@@ -1,11 +1,11 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mssql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
@@ -41,10 +41,45 @@ class MsSqlSourceMetadataQuerier(
 
     private fun checkSqlServerAgentRunning() {
         try {
+            // First check EngineEdition to determine if this is Azure SQL
+            // EngineEdition values:
+            // https://learn.microsoft.com/en-us/sql/t-sql/functions/serverproperty-transact-sql
+            // 5 = Azure SQL Database
+            // 8 = Azure SQL Managed Instance (SQL Server Agent is always running)
+            val engineEdition: Int? =
+                base.conn.createStatement().use { stmt: Statement ->
+                    stmt
+                        .executeQuery("SELECT ServerProperty('EngineEdition') AS EngineEdition")
+                        .use { rs: ResultSet ->
+                            if (rs.next()) rs.getInt("EngineEdition") else null
+                        }
+                }
+
+            when (engineEdition) {
+                5 -> {
+                    // Azure SQL Database - SQL Server Agent is not applicable
+                    // CDC in Azure SQL Database works differently and doesn't require SQL Server
+                    // Agent
+                    log.info {
+                        "Azure SQL Database detected (EngineEdition=$engineEdition). Skipping SQL Server Agent check."
+                    }
+                    return
+                }
+                8 -> {
+                    // Azure SQL Managed Instance - SQL Server Agent is always running
+                    // https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/transact-sql-tsql-differences-sql-server#sql-server-agent
+                    log.info {
+                        "Azure SQL Managed Instance detected (EngineEdition=$engineEdition). SQL Server Agent is assumed to be running."
+                    }
+                    return
+                }
+            }
+
+            // For on-premises SQL Server, check if SQL Server Agent is running
             base.conn.createStatement().use { stmt: Statement ->
                 stmt
                     .executeQuery(
-                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%'"
+                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'"
                     )
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
@@ -61,7 +96,9 @@ class MsSqlSourceMetadataQuerier(
                     }
             }
         } catch (e: SQLException) {
-            throw ConfigErrorException("Failed to check SQL Server Agent status: ${e.message}")
+            // Gracefully handle cases where sys.dm_server_services is not accessible
+            // This can happen in some Azure SQL configurations or restricted permission scenarios
+            log.warn { "Skipping SQL Server Agent check due to SQLException: ${e.message}" }
         }
     }
 
@@ -89,11 +126,11 @@ class MsSqlSourceMetadataQuerier(
         }
     }
 
-    override fun fields(streamID: StreamIdentifier): List<Field> {
+    override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         if (table !in memoizedColumnMetadata) return listOf()
         return memoizedColumnMetadata[table]!!.map {
-            Field(it.label, base.fieldTypeMapper.toFieldType(it))
+            EmittedField(it.label, base.fieldTypeMapper.toFieldType(it))
         }
     }
 

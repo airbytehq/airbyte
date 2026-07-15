@@ -100,6 +100,10 @@ This connector outputs the following incremental streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -107,7 +111,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.2.7 | 2025-07-30 | [64127](https://github.com/airbytehq/airbyte/pull/64127) | Change user agent string |
+| 1.2.7 | 2025-09-07 | [64127](https://github.com/airbytehq/airbyte/pull/64127) | Change user agent string |
 | 1.2.6 | 2025-05-24 | [60072](https://github.com/airbytehq/airbyte/pull/60072) | Update dependencies |
 | 1.2.5 | 2025-05-04 | [59516](https://github.com/airbytehq/airbyte/pull/59516) | Update dependencies |
 | 1.2.4 | 2025-04-27 | [59044](https://github.com/airbytehq/airbyte/pull/59044) | Update dependencies |

@@ -60,12 +60,20 @@ You can follow the steps laid out below to create the application and obtain the
 
 2. Click the **OAuth 2.0 tools** link in the **Understanding authentication and OAuth 2.0** section on the right side of the page.
 3. Click **Create token**.
-4. Select the scopes you want to use for your app. We recommend using the following scopes:
-   - `r_emailaddress`
-   - `r_liteprofile`
-   - `r_ads`
-   - `r_ads_reporting`
-   - `r_organization_social`
+4. Select the scopes you want to use for your app. The connector requires the following scopes:
+   - `r_ads` - Read ad accounts and related data
+   - `r_ads_reporting` - Read ad analytics and reporting data
+   - `r_basicprofile` - Read basic profile information
+   - `r_liteprofile` - Read lite profile information
+   - `r_emailaddress` - Read email address
+   - `r_organization_social` - Read organization social data
+   - `r_organization_admin` - Read organization admin data
+   - `r_events` - Read events data
+   - `r_1st_connections_size` - Read first-degree connection count
+   - `r_marketing_leadgen_automation` - Read lead gen form data
+   - `r_ads_leadgen_automation` - Read lead gen automation data
+
+   Not all scopes may be available depending on your LinkedIn API program access level. At a minimum, you need `r_ads` and `r_ads_reporting` to sync ad account data and analytics.
 5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
@@ -110,7 +118,9 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 
 6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
 7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
-8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled form LinkedIn Ads with your particular needs. To add a custom report:
+8. (Optional) For **Lookback Window**, enter the number of days to look back when syncing ad analytics data. This allows the connector to re-fetch data from a previous period to capture late-arriving conversions or attribution updates. Leave blank to use the default behavior.
+9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
+10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
    2. Enter a **Report Name**. This will be used as the stream name during replication.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
@@ -119,7 +129,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
-9. Click **Set up source** and wait for the tests to complete.
+11. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -149,6 +159,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Job Function](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Job Title](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Industry](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
+- [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 
@@ -168,13 +179,7 @@ LinkedIn Ads has Official Rate Limits for API Usage, [more information here](htt
 "Caught retriable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
 ```
 
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. If the maximum available API requests capacity is reached, you will have the following message:
-
-```text
-"Max try rate limit exceeded..."
-```
-
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics.
+This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. The connector uses exponential backoff to retry rate-limited requests automatically. If you experience persistent rate limiting, check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics.
 
 ### Ad analytics streams
 
@@ -182,7 +187,11 @@ LinkedIn Ads supports a number of different streams that provide metrics about t
 
 In order to improve sync performance, when configuring your connection, only select the columns that you need replicated into your downstream destination. Fewer columns selected should reduce the duration of syncs.
 
-:::caution The LinkedIn Ads API will not return records that do not have no values for any of the dimensions you specify. Please take caution selecting columns as you may see fewer or more records depending on your selection.:::
+:::caution
+
+The LinkedIn Ads API does not return records that have no values for any of the dimensions you specify. Take caution selecting columns, as you may see fewer or more records depending on your selection.
+
+:::
 
 ## Data type map
 
@@ -191,19 +200,20 @@ In order to improve sync performance, when configuring your connection, only sel
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
-| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm: ss |
+| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm:ss  |
 | `array`          | `array`      |                             |
 | `boolean`        | `boolean`    | True/False                  |
 | `string`         | `string`     |                             |
 
-## Limits & considerations regarding  `Lead forms` and `Lead form responses` streams
-1. LinkedIn API requires special query params characters (eg: `(`, `:` or `)`), and low-code automatically escapes them using `query params`.
-As auto-escaping disabling does not look not manageable via low-code, the workaround was to hard-code them in the request `path` directly.
-2. `Incremental Sync` is not manageable via low-code due to LinkedIn API way to handle timerange via query param:
-```
-submittedAtTimeRange=(start:1711407600000,end:1711494000000)
-```
-No workaround has been identified to manage this issue as of 2025, February.
+## Limitations
+
+### Lead forms and Lead form responses
+
+The **Lead forms** and **Lead form responses** streams support Full Refresh sync mode only. Incremental sync is not available for these streams due to limitations in how the LinkedIn API handles time-range filtering for lead data.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -212,98 +222,109 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
+| 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
+| 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
+| 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
+| 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
+| 5.6.2 | 2026-01-20 | [72028](https://github.com/airbytehq/airbyte/pull/72028) | Update dependencies |
+| 5.6.1 | 2026-01-14 | [68982](https://github.com/airbytehq/airbyte/pull/68982) | Update dependencies |
 | 5.6.0 | 2025-11-04 | [69180](https://github.com/airbytehq/airbyte/pull/69180) | Promoting release candidate 5.6.0-rc.1 to a main version. |
-| 5.6.0-rc.1 | 2025-10-29 | [68614](https://github.com/airbytehq/airbyte/pull/68614)     | Upgrade to latest CDK to only include the selected columns of the schema in API requests for ad analytics streams                                                      |
-| 5.5.5      | 2025-10-27 | [68626](https://github.com/airbytehq/airbyte/pull/68626)     | Increase concurrency and introduce initial attempt at API budget                                                                                                       |
-| 5.5.4      | 2025-10-21 | [64967](https://github.com/airbytehq/airbyte/pull/64967) | Update dependencies                                                                                                                                                    |
-| 5.5.3      | 2025-10-09 | [67564](https://github.com/airbytehq/airbyte/pull/67564) | Upgrade to CDK v7.                                                                                                                                                     |
-| 5.5.2      | 2025-07-16 | [63336](https://github.com/airbytehq/airbyte/pull/63336) | Promoting release candidate 5.5.2-rc.1 to a main version.                                                                                                              |
-| 5.5.2-rc.1 | 2025-06-23 | [60996](https://github.com/airbytehq/airbyte/pull/60996) | Fix to properly manage pagination for `Lead forms` and `Lead form responses` streams                                                                                   |
-| 5.5.1      | 2025-06-18 | [61639](https://github.com/airbytehq/airbyte/pull/61639) | Reduce default concurrency level to 3 and enable configurability via `num_workers` config property                                                                     |
-| 5.5.0      | 2025-04-28 | [59116](https://github.com/airbytehq/airbyte/pull/59116) | Promoting release candidate 5.5.0-rc.1 to a main version.                                                                                                              |
-| 5.5.0-rc.1 | 2025-04-25 | [58628](https://github.com/airbytehq/airbyte/pull/58628) | Convert to manifest-only format                                                                                                                                        |
-| 5.4.1      | 2025-04-23 | [58134](https://github.com/airbytehq/airbyte/pull/58134) | Fix to properly retrieve `approximateMemberReach` for `adAnalytics` streams following `v5.3.3`.                                                                        |
-| 5.4.0      | 2025-04-22 | [58593](https://github.com/airbytehq/airbyte/pull/58593) | Promoting release candidate 5.4.0-rc.1 to a main version.                                                                                                              |
-| 5.4.0-rc.1 | 2025-04-18 | [58114](https://github.com/airbytehq/airbyte/pull/58114) | Removes custom retrievers and cursors from analytics streams so that they can take up concurrency.                                                                     |
-| 5.3.3      | 2025-03-12 | [55724](https://github.com/airbytehq/airbyte/pull/55724) | Update outdated schema `approximateUniqueImpressions` to new `approximateMemberReach` for `adAnalytics` streams.                                                       |
-| 5.3.2      | 2025-03-08 | [55447](https://github.com/airbytehq/airbyte/pull/55447) | Update dependencies                                                                                                                                                    |
-| 5.3.1      | 2025-03-05 | [55211](https://github.com/airbytehq/airbyte/pull/55211) | Update dependencies                                                                                                                                                    |
-| 5.3.0      | 2025-03-02 | [55171](https://github.com/airbytehq/airbyte/pull/55171) | Migrate API to v202502                                                                                                                                                 |
-| 5.2.3      | 2025-03-01 | [54813](https://github.com/airbytehq/airbyte/pull/54813) | Update dependencies                                                                                                                                                    |
-| 5.2.2      | 2025-02-22 | [53308](https://github.com/airbytehq/airbyte/pull/53308) | Update dependencies                                                                                                                                                    |
-| 5.2.1      | 2025-02-10 | [53611](https://github.com/airbytehq/airbyte/pull/53611) | Add schema precisions for `Lead forms` and `Lead form responses` streams                                                                                               |
-| 5.2.0      | 2025-02-04 | [52047](https://github.com/airbytehq/airbyte/pull/52047) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations                                                                                   |
-| 5.1.6      | 2025-02-02 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream                                                                                                         |
-| 5.1.5      | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies                                                                                                                                                    |
-| 5.1.4      | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error                                                                                                                                                        |
-| 5.1.3      | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6                                                                                                                                            |
-| 5.1.2      | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies                                                                                                                                                    |
-| 5.1.1      | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 5.1.0      | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling                                                                                                   |
-| 5.0.0      | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users                                                                   |
-| 4.1.4      | 2024-10-12 | [46862](https://github.com/airbytehq/airbyte/pull/46862) | Update dependencies                                                                                                                                                    |
-| 4.1.3      | 2024-10-05 | [46433](https://github.com/airbytehq/airbyte/pull/46433) | Update dependencies                                                                                                                                                    |
-| 4.1.2      | 2024-09-28 | [46171](https://github.com/airbytehq/airbyte/pull/46171) | Update dependencies                                                                                                                                                    |
-| 4.1.1      | 2024-09-21 | [45774](https://github.com/airbytehq/airbyte/pull/45774) | Update dependencies                                                                                                                                                    |
-| 4.1.0      | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code                                                                                                                                                    |
-| 4.0.6      | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies                                                                                                                                                    |
-| 4.0.5      | 2024-09-07 | [45209](https://github.com/airbytehq/airbyte/pull/45209) | Update dependencies                                                                                                                                                    |
-| 4.0.4      | 2024-08-31 | [44950](https://github.com/airbytehq/airbyte/pull/44950) | Update dependencies                                                                                                                                                    |
-| 4.0.3      | 2024-08-24 | [44682](https://github.com/airbytehq/airbyte/pull/44682) | Update dependencies                                                                                                                                                    |
-| 4.0.2      | 2024-08-17 | [44220](https://github.com/airbytehq/airbyte/pull/44220) | Update dependencies                                                                                                                                                    |
-| 4.0.1      | 2024-08-10 | [43629](https://github.com/airbytehq/airbyte/pull/43629) | Update dependencies                                                                                                                                                    |
-| 4.0.0      | 2024-08-07 | [43359](https://github.com/airbytehq/airbyte/pull/43359) | Revert low code migration                                                                                                                                              |
-| 3.0.1      | 2024-08-03 | [43087](https://github.com/airbytehq/airbyte/pull/43087) | Update dependencies                                                                                                                                                    |
-| 3.0.0      | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code                                                                                                                                                    |
-| 2.1.12     | 2024-07-27 | [42728](https://github.com/airbytehq/airbyte/pull/42728) | Update dependencies                                                                                                                                                    |
-| 2.1.11     | 2024-07-20 | [42291](https://github.com/airbytehq/airbyte/pull/42291) | Update dependencies                                                                                                                                                    |
-| 2.1.10     | 2024-07-13 | [41710](https://github.com/airbytehq/airbyte/pull/41710) | Update dependencies                                                                                                                                                    |
-| 2.1.9      | 2024-07-10 | [41517](https://github.com/airbytehq/airbyte/pull/41517) | Update dependencies                                                                                                                                                    |
-| 2.1.8      | 2024-07-09 | [41315](https://github.com/airbytehq/airbyte/pull/41315) | Update dependencies                                                                                                                                                    |
-| 2.1.7      | 2024-07-06 | [40868](https://github.com/airbytehq/airbyte/pull/40868) | Update dependencies                                                                                                                                                    |
-| 2.1.6      | 2024-06-25 | [40331](https://github.com/airbytehq/airbyte/pull/40331) | Update dependencies                                                                                                                                                    |
-| 2.1.5      | 2024-06-22 | [39998](https://github.com/airbytehq/airbyte/pull/39998) | Update dependencies                                                                                                                                                    |
-| 2.1.4      | 2024-06-16 | [39442](https://github.com/airbytehq/airbyte/pull/39442) | Fix README commands, change spec from json to yaml, fix schema states to object                                                                                        |
-| 2.1.3      | 2024-06-06 | [39240](https://github.com/airbytehq/airbyte/pull/39240) | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
-| 2.1.2      | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions                                                                                                                                                    |
-| 2.1.1      | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs                                                                                 |
-| 2.1.0      | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination                                                                                                            |
-| 2.0.0      | 2024-04-24 | [37531](https://github.com/airbytehq/airbyte/pull/37531) | Change primary key for Analytics Streams                                                                                                                               |
-| 1.0.1      | 2024-03-28 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Proceed pagination if return less than expected                                                                                                                        |
-| 1.0.0      | 2024-04-10 | [36927](https://github.com/airbytehq/airbyte/pull/36927) | Update primary key for Analytics Streams                                                                                                                               |
-| 0.8.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                                                                        |
-| 0.7.0      | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures                                                                                                               |
-| 0.6.8      | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry                                                                                                                                        |
-| 0.6.7      | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Prepare for airbyte-lib                                                                                                                                                |
-| 0.6.6      | 2024-01-15 | [34222](https://github.com/airbytehq/airbyte/pull/34222) | Use stream slices for Analytics streams                                                                                                                                |
-| 0.6.5      | 2023-12-15 | [33530](https://github.com/airbytehq/airbyte/pull/33530) | Fix typo in `Pivot Category` list                                                                                                                                      |
-| 0.6.4      | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                        |
-| 0.6.3      | 2023-10-13 | [31396](https://github.com/airbytehq/airbyte/pull/31396) | Fix pagination for reporting                                                                                                                                           |
-| 0.6.2      | 2023-08-23 | [31221](https://github.com/airbytehq/airbyte/pull/31221) | Increase max time between messages to 24 hours                                                                                                                         |
-| 0.6.1      | 2023-08-23 | [29600](https://github.com/airbytehq/airbyte/pull/29600) | Update field descriptions                                                                                                                                              |
-| 0.6.0      | 2023-08-22 | [29721](https://github.com/airbytehq/airbyte/pull/29721) | Add `Conversions` stream                                                                                                                                               |
-| 0.5.0      | 2023-08-14 | [29175](https://github.com/airbytehq/airbyte/pull/29175) | Add Custom report Constructor                                                                                                                                          |
-| 0.4.0      | 2023-08-08 | [29175](https://github.com/airbytehq/airbyte/pull/29175) | Add analytics streams                                                                                                                                                  |
-| 0.3.1      | 2023-08-08 | [29189](https://github.com/airbytehq/airbyte/pull/29189) | Fix empty accounts field                                                                                                                                               |
-| 0.3.0      | 2023-08-07 | [29045](https://github.com/airbytehq/airbyte/pull/29045) | Add new fields to schemas; convert datetime fields to `rfc3339`                                                                                                        |
-| 0.2.1      | 2023-05-30 | [26780](https://github.com/airbytehq/airbyte/pull/26780) | Reduce records limit for Creatives Stream                                                                                                                              |
-| 0.2.0      | 2023-05-23 | [26372](https://github.com/airbytehq/airbyte/pull/26372) | Migrate to LinkedIn API version: May 2023                                                                                                                              |
-| 0.1.16     | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth                                                                                                     |
-| 0.1.15     | 2023-02-13 | [22940](https://github.com/airbytehq/airbyte/pull/22940) | Specified date formatting in specification                                                                                                                             |
-| 0.1.14     | 2023-02-03 | [22361](https://github.com/airbytehq/airbyte/pull/22361) | Turn on default HttpAvailabilityStrategy                                                                                                                               |
-| 0.1.13     | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | For adDirectSponsoredContents stream skip accounts which are part of organization                                                                                      |
-| 0.1.12     | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | For adDirectSponsoredContents stream skip accounts which are part of organization                                                                                      |
-| 0.1.11     | 2022-10-07 | [17724](https://github.com/airbytehq/airbyte/pull/17724) | Retry 429/5xx errors when refreshing access token                                                                                                                      |
-| 0.1.10     | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                                                                          |
-| 0.1.9      | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas                                                                                                                       |
-| 0.1.8      | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column                                                                   |
-| 0.1.7      | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                                                                                        |
-| 0.1.6      | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documentation corrections                                                                                                                                        |
-| 0.1.5      | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984)   | Update connector fields title/description                                                                                                                              |
-| 0.1.4      | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382)   | Modify log message in rate-limit cases                                                                                                                                 |
-| 0.1.3      | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839)   | Added OAuth support                                                                                                                                                    |
-| 0.1.2      | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                                                                        |
-| 0.1.1      | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610)   | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default                                                        |
-| 0.1.0      | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285)   | Initial release of Native LinkedIn Ads connector for Airbyte                                                                                                           |
+| 5.6.0-rc.1 | 2025-10-29 | [68614](https://github.com/airbytehq/airbyte/pull/68614) | Upgrade to latest CDK to only include the selected columns of the schema in API requests for ad analytics streams |
+| 5.5.5 | 2025-10-28 | [68626](https://github.com/airbytehq/airbyte/pull/68626) | Increase concurrency and introduce initial attempt at API budget |
+| 5.5.4 | 2025-10-21 | [64967](https://github.com/airbytehq/airbyte/pull/64967) | Update dependencies |
+| 5.5.3 | 2025-10-14 | [67564](https://github.com/airbytehq/airbyte/pull/67564) | Upgrade to CDK v7. |
+| 5.5.2 | 2025-07-16 | [63336](https://github.com/airbytehq/airbyte/pull/63336) | Promoting release candidate 5.5.2-rc.1 to a main version. |
+| 5.5.2-rc.1 | 2025-06-23 | [60996](https://github.com/airbytehq/airbyte/pull/60996) | Fix to properly manage pagination for `Lead forms` and `Lead form responses` streams |
+| 5.5.1 | 2025-06-18 | [61639](https://github.com/airbytehq/airbyte/pull/61639) | Reduce default concurrency level to 3 and enable configurability via `num_workers` config property |
+| 5.5.0 | 2025-04-28 | [59116](https://github.com/airbytehq/airbyte/pull/59116) | Promoting release candidate 5.5.0-rc.1 to a main version. |
+| 5.5.0-rc.1 | 2025-04-25 | [58628](https://github.com/airbytehq/airbyte/pull/58628) | Convert to manifest-only format |
+| 5.4.1 | 2025-04-23 | [58134](https://github.com/airbytehq/airbyte/pull/58134) | Fix to properly retrieve `approximateMemberReach` for `adAnalytics` streams following `v5.3.3`. |
+| 5.4.0 | 2025-04-22 | [58593](https://github.com/airbytehq/airbyte/pull/58593) | Promoting release candidate 5.4.0-rc.1 to a main version. |
+| 5.4.0-rc.1 | 2025-04-18 | [58114](https://github.com/airbytehq/airbyte/pull/58114) | Removes custom retrievers and cursors from analytics streams so that they can take up concurrency. |
+| 5.3.3 | 2025-03-12 | [55724](https://github.com/airbytehq/airbyte/pull/55724) | Update outdated schema `approximateUniqueImpressions` to new `approximateMemberReach` for `adAnalytics` streams. |
+| 5.3.2 | 2025-03-08 | [55447](https://github.com/airbytehq/airbyte/pull/55447) | Update dependencies |
+| 5.3.1 | 2025-03-05 | [55211](https://github.com/airbytehq/airbyte/pull/55211) | Update dependencies |
+| 5.3.0 | 2025-03-02 | [55171](https://github.com/airbytehq/airbyte/pull/55171) | Migrate API to v202502 |
+| 5.2.3 | 2025-03-01 | [54813](https://github.com/airbytehq/airbyte/pull/54813) | Update dependencies |
+| 5.2.2 | 2025-02-22 | [53308](https://github.com/airbytehq/airbyte/pull/53308) | Update dependencies |
+| 5.2.1 | 2025-02-10 | [53611](https://github.com/airbytehq/airbyte/pull/53611) | Add schema precisions for `Lead forms` and `Lead form responses` streams |
+| 5.2.0 | 2025-02-04 | [52047](https://github.com/airbytehq/airbyte/pull/52047) | Add `Lead forms` and `Lead form responses` new streams - See Limits & considerations |
+| 5.1.6 | 2025-02-02 | [49458](https://github.com/airbytehq/airbyte/pull/49458) | Update Linkedin Ads API version to 202410 for creatives stream |
+| 5.1.5 | 2025-02-01 | [52791](https://github.com/airbytehq/airbyte/pull/52791) | Update dependencies |
+| 5.1.4 | 2025-01-30 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Fix state error |
+| 5.1.3 | 2025-01-22 | [52604](https://github.com/airbytehq/airbyte/pull/52604) | Update CDK to production ^6 |
+| 5.1.2 | 2025-01-25 | [52253](https://github.com/airbytehq/airbyte/pull/52253) | Update dependencies |
+| 5.1.1 | 2025-01-15 | [47092](https://github.com/airbytehq/airbyte/pull/47092) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 5.1.0 | 2025-01-14 | [48863](https://github.com/airbytehq/airbyte/pull/48863) | Custom streams moved to manifest implementation & URL Error Handling |
+| 5.0.0 | 2024-11-26 | [48451](https://github.com/airbytehq/airbyte/pull/48451) | Update primary keys for streams ad_campaign_analytics, Custom Ad Analytics Reports and account_users |
+| 4.1.4 | 2024-10-12 | [46862](https://github.com/airbytehq/airbyte/pull/46862) | Update dependencies |
+| 4.1.3 | 2024-10-05 | [46433](https://github.com/airbytehq/airbyte/pull/46433) | Update dependencies |
+| 4.1.2 | 2024-09-28 | [46171](https://github.com/airbytehq/airbyte/pull/46171) | Update dependencies |
+| 4.1.1 | 2024-09-21 | [45774](https://github.com/airbytehq/airbyte/pull/45774) | Update dependencies |
+| 4.1.0 | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code |
+| 4.0.6 | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies |
+| 4.0.5 | 2024-09-07 | [45209](https://github.com/airbytehq/airbyte/pull/45209) | Update dependencies |
+| 4.0.4 | 2024-08-31 | [44950](https://github.com/airbytehq/airbyte/pull/44950) | Update dependencies |
+| 4.0.3 | 2024-08-24 | [44682](https://github.com/airbytehq/airbyte/pull/44682) | Update dependencies |
+| 4.0.2 | 2024-08-17 | [44220](https://github.com/airbytehq/airbyte/pull/44220) | Update dependencies |
+| 4.0.1 | 2024-08-10 | [43629](https://github.com/airbytehq/airbyte/pull/43629) | Update dependencies |
+| 4.0.0 | 2024-08-07 | [43359](https://github.com/airbytehq/airbyte/pull/43359) | Revert low code migration |
+| 3.0.1 | 2024-08-03 | [43087](https://github.com/airbytehq/airbyte/pull/43087) | Update dependencies |
+| 3.0.0 | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code |
+| 2.1.12 | 2024-07-27 | [42728](https://github.com/airbytehq/airbyte/pull/42728) | Update dependencies |
+| 2.1.11 | 2024-07-20 | [42291](https://github.com/airbytehq/airbyte/pull/42291) | Update dependencies |
+| 2.1.10 | 2024-07-13 | [41710](https://github.com/airbytehq/airbyte/pull/41710) | Update dependencies |
+| 2.1.9 | 2024-07-10 | [41517](https://github.com/airbytehq/airbyte/pull/41517) | Update dependencies |
+| 2.1.8 | 2024-07-09 | [41315](https://github.com/airbytehq/airbyte/pull/41315) | Update dependencies |
+| 2.1.7 | 2024-07-06 | [40868](https://github.com/airbytehq/airbyte/pull/40868) | Update dependencies |
+| 2.1.6 | 2024-06-25 | [40331](https://github.com/airbytehq/airbyte/pull/40331) | Update dependencies |
+| 2.1.5 | 2024-06-22 | [39998](https://github.com/airbytehq/airbyte/pull/39998) | Update dependencies |
+| 2.1.4 | 2024-06-16 | [39442](https://github.com/airbytehq/airbyte/pull/39442) | Fix README commands, change spec from json to yaml, fix schema states to object |
+| 2.1.3 | 2024-06-06 | [39240](https://github.com/airbytehq/airbyte/pull/39240) | [autopull] Upgrade base image to v1.2.2 |
+| 2.1.2 | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions |
+| 2.1.1 | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs |
+| 2.1.0 | 2024-04-30 | [37573](https://github.com/airbytehq/airbyte/pull/37573) | Update API version to `202404`; add cursor-based pagination |
+| 2.0.0 | 2024-04-24 | [37531](https://github.com/airbytehq/airbyte/pull/37531) | Change primary key for Analytics Streams |
+| 1.0.1 | 2024-03-28 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Proceed pagination if return less than expected |
+| 1.0.0 | 2024-04-10 | [36927](https://github.com/airbytehq/airbyte/pull/36927) | Update primary key for Analytics Streams |
+| 0.8.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 0.7.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
+| 0.6.8 | 2024-02-09 | [35086](https://github.com/airbytehq/airbyte/pull/35086) | Manage dependencies with Poetry |
+| 0.6.7 | 2024-01-11 | [34152](https://github.com/airbytehq/airbyte/pull/34152) | Prepare for airbyte-lib |
+| 0.6.6 | 2024-01-15 | [34222](https://github.com/airbytehq/airbyte/pull/34222) | Use stream slices for Analytics streams |
+| 0.6.5 | 2023-12-15 | [33530](https://github.com/airbytehq/airbyte/pull/33530) | Fix typo in `Pivot Category` list |
+| 0.6.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.6.3 | 2023-10-13 | [31396](https://github.com/airbytehq/airbyte/pull/31396) | Fix pagination for reporting |
+| 0.6.2 | 2023-08-23 | [31221](https://github.com/airbytehq/airbyte/pull/31221) | Increase max time between messages to 24 hours |
+| 0.6.1 | 2023-08-23 | [29600](https://github.com/airbytehq/airbyte/pull/29600) | Update field descriptions |
+| 0.6.0 | 2023-08-22 | [29721](https://github.com/airbytehq/airbyte/pull/29721) | Add `Conversions` stream |
+| 0.5.0 | 2023-08-14 | [29175](https://github.com/airbytehq/airbyte/pull/29175) | Add Custom report Constructor |
+| 0.4.0 | 2023-08-08 | [29175](https://github.com/airbytehq/airbyte/pull/29175) | Add analytics streams |
+| 0.3.1 | 2023-08-08 | [29189](https://github.com/airbytehq/airbyte/pull/29189) | Fix empty accounts field |
+| 0.3.0 | 2023-08-07 | [29045](https://github.com/airbytehq/airbyte/pull/29045) | Add new fields to schemas; convert datetime fields to `rfc3339` |
+| 0.2.1 | 2023-05-30 | [26780](https://github.com/airbytehq/airbyte/pull/26780) | Reduce records limit for Creatives Stream |
+| 0.2.0 | 2023-05-23 | [26372](https://github.com/airbytehq/airbyte/pull/26372) | Migrate to LinkedIn API version: May 2023 |
+| 0.1.16 | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth |
+| 0.1.15 | 2023-02-13 | [22940](https://github.com/airbytehq/airbyte/pull/22940) | Specified date formatting in specification |
+| 0.1.14 | 2023-02-03 | [22361](https://github.com/airbytehq/airbyte/pull/22361) | Turn on default HttpAvailabilityStrategy |
+| 0.1.13 | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | For adDirectSponsoredContents stream skip accounts which are part of organization |
+| 0.1.12 | 2022-10-18 | [18111](https://github.com/airbytehq/airbyte/pull/18111) | For adDirectSponsoredContents stream skip accounts which are part of organization |
+| 0.1.11 | 2022-10-07 | [17724](https://github.com/airbytehq/airbyte/pull/17724) | Retry 429/5xx errors when refreshing access token |
+| 0.1.10 | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states. |
+| 0.1.9 | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas |
+| 0.1.8 | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column |
+| 0.1.7 | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
+| 0.1.6 | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documentation corrections |
+| 0.1.5 | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984) | Update connector fields title/description |
+| 0.1.4 | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382) | Modify log message in rate-limit cases |
+| 0.1.3 | 2021-11-11 | [7839](https://github.com/airbytehq/airbyte/pull/7839) | Added OAuth support |
+| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.1 | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610) | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default |
+| 0.1.0 | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte |
 
 </details>

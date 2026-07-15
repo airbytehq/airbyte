@@ -18,6 +18,10 @@ API Reference: https://docs.tavus.io/api-reference/phoenix-replica-model/get-rep
 | personas | persona_id | DefaultPaginator | ✅ |  ✅  |
 | speeches | speech_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,22 @@ API Reference: https://docs.tavus.io/api-reference/phoenix-replica-model/get-rep
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2026-07-14 | [82037](https://github.com/airbytehq/airbyte/pull/82037) | Update dependencies |
+| 0.0.38 | 2026-06-30 | [81293](https://github.com/airbytehq/airbyte/pull/81293) | Update dependencies |
+| 0.0.37 | 2026-06-23 | [80666](https://github.com/airbytehq/airbyte/pull/80666) | Update dependencies |
+| 0.0.36 | 2026-06-16 | [80082](https://github.com/airbytehq/airbyte/pull/80082) | Update dependencies |
+| 0.0.35 | 2026-06-09 | [79526](https://github.com/airbytehq/airbyte/pull/79526) | Update dependencies |
+| 0.0.34 | 2026-06-02 | [79049](https://github.com/airbytehq/airbyte/pull/79049) | Update dependencies |
+| 0.0.33 | 2026-04-28 | [77414](https://github.com/airbytehq/airbyte/pull/77414) | Update dependencies |
+| 0.0.32 | 2026-04-21 | [76794](https://github.com/airbytehq/airbyte/pull/76794) | Update dependencies |
+| 0.0.31 | 2026-03-31 | [75780](https://github.com/airbytehq/airbyte/pull/75780) | Update dependencies |
+| 0.0.30 | 2026-03-17 | [75041](https://github.com/airbytehq/airbyte/pull/75041) | Update dependencies |
+| 0.0.29 | 2026-03-10 | [74581](https://github.com/airbytehq/airbyte/pull/74581) | Update dependencies |
+| 0.0.28 | 2026-02-24 | [73834](https://github.com/airbytehq/airbyte/pull/73834) | Update dependencies |
+| 0.0.27 | 2026-02-10 | [73126](https://github.com/airbytehq/airbyte/pull/73126) | Update dependencies |
+| 0.0.26 | 2026-01-20 | [72107](https://github.com/airbytehq/airbyte/pull/72107) | Update dependencies |
+| 0.0.25 | 2026-01-14 | [71577](https://github.com/airbytehq/airbyte/pull/71577) | Update dependencies |
+| 0.0.24 | 2025-12-18 | [70603](https://github.com/airbytehq/airbyte/pull/70603) | Update dependencies |
 | 0.0.23 | 2025-11-25 | [70044](https://github.com/airbytehq/airbyte/pull/70044) | Update dependencies |
 | 0.0.22 | 2025-11-18 | [69555](https://github.com/airbytehq/airbyte/pull/69555) | Update dependencies |
 | 0.0.21 | 2025-10-29 | [69013](https://github.com/airbytehq/airbyte/pull/69013) | Update dependencies |
@@ -35,7 +55,7 @@ API Reference: https://docs.tavus.io/api-reference/phoenix-replica-model/get-rep
 | 0.0.16 | 2025-09-23 | [66358](https://github.com/airbytehq/airbyte/pull/66358) | Update dependencies |
 | 0.0.15 | 2025-09-09 | [65677](https://github.com/airbytehq/airbyte/pull/65677) | Update dependencies |
 | 0.0.14 | 2025-08-24 | [65433](https://github.com/airbytehq/airbyte/pull/65433) | Update dependencies |
-| 0.0.13 | 2025-08-09 | [64810](https://github.com/airbytehq/airbyte/pull/64810) | Update dependencies |
+| 0.0.13 | 2025-08-10 | [64810](https://github.com/airbytehq/airbyte/pull/64810) | Update dependencies |
 | 0.0.12 | 2025-07-26 | [63970](https://github.com/airbytehq/airbyte/pull/63970) | Update dependencies |
 | 0.0.11 | 2025-07-19 | [63649](https://github.com/airbytehq/airbyte/pull/63649) | Update dependencies |
 | 0.0.10 | 2025-07-12 | [63071](https://github.com/airbytehq/airbyte/pull/63071) | Update dependencies |

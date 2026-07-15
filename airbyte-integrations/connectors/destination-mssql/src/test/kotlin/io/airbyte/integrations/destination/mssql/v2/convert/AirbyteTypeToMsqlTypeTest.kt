@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2.convert
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 
 class AirbyteTypeToMsqlTypeTest {
 
-    private val converter = AirbyteTypeToMssqlType()
+    private val converter = AirbyteTypeToMssqlType
 
     @Test
     fun testConvertObjectType() {

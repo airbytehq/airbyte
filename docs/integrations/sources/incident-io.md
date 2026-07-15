@@ -1,26 +1,25 @@
 # Incident.io
 
-This is the Incident.io source connector which ingests data from the incident API.
-The important streams are `incidents`, `follow-ups` and `severities`
+[Incident.io](https://incident.io/) is an incident management platform that provides on-call scheduling, status pages, and incident response tooling. This connector syncs data from the [Incident.io API](https://api-docs.incident.io/).
 
 ## Prerequisites
 
-An API key is required for authentication and using this connector. In order to obtain an API key, you must first create an Incident.io account.
-You can create an account here https://incident.io/
-Once you create an account and log in , you will find your API keys section in the settings sidebar under the `extends` heading. Make sure to provide all of the appropriate permissions.
-You can find more about their API here https://api-docs.incident.io/
+- An Incident.io account with API access. You can sign up at [incident.io](https://incident.io/).
+- An Incident.io API key. To create one, go to **Settings** → **API keys** in your Incident.io dashboard. When you create the key, choose which actions it can take. Keys can have account-level permissions, team-scoped permissions, or both. For this connector, the key needs read access to all resources you want to sync. The API key is shown only once, so store it somewhere safe.
 
-## Set up the Adjust source connector
+For more information about the API, see the [Incident.io API reference](https://api-docs.incident.io/).
+
+## Set up the Incident.io source connector
 
 1. Click **Sources** and then click **+ New source**.
-2. On the Set up the source page, select **Incdient.io** from the Source type dropdown.
-3. Enter a name for your new source.
-4. For **API Key**, enter your API key obtained in the previous step.
-7. Click **Set up source**.
+2. On the Set up the source page, select **Incident.io** from the Source type dropdown.
+3. Enter a name for the source.
+4. For **API Key**, enter the API key you created in your Incident.io dashboard.
+5. Click **Set up source**.
 
 ## Supported sync modes
 
-The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Incident.io source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 
@@ -28,33 +27,61 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys |  |
+| `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| actions | id | No pagination | ✅ |  ❌  |
-| catalog_types | id | No pagination | ✅ |  ❌  |
-| custom_fields | id | No pagination | ✅ |  ❌  |
-| follow-ups | id | No pagination | ✅ |  ❌  |
-| incident_roles | id | No pagination | ✅ |  ❌  |
-| incident_timestamps | id | No pagination | ✅ |  ❌  |
-| incident_updates | id | DefaultPaginator | ✅ |  ❌  |
-| incident_statuses | id | No pagination | ✅ |  ❌  |
-| workflows | id | No pagination | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| severities | id | No pagination | ✅ |  ❌  |
-| schedules | id | DefaultPaginator | ✅ |  ❌  |
-| incidents | id | DefaultPaginator | ✅ |  ❌  |
-| alerts | id | DefaultPaginator | ✅ |  ❌  |
+| actions | id | No pagination | ✅ | ❌ |
+| alerts | id | DefaultPaginator | ✅ | ❌ |
+| catalog_types | id | No pagination | ✅ | ❌ |
+| custom_fields | id | No pagination | ✅ | ❌ |
+| escalations | id | DefaultPaginator | ✅ | ❌ |
+| follow-ups | id | No pagination | ✅ | ❌ |
+| incident_roles | id | No pagination | ✅ | ❌ |
+| incident_statuses | id | No pagination | ✅ | ❌ |
+| incident_timestamps | id | No pagination | ✅ | ❌ |
+| incident_updates | id | DefaultPaginator | ✅ | ❌ |
+| incidents | id | DefaultPaginator | ✅ | ❌ |
+| schedules | id | DefaultPaginator | ✅ | ❌ |
+| severities | id | No pagination | ✅ | ❌ |
+| users | id | DefaultPaginator | ✅ | ❌ |
+| workflows | id | No pagination | ✅ | ❌ |
+
+## Limitations and troubleshooting
+
+The Incident.io API has a default rate limit of 1,200 requests per minute per API key. If the connector encounters rate limiting, it retries with exponential backoff.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date              | Pull Request | Subject        |
-|---------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.1.32 | 2026-07-14 | [81861](https://github.com/airbytehq/airbyte/pull/81861) | Update dependencies |
+| 0.1.31 | 2026-06-30 | [81093](https://github.com/airbytehq/airbyte/pull/81093) | Update dependencies |
+| 0.1.30 | 2026-06-23 | [80512](https://github.com/airbytehq/airbyte/pull/80512) | Update dependencies |
+| 0.1.29 | 2026-06-16 | [79887](https://github.com/airbytehq/airbyte/pull/79887) | Update dependencies |
+| 0.1.28 | 2026-06-09 | [79368](https://github.com/airbytehq/airbyte/pull/79368) | Update dependencies |
+| 0.1.27 | 2026-06-03 | [78426](https://github.com/airbytehq/airbyte/pull/78426) | Add `external_issue_reference` field to the follow-ups stream |
+| 0.1.26 | 2026-06-02 | [78742](https://github.com/airbytehq/airbyte/pull/78742) | Update dependencies |
+| 0.1.25 | 2026-04-28 | [77315](https://github.com/airbytehq/airbyte/pull/77315) | Update dependencies |
+| 0.1.24 | 2026-04-21 | [76661](https://github.com/airbytehq/airbyte/pull/76661) | Update dependencies |
+| 0.1.23 | 2026-03-17 | [75081](https://github.com/airbytehq/airbyte/pull/75081) | Update dependencies |
+| 0.1.22 | 2026-03-10 | [74503](https://github.com/airbytehq/airbyte/pull/74503) | Update dependencies |
+| 0.1.21 | 2026-02-26 | [74072](https://github.com/airbytehq/airbyte/pull/74072) | Migrate to incident_roles v2 endpoint and add escalations stream |
+| 0.1.20 | 2026-02-24 | [73520](https://github.com/airbytehq/airbyte/pull/73520) | Update dependencies |
+| 0.1.19 | 2026-02-10 | [73089](https://github.com/airbytehq/airbyte/pull/73089) | Update dependencies |
+| 0.1.18 | 2026-02-03 | [72760](https://github.com/airbytehq/airbyte/pull/72760) | Update dependencies |
+| 0.1.17 | 2026-01-20 | [71981](https://github.com/airbytehq/airbyte/pull/71981) | Update dependencies |
+| 0.1.16 | 2026-01-14 | [71413](https://github.com/airbytehq/airbyte/pull/71413) | Update dependencies |
+| 0.1.15 | 2025-12-18 | [70511](https://github.com/airbytehq/airbyte/pull/70511) | Update dependencies |
 | 0.1.14 | 2025-11-25 | [70182](https://github.com/airbytehq/airbyte/pull/70182) | Update dependencies |
 | 0.1.13 | 2025-11-18 | [69504](https://github.com/airbytehq/airbyte/pull/69504) | Update dependencies |
 | 0.1.12 | 2025-10-29 | [68778](https://github.com/airbytehq/airbyte/pull/68778) | Update dependencies |
@@ -98,6 +125,6 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 | 0.0.4 | 2024-12-14 | [49218](https://github.com/airbytehq/airbyte/pull/49218) | Update dependencies |
 | 0.0.3 | 2024-12-11 | [48989](https://github.com/airbytehq/airbyte/pull/48989) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.0.2 | 2024-11-04 | [47842](https://github.com/airbytehq/airbyte/pull/47842) | Update dependencies |
-| 0.0.1   | 2024-10-03 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
+| 0.0.1 | 2024-10-03 | | Initial release by [@aazam-gh](https://github.com/aazam-gh) via Connector Builder |
 
 </details>

@@ -186,20 +186,43 @@
               "airbyte_secret" : true,
               "order" : 4
             },
+            "scope" : {
+              "type" : "string",
+              "description" : "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>.",
+              "title" : "OAuth Scope",
+              "examples" : [ "PRINCIPAL_ROLE:catalog_admin" ],
+              "order" : 5
+            },
+            "oauth2_server_uri" : {
+              "type" : "string",
+              "description" : "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions.",
+              "title" : "OAuth2 Server URI",
+              "examples" : [ "https://polaris.example.com/oauth/tokens" ],
+              "order" : 6
+            },
             "namespace" : {
               "type" : "string",
               "description" : "The Polaris namespace to be used in the Table identifier.\n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
               "title" : "Default namespace",
-              "order" : 5
+              "order" : 7
             }
           },
-          "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret", "namespace" ]
+          "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret", "scope", "namespace" ]
         } ],
         "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST, POLARIS) and its associated configuration.",
         "title" : "Catalog Type",
         "always_show" : true,
         "order" : 7,
         "type" : "object"
+      },
+      "flush_batch_size_mb" : {
+        "type" : "integer",
+        "description" : "The approximate size in megabytes of each batch of data written to Iceberg. Smaller values flush more frequently, improving data freshness and reducing data loss on failure, but will create more small files that require compaction. Must be between 1 and 500 MB. Default is 200 MB.",
+        "title" : "Flush Batch Size (MB)",
+        "examples" : [ 200 ],
+        "default" : 200,
+        "order" : 8,
+        "airbyte_hidden" : true
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

@@ -12,11 +12,11 @@ data:
       enabled: false
       packageName: airbyte-source-defillama
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.6@sha256:119f90901b5332768114af4d7a75278c5193769df35cec7b2d9aef38570468b0
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
   connectorSubtype: api
   connectorType: source
   definitionId: df19571f-208a-4a12-a402-a4cdf70a44d6
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-defillama
   githubIssueLabel: source-defillama
   icon: icon.svg

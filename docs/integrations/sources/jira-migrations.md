@@ -1,5 +1,55 @@
 # Jira Migration Guide
 
+## Upgrading to 6.0.0
+
+Atlassian is removing the `GET /rest/api/3/fieldconfiguration` endpoint in July 2026 (see [RFC-103](https://community.developer.atlassian.com/t/rfc-103-jira-field-configuration-overhaul-admin-experience-and-api-changes/)). This version removes the `issue_field_configurations` stream entirely, with no replacement stream. After upgrading, this stream will no longer be available for syncing.
+
+### Who is affected
+
+Users syncing the `issue_field_configurations` stream. Users who do not sync this stream can upgrade without action.
+
+### Steps to migrate
+
+1. Select **Connections** in the main navbar, then select the affected connection(s).
+2. Select the **Schema** tab.
+3. Disable the `issue_field_configurations` stream.
+4. Select **Save changes** at the bottom of the page.
+
+If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/managing-airbyte/connector-updates).
+
+## Upgrading to 5.0.0
+
+Atlassian is removing the `GET /rest/api/3/workflow/search` endpoint on June 1, 2026 (see Atlassian's [CHANGE-2569](https://developer.atlassian.com/cloud/jira/platform/changelog/#CHANGE-2569)). This version of the source-jira connector migrates the `workflows` stream to the replacement endpoint `GET /rest/api/3/workflows/search`, which returns a different response shape.
+
+### What changed
+
+- The primary key of the `workflows` stream changed from `[entityId, name]` to `[id]`.
+- The replacement endpoint returns global and project workflows. The deprecated endpoint returned published classic workflows and didn't return next-gen workflows.
+- Record-level field changes:
+  - `id` is now a top-level UUID string (previously an object `{ entityId, name }`).
+  - `name` is now a top-level string (previously nested inside `id`).
+  - New fields: `isEditable`, `scope`, `taskId`, `version`, `loopedTransitionContainerLayout`, `startPointLayout`.
+  - Removed fields: `isDefault`, `hasDraftWorkflow`, `operations`, `projects`, `schemes`.
+  - `transitions[]` items now use `links`, `actions`, `conditions`, `validators`, `triggers`, `transitionScreen`, and `toStatusReference` instead of `from`, `to`, `rules.postFunctions`, and `screen`.
+  - `statuses[]` items now include `statusReference`, `statusCategory`, and `layout` in addition to `id` and `name`.
+  - `created` and `updated` are now nullable and are no longer guaranteed to be ISO date-time formatted strings.
+
+### Who is affected
+
+Users syncing the `workflows` stream. Users who do not sync this stream can upgrade without action.
+
+### Steps to migrate
+
+1. Select **Connections** in the main navbar, then select the affected connection(s).
+2. Select the **Schema** tab and click **Refresh source schema**, then **OK**.
+3. Select **Save changes** at the bottom of the page.
+4. Select the **Status** tab, click the three-dot menu on the **Workflows** stream, and press **Clear data**.
+5. Return to the **Schema** tab, re-enable the stream if needed, and select **Sync now**.
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+If you have downstream models that depend on the previous shape of `workflows` records, update them to read the workflow identifier from `id` (string) instead of `id.entityId`, the workflow name from `name` (string) instead of `id.name`, and transition source/target references from `transitions[].links[].fromStatusReference` / `toStatusReference` instead of `transitions[].from` / `to`.
+
 ## Upgrading to 4.0.0
 
 This is a breaking change for users syncing the **Pull Requests** stream, which will no longer be supported moving forward. This version removes all code pertaining to this stream, as well as the `enable_experimental_streams` config option.
@@ -11,7 +61,7 @@ Users who do not have this stream enabled will not be affected and can safely up
 3. Disable the `pull_requests` stream
 4. In the main navbar, navigate to the **Sources** tab and select the affected Jira source. Set the `enable_experimental_streams` field to false and save your changes.
 
-If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/next/managing-airbyte/connector-updates).
+If you're a self-managed user and can't upgrade to the new version yet, you can pin the connector to a specific version. [Help managing upgrades](/platform/managing-airbyte/connector-updates).
 
 ## Upgrading to 3.0.0
 

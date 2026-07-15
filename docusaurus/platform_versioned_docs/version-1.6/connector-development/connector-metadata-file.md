@@ -27,7 +27,7 @@ data:
   tags:
     - language:java
     - language:python
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/source-postgres-strict-encrypt
       enabled: true
@@ -38,18 +38,18 @@ data:
 metadataSpecVersion: "1.0"
 ```
 
-## The `registries` Section
+## The `registryOverrides` Section
 
-The `registries` section within the `metadata.yaml` file plays a vital role in determining the contents of the `oss_registry.json` and `cloud_registry.json` files.
+The `registryOverrides` section within the `metadata.yaml` file plays a vital role in determining the contents of the `oss_registry.json` and `cloud_registry.json` files.
 
 This section contains two subsections: `cloud` and `oss` (Open Source Software). Each subsection contains details about the specific registry, such as the Docker repository associated with it and whether it's enabled or not.
 
 ### Structure
 
-Here's how the `registries` section is structured in our previous `metadata.yaml` example:
+Here's how the `registryOverrides` section is structured in our previous `metadata.yaml` example:
 
 ```yaml
-registries:
+registryOverrides:
   cloud:
     dockerRepository: airbyte/source-postgres-strict-encrypt
     enabled: true
@@ -57,15 +57,15 @@ registries:
     enabled: true
 ```
 
-In this example, both `cloud` and `oss` registries are enabled, and the Docker repository for the `cloud` registry is overrode to `airbyte/source-postgres-strict-encrypt`.
+In this example, both `cloud` and `oss` registries are enabled, and the Docker repository for the `cloud` registry is overridden to `airbyte/source-postgres-strict-encrypt`.
 
 ### Updating Registries
 
-When the `metadata.yaml` file is updated, this data is automatically uploaded to Airbyte's metadata service. This service then generates the publicly available `oss_registry.json` and `cloud_registry.json` registries based on the information provided in the `registries` section.
+When the `metadata.yaml` file is updated, this data is automatically uploaded to Airbyte's metadata service. This service then generates the publicly available `oss_registry.json` and `cloud_registry.json` registries based on the information provided in the `registryOverrides` section.
 
 For instance, if a connector is listed as `enabled: true` under the `oss` section, it will be included in the `oss_registry.json` file. Similarly, if it's listed as `enabled: true` under the `cloud` section, it will be included in the `cloud_registry.json` file.
 
-Thus, the `registries` section in the `metadata.yaml` file provides a flexible and organized way to manage which connectors are included in each registry.
+Thus, the `registryOverrides` section in the `metadata.yaml` file provides a flexible and organized way to manage which connectors are included in each registry.
 
 ## The `tags` Section
 

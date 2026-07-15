@@ -16,6 +16,10 @@ A Connector for Thrive Learning
 | Users | id | DefaultPaginator | ✅ |  ❌  |
 | Activities | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,22 @@ A Connector for Thrive Learning
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2026-07-14 | [82054](https://github.com/airbytehq/airbyte/pull/82054) | Update dependencies |
+| 0.0.34 | 2026-06-30 | [81277](https://github.com/airbytehq/airbyte/pull/81277) | Update dependencies |
+| 0.0.33 | 2026-06-23 | [80674](https://github.com/airbytehq/airbyte/pull/80674) | Update dependencies |
+| 0.0.32 | 2026-06-16 | [80072](https://github.com/airbytehq/airbyte/pull/80072) | Update dependencies |
+| 0.0.31 | 2026-06-09 | [79519](https://github.com/airbytehq/airbyte/pull/79519) | Update dependencies |
+| 0.0.30 | 2026-06-02 | [79019](https://github.com/airbytehq/airbyte/pull/79019) | Update dependencies |
+| 0.0.29 | 2026-04-28 | [77493](https://github.com/airbytehq/airbyte/pull/77493) | Update dependencies |
+| 0.0.28 | 2026-04-21 | [76811](https://github.com/airbytehq/airbyte/pull/76811) | Update dependencies |
+| 0.0.27 | 2026-03-17 | [75062](https://github.com/airbytehq/airbyte/pull/75062) | Update dependencies |
+| 0.0.26 | 2026-03-10 | [74587](https://github.com/airbytehq/airbyte/pull/74587) | Update dependencies |
+| 0.0.25 | 2026-03-03 | [73882](https://github.com/airbytehq/airbyte/pull/73882) | Update dependencies |
+| 0.0.24 | 2026-02-10 | [73131](https://github.com/airbytehq/airbyte/pull/73131) | Update dependencies |
+| 0.0.23 | 2026-02-03 | [72775](https://github.com/airbytehq/airbyte/pull/72775) | Update dependencies |
+| 0.0.22 | 2026-01-20 | [72018](https://github.com/airbytehq/airbyte/pull/72018) | Update dependencies |
+| 0.0.21 | 2026-01-14 | [71424](https://github.com/airbytehq/airbyte/pull/71424) | Update dependencies |
+| 0.0.20 | 2025-12-18 | [70735](https://github.com/airbytehq/airbyte/pull/70735) | Update dependencies |
 | 0.0.19 | 2025-11-25 | [69852](https://github.com/airbytehq/airbyte/pull/69852) | Update dependencies |
 | 0.0.18 | 2025-11-18 | [69662](https://github.com/airbytehq/airbyte/pull/69662) | Update dependencies |
 | 0.0.17 | 2025-10-29 | [69038](https://github.com/airbytehq/airbyte/pull/69038) | Update dependencies |

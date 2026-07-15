@@ -3,7 +3,11 @@
 #
 
 import pytest
+import requests
 from source_shopify.streams.streams import OrderRefunds, Orders
+from source_shopify.utils import LimitReducingErrorHandler
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 # Mock data for Orders stream with pagination via Link headers
@@ -24,12 +28,12 @@ class TestOrdersLimitReducingErrorHandler:
     def test_orders_stream_500_error_handling(self, requests_mock):
         # Mock the events endpoint to prevent NoMockAddress error
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/events.json?filter=Order&verb=destroy",
+            "https://test-shop.myshopify.com/admin/api/2025-10/events.json?filter=Order&verb=destroy",
             [{"status_code": 200, "json": {"events": []}}],
         )
         # Simulate initial URL with 500 errors, then success with pagination
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&status=any",
             [
                 {"status_code": 500},  # Initial request fails
                 {"status_code": 500},  # Retry with 250 fails again
@@ -37,39 +41,39 @@ class TestOrdersLimitReducingErrorHandler:
                     "status_code": 200,
                     "json": ORDERS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1>; rel="next"'
                     },
                 },
             ],
         )
         # Response for reduced limit
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&status=any",
             [
                 {
                     "status_code": 200,
                     "json": ORDERS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&page_info=page1>; rel="next"'
                     },
                 }
             ],
         )
         # Paginated responses
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1",
             [
                 {
                     "status_code": 200,
                     "json": ORDERS_PAGE_2,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page2>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page2>; rel="next"'
                     },
                 }
             ],
         )
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page2",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page2",
             [{"status_code": 200, "json": ORDERS_PAGE_3, "headers": {}}],  # No next page
         )
 
@@ -91,43 +95,73 @@ class TestOrdersLimitReducingErrorHandler:
         ), "No request was made with the reduced limit (limit=125)"
 
 
+def _unmapped_response(status_code: int) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status_code
+    return response
+
+
+@pytest.mark.parametrize(
+    "response_or_exception",
+    [
+        pytest.param(RuntimeError("boom"), id="unmapped_exception"),
+        pytest.param(_unmapped_response(418), id="unmapped_status_code"),
+    ],
+)
+def test_limit_reducing_error_handler_logs_fallthrough_without_crashing(response_or_exception):
+    """
+    Regression test for the null-logger `AttributeError` bug
+    ([oncall#11714](https://github.com/airbytehq/oncall/issues/11714)).
+
+    The parent `HttpStatusErrorHandler.interpret_response` calls `self._logger.error` / `.warning`
+    whenever an exception or status code falls through to the default branch. Previously the
+    handler was constructed with `logger=None`, causing `AttributeError: 'NoneType' object has no
+    attribute 'error'` on any non-500 failure path.
+    """
+    handler = LimitReducingErrorHandler(max_retries=5, error_mapping={})
+
+    resolution = handler.interpret_response(response_or_exception)
+
+    assert resolution.response_action == ResponseAction.RETRY
+
+
 class TestOrderRefundsLimitReducingErrorHandler:
     def test_order_refunds_stream_500_error_handling(self, requests_mock):
         # Mock the events endpoint to prevent NoMockAddress error
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/events.json?filter=Order&verb=destroy",
+            "https://test-shop.myshopify.com/admin/api/2025-10/events.json?filter=Order&verb=destroy",
             [{"status_code": 200, "json": {"events": []}}],
         )
         # Simulate initial URL with 500 error, then success with pagination
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&status=any",
             [
                 {"status_code": 500},  # Initial request fails
                 {
                     "status_code": 200,
                     "json": ORDERS_WITH_REFUNDS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1>; rel="next"'
                     },
                 },
             ],
         )
         # Response for reduced limit
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&status=any",
             [
                 {
                     "status_code": 200,
                     "json": ORDERS_WITH_REFUNDS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&page_info=page1>; rel="next"'
                     },
                 }
             ],
         )
         # Paginated response
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1",
             [{"status_code": 200, "json": ORDERS_WITH_REFUNDS_PAGE_2, "headers": {}}],  # No next page
         )
 

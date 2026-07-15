@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.schema
@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -42,6 +43,7 @@ class TableSchemaFactoryTest {
         every { mapper.toTempTableName(finalTableName) } returns tempTableName
         every { colNameResolver.getColumnNameMapping(inputSchema.keys) } returns columnNameMapping
         every { mapper.toColumnType(any()) } returns ColumnType("test_type", false)
+        every { mapper.toFinalSchema(any()) } answers { firstArg<StreamTableSchema>() }
 
         val result = factory.make(finalTableName, inputSchema, importType)
 

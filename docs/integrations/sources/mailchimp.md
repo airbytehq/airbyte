@@ -70,7 +70,7 @@ The Mailchimp source connector supports the following streams and [sync modes](h
 | [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)        | ✓            | ✓           |
 | [Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)                   | ✓            |             |
 | [Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓            |             |
-| [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)                                         | ✓            | ✓           |
+| [Lists](https://mailchimp.com/developer/marketing/api/lists/get-list-info/)                                         | ✓            | ✓           |
 | [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                      | ✓            | ✓           |
 | [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                            | ✓            | ✓           |
 | [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                             | ✓            | ✓           |
@@ -109,7 +109,9 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 ### Connector limitations
 
-[Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
+The [Mailchimp Marketing API](https://mailchimp.com/developer/marketing/docs/fundamentals/#api-limits) enforces a limit of 10 simultaneous connections per account. Exceeding this limit returns an HTTP 429 error. This limit applies across all API consumers sharing the same account, including Airbyte syncs, other integrations, and the Mailchimp web application. The API also has a 120-second timeout on individual requests.
+
+The connector includes a **Number of concurrent threads** configuration parameter (default: 2, min: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but keep the total number of simultaneous connections across all consumers within Mailchimp's 10-connection limit.
 
 </details>
 
@@ -119,6 +121,10 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 - [Build a data ingestion pipeline from Mailchimp to Snowflake](https://airbyte.com/tutorials/data-ingestion-pipeline-mailchimp-snowflake)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -126,6 +132,28 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.31 | 2026-07-14 | [81912](https://github.com/airbytehq/airbyte/pull/81912) | Update dependencies |
+| 2.1.30 | 2026-06-30 | [81135](https://github.com/airbytehq/airbyte/pull/81135) | Update dependencies |
+| 2.1.29 | 2026-06-23 | [80520](https://github.com/airbytehq/airbyte/pull/80520) | Update dependencies |
+| 2.1.28 | 2026-06-16 | [79931](https://github.com/airbytehq/airbyte/pull/79931) | Update dependencies |
+| 2.1.27 | 2026-06-09 | [79396](https://github.com/airbytehq/airbyte/pull/79396) | Update dependencies |
+| 2.1.26 | 2026-06-02 | [78809](https://github.com/airbytehq/airbyte/pull/78809) | Update dependencies |
+| 2.1.25 | 2026-04-28 | [77289](https://github.com/airbytehq/airbyte/pull/77289) | Update dependencies |
+| 2.1.24 | 2026-04-21 | [76663](https://github.com/airbytehq/airbyte/pull/76663) | Update dependencies |
+| 2.1.23 | 2026-04-17 | [76453](https://github.com/airbytehq/airbyte/pull/76453) | Promoted release candidate to GA |
+| 2.1.23-rc.4 | 2026-04-13 | [76268](https://github.com/airbytehq/airbyte/pull/76268) | Add HTTPAPIBudget for rate limit enforcement (Phase 2 of concurrency tuning) |
+| 2.1.23-rc.3 | 2026-04-10 | [76232](https://github.com/airbytehq/airbyte/pull/76232) | Increase default_concurrency to 6 (iteration 3, final concurrency tuning) |
+| 2.1.23-rc.2 | 2026-04-08 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Increase default_concurrency to 5 (iteration 2 of concurrency tuning) |
+| 2.1.23-rc.1 | 2026-04-08 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add concurrency_level and num_workers configuration for concurrency tuning |
+| 2.1.22 | 2026-04-01 | [75576](https://github.com/airbytehq/airbyte/pull/75576) | Add `oauth_connector_input_specification` for declarative OAuth |
+| 2.1.21 | 2026-03-31 | [75803](https://github.com/airbytehq/airbyte/pull/75803) | Update dependencies |
+| 2.1.20 | 2026-03-24 | [74579](https://github.com/airbytehq/airbyte/pull/74579) | Update dependencies |
+| 2.1.19 | 2026-03-03 | [74155](https://github.com/airbytehq/airbyte/pull/74155) | Update dependencies |
+| 2.1.18 | 2026-02-17 | [73380](https://github.com/airbytehq/airbyte/pull/73380) | Update dependencies |
+| 2.1.17 | 2026-02-10 | [73055](https://github.com/airbytehq/airbyte/pull/73055) | Update dependencies |
+| 2.1.16 | 2026-01-20 | [72019](https://github.com/airbytehq/airbyte/pull/72019) | Update dependencies |
+| 2.1.15 | 2026-01-14 | [71446](https://github.com/airbytehq/airbyte/pull/71446) | Update dependencies |
+| 2.1.14 | 2025-12-18 | [70791](https://github.com/airbytehq/airbyte/pull/70791) | Update dependencies |
 | 2.1.13 | 2025-11-25 | [70012](https://github.com/airbytehq/airbyte/pull/70012) | Update dependencies |
 | 2.1.12 | 2025-11-18 | [69453](https://github.com/airbytehq/airbyte/pull/69453) | Update dependencies |
 | 2.1.11 | 2025-10-29 | [68941](https://github.com/airbytehq/airbyte/pull/68941) | Update dependencies |
@@ -169,55 +197,55 @@ Now that you have set up the Mailchimp source connector, check out the following
 | 2.0.12 | 2024-07-20 | [42381](https://github.com/airbytehq/airbyte/pull/42381) | Update dependencies |
 | 2.0.11 | 2024-07-13 | [41683](https://github.com/airbytehq/airbyte/pull/41683) | Update dependencies |
 | 2.0.10 | 2024-07-10 | [41399](https://github.com/airbytehq/airbyte/pull/41399) | Update dependencies |
-| 2.0.9  | 2024-07-09 | [41152](https://github.com/airbytehq/airbyte/pull/41152) | Update dependencies |
-| 2.0.8  | 2024-07-06 | [40897](https://github.com/airbytehq/airbyte/pull/40897) | Update dependencies |
-| 2.0.7  | 2024-06-25 | [40320](https://github.com/airbytehq/airbyte/pull/40320) | Update dependencies |
-| 2.0.6  | 2024-06-21 | [39937](https://github.com/airbytehq/airbyte/pull/39937) | Update dependencies |
-| 2.0.5  | 2024-06-18 | [38868](https://github.com/airbytehq/airbyte/pull/38868) | Refactor:  use `client_side_incremental` feature |
-| 2.0.4  | 2024-06-06 | [39202](https://github.com/airbytehq/airbyte/pull/39202) | [autopull] Upgrade base image to v1.2.2 |
-| 2.0.3  | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions |
-| 2.0.2  | 2024-04-25 | [37572](https://github.com/airbytehq/airbyte/pull/37572) | Fixed `start_date` format issue for the `email_activity` stream |
-| 2.0.1  | 2024-04-19 | [37434](https://github.com/airbytehq/airbyte/pull/37434) | Fixed cursor format for the `email_activity` stream |
-| 2.0.0  | 2024-04-01 | [35281](https://github.com/airbytehq/airbyte/pull/35281) | Migrate to Low-Code |
-| 1.2.0  | 2024-03-28 | [36600](https://github.com/airbytehq/airbyte/pull/36600) | Migrate to latest Airbyte-CDK. |
-| 1.1.2  | 2024-02-09 | [35092](https://github.com/airbytehq/airbyte/pull/35092) | Manage dependencies with Poetry. |
-| 1.1.1  | 2024-01-11 | [34157](https://github.com/airbytehq/airbyte/pull/34157) | Prepare for airbyte-lib |
-| 1.1.0  | 2023-12-20 | [32852](https://github.com/airbytehq/airbyte/pull/32852) | Add optional start_date for incremental streams |
-| 1.0.0  | 2023-12-19 | [32836](https://github.com/airbytehq/airbyte/pull/32836) | Add airbyte-type to `datetime` columns and remove `._links` column |
+| 2.0.9 | 2024-07-09 | [41152](https://github.com/airbytehq/airbyte/pull/41152) | Update dependencies |
+| 2.0.8 | 2024-07-06 | [40897](https://github.com/airbytehq/airbyte/pull/40897) | Update dependencies |
+| 2.0.7 | 2024-06-25 | [40320](https://github.com/airbytehq/airbyte/pull/40320) | Update dependencies |
+| 2.0.6 | 2024-06-21 | [39937](https://github.com/airbytehq/airbyte/pull/39937) | Update dependencies |
+| 2.0.5 | 2024-06-18 | [38868](https://github.com/airbytehq/airbyte/pull/38868) | Refactor:  use `client_side_incremental` feature |
+| 2.0.4 | 2024-06-06 | [39202](https://github.com/airbytehq/airbyte/pull/39202) | [autopull] Upgrade base image to v1.2.2 |
+| 2.0.3 | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions |
+| 2.0.2 | 2024-04-25 | [37572](https://github.com/airbytehq/airbyte/pull/37572) | Fixed `start_date` format issue for the `email_activity` stream |
+| 2.0.1 | 2024-04-19 | [37434](https://github.com/airbytehq/airbyte/pull/37434) | Fixed cursor format for the `email_activity` stream |
+| 2.0.0 | 2024-04-01 | [35281](https://github.com/airbytehq/airbyte/pull/35281) | Migrate to Low-Code |
+| 1.2.0 | 2024-03-28 | [36600](https://github.com/airbytehq/airbyte/pull/36600) | Migrate to latest Airbyte-CDK. |
+| 1.1.2 | 2024-02-09 | [35092](https://github.com/airbytehq/airbyte/pull/35092) | Manage dependencies with Poetry. |
+| 1.1.1 | 2024-01-11 | [34157](https://github.com/airbytehq/airbyte/pull/34157) | Prepare for airbyte-lib |
+| 1.1.0 | 2023-12-20 | [32852](https://github.com/airbytehq/airbyte/pull/32852) | Add optional start_date for incremental streams |
+| 1.0.0 | 2023-12-19 | [32836](https://github.com/airbytehq/airbyte/pull/32836) | Add airbyte-type to `datetime` columns and remove `._links` column |
 | 0.10.0 | 2023-11-23 | [32782](https://github.com/airbytehq/airbyte/pull/32782) | Add SegmentMembers stream |
-| 0.9.0  | 2023-11-17 | [32218](https://github.com/airbytehq/airbyte/pull/32218) | Add Interests, InterestCategories, Tags streams |
-| 0.8.3  | 2023-11-15 | [32543](https://github.com/airbytehq/airbyte/pull/32543) | Handle empty datetime fields in Reports stream |
-| 0.8.2  | 2023-11-13 | [32466](https://github.com/airbytehq/airbyte/pull/32466) | Improve error handling during connection check |
-| 0.8.1  | 2023-11-06 | [32226](https://github.com/airbytehq/airbyte/pull/32226) | Unmute expected records test after data anonymisation |
-| 0.8.0  | 2023-11-01 | [32032](https://github.com/airbytehq/airbyte/pull/32032) | Add ListMembers stream |
-| 0.7.0  | 2023-10-27 | [31940](https://github.com/airbytehq/airbyte/pull/31940) | Implement availability strategy |
-| 0.6.0  | 2023-10-27 | [31922](https://github.com/airbytehq/airbyte/pull/31922) | Add Segments stream |
-| 0.5.0  | 2023-10-20 | [31675](https://github.com/airbytehq/airbyte/pull/31675) | Add Unsubscribes stream |
-| 0.4.1  | 2023-05-02 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Handle unknown error in EmailActivity |
-| 0.4.0  | 2023-04-11 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream |
-| 0.3.5  | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream |
-| 0.3.4  | 2023-02-06 | [22405](https://github.com/airbytehq/airbyte/pull/22405) | Revert extra logging |
-| 0.3.3  | 2023-02-01 | [22228](https://github.com/airbytehq/airbyte/pull/22228) | Add extra logging |
-| 0.3.2  | 2023-01-27 | [22014](https://github.com/airbytehq/airbyte/pull/22014) | Set `AvailabilityStrategy` for streams explicitly to `None` |
-| 0.3.1  | 2022-12-20 | [20720](https://github.com/airbytehq/airbyte/pull/20720) | Use stream slices as a source for request params instead of a stream state |
-| 0.3.0  | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream. |
+| 0.9.0 | 2023-11-17 | [32218](https://github.com/airbytehq/airbyte/pull/32218) | Add Interests, InterestCategories, Tags streams |
+| 0.8.3 | 2023-11-15 | [32543](https://github.com/airbytehq/airbyte/pull/32543) | Handle empty datetime fields in Reports stream |
+| 0.8.2 | 2023-11-13 | [32466](https://github.com/airbytehq/airbyte/pull/32466) | Improve error handling during connection check |
+| 0.8.1 | 2023-11-06 | [32226](https://github.com/airbytehq/airbyte/pull/32226) | Unmute expected records test after data anonymisation |
+| 0.8.0 | 2023-11-01 | [32032](https://github.com/airbytehq/airbyte/pull/32032) | Add ListMembers stream |
+| 0.7.0 | 2023-10-27 | [31940](https://github.com/airbytehq/airbyte/pull/31940) | Implement availability strategy |
+| 0.6.0 | 2023-10-27 | [31922](https://github.com/airbytehq/airbyte/pull/31922) | Add Segments stream |
+| 0.5.0 | 2023-10-20 | [31675](https://github.com/airbytehq/airbyte/pull/31675) | Add Unsubscribes stream |
+| 0.4.1 | 2023-05-02 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Handle unknown error in EmailActivity |
+| 0.4.0 | 2023-04-11 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream |
+| 0.3.5 | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream |
+| 0.3.4 | 2023-02-06 | [22405](https://github.com/airbytehq/airbyte/pull/22405) | Revert extra logging |
+| 0.3.3 | 2023-02-01 | [22228](https://github.com/airbytehq/airbyte/pull/22228) | Add extra logging |
+| 0.3.2 | 2023-01-27 | [22014](https://github.com/airbytehq/airbyte/pull/22014) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.3.1 | 2022-12-20 | [20720](https://github.com/airbytehq/airbyte/pull/20720) | Use stream slices as a source for request params instead of a stream state |
+| 0.3.0 | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream. |
 | 0.2.15 | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states. |
 | 0.2.14 | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation |
 | 0.2.13 | 2022-04-11 | [11632](https://github.com/airbytehq/airbyte/pull/11632) | Add unit tests |
 | 0.2.12 | 2022-03-17 | [10975](https://github.com/airbytehq/airbyte/pull/10975) | Fix campaign's stream normalization |
-| 0.2.11 | 2021-12-24 | [7159](https://github.com/airbytehq/airbyte/pull/7159)   | Add oauth2.0 support |
-| 0.2.10 | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000)   | Update connector fields title/description |
-| 0.2.9  | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975)   | Updated JSON schemas |
-| 0.2.8  | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481)   | Remove date-time type from some fields |
-| 0.2.7  | 2021-08-03 | [5137](https://github.com/airbytehq/airbyte/pull/5137)   | Source Mailchimp: fix primary key for email activities |
-| 0.2.6  | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024)   | Source Mailchimp: handle records with no no "activity" field in response |
-| 0.2.5  | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621)   | Mailchimp fix url-base |
-| 0.2.4  | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285)   | Use datacenter URL parameter from apikey |
-| 0.2.3  | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
-| 0.2.2  | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415)   | Get Members activities |
-| 0.2.1  | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning |
-| 0.2.0  | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties |
-| 0.1.4  | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file |
+| 0.2.11 | 2021-12-24 | [7159](https://github.com/airbytehq/airbyte/pull/7159) | Add oauth2.0 support |
+| 0.2.10 | 2021-12-21 | [9000](https://github.com/airbytehq/airbyte/pull/9000) | Update connector fields title/description |
+| 0.2.9 | 2021-12-13 | [7975](https://github.com/airbytehq/airbyte/pull/7975) | Updated JSON schemas |
+| 0.2.8 | 2021-08-17 | [5481](https://github.com/airbytehq/airbyte/pull/5481) | Remove date-time type from some fields |
+| 0.2.7 | 2021-08-03 | [5137](https://github.com/airbytehq/airbyte/pull/5137) | Source Mailchimp: fix primary key for email activities |
+| 0.2.6 | 2021-07-28 | [5024](https://github.com/airbytehq/airbyte/pull/5024) | Source Mailchimp: handle records with no no "activity" field in response |
+| 0.2.5 | 2021-07-08 | [4621](https://github.com/airbytehq/airbyte/pull/4621) | Mailchimp fix url-base |
+| 0.2.4 | 2021-06-09 | [4285](https://github.com/airbytehq/airbyte/pull/4285) | Use datacenter URL parameter from apikey |
+| 0.2.3 | 2021-06-08 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for Kubernetes support |
+| 0.2.2 | 2021-06-08 | [3415](https://github.com/airbytehq/airbyte/pull/3415) | Get Members activities |
+| 0.2.1 | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix base connector versioning |
+| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Protocol allows future/unknown properties |
+| 0.1.4 | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file |
 
 </details>
 

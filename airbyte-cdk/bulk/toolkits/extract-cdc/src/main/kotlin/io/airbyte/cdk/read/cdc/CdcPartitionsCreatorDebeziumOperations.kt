@@ -1,13 +1,32 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Stream
+import java.util.concurrent.atomic.AtomicBoolean
 
-interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
+interface CdcPartitionsCreatorDebeziumOperations<T : PartiallyOrdered<T>> {
+
+    companion object {
+        private val hasRunStartup = AtomicBoolean(false)
+
+        fun shouldRunStartup(): Boolean {
+            return hasRunStartup.compareAndSet(false, true)
+        }
+    }
+
+    /** Run optional startup hook if it hasn't already been run */
+    fun runStartup(offset: DebeziumOffset) {
+        if (shouldRunStartup()) {
+            startup(offset)
+        }
+    }
+
+    /** Optional startup hook. */
+    fun startup(offset: DebeziumOffset) {}
 
     /** Extracts the WAL position from a [DebeziumOffset]. */
     fun position(offset: DebeziumOffset): T

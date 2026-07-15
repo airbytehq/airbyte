@@ -23,6 +23,20 @@ For APIs and custom sources, most syncs happen incrementally, so the row amount 
 
 For Databases and File sources, Airbyte measures the data volume observed by the Airbyte Platform during the sync to determine data volumes. When the data is in transit, it is serialized to Airbyte Protocol format records. This is likely to be a larger representation of your data than you would see if you were to query your database directly, and varies depending on how your database stores and compresses data.
 
+## What happens when you run out of credits
+
+:::note
+All pricing is in USD.
+:::
+
+**If you run out of credits, Airbyte Cloud continues your syncs as it normally would and bills you in-arrears**. Airbyte does not stop in-progress syncs and does not pause scheduled ones. You're billed monthly for any additional credit usage, regardless of sync status.
+
+If you pass $10,000 (USD) in credit usage during a billing period, Airbyte automatically charges your saved payment method and issues an invoice.
+
+## Purchase credits
+
+If you want to pre-purchase credits, [contact Sales](https://airbyte.com/company/talk-to-sales).
+
 ## Start a trial
 
 To begin a trial of Airbyte Cloud, head to [cloud.airbyte.com/signup](https://cloud.airbyte.com/signup). Your trial begins after your first successful sync. Trials last 30 days or when you use 400 trial credits, whichever occurs first.
@@ -55,7 +69,11 @@ Airbyte automatically charges the credit card on file at the end of each month's
 
 ### Review your subscription
 
-The Subscription section shows the subscription plan you have enrolled in. Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about larger plans, new features, or custom discounts.
+The Subscription section shows the subscription plan you have enrolled in.
+
+If you're on Standard and eligible for self-serve Plus, you can upgrade from the Billing page. Plus includes everything in Standard and adds [15-minute sync schedules](/platform/using-airbyte/core-concepts/sync-schedules) and [mappings](/platform/using-airbyte/mappings). Airbyte applies Plus after checkout is complete.
+
+Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to inquire about Pro, Enterprise Flex, new features, or custom discounts.
 
 ### Review your account balance
 
@@ -65,7 +83,7 @@ In the Account balance section, you can view more details about your balance.
 
 - **Invoice date**: The date of the upcoming invoice
 
-- **Remaining credits**: The amount of credits that remain. Airbyte uses these credits first before it accrues an invoice amount. This is typically only relevant if you pre-purchased credits before November 2024.
+- **Remaining credits**: The amount of credits that remain. Airbyte uses these credits first before it accrues an invoice amount.
 
 ### Review billing information
 
@@ -110,7 +128,3 @@ To enroll in or modify your existing billing notifications:
 2. Submit the form with the thresholds you want to use for alerts.
 
 To unenroll, [email the Billing team](mailto:billing@airbyte.io) with your request.
-
-## Purchasing credits
-
-You can no longer pre-purchase credits. As of November 2024, Airbyte Cloud has moved to in-arrears billing. You're invoiced monthly.

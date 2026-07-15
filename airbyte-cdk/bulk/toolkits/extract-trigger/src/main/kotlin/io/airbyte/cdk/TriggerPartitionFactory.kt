@@ -1,19 +1,20 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.DefaultJdbcStreamStateValue
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.Stream
@@ -63,19 +64,27 @@ class TriggerPartitionFactory(
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: TriggerStreamState = streamState(streamFeedBootstrap)
         val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
+
+        // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
+        // to read it. This relies on the fact that neither cursor columns nor trigger table
+        // timestamps can contain nulls, so we won't see a null value from the DB.
+        if (opaqueStateValue?.isNull == true) {
+            return null
+        }
+
         if (opaqueStateValue == null) {
             return coldStart(streamState)
         }
-        val sv: TriggerStreamStateValue =
-            Jsons.treeToValue(opaqueStateValue, TriggerStreamStateValue::class.java)
-        val pkMap: Map<Field, JsonNode> =
+        val sv: DefaultJdbcStreamStateValue =
+            Jsons.treeToValue(opaqueStateValue, DefaultJdbcStreamStateValue::class.java)
+        val pkMap: Map<EmittedField, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
                     handler.accept(ResetStream(stream.id))
                     streamState.reset()
                     return coldStart(streamState)
                 }
-        val cursorPair: Pair<Field, JsonNode>? =
+        val cursorPair: Pair<EmittedField, JsonNode>? =
             if (sv.cursors.isEmpty()) {
                 null
             } else {
@@ -110,7 +119,7 @@ class TriggerPartitionFactory(
                 )
             }
         } else {
-            val (cursor: Field, cursorCheckpoint: JsonNode) = cursorPair
+            val (cursor: EmittedField, cursorCheckpoint: JsonNode) = cursorPair
             val triggerCdcPartitionState =
                 if (cursor.id == config.CURSOR_FIELD.id) TriggerCdcPartitionState.INCREMENTAL
                 else null
@@ -151,11 +160,11 @@ class TriggerPartitionFactory(
         }
     }
 
-    private fun TriggerStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.pkMap(stream: Stream): Map<EmittedField, JsonNode>? {
         if (primaryKey.isEmpty()) {
             return mapOf()
         }
-        val fields: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val fields: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != fields.map { it.id }.toSet()) {
             handler.accept(
                 InvalidPrimaryKey(stream.id, primaryKey.keys.toList()),
@@ -165,7 +174,9 @@ class TriggerPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun TriggerStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.cursorPair(
+        stream: Stream
+    ): Pair<EmittedField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -173,10 +184,10 @@ class TriggerPartitionFactory(
             return null
         }
         val cursorLabel: String = cursors.keys.first()
-        val cursor: FieldOrMetaField? =
+        val cursor: DataOrMetaField? =
             stream.schema.find { it.id == cursorLabel }
                 ?: config.COMMON_FIELDS.find { it.id == cursorLabel }
-        if (cursor !is Field) {
+        if (cursor !is EmittedField) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),
             )
@@ -193,7 +204,7 @@ class TriggerPartitionFactory(
 
     private fun coldStart(streamState: TriggerStreamState): TriggerPartition {
         val stream: Stream = streamState.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             if (pkChosenFromCatalog.isEmpty()) {
                 return TriggerUnsplittableSnapshotPartition(
@@ -211,8 +222,8 @@ class TriggerPartitionFactory(
                 upperBound = null,
             )
         }
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
         if (pkChosenFromCatalog.isEmpty()) {
             return TriggerUnsplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
@@ -240,8 +251,8 @@ class TriggerPartitionFactory(
         unsplitPartition: TriggerPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<TriggerPartition> {
-        val splitPartitionBoundaries: List<TriggerStreamStateValue> by lazy {
-            opaqueStateValues.map { Jsons.treeToValue(it, TriggerStreamStateValue::class.java) }
+        val splitPartitionBoundaries: List<DefaultJdbcStreamStateValue> by lazy {
+            opaqueStateValues.map { Jsons.treeToValue(it, DefaultJdbcStreamStateValue::class.java) }
         }
         return when (unsplitPartition) {
             is TriggerSplittableSnapshotPartition ->
@@ -255,7 +266,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerSplittableSnapshotPartition.split(
-        splitPointValues: List<TriggerStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<TriggerSplittableSnapshotPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -275,7 +286,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerSplittableSnapshotWithCursorPartition.split(
-        splitPointValues: List<TriggerStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<TriggerSplittableSnapshotWithCursorPartition> {
         val inners: List<List<JsonNode>> =
             splitPointValues.mapNotNull { it.pkMap(streamState.stream)?.values?.toList() }
@@ -297,7 +308,7 @@ class TriggerPartitionFactory(
     }
 
     private fun TriggerCursorIncrementalPartition.split(
-        splitPointValues: List<TriggerStreamStateValue>
+        splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<TriggerCursorIncrementalPartition> {
         val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
         val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners

@@ -1,0 +1,63 @@
+[
+  {
+    "type": "profile",
+    "id": "profile_001",
+    "attributes": {
+      "email": "test@example.com",
+      "phone_number": "+1234567890",
+      "external_id": "ext_001",
+      "first_name": "John",
+      "last_name": "Doe",
+      "organization": "Test Corp",
+      "locale": "en-US",
+      "title": "Engineer",
+      "image": "https://example.com/image.jpg",
+      "created": "2024-01-01T10:00:00+00:00",
+      "updated": "2024-01-15T12:30:00+00:00",
+      "last_event_date": "2024-01-14T08:00:00+00:00",
+      "location": {
+        "address1": "123 Main St",
+        "address2": "Suite 100",
+        "city": "San Francisco",
+        "country": "United States",
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+        "region": "CA",
+        "zip": "94102",
+        "timezone": "America/Los_Angeles",
+        "ip": "192.168.1.1"
+      },
+      "properties": {
+        "custom_field": "custom_value"
+      },
+      "subscriptions": {
+        "email": {
+          "marketing": {
+            "can_receive_email_marketing": true,
+            "consent": "SUBSCRIBED",
+            "consent_timestamp": "2024-01-01T10:00:00+00:00"
+          }
+        },
+        "sms": {
+          "marketing": {
+            "can_receive_sms_marketing": false
+          }
+        }
+      },
+      "predictive_analytics": {
+        "historic_clv": 150.0,
+        "predicted_clv": 200.0,
+        "total_clv": 350.0,
+        "historic_number_of_orders": 5,
+        "predicted_number_of_orders": 3,
+        "average_days_between_orders": 30,
+        "average_order_value": 50.0,
+        "churn_probability": 0.15,
+        "expected_date_of_next_order": "2024-02-15T00:00:00+00:00"
+      }
+    },
+    "links": {
+      "self": "https://a.klaviyo.com/api/profiles/profile_001"
+    }
+  }
+]

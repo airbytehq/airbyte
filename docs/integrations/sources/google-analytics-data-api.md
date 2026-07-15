@@ -31,6 +31,14 @@ This connector works with Google Analytics 4 (GA4) and [Google Analytics 360](ht
 7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**.
 8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
 
+:::note
+When authenticating with a **service account** (Airbyte Open Source), you must also grant that service account access to the **GA4 property** in **Google Analytics**. Creating a service account and downloading the JSON key does not automatically give it permission to read Analytics data.
+
+1. In Google Analytics, go to **Admin** → under **Property**, click **Property access management**.
+2. Click **+** → **Add users**, then add the service account email (for example, `...@...iam.gserviceaccount.com`).
+3. Grant at least the **Viewer** role (read-only) for the target property.
+:::
+
 #### Enable the Google Analytics APIs
 
 Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
@@ -78,7 +86,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
+4. Select **Service Account Key Authentication** from the dropdown list and enter the **Service Account JSON Key** from Step 1.
 5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
@@ -97,7 +105,7 @@ Many analyses and data investigations may require 24-48 hours to process informa
 7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past we should refresh the data in every run. Since attribution changes after the event date, and Google Analytics has a data processing latency this is key to keep up with consistent information. If you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days..
+10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run. Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
 
 :::caution
 
@@ -123,65 +131,67 @@ The Google Analytics 4 (GA4) source connector supports the following [sync modes
 
 This connector outputs the following incremental streams:
 
+All preconfigured streams and custom streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
+
 - Preconfigured streams:
-  - [daily_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [devices](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [four_weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [locations](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_sources](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [website_overview](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [weekly_active_users](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_source_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_source_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_source_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_campaign_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_google_ads_ad_network_type_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [user_acquisition_first_user_google_ads_ad_group_name_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_source_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_medium_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_source_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_campaign_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_default_channel_grouping_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [traffic_acquisition_session_source_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [events_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [weekly_events_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [conversions_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages_title_and_screen_class_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages_path_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [pages_title_and_screen_name_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [content_group_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_name_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_id_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_report_combined](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_2_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_3_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_4_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_category_5_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [ecommerce_purchases_item_brand_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_ad_unit_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_page_path_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_ad_format_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [publisher_ads_ad_source_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_country_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_region_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_city_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_language_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_age_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_gender_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [demographic_interest_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_browser_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_device_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_device_model_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_screen_resolution_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_app_version_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_platform_device_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_operating_system_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_os_with_version_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-- [Custom stream\(s\)](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
+  - daily_active_users
+  - devices
+  - four_weekly_active_users
+  - locations
+  - pages
+  - traffic_sources
+  - website_overview
+  - weekly_active_users
+  - user_acquisition_first_user_medium_report
+  - user_acquisition_first_user_source_report
+  - user_acquisition_first_user_source_medium_report
+  - user_acquisition_first_user_source_platform_report
+  - user_acquisition_first_user_campaign_report
+  - user_acquisition_first_user_google_ads_ad_network_type_report
+  - user_acquisition_first_user_google_ads_ad_group_name_report
+  - traffic_acquisition_session_source_medium_report
+  - traffic_acquisition_session_medium_report
+  - traffic_acquisition_session_source_report
+  - traffic_acquisition_session_campaign_report
+  - traffic_acquisition_session_default_channel_grouping_report
+  - traffic_acquisition_session_source_platform_report
+  - events_report
+  - weekly_events_report
+  - conversions_report
+  - pages_title_and_screen_class_report
+  - pages_path_report
+  - pages_title_and_screen_name_report
+  - content_group_report
+  - ecommerce_purchases_item_name_report
+  - ecommerce_purchases_item_id_report
+  - ecommerce_purchases_item_category_report_combined
+  - ecommerce_purchases_item_category_report
+  - ecommerce_purchases_item_category_2_report
+  - ecommerce_purchases_item_category_3_report
+  - ecommerce_purchases_item_category_4_report
+  - ecommerce_purchases_item_category_5_report
+  - ecommerce_purchases_item_brand_report
+  - publisher_ads_ad_unit_report
+  - publisher_ads_page_path_report
+  - publisher_ads_ad_format_report
+  - publisher_ads_ad_source_report
+  - demographic_country_report
+  - demographic_region_report
+  - demographic_city_report
+  - demographic_language_report
+  - demographic_age_report
+  - demographic_gender_report
+  - demographic_interest_report
+  - tech_browser_report
+  - tech_device_category_report
+  - tech_device_model_report
+  - tech_screen_resolution_report
+  - tech_app_version_report
+  - tech_platform_report
+  - tech_platform_device_category_report
+  - tech_operating_system_report
+  - tech_os_with_version_report
+- Custom stream(s)
 
 ## Connector-specific features
 
@@ -263,6 +273,10 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -270,9 +284,38 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
+| 2.9.42 | 2026-06-30 | [81086](https://github.com/airbytehq/airbyte/pull/81086) | Update dependencies |
+| 2.9.41 | 2026-06-23 | [80482](https://github.com/airbytehq/airbyte/pull/80482) | Update dependencies |
+| 2.9.40 | 2026-06-16 | [79881](https://github.com/airbytehq/airbyte/pull/79881) | Update dependencies |
+| 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
+| 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
+| 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
+| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
+| 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
+| 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
+| 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
+| 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
+| 2.9.33-rc.1 | 2026-04-23 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Surface the GA4 API error message on 400 and 403 responses, and stop retrying permission errors |
+| 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
+| 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
+| 2.9.31 | 2026-04-09 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
+| 2.9.30 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
+| 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
+| 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
+| 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
+| 2.9.26 | 2026-02-25 | [73632](https://github.com/airbytehq/airbyte/pull/73632) | fix(source-google-analytics-data-api): use GA4 today keyword for timezone-correct end dates (AI-Triage PR) |
+| 2.9.25 | 2026-02-24 | [73750](https://github.com/airbytehq/airbyte/pull/73750) | Update dependencies |
+| 2.9.24 | 2026-02-17 | [73404](https://github.com/airbytehq/airbyte/pull/73404) | Update dependencies |
+| 2.9.23 | 2026-02-10 | [73067](https://github.com/airbytehq/airbyte/pull/73067) | Update dependencies |
+| 2.9.22 | 2026-02-03 | [72590](https://github.com/airbytehq/airbyte/pull/72590) | Update dependencies |
+| 2.9.21 | 2026-01-20 | [71924](https://github.com/airbytehq/airbyte/pull/71924) | Update dependencies |
+| 2.9.20 | 2026-01-14 | [71432](https://github.com/airbytehq/airbyte/pull/71432) | Update dependencies |
+| 2.9.19 | 2025-12-18 | [70693](https://github.com/airbytehq/airbyte/pull/70693) | Update dependencies |
 | 2.9.18 | 2025-11-25 | [69892](https://github.com/airbytehq/airbyte/pull/69892) | Update dependencies |
 | 2.9.17 | 2025-11-18 | [69414](https://github.com/airbytehq/airbyte/pull/69414) | Update dependencies |
-| 2.9.16 | 2025-11-11 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
+| 2.9.16 | 2025-11-12 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
 | 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
 | 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
 | 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dev_null
@@ -12,7 +12,7 @@ import jakarta.inject.Singleton
 @Singleton
 class DevNullWriter : DestinationWriter {
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        /* Do nothing. Work is done by the DirectLoader. TODO: Remove StreamLoader entirely. */
+        /* Does nothing */
         return object : StreamLoader {
             override val stream: DestinationStream = stream
         }

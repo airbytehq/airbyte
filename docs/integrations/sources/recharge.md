@@ -144,8 +144,12 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 
 ### Error Handling
 
-*   **Transient HTTP Errors:** Common transient errors (e.g., `500 - Internal server error`, `503 - A 3rd party service on which the request depends has timed out`) are handled by Airbyte's `DefaultErrorHandler`. This mechanism retries requests with an exponential backoff strategy, up to a maximum of 10 retries.
-*   **Persistent Issues:** If you consistently encounter rate limit issues or other errors that are not automatically resolved by the connector's retry mechanisms, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub with relevant logs and details.
+- **Transient HTTP Errors:** Common transient errors (e.g., `500 - Internal server error`, `503 - A 3rd party service on which the request depends has timed out`) are handled by Airbyte's `DefaultErrorHandler`. This mechanism retries requests with an exponential backoff strategy, up to a maximum of 10 retries.
+- **Persistent Issues:** If you consistently encounter rate limit issues or other errors that are not automatically resolved by the connector's retry mechanisms, please [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) on GitHub with relevant logs and details.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -156,7 +160,7 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
 | 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
 | 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
-| 3.0.9 | 2025-10-07 | [67543](https://github.com/airbytehq/airbyte/pull/67543) | Update dependencies |
+| 3.0.9 | 2025-10-08 | [67543](https://github.com/airbytehq/airbyte/pull/67543) | Update dependencies |
 | 3.0.8 | 2025-09-30 | [66444](https://github.com/airbytehq/airbyte/pull/66444) | Update dependencies |
 | 3.0.7 | 2025-09-09 | [65674](https://github.com/airbytehq/airbyte/pull/65674) | Update dependencies |
 | 3.0.6 | 2025-08-24 | [65465](https://github.com/airbytehq/airbyte/pull/65465) | Update dependencies |
@@ -186,7 +190,7 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 | 2.6.3 | 2025-01-25 | [52468](https://github.com/airbytehq/airbyte/pull/52468) | Update dependencies |
 | 2.6.2 | 2025-01-18 | [51914](https://github.com/airbytehq/airbyte/pull/51914) | Update dependencies |
 | 2.6.1 | 2025-01-11 | [51333](https://github.com/airbytehq/airbyte/pull/51333) | Update dependencies |
-| 2.6.0 | 2025-01-02 | [48382](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
+| 2.6.0 | 2025-01-02 | [49926](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
 | 2.5.4 | 2025-01-04 | [50927](https://github.com/airbytehq/airbyte/pull/50927) | Update dependencies |
 | 2.5.3 | 2024-12-28 | [50724](https://github.com/airbytehq/airbyte/pull/50724) | Update dependencies |
 | 2.5.2 | 2024-12-21 | [50265](https://github.com/airbytehq/airbyte/pull/50265) | Update dependencies |

@@ -31,6 +31,10 @@ Visit the [OpenWeather](https://openweathermap.org) to create a user account and
 
 The free plan allows 60 calls per minute and 1,000,000 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,21 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.56 | 2026-07-14 | [81955](https://github.com/airbytehq/airbyte/pull/81955) | Update dependencies |
+| 0.3.55 | 2026-06-30 | [81190](https://github.com/airbytehq/airbyte/pull/81190) | Update dependencies |
+| 0.3.54 | 2026-06-23 | [80595](https://github.com/airbytehq/airbyte/pull/80595) | Update dependencies |
+| 0.3.53 | 2026-06-16 | [79974](https://github.com/airbytehq/airbyte/pull/79974) | Update dependencies |
+| 0.3.52 | 2026-06-09 | [79459](https://github.com/airbytehq/airbyte/pull/79459) | Update dependencies |
+| 0.3.51 | 2026-06-02 | [78879](https://github.com/airbytehq/airbyte/pull/78879) | Update dependencies |
+| 0.3.50 | 2026-04-28 | [77330](https://github.com/airbytehq/airbyte/pull/77330) | Update dependencies |
+| 0.3.49 | 2026-04-21 | [76719](https://github.com/airbytehq/airbyte/pull/76719) | Update dependencies |
+| 0.3.48 | 2026-03-17 | [74974](https://github.com/airbytehq/airbyte/pull/74974) | Update dependencies |
+| 0.3.47 | 2026-03-10 | [74630](https://github.com/airbytehq/airbyte/pull/74630) | Update dependencies |
+| 0.3.46 | 2026-03-03 | [73568](https://github.com/airbytehq/airbyte/pull/73568) | Update dependencies |
+| 0.3.45 | 2026-02-10 | [73079](https://github.com/airbytehq/airbyte/pull/73079) | Update dependencies |
+| 0.3.44 | 2026-01-20 | [72182](https://github.com/airbytehq/airbyte/pull/72182) | Update dependencies |
+| 0.3.43 | 2026-01-14 | [71667](https://github.com/airbytehq/airbyte/pull/71667) | Update dependencies |
+| 0.3.42 | 2025-12-18 | [70515](https://github.com/airbytehq/airbyte/pull/70515) | Update dependencies |
 | 0.3.41 | 2025-11-25 | [70133](https://github.com/airbytehq/airbyte/pull/70133) | Update dependencies |
 | 0.3.40 | 2025-11-18 | [69663](https://github.com/airbytehq/airbyte/pull/69663) | Update dependencies |
 | 0.3.39 | 2025-10-29 | [69012](https://github.com/airbytehq/airbyte/pull/69012) | Update dependencies |
@@ -45,7 +64,7 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 | 0.3.37 | 2025-10-14 | [67768](https://github.com/airbytehq/airbyte/pull/67768) | Update dependencies |
 | 0.3.36 | 2025-10-07 | [67344](https://github.com/airbytehq/airbyte/pull/67344) | Update dependencies |
 | 0.3.35 | 2025-09-30 | [66382](https://github.com/airbytehq/airbyte/pull/66382) | Update dependencies |
-| 0.3.34 | 2025-09-09 | [65797](https://github.com/airbytehq/airbyte/pull/65797) | Update dependencies |
+| 0.3.34 | 2025-09-10 | [65797](https://github.com/airbytehq/airbyte/pull/65797) | Update dependencies |
 | 0.3.33 | 2025-08-23 | [65216](https://github.com/airbytehq/airbyte/pull/65216) | Update dependencies |
 | 0.3.32 | 2025-08-09 | [64671](https://github.com/airbytehq/airbyte/pull/64671) | Update dependencies |
 | 0.3.31 | 2025-08-02 | [64189](https://github.com/airbytehq/airbyte/pull/64189) | Update dependencies |

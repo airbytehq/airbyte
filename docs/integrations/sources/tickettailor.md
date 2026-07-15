@@ -21,6 +21,10 @@ The Airbyte connector for [TicketTailor](https://tickettailor.com) enables seaml
 | waitlists | id | DefaultPaginator | ✅ |  ❌  |
 | vouchers_codes | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,21 @@ The Airbyte connector for [TicketTailor](https://tickettailor.com) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-07-14 | [82056](https://github.com/airbytehq/airbyte/pull/82056) | Update dependencies |
+| 0.0.53 | 2026-06-30 | [81273](https://github.com/airbytehq/airbyte/pull/81273) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80689](https://github.com/airbytehq/airbyte/pull/80689) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [80040](https://github.com/airbytehq/airbyte/pull/80040) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79543](https://github.com/airbytehq/airbyte/pull/79543) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [79016](https://github.com/airbytehq/airbyte/pull/79016) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77472](https://github.com/airbytehq/airbyte/pull/77472) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [75358](https://github.com/airbytehq/airbyte/pull/75358) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73841](https://github.com/airbytehq/airbyte/pull/73841) | Update dependencies |
+| 0.0.45 | 2026-02-17 | [73524](https://github.com/airbytehq/airbyte/pull/73524) | Update dependencies |
+| 0.0.44 | 2026-02-10 | [73103](https://github.com/airbytehq/airbyte/pull/73103) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72757](https://github.com/airbytehq/airbyte/pull/72757) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71988](https://github.com/airbytehq/airbyte/pull/71988) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71426](https://github.com/airbytehq/airbyte/pull/71426) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70742](https://github.com/airbytehq/airbyte/pull/70742) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [69882](https://github.com/airbytehq/airbyte/pull/69882) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69695](https://github.com/airbytehq/airbyte/pull/69695) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [68988](https://github.com/airbytehq/airbyte/pull/68988) | Update dependencies |
@@ -35,10 +54,10 @@ The Airbyte connector for [TicketTailor](https://tickettailor.com) enables seaml
 | 0.0.35 | 2025-10-14 | [67890](https://github.com/airbytehq/airbyte/pull/67890) | Update dependencies |
 | 0.0.34 | 2025-10-07 | [67504](https://github.com/airbytehq/airbyte/pull/67504) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66835](https://github.com/airbytehq/airbyte/pull/66835) | Update dependencies |
-| 0.0.32 | 2025-09-23 | [66361](https://github.com/airbytehq/airbyte/pull/66361) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [66361](https://github.com/airbytehq/airbyte/pull/66361) | Update dependencies |
 | 0.0.31 | 2025-09-09 | [65723](https://github.com/airbytehq/airbyte/pull/65723) | Update dependencies |
 | 0.0.30 | 2025-08-24 | [65482](https://github.com/airbytehq/airbyte/pull/65482) | Update dependencies |
-| 0.0.29 | 2025-08-09 | [64808](https://github.com/airbytehq/airbyte/pull/64808) | Update dependencies |
+| 0.0.29 | 2025-08-10 | [64808](https://github.com/airbytehq/airbyte/pull/64808) | Update dependencies |
 | 0.0.28 | 2025-08-02 | [64429](https://github.com/airbytehq/airbyte/pull/64429) | Update dependencies |
 | 0.0.27 | 2025-07-26 | [63963](https://github.com/airbytehq/airbyte/pull/63963) | Update dependencies |
 | 0.0.26 | 2025-07-05 | [62673](https://github.com/airbytehq/airbyte/pull/62673) | Update dependencies |

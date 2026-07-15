@@ -5869,7 +5869,7 @@ definitions:
             type: DpathExtractor
             field_path:
               - _embedded
-              - travelInsuranceProviders
+              - travelInsuranceProducts
       primary_key:
         - id
       schema_loader:
@@ -7207,7 +7207,7 @@ metadata:
       responsesAreSuccessful: true
     travel_insurance_products:
       hasRecords: true
-      streamHash: e25d49699eb55659538ce4623b5c5556d438dd71
+      streamHash: 9bd195e511a9ffa6ee6228853b6a3829a7348dc7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true

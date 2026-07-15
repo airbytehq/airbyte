@@ -1,0 +1,1056 @@
+# Orb full reference
+
+This is the full reference documentation for the Orb agent connector.
+
+## Supported entities and actions
+
+The Orb connector supports the following entities and actions.
+
+| Entity | Actions |
+|--------|---------|
+| Customers | [List](#customers-list), [Get](#customers-get), [Context Store Search](#customers-context-store-search) |
+| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [Context Store Search](#subscriptions-context-store-search) |
+| Plans | [List](#plans-list), [Get](#plans-get), [Context Store Search](#plans-context-store-search) |
+| Invoices | [List](#invoices-list), [Get](#invoices-get), [Context Store Search](#invoices-context-store-search) |
+
+## Customers
+
+### Customers List
+
+Returns a paginated list of customers
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "customers",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.customers.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Number of items to return per page |
+| `cursor` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `external_customer_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `email` | `string \| null` |  |
+| `created_at` | `string \| null` |  |
+| `payment_provider` | `string \| null` |  |
+| `payment_provider_id` | `string \| null` |  |
+| `timezone` | `string \| null` |  |
+| `shipping_address` | `object \| any` |  |
+| `billing_address` | `object \| any` |  |
+| `balance` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `tax_id` | `object \| null` |  |
+| `auto_collection` | `boolean \| null` |  |
+| `metadata` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string \| null` |  |
+
+</details>
+
+### Customers Get
+
+Get a single customer by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "customers",
+  "action": "get",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.customers.get(
+    customer_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "get",
+    "params": {
+        "customer_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `customer_id` | `string` | Yes | Customer ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `external_customer_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `email` | `string \| null` |  |
+| `created_at` | `string \| null` |  |
+| `payment_provider` | `string \| null` |  |
+| `payment_provider_id` | `string \| null` |  |
+| `timezone` | `string \| null` |  |
+| `shipping_address` | `object \| any` |  |
+| `billing_address` | `object \| any` |  |
+| `balance` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `tax_id` | `object \| null` |  |
+| `auto_collection` | `boolean \| null` |  |
+| `metadata` | `object \| null` |  |
+
+
+</details>
+
+### Customers Context Store Search
+
+Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "customers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.customers.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "customers",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | The unique identifier of the customer |
+| `external_customer_id` | `string` | The ID of the customer in an external system |
+| `name` | `string` | The name of the customer |
+| `email` | `string` | The email address of the customer |
+| `created_at` | `string` | The date and time when the customer was created |
+| `payment_provider` | `string` | The payment provider used by the customer |
+| `payment_provider_id` | `string` | The ID of the customer in the payment provider's system |
+| `timezone` | `string` | The timezone setting of the customer |
+| `shipping_address` | `object` | The shipping address of the customer |
+| `billing_address` | `object` | The billing address of the customer |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the customer |
+| `data[].external_customer_id` | `string` | The ID of the customer in an external system |
+| `data[].name` | `string` | The name of the customer |
+| `data[].email` | `string` | The email address of the customer |
+| `data[].created_at` | `string` | The date and time when the customer was created |
+| `data[].payment_provider` | `string` | The payment provider used by the customer |
+| `data[].payment_provider_id` | `string` | The ID of the customer in the payment provider's system |
+| `data[].timezone` | `string` | The timezone setting of the customer |
+| `data[].shipping_address` | `object` | The shipping address of the customer |
+| `data[].billing_address` | `object` | The billing address of the customer |
+
+</details>
+
+## Subscriptions
+
+### Subscriptions List
+
+Returns a paginated list of subscriptions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "subscriptions",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.subscriptions.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Number of items to return per page |
+| `cursor` | `string` | No | Cursor for pagination |
+| `customer_id` | `string` | No | Filter subscriptions by customer ID |
+| `external_customer_id` | `string` | No | Filter subscriptions by external customer ID |
+| `status` | `"active" \| "ended" \| "upcoming"` | No | Filter subscriptions by status |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `created_at` | `string \| null` |  |
+| `start_date` | `string \| null` |  |
+| `end_date` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `customer` | `object \| null` |  |
+| `plan` | `object \| null` |  |
+| `current_billing_period_start_date` | `string \| null` |  |
+| `current_billing_period_end_date` | `string \| null` |  |
+| `active_plan_phase_order` | `integer \| null` |  |
+| `fixed_fee_quantity_schedule` | `array \| null` |  |
+| `price_intervals` | `array \| null` |  |
+| `redeemed_coupon` | `object \| null` |  |
+| `default_invoice_memo` | `string \| null` |  |
+| `auto_collection` | `boolean \| null` |  |
+| `net_terms` | `integer \| null` |  |
+| `invoicing_threshold` | `string \| null` |  |
+| `metadata` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string \| null` |  |
+
+</details>
+
+### Subscriptions Get
+
+Get a single subscription by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "subscriptions",
+  "action": "get",
+  "params": {
+    "subscription_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.subscriptions.get(
+    subscription_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "get",
+    "params": {
+        "subscription_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `subscription_id` | `string` | Yes | Subscription ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `created_at` | `string \| null` |  |
+| `start_date` | `string \| null` |  |
+| `end_date` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `customer` | `object \| null` |  |
+| `plan` | `object \| null` |  |
+| `current_billing_period_start_date` | `string \| null` |  |
+| `current_billing_period_end_date` | `string \| null` |  |
+| `active_plan_phase_order` | `integer \| null` |  |
+| `fixed_fee_quantity_schedule` | `array \| null` |  |
+| `price_intervals` | `array \| null` |  |
+| `redeemed_coupon` | `object \| null` |  |
+| `default_invoice_memo` | `string \| null` |  |
+| `auto_collection` | `boolean \| null` |  |
+| `net_terms` | `integer \| null` |  |
+| `invoicing_threshold` | `string \| null` |  |
+| `metadata` | `object \| null` |  |
+
+
+</details>
+
+### Subscriptions Context Store Search
+
+Search and filter subscriptions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "subscriptions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.subscriptions.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | The unique identifier of the subscription |
+| `created_at` | `string` | The date and time when the subscription was created |
+| `start_date` | `string` | The date and time when the subscription starts |
+| `end_date` | `string` | The date and time when the subscription ends |
+| `status` | `string` | The current status of the subscription |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the subscription |
+| `data[].created_at` | `string` | The date and time when the subscription was created |
+| `data[].start_date` | `string` | The date and time when the subscription starts |
+| `data[].end_date` | `string` | The date and time when the subscription ends |
+| `data[].status` | `string` | The current status of the subscription |
+
+</details>
+
+## Plans
+
+### Plans List
+
+Returns a paginated list of plans
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "plans",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.plans.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "plans",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Number of items to return per page |
+| `cursor` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `created_at` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `default_invoice_memo` | `string \| null` |  |
+| `net_terms` | `integer \| null` |  |
+| `currency` | `string \| null` |  |
+| `prices` | `array \| null` |  |
+| `product` | `object \| null` |  |
+| `minimum` | `object \| null` |  |
+| `maximum` | `object \| null` |  |
+| `discount` | `object \| null` |  |
+| `trial_config` | `object \| null` |  |
+| `plan_phases` | `array \| null` |  |
+| `external_plan_id` | `string \| null` |  |
+| `invoicing_currency` | `string \| null` |  |
+| `metadata` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string \| null` |  |
+
+</details>
+
+### Plans Get
+
+Get a single plan by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "plans",
+  "action": "get",
+  "params": {
+    "plan_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.plans.get(
+    plan_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "plans",
+    "action": "get",
+    "params": {
+        "plan_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `plan_id` | `string` | Yes | Plan ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `created_at` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `default_invoice_memo` | `string \| null` |  |
+| `net_terms` | `integer \| null` |  |
+| `currency` | `string \| null` |  |
+| `prices` | `array \| null` |  |
+| `product` | `object \| null` |  |
+| `minimum` | `object \| null` |  |
+| `maximum` | `object \| null` |  |
+| `discount` | `object \| null` |  |
+| `trial_config` | `object \| null` |  |
+| `plan_phases` | `array \| null` |  |
+| `external_plan_id` | `string \| null` |  |
+| `invoicing_currency` | `string \| null` |  |
+| `metadata` | `object \| null` |  |
+
+
+</details>
+
+### Plans Context Store Search
+
+Search and filter plans records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "plans",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.plans.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "plans",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | The unique identifier of the plan |
+| `created_at` | `string` | The date and time when the plan was created |
+| `name` | `string` | The name of the plan |
+| `description` | `string` | A description of the plan |
+| `prices` | `array` | The pricing options for the plan |
+| `product` | `object` | The product associated with the plan |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the plan |
+| `data[].created_at` | `string` | The date and time when the plan was created |
+| `data[].name` | `string` | The name of the plan |
+| `data[].description` | `string` | A description of the plan |
+| `data[].prices` | `array` | The pricing options for the plan |
+| `data[].product` | `object` | The product associated with the plan |
+
+</details>
+
+## Invoices
+
+### Invoices List
+
+Returns a paginated list of invoices
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "invoices",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.invoices.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoices",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `limit` | `integer` | No | Number of items to return per page |
+| `cursor` | `string` | No | Cursor for pagination |
+| `customer_id` | `string` | No | Filter invoices by customer ID |
+| `external_customer_id` | `string` | No | Filter invoices by external customer ID |
+| `subscription_id` | `string` | No | Filter invoices by subscription ID |
+| `invoice_date_gt` | `string` | No | Filter invoices with invoice date greater than this value (ISO 8601 format) |
+| `invoice_date_gte` | `string` | No | Filter invoices with invoice date greater than or equal to this value (ISO 8601 format) |
+| `invoice_date_lt` | `string` | No | Filter invoices with invoice date less than this value (ISO 8601 format) |
+| `invoice_date_lte` | `string` | No | Filter invoices with invoice date less than or equal to this value (ISO 8601 format) |
+| `status` | `"draft" \| "issued" \| "paid" \| "synced" \| "void"` | No | Filter invoices by status |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `created_at` | `string \| null` |  |
+| `invoice_date` | `string \| null` |  |
+| `due_date` | `string \| null` |  |
+| `invoice_pdf` | `string \| null` |  |
+| `subtotal` | `string \| null` |  |
+| `total` | `string \| null` |  |
+| `amount_due` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `memo` | `string \| null` |  |
+| `issue_failed_at` | `string \| null` |  |
+| `sync_failed_at` | `string \| null` |  |
+| `payment_failed_at` | `string \| null` |  |
+| `payment_started_at` | `string \| null` |  |
+| `voided_at` | `string \| null` |  |
+| `paid_at` | `string \| null` |  |
+| `issued_at` | `string \| null` |  |
+| `hosted_invoice_url` | `string \| null` |  |
+| `line_items` | `array \| null` |  |
+| `subscription` | `object \| null` |  |
+| `customer` | `object \| null` |  |
+| `currency` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `minimum` | `object \| null` |  |
+| `maximum` | `object \| null` |  |
+| `credit_notes` | `array \| null` |  |
+| `will_auto_issue` | `boolean \| null` |  |
+| `eligible_to_issue_at` | `string \| null` |  |
+| `customer_balance_transactions` | `array \| null` |  |
+| `auto_collection` | `object \| null` |  |
+| `invoice_number` | `string \| null` |  |
+| `billing_address` | `object \| any` |  |
+| `shipping_address` | `object \| any` |  |
+| `metadata` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `string \| null` |  |
+
+</details>
+
+### Invoices Get
+
+Get a single invoice by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "invoices",
+  "action": "get",
+  "params": {
+    "invoice_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.invoices.get(
+    invoice_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoices",
+    "action": "get",
+    "params": {
+        "invoice_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `invoice_id` | `string` | Yes | Invoice ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `created_at` | `string \| null` |  |
+| `invoice_date` | `string \| null` |  |
+| `due_date` | `string \| null` |  |
+| `invoice_pdf` | `string \| null` |  |
+| `subtotal` | `string \| null` |  |
+| `total` | `string \| null` |  |
+| `amount_due` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `memo` | `string \| null` |  |
+| `issue_failed_at` | `string \| null` |  |
+| `sync_failed_at` | `string \| null` |  |
+| `payment_failed_at` | `string \| null` |  |
+| `payment_started_at` | `string \| null` |  |
+| `voided_at` | `string \| null` |  |
+| `paid_at` | `string \| null` |  |
+| `issued_at` | `string \| null` |  |
+| `hosted_invoice_url` | `string \| null` |  |
+| `line_items` | `array \| null` |  |
+| `subscription` | `object \| null` |  |
+| `customer` | `object \| null` |  |
+| `currency` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `minimum` | `object \| null` |  |
+| `maximum` | `object \| null` |  |
+| `credit_notes` | `array \| null` |  |
+| `will_auto_issue` | `boolean \| null` |  |
+| `eligible_to_issue_at` | `string \| null` |  |
+| `customer_balance_transactions` | `array \| null` |  |
+| `auto_collection` | `object \| null` |  |
+| `invoice_number` | `string \| null` |  |
+| `billing_address` | `object \| any` |  |
+| `shipping_address` | `object \| any` |  |
+| `metadata` | `object \| null` |  |
+
+
+</details>
+
+### Invoices Context Store Search
+
+Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "invoices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await orb.invoices.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoices",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | The unique identifier of the invoice |
+| `created_at` | `string` | The date and time when the invoice was created |
+| `invoice_date` | `string` | The date of the invoice |
+| `due_date` | `string` | The due date for the invoice |
+| `invoice_pdf` | `string` | The URL to download the PDF version of the invoice |
+| `subtotal` | `string` | The subtotal amount of the invoice |
+| `total` | `string` | The total amount of the invoice |
+| `amount_due` | `string` | The amount due on the invoice |
+| `status` | `string` | The current status of the invoice |
+| `memo` | `string` | Any additional notes or comments on the invoice |
+| `paid_at` | `string` | The date and time when the invoice was paid |
+| `issued_at` | `string` | The date and time when the invoice was issued |
+| `hosted_invoice_url` | `string` | The URL to view the hosted invoice |
+| `line_items` | `array` | The line items on the invoice |
+| `subscription` | `object` | The subscription associated with the invoice |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | The unique identifier of the invoice |
+| `data[].created_at` | `string` | The date and time when the invoice was created |
+| `data[].invoice_date` | `string` | The date of the invoice |
+| `data[].due_date` | `string` | The due date for the invoice |
+| `data[].invoice_pdf` | `string` | The URL to download the PDF version of the invoice |
+| `data[].subtotal` | `string` | The subtotal amount of the invoice |
+| `data[].total` | `string` | The total amount of the invoice |
+| `data[].amount_due` | `string` | The amount due on the invoice |
+| `data[].status` | `string` | The current status of the invoice |
+| `data[].memo` | `string` | Any additional notes or comments on the invoice |
+| `data[].paid_at` | `string` | The date and time when the invoice was paid |
+| `data[].issued_at` | `string` | The date and time when the invoice was issued |
+| `data[].hosted_invoice_url` | `string` | The URL to view the hosted invoice |
+| `data[].line_items` | `array` | The line items on the invoice |
+| `data[].subscription` | `object` | The subscription associated with the invoice |
+
+</details>
+

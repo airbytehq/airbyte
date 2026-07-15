@@ -21,6 +21,10 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 | report_widgets | Hash | No pagination | ✅ |  ❌  |
 | users | Hash | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,23 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-07-14 | [82067](https://github.com/airbytehq/airbyte/pull/82067) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81315](https://github.com/airbytehq/airbyte/pull/81315) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80723](https://github.com/airbytehq/airbyte/pull/80723) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [80098](https://github.com/airbytehq/airbyte/pull/80098) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79589](https://github.com/airbytehq/airbyte/pull/79589) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [79065](https://github.com/airbytehq/airbyte/pull/79065) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77510](https://github.com/airbytehq/airbyte/pull/77510) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76793](https://github.com/airbytehq/airbyte/pull/76793) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75859](https://github.com/airbytehq/airbyte/pull/75859) | Update dependencies |
+| 0.0.49 | 2026-03-24 | [75373](https://github.com/airbytehq/airbyte/pull/75373) | Update dependencies |
+| 0.0.48 | 2026-03-10 | [74669](https://github.com/airbytehq/airbyte/pull/74669) | Update dependencies |
+| 0.0.47 | 2026-03-03 | [74158](https://github.com/airbytehq/airbyte/pull/74158) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73505](https://github.com/airbytehq/airbyte/pull/73505) | Update dependencies |
+| 0.0.45 | 2026-02-03 | [72607](https://github.com/airbytehq/airbyte/pull/72607) | Update dependencies |
+| 0.0.44 | 2026-01-20 | [72067](https://github.com/airbytehq/airbyte/pull/72067) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71441](https://github.com/airbytehq/airbyte/pull/71441) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70730](https://github.com/airbytehq/airbyte/pull/70730) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70101](https://github.com/airbytehq/airbyte/pull/70101) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69644](https://github.com/airbytehq/airbyte/pull/69644) | Update dependencies |
 | 0.0.39 | 2025-10-29 | [68927](https://github.com/airbytehq/airbyte/pull/68927) | Update dependencies |
@@ -36,8 +57,8 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 | 0.0.36 | 2025-10-07 | [67320](https://github.com/airbytehq/airbyte/pull/67320) | Update dependencies |
 | 0.0.35 | 2025-09-30 | [66445](https://github.com/airbytehq/airbyte/pull/66445) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65717](https://github.com/airbytehq/airbyte/pull/65717) | Update dependencies |
-| 0.0.33 | 2025-08-23 | [65416](https://github.com/airbytehq/airbyte/pull/65416) | Update dependencies |
-| 0.0.32 | 2025-08-09 | [64811](https://github.com/airbytehq/airbyte/pull/64811) | Update dependencies |
+| 0.0.33 | 2025-08-24 | [65416](https://github.com/airbytehq/airbyte/pull/65416) | Update dependencies |
+| 0.0.32 | 2025-08-10 | [64811](https://github.com/airbytehq/airbyte/pull/64811) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64378](https://github.com/airbytehq/airbyte/pull/64378) | Update dependencies |
 | 0.0.30 | 2025-07-26 | [64077](https://github.com/airbytehq/airbyte/pull/64077) | Update dependencies |
 | 0.0.29 | 2025-07-20 | [63664](https://github.com/airbytehq/airbyte/pull/63664) | Update dependencies |

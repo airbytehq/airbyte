@@ -32,6 +32,10 @@ Create an application and note down the Account Id and the API key, you will nee
 | sale_lists | ID | DefaultPaginator | ✅ |  ❌  |
 | product_families | ID | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -39,6 +43,21 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.39 | 2026-07-14 | [81780](https://github.com/airbytehq/airbyte/pull/81780) | Update dependencies |
+| 0.3.38 | 2026-06-30 | [81001](https://github.com/airbytehq/airbyte/pull/81001) | Update dependencies |
+| 0.3.37 | 2026-06-23 | [80418](https://github.com/airbytehq/airbyte/pull/80418) | Update dependencies |
+| 0.3.36 | 2026-06-16 | [79828](https://github.com/airbytehq/airbyte/pull/79828) | Update dependencies |
+| 0.3.35 | 2026-06-09 | [79283](https://github.com/airbytehq/airbyte/pull/79283) | Update dependencies |
+| 0.3.34 | 2026-06-02 | [78610](https://github.com/airbytehq/airbyte/pull/78610) | Update dependencies |
+| 0.3.33 | 2026-04-28 | [77195](https://github.com/airbytehq/airbyte/pull/77195) | Update dependencies |
+| 0.3.32 | 2026-04-21 | [76548](https://github.com/airbytehq/airbyte/pull/76548) | Update dependencies |
+| 0.3.31 | 2026-03-31 | [75744](https://github.com/airbytehq/airbyte/pull/75744) | Update dependencies |
+| 0.3.30 | 2026-03-17 | [75102](https://github.com/airbytehq/airbyte/pull/75102) | Update dependencies |
+| 0.3.29 | 2026-02-24 | [73826](https://github.com/airbytehq/airbyte/pull/73826) | Update dependencies |
+| 0.3.28 | 2026-02-17 | [73024](https://github.com/airbytehq/airbyte/pull/73024) | Update dependencies |
+| 0.3.27 | 2026-01-20 | [72135](https://github.com/airbytehq/airbyte/pull/72135) | Update dependencies |
+| 0.3.26 | 2026-01-14 | [71728](https://github.com/airbytehq/airbyte/pull/71728) | Update dependencies |
+| 0.3.25 | 2025-12-18 | [70623](https://github.com/airbytehq/airbyte/pull/70623) | Update dependencies |
 | 0.3.24 | 2025-11-25 | [69943](https://github.com/airbytehq/airbyte/pull/69943) | Update dependencies |
 | 0.3.23 | 2025-11-18 | [69623](https://github.com/airbytehq/airbyte/pull/69623) | Update dependencies |
 | 0.3.22 | 2025-10-29 | [68862](https://github.com/airbytehq/airbyte/pull/68862) | Update dependencies |
@@ -49,8 +68,8 @@ Create an application and note down the Account Id and the API key, you will nee
 | 0.3.17 | 2025-09-09 | [65767](https://github.com/airbytehq/airbyte/pull/65767) | Update dependencies |
 | 0.3.16 | 2025-08-22 | [PR_NUMBER] | Add RequiredBy field and enhance datetime support |
 | 0.3.15 | 2025-08-23 | [65248](https://github.com/airbytehq/airbyte/pull/65248) | Update dependencies |
-| 0.3.14 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
-| 0.3.13 | 2025-08-08 | [64118](https://github.com/airbytehq/airbyte/pull/64118) | Fix product_availability primary key to support multi-location inventory tracking by using composite key [ID, Location] instead of just [ID] |
+| 0.3.14 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.3.13 | 2025-08-14 | [64118](https://github.com/airbytehq/airbyte/pull/64118) | Fix product_availability primary key to support multi-location inventory tracking by using composite key [ID, Location] instead of just [ID] |
 | 0.3.12 | 2025-08-09 | [64712](https://github.com/airbytehq/airbyte/pull/64712) | Update dependencies |
 | 0.3.11 | 2025-08-02 | [64396](https://github.com/airbytehq/airbyte/pull/64396) | Update dependencies |
 | 0.3.10 | 2025-07-26 | [64046](https://github.com/airbytehq/airbyte/pull/64046) | Update dependencies |

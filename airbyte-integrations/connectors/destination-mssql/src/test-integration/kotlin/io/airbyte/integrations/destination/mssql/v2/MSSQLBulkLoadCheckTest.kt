@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2
@@ -16,10 +16,14 @@ class MSSQLBulkLoadCheckTest :
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
-                    Files.readString(Path.of(BulkInsert.CONFIG_FILE)),
-                    name = "Bulk Load Check Should work",
+                    Files.readString(Path.of(CONFIG_FILE)),
+                    name = "Azure Bulk Load Check should work",
                 ),
             ),
         emptyMap(),
         configUpdater = FakeConfigurationUpdater,
-    )
+    ) {
+    companion object {
+        const val CONFIG_FILE = "secrets/azure_bulk_config.json"
+    }
+}

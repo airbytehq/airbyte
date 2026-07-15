@@ -19,7 +19,9 @@ You may also need the following. This article explains how to get them.
 
 ## Setup guide
 
-### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
+### Set up Salesforce
+
+#### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
 
 Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
@@ -29,7 +31,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
-#### Step 1: Create a new user
+##### Step 1: Create a new user
 
 1. On the top right of the screen, click the gear icon and then click **Setup**.
 2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
@@ -39,7 +41,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
       4. Decide whether to generate a new password and notify the user.
       5. Select `save`
 
-#### Step 2: Create a new permission set
+##### Step 2: Create a new permission set
 
 1. Using the left navigation bar, select **Users** > **Permission Sets**
 2. Click `New` to create a new Permission Set.
@@ -57,7 +59,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
    3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
    4. Click `Save`
 
-#### Step 3: Assign the permission set to the new user
+##### Step 3: Assign the permission set to the new user
 
 1. From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 2. Click "Add Assignments."
@@ -73,7 +75,7 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 <!-- env:oss -->
 
-### Get Salesforce OAuth credentials (Airbyte Open Source only)
+#### Get Salesforce OAuth credentials (Airbyte Open Source only)
 
 If you are using Airbyte Open Source, obtain the following OAuth credentials to authenticate:
 
@@ -104,7 +106,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -121,7 +125,9 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -185,6 +191,10 @@ To sync security-related data from Salesforce, the authenticated Salesforce user
 
 For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -239,6 +249,45 @@ More information on the differences between various Salesforce APIs can be found
 If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
 :::
 
+### Session expiry on long-running Bulk API syncs
+
+Salesforce access tokens expire after a configurable session timeout, which defaults to 2 hours. Prior to connector version 2.7.20, long-running Bulk API syncs could fail with `INVALID_SESSION_ID` errors because the access token was captured once at sync start and never refreshed. Starting in version 2.7.20, the connector proactively refreshes the access token every 30 minutes, well before the default session timeout. If a session is unexpectedly invalidated between refresh cycles, the connector detects the `INVALID_SESSION_ID` response and forces an immediate token refresh before retrying the request.
+
+If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is running version 2.7.20 or later.
+
+### Missing Records (Salesforce API Eventual Consistency)
+
+Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
+
+**Symptoms:**
+
+- Records are missing in the destination but present when queried directly in Salesforce
+- The same source synced to a different destination at a later time does not have missing records
+- No errors appear in sync logs
+
+**Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). Because the connector uses append-dedup mode, re-reading overlapping data does not create duplicates in the destination.
+
+The lookback window uses the ISO 8601 duration format. The format is `PT<number><unit>`, where `P` marks the start of the duration and `T` separates date from time components. Common examples:
+
+| Value  | Meaning    |
+|:-------|:-----------|
+| PT10M  | 10 minutes |
+| PT30M  | 30 minutes |
+| PT1H   | 1 hour     |
+| PT2H   | 2 hours    |
+| P1D    | 1 day      |
+
+### Preserving "NA" string values {#preserving-na-string-values}
+
+When extracting data through the Bulk API, the connector downloads results as CSV. By default, literal strings such as `NA`, `N/A`, `NULL`, `None`, `NaN`, `null` and `#N/A` are interpreted as missing values and synced as `null`. This can cause data correctness issues when such a string is a legitimate value — for example, a picklist where `NA` means "North America".
+
+**Symptoms:**
+
+- A field that contains `NA`/`N/A` (or similar) in Salesforce is `null` in the destination
+- Only affects streams synced via the Bulk API (see [Usage of the BULK API vs REST API](#usage-of-the-bulk-api-vs-rest-api)); REST-synced streams are unaffected
+
+**Solution:** Enable the **Preserve "NA" and similar string values** option in the connector configuration (config field `preserve_na_values`). When enabled, these strings are kept as-is; empty cells are still synced as `null`. The option is **off by default** to preserve the connector's historical behavior. After enabling it, run a refresh of the affected stream(s) to backfill the corrected values.
+
 </details>
 
 ## Changelog
@@ -248,29 +297,39 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.26-rc.1 | 2026-07-14 | [81535](https://github.com/airbytehq/airbyte/pull/81535) | Use ordered `ConcurrentMessageRepository` so state checkpoints are emitted in-order with records, preventing data loss (cursor advancing past uncommitted records) when a sync is terminated ungracefully |
+| 2.7.25 | 2026-06-20 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
+| 2.7.24 | 2026-06-23 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
+| 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
+| 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
+| 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
+| 2.7.21-rc.1 | 2026-04-21 | [76389](https://github.com/airbytehq/airbyte/pull/76389) | Fix bulk job slicing by bypassing deprecated DeclarativeStream.stream_slices() after CDK 7.13+ upgrade |
+| 2.7.20 | 2026-04-02 | [75201](https://github.com/airbytehq/airbyte/pull/75201) | Fix Bulk API INVALID_SESSION_ID by replacing static token provider with auto-refreshing SalesforceTokenProvider |
+| 2.7.19 | 2026-03-31 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
+| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
+| 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|
-| 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
-| 2.7.14      | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
-| 2.7.13      | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
-| 2.7.12      | 2025-09-10 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
-| 2.7.11      | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
-| 2.7.10      | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
-| 2.7.9       | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
-| 2.7.8       | 2025-04-27 | [58997](https://github.com/airbytehq/airbyte/pull/58997) | Update dependencies |
-| 2.7.7       | 2025-04-19 | [58453](https://github.com/airbytehq/airbyte/pull/58453) | Update dependencies |
-| 2.7.6       | 2025-04-12 | [57976](https://github.com/airbytehq/airbyte/pull/57976) | Update dependencies |
-| 2.7.5       | 2025-04-05 | [57424](https://github.com/airbytehq/airbyte/pull/57424) | Update dependencies |
-| 2.7.4       | 2025-03-27 | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response |
-| 2.7.3       | 2025-03-29 | [56776](https://github.com/airbytehq/airbyte/pull/56776) | Update dependencies |
-| 2.7.2       | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
-| 2.7.1       | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
-| 2.7.0       | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever |
-| 2.6.5       | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
-| 2.6.5       | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
-| 2.6.5-rc.1  | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
-| 2.6.4       | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 2.6.3       | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies                                                                                                                                                    |
+| 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
+| 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records |
+| 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
+| 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
+| 2.7.12 | 2025-09-15 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
+| 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
+| 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
+| 2.7.9 | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
+| 2.7.8 | 2025-04-27 | [58997](https://github.com/airbytehq/airbyte/pull/58997) | Update dependencies |
+| 2.7.7 | 2025-04-19 | [58453](https://github.com/airbytehq/airbyte/pull/58453) | Update dependencies |
+| 2.7.6 | 2025-04-12 | [57976](https://github.com/airbytehq/airbyte/pull/57976) | Update dependencies |
+| 2.7.5 | 2025-04-05 | [57424](https://github.com/airbytehq/airbyte/pull/57424) | Update dependencies |
+| 2.7.4 | 2025-03-27 | [53689](https://github.com/airbytehq/airbyte/pull/53689) | catch JSONDecodeError for error response |
+| 2.7.3 | 2025-03-29 | [56776](https://github.com/airbytehq/airbyte/pull/56776) | Update dependencies |
+| 2.7.2 | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
+| 2.7.1 | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
+| 2.7.0 | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever |
+| 2.6.5 | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
+| 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0 |
+| 2.6.4 | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.6.3 | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies |
 | 2.6.2       | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1       | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0       | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
@@ -303,7 +362,7 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 | 2.5.8       | 2024-04-30 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs                                                                                                                                    |
 | 2.5.7       | 2024-04-24 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Schema descriptions                                                                                                                                                    |
 | 2.5.6       | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type                                                                                        |
-| 2.5.5       | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                                                        |
+| 2.5.5       | 2024-04-18 | [37419](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                                                        |
 | 2.5.4       | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                                                       |
 | 2.5.3       | 2024-04-17 | [37376](https://github.com/airbytehq/airbyte/pull/37376) | Improve rate limit error message during check command                                                                                                                  |
 | 2.5.2       | 2024-04-15 | [37105](https://github.com/airbytehq/airbyte/pull/37105) | Raise error when schema generation fails                                                                                                                               |

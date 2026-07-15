@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
@@ -48,6 +48,7 @@ data class MySqlSourceConfiguration(
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
+    val treatTinyint1AsInteger: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
@@ -123,7 +124,9 @@ constructor(
         // Configure SSH tunneling.
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
-            SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+            SshConnectionOptions.fromAdditionalProperties(
+                pojo.getAdditionalProperties() ?: emptyMap()
+            )
 
         // Configure SSL encryption.
         if (
@@ -147,6 +150,11 @@ constructor(
         val jdbcUrlFmt = "jdbc:mysql://${address}"
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
+
+        val treatTinyint1AsInteger: Boolean = pojo.treatTinyint1AsInteger ?: false
+        if (treatTinyint1AsInteger) {
+            jdbcProperties["tinyInt1isBit"] = "false"
+        }
 
         // Only validate table filters if schemas are explicitly configured
         val tableFilters = pojo.tableFilters ?: emptyList()
@@ -211,6 +219,7 @@ constructor(
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            treatTinyint1AsInteger = treatTinyint1AsInteger,
         )
     }
 

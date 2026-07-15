@@ -14,6 +14,10 @@ Connector for PayFit.
 | Company | id | No pagination | ✅ |  ❌  |
 | Collaborators | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -21,6 +25,21 @@ Connector for PayFit.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.44 | 2026-07-14 | [81958](https://github.com/airbytehq/airbyte/pull/81958) | Update dependencies |
+| 0.0.43 | 2026-06-30 | [81170](https://github.com/airbytehq/airbyte/pull/81170) | Update dependencies |
+| 0.0.42 | 2026-06-23 | [80598](https://github.com/airbytehq/airbyte/pull/80598) | Update dependencies |
+| 0.0.41 | 2026-06-16 | [79979](https://github.com/airbytehq/airbyte/pull/79979) | Update dependencies |
+| 0.0.40 | 2026-06-09 | [79432](https://github.com/airbytehq/airbyte/pull/79432) | Update dependencies |
+| 0.0.39 | 2026-06-02 | [78894](https://github.com/airbytehq/airbyte/pull/78894) | Update dependencies |
+| 0.0.38 | 2026-04-28 | [77339](https://github.com/airbytehq/airbyte/pull/77339) | Update dependencies |
+| 0.0.37 | 2026-04-21 | [76701](https://github.com/airbytehq/airbyte/pull/76701) | Update dependencies |
+| 0.0.36 | 2026-03-17 | [75017](https://github.com/airbytehq/airbyte/pull/75017) | Update dependencies |
+| 0.0.35 | 2026-03-03 | [73883](https://github.com/airbytehq/airbyte/pull/73883) | Update dependencies |
+| 0.0.34 | 2026-02-17 | [73194](https://github.com/airbytehq/airbyte/pull/73194) | Update dependencies |
+| 0.0.33 | 2026-02-03 | [72582](https://github.com/airbytehq/airbyte/pull/72582) | Update dependencies |
+| 0.0.32 | 2026-01-20 | [72175](https://github.com/airbytehq/airbyte/pull/72175) | Update dependencies |
+| 0.0.31 | 2026-01-14 | [71646](https://github.com/airbytehq/airbyte/pull/71646) | Update dependencies |
+| 0.0.30 | 2025-12-18 | [70528](https://github.com/airbytehq/airbyte/pull/70528) | Update dependencies |
 | 0.0.29 | 2025-11-25 | [70110](https://github.com/airbytehq/airbyte/pull/70110) | Update dependencies |
 | 0.0.28 | 2025-11-18 | [69689](https://github.com/airbytehq/airbyte/pull/69689) | Update dependencies |
 | 0.0.27 | 2025-10-29 | [69037](https://github.com/airbytehq/airbyte/pull/69037) | Update dependencies |

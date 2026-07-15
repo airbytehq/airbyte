@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.ssh
 
 import io.airbyte.cdk.ConfigErrorException
@@ -44,6 +44,23 @@ internal constructor(
         }
     }
 }
+
+fun startTunnelAndGetEndpoint(
+    ssh: SshTunnelMethodConfiguration,
+    hostname: String,
+    port: Int,
+): String =
+    when (ssh) {
+        is SshKeyAuthTunnelMethod,
+        is SshPasswordAuthTunnelMethod -> {
+            val remote = SshdSocketAddress(hostname, port)
+            val sshConnectionOptions: SshConnectionOptions =
+                SshConnectionOptions.fromAdditionalProperties(emptyMap())
+            val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
+            "${tunnel.address.hostName}:${tunnel.address.port}"
+        }
+        is SshNoTunnelMethod -> "$hostname:$port"
+    }
 
 /** Creates an open [TunnelSession]. */
 fun createTunnelSession(

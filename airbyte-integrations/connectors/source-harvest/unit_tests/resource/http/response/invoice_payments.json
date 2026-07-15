@@ -1,0 +1,30 @@
+{
+  "invoice_payments": [
+    {
+      "id": 9876543,
+      "amount": 10000.0,
+      "paid_at": "2024-02-10T15:30:00Z",
+      "paid_date": "2024-02-10",
+      "recorded_by": "John Doe",
+      "recorded_by_email": "john.doe@example.com",
+      "notes": "Payment received via wire transfer",
+      "transaction_id": "TXN-123456",
+      "payment_gateway": {
+        "id": 1,
+        "name": "Manual"
+      },
+      "created_at": "2024-02-10T15:30:00Z",
+      "updated_at": "2024-02-10T15:30:00Z"
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/invoice_payments?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/invoice_payments?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}

@@ -1,8 +1,8 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -33,8 +33,8 @@ class MySqlSourceSelectQueryGeneratorTest {
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
-                        Field("k", IntFieldType),
-                        Field("v", StringFieldType),
+                        EmittedField("k", IntFieldType),
+                        EmittedField("v", StringFieldType),
                     ),
                 ),
                 From("TBL", "SC"),
@@ -46,7 +46,7 @@ class MySqlSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectMaxCursor() {
         SelectQuerySpec(
-                SelectColumnMaxValue(Field("ts", OffsetDateTimeFieldType)),
+                SelectColumnMaxValue(EmittedField("ts", OffsetDateTimeFieldType)),
                 From("TBL", "SC"),
             )
             .assertSqlEquals("""SELECT MAX(`ts`) FROM `SC`.`TBL`""")
@@ -57,8 +57,8 @@ class MySqlSourceSelectQueryGeneratorTest {
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
-                        Field("k", IntFieldType),
-                        Field("v", StringFieldType),
+                        EmittedField("k", IntFieldType),
+                        EmittedField("v", StringFieldType),
                     ),
                 ),
                 From("TBL", "SC"),
@@ -68,14 +68,14 @@ class MySqlSourceSelectQueryGeneratorTest {
 
     @Test
     fun testSelectForResumableInitialSync() {
-        val k1 = Field("k1", IntFieldType)
+        val k1 = EmittedField("k1", IntFieldType)
         val v1 = Jsons.numberNode(10)
-        val k2 = Field("k2", IntFieldType)
+        val k2 = EmittedField("k2", IntFieldType)
         val v2 = Jsons.numberNode(20)
-        val k3 = Field("k3", IntFieldType)
+        val k3 = EmittedField("k3", IntFieldType)
         val v3 = Jsons.numberNode(30)
         SelectQuerySpec(
-                SelectColumns(listOf(k1, k2, k3, Field("msg", StringFieldType))),
+                SelectColumns(listOf(k1, k2, k3, EmittedField("msg", StringFieldType))),
                 From("TBL", "SC"),
                 Where(
                     Or(
@@ -108,11 +108,11 @@ class MySqlSourceSelectQueryGeneratorTest {
 
     @Test
     fun testSelectForCursorBasedIncrementalSync() {
-        val c = Field("c", DoubleFieldType)
+        val c = EmittedField("c", DoubleFieldType)
         val lb = Jsons.numberNode(0.5)
         val ub = Jsons.numberNode(0.5)
         SelectQuerySpec(
-                SelectColumns(listOf(Field("msg", StringFieldType), c)),
+                SelectColumns(listOf(EmittedField("msg", StringFieldType), c)),
                 From("TBL", "SC"),
                 Where(And(listOf(Greater(c, lb), LesserOrEqual(c, ub)))),
                 OrderBy(listOf(c)),

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Publish a Python connector to PyPI registry
-# Extracted from airbyte-ci publish pipeline for GitHub Actions integration
+# Publish script for GitHub Actions integration
 #
 
 set -euo pipefail
@@ -18,8 +18,9 @@ Options:
     -n, --name CONNECTOR_NAME     Connector name (required)
     -t, --token TOKEN             PyPI token (optional, specify this or set PYTHON_REGISTRY_TOKEN environment variable)
     -v, --version VERSION         Override version (optional)
-    --release-type TYPE           Release type (optional): 'pre-release' or 'main-release' (default is 'pre-release')
+    --with-semver-suffix TYPE     Semver suffix (optional): 'none', 'preview', or 'rc' (default is 'preview')
     --test-registry               Use the test PyPI registry (default is production registry)
+    --dry-run                     Build the package and skip upload
     -h, --help                    Show this help message
 
 Environment Variables:
@@ -27,7 +28,7 @@ Environment Variables:
 
 Examples:
     $0 --name source-faker --token \$PYPI_TOKEN
-    $0 --name source-faker --token \$PYPI_TOKEN --release-type main-release
+    $0 --name source-faker --token \$PYPI_TOKEN --with-semver-suffix none
 EOF
 }
 
@@ -45,6 +46,22 @@ function get_pypi_package_name() {
     yq eval '.data.remoteRegistries.pypi.packageName' "$1"
 }
 
+# Create the temporary PyPI long description used during package builds.
+function write_pypi_readme() {
+    local connector_title="$1"
+    local readme_file="$2"
+
+    cat > "$readme_file" << EOF
+# $connector_title
+
+This package contains the Airbyte $connector_title connector.
+
+Airbyte is open-source data movement for ELT pipelines and AI agents. It moves data from APIs, databases, and files to warehouses, lakes, and AI applications.
+
+Airbyte provides a catalog of 600+ connectors for APIs, databases, data warehouses, data lakes, and AI applications. Use this package with [PyAirbyte](https://docs.airbyte.com/developers/pyairbyte) to run the connector from Python.
+EOF
+}
+
 # Default values
 REGISTRY_UPLOAD_URL="https://upload.pypi.org/legacy/"
 REGISTRY_CHECK_URL="https://pypi.org/pypi"
@@ -54,10 +71,11 @@ TEST_REGISTRY_UPLOAD_URL="https://test.pypi.org/legacy/"
 TEST_REGISTRY_CHECK_URL="https://test.pypi.org/pypi"
 TEST_REGISTRY_PACKAGE_URL="https://test.pypi.org/project"
 
-RELEASE_TYPE="pre-release"
+SEMVER_SUFFIX="preview"
 CONNECTOR_NAME=""
 PYPI_TOKEN=""
 VERSION_OVERRIDE=""
+DRY_RUN="false"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -74,8 +92,8 @@ while [[ $# -gt 0 ]]; do
             VERSION_OVERRIDE="$2"
             shift 2
             ;;
-        --release-type)
-            RELEASE_TYPE="$2"
+        --with-semver-suffix)
+            SEMVER_SUFFIX="$2"
             shift 2
             ;;
         --test-registry)
@@ -83,6 +101,10 @@ while [[ $# -gt 0 ]]; do
             REGISTRY_CHECK_URL="$TEST_REGISTRY_CHECK_URL"
             REGISTRY_PACKAGE_URL="$TEST_REGISTRY_PACKAGE_URL"
             echo "🧪 Using Test PyPI registry: $REGISTRY_UPLOAD_URL"
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN="true"
             shift
             ;;
         -h|--help)
@@ -104,8 +126,8 @@ if [[ -z "$CONNECTOR_NAME" ]]; then
     exit 1
 fi
 
-if [[ "$RELEASE_TYPE" != "pre-release" && "$RELEASE_TYPE" != "main-release" ]]; then
-    echo "Error: Invalid release type '$RELEASE_TYPE'. Valid options are 'pre-release' or 'main-release'." >&2
+if [[ "$SEMVER_SUFFIX" != "none" && "$SEMVER_SUFFIX" != "preview" && "$SEMVER_SUFFIX" != "rc" ]]; then
+    echo "Error: Invalid semver suffix '$SEMVER_SUFFIX'. Valid options are 'none', 'preview', or 'rc'." >&2
     usage >&2
     exit 1
 fi
@@ -115,7 +137,7 @@ if [[ -z "$PYPI_TOKEN" && -n "${PYTHON_REGISTRY_TOKEN:-}" ]]; then
     PYPI_TOKEN="$PYTHON_REGISTRY_TOKEN"
 fi
 
-if [[ -z "$PYPI_TOKEN" ]]; then
+if [[ -z "$PYPI_TOKEN" && "$DRY_RUN" != "true" ]]; then
     echo "Error: PyPI token is required (use --token or set PYTHON_REGISTRY_TOKEN in your environment), skipping PyPI publishing" >&2
     exit 0
 fi
@@ -151,32 +173,43 @@ if [[ -z "$PACKAGE_NAME" ]]; then
     echo "⚠️ Error: Package name not found in metadata.yaml, skipping PyPI publishing." >&2
     exit 0
 fi
+CONNECTOR_TITLE=$(yq eval '.data.name' "$METADATA_FILE")
 BASE_VERSION=$(poe -qq get-version)
 
 # Determine version to use
 if [[ -n "$VERSION_OVERRIDE" ]]; then
     VERSION="$VERSION_OVERRIDE"
-elif [[ "$RELEASE_TYPE" == "pre-release" ]]; then
-    # Add current timestamp for pre-release.
+elif [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
+    # When set by the publish workflow, use the pre-resolved tag directly.
+    VERSION="$CONNECTOR_VERSION_TAG"
+elif [[ "$SEMVER_SUFFIX" == "preview" ]]; then
+    # Add current timestamp for preview builds.
     # we can't use the git revision because not all python registries allow local version identifiers. 
     # Public version identifiers must conform to PEP 440 and only allow digits.
     TIMESTAMP=$(date +"%Y%m%d%H%M")
     VERSION="${BASE_VERSION}.dev.${TIMESTAMP}"
+elif [[ "$SEMVER_SUFFIX" == "rc" ]]; then
+    # Add rc1 suffix for release candidates
+    VERSION="${BASE_VERSION}rc1"
 else
     VERSION="$BASE_VERSION"
 fi
 
 echo "Package name: $PACKAGE_NAME"
 echo "Version: $VERSION"
-echo "Release type: $RELEASE_TYPE"
+echo "Semver suffix: $SEMVER_SUFFIX"
 echo
 
-# Check if package already exists
-if [[ $(curl -s -o /dev/null -w "%{http_code}" "$REGISTRY_CHECK_URL/$PACKAGE_NAME/$VERSION/json") == "200" ]]; then
-    echo "⚠️ Package $PACKAGE_NAME version $VERSION already exists on PyPI  at $REGISTRY_CHECK_URL/$PACKAGE_NAME/$VERSION/json. Skipping publishing."
-    exit 0
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo "Dry run: skipping package existence check and upload."
 else
-    echo "✅ Package $PACKAGE_NAME version $VERSION does not exist already on PyPI. Proceeding with publishing."
+    # Check if package already exists
+    if [[ $(curl -s -o /dev/null -w "%{http_code}" "$REGISTRY_CHECK_URL/$PACKAGE_NAME/$VERSION/json") == "200" ]]; then
+        echo "⚠️ Package $PACKAGE_NAME version $VERSION already exists on PyPI  at $REGISTRY_CHECK_URL/$PACKAGE_NAME/$VERSION/json. Skipping publishing."
+        exit 0
+    else
+        echo "✅ Package $PACKAGE_NAME version $VERSION does not exist already on PyPI. Proceeding with publishing."
+    fi
 fi
 
 
@@ -184,39 +217,59 @@ fi
 if [[ -f "pyproject.toml" ]]; then
     echo "Detected Poetry project"
 
+    PYPI_README_FILE=".airbyte-pypi-readme.md"
+
     # runs automatically on script error or exit
     cleanup() {
         if [[ -f pyproject.toml.bak ]]; then
             mv pyproject.toml.bak pyproject.toml
             echo "Restored original pyproject.toml"
         fi
+        if [[ -f "$PYPI_README_FILE" ]]; then
+            rm "$PYPI_README_FILE"
+            echo "Removed temporary PyPI README"
+        fi
     }
     trap cleanup EXIT   
+
+    write_pypi_readme "$CONNECTOR_TITLE" "$PYPI_README_FILE"
+    echo "Using generated PyPI README for $CONNECTOR_TITLE"
 
     # to support overriding the package name and the version when publishing to PyPI, the script modifies the pyproject.toml file 
     # we keep a backup at pyproject.toml.bak that is used to restore the initial state at the end
     # TODO: figure out if we can do this in a less hacky way and reevaluate whether to continue defining PyPI package information in metadata.yaml
     sed -i.bak -E \
         "s/^([[:space:]]*name[[:space:]]*=[[:space:]]*\").*(\".*)$/\\1${PACKAGE_NAME}\\2/;
-        s/^([[:space:]]*version[[:space:]]*=[[:space:]]*\").*(\".*)$/\\1${VERSION}\\2/" \
+        s/^([[:space:]]*version[[:space:]]*=[[:space:]]*\").*(\".*)$/\\1${VERSION}\\2/;
+        s/^([[:space:]]*readme[[:space:]]*=[[:space:]]*\").*(\".*)$/\\1${PYPI_README_FILE}\\2/" \
         pyproject.toml
 
-    echo "✅ Temporary override package name to '$PACKAGE_NAME' and version to '$VERSION' in pyproject.toml"
+    echo "✅ Temporary override package name to '$PACKAGE_NAME', version to '$VERSION', and readme to '$PYPI_README_FILE' in pyproject.toml"
 
     # Configure Poetry for PyPI publishing
     poetry config repositories.mypypi "$REGISTRY_UPLOAD_URL"
-    poetry config pypi-token.mypypi "$PYPI_TOKEN"
+    if [[ -n "$PYPI_TOKEN" ]]; then
+        poetry config pypi-token.mypypi "$PYPI_TOKEN"
+    fi
 
     # Default timeout is set to 15 seconds
     # We sometime face 443 HTTP read timeout responses from PyPi
     # Setting it to 60 seconds to avoid transient publish failures
     export POETRY_REQUESTS_TIMEOUT=60
 
-    poetry publish --build --repository mypypi --no-interaction -vvv
+    PUBLISH_ARGS=(publish --build --repository mypypi --no-interaction -vvv)
+    if [[ "$DRY_RUN" == "true" ]]; then
+        PUBLISH_ARGS+=(--dry-run)
+    fi
+    poetry "${PUBLISH_ARGS[@]}"
 
 else
     echo "⚠️ Error: No pyproject.toml, skipping publishing to PyPI" >&2
     exit 0
 fi
 
-echo "✅ Successfully published $PACKAGE_NAME ($VERSION) to PyPI ($REGISTRY_PACKAGE_URL/$PACKAGE_NAME/$VERSION)"
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo "✅ Dry run completed for $PACKAGE_NAME ($VERSION)"
+else
+    echo "✅ Successfully published $PACKAGE_NAME ($VERSION) to PyPI ($REGISTRY_PACKAGE_URL/$PACKAGE_NAME/$VERSION)"
+fi

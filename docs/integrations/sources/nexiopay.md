@@ -21,6 +21,10 @@ API Reference: https://docs.nexiopay.com/reference/api-reference
 | spendbacks | id | DefaultPaginator | ✅ |  ✅  |
 | card_tokens | key | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,23 @@ API Reference: https://docs.nexiopay.com/reference/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-07-14 | [81914](https://github.com/airbytehq/airbyte/pull/81914) | Update dependencies |
+| 0.0.41 | 2026-06-30 | [81140](https://github.com/airbytehq/airbyte/pull/81140) | Update dependencies |
+| 0.0.40 | 2026-06-23 | [80542](https://github.com/airbytehq/airbyte/pull/80542) | Update dependencies |
+| 0.0.39 | 2026-06-16 | [79965](https://github.com/airbytehq/airbyte/pull/79965) | Update dependencies |
+| 0.0.38 | 2026-06-09 | [79416](https://github.com/airbytehq/airbyte/pull/79416) | Update dependencies |
+| 0.0.37 | 2026-06-02 | [78851](https://github.com/airbytehq/airbyte/pull/78851) | Update dependencies |
+| 0.0.36 | 2026-04-28 | [77297](https://github.com/airbytehq/airbyte/pull/77297) | Update dependencies |
+| 0.0.35 | 2026-04-21 | [76673](https://github.com/airbytehq/airbyte/pull/76673) | Update dependencies |
+| 0.0.34 | 2026-03-31 | [75785](https://github.com/airbytehq/airbyte/pull/75785) | Update dependencies |
+| 0.0.33 | 2026-03-10 | [74619](https://github.com/airbytehq/airbyte/pull/74619) | Update dependencies |
+| 0.0.32 | 2026-02-24 | [73873](https://github.com/airbytehq/airbyte/pull/73873) | Update dependencies |
+| 0.0.31 | 2026-02-17 | [73550](https://github.com/airbytehq/airbyte/pull/73550) | Update dependencies |
+| 0.0.30 | 2026-02-10 | [73041](https://github.com/airbytehq/airbyte/pull/73041) | Update dependencies |
+| 0.0.29 | 2026-02-03 | [72547](https://github.com/airbytehq/airbyte/pull/72547) | Update dependencies |
+| 0.0.28 | 2026-01-20 | [71954](https://github.com/airbytehq/airbyte/pull/71954) | Update dependencies |
+| 0.0.27 | 2026-01-14 | [71642](https://github.com/airbytehq/airbyte/pull/71642) | Update dependencies |
+| 0.0.26 | 2025-12-18 | [70594](https://github.com/airbytehq/airbyte/pull/70594) | Update dependencies |
 | 0.0.25 | 2025-11-25 | [69903](https://github.com/airbytehq/airbyte/pull/69903) | Update dependencies |
 | 0.0.24 | 2025-11-18 | [69408](https://github.com/airbytehq/airbyte/pull/69408) | Update dependencies |
 | 0.0.23 | 2025-10-29 | [68718](https://github.com/airbytehq/airbyte/pull/68718) | Update dependencies |
@@ -35,7 +56,7 @@ API Reference: https://docs.nexiopay.com/reference/api-reference
 | 0.0.21 | 2025-10-14 | [67780](https://github.com/airbytehq/airbyte/pull/67780) | Update dependencies |
 | 0.0.20 | 2025-10-07 | [67428](https://github.com/airbytehq/airbyte/pull/67428) | Update dependencies |
 | 0.0.19 | 2025-09-30 | [66920](https://github.com/airbytehq/airbyte/pull/66920) | Update dependencies |
-| 0.0.18 | 2025-09-23 | [66611](https://github.com/airbytehq/airbyte/pull/66611) | Update dependencies |
+| 0.0.18 | 2025-09-24 | [66611](https://github.com/airbytehq/airbyte/pull/66611) | Update dependencies |
 | 0.0.17 | 2025-09-09 | [65749](https://github.com/airbytehq/airbyte/pull/65749) | Update dependencies |
 | 0.0.16 | 2025-08-23 | [65212](https://github.com/airbytehq/airbyte/pull/65212) | Update dependencies |
 | 0.0.15 | 2025-08-09 | [64690](https://github.com/airbytehq/airbyte/pull/64690) | Update dependencies |

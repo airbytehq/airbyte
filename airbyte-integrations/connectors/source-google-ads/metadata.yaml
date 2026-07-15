@@ -11,19 +11,23 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 4.1.3
+  dockerImageTag: 6.1.0
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
     - title: Release notes
       url: https://developers.google.com/google-ads/api/docs/release-notes
       type: api_release_history
+    - title: Deprecation and sunset dates
+      url: https://developers.google.com/google-ads/api/docs/sunset-dates
+      type: api_deprecations
     - title: Developer blog
       url: https://ads-developers.googleblog.com/
+      type: api_release_history
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
-  maxSecondsBetweenMessages: 86400
+  maxSecondsBetweenMessages: 14400
   name: Google Ads
   remoteRegistries:
     pypi:
@@ -51,6 +55,28 @@ data:
       4.0.0:
         message: Google is deprecating v18 of the Google Ads API August 20. This release upgrades the Google Ads API to the latest version (v20), which causes changes in several schemas. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2025-08-19"
+      5.0.0:
+        message: This release upgrades the Google Ads API from v20 to v23. Several built-in stream schemas have renamed fields (e.g., video metrics renamed to TrueView equivalents, `campaign.start_date` / `end_date` renamed to `start_date_time` / `end_date_time`) and removed fields (`CallAd` / `CallAdInfo` on `ad_group_ad`). It also removes the nullable `bidding_strategy.id` field from the primary keys of the `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs. See the migration guide for full details.
+        upgradeDeadline: "2026-05-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "campaign",
+                "campaign_budget",
+                "account_performance_report",
+                "ad_group_ad",
+                "ad_group_ad_legacy",
+                "display_keyword_view",
+                "geographic_view_with_metrics",
+                "topic_view",
+                "user_location_view",
+                "ad_group_bidding_strategy",
+                "campaign_bidding_strategy",
+              ]
+      6.0.0:
+        message: This release limits incremental report streams and custom queries that use `segments.date` to the 37-month granular data retention window enforced by the Google Ads API. The affected built-in streams are `account_performance_report`, `ad_group`, `ad_group_ad`, `ad_group_ad_legacy`, `ad_group_bidding_strategy`, `campaign`, `campaign_bidding_strategy`, `campaign_budget`, `click_view`, `customer`, `display_keyword_view`, `geographic_view`, `geographic_view_with_metrics`, `keyword_view`, `shopping_performance_view`, `topic_view`, and `user_location_view`; custom queries using `segments.date` are also affected. Data older than 37 months will be skipped. If you use the Full Refresh | Overwrite sync mode, store historical data older than 37 months before upgrading or that data will be permanently lost. If you use the Incremental | Append or Incremental | Append and Deduped sync modes, historical destination data older than 37 months is preserved, but the connector will not be able to sync it again. See the migration guide for full details.
+        upgradeDeadline: "2026-05-31"
   suggestedStreams:
     streams:
       - campaigns
@@ -65,7 +91,7 @@ data:
       - ad_group_labels
       - ad_group_ad_labels
       - user_location_report
-      - geographic_report
+      - geographic_view_with_metrics
       - display_keyword_performance_report
       - shopping_performance_report
       - display_topics_performance_report

@@ -1,0 +1,187 @@
+{
+  "tableSchema" : {
+    "columns" : {
+      "string" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "number" : {
+        "type" : "decimal(38,9)",
+        "nullable" : true
+      },
+      "integer" : {
+        "type" : "bigint",
+        "nullable" : true
+      },
+      "boolean" : {
+        "type" : "boolean",
+        "nullable" : true
+      },
+      "timestamp_with_timezone" : {
+        "type" : "timestamptz",
+        "nullable" : true
+      },
+      "timestamp_without_timezone" : {
+        "type" : "timestamp",
+        "nullable" : true
+      },
+      "time_with_timezone" : {
+        "type" : "timetz",
+        "nullable" : true
+      },
+      "time_without_timezone" : {
+        "type" : "time",
+        "nullable" : true
+      },
+      "date" : {
+        "type" : "date",
+        "nullable" : true
+      },
+      "object" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "object_with_empty_schema" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "object_without_schema" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "array" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "array_without_schema" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "union" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "legacy_union" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "unknown" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "string_nonnull" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "number_nonnull" : {
+        "type" : "decimal(38,9)",
+        "nullable" : true
+      },
+      "integer_nonnull" : {
+        "type" : "bigint",
+        "nullable" : true
+      },
+      "boolean_nonnull" : {
+        "type" : "boolean",
+        "nullable" : true
+      },
+      "timestamp_with_timezone_nonnull" : {
+        "type" : "timestamptz",
+        "nullable" : true
+      },
+      "timestamp_without_timezone_nonnull" : {
+        "type" : "timestamp",
+        "nullable" : true
+      },
+      "time_with_timezone_nonnull" : {
+        "type" : "timetz",
+        "nullable" : true
+      },
+      "time_without_timezone_nonnull" : {
+        "type" : "time",
+        "nullable" : true
+      },
+      "date_nonnull" : {
+        "type" : "date",
+        "nullable" : true
+      },
+      "object_nonnull" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "object_with_empty_schema_nonnull" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "object_without_schema_nonnull" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "array_nonnull" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "array_without_schema_nonnull" : {
+        "type" : "super",
+        "nullable" : true
+      },
+      "union_nonnull" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "legacy_union_nonnull" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "unknown_nonnull" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "table" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "column" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "create" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "delete" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "e________________________________" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "_1column" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "foo_" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "foo__1" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "foo__2" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "upper_case" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      },
+      "mixed_case" : {
+        "type" : "varchar(65535)",
+        "nullable" : true
+      }
+    }
+  },
+  "additionalInfo" : { }
+}

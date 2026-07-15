@@ -1,0 +1,25 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "segments": [
+    {
+      "sub_request_status": "SUCCESS",
+      "segment": {
+        "id": "test_segment_123",
+        "updated_at": "2024-01-15T10:00:00.000Z",
+        "created_at": "2023-01-01T00:00:00.000Z",
+        "name": "Test Segment",
+        "ad_account_id": "test_adaccount_456",
+        "description": "Test segment description",
+        "status": "ACTIVE",
+        "source_type": "FIRST_PARTY",
+        "retention_in_days": 180,
+        "approximate_number_users": 1000,
+        "upload_status": "COMPLETE",
+        "targetable_status": "READY",
+        "organization_id": "test_org_123",
+        "visible_to": ["ALL_ACCOUNTS"]
+      }
+    }
+  ]
+}

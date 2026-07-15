@@ -23,6 +23,10 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | delivery_methods | id | DefaultPaginator | ✅ |  ❌  |
 | tags | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,19 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.56 | 2026-07-14 | [82052](https://github.com/airbytehq/airbyte/pull/82052) | Update dependencies |
+| 0.0.55 | 2026-06-30 | [81290](https://github.com/airbytehq/airbyte/pull/81290) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80696](https://github.com/airbytehq/airbyte/pull/80696) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [80062](https://github.com/airbytehq/airbyte/pull/80062) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79561](https://github.com/airbytehq/airbyte/pull/79561) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [77470](https://github.com/airbytehq/airbyte/pull/77470) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76805](https://github.com/airbytehq/airbyte/pull/76805) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75711](https://github.com/airbytehq/airbyte/pull/75711) | Update dependencies |
+| 0.0.48 | 2026-03-17 | [75057](https://github.com/airbytehq/airbyte/pull/75057) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74495](https://github.com/airbytehq/airbyte/pull/74495) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [72083](https://github.com/airbytehq/airbyte/pull/72083) | Update dependencies |
+| 0.0.45 | 2026-01-14 | [71467](https://github.com/airbytehq/airbyte/pull/71467) | Update dependencies |
+| 0.0.44 | 2025-12-18 | [70718](https://github.com/airbytehq/airbyte/pull/70718) | Update dependencies |
 | 0.0.43 | 2025-11-25 | [70191](https://github.com/airbytehq/airbyte/pull/70191) | Update dependencies |
 | 0.0.42 | 2025-11-18 | [69642](https://github.com/airbytehq/airbyte/pull/69642) | Update dependencies |
 | 0.0.41 | 2025-10-29 | [68953](https://github.com/airbytehq/airbyte/pull/68953) | Update dependencies |
@@ -38,10 +55,10 @@ Veeqo Airbyte connector for Veeqo enables seamless data integration between Veeq
 | 0.0.38 | 2025-10-07 | [67322](https://github.com/airbytehq/airbyte/pull/67322) | Update dependencies |
 | 0.0.37 | 2025-09-30 | [66953](https://github.com/airbytehq/airbyte/pull/66953) | Update dependencies |
 | 0.0.36 | 2025-09-09 | [65742](https://github.com/airbytehq/airbyte/pull/65742) | Update dependencies |
-| 0.0.35 | 2025-08-23 | [65418](https://github.com/airbytehq/airbyte/pull/65418) | Update dependencies |
-| 0.0.34 | 2025-08-09 | [64859](https://github.com/airbytehq/airbyte/pull/64859) | Update dependencies |
+| 0.0.35 | 2025-08-24 | [65418](https://github.com/airbytehq/airbyte/pull/65418) | Update dependencies |
+| 0.0.34 | 2025-08-10 | [64859](https://github.com/airbytehq/airbyte/pull/64859) | Update dependencies |
 | 0.0.33 | 2025-08-02 | [64395](https://github.com/airbytehq/airbyte/pull/64395) | Update dependencies |
-| 0.0.32 | 2025-07-26 | [64084](https://github.com/airbytehq/airbyte/pull/64084) | Update dependencies |
+| 0.0.32 | 2025-07-27 | [64084](https://github.com/airbytehq/airbyte/pull/64084) | Update dependencies |
 | 0.0.31 | 2025-07-19 | [63616](https://github.com/airbytehq/airbyte/pull/63616) | Update dependencies |
 | 0.0.30 | 2025-07-12 | [63241](https://github.com/airbytehq/airbyte/pull/63241) | Update dependencies |
 | 0.0.29 | 2025-07-05 | [62702](https://github.com/airbytehq/airbyte/pull/62702) | Update dependencies |

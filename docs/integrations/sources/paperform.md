@@ -17,6 +17,10 @@ Airbyte connector for [Paperform](https://paperform.co/) enables seamless data i
 | coupons | code | DefaultPaginator | ✅ |  ❌  |
 | products |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,20 @@ Airbyte connector for [Paperform](https://paperform.co/) enables seamless data i
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-07-14 | [81952](https://github.com/airbytehq/airbyte/pull/81952) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81196](https://github.com/airbytehq/airbyte/pull/81196) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80592](https://github.com/airbytehq/airbyte/pull/80592) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [79981](https://github.com/airbytehq/airbyte/pull/79981) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79460](https://github.com/airbytehq/airbyte/pull/79460) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78906](https://github.com/airbytehq/airbyte/pull/78906) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77388](https://github.com/airbytehq/airbyte/pull/77388) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76728](https://github.com/airbytehq/airbyte/pull/76728) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [74956](https://github.com/airbytehq/airbyte/pull/74956) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [74236](https://github.com/airbytehq/airbyte/pull/74236) | Update dependencies |
+| 0.0.43 | 2026-02-10 | [72588](https://github.com/airbytehq/airbyte/pull/72588) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [72173](https://github.com/airbytehq/airbyte/pull/72173) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71681](https://github.com/airbytehq/airbyte/pull/71681) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70512](https://github.com/airbytehq/airbyte/pull/70512) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [70095](https://github.com/airbytehq/airbyte/pull/70095) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69687](https://github.com/airbytehq/airbyte/pull/69687) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [69025](https://github.com/airbytehq/airbyte/pull/69025) | Update dependencies |
@@ -31,7 +49,7 @@ Airbyte connector for [Paperform](https://paperform.co/) enables seamless data i
 | 0.0.35 | 2025-10-14 | [67775](https://github.com/airbytehq/airbyte/pull/67775) | Update dependencies |
 | 0.0.34 | 2025-10-07 | [67349](https://github.com/airbytehq/airbyte/pull/67349) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66380](https://github.com/airbytehq/airbyte/pull/66380) | Update dependencies |
-| 0.0.32 | 2025-09-09 | [65781](https://github.com/airbytehq/airbyte/pull/65781) | Update dependencies |
+| 0.0.32 | 2025-09-10 | [65781](https://github.com/airbytehq/airbyte/pull/65781) | Update dependencies |
 | 0.0.31 | 2025-08-23 | [65181](https://github.com/airbytehq/airbyte/pull/65181) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64731](https://github.com/airbytehq/airbyte/pull/64731) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64296](https://github.com/airbytehq/airbyte/pull/64296) | Update dependencies |

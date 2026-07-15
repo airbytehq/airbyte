@@ -48,6 +48,10 @@ Supported Data Streams:
 | twitter_posts | id | No pagination | ✅ |  ❌  |
 | youtube_posts | videoId | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -55,6 +59,22 @@ Supported Data Streams:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2026-07-14 | [81904](https://github.com/airbytehq/airbyte/pull/81904) | Update dependencies |
+| 0.0.27 | 2026-06-30 | [81164](https://github.com/airbytehq/airbyte/pull/81164) | Update dependencies |
+| 0.0.26 | 2026-06-23 | [80557](https://github.com/airbytehq/airbyte/pull/80557) | Update dependencies |
+| 0.0.25 | 2026-06-16 | [79943](https://github.com/airbytehq/airbyte/pull/79943) | Update dependencies |
+| 0.0.24 | 2026-06-09 | [79417](https://github.com/airbytehq/airbyte/pull/79417) | Update dependencies |
+| 0.0.23 | 2026-06-02 | [78839](https://github.com/airbytehq/airbyte/pull/78839) | Update dependencies |
+| 0.0.22 | 2026-04-28 | [77342](https://github.com/airbytehq/airbyte/pull/77342) | Update dependencies |
+| 0.0.21 | 2026-04-21 | [76677](https://github.com/airbytehq/airbyte/pull/76677) | Update dependencies |
+| 0.0.20 | 2026-03-31 | [75807](https://github.com/airbytehq/airbyte/pull/75807) | Update dependencies |
+| 0.0.19 | 2026-03-17 | [74565](https://github.com/airbytehq/airbyte/pull/74565) | Update dependencies |
+| 0.0.18 | 2026-02-24 | [73809](https://github.com/airbytehq/airbyte/pull/73809) | Update dependencies |
+| 0.0.17 | 2026-02-17 | [73392](https://github.com/airbytehq/airbyte/pull/73392) | Update dependencies |
+| 0.0.16 | 2026-02-10 | [73188](https://github.com/airbytehq/airbyte/pull/73188) | Update dependencies |
+| 0.0.15 | 2026-01-20 | [72034](https://github.com/airbytehq/airbyte/pull/72034) | Update dependencies |
+| 0.0.14 | 2026-01-14 | [71527](https://github.com/airbytehq/airbyte/pull/71527) | Update dependencies |
+| 0.0.13 | 2025-12-18 | [70748](https://github.com/airbytehq/airbyte/pull/70748) | Update dependencies |
 | 0.0.12 | 2025-11-25 | [70118](https://github.com/airbytehq/airbyte/pull/70118) | Update dependencies |
 | 0.0.11 | 2025-11-18 | [69550](https://github.com/airbytehq/airbyte/pull/69550) | Update dependencies |
 | 0.0.10 | 2025-10-29 | [69063](https://github.com/airbytehq/airbyte/pull/69063) | Update dependencies |
@@ -65,7 +85,7 @@ Supported Data Streams:
 | 0.0.5 | 2025-09-09 | [65802](https://github.com/airbytehq/airbyte/pull/65802) | Update dependencies |
 | 0.0.4 | 2025-08-23 | [65179](https://github.com/airbytehq/airbyte/pull/65179) | Update dependencies |
 | 0.0.3 | 2025-08-16 | [64965](https://github.com/airbytehq/airbyte/pull/64965) | Update dependencies |
-| 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.2 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-06 | | Initial release by [@santigiova](https://github.com/santigiova) via Connector Builder |
 
 </details>

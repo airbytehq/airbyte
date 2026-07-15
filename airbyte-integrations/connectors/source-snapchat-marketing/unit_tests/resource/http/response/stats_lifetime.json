@@ -1,0 +1,23 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "lifetime_stats": [
+    {
+      "sub_request_status": "SUCCESS",
+      "lifetime_stat": {
+        "id": "test_entity_id",
+        "type": "AD_ACCOUNT",
+        "granularity": "LIFETIME",
+        "stats": {
+          "impressions": 100000,
+          "swipes": 5000,
+          "spend": 500000000,
+          "video_views": 80000,
+          "android_installs": 1000,
+          "ios_installs": 1500,
+          "total_installs": 2500
+        }
+      }
+    }
+  ]
+}

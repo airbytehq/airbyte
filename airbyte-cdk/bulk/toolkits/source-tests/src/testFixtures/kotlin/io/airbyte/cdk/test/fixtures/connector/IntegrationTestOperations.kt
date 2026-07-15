@@ -1,4 +1,4 @@
-/* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.test.fixtures.connector
 
 import io.airbyte.cdk.command.CliRunner
@@ -26,7 +26,14 @@ class IntegrationTestOperations(
         return streams
     }
 
+    @Deprecated("Use the correctly named 'read' function")
     fun sync(
+        catalog: ConfiguredAirbyteCatalog,
+        state: List<AirbyteStateMessage> = listOf(),
+        vararg featureFlags: FeatureFlag
+    ): BufferingOutputConsumer = read(catalog, state, *featureFlags)
+
+    fun read(
         catalog: ConfiguredAirbyteCatalog,
         state: List<AirbyteStateMessage> = listOf(),
         vararg featureFlags: FeatureFlag

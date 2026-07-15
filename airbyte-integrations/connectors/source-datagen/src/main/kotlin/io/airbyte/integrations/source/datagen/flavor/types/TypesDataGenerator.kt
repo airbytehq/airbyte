@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.datagen.flavor.types
@@ -51,57 +51,56 @@ class TypesDataGenerator() : DataGenerator {
     val timestampWithoutTimeZone = LocalDateTime.now()
     val json = """{"id": 1, "name": "alice", "active": true}"""
 
+    private val intCodec = IntegerFieldType.jsonEncoder as IntCodec
+    private val textCodec = StringFieldType.jsonEncoder as TextCodec
+    private val booleanCodec = BooleanFieldType.jsonEncoder as BooleanCodec
+    private val doubleCodec = NumberFieldType.jsonEncoder as DoubleCodec
+    private val bigDecimalIntCodec = BigIntegerFieldType.jsonEncoder as BigDecimalIntegerCodec
+    private val bigDecimalCodec = BigDecimalFieldType.jsonEncoder as BigDecimalCodec
+    private val localDateCodec = DateFieldType.jsonEncoder as LocalDateCodec
+    private val offsetTimeCodec = TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec
+    private val localTimeCodec = TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec
+    private val offsetDateTimeCodec =
+        TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
+    private val localDateTimeCodec =
+        TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
+    private val jsonStringCodec = JsonFieldType.jsonEncoder as JsonStringCodec
+
     override fun generateData(currentID: Long, modulo: Int, offset: Int): NativeRecordPayload {
         val incrementedID = (currentID * modulo + offset)
         val recordData: NativeRecordPayload = mutableMapOf()
 
-        recordData[TypesFlavor.FieldNames.ID] =
-            FieldValueEncoder(incrementedID.toInt(), IntegerFieldType.jsonEncoder as IntCodec)
+        recordData[TypesFlavor.FieldNames.ID] = FieldValueEncoder(incrementedID.toInt(), intCodec)
 
-        recordData[TypesFlavor.FieldNames.STRING] =
-            FieldValueEncoder(stringData, StringFieldType.jsonEncoder as TextCodec)
+        recordData[TypesFlavor.FieldNames.STRING] = FieldValueEncoder(stringData, textCodec)
 
         recordData[TypesFlavor.FieldNames.BOOLEAN] =
-            FieldValueEncoder(Random.nextBoolean(), BooleanFieldType.jsonEncoder as BooleanCodec)
+            FieldValueEncoder(Random.nextBoolean(), booleanCodec)
 
         recordData[TypesFlavor.FieldNames.NUMBER] =
-            FieldValueEncoder(incrementedID.toDouble(), NumberFieldType.jsonEncoder as DoubleCodec)
+            FieldValueEncoder(incrementedID.toDouble(), doubleCodec)
 
         recordData[TypesFlavor.FieldNames.BIG_INTEGER] =
-            FieldValueEncoder(bigInt, BigIntegerFieldType.jsonEncoder as BigDecimalIntegerCodec)
+            FieldValueEncoder(bigInt, bigDecimalIntCodec)
 
         recordData[TypesFlavor.FieldNames.BIG_DECIMAL] =
-            FieldValueEncoder(bigDecimal, BigDecimalFieldType.jsonEncoder as BigDecimalCodec)
+            FieldValueEncoder(bigDecimal, bigDecimalCodec)
 
-        recordData[TypesFlavor.FieldNames.DATE] =
-            FieldValueEncoder(date, DateFieldType.jsonEncoder as LocalDateCodec)
+        recordData[TypesFlavor.FieldNames.DATE] = FieldValueEncoder(date, localDateCodec)
 
         recordData[TypesFlavor.FieldNames.TIME_WITH_TIME_ZONE] =
-            FieldValueEncoder(
-                timeWithTimeZone,
-                TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec
-            )
+            FieldValueEncoder(timeWithTimeZone, offsetTimeCodec)
 
         recordData[TypesFlavor.FieldNames.TIME_WITHOUT_TIME_ZONE] =
-            FieldValueEncoder(
-                timeWithoutTimeZone,
-                TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec
-            )
+            FieldValueEncoder(timeWithoutTimeZone, localTimeCodec)
 
         recordData[TypesFlavor.FieldNames.TIMESTAMP_WITH_TIME_ZONE] =
-            FieldValueEncoder(
-                timestampWithTimeZone,
-                TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
-            )
+            FieldValueEncoder(timestampWithTimeZone, offsetDateTimeCodec)
 
         recordData[TypesFlavor.FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE] =
-            FieldValueEncoder(
-                timestampWithoutTimeZone,
-                TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
-            )
+            FieldValueEncoder(timestampWithoutTimeZone, localDateTimeCodec)
 
-        recordData[TypesFlavor.FieldNames.JSON] =
-            FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
+        recordData[TypesFlavor.FieldNames.JSON] = FieldValueEncoder(json, jsonStringCodec)
 
         return recordData
     }

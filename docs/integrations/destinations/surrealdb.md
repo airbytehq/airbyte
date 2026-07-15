@@ -4,15 +4,6 @@
 
 This page guides you through the process of setting up the SurrealDB destination connector.
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | No                  |       |
-| Incremental - Append + Deduped | No                  |       |
-| Namespaces                     | No                  |       |
-
 #### Output Schema
 
 Each stream will be output into its own table in SurrealDB. Each table will contain 3 columns:
@@ -21,6 +12,16 @@ Each stream will be output into its own table in SurrealDB. Each table will cont
 The connector use this as the ID of each record in the destination SurrealDB table.
 - `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source. The column type in SurrealDB is `datetime`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in SurrealDB is `object`.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Getting Started
 
@@ -79,6 +80,10 @@ Using this feature requires additional configuration, when creating the destinat
 5. `SSH Login Username` is the username that Airbyte should use when connection to the bastion server. This is NOT the SurrealDB username.
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the SurrealDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). SurrealDB doesn't differentiate between a database and schema. The configured database acts as the default namespace.
 
 ## Changelog
 

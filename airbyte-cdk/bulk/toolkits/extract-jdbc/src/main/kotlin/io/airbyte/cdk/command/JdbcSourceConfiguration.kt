@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
 import io.airbyte.cdk.ConfigErrorException
@@ -16,7 +16,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
     /** Properties map (with username, password, etc.) passed along to the JDBC driver. */
     val jdbcProperties: Map<String, String>
 
-    /** Ordered set of namespaces (typically, schemas) for the connector to consider. */
+    /** Namespaces for the connector to consider. Empty means all namespaces. */
     val namespaces: Set<String>
 
     /** When set, each table is queried individually to check for SELECT privileges. */

@@ -1,0 +1,99 @@
+[
+  {
+    "id": 99,
+    "name": "Test Product",
+    "slug": "test-product",
+    "permalink": "https://test-shop.example.com/product/test-product/",
+    "date_created": "2024-01-10T08:00:00",
+    "date_modified": "2024-03-10T12:30:00",
+    "date_created_gmt": "2024-01-10T08:00:00",
+    "date_modified_gmt": "2024-03-10T12:30:00",
+    "type": "simple",
+    "status": "publish",
+    "featured": false,
+    "catalog_visibility": "visible",
+    "description": "<p>This is a test product description.</p>",
+    "short_description": "<p>Short description.</p>",
+    "sku": "TEST-001",
+    "price": "49.99",
+    "regular_price": "49.99",
+    "sale_price": "",
+    "date_on_sale_from": null,
+    "date_on_sale_from_gmt": null,
+    "date_on_sale_to": null,
+    "date_on_sale_to_gmt": null,
+    "on_sale": false,
+    "purchasable": true,
+    "total_sales": 15,
+    "virtual": false,
+    "downloadable": false,
+    "downloads": [],
+    "download_limit": -1,
+    "download_expiry": -1,
+    "external_url": "",
+    "button_text": "",
+    "tax_status": "taxable",
+    "tax_class": "",
+    "manage_stock": true,
+    "stock_quantity": 100,
+    "backorders": "no",
+    "backorders_allowed": false,
+    "backordered": false,
+    "low_stock_amount": null,
+    "sold_individually": false,
+    "weight": "0.5",
+    "dimensions": {
+      "length": "10",
+      "width": "5",
+      "height": "2"
+    },
+    "shipping_required": true,
+    "shipping_taxable": true,
+    "shipping_class": "",
+    "shipping_class_id": 0,
+    "reviews_allowed": true,
+    "average_rating": "4.50",
+    "rating_count": 2,
+    "upsell_ids": [],
+    "cross_sell_ids": [],
+    "parent_id": 0,
+    "purchase_note": "",
+    "categories": [
+      {
+        "id": 15,
+        "name": "Electronics",
+        "slug": "electronics"
+      }
+    ],
+    "tags": [],
+    "images": [
+      {
+        "id": 50,
+        "date_created": "2024-01-10T08:00:00",
+        "date_created_gmt": "2024-01-10T08:00:00",
+        "date_modified": "2024-01-10T08:00:00",
+        "date_modified_gmt": "2024-01-10T08:00:00",
+        "src": "https://test-shop.example.com/wp-content/uploads/product.jpg",
+        "name": "product",
+        "alt": ""
+      }
+    ],
+    "attributes": [],
+    "default_attributes": [],
+    "variations": [],
+    "grouped_products": [],
+    "menu_order": 0,
+    "price_html": "<span class=\"woocommerce-Price-amount amount\">$49.99</span>",
+    "related_ids": [],
+    "meta_data": [],
+    "stock_status": "instock",
+    "_links": {
+      "self": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/products/99" }
+      ],
+      "collection": [
+        { "href": "https://test-shop.example.com/wp-json/wc/v3/products" }
+      ]
+    }
+  }
+]

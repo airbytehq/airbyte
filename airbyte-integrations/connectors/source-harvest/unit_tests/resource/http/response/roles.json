@@ -1,0 +1,21 @@
+{
+  "roles": [
+    {
+      "id": 1234567,
+      "name": "Developer",
+      "user_ids": [1782884],
+      "created_at": "2023-01-05T10:00:00Z",
+      "updated_at": "2023-01-05T10:00:00Z"
+    }
+  ],
+  "per_page": 50,
+  "total_pages": 1,
+  "total_entries": 1,
+  "page": 1,
+  "links": {
+    "first": "https://api.harvestapp.com/v2/roles?page=1&per_page=50",
+    "last": "https://api.harvestapp.com/v2/roles?page=1&per_page=50",
+    "previous": null,
+    "next": null
+  }
+}

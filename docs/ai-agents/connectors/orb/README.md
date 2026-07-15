@@ -1,0 +1,580 @@
+# Orb
+
+The Orb agent connector is a Python package that equips AI agents to interact with Orb through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
+
+Orb is a usage-based billing platform that enables businesses to implement flexible pricing models,
+track customer usage, and manage subscriptions. This connector provides access to customers,
+subscriptions, plans, and invoices for billing analytics and customer management.
+
+
+## Example prompts
+
+The Orb connector is optimized to handle prompts like these.
+
+- Show me all my customers in Orb
+- List all active subscriptions
+- What plans are available?
+- Show me recent invoices
+- Show me details for a recent customer
+- What is the status of a recent subscription?
+- Show me the pricing details for a plan
+- Confirm the Stripe ID linked to a customer
+- What is the payment provider ID for a customer?
+- List all invoices for a specific customer
+- List all subscriptions for customer XYZ
+- Show all active subscriptions for a specific customer
+- What subscriptions does customer \{external_customer_id\} have?
+- Pull all invoices from the last month
+- Show invoices created after \{date\}
+- List all paid invoices for customer \{customer_id\}
+- What invoices are in draft status?
+- Show all issued invoices for subscription \{subscription_id\}
+
+## Unsupported prompts
+
+The Orb connector isn't currently able to handle prompts like these.
+
+- Create a new customer in Orb
+- Update subscription details
+- Delete a customer record
+- Send an invoice to a customer
+- Filter subscriptions by plan name (must filter client-side after listing)
+- Pull customers billed for specific products (must examine invoice line_items client-side)
+
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Context Store Search](./REFERENCE.md#subscriptions-context-store-search) |
+| Plans | [List](./REFERENCE.md#plans-list), [Get](./REFERENCE.md#plans-get), [Context Store Search](./REFERENCE.md#plans-context-store-search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search) |
+
+
+## Orb API docs
+
+See the official [Orb API reference](https://docs.withorb.com/api-reference).
+
+## Interfaces
+
+Use the Orb connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "orb",
+  "entity": "customers",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `OrbConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Orb Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Orb Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `OrbConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+@tool
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Orb connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@OrbConnector.tool_utils(framework="openai_agents")
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Orb connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Orb Assistant", tools=[orb_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+
+connector = connect("orb", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Orb Agent")
+
+@mcp.tool
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Orb connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = OrbConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = OrbConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = OrbConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Orb Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = OrbConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Orb Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+
+##### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Orb Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+mcp = FastMCP("Orb Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `OrbConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+@tool
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Orb connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@OrbConnector.tool_utils(framework="openai_agents")
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Orb connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Orb Assistant", tools=[orb_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.orb import OrbConnector
+from airbyte_agent_sdk.connectors.orb.models import OrbAuthConfig
+
+connector = OrbConnector(
+    auth_config=OrbAuthConfig(
+        api_key="<Your Orb API key>"
+    )
+)
+
+mcp = FastMCP("Orb Agent")
+
+@mcp.tool
+@OrbConnector.tool_utils
+async def orb_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Orb connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+
+## Authentication
+
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
+
+## IP allow list
+
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
+
+## Version information
+
+**Connector version:** 0.1.9

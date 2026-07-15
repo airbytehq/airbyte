@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.message
@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class DestinationRecordRawTest {
+
+    private val coercer = AirbyteValueCoercer()
 
     // Create a schema with various field types for testing
     private val recordSchema =
@@ -42,8 +44,6 @@ class DestinationRecordRawTest {
         DestinationStream(
             unmappedNamespace = "test_namespace",
             unmappedName = "test_stream",
-            Append,
-            recordSchema,
             generationId = 42L,
             minimumGenerationId = 0L,
             syncId = 123L,
@@ -100,7 +100,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Verify declared fields are processed correctly
         assertEquals(2, enrichedRecord.declaredFields.size)
@@ -154,7 +154,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Check coerced string field
         val stringField = enrichedRecord.declaredFields["string_field"]
@@ -208,7 +208,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Check valid field is preserved
         val stringField = enrichedRecord.declaredFields["string_field"]
@@ -267,7 +267,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Verify meta changes are preserved
         assertNotNull(enrichedRecord.sourceMeta)
@@ -285,15 +285,10 @@ class DestinationRecordRawTest {
 
     @Test
     fun `test handling empty fields in schema`() {
-        // Create an empty schema
-        val emptySchema = ObjectType(linkedMapOf())
-
         val streamWithEmptySchema =
             DestinationStream(
                 unmappedNamespace = "test_namespace",
                 unmappedName = "test_stream",
-                Append,
-                emptySchema,
                 generationId = 42L,
                 minimumGenerationId = 0L,
                 syncId = 123L,
@@ -338,7 +333,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Verify all fields are treated as undeclared
         assertEquals(0, enrichedRecord.declaredFields.size)
@@ -390,8 +385,6 @@ class DestinationRecordRawTest {
             DestinationStream(
                 unmappedNamespace = "test_namespace",
                 unmappedName = "test_stream",
-                Append,
-                complexSchema,
                 generationId = 42L,
                 minimumGenerationId = 0L,
                 syncId = 123L,
@@ -450,7 +443,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Verify complex fields are processed correctly
         assertEquals(2, enrichedRecord.declaredFields.size)
@@ -496,7 +489,7 @@ class DestinationRecordRawTest {
                 airbyteRawId = UUID.randomUUID(),
             )
 
-        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord = rawRecord.asEnrichedDestinationRecordAirbyteValue(coercer)
 
         // Verify fields are processed correctly
         assertEquals(2, enrichedRecord.declaredFields.size)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -72,5 +72,12 @@ class DefaultJdbcSharedState(
                     }
             }
             ?.toMap()
+    }
+
+    override fun tryAcquireResourcesForCreatorFactory():
+        JdbcPartitionsCreatorFactory.AcquiredResources? {
+        val acquiredThread: ConcurrencyResource.AcquiredThread =
+            concurrencyResource.tryAcquire() ?: return null
+        return JdbcPartitionsCreatorFactory.AcquiredResources { acquiredThread.close() }
     }
 }

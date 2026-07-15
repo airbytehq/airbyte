@@ -33,6 +33,10 @@ Using this stream we can extarct data from various streams such as contacts , de
 | calls | id | DefaultPaginator | ✅ |  ❌  |
 | meetings | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,22 @@ Using this stream we can extarct data from various streams such as contacts , de
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-07-14 | [81942](https://github.com/airbytehq/airbyte/pull/81942) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81201](https://github.com/airbytehq/airbyte/pull/81201) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80575](https://github.com/airbytehq/airbyte/pull/80575) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79999](https://github.com/airbytehq/airbyte/pull/79999) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79446](https://github.com/airbytehq/airbyte/pull/79446) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78813](https://github.com/airbytehq/airbyte/pull/78813) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77390](https://github.com/airbytehq/airbyte/pull/77390) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76678](https://github.com/airbytehq/airbyte/pull/76678) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75673](https://github.com/airbytehq/airbyte/pull/75673) | Update dependencies |
+| 0.0.49 | 2026-03-24 | [74988](https://github.com/airbytehq/airbyte/pull/74988) | Update dependencies |
+| 0.0.48 | 2026-03-10 | [74659](https://github.com/airbytehq/airbyte/pull/74659) | Update dependencies |
+| 0.0.47 | 2026-03-03 | [73570](https://github.com/airbytehq/airbyte/pull/73570) | Update dependencies |
+| 0.0.46 | 2026-02-03 | [72576](https://github.com/airbytehq/airbyte/pull/72576) | Update dependencies |
+| 0.0.45 | 2026-01-20 | [71952](https://github.com/airbytehq/airbyte/pull/71952) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71610](https://github.com/airbytehq/airbyte/pull/71610) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70598](https://github.com/airbytehq/airbyte/pull/70598) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [69884](https://github.com/airbytehq/airbyte/pull/69884) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69400](https://github.com/airbytehq/airbyte/pull/69400) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [68705](https://github.com/airbytehq/airbyte/pull/68705) | Update dependencies |
@@ -47,7 +67,7 @@ Using this stream we can extarct data from various streams such as contacts , de
 | 0.0.38 | 2025-10-14 | [67798](https://github.com/airbytehq/airbyte/pull/67798) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67425](https://github.com/airbytehq/airbyte/pull/67425) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66931](https://github.com/airbytehq/airbyte/pull/66931) | Update dependencies |
-| 0.0.35 | 2025-09-23 | [66622](https://github.com/airbytehq/airbyte/pull/66622) | Update dependencies |
+| 0.0.35 | 2025-09-24 | [66622](https://github.com/airbytehq/airbyte/pull/66622) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65775](https://github.com/airbytehq/airbyte/pull/65775) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65195](https://github.com/airbytehq/airbyte/pull/65195) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64732](https://github.com/airbytehq/airbyte/pull/64732) | Update dependencies |

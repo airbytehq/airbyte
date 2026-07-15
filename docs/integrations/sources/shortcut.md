@@ -46,6 +46,10 @@ Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more detai
 | stories_comments | id | No pagination | ✅ |  ✅  |
 | story_history | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -53,6 +57,19 @@ Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more detai
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.53 | 2026-07-14 | [82002](https://github.com/airbytehq/airbyte/pull/82002) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81227](https://github.com/airbytehq/airbyte/pull/81227) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80637](https://github.com/airbytehq/airbyte/pull/80637) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80050](https://github.com/airbytehq/airbyte/pull/80050) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79487](https://github.com/airbytehq/airbyte/pull/79487) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78936](https://github.com/airbytehq/airbyte/pull/78936) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77420](https://github.com/airbytehq/airbyte/pull/77420) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76762](https://github.com/airbytehq/airbyte/pull/76762) | Update dependencies |
+| 0.0.45 | 2026-03-24 | [74600](https://github.com/airbytehq/airbyte/pull/74600) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [74231](https://github.com/airbytehq/airbyte/pull/74231) | Update dependencies |
+| 0.0.43 | 2026-02-17 | [72725](https://github.com/airbytehq/airbyte/pull/72725) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71658](https://github.com/airbytehq/airbyte/pull/71658) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70703](https://github.com/airbytehq/airbyte/pull/70703) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70108](https://github.com/airbytehq/airbyte/pull/70108) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69486](https://github.com/airbytehq/airbyte/pull/69486) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68807](https://github.com/airbytehq/airbyte/pull/68807) | Update dependencies |
@@ -62,9 +79,9 @@ Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more detai
 | 0.0.34 | 2025-09-30 | [66907](https://github.com/airbytehq/airbyte/pull/66907) | Update dependencies |
 | 0.0.33 | 2025-09-24 | [66258](https://github.com/airbytehq/airbyte/pull/66258) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65699](https://github.com/airbytehq/airbyte/pull/65699) | Update dependencies |
-| 0.0.31 | 2025-08-23 | [65392](https://github.com/airbytehq/airbyte/pull/65392) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65392](https://github.com/airbytehq/airbyte/pull/65392) | Update dependencies |
 | 0.0.30 | 2025-08-16 | [64992](https://github.com/airbytehq/airbyte/pull/64992) | Update dependencies |
-| 0.0.29 | 2025-08-02 | [64471](https://github.com/airbytehq/airbyte/pull/64471) | Update dependencies |
+| 0.0.29 | 2025-08-03 | [64471](https://github.com/airbytehq/airbyte/pull/64471) | Update dependencies |
 | 0.0.28 | 2025-06-28 | [62293](https://github.com/airbytehq/airbyte/pull/62293) | Update dependencies |
 | 0.0.27 | 2025-06-21 | [61821](https://github.com/airbytehq/airbyte/pull/61821) | Update dependencies |
 | 0.0.26 | 2025-06-14 | [61307](https://github.com/airbytehq/airbyte/pull/61307) | Update dependencies |

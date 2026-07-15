@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -31,6 +31,17 @@ interface TableOperationsClient {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
     )
+
+    /**
+     * Creates a temporary table.Override in connectors where temp tables need different handling
+     * (e.g. skipping stage creation, using transient storage, etc.).
+     */
+    suspend fun createTempTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean,
+    ) = createTable(stream, tableName, columnNameMapping, replace)
 
     /** Checks if a table exists. */
     suspend fun tableExists(table: TableName) = false

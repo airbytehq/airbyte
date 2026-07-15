@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse.component.config
 
-import io.airbyte.cdk.load.component.config.TestConfigLoader.loadTestConfig
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.clickhouse.ClickhouseConfigUpdater
+import io.airbyte.integrations.destination.clickhouse.ClickhouseContainerHelper
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
@@ -19,10 +21,23 @@ class ComponentTestConfigFactory {
     @Singleton
     @Primary
     fun config(): ClickhouseConfiguration {
-        return loadTestConfig(
-            ClickhouseSpecificationOss::class.java,
-            ClickhouseConfigurationFactory::class.java,
-            "test-instance.json",
-        )
+        ClickhouseContainerHelper.start()
+
+        val configJson =
+            """
+            {
+                "host": "localhost",
+                "port": "8123",
+                "protocol": "http",
+                "username": "replace_me_username",
+                "password": "replace_me_password",
+                "database": "default",
+                "enable_json": true
+            }
+        """
+
+        val updatedConfig = ClickhouseConfigUpdater().update(configJson)
+        val spec = Jsons.readValue(updatedConfig, ClickhouseSpecificationOss::class.java)
+        return ClickhouseConfigurationFactory().makeWithoutExceptionHandling(spec)
     }
 }

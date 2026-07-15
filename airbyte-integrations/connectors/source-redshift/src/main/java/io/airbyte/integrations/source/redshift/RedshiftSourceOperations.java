@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.redshift;
@@ -14,15 +14,30 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RedshiftSourceOperations extends JdbcSourceOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSourceOperations.class);
+
+  // Redshift's default timestamp rendering is e.g. "2026-06-04 05:50:52.815018"
+  // (or with an offset like "+00", "+0530", "+05:30" for timestamptz).
+  private static final DateTimeFormatter REDSHIFT_LOCAL_DATETIME = new DateTimeFormatterBuilder()
+      .append(DateTimeFormatter.ISO_LOCAL_DATE)
+      .appendLiteral(' ')
+      .append(DateTimeFormatter.ISO_LOCAL_TIME)
+      .toFormatter();
+  private static final DateTimeFormatter REDSHIFT_OFFSET_DATETIME = new DateTimeFormatterBuilder()
+      .append(REDSHIFT_LOCAL_DATETIME)
+      .appendPattern("[XXX][XX][X]")
+      .toFormatter();
 
   @Override
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
@@ -48,25 +63,42 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final Timestamp timestamp = resultSet.getTimestamp(index);
+    // The Redshift JDBC driver applies a DST-sensitive offset when materializing timestamp values
+    // via getTimestamp(), so values can come back shifted by an hour. Read the raw server-rendered
+    // string instead (e.g. "2026-06-04 05:50:52.815018") and parse it ourselves.
+    final String raw = resultSet.getString(index);
+    if (raw == null) {
+      return;
+    }
+    final LocalDateTime timestamp = REDSHIFT_LOCAL_DATETIME.parse(raw, LocalDateTime::from);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
   @Override
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    final LocalDateTime date = LocalDateTime.parse(value);
-    preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(date));
+    try {
+      preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(LocalDateTime.parse(value)));
+    } catch (final DateTimeParseException e) {
+      // Fallback: parse timezone-aware timestamps (e.g. "2026-03-11T17:05:58Z").
+      // Redshift may report timestamptz columns, whose serialized cursor values
+      // contain a UTC offset or 'Z' suffix that LocalDateTime.parse cannot handle.
+      preparedStatement.setTimestamp(parameterIndex, Timestamp.from(OffsetDateTime.parse(value).toInstant()));
+    }
   }
 
   @Override
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    try {
-      super.putTimestampWithTimezone(node, columnName, resultSet, index);
-    } catch (final Exception e) {
-      final Instant instant = resultSet.getTimestamp(index).toInstant();
-      node.put(columnName, instant.toString());
+    // The Redshift JDBC driver applies a DST-sensitive offset when materializing timestamptz values
+    // via both getObject(OffsetDateTime) and getTimestamp(), so values can come back shifted by an
+    // hour. Read the raw server-rendered string instead (e.g. "2026-06-04 05:50:52.815018+00") and
+    // parse it ourselves to recover the true instant.
+    final String raw = resultSet.getString(index);
+    if (raw == null) {
+      return;
     }
+    final OffsetDateTime timestamptz = REDSHIFT_OFFSET_DATETIME.parse(raw, OffsetDateTime::from);
+    node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamptz));
   }
 
   @Override

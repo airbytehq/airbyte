@@ -17,6 +17,10 @@ API Reference: https://docs.zapsign.com.br/
 | documents | token | DefaultPaginator | ✅ |  ✅  |
 | signer | token | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,21 @@ API Reference: https://docs.zapsign.com.br/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.42 | 2026-07-14 | [82081](https://github.com/airbytehq/airbyte/pull/82081) | Update dependencies |
+| 0.0.41 | 2026-06-30 | [81323](https://github.com/airbytehq/airbyte/pull/81323) | Update dependencies |
+| 0.0.40 | 2026-06-23 | [80711](https://github.com/airbytehq/airbyte/pull/80711) | Update dependencies |
+| 0.0.39 | 2026-06-16 | [80121](https://github.com/airbytehq/airbyte/pull/80121) | Update dependencies |
+| 0.0.38 | 2026-06-09 | [79581](https://github.com/airbytehq/airbyte/pull/79581) | Update dependencies |
+| 0.0.37 | 2026-06-02 | [79054](https://github.com/airbytehq/airbyte/pull/79054) | Update dependencies |
+| 0.0.36 | 2026-04-28 | [77508](https://github.com/airbytehq/airbyte/pull/77508) | Update dependencies |
+| 0.0.35 | 2026-04-21 | [76806](https://github.com/airbytehq/airbyte/pull/76806) | Update dependencies |
+| 0.0.34 | 2026-03-31 | [75877](https://github.com/airbytehq/airbyte/pull/75877) | Update dependencies |
+| 0.0.33 | 2026-03-24 | [75376](https://github.com/airbytehq/airbyte/pull/75376) | Update dependencies |
+| 0.0.32 | 2026-02-24 | [73892](https://github.com/airbytehq/airbyte/pull/73892) | Update dependencies |
+| 0.0.31 | 2026-02-10 | [73154](https://github.com/airbytehq/airbyte/pull/73154) | Update dependencies |
+| 0.0.30 | 2026-01-20 | [72068](https://github.com/airbytehq/airbyte/pull/72068) | Update dependencies |
+| 0.0.29 | 2026-01-14 | [71675](https://github.com/airbytehq/airbyte/pull/71675) | Update dependencies |
+| 0.0.28 | 2025-12-18 | [70712](https://github.com/airbytehq/airbyte/pull/70712) | Update dependencies |
 | 0.0.27 | 2025-11-25 | [70105](https://github.com/airbytehq/airbyte/pull/70105) | Update dependencies |
 | 0.0.26 | 2025-11-18 | [69567](https://github.com/airbytehq/airbyte/pull/69567) | Update dependencies |
 | 0.0.25 | 2025-10-29 | [68971](https://github.com/airbytehq/airbyte/pull/68971) | Update dependencies |
@@ -33,10 +52,10 @@ API Reference: https://docs.zapsign.com.br/
 | 0.0.21 | 2025-09-30 | [66841](https://github.com/airbytehq/airbyte/pull/66841) | Update dependencies |
 | 0.0.20 | 2025-09-24 | [66463](https://github.com/airbytehq/airbyte/pull/66463) | Update dependencies |
 | 0.0.19 | 2025-09-09 | [65667](https://github.com/airbytehq/airbyte/pull/65667) | Update dependencies |
-| 0.0.18 | 2025-08-23 | [65401](https://github.com/airbytehq/airbyte/pull/65401) | Update dependencies |
-| 0.0.17 | 2025-08-09 | [64856](https://github.com/airbytehq/airbyte/pull/64856) | Update dependencies |
+| 0.0.18 | 2025-08-24 | [65401](https://github.com/airbytehq/airbyte/pull/65401) | Update dependencies |
+| 0.0.17 | 2025-08-10 | [64856](https://github.com/airbytehq/airbyte/pull/64856) | Update dependencies |
 | 0.0.16 | 2025-08-02 | [64352](https://github.com/airbytehq/airbyte/pull/64352) | Update dependencies |
-| 0.0.15 | 2025-07-26 | [64082](https://github.com/airbytehq/airbyte/pull/64082) | Update dependencies |
+| 0.0.15 | 2025-07-27 | [64082](https://github.com/airbytehq/airbyte/pull/64082) | Update dependencies |
 | 0.0.14 | 2025-07-20 | [63652](https://github.com/airbytehq/airbyte/pull/63652) | Update dependencies |
 | 0.0.13 | 2025-07-12 | [63172](https://github.com/airbytehq/airbyte/pull/63172) | Update dependencies |
 | 0.0.12 | 2025-07-05 | [62720](https://github.com/airbytehq/airbyte/pull/62720) | Update dependencies |

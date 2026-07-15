@@ -30,6 +30,10 @@ The Timely source connector supports the following [sync modes](https://docs.air
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | Yes        |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,23 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.0.46 | 2026-07-14 | [82030](https://github.com/airbytehq/airbyte/pull/82030) | Update dependencies |
+| 1.0.45 | 2026-06-30 | [81261](https://github.com/airbytehq/airbyte/pull/81261) | Update dependencies |
+| 1.0.44 | 2026-06-23 | [80679](https://github.com/airbytehq/airbyte/pull/80679) | Update dependencies |
+| 1.0.43 | 2026-06-16 | [80055](https://github.com/airbytehq/airbyte/pull/80055) | Update dependencies |
+| 1.0.42 | 2026-06-09 | [79522](https://github.com/airbytehq/airbyte/pull/79522) | Update dependencies |
+| 1.0.41 | 2026-06-02 | [79052](https://github.com/airbytehq/airbyte/pull/79052) | Update dependencies |
+| 1.0.40 | 2026-04-28 | [77464](https://github.com/airbytehq/airbyte/pull/77464) | Update dependencies |
+| 1.0.39 | 2026-04-21 | [76756](https://github.com/airbytehq/airbyte/pull/76756) | Update dependencies |
+| 1.0.38 | 2026-03-17 | [75043](https://github.com/airbytehq/airbyte/pull/75043) | Update dependencies |
+| 1.0.37 | 2026-03-10 | [74549](https://github.com/airbytehq/airbyte/pull/74549) | Update dependencies |
+| 1.0.36 | 2026-02-24 | [73848](https://github.com/airbytehq/airbyte/pull/73848) | Update dependencies |
+| 1.0.35 | 2026-02-17 | [73510](https://github.com/airbytehq/airbyte/pull/73510) | Update dependencies |
+| 1.0.34 | 2026-02-10 | [73100](https://github.com/airbytehq/airbyte/pull/73100) | Update dependencies |
+| 1.0.33 | 2026-02-03 | [72755](https://github.com/airbytehq/airbyte/pull/72755) | Update dependencies |
+| 1.0.32 | 2026-01-20 | [72031](https://github.com/airbytehq/airbyte/pull/72031) | Update dependencies |
+| 1.0.31 | 2026-01-14 | [71408](https://github.com/airbytehq/airbyte/pull/71408) | Update dependencies |
+| 1.0.30 | 2025-12-18 | [70741](https://github.com/airbytehq/airbyte/pull/70741) | Update dependencies |
 | 1.0.29 | 2025-11-25 | [69850](https://github.com/airbytehq/airbyte/pull/69850) | Update dependencies |
 | 1.0.28 | 2025-11-18 | [69705](https://github.com/airbytehq/airbyte/pull/69705) | Update dependencies |
 | 1.0.27 | 2025-10-29 | [68855](https://github.com/airbytehq/airbyte/pull/68855) | Update dependencies |
@@ -44,10 +65,10 @@ The Timely source connector supports the following [sync modes](https://docs.air
 | 1.0.25 | 2025-10-14 | [67863](https://github.com/airbytehq/airbyte/pull/67863) | Update dependencies |
 | 1.0.24 | 2025-10-07 | [67514](https://github.com/airbytehq/airbyte/pull/67514) | Update dependencies |
 | 1.0.23 | 2025-09-30 | [66838](https://github.com/airbytehq/airbyte/pull/66838) | Update dependencies |
-| 1.0.22 | 2025-09-23 | [66601](https://github.com/airbytehq/airbyte/pull/66601) | Update dependencies |
+| 1.0.22 | 2025-09-24 | [66601](https://github.com/airbytehq/airbyte/pull/66601) | Update dependencies |
 | 1.0.21 | 2025-09-09 | [65705](https://github.com/airbytehq/airbyte/pull/65705) | Update dependencies |
 | 1.0.20 | 2025-08-24 | [65443](https://github.com/airbytehq/airbyte/pull/65443) | Update dependencies |
-| 1.0.19 | 2025-08-09 | [64834](https://github.com/airbytehq/airbyte/pull/64834) | Update dependencies |
+| 1.0.19 | 2025-08-10 | [64834](https://github.com/airbytehq/airbyte/pull/64834) | Update dependencies |
 | 1.0.18 | 2025-08-02 | [64446](https://github.com/airbytehq/airbyte/pull/64446) | Update dependencies |
 | 1.0.17 | 2025-07-19 | [63636](https://github.com/airbytehq/airbyte/pull/63636) | Update dependencies |
 | 1.0.16 | 2025-07-12 | [63091](https://github.com/airbytehq/airbyte/pull/63091) | Update dependencies |

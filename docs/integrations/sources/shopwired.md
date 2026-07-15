@@ -28,6 +28,10 @@ API Reference: https://api.shopwired.co.uk/
 | categories | id | DefaultPaginator | ✅ |  ✅  |
 | themes | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,21 @@ API Reference: https://api.shopwired.co.uk/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2026-07-14 | [81984](https://github.com/airbytehq/airbyte/pull/81984) | Update dependencies |
+| 0.0.33 | 2026-06-30 | [81239](https://github.com/airbytehq/airbyte/pull/81239) | Update dependencies |
+| 0.0.32 | 2026-06-23 | [80647](https://github.com/airbytehq/airbyte/pull/80647) | Update dependencies |
+| 0.0.31 | 2026-06-16 | [80048](https://github.com/airbytehq/airbyte/pull/80048) | Update dependencies |
+| 0.0.30 | 2026-06-09 | [79496](https://github.com/airbytehq/airbyte/pull/79496) | Update dependencies |
+| 0.0.29 | 2026-06-02 | [78967](https://github.com/airbytehq/airbyte/pull/78967) | Update dependencies |
+| 0.0.28 | 2026-04-28 | [77430](https://github.com/airbytehq/airbyte/pull/77430) | Update dependencies |
+| 0.0.27 | 2026-04-21 | [75794](https://github.com/airbytehq/airbyte/pull/75794) | Update dependencies |
+| 0.0.26 | 2026-03-03 | [73976](https://github.com/airbytehq/airbyte/pull/73976) | Update dependencies |
+| 0.0.25 | 2026-02-17 | [73529](https://github.com/airbytehq/airbyte/pull/73529) | Update dependencies |
+| 0.0.24 | 2026-02-10 | [73229](https://github.com/airbytehq/airbyte/pull/73229) | Update dependencies |
+| 0.0.23 | 2026-02-03 | [72707](https://github.com/airbytehq/airbyte/pull/72707) | Update dependencies |
+| 0.0.22 | 2026-01-20 | [72126](https://github.com/airbytehq/airbyte/pull/72126) | Update dependencies |
+| 0.0.21 | 2026-01-14 | [71618](https://github.com/airbytehq/airbyte/pull/71618) | Update dependencies |
+| 0.0.20 | 2025-12-18 | [70676](https://github.com/airbytehq/airbyte/pull/70676) | Update dependencies |
 | 0.0.19 | 2025-11-25 | [69497](https://github.com/airbytehq/airbyte/pull/69497) | Update dependencies |
 | 0.0.18 | 2025-10-29 | [68798](https://github.com/airbytehq/airbyte/pull/68798) | Update dependencies |
 | 0.0.17 | 2025-10-21 | [68239](https://github.com/airbytehq/airbyte/pull/68239) | Update dependencies |
@@ -43,8 +62,8 @@ API Reference: https://api.shopwired.co.uk/
 | 0.0.14 | 2025-09-30 | [66914](https://github.com/airbytehq/airbyte/pull/66914) | Update dependencies |
 | 0.0.13 | 2025-09-24 | [66255](https://github.com/airbytehq/airbyte/pull/66255) | Update dependencies |
 | 0.0.12 | 2025-09-09 | [65679](https://github.com/airbytehq/airbyte/pull/65679) | Update dependencies |
-| 0.0.11 | 2025-08-23 | [65435](https://github.com/airbytehq/airbyte/pull/65435) | Update dependencies |
-| 0.0.10 | 2025-08-09 | [64843](https://github.com/airbytehq/airbyte/pull/64843) | Update dependencies |
+| 0.0.11 | 2025-08-24 | [65435](https://github.com/airbytehq/airbyte/pull/65435) | Update dependencies |
+| 0.0.10 | 2025-08-10 | [64843](https://github.com/airbytehq/airbyte/pull/64843) | Update dependencies |
 | 0.0.9 | 2025-07-19 | [63639](https://github.com/airbytehq/airbyte/pull/63639) | Update dependencies |
 | 0.0.8 | 2025-07-12 | [63053](https://github.com/airbytehq/airbyte/pull/63053) | Update dependencies |
 | 0.0.7 | 2025-06-28 | [62295](https://github.com/airbytehq/airbyte/pull/62295) | Update dependencies |

@@ -12,7 +12,7 @@ ARG CONNECTOR_NAME
 
 # Set permissions for downloaded files
 RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
-    chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh /airbyte/dd-java-agent.jar
+    chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh
 
 ENV AIRBYTE_ENTRYPOINT="/airbyte/base.sh"
 ENV APPLICATION="${CONNECTOR_NAME}"

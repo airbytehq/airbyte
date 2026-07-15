@@ -20,6 +20,9 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 | eod_data | date.ticker | No pagination | ✅ |  ✅  |
 | intraday_unadjusted_data | date.ticker | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -28,6 +31,22 @@ With this connector we can extract data from EOD , Intraday and news feeds strea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-07-14 | [82036](https://github.com/airbytehq/airbyte/pull/82036) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81299](https://github.com/airbytehq/airbyte/pull/81299) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80677](https://github.com/airbytehq/airbyte/pull/80677) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [80063](https://github.com/airbytehq/airbyte/pull/80063) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79531](https://github.com/airbytehq/airbyte/pull/79531) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [79038](https://github.com/airbytehq/airbyte/pull/79038) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77400](https://github.com/airbytehq/airbyte/pull/77400) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76775](https://github.com/airbytehq/airbyte/pull/76775) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75871](https://github.com/airbytehq/airbyte/pull/75871) | Update dependencies |
+| 0.0.48 | 2026-03-24 | [75086](https://github.com/airbytehq/airbyte/pull/75086) | Update dependencies |
+| 0.0.47 | 2026-02-24 | [73942](https://github.com/airbytehq/airbyte/pull/73942) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73440](https://github.com/airbytehq/airbyte/pull/73440) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73091](https://github.com/airbytehq/airbyte/pull/73091) | Update dependencies |
+| 0.0.44 | 2026-01-20 | [72102](https://github.com/airbytehq/airbyte/pull/72102) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71603](https://github.com/airbytehq/airbyte/pull/71603) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70635](https://github.com/airbytehq/airbyte/pull/70635) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70042](https://github.com/airbytehq/airbyte/pull/70042) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69561](https://github.com/airbytehq/airbyte/pull/69561) | Update dependencies |
 | 0.0.39 | 2025-10-29 | [69019](https://github.com/airbytehq/airbyte/pull/69019) | Update dependencies |

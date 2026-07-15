@@ -38,6 +38,10 @@ The New York Times connector should not run into limitations under normal usage.
 2. Enable API access for the supported endpoints (see Output schema section for supported streams).
 3. Write the key into `secrets/config.json` file.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -45,6 +49,20 @@ The New York Times connector should not run into limitations under normal usage.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.35 | 2026-07-14 | [81928](https://github.com/airbytehq/airbyte/pull/81928) | Update dependencies |
+| 0.2.34 | 2026-06-30 | [81169](https://github.com/airbytehq/airbyte/pull/81169) | Update dependencies |
+| 0.2.33 | 2026-06-23 | [80559](https://github.com/airbytehq/airbyte/pull/80559) | Update dependencies |
+| 0.2.32 | 2026-06-16 | [79960](https://github.com/airbytehq/airbyte/pull/79960) | Update dependencies |
+| 0.2.31 | 2026-06-09 | [79421](https://github.com/airbytehq/airbyte/pull/79421) | Update dependencies |
+| 0.2.30 | 2026-06-02 | [78856](https://github.com/airbytehq/airbyte/pull/78856) | Update dependencies |
+| 0.2.29 | 2026-04-28 | [77357](https://github.com/airbytehq/airbyte/pull/77357) | Update dependencies |
+| 0.2.28 | 2026-04-21 | [76685](https://github.com/airbytehq/airbyte/pull/76685) | Update dependencies |
+| 0.2.27 | 2026-03-24 | [75070](https://github.com/airbytehq/airbyte/pull/75070) | Update dependencies |
+| 0.2.26 | 2026-03-03 | [73042](https://github.com/airbytehq/airbyte/pull/73042) | Update dependencies |
+| 0.2.25 | 2026-02-03 | [72550](https://github.com/airbytehq/airbyte/pull/72550) | Update dependencies |
+| 0.2.24 | 2026-01-20 | [71936](https://github.com/airbytehq/airbyte/pull/71936) | Update dependencies |
+| 0.2.23 | 2026-01-14 | [71595](https://github.com/airbytehq/airbyte/pull/71595) | Update dependencies |
+| 0.2.22 | 2025-12-18 | [70566](https://github.com/airbytehq/airbyte/pull/70566) | Update dependencies |
 | 0.2.21 | 2025-11-25 | [69876](https://github.com/airbytehq/airbyte/pull/69876) | Update dependencies |
 | 0.2.20 | 2025-11-18 | [69377](https://github.com/airbytehq/airbyte/pull/69377) | Update dependencies |
 | 0.2.19 | 2025-10-29 | [68746](https://github.com/airbytehq/airbyte/pull/68746) | Update dependencies |
@@ -52,7 +70,7 @@ The New York Times connector should not run into limitations under normal usage.
 | 0.2.17 | 2025-10-14 | [67738](https://github.com/airbytehq/airbyte/pull/67738) | Update dependencies |
 | 0.2.16 | 2025-10-07 | [67417](https://github.com/airbytehq/airbyte/pull/67417) | Update dependencies |
 | 0.2.15 | 2025-09-30 | [66932](https://github.com/airbytehq/airbyte/pull/66932) | Update dependencies |
-| 0.2.14 | 2025-09-23 | [66609](https://github.com/airbytehq/airbyte/pull/66609) | Update dependencies |
+| 0.2.14 | 2025-09-24 | [66609](https://github.com/airbytehq/airbyte/pull/66609) | Update dependencies |
 | 0.2.13 | 2025-09-09 | [65865](https://github.com/airbytehq/airbyte/pull/65865) | Update dependencies |
 | 0.2.12 | 2025-08-23 | [65214](https://github.com/airbytehq/airbyte/pull/65214) | Update dependencies |
 | 0.2.11 | 2025-08-09 | [64733](https://github.com/airbytehq/airbyte/pull/64733) | Update dependencies |

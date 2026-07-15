@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.state
@@ -264,7 +264,7 @@ class StateKeyClientTest {
                 every { unmappedDescriptor } returns descriptor
                 // below is just for the catalog initialization
                 every { mappedDescriptor } returns descriptor
-                every { importType } returns Append
+                every { tableSchema } returns mockk { every { importType } returns Append }
             }
         }
     }

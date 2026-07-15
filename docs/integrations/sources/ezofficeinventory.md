@@ -30,6 +30,10 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 | asset_histories |  | DefaultPaginator | ✅ |  ✅  |
 | asset_stock_histories |  | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -37,6 +41,24 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.58 | 2026-07-14 | [81797](https://github.com/airbytehq/airbyte/pull/81797) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81078](https://github.com/airbytehq/airbyte/pull/81078) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80467](https://github.com/airbytehq/airbyte/pull/80467) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79832](https://github.com/airbytehq/airbyte/pull/79832) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79321](https://github.com/airbytehq/airbyte/pull/79321) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78682](https://github.com/airbytehq/airbyte/pull/78682) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77233](https://github.com/airbytehq/airbyte/pull/77233) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76587](https://github.com/airbytehq/airbyte/pull/76587) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75806](https://github.com/airbytehq/airbyte/pull/75806) | Update dependencies |
+| 0.0.49 | 2026-03-17 | [74999](https://github.com/airbytehq/airbyte/pull/74999) | Update dependencies |
+| 0.0.48 | 2026-03-10 | [74432](https://github.com/airbytehq/airbyte/pull/74432) | Update dependencies |
+| 0.0.47 | 2026-02-24 | [73897](https://github.com/airbytehq/airbyte/pull/73897) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73455](https://github.com/airbytehq/airbyte/pull/73455) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [72984](https://github.com/airbytehq/airbyte/pull/72984) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72606](https://github.com/airbytehq/airbyte/pull/72606) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [71887](https://github.com/airbytehq/airbyte/pull/71887) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71611](https://github.com/airbytehq/airbyte/pull/71611) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70546](https://github.com/airbytehq/airbyte/pull/70546) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70188](https://github.com/airbytehq/airbyte/pull/70188) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69417](https://github.com/airbytehq/airbyte/pull/69417) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68741](https://github.com/airbytehq/airbyte/pull/68741) | Update dependencies |

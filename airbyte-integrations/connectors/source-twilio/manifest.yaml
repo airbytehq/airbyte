@@ -163,7 +163,7 @@ definitions:
         - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: P1D
-      step: P1Y
+      step: "{{ config.get('slice_step_duration', 'P1M') }}"
       lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
@@ -216,12 +216,30 @@ definitions:
 
   alerts_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/base_requester/error_handler"
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 400
+              error_message_contains: "Invalid page and pageSize combination"
+              error_message: >-
+                Twilio Alerts request exceeds the 10,000-result pagination limit. Decrease Slice Step Duration in the source configuration to sync fewer Alert records per slice.
+            - $ref: "#/definitions/base_requester/error_handler/response_filters/0"
+            - $ref: "#/definitions/base_requester/error_handler/response_filters/1"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_generated
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
-      step: P1Y
+      step: "{{ config.get('slice_step_duration', 'P1M') }}"
       lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
@@ -324,8 +342,25 @@ definitions:
           - type: ParentStreamConfig
             stream:
               $ref: "#/definitions/conferences_stream"
+              # Only fetch active (init and in-progress) conferences because the Twilio
+              # Participants API does not return data for completed conferences
+              # (participants are only available while the conference is active).
+              # The child partitions are keyed by `subresource_uris`, so the parent-side
+              # ListPartitionRouter does not change the child partition key and no state
+              # migration is needed.
               retriever:
                 $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+                partition_router:
+                  - type: ListPartitionRouter
+                    values:
+                      - "init"
+                      - "in-progress"
+                    cursor_field: conference_status
+                    request_option:
+                      type: RequestOption
+                      field_name: Status
+                      inject_into: request_parameter
+                  - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
                 record_selector:
                   $ref: "#/definitions/base_stream/retriever/record_selector"
                   record_filter:
@@ -343,6 +378,25 @@ definitions:
 
   conferences_stream:
     $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    retriever:
+      $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - "init"
+            - "in-progress"
+            - "completed"
+          cursor_field: conference_status
+          request_option:
+            type: RequestOption
+            field_name: Status
+            inject_into: request_parameter
+        - $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever/partition_router"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TwilioConferencesStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -550,7 +604,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT1S
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%SZ'), day_delta(-400, format='%Y-%m-%d %H:%M:%SZ')) }}"
@@ -585,7 +639,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
       datetime_format: "%Y-%m-%d %H:%M:%SZ"
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT1S
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%SZ'), day_delta(-400, format='%Y-%m-%d %H:%M:%SZ')) }}"
@@ -621,7 +675,7 @@ definitions:
       schema:
         $ref: "#/schemas/roles"
     $parameters:
-      url: "https://chat.twilio.com/v2/Services/{{ stream_partition['sid'] }}/Roles"
+      url: "https://conversations.twilio.com/v1/Services/{{ stream_partition['sid'] }}/Roles"
       name: roles
 
   services_stream:
@@ -631,7 +685,7 @@ definitions:
       schema:
         $ref: "#/schemas/services"
     $parameters:
-      url: https://chat.twilio.com/v2/Services
+      url: https://conversations.twilio.com/v1/Services
       name: services
 
   step_stream:
@@ -871,15 +925,31 @@ spec:
         order: 4
         title: Lookback window
         type: integer
-      num_worker:
+      num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 3
         examples: [1, 2, 3]
         order: 5
         description: The number of worker threads to use for the sync.
+      slice_step_duration:
+        type: string
+        title: Slice Step Duration
+        description: The time window size for each data slice when syncing incremental streams. Smaller windows may help avoid timeouts for accounts with large data volumes.
+        default: P1M
+        enum:
+          - P1D
+          - P1W
+          - P1M
+          - P1Y
+        enum_labels:
+          P1D: 1 Day
+          P1W: 1 Week
+          P1M: 1 Month
+          P1Y: 1 Year
+        order: 6
 
 schemas:
   accounts:
@@ -3233,8 +3303,8 @@ schemas:
         type:
           - "null"
           - string
-      service_sid:
-        description: The unique identifier for the service associated with the role.
+      chat_service_sid:
+        description: The unique identifier for the Conversation Service associated with the role.
         type:
           - "null"
           - string
@@ -3282,173 +3352,66 @@ schemas:
       - "null"
       - object
     properties:
-      account_sid:
-        description: The unique identifier of the account related to the service.
+      sid:
+        description: The unique identifier of the Conversation Service.
         type:
           - "null"
           - string
-      consumption_report_interval:
-        description: The interval at which consumption reports are generated.
+      account_sid:
+        description: The unique identifier of the account related to the Conversation Service.
         type:
           - "null"
-          - number
+          - string
+      friendly_name:
+        description: A user-friendly name given to the Conversation Service.
+        type:
+          - "null"
+          - string
       date_created:
-        description: The date and time when the service was created.
+        description: The date and time when the Conversation Service was created.
         type:
           - "null"
           - string
         format: date-time
       date_updated:
-        description: The date and time when the service was last updated.
+        description: The date and time when the Conversation Service was last updated.
         type:
           - "null"
           - string
         format: date-time
-      default_channel_creator_role_sid:
-        description: The default role assigned to the creator of a channel.
+      url:
+        description: URL of the Conversation Service.
         type:
           - "null"
           - string
-      default_channel_role_sid:
-        description: The default role assigned to all users in a channel.
-        type:
-          - "null"
-          - string
-      default_service_role_sid:
-        description: The default role assigned to users of the service.
-        type:
-          - "null"
-          - string
-      friendly_name:
-        description: A user-friendly name given to the service.
-        type:
-          - "null"
-          - string
-      limits:
-        description: Limits applied to the service.
-        type:
-          - "null"
-          - object
-        properties:
-          channel_members:
-            description: Maximum number of members allowed in a channel.
-            type:
-              - "null"
-              - number
-          user_channels:
-            description: Maximum number of channels a user can belong to.
-            type:
-              - "null"
-              - number
       links:
-        description: Links to different resources related to the service.
+        description: Links to different resources related to the Conversation Service.
         type:
           - "null"
           - object
         properties:
-          channels:
-            description: Links related to channels.
+          conversations:
+            description: Link to the conversations resource for this service.
             type:
               - "null"
               - string
           users:
-            description: Links related to users.
+            description: Link to the users resource for this service.
             type:
               - "null"
               - string
           roles:
-            description: Links related to roles.
+            description: Link to the roles resource for this service.
             type:
               - "null"
               - string
           bindings:
-            description: Links related to bindings.
+            description: Link to the bindings resource for this service.
             type:
               - "null"
               - string
-      notifications:
-        description: Notification settings for users.
-        type:
-          - "null"
-          - object
-        properties:
-          users:
-            description: Users to receive notifications.
-            type:
-              - "null"
-              - string
-      post_webhook_url:
-        description: URL for the post webhook.
-        type:
-          - "null"
-          - string
-      pre_webhook_url:
-        description: URL for the pre webhook.
-        type:
-          - "null"
-          - string
-      pre_webhook_retry_count:
-        description: Number of retries for the pre webhook.
-        type:
-          - "null"
-          - number
-      post_webhook_retry_count:
-        description: Number of retries for the post webhook.
-        type:
-          - "null"
-          - number
-      reachability_enabled:
-        description: Flag indicating if reachability is enabled.
-        type:
-          - "null"
-          - boolean
-      read_status_enabled:
-        description: Flag indicating if read status is enabled.
-        type:
-          - "null"
-          - boolean
-      sid:
-        description: The unique identifier of the service.
-        type:
-          - "null"
-          - string
-      typing_indicator_timeout:
-        description: Timeout duration for typing indicators.
-        type:
-          - "null"
-          - number
-      url:
-        description: URL of the service.
-        type:
-          - "null"
-          - string
-      webhook_filters:
-        description: Filters for webhooks.
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - string
-      webhook_method:
-        description: HTTP method used for webhooks.
-        type:
-          - "null"
-          - string
-      media:
-        description: Media settings for the service.
-        type:
-          - "null"
-          - object
-        properties:
-          size_limit_mb:
-            description: Maximum size limit for media in megabytes.
-            type:
-              - "null"
-              - number
-          compatibility_message:
-            description: Message to display for incompatible media.
+          configuration:
+            description: Link to the configuration resource for this service.
             type:
               - "null"
               - string
@@ -3837,8 +3800,8 @@ schemas:
           - "null"
           - number
       start_date:
-        description: The start date and time of the usage record period.
-        format: date-time
+        description: The start date of the usage record period.
+        format: date
         type:
           - "null"
           - string

@@ -26,6 +26,62 @@ now: Wed Oct 03 2012 15:00:21 GMT-0400 (EDT)
 
 When importing a large MongoDB collection for the first time, the import duration might exceed the Oplog retention period. The Oplog is crucial for incremental updates, and an invalid resume token will require the MongoDB collection to be re-imported to ensure no source updates were missed.
 
+### MongoDB CDC Limitations
+
+MongoDB has a 16MB maximum document size limit for BSON documents. During CDC (Change Data Capture) syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. This typically occurs during incremental syncs when change stream events include the full document content.
+
+If you encounter this error, you have several options to resolve it:
+
+1. Switch the affected stream to Full Refresh sync mode instead of Incremental mode. Full Refresh does not use change streams and is not subject to this limitation.
+2. If you are using Post Image update capture mode, switch to Lookup mode. Lookup mode retrieves the current document state separately, which can reduce the size of change stream events.
+3. Restructure large documents in your MongoDB collection to stay under the 16MB limit.
+4. Deselect streams containing documents that exceed the size limit.
+
+For more information about MongoDB's document size limits, see the [MongoDB documentation on limits](https://www.mongodb.com/docs/manual/reference/limits/).
+
+## Update Capture Mode: Lookup vs Post Image
+
+When using CDC (Incremental sync mode), the **Update Capture Mode** setting determines how Airbyte retrieves the full
+document content for update events. The default mode is **Lookup**, but Lookup and Post Image have important behavioral differences:
+
+### **Lookup** (default)
+
+Lookup fetches the document’s latest available state when the update event is processed.
+
+If a document is updated multiple times in rapid succession, or if multiple updates happen between syncs, Airbyte may
+capture the newest available version instead of each intermediate state. When this happens, multiple update events can
+show the same final version of the document, and **the intermediate full-document states are not captured.**
+
+#### Use Lookup when
+
+- Your MongoDB version is earlier than 6.0.
+- You only need the latest version of each document and do not need to capture every intermediate change.
+- Your documents are very large and you want to reduce the size of change stream events.
+
+### Post Image (requires MongoDB 6.0+)
+
+Uses MongoDB's built-in [change stream post-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images), which capture the document state immediately after each
+individual change. This is useful when you need the exact document state after every update, rather than the latest
+available version that **Lookup** may return.
+
+#### When to use Post Image
+
+- If you need accurate per-update document states.
+- If your MongoDB version is `6.0` or later
+
+#### Requirements for Post Image mode
+
+- MongoDB 6.0+
+- Collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). If this configuration is not enabled, Airbyte may not be able to retrieve the expected document state for update events.
+
+:::warning
+
+Post Image can increase the size of change stream events because the full document is included in the event. For very
+large documents, change stream events may exceed MongoDB’s 16 MiB BSON limit and fail with BSONObjectTooLarge errors.
+This risk can also apply to Lookup when the full document and change event metadata are large.
+
+:::
+
 ### Supported MongoDB Clusters
 
 - Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
@@ -38,7 +94,45 @@ When importing a large MongoDB collection for the first time, the import duratio
 ### Schema Discovery & Enforcement
 
 - Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
-- When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
+- When running with Schema Enforced set to `false`, there is no attempt to discover any schema. See more in [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement).
+
+### Schema discovery performance impact
+
+Because MongoDB collections are [schemaless](https://www.mongodb.com/docs/manual/data-modeling/), documents in the same collection can have different fields and data types. The connector attempts to infer a schema by sampling documents, but no sample size can guarantee a complete or stable schema. New fields can be added to documents at any time, and a schema derived from today's sample may not represent tomorrow's data. Keep this inherent limitation in mind when choosing between schema-enforced and schemaless modes.
+
+When schema enforcement is enabled, the Discover phase executes a [`$sample`](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) aggregation pipeline against every collection in each configured database. These pipelines run **concurrently** using parallel threads, one per collection. Each pipeline samples up to 10,000 documents by default, then processes them through `$project`, `$unwind`, and `$group` stages to extract field names and types.
+
+On clusters with hundreds of collections, this means hundreds of simultaneous aggregation queries hitting the database at once. The `$sample` stage performs a [random collection scan](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/#behavior), which can be I/O-intensive on large collections. Combined with the downstream aggregation stages, this can exhaust available CPU and memory on your MongoDB nodes.
+
+#### Recommended approaches
+
+These approaches address the root cause of the performance risk by reducing or eliminating the discovery workload.
+
+1. **Disable schema enforcement.** Set **Schema Enforced** to `false` to skip the sampling-based discovery entirely. In schemaless mode, the connector samples only one document per collection to confirm the `_id` field exists. This dramatically reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement) for configuration details.
+
+2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb-v2#configuration-parameters) configuration parameter.
+
+#### Other alternatives
+
+These approaches do not reduce the discovery workload itself, but can help isolate it from your production traffic.
+
+1. **Direct reads to a secondary node.** Add [`readPreference=secondary`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondary) or [`readPreference=secondaryPreferred`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondaryPreferred) to your MongoDB [connection string](https://www.mongodb.com/docs/manual/reference/connection-string/). This routes the discovery queries to a secondary replica set member instead of the primary, protecting your primary node from the additional load.
+
+   ```text
+   mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondaryPreferred
+   ```
+
+2. **Use MongoDB Atlas analytics nodes.** If you use MongoDB Atlas (M10 tier or above), you can provision [analytics nodes](https://www.mongodb.com/docs/atlas/reference/replica-set-tags/) that are isolated from your operational workload. Direct Airbyte's reads to an analytics node by adding [read preference tags](https://www.mongodb.com/docs/manual/core/read-preference-tags/) to your connection string:
+
+   ```text
+   mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondary&readPreferenceTags=nodeType:ANALYTICS
+   ```
+
+   This fully isolates the discovery workload from your production traffic.
+
+3. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, [schedule your Airbyte syncs](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections#connection-schedule) to run during periods of low production traffic. Schema discovery runs at the start of every sync, so timing matters.
+
+4. **Reduce the number of configured databases.** The connector discovers collections across all configured databases. If you only need data from specific databases, remove unnecessary databases from your source configuration to reduce the total number of collections discovered.
 
 ### Vendor-Specific Connector Limitations
 

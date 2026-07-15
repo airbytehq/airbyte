@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.check
 
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
-import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
@@ -21,7 +21,7 @@ import jakarta.inject.Singleton
 class PostgresCloudChecker(
     private val postgresConfiguration: PostgresConfiguration,
     private val postgresOssChecker: PostgresOssChecker,
-) : DestinationCheckerV2 {
+) : DestinationChecker {
 
     @Inject
     constructor(

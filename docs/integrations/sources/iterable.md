@@ -6,28 +6,31 @@ This page contains the setup guide and reference information for the Iterable so
 
 To set up the Iterable source connector, you need:
 
-- An Iterable [`Server-side` API Key with `Standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-). Mobile and Browser API keys are not supported.
+- An Iterable [Server-side API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys) with **Standard** permissions. The key must be created in the Iterable project you want to sync. Mobile, Browser, and other client-side API keys are not supported.
+- The data center your Iterable project is hosted in. Each Iterable project lives in either the US data center (USDC) or the European data center (EDC), and an API key only works against the data center that issued it. If you don't know which data center your project uses, ask an Iterable administrator or check the URL you use to log in to Iterable.
 
 ## Set up the Iterable connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Iterable** from the Source type dropdown.
-4. Enter the name for the Iterable connector.
-5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. Click **Set up source**.
+3. On the Set up the source page, select **Iterable** from the **Source type** dropdown.
+4. Enter a name for the Iterable connector.
+5. For **API Key**, enter your Iterable [Server-side API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys).
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The connector replicates data created on and after this date.
+7. For **Region**, select **US** if your Iterable project is hosted in the US data center, or **EU** if it's hosted in the European data center. The default is **US**. The connector calls `https://api.iterable.com/api/` for **US** and `https://api.eu.iterable.com/api/` for **EU**. The selected region must match the data center that issued your API key.
+8. (Optional) For **Lookback Window (Minutes)**, enter the number of minutes to re-read before the current time at the end of each sync window. The default is 5 minutes. This accounts for eventual consistency delays in Iterable's Export API. Increase this value if you observe missing events near the end of sync windows.
+9. Click **Set up source**.
 
 ## Supported sync modes
 
 The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- Full Refresh - Overwrite
+- Full Refresh - Append
+- Incremental - Append
+- Incremental - Append + Deduped
 
-## Supported Streams
+## Supported streams
 
 - [Campaigns](https://api.iterable.com/api/docs#campaigns_campaigns)
 - [Campaign Metrics](https://api.iterable.com/api/docs#campaigns_metrics)
@@ -74,21 +77,37 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 - [CustomEvent](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 - [HostedUnsubscribeClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 
-## Performance and data retrieval
+## Limitations and considerations
+
+### Data center regions
+
+Iterable hosts each project in either the US data center (USDC) or the European data center (EDC). API keys are scoped to the data center where they were created and can't be used against the other one. Choose the **Region** that matches your project so the connector calls the correct base URL. If a sync fails immediately with authentication errors after a working configuration, confirm that the **Region** still matches the data center that issued your API key.
+
+### Rate limits
+
+Iterable's Export API limits requests to 4 per minute per project. The connector respects this limit and automatically adjusts the size of date range slices to stay within it. For most other endpoints, Iterable applies a rate limit of 100 requests per second per project. The connector retries rate-limited requests (HTTP 429) with exponential backoff.
 
 ### Incremental sync behavior
 
 Streams that support incremental sync use the following approaches:
 
-- **Users stream**: Splits data retrieval into 90-day intervals to manage large data volumes efficiently. The stream uses the `profileUpdatedAt` field as the cursor for incremental syncs.
-- **Event streams** (Email, Push, SMS, In-App, Web Push, Inbox events): Use adaptive date range slicing to handle varying data volumes. The connector automatically adjusts slice sizes based on API response times and handles connection timeouts gracefully.
-- **Templates stream**: Supports incremental sync using the `updatedAt` field as the cursor.
+- **Users**: Splits data retrieval into 90-day intervals. Uses `profileUpdatedAt` as the cursor.
+- **Export-based event streams** (Email, Push, SMS, In-App, Web Push, Inbox, Purchase, CustomEvent, HostedUnsubscribeClick): Use adaptive date range slicing. The connector starts with a 30-day slice, then adjusts subsequent slice sizes based on how long each request takes to process. If a request fails with a connection timeout (`ChunkedEncodingError`), the connector halves the slice size and retries up to 6 times.
+- **Templates**: Uses 90-day fixed intervals. Uses `updatedAt` as the cursor.
+
+### Lookback window
+
+Iterable's Export API has eventual consistency: recently created events may not appear in export results immediately. To prevent silent data loss, the connector subtracts a configurable lookback window (default: 5 minutes) from the current time when determining the end of each sync window. The connector also filters out duplicate records that fall within the lookback overlap.
 
 ### Error handling
 
-The List Users stream handles `500 - Generic Error` responses gracefully by skipping the affected list and continuing to process remaining lists. This behavior prevents individual list errors from blocking the entire sync and is related to intermittent API failures when retrieving users for specific list IDs.
+The List Users stream skips lists that return `500 - Generic Error` responses and continues processing remaining lists. This prevents intermittent API failures for individual lists from blocking the entire sync.
 
-The connector implements retry logic with exponential backoff for rate limiting (HTTP 429) and server errors (HTTP 500-599), with up to 10 retries and delays ranging from 20 to 400 seconds.
+For all streams, the connector retries failed requests with exponential backoff for rate limiting (HTTP 429) and server errors (HTTP 500–599), with up to 10 retries and delays ranging from 20 to 400 seconds.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -97,6 +116,10 @@ The connector implements retry logic with exponential backoff for rate limiting 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
+| 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
+| 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
+| 0.6.54 | 2026-03-04 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
 | 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
 | 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
@@ -167,31 +190,31 @@ The connector implements retry logic with exponential backoff for rate limiting 
 | 0.3.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
 | 0.2.2 | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry. |
 | 0.2.1 | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
-| 0.2.0   | 2023-09-29 | [28457](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
-| 0.1.31  | 2023-12-06 | [33106](https://github.com/airbytehq/airbyte/pull/33106) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                            |
-| 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                                                                              |
-| 0.1.29  | 2023-05-24 | [26459](https://github.com/airbytehq/airbyte/pull/26459) | Added requests reading timeout 300 seconds                                                                                                                                 |
-| 0.1.28  | 2023-05-12 | [26014](https://github.com/airbytehq/airbyte/pull/26014) | Improve 500 handling for Events stream                                                                                                                                     |
-| 0.1.27  | 2023-04-06 | [24962](https://github.com/airbytehq/airbyte/pull/24962) | `UserList` stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one                                                                |
-| 0.1.26  | 2023-03-10 | [23938](https://github.com/airbytehq/airbyte/pull/23938) | Improve retry for `500 - Generic Error`                                                                                                                                    |
-| 0.1.25  | 2023-03-07 | [23821](https://github.com/airbytehq/airbyte/pull/23821) | Added retry for `500 - Generic Error`, increased max attempts number to `6` to handle `ChunkedEncodingError`                                                               |
-| 0.1.24  | 2023-02-14 | [22979](https://github.com/airbytehq/airbyte/pull/22979) | Specified date formatting in specification                                                                                                                                 |
-| 0.1.23  | 2023-01-27 | [22011](https://github.com/airbytehq/airbyte/pull/22011) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                |
-| 0.1.22  | 2022-11-30 | [19913](https://github.com/airbytehq/airbyte/pull/19913) | Replace pendulum.parse -> dateutil.parser.parse to avoid memory leak                                                                                                       |
-| 0.1.21  | 2022-10-27 | [18537](https://github.com/airbytehq/airbyte/pull/18537) | Improve streams discovery                                                                                                                                                  |
-| 0.1.20  | 2022-10-21 | [18292](https://github.com/airbytehq/airbyte/pull/18292) | Better processing of 401 and 429 errors                                                                                                                                    |
-| 0.1.19  | 2022-10-05 | [17602](https://github.com/airbytehq/airbyte/pull/17602) | Add check for stream permissions                                                                                                                                           |
-| 0.1.18  | 2022-10-04 | [17573](https://github.com/airbytehq/airbyte/pull/17573) | Limit time range for SATs                                                                                                                                                  |
-| 0.1.17  | 2022-09-02 | [16067](https://github.com/airbytehq/airbyte/pull/16067) | added new events streams                                                                                                                                                   |
-| 0.1.16  | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header                                                                                                                                               |
-| 0.1.15  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                                                                                                                  |
-| 0.1.14  | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380)   | Update `Events` stream to use `export/userEvents` endpoint                                                                                                                 |
-| 0.1.13  | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091)   | Adjust slice ranges for email streams                                                                                                                                      |
-| 0.1.12  | 2021-11-09 | [7780](https://github.com/airbytehq/airbyte/pull/7780)   | Split EmailSend stream into slices to fix premature connection close error                                                                                                 |
-| 0.1.11  | 2021-11-03 | [7619](https://github.com/airbytehq/airbyte/pull/7619)   | Bugfix type error while incrementally loading the `Templates` stream                                                                                                       |
-| 0.1.10  | 2021-11-03 | [7591](https://github.com/airbytehq/airbyte/pull/7591)   | Optimize export streams memory consumption for large requests                                                                                                              |
-| 0.1.9   | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Enable campaign_metrics stream                                                                                                                                             |
-| 0.1.8   | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915)   | Add new streams: campaign_metrics, events                                                                                                                                  |
-| 0.1.7   | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242)   | Updated schema for: campaigns, lists, templates, metadata                                                                                                                  |
+| 0.2.0 | 2023-09-29 | [30931](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
+| 0.1.31 | 2023-12-06 | [33106](https://github.com/airbytehq/airbyte/pull/33106) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.30 | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode |
+| 0.1.29 | 2023-05-24 | [26459](https://github.com/airbytehq/airbyte/pull/26459) | Added requests reading timeout 300 seconds |
+| 0.1.28 | 2023-05-12 | [26014](https://github.com/airbytehq/airbyte/pull/26014) | Improve 500 handling for Events stream |
+| 0.1.27 | 2023-04-06 | [24962](https://github.com/airbytehq/airbyte/pull/24962) | `UserList` stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one |
+| 0.1.26 | 2023-03-10 | [23938](https://github.com/airbytehq/airbyte/pull/23938) | Improve retry for `500 - Generic Error` |
+| 0.1.25 | 2023-03-07 | [23821](https://github.com/airbytehq/airbyte/pull/23821) | Added retry for `500 - Generic Error`, increased max attempts number to `6` to handle `ChunkedEncodingError` |
+| 0.1.24 | 2023-02-14 | [22979](https://github.com/airbytehq/airbyte/pull/22979) | Specified date formatting in specification |
+| 0.1.23 | 2023-01-27 | [22011](https://github.com/airbytehq/airbyte/pull/22011) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.1.22 | 2022-11-30 | [19913](https://github.com/airbytehq/airbyte/pull/19913) | Replace pendulum.parse -> dateutil.parser.parse to avoid memory leak |
+| 0.1.21 | 2022-10-27 | [18537](https://github.com/airbytehq/airbyte/pull/18537) | Improve streams discovery |
+| 0.1.20 | 2022-10-21 | [18292](https://github.com/airbytehq/airbyte/pull/18292) | Better processing of 401 and 429 errors |
+| 0.1.19 | 2022-10-05 | [17602](https://github.com/airbytehq/airbyte/pull/17602) | Add check for stream permissions |
+| 0.1.18 | 2022-10-04 | [17573](https://github.com/airbytehq/airbyte/pull/17573) | Limit time range for SATs |
+| 0.1.17 | 2022-09-02 | [16067](https://github.com/airbytehq/airbyte/pull/16067) | added new events streams |
+| 0.1.16 | 2022-08-15 | [15670](https://github.com/airbytehq/airbyte/pull/15670) | Api key is passed via header |
+| 0.1.15 | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description |
+| 0.1.14 | 2021-12-01 | [8380](https://github.com/airbytehq/airbyte/pull/8380) | Update `Events` stream to use `export/userEvents` endpoint |
+| 0.1.13 | 2021-11-22 | [8091](https://github.com/airbytehq/airbyte/pull/8091) | Adjust slice ranges for email streams |
+| 0.1.12 | 2021-11-09 | [7780](https://github.com/airbytehq/airbyte/pull/7780) | Split EmailSend stream into slices to fix premature connection close error |
+| 0.1.11 | 2021-11-03 | [7619](https://github.com/airbytehq/airbyte/pull/7619) | Bugfix type error while incrementally loading the `Templates` stream |
+| 0.1.10 | 2021-11-03 | [7591](https://github.com/airbytehq/airbyte/pull/7591) | Optimize export streams memory consumption for large requests |
+| 0.1.9 | 2021-10-06 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Enable campaign_metrics stream |
+| 0.1.8 | 2021-09-20 | [5915](https://github.com/airbytehq/airbyte/pull/5915) | Add new streams: campaign_metrics, events |
+| 0.1.7 | 2021-09-20 | [6242](https://github.com/airbytehq/airbyte/pull/6242) | Updated schema for: campaigns, lists, templates, metadata |
 
 </details>

@@ -76,6 +76,10 @@ The connector is restricted by normal Trello [requests limitation](https://devel
 
 The Trello connector should not run into Trello API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -84,9 +88,9 @@ The Trello connector should not run into Trello API limitations under normal usa
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
 | 1.3.10 | 2025-08-24 | [65474](https://github.com/airbytehq/airbyte/pull/65474) | Update dependencies |
-| 1.3.9 | 2025-08-09 | [64813](https://github.com/airbytehq/airbyte/pull/64813) | Update dependencies |
+| 1.3.9 | 2025-08-10 | [64813](https://github.com/airbytehq/airbyte/pull/64813) | Update dependencies |
 | 1.3.8 | 2025-08-02 | [64394](https://github.com/airbytehq/airbyte/pull/64394) | Update dependencies |
-| 1.3.7 | 2025-07-26 | [64086](https://github.com/airbytehq/airbyte/pull/64086) | Update dependencies |
+| 1.3.7 | 2025-07-27 | [64086](https://github.com/airbytehq/airbyte/pull/64086) | Update dependencies |
 | 1.3.6 | 2025-07-20 | [63680](https://github.com/airbytehq/airbyte/pull/63680) | Update dependencies |
 | 1.3.5 | 2025-07-12 | [63204](https://github.com/airbytehq/airbyte/pull/63204) | Update dependencies |
 | 1.3.4 | 2025-07-05 | [62668](https://github.com/airbytehq/airbyte/pull/62668) | Update dependencies |

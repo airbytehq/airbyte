@@ -741,28 +741,6 @@ Table "GET_MERCHANTS_LISTINGS_FYP_REPORT" {
     "dataEndTime" string
 }
 
-Table "GET_FBA_SNS_FORECAST_DATA" {
-    "offer-state" string
-    "snapshot-date" string
-    "sku" string
-    "fnsku" string
-    "asin" string
-    "estimated-avg-sns-discount-next-8-weeks" string
-    "product-name" string
-    "country" string
-    "active-subscriptions" string
-    "week-1-start-date" string
-    "scheduled-sns-units-week-1" string
-    "scheduled-sns-units-week-2" string
-    "scheduled-sns-units-week-3" string
-    "scheduled-sns-units-week-4" string
-    "scheduled-sns-units-week-5" string
-    "scheduled-sns-units-week-6" string
-    "scheduled-sns-units-week-7" string
-    "scheduled-sns-units-week-8" string
-    "dataEndTime" string
-}
-
 Table "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE" {
     "amazon-order-id" string
     "merchant-order-id" string

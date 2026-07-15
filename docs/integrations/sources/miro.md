@@ -18,6 +18,10 @@ Airbyte connector for Miro can be used to extract data related to board content,
 | board_groups |  | No pagination | ✅ |  ❌  |
 | board_connectors | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,23 @@ Airbyte connector for Miro can be used to extract data related to board content,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.59 | 2026-07-14 | [81900](https://github.com/airbytehq/airbyte/pull/81900) | Update dependencies |
+| 0.0.58 | 2026-06-30 | [81162](https://github.com/airbytehq/airbyte/pull/81162) | Update dependencies |
+| 0.0.57 | 2026-06-23 | [80539](https://github.com/airbytehq/airbyte/pull/80539) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [79939](https://github.com/airbytehq/airbyte/pull/79939) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79425](https://github.com/airbytehq/airbyte/pull/79425) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78814](https://github.com/airbytehq/airbyte/pull/78814) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77346](https://github.com/airbytehq/airbyte/pull/77346) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76672](https://github.com/airbytehq/airbyte/pull/76672) | Update dependencies |
+| 0.0.51 | 2026-03-31 | [75802](https://github.com/airbytehq/airbyte/pull/75802) | Update dependencies |
+| 0.0.50 | 2026-03-24 | [75389](https://github.com/airbytehq/airbyte/pull/75389) | Update dependencies |
+| 0.0.49 | 2026-03-10 | [74593](https://github.com/airbytehq/airbyte/pull/74593) | Update dependencies |
+| 0.0.48 | 2026-03-03 | [74189](https://github.com/airbytehq/airbyte/pull/74189) | Update dependencies |
+| 0.0.47 | 2026-02-17 | [73222](https://github.com/airbytehq/airbyte/pull/73222) | Update dependencies |
+| 0.0.46 | 2026-02-03 | [72721](https://github.com/airbytehq/airbyte/pull/72721) | Update dependencies |
+| 0.0.45 | 2026-01-20 | [72023](https://github.com/airbytehq/airbyte/pull/72023) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71529](https://github.com/airbytehq/airbyte/pull/71529) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70774](https://github.com/airbytehq/airbyte/pull/70774) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [70096](https://github.com/airbytehq/airbyte/pull/70096) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69529](https://github.com/airbytehq/airbyte/pull/69529) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [69071](https://github.com/airbytehq/airbyte/pull/69071) | Update dependencies |
@@ -32,7 +53,7 @@ Airbyte connector for Miro can be used to extract data related to board content,
 | 0.0.38 | 2025-10-14 | [67832](https://github.com/airbytehq/airbyte/pull/67832) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67385](https://github.com/airbytehq/airbyte/pull/67385) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66350](https://github.com/airbytehq/airbyte/pull/66350) | Update dependencies |
-| 0.0.35 | 2025-09-09 | [65805](https://github.com/airbytehq/airbyte/pull/65805) | Update dependencies |
+| 0.0.35 | 2025-09-10 | [65805](https://github.com/airbytehq/airbyte/pull/65805) | Update dependencies |
 | 0.0.34 | 2025-08-23 | [65173](https://github.com/airbytehq/airbyte/pull/65173) | Update dependencies |
 | 0.0.33 | 2025-08-09 | [64698](https://github.com/airbytehq/airbyte/pull/64698) | Update dependencies |
 | 0.0.32 | 2025-08-02 | [64295](https://github.com/airbytehq/airbyte/pull/64295) | Update dependencies |

@@ -51,14 +51,6 @@ dependencyResolutionManagement {
 
         // Maven Central has most of everything.
         mavenCentral()
-        // TODO remove this after jsonschemafriend is republished to jitpack https://github.com/jimblackler/jsonschemafriend/issues/124
-        maven {
-            name 'scijava'
-            url 'https://maven.scijava.org/content/repositories/public'
-            content {
-                includeGroup 'net.jimblackler.jsonschemafriend'
-            }
-        }
         // Jitpack is used to pull dependencies directly from github.
         maven {
             name 'jitpack'
@@ -195,7 +187,3 @@ integrationsPath.eachDir { dir ->
     }
     include ":airbyte-integrations:connectors:${dir.getFileName()}"
 }
-
-// Include miscellaneous modules.
-include ':airbyte-integrations:connectors-performance:source-harness'
-include ':airbyte-integrations:connectors-performance:destination-harness'

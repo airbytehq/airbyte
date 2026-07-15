@@ -15,7 +15,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.customer.io/v1
+          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['app_api_key'] }}"
@@ -161,7 +161,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.customer.io/v1
+          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['app_api_key'] }}"
@@ -188,7 +188,7 @@ definitions:
                     type: SimpleRetriever
                     requester:
                       type: HttpRequester
-                      url_base: https://api.customer.io/v1
+                      url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
                       authenticator:
                         type: BearerAuthenticator
                         api_token: "{{ config['app_api_key'] }}"
@@ -449,7 +449,7 @@ definitions:
         type: SimpleRetriever
         requester:
           type: HttpRequester
-          url_base: https://api.customer.io/v1
+          url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
           authenticator:
             type: BearerAuthenticator
             api_token: "{{ config['app_api_key'] }}"
@@ -524,7 +524,7 @@ definitions:
                 - integer
   base_requester:
     type: HttpRequester
-    url_base: https://api.customer.io/v1
+    url_base: "https://api{{ '-eu' if config.get('region') == 'EU' else '' }}.customer.io/v1"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['app_api_key'] }}"
@@ -536,11 +536,7 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.customer.io/v1
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['app_api_key'] }}"
+        $ref: "#/definitions/base_requester"
         path: /campaigns
         http_method: GET
       record_selector:
@@ -549,6 +545,17 @@ streams:
           type: DpathExtractor
           field_path:
             - "campaigns"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+      is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -681,11 +688,7 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.customer.io/v1
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['app_api_key'] }}"
+        $ref: "#/definitions/base_requester"
         path: /campaigns/{{ stream_partition.parent_id }}/actions
         http_method: GET
       record_selector:
@@ -694,6 +697,16 @@ streams:
           type: DpathExtractor
           field_path:
             - "actions"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -708,11 +721,7 @@ streams:
                 retriever:
                   type: SimpleRetriever
                   requester:
-                    type: HttpRequester
-                    url_base: https://api.customer.io/v1
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: "{{ config['app_api_key'] }}"
+                    $ref: "#/definitions/base_requester"
                     path: /campaigns
                     http_method: GET
                   record_selector:
@@ -846,6 +855,17 @@ streams:
                         type:
                           - "null"
                           - boolean
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+      is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -968,11 +988,7 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.customer.io/v1
-        authenticator:
-          type: BearerAuthenticator
-          api_token: "{{ config['app_api_key'] }}"
+        $ref: "#/definitions/base_requester"
         path: /newsletters
         http_method: GET
       record_selector:
@@ -981,6 +997,32 @@ streams:
           type: DpathExtractor
           field_path:
             - "newsletters"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
+        page_token_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      datetime_format: "%s"
+      cursor_datetime_formats:
+        - "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '0' }}"
+        datetime_format: "%s"
+      is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1055,6 +1097,26 @@ spec:
         title: Customer.io App API Key
         airbyte_secret: true
         order: 0
+      region:
+        type: string
+        title: Region
+        description: >-
+          The region of your Customer.io workspace. Select "EU" if your account is hosted in the EU region (api-eu.customer.io); otherwise leave as "US".
+        enum:
+          - US
+          - EU
+        default: US
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Records with an `updated` timestamp before this date will be filtered out client-side. Leave blank to sync all records.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2023-01-01T00:00:00Z"
+        order: 2
     additionalProperties: true
 metadata:
   autoImportSchema:

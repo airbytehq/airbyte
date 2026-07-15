@@ -1,9 +1,9 @@
 # Parse the command-line args that we care about.
 # Scripts sourcing this script can be invoked as either:
-# ./foo.sh [--release-type=<pre-release|main-release>] [--publish] [--name=<source/destination-foo>]* [--name <source/destination-foo>]*
+# ./foo.sh [--with-semver-suffix=<none|preview|rc>] [--publish] [--name=<source/destination-foo>]* [--name <source/destination-foo>]*
 # Or, if invoked with no `--name` flags:
-# ./get-modified-connectors.sh --json | ./foo.sh [--release-type=<pre-release|main-release>] [--publish]
-publish_mode="pre-release"
+# ./get-modified-connectors.sh --json | ./foo.sh [--with-semver-suffix=<none|preview|rc>] [--publish]
+semver_suffix="preview"
 do_publish=false
 connectors=()
 
@@ -13,12 +13,12 @@ while [[ $# -gt 0 ]]; do
       sed -n '1,34p' "$0"
       exit 0
       ;;
-    --release-type=*)
-      publish_mode="${1#*=}"
+    --with-semver-suffix=*)
+      semver_suffix="${1#*=}"
       shift
       ;;
-    --release-type)
-      publish_mode="$2"
+    --with-semver-suffix)
+      semver_suffix="$2"
       shift 2
       ;;
     --publish)

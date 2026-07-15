@@ -71,6 +71,10 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -78,6 +82,20 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
+| 1.2.56 | 2026-06-16 | [79967](https://github.com/airbytehq/airbyte/pull/79967) | Update dependencies |
+| 1.2.55 | 2026-06-09 | [79440](https://github.com/airbytehq/airbyte/pull/79440) | Update dependencies |
+| 1.2.54 | 2026-06-02 | [78812](https://github.com/airbytehq/airbyte/pull/78812) | Update dependencies |
+| 1.2.53 | 2026-04-28 | [77334](https://github.com/airbytehq/airbyte/pull/77334) | Update dependencies |
+| 1.2.52 | 2026-04-21 | [76716](https://github.com/airbytehq/airbyte/pull/76716) | Update dependencies |
+| 1.2.51 | 2026-03-31 | [75648](https://github.com/airbytehq/airbyte/pull/75648) | Update dependencies |
+| 1.2.50 | 2026-03-24 | [74991](https://github.com/airbytehq/airbyte/pull/74991) | Update dependencies |
+| 1.2.49 | 2026-03-10 | [74661](https://github.com/airbytehq/airbyte/pull/74661) | Update dependencies |
+| 1.2.48 | 2026-02-24 | [73815](https://github.com/airbytehq/airbyte/pull/73815) | Update dependencies |
+| 1.2.47 | 2026-02-10 | [73116](https://github.com/airbytehq/airbyte/pull/73116) | Update dependencies |
+| 1.2.46 | 2026-02-03 | [72556](https://github.com/airbytehq/airbyte/pull/72556) | Update dependencies |
+| 1.2.45 | 2026-01-20 | [71929](https://github.com/airbytehq/airbyte/pull/71929) | Update dependencies |
+| 1.2.44 | 2026-01-14 | [71592](https://github.com/airbytehq/airbyte/pull/71592) | Update dependencies |
+| 1.2.43 | 2025-12-18 | [70573](https://github.com/airbytehq/airbyte/pull/70573) | Update dependencies |
 | 1.2.42 | 2025-11-25 | [69879](https://github.com/airbytehq/airbyte/pull/69879) | Update dependencies |
 | 1.2.41 | 2025-11-18 | [69398](https://github.com/airbytehq/airbyte/pull/69398) | Update dependencies |
 | 1.2.40 | 2025-10-29 | [68699](https://github.com/airbytehq/airbyte/pull/68699) | Update dependencies |
@@ -85,7 +103,7 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 | 1.2.38 | 2025-10-14 | [67769](https://github.com/airbytehq/airbyte/pull/67769) | Update dependencies |
 | 1.2.37 | 2025-10-07 | [67418](https://github.com/airbytehq/airbyte/pull/67418) | Update dependencies |
 | 1.2.36 | 2025-09-30 | [66933](https://github.com/airbytehq/airbyte/pull/66933) | Update dependencies |
-| 1.2.35 | 2025-09-23 | [66618](https://github.com/airbytehq/airbyte/pull/66618) | Update dependencies |
+| 1.2.35 | 2025-09-24 | [66618](https://github.com/airbytehq/airbyte/pull/66618) | Update dependencies |
 | 1.2.34 | 2025-09-09 | [65751](https://github.com/airbytehq/airbyte/pull/65751) | Update dependencies |
 | 1.2.33 | 2025-08-23 | [65224](https://github.com/airbytehq/airbyte/pull/65224) | Update dependencies |
 | 1.2.32 | 2025-08-09 | [64719](https://github.com/airbytehq/airbyte/pull/64719) | Update dependencies |

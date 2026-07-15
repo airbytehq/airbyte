@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.schema
@@ -42,10 +42,13 @@ class TableSchemaFactory(
                 finalSchema = finalSchema,
             )
 
-        return StreamTableSchema(
-            tableNames,
-            columnSchema,
-            importType,
-        )
+        val tableSchema =
+            StreamTableSchema(
+                tableNames,
+                columnSchema,
+                importType,
+            )
+
+        return mapper.toFinalSchema(tableSchema)
     }
 }

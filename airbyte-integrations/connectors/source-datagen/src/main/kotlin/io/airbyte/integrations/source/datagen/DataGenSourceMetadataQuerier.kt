@@ -1,9 +1,9 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.datagen
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Primary
@@ -18,7 +18,7 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
         // Nothing to do here.
     }
 
-    override fun fields(streamID: StreamIdentifier): List<Field> {
+    override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         val flavor = configuration.flavor
         return flavor.fields[streamID.name] ?: emptyList()
     }

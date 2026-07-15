@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb.state;
@@ -254,7 +254,7 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
    */
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, final Document document) {
-    final var fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
+    final Map<String, JsonNode> fields = MongoDbCdcEventUtils.extractFieldSchemas(stream);
 
     final var jsonNode = isEnforceSchema ? MongoDbCdcEventUtils.toJsonNode(document, fields) : MongoDbCdcEventUtils.toJsonNodeNoSchema(document);
 

@@ -17,6 +17,10 @@ The Ubidots Connector facilitates easy integration with the Ubidots IoT platform
 | device_groups | id | DefaultPaginator | ✅ |  ❌  |
 | device_types | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -24,6 +28,21 @@ The Ubidots Connector facilitates easy integration with the Ubidots IoT platform
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-07-14 | [82057](https://github.com/airbytehq/airbyte/pull/82057) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81288](https://github.com/airbytehq/airbyte/pull/81288) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80670](https://github.com/airbytehq/airbyte/pull/80670) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [80096](https://github.com/airbytehq/airbyte/pull/80096) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79540](https://github.com/airbytehq/airbyte/pull/79540) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [78995](https://github.com/airbytehq/airbyte/pull/78995) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77475](https://github.com/airbytehq/airbyte/pull/77475) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76808](https://github.com/airbytehq/airbyte/pull/76808) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75698](https://github.com/airbytehq/airbyte/pull/75698) | Update dependencies |
+| 0.0.48 | 2026-03-17 | [74510](https://github.com/airbytehq/airbyte/pull/74510) | Update dependencies |
+| 0.0.47 | 2026-02-24 | [73915](https://github.com/airbytehq/airbyte/pull/73915) | Update dependencies |
+| 0.0.46 | 2026-02-10 | [73004](https://github.com/airbytehq/airbyte/pull/73004) | Update dependencies |
+| 0.0.45 | 2026-01-27 | [72013](https://github.com/airbytehq/airbyte/pull/72013) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71422](https://github.com/airbytehq/airbyte/pull/71422) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70766](https://github.com/airbytehq/airbyte/pull/70766) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [69856](https://github.com/airbytehq/airbyte/pull/69856) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69658](https://github.com/airbytehq/airbyte/pull/69658) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [68913](https://github.com/airbytehq/airbyte/pull/68913) | Update dependencies |
@@ -31,10 +50,10 @@ The Ubidots Connector facilitates easy integration with the Ubidots IoT platform
 | 0.0.38 | 2025-10-14 | [67883](https://github.com/airbytehq/airbyte/pull/67883) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67501](https://github.com/airbytehq/airbyte/pull/67501) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66833](https://github.com/airbytehq/airbyte/pull/66833) | Update dependencies |
-| 0.0.35 | 2025-09-23 | [66602](https://github.com/airbytehq/airbyte/pull/66602) | Update dependencies |
+| 0.0.35 | 2025-09-24 | [66602](https://github.com/airbytehq/airbyte/pull/66602) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65719](https://github.com/airbytehq/airbyte/pull/65719) | Update dependencies |
-| 0.0.33 | 2025-08-23 | [65423](https://github.com/airbytehq/airbyte/pull/65423) | Update dependencies |
-| 0.0.32 | 2025-08-09 | [64805](https://github.com/airbytehq/airbyte/pull/64805) | Update dependencies |
+| 0.0.33 | 2025-08-24 | [65423](https://github.com/airbytehq/airbyte/pull/65423) | Update dependencies |
+| 0.0.32 | 2025-08-10 | [64805](https://github.com/airbytehq/airbyte/pull/64805) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64334](https://github.com/airbytehq/airbyte/pull/64334) | Update dependencies |
 | 0.0.30 | 2025-07-26 | [64054](https://github.com/airbytehq/airbyte/pull/64054) | Update dependencies |
 | 0.0.29 | 2025-07-20 | [63656](https://github.com/airbytehq/airbyte/pull/63656) | Update dependencies |

@@ -171,28 +171,6 @@
         "dataEndTime": "2121-07-01T00:00:00Z"
       },
       "stream_descriptor": {
-        "name": "GET_FBA_SNS_FORECAST_DATA"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "dataEndTime": "2121-07-01T00:00:00Z"
-      },
-      "stream_descriptor": {
-        "name": "GET_FBA_SNS_PERFORMANCE_DATA"
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "dataEndTime": "2121-07-01T00:00:00Z"
-      },
-      "stream_descriptor": {
         "name": "GET_FBA_STORAGE_FEE_CHARGES_DATA"
       }
     }

@@ -37,6 +37,10 @@ This Source is capable of syncing the following Streams:
 3. In the API tab, click `Create API Kay`. Select `Private Key`.
 4. Use the created secret key to configure your source!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -44,6 +48,21 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.3.57 | 2026-07-14 | [81993](https://github.com/airbytehq/airbyte/pull/81993) | Update dependencies |
+| 0.3.56 | 2026-06-30 | [81245](https://github.com/airbytehq/airbyte/pull/81245) | Update dependencies |
+| 0.3.55 | 2026-06-23 | [80640](https://github.com/airbytehq/airbyte/pull/80640) | Update dependencies |
+| 0.3.54 | 2026-06-16 | [80017](https://github.com/airbytehq/airbyte/pull/80017) | Update dependencies |
+| 0.3.53 | 2026-06-09 | [79494](https://github.com/airbytehq/airbyte/pull/79494) | Update dependencies |
+| 0.3.52 | 2026-06-02 | [78961](https://github.com/airbytehq/airbyte/pull/78961) | Update dependencies |
+| 0.3.51 | 2026-04-28 | [77406](https://github.com/airbytehq/airbyte/pull/77406) | Update dependencies |
+| 0.3.50 | 2026-04-21 | [76749](https://github.com/airbytehq/airbyte/pull/76749) | Update dependencies |
+| 0.3.49 | 2026-03-17 | [74595](https://github.com/airbytehq/airbyte/pull/74595) | Update dependencies |
+| 0.3.48 | 2026-03-03 | [73972](https://github.com/airbytehq/airbyte/pull/73972) | Update dependencies |
+| 0.3.47 | 2026-02-17 | [73526](https://github.com/airbytehq/airbyte/pull/73526) | Update dependencies |
+| 0.3.46 | 2026-02-03 | [72711](https://github.com/airbytehq/airbyte/pull/72711) | Update dependencies |
+| 0.3.45 | 2026-01-20 | [72153](https://github.com/airbytehq/airbyte/pull/72153) | Update dependencies |
+| 0.3.44 | 2026-01-14 | [71623](https://github.com/airbytehq/airbyte/pull/71623) | Update dependencies |
+| 0.3.43 | 2025-12-18 | [70705](https://github.com/airbytehq/airbyte/pull/70705) | Update dependencies |
 | 0.3.42 | 2025-11-25 | [70125](https://github.com/airbytehq/airbyte/pull/70125) | Update dependencies |
 | 0.3.41 | 2025-11-18 | [69456](https://github.com/airbytehq/airbyte/pull/69456) | Update dependencies |
 | 0.3.40 | 2025-10-29 | [68789](https://github.com/airbytehq/airbyte/pull/68789) | Update dependencies |
@@ -104,6 +123,6 @@ This Source is capable of syncing the following Streams:
 | 0.1.3 | 2022-08-01 | [15066](https://github.com/airbytehq/airbyte/pull/15066) | Update primary key to `idString` |
 | 0.1.2 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
 | 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.0   | 2021-08-16 | [3787](https://github.com/airbytehq/airbyte/pull/5418)   | Add Native Shortio Source Connector               |
+| 0.1.0 | 2021-08-16 | [5418](https://github.com/airbytehq/airbyte/pull/5418) | Add Native Shortio Source Connector |
 
 </details>

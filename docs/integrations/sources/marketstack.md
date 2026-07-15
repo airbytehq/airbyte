@@ -18,6 +18,10 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 | Splits |  | DefaultPaginator | ✅ |  ❌  |
 | Dividends |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,22 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-07-14 | [81902](https://github.com/airbytehq/airbyte/pull/81902) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81156](https://github.com/airbytehq/airbyte/pull/81156) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80538](https://github.com/airbytehq/airbyte/pull/80538) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79926](https://github.com/airbytehq/airbyte/pull/79926) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79401](https://github.com/airbytehq/airbyte/pull/79401) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78818](https://github.com/airbytehq/airbyte/pull/78818) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77389](https://github.com/airbytehq/airbyte/pull/77389) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76689](https://github.com/airbytehq/airbyte/pull/76689) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75829](https://github.com/airbytehq/airbyte/pull/75829) | Update dependencies |
+| 0.0.49 | 2026-03-24 | [73831](https://github.com/airbytehq/airbyte/pull/73831) | Update dependencies |
+| 0.0.48 | 2026-02-17 | [73396](https://github.com/airbytehq/airbyte/pull/73396) | Update dependencies |
+| 0.0.47 | 2026-02-10 | [73205](https://github.com/airbytehq/airbyte/pull/73205) | Update dependencies |
+| 0.0.46 | 2026-02-03 | [72695](https://github.com/airbytehq/airbyte/pull/72695) | Update dependencies |
+| 0.0.45 | 2026-01-20 | [72029](https://github.com/airbytehq/airbyte/pull/72029) | Update dependencies |
+| 0.0.44 | 2026-01-14 | [71528](https://github.com/airbytehq/airbyte/pull/71528) | Update dependencies |
+| 0.0.43 | 2025-12-18 | [70744](https://github.com/airbytehq/airbyte/pull/70744) | Update dependencies |
 | 0.0.42 | 2025-11-25 | [70097](https://github.com/airbytehq/airbyte/pull/70097) | Update dependencies |
 | 0.0.41 | 2025-11-18 | [69590](https://github.com/airbytehq/airbyte/pull/69590) | Update dependencies |
 | 0.0.40 | 2025-10-29 | [69062](https://github.com/airbytehq/airbyte/pull/69062) | Update dependencies |
@@ -32,7 +52,7 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 | 0.0.38 | 2025-10-14 | [67850](https://github.com/airbytehq/airbyte/pull/67850) | Update dependencies |
 | 0.0.37 | 2025-10-07 | [67384](https://github.com/airbytehq/airbyte/pull/67384) | Update dependencies |
 | 0.0.36 | 2025-09-30 | [66349](https://github.com/airbytehq/airbyte/pull/66349) | Update dependencies |
-| 0.0.35 | 2025-09-09 | [65771](https://github.com/airbytehq/airbyte/pull/65771) | Update dependencies |
+| 0.0.35 | 2025-09-10 | [65771](https://github.com/airbytehq/airbyte/pull/65771) | Update dependencies |
 | 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.33 | 2025-08-23 | [65185](https://github.com/airbytehq/airbyte/pull/65185) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64745](https://github.com/airbytehq/airbyte/pull/64745) | Update dependencies |

@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.jdbc
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
@@ -9,7 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.DriverManager
-import java.util.Properties
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 import org.apache.sshd.common.util.net.SshdSocketAddress
@@ -23,7 +23,7 @@ private val log = KotlinLogging.logger {}
  * SSH tunnel session is shared by many connections.
  */
 @Singleton
-class JdbcConnectionFactory(
+open class JdbcConnectionFactory(
     val config: JdbcSourceConfiguration,
 ) : Supplier<Connection> {
 

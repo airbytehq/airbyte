@@ -1,13 +1,19 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.ValidatedJsonUtils
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
@@ -15,6 +21,7 @@ import io.airbyte.cdk.load.test.util.NameMapper
 import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
@@ -46,12 +53,87 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testAppendSchemaEvolution() {
         super.testAppendSchemaEvolution()
     }
+
+    @Test
+    fun testLeadingAndTrailingWhitespaceIsTrimmedByDefault() {
+        val stream = whitespaceStream("test_whitespace_default")
+
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(whitespaceRecord(stream, id = 1, value = " hello   ")),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(whitespaceExpectedRecord(id = 1, value = "hello")),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    fun testLeadingAndTrailingWhitespaceIsPreservedWhenTrimSpaceIsDisabled() {
+        val stream = whitespaceStream("test_whitespace_disabled")
+        val trimSpaceDisabledConfig = configWithTrimSpace(false)
+
+        runSync(
+            trimSpaceDisabledConfig,
+            stream,
+            listOf(whitespaceRecord(stream, id = 1, value = " hello   ")),
+        )
+
+        dumpAndDiffRecords(
+            ValidatedJsonUtils.parseOne(configSpecClass, trimSpaceDisabledConfig),
+            listOf(whitespaceExpectedRecord(id = 1, value = " hello   ")),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    private fun whitespaceStream(name: String): DestinationStream =
+        DestinationStream(
+            unmappedNamespace = randomizedNamespace,
+            unmappedName = name,
+            generationId = 0,
+            minimumGenerationId = 0,
+            syncId = 42,
+            namespaceMapper = namespaceMapperForMedium(),
+            tableSchema =
+                makeTableSchema(
+                    ObjectType(linkedMapOf("id" to intType, "value" to stringType)),
+                    Append,
+                ),
+        )
+
+    private fun whitespaceRecord(stream: DestinationStream, id: Int, value: String): InputRecord =
+        InputRecord(
+            stream = stream,
+            data = mapOf("id" to id, "value" to value).serializeToString(),
+            emittedAtMs = 1234,
+            checkpointId = checkpointKeyForMedium()?.checkpointId,
+        )
+
+    private fun whitespaceExpectedRecord(id: Int, value: String): OutputRecord =
+        OutputRecord(
+            extractedAt = 1234,
+            generationId = 0,
+            data = mapOf("id" to id, "value" to value),
+            airbyteMeta = OutputRecord.Meta(syncId = 42),
+        )
+
+    private fun configWithTrimSpace(trimSpace: Boolean): String =
+        (Jsons.readTree(updatedConfig).deepCopy<ObjectNode>())
+            .apply { put("trim_space", trimSpace) }
+            .serializeToString()
 }
 
 class SnowflakeInsertIgnoreCasingAcceptanceTest :
@@ -63,7 +145,7 @@ class SnowflakeInsertIgnoreCasingAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
-        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -134,6 +216,12 @@ class SnowflakeRawInsertProtoAcceptanceTest :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15495")
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
 }
 
 abstract class SnowflakeAcceptanceTest(
@@ -159,12 +247,11 @@ abstract class SnowflakeAcceptanceTest(
         isStreamSchemaRetroactiveForUnknownTypeToString =
             isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
-        stringifySchemalessObjects = true,
+        stringifySchemalessObjects = false,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         stringifyUnionObjects = false,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -186,15 +273,7 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-        useDataFlowPipeline = true,
-    ) {
-
-    @Disabled override fun testUnions() {}
-
-    @Disabled override fun testAppendJsonSchemaEvolution() {}
-
-    @Disabled override fun testContainerTypes() {}
-}
+    )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
     if (metaAsString.isNullOrEmpty()) {

@@ -7,16 +7,13 @@ import TabItem from "@theme/TabItem";
 
 # API documentation
 
-Use the Airbyte API to programmatically interact with Airbyte. You can extend it to:
-
-- Control Airbyte in conjunction with orchestration tools like Airflow
-- Use [Airbyte Embedded](https://airbyte.com/ai)
+Use the Airbyte API to programmatically interact with Airbyte. For example, you can control Airbyte in conjunction with orchestration tools like Airflow.
 
 This article shows you how to get an access token and make your first request, and it provides strategies to manage token expiry.
 
 ## Get an access token
 
-Before you can make requests to the API, you need an access token. For help with this, see [Get an access token](/platform/next/using-airbyte/configuring-api-access).
+Before you can make requests to the API, you need an access token. For help with this, see [Get an access token](/platform/using-airbyte/configuring-api-access).
 
 ## Use the right base URL
 
@@ -222,6 +219,10 @@ curl --request GET \
 
 </TabItem>
 </Tabs>
+
+## Use external secret references
+
+If your organization uses an external secret manager (such as AWS Secrets Manager, Google Secret Manager, or Azure Key Vault), you can pass secret references instead of raw credentials when creating or updating connectors via the API. Use the `secret_coordinate::` prefix on any secret field to store an external reference rather than the plain text value. For example, for an AWS Secrets Manager secret named `production/database/password`, pass `secret_coordinate::production/database/password`. For setup instructions and examples, see [External Secret Management](/platform/operating-airbyte/external-secrets#external-secret-references).
 
 ## Handle access token expiry in your requests
 

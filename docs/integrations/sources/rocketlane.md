@@ -20,6 +20,10 @@ Rocketlane connector  enables seamless data integration by syncing project, task
 | time-entries | timeEntryId | DefaultPaginator | ✅ |  ❌  |
 | space-documents | spaceDocumentId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -27,6 +31,23 @@ Rocketlane connector  enables seamless data integration by syncing project, task
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-07-14 | [81977](https://github.com/airbytehq/airbyte/pull/81977) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81240](https://github.com/airbytehq/airbyte/pull/81240) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80633](https://github.com/airbytehq/airbyte/pull/80633) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [80029](https://github.com/airbytehq/airbyte/pull/80029) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79475](https://github.com/airbytehq/airbyte/pull/79475) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [78976](https://github.com/airbytehq/airbyte/pull/78976) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77438](https://github.com/airbytehq/airbyte/pull/77438) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76736](https://github.com/airbytehq/airbyte/pull/76736) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75823](https://github.com/airbytehq/airbyte/pull/75823) | Update dependencies |
+| 0.0.48 | 2026-03-24 | [75342](https://github.com/airbytehq/airbyte/pull/75342) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74694](https://github.com/airbytehq/airbyte/pull/74694) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73479](https://github.com/airbytehq/airbyte/pull/73479) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73183](https://github.com/airbytehq/airbyte/pull/73183) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72568](https://github.com/airbytehq/airbyte/pull/72568) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [72129](https://github.com/airbytehq/airbyte/pull/72129) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71538](https://github.com/airbytehq/airbyte/pull/71538) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70755](https://github.com/airbytehq/airbyte/pull/70755) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [69984](https://github.com/airbytehq/airbyte/pull/69984) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69683](https://github.com/airbytehq/airbyte/pull/69683) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68916](https://github.com/airbytehq/airbyte/pull/68916) | Update dependencies |
@@ -34,10 +55,10 @@ Rocketlane connector  enables seamless data integration by syncing project, task
 | 0.0.36 | 2025-10-14 | [67948](https://github.com/airbytehq/airbyte/pull/67948) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67220](https://github.com/airbytehq/airbyte/pull/67220) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66870](https://github.com/airbytehq/airbyte/pull/66870) | Update dependencies |
-| 0.0.33 | 2025-09-23 | [66638](https://github.com/airbytehq/airbyte/pull/66638) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [66638](https://github.com/airbytehq/airbyte/pull/66638) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [66129](https://github.com/airbytehq/airbyte/pull/66129) | Update dependencies |
-| 0.0.31 | 2025-08-23 | [65400](https://github.com/airbytehq/airbyte/pull/65400) | Update dependencies |
-| 0.0.30 | 2025-08-09 | [64835](https://github.com/airbytehq/airbyte/pull/64835) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65400](https://github.com/airbytehq/airbyte/pull/65400) | Update dependencies |
+| 0.0.30 | 2025-08-10 | [64835](https://github.com/airbytehq/airbyte/pull/64835) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64451](https://github.com/airbytehq/airbyte/pull/64451) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [63983](https://github.com/airbytehq/airbyte/pull/63983) | Update dependencies |
 | 0.0.27 | 2025-07-19 | [63619](https://github.com/airbytehq/airbyte/pull/63619) | Update dependencies |

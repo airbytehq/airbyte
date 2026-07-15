@@ -19,6 +19,10 @@ Using this connector we can extract data from products , packages , orders , dis
 | orders | id | DefaultPaginator | ✅ |  ✅  |
 | subscriptions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,22 @@ Using this connector we can extract data from products , packages , orders , dis
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-07-14 | [82004](https://github.com/airbytehq/airbyte/pull/82004) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81237](https://github.com/airbytehq/airbyte/pull/81237) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80653](https://github.com/airbytehq/airbyte/pull/80653) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80016](https://github.com/airbytehq/airbyte/pull/80016) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79514](https://github.com/airbytehq/airbyte/pull/79514) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78941](https://github.com/airbytehq/airbyte/pull/78941) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77443](https://github.com/airbytehq/airbyte/pull/77443) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76739](https://github.com/airbytehq/airbyte/pull/76739) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [75109](https://github.com/airbytehq/airbyte/pull/75109) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [74230](https://github.com/airbytehq/airbyte/pull/74230) | Update dependencies |
+| 0.0.43 | 2026-02-17 | [73536](https://github.com/airbytehq/airbyte/pull/73536) | Update dependencies |
+| 0.0.42 | 2026-02-10 | [73184](https://github.com/airbytehq/airbyte/pull/73184) | Update dependencies |
+| 0.0.41 | 2026-02-03 | [72551](https://github.com/airbytehq/airbyte/pull/72551) | Update dependencies |
+| 0.0.40 | 2026-01-20 | [72128](https://github.com/airbytehq/airbyte/pull/72128) | Update dependencies |
+| 0.0.39 | 2026-01-14 | [71533](https://github.com/airbytehq/airbyte/pull/71533) | Update dependencies |
+| 0.0.38 | 2025-12-18 | [70733](https://github.com/airbytehq/airbyte/pull/70733) | Update dependencies |
 | 0.0.37 | 2025-11-25 | [69965](https://github.com/airbytehq/airbyte/pull/69965) | Update dependencies |
 | 0.0.36 | 2025-11-18 | [69671](https://github.com/airbytehq/airbyte/pull/69671) | Update dependencies |
 | 0.0.35 | 2025-10-29 | [68858](https://github.com/airbytehq/airbyte/pull/68858) | Update dependencies |
@@ -33,9 +53,9 @@ Using this connector we can extract data from products , packages , orders , dis
 | 0.0.33 | 2025-10-14 | [67913](https://github.com/airbytehq/airbyte/pull/67913) | Update dependencies |
 | 0.0.32 | 2025-10-07 | [67218](https://github.com/airbytehq/airbyte/pull/67218) | Update dependencies |
 | 0.0.31 | 2025-09-30 | [66872](https://github.com/airbytehq/airbyte/pull/66872) | Update dependencies |
-| 0.0.30 | 2025-09-23 | [66629](https://github.com/airbytehq/airbyte/pull/66629) | Update dependencies |
+| 0.0.30 | 2025-09-24 | [66629](https://github.com/airbytehq/airbyte/pull/66629) | Update dependencies |
 | 0.0.29 | 2025-09-09 | [65684](https://github.com/airbytehq/airbyte/pull/65684) | Update dependencies |
-| 0.0.28 | 2025-08-23 | [65430](https://github.com/airbytehq/airbyte/pull/65430) | Update dependencies |
+| 0.0.28 | 2025-08-24 | [65430](https://github.com/airbytehq/airbyte/pull/65430) | Update dependencies |
 | 0.0.27 | 2025-08-16 | [65002](https://github.com/airbytehq/airbyte/pull/65002) | Update dependencies |
 | 0.0.26 | 2025-08-02 | [64450](https://github.com/airbytehq/airbyte/pull/64450) | Update dependencies |
 | 0.0.25 | 2025-07-26 | [63986](https://github.com/airbytehq/airbyte/pull/63986) | Update dependencies |

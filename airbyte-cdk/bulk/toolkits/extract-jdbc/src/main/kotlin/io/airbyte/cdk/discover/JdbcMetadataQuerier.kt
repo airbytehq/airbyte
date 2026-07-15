@@ -1,6 +1,7 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
@@ -34,6 +35,7 @@ class JdbcMetadataQuerier(
     val checkQueries: JdbcCheckQueries,
     jdbcConnectionFactory: JdbcConnectionFactory,
 ) : MetadataQuerier {
+
     val conn: Connection = jdbcConnectionFactory.get()
 
     private val log = KotlinLogging.logger {}
@@ -68,28 +70,74 @@ class JdbcMetadataQuerier(
             .groupBy { it.schemaName }
             .mapValues { (_, filters) -> filters.flatMap { it.patterns } }
 
+    /**
+     * The set of namespaces to discover against. When [JdbcSourceConfiguration.namespaces] is
+     * non-empty this is just that set; otherwise it is resolved at discovery time to every
+     * schema/catalog the JDBC user can see, minus [DefaultJdbcConstants.ignoredNamespaces].
+     *
+     * @throws [ConfigErrorException] when nothing is configured and the resolved set is empty.
+     */
+    val effectiveNamespaces: Set<String> by lazy {
+        if (config.namespaces.isNotEmpty()) {
+            return@lazy config.namespaces
+        }
+        val dbmd: DatabaseMetaData = conn.metaData
+        val discovered: Set<String> =
+            when (constants.namespaceKind) {
+                NamespaceKind.CATALOG ->
+                    dbmd.catalogs.use { rs: ResultSet ->
+                        buildSet { while (rs.next()) rs.getString("TABLE_CAT")?.let(::add) }
+                    }
+                NamespaceKind.SCHEMA,
+                NamespaceKind.CATALOG_AND_SCHEMA ->
+                    dbmd.schemas.use { rs: ResultSet ->
+                        buildSet { while (rs.next()) rs.getString("TABLE_SCHEM")?.let(::add) }
+                    }
+            }
+        val ignoredUpper: Set<String> =
+            constants.ignoredNamespaces
+                .map { it.uppercase() }
+                .plus("AIRBYTE_INTERNAL")
+                .plus("_AB_CDC")
+                .toSet()
+        val filtered: Set<String> =
+            if (ignoredUpper.isEmpty()) discovered
+            else discovered.filterNot { it.uppercase() in ignoredUpper }.toSet()
+        if (filtered.isEmpty()) {
+            throw ConfigErrorException("No namespaces are accessible to the JDBC user.")
+        }
+        log.info { "No namespaces specified. Discovered ${filtered.size} namespace(s)." }
+        filtered
+    }
+
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
+            val ignoredStreamsUpper: Set<String> =
+                constants.ignoredStreams.map { it.uppercase() }.toSet()
 
             fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
                 dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
-                        allTables.add(
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
+                        val tableName: String = rs.getString("TABLE_NAME")
+                        if (tableName.uppercase() !in ignoredStreamsUpper) {
+                            allTables.add(
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = tableName,
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
 
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+            val namespacesToQuery: Set<String> = effectiveNamespaces
+            for (namespace in namespacesToQuery + namespacesToQuery.map { it.uppercase() }) {
                 val (catalog: String?, schema: String?) =
                     when (constants.namespaceKind) {
                         NamespaceKind.CATALOG -> namespace to null
@@ -109,7 +157,7 @@ class JdbcMetadataQuerier(
                     addTablesFromQuery(catalog, schema, null)
                 }
             }
-            log.info { "Discovered ${allTables.size} table(s) in namespaces ${config.namespaces}." }
+            log.info { "Discovered ${allTables.size} table(s) in namespaces $namespacesToQuery." }
             return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
@@ -126,7 +174,6 @@ class JdbcMetadataQuerier(
         log.info { "Querying column names for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
-
             fun addColumnsFromQuery(
                 catalog: String?,
                 schema: String?,
@@ -143,10 +190,11 @@ class JdbcMetadataQuerier(
                     }
                 }
             }
-            // Query columns using the same pattern as table discovery:
+            // Query columns per namespace, consistent with table discovery:
             // - If schema has filters, query per filter pattern
-            // - If no filters, query entire schema at once
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+            // - If no filters, query the entire schema at once
+            val namespacesToQuery: Set<String> = effectiveNamespaces
+            for (namespace in namespacesToQuery + namespacesToQuery.map { it.uppercase() }) {
                 val (catalog: String?, schema: String?) =
                     when (constants.namespaceKind) {
                         NamespaceKind.CATALOG -> namespace to null
@@ -160,11 +208,15 @@ class JdbcMetadataQuerier(
                         ?.value
                 if (patterns != null && patterns.isNotEmpty()) {
                     for (pattern in patterns) {
-                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+                        if (constants.includePseudoColumns) {
+                            addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+                        }
                         addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
                     }
                 } else {
-                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
+                    if (constants.includePseudoColumns) {
+                        addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
+                    }
                     addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
                 }
             }
@@ -247,9 +299,9 @@ class JdbcMetadataQuerier(
 
     override fun fields(
         streamID: StreamIdentifier,
-    ): List<Field> {
+    ): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map { EmittedField(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
@@ -279,7 +331,7 @@ class JdbcMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { EmittedField(it, NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )
@@ -400,7 +452,7 @@ class JdbcMetadataQuerier(
                 selectQueryGenerator,
                 fieldTypeMapper,
                 checkQueries,
-                jdbcConnectionFactory,
+                jdbcConnectionFactory
             )
         }
     }

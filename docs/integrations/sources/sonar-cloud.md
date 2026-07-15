@@ -23,6 +23,10 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 - Sonar cloud User Token
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,21 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.52 | 2026-07-14 | [81997](https://github.com/airbytehq/airbyte/pull/81997) | Update dependencies |
+| 0.2.51 | 2026-06-30 | [81253](https://github.com/airbytehq/airbyte/pull/81253) | Update dependencies |
+| 0.2.50 | 2026-06-23 | [80623](https://github.com/airbytehq/airbyte/pull/80623) | Update dependencies |
+| 0.2.49 | 2026-06-16 | [80037](https://github.com/airbytehq/airbyte/pull/80037) | Update dependencies |
+| 0.2.48 | 2026-06-09 | [79495](https://github.com/airbytehq/airbyte/pull/79495) | Update dependencies |
+| 0.2.47 | 2026-06-02 | [78947](https://github.com/airbytehq/airbyte/pull/78947) | Update dependencies |
+| 0.2.46 | 2026-04-28 | [77439](https://github.com/airbytehq/airbyte/pull/77439) | Update dependencies |
+| 0.2.45 | 2026-04-21 | [75890](https://github.com/airbytehq/airbyte/pull/75890) | Update dependencies |
+| 0.2.44 | 2026-03-24 | [75384](https://github.com/airbytehq/airbyte/pull/75384) | Update dependencies |
+| 0.2.43 | 2026-03-10 | [74575](https://github.com/airbytehq/airbyte/pull/74575) | Update dependencies |
+| 0.2.42 | 2026-02-24 | [73980](https://github.com/airbytehq/airbyte/pull/73980) | Update dependencies |
+| 0.2.41 | 2026-02-10 | [73094](https://github.com/airbytehq/airbyte/pull/73094) | Update dependencies |
+| 0.2.40 | 2026-01-20 | [72122](https://github.com/airbytehq/airbyte/pull/72122) | Update dependencies |
+| 0.2.39 | 2026-01-14 | [71678](https://github.com/airbytehq/airbyte/pull/71678) | Update dependencies |
+| 0.2.38 | 2025-12-18 | [70699](https://github.com/airbytehq/airbyte/pull/70699) | Update dependencies |
 | 0.2.37 | 2025-11-25 | [70124](https://github.com/airbytehq/airbyte/pull/70124) | Update dependencies |
 | 0.2.36 | 2025-11-18 | [69450](https://github.com/airbytehq/airbyte/pull/69450) | Update dependencies |
 | 0.2.35 | 2025-10-29 | [68830](https://github.com/airbytehq/airbyte/pull/68830) | Update dependencies |
@@ -38,9 +57,9 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 | 0.2.32 | 2025-10-07 | [67452](https://github.com/airbytehq/airbyte/pull/67452) | Update dependencies |
 | 0.2.31 | 2025-09-30 | [66906](https://github.com/airbytehq/airbyte/pull/66906) | Update dependencies |
 | 0.2.30 | 2025-09-24 | [65670](https://github.com/airbytehq/airbyte/pull/65670) | Update dependencies |
-| 0.2.29 | 2025-08-23 | [65394](https://github.com/airbytehq/airbyte/pull/65394) | Update dependencies |
-| 0.2.28 | 2025-08-09 | [64802](https://github.com/airbytehq/airbyte/pull/64802) | Update dependencies |
-| 0.2.27 | 2025-08-02 | [64470](https://github.com/airbytehq/airbyte/pull/64470) | Update dependencies |
+| 0.2.29 | 2025-08-24 | [65394](https://github.com/airbytehq/airbyte/pull/65394) | Update dependencies |
+| 0.2.28 | 2025-08-10 | [64802](https://github.com/airbytehq/airbyte/pull/64802) | Update dependencies |
+| 0.2.27 | 2025-08-03 | [64470](https://github.com/airbytehq/airbyte/pull/64470) | Update dependencies |
 | 0.2.26 | 2025-07-26 | [64005](https://github.com/airbytehq/airbyte/pull/64005) | Update dependencies |
 | 0.2.25 | 2025-07-19 | [63617](https://github.com/airbytehq/airbyte/pull/63617) | Update dependencies |
 | 0.2.24 | 2025-07-05 | [62683](https://github.com/airbytehq/airbyte/pull/62683) | Update dependencies |

@@ -23,6 +23,10 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 | detailed_signed_waiver | waiverId | No pagination | ✅ |  ❌  |
 | checkins | waiverId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -30,6 +34,20 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-07-14 | [82020](https://github.com/airbytehq/airbyte/pull/82020) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81247](https://github.com/airbytehq/airbyte/pull/81247) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80629](https://github.com/airbytehq/airbyte/pull/80629) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80039](https://github.com/airbytehq/airbyte/pull/80039) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79508](https://github.com/airbytehq/airbyte/pull/79508) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78968](https://github.com/airbytehq/airbyte/pull/78968) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77416](https://github.com/airbytehq/airbyte/pull/77416) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76765](https://github.com/airbytehq/airbyte/pull/76765) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [75094](https://github.com/airbytehq/airbyte/pull/75094) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [73986](https://github.com/airbytehq/airbyte/pull/73986) | Update dependencies |
+| 0.0.43 | 2026-02-17 | [73231](https://github.com/airbytehq/airbyte/pull/73231) | Update dependencies |
+| 0.0.42 | 2026-02-03 | [72713](https://github.com/airbytehq/airbyte/pull/72713) | Update dependencies |
+| 0.0.41 | 2026-01-20 | [71661](https://github.com/airbytehq/airbyte/pull/71661) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70721](https://github.com/airbytehq/airbyte/pull/70721) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [70068](https://github.com/airbytehq/airbyte/pull/70068) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69484](https://github.com/airbytehq/airbyte/pull/69484) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [68831](https://github.com/airbytehq/airbyte/pull/68831) | Update dependencies |
@@ -38,8 +56,8 @@ Due to some limitation of SmartWaiver API it can have situations where you won't
 | 0.0.34 | 2025-10-07 | [67444](https://github.com/airbytehq/airbyte/pull/67444) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66899](https://github.com/airbytehq/airbyte/pull/66899) | Update dependencies |
 | 0.0.32 | 2025-09-24 | [66266](https://github.com/airbytehq/airbyte/pull/66266) | Update dependencies |
-| 0.0.31 | 2025-08-23 | [65421](https://github.com/airbytehq/airbyte/pull/65421) | Update dependencies |
-| 0.0.30 | 2025-08-09 | [64837](https://github.com/airbytehq/airbyte/pull/64837) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65421](https://github.com/airbytehq/airbyte/pull/65421) | Update dependencies |
+| 0.0.30 | 2025-08-10 | [64837](https://github.com/airbytehq/airbyte/pull/64837) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64433](https://github.com/airbytehq/airbyte/pull/64433) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [63077](https://github.com/airbytehq/airbyte/pull/63077) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [62736](https://github.com/airbytehq/airbyte/pull/62736) | Update dependencies |

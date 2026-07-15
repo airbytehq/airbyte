@@ -1,0 +1,21 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "media": [
+    {
+      "sub_request_status": "SUCCESS",
+      "media": {
+        "id": "test_media_123",
+        "updated_at": "2024-01-15T10:00:00.000Z",
+        "created_at": "2023-01-01T00:00:00.000Z",
+        "name": "Test Media",
+        "ad_account_id": "test_adaccount_456",
+        "type": "VIDEO",
+        "media_status": "READY",
+        "file_name": "test_video.mp4",
+        "download_link": "https://example.com/test_video.mp4",
+        "duration_secs": 10.5
+      }
+    }
+  ]
+}

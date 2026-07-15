@@ -29,22 +29,20 @@ This section should contain a table mapping each of the connector's data types t
 | numeric          | integer      | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)  |
 | numeric          | number       | [more info](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)  |
 
-### Features
-
-This section should contain a table with the following format:
-
-| Feature                       | Supported?(Yes/No) | Notes |
-| :---------------------------- | :----------------- | :---- |
-| Full Refresh Sync             | yes                |       |
-| Incremental Sync              | yes                |       |
-| Replicate Incremental Deletes | no                 |       |
-| SSL connection                | yes                |       |
-| SSH Tunnel Support            | yes                |       |
-
 ### Performance considerations
 
 Batch/bulk writes are performed. Large records may impact performance.  
 The connector should be enhanced to support variable batch sizes.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -90,6 +88,10 @@ Using this feature requires additional configuration, when creating the source. 
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` TiDB password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -103,7 +105,7 @@ Using this feature requires additional configuration, when creating the source. 
 | 0.1.4 | 2022-10-14 | [17805](https://github.com/airbytehq/airbyte/pull/17805) | add SSH Tunneling |
 | 0.1.3 | 2022-05-30 | [14640](https://github.com/airbytehq/airbyte/pull/14640) | Include lifecycle management |
 | 0.1.2 | 2022-04-19 | [11752](https://github.com/airbytehq/airbyte/pull/11752) | Reduce batch size to 32Mb |
-| 0.1.1   | 2022-02-10 | [10256](https://github.com/airbytehq/airbyte/pull/1256)  | Add ExitOnOutOfMemoryError connectors |
+| 0.1.1   | 2022-02-10 | [1256](https://github.com/airbytehq/airbyte/pull/1256)  | Add ExitOnOutOfMemoryError connectors |
 | 0.1.0   | 2021-10-13 | [7005](https://github.com/airbytehq/airbyte/pull/7005)   | Initial release.                      |
 
 </details>

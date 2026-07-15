@@ -53,6 +53,10 @@ your employees to the right projects.
 - Primetric [client secret](https://app.primetric.com/administrator/integrations)
 - Primetric client id
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -60,12 +64,13 @@ your employees to the right projects.
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 1.1.39 | 2025-12-18 | [70651](https://github.com/airbytehq/airbyte/pull/70651) | Update dependencies |
 | 1.1.38 | 2025-11-25 | [70001](https://github.com/airbytehq/airbyte/pull/70001) | Update dependencies |
 | 1.1.37 | 2025-11-18 | [69609](https://github.com/airbytehq/airbyte/pull/69609) | Update dependencies |
 | 1.1.36 | 2025-10-29 | [68950](https://github.com/airbytehq/airbyte/pull/68950) | Update dependencies |
 | 1.1.35 | 2025-10-21 | [68386](https://github.com/airbytehq/airbyte/pull/68386) | Update dependencies |
 | 1.1.34 | 2025-10-14 | [67487](https://github.com/airbytehq/airbyte/pull/67487) | Update dependencies |
-| 1.1.33 | 2025-09-30 | [66967](https://github.com/airbytehq/airbyte/pull/66967) | Update dependencies |
+| 1.1.33 | 2025-10-01 | [66967](https://github.com/airbytehq/airbyte/pull/66967) | Update dependencies |
 | 1.1.32 | 2025-09-23 | [66421](https://github.com/airbytehq/airbyte/pull/66421) | Update dependencies |
 | 1.1.31 | 2025-09-09 | [65831](https://github.com/airbytehq/airbyte/pull/65831) | Update dependencies |
 | 1.1.30 | 2025-08-23 | [65175](https://github.com/airbytehq/airbyte/pull/65175) | Update dependencies |

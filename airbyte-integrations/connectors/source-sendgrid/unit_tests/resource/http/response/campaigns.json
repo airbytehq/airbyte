@@ -1,0 +1,14 @@
+{
+  "result": [
+    {
+      "id": "campaign-123-abc",
+      "name": "Spring Sale Campaign",
+      "status": "scheduled",
+      "channels": ["email"],
+      "is_abtest": false,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "_metadata": {}
+}

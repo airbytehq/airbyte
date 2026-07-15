@@ -1,219 +1,272 @@
 # Redshift
 
-This page guides you through the process of setting up the Redshift destination connector.
+Setting up the Redshift destination connector involves setting up Redshift entities (cluster,
+database, schema, user) in the AWS console, configuring an S3 bucket for staging, and configuring
+the Redshift destination connector using the Airbyte UI.
+
+This page describes the step-by-step process of setting up the Redshift destination connector.
 
 ## Prerequisites
 
-The Airbyte Redshift destination allows you to sync data to Redshift. Airbyte replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html). Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file.
+- An [AWS account](https://aws.amazon.com/console/) with access to Amazon Redshift
+- A Redshift cluster ([provisioned](https://docs.aws.amazon.com/redshift/latest/gsg/new-user.html)
+  or [serverless](https://docs.aws.amazon.com/redshift/latest/gsg/new-user-serverless.html))
+- An [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for staging data
+- AWS IAM credentials
+  with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
+  to the S3 bucket
 
-### Configuration Options
+NOTE: The Redshift destination
+uses [S3 staging with COPY](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html) as
+the loading method. This is the recommended approach described by Redshift best practices. Data is uploaded to S3 as
+multiple files along with a manifest file, then loaded into Redshift via the COPY command.
 
-- **Host**
-- **Port**
-- **Username**
-- **Password**
-- **Schema**
-- **Database**
-  - This database needs to exist within the cluster provided.
-- **S3 Bucket Name**
-  - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
-    create an S3 bucket.
-- **S3 Bucket Region**
-  - Place the S3 bucket and the Redshift cluster in the same region to save on networking costs.
-- **Access Key Id**
-  - See
-    [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
-    on how to generate an access key.
-  - We recommend creating an Airbyte-specific user. This user will require
-    [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
-    to objects in the staging bucket.
-- **Secret Access Key**
-  - Corresponding key to the above key id.
+## Setup guide
 
-Optional parameters:
+### Step 1: Set up Airbyte-specific entities in Redshift
 
-- **Bucket Path**
-  - The directory within the S3 bucket to place the staging data. For example, if you set this to
-    `yourFavoriteSubdirectory`, we will place the staging data inside
-    `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
-- **S3 Filename pattern**
-  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
-    `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
-    The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
-- **Purge Staging Data**
-  - Whether to delete the staging files from S3 after completing the sync. Specifically, the
-    connector will create CSV files named
-    `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns
-    (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
-    completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
+To set up the Redshift destination connector, you first need to create Airbyte-specific Redshift
+entities (a database, schema, and user) with the appropriate permissions to write data into
+Redshift and manage staging operations.
 
-NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel
-supports the SQL connection only. S3 is secured through public HTTPS access only. Subsequent typing
-and deduping queries on final table are executed over using provided SSH Tunnel configuration.
+You can use the following script in the
+[Redshift Query Editor](https://docs.aws.amazon.com/redshift/latest/mgmt/query-editor-v2-using.html)
+to create the entities:
 
-## Step 1: Set up Redshift
-
-1. [Log in](https://aws.amazon.com/console/) to AWS Management console. If you don't have a AWS
-   account already, you’ll need to
-   [create](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
-   one in order to use the API.
-2. Go to the AWS Redshift service.
-3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and
-   activate AWS Redshift cluster if you don't have one ready.
-4. (Optional)
-   [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/)
-   connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\).
-5. (Optional)
-   [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
-   staging S3 bucket \(for the COPY strategy\).
-
-### Permissions in Redshift
-
-Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g.
-`my_schema` and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this
-raw data schema is `airbyte_internal` but this can be overridden in the Redshift Destination's
-advanced settings. Airbyte also needs to query Redshift's
-[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for
-metadata about the tables airbyte manages.
-
-To ensure the `airbyte_user` has the correction permissions to:
-
-- create schemas in your database
-- grant usage to any existing schemas you want Airbyte to use
-- grant select to the `svv_table_info` table
-
-You can execute the following SQL statements
+1. [Log into your AWS account](https://aws.amazon.com/console/) and navigate to the Redshift service.
+2. Open the Query Editor and connect to your cluster.
+3. Edit the following script to change the password to a more secure password and to change the names of other resources
+   as needed.
 
 ```sql
-GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
-GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
+-- create a Database for Airbyte data (if it does not already exist)
+CREATE
+DATABASE airbyte_database;
 ```
 
-### Optional Use of SSH Bastion Host
+4. **Switch your connection** to `airbyte_database` in the Query Editor. Redshift does not support switching databases
+   within a session, so you must select `airbyte_database` from the database dropdown before running the remaining
+   statements.
+
+TIP: You can verify you are connected to the correct database by running:
+
+```sql
+SELECT CURRENT_DATABASE();
+```
+
+5. Run the following script to create the schema, user, and grants:
+
+```sql
+-- create a schema for Airbyte data (if it does not already exist)
+CREATE SCHEMA IF NOT EXISTS airbyte_schema;
+
+-- create Airbyte user
+CREATE
+USER airbyte_user PASSWORD 'your_secure_password_here';
+
+-- grant permissions on the database
+GRANT CREATE
+ON DATABASE airbyte_database TO airbyte_user;
+
+-- grant permissions on the target schema
+GRANT USAGE, CREATE
+ON SCHEMA airbyte_schema TO airbyte_user;
+```
+
+6. Verify the script ran successfully in the Query Editor.
+
+NOTE: Our integration automatically creates the necessary schemas in your Redshift database. To enable this, ensure the
+connection user has `CREATE` privileges on the database. If you prefer to create schemas manually, grant `USAGE` and
+`CREATE` privileges on those schemas to the Airbyte user.
+
+### Step 2: Set up S3 staging
+
+Airbyte stages data in S3 before loading it into Redshift via the COPY command. You need to
+configure an S3 bucket and IAM credentials for this purpose.
+
+1. [Create an S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)
+   if you don't already have one for staging.
+2. Place the S3 bucket in the **same AWS region** as your Redshift cluster to minimize networking
+   costs and improve performance.
+3. [Create an IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html) (or
+   use an existing one)
+   with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
+   to the staging bucket.
+4. [Generate an access key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
+   for the IAM user.
+
+See the [S3 Staging fields](#s3-staging-fields) table for the full list of required and optional
+S3 configuration parameters.
+
+NOTE: S3 staging does not use the SSH Tunnel option for copying data. SSH Tunnel supports the SQL connection only. S3 is
+secured through public HTTPS access only. Subsequent queries on the destination tables are executed using the provided
+SSH Tunnel configuration.
+
+#### Optional: SSH Bastion Host
 
 This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH
-Tunneling. Setup of the host is beyond the scope of this document but several tutorials are
-available online to fascilitate this task. Enter the bastion host, port and credentials in the
-destination configuration.
+Tunneling. Enter the bastion host, port, and credentials in the destination configuration.
 
-## Step 2: Set up the destination connector in Airbyte
+### Step 3: Set up Redshift as a destination in Airbyte
 
-**For Airbyte Cloud:**
+Navigate to the Airbyte UI to set up Redshift as a destination:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte account](https://cloud.airbyte.com/workspaces).
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new
    destination**.
 3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a
    name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy.
-5. Click `Set up destination`.
+4. Fill in the required fields using the configuration reference below.
+5. Click **Set up destination**.
 
-**For Airbyte Open Source:**
+#### Connection fields
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new
-   destination**.
-3. On the destination setup page, select **Redshift** from the Destination type dropdown and enter a
-   name for this connector.
-4. Fill in all the required fields to use the INSERT or COPY strategy.
-5. Click `Set up destination`.
+| Field                                                                                                           | Description                                                                                                                                                                          |
+|:----------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Host](https://docs.aws.amazon.com/redshift/latest/mgmt/managing-clusters-console.html#obtain-cluster-endpoint) | The endpoint of your Redshift cluster or serverless workgroup. Provisioned clusters end with `.redshift.amazonaws.com`; serverless workgroups end with `.redshift-serverless.amazonaws.com`. Example: `my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com` |
+| Port                                                                                                            | Port of the database. Default: `5439`                                                                                                                                                |
+| Username                                                                                                        | The username you created in Step 1 to allow Airbyte to access the database. Example: `airbyte_user`                                                                                  |
+| Password                                                                                                        | The password associated with the username.                                                                                                                                           |
+| [Database](https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_DATABASE.html)                               | The name of the database you want to sync data into. This database must already exist within your Redshift cluster. Example: `airbyte_database`                                      |
+| [Default Schema](https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_SCHEMA.html)                           | The default schema tables are written to if the source does not specify a namespace. Default: `public`                                                                               |
+
+#### S3 Staging fields
+
+| Field                                                                                                                        | Description                                                                                                                                                                                                                                                    |
+|:-----------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [S3 Bucket Name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)                          | The name of the staging S3 bucket you created in Step 2. Example: `airbyte-staging-bucket`                                                                                                                                                                     |
+| S3 Bucket Region                                                                                                             | The region of the S3 staging bucket. Place in the same region as your Redshift cluster to reduce costs. Example: `us-east-1`                                                                                                                                   |
+| [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket.                                                                                                                                                                   |
+| S3 Secret Access Key                                                                                                         | The corresponding AWS Secret Access Key for the Access Key ID.                                                                                                                                                                                                 |
+| S3 Bucket Path (Optional)                                                                                                    | The directory under the S3 bucket where staging data will be written. If not provided, defaults to the root directory. Example: `data_sync/redshift`                                                                                                           |
+| S3 Filename Pattern (Optional)                                                                                               | The pattern for S3 staging file names. Supported placeholders: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. Do not use empty spaces or unsupported placeholders. |
+| Purge Staging Data (Optional)                                                                                                | Whether to delete the staging files from S3 after completing the sync. Default: `true`. Set to `false` to retain files for debugging or auditing.                                                                                                              |
+
+#### Advanced fields
+
+| Field                                                                                                                                         | Description                                                                                                                                                               |
+|:----------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2` |
+| [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
+| Drop CASCADE (Optional)                                                                                                                       | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
+
+## Output schema
+
+Airbyte writes each stream directly into a final table in Redshift with typed columns.
+
+### Final Table schema
+
+The final table contains these fields, in addition to the columns declared in your stream schema:
+
+- `_airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. Column type: `VARCHAR(36)`.
+- `_airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. Column type:
+  `TIMESTAMP WITH TIME ZONE`.
+- `_airbyte_meta`: A JSON object containing metadata about the record, such as changes applied during syncing. Column
+  type: `SUPER`.
+- `_airbyte_generation_id`: An identifier for the generation of the sync that produced this record. Column type:
+  `BIGINT`.
+
+See [Airbyte metadata fields](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these
+fields.
+
+NOTE: As of version 4.0.0, the Redshift destination writes data directly to final tables
+with [direct load](https://docs.airbyte.com/platform/using-airbyte/core-concepts/direct-load-tables). Raw tables (
+`_airbyte_raw_*`) are no longer created. If you are upgrading from an older version, see
+the [migration guide](redshift-migrations.md) for details.
+
+### Schema naming
+
+- Redshift lowercases all schema, table, and column names and replaces special characters with
+  underscores, following the rules defined in
+  [Redshift Names & Identifiers](https://docs.aws.amazon.com/redshift/latest/dg/r_names.html).
+- Identifiers are limited to 127 characters. Names that exceed this limit are truncated to 118 characters with an
+  underscore and an 8-character hash suffix to avoid collisions.
+
+## Data type map
+
+| Airbyte type                        | Redshift type      |
+|:------------------------------------|:-------------------|
+| STRING                              | VARCHAR(65535)     |
+| STRING (BASE64)                     | VARCHAR(65535)     |
+| STRING (BIG_NUMBER)                 | VARCHAR(65535)     |
+| STRING (BIG_INTEGER)                | VARCHAR(65535)     |
+| NUMBER                              | DECIMAL(38,9)      |
+| INTEGER                             | BIGINT             |
+| BOOLEAN                             | BOOLEAN            |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ        |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP          |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ             |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME               |
+| DATE                                | DATE               |
+| OBJECT                              | SUPER              |
+| ARRAY                               | SUPER              |
+| UNKNOWN                             | VARCHAR(65535)     |
+
+### Precision and size limits
+
+Redshift enforces size limits on certain data types. When a value exceeds a limit, Airbyte nulls the value and records
+the change in the `_airbyte_meta` column.
+
+- **VARCHAR**: Maximum 65,535 bytes.
+- **SUPER**: Maximum 16 MB per record. See the AWS documentation
+  on [SUPER type](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html)
+  and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
+- **BIGINT**: Stores values in the range -2^63 to 2^63-1. If an integer value falls outside this range, Airbyte nulls
+  the value and records the change in `_airbyte_meta`.
+- **NUMERIC(38, 9)**: Redshift supports a maximum precision of 38 and scale of 9. If the source value has a scale
+  greater than 9, Redshift silently rounds it — this is not recorded in `_airbyte_meta`. If the precision exceeds 38,
+  Airbyte nulls the value and records the change in `_airbyte_meta`.
+
+### Schema evolution
+
+This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new
+columns to destination tables. The connector requires `CREATE` and `ALTER TABLE` privileges on destination schemas and
+tables to support this feature.
 
 ## Supported sync modes
 
 The Redshift destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+[sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
-- Full Refresh
-- Incremental - Append Sync
-- Incremental - Append + Deduped
-
-## Performance considerations
-
-Synchronization performance depends on the amount of data to be transferred. Cluster scaling issues
-can be resolved directly using the cluster settings in the AWS Redshift console.
-
-## Connector-specific features & highlights
-
-### Notes about Redshift Naming Conventions
-
-From [Redshift Names & Identifiers](https://docs.aws.amazon.com/redshift/latest/dg/r_names.html):
-
-#### Standard Identifiers
-
-- Begin with an ASCII single-byte alphabetic character or underscore character, or a UTF-8 multibyte
-  character two to four bytes long.
-- Subsequent characters can be ASCII single-byte alphanumeric characters, underscores, or dollar
-  signs, or UTF-8 multibyte characters two to four bytes long.
-- Be between 1 and 127 bytes in length, not including quotation marks for delimited identifiers.
-- Contain no quotation marks and no spaces.
-
-#### Delimited Identifiers
-
-Delimited identifiers \(also known as quoted identifiers\) begin and end with double quotation marks
-\("\). If you use a delimited identifier, you must use the double quotation marks for every
-reference to that object. The identifier can contain any standard UTF-8 printable characters other
-than the double quotation mark itself. Therefore, you can create column or table names that include
-otherwise illegal characters, such as spaces or the percent symbol. ASCII letters in delimited
-identifiers are case-insensitive and are folded to lowercase. To use a double quotation mark in a
-string, you must precede it with another double quotation mark character.
-
-Therefore, Airbyte Redshift destination will create tables and schemas using the Unquoted
-identifiers when possible or fallback to Quoted Identifiers if the names are containing special
-characters.
-
-### Data Size Limitations
-
-Redshift specifies a maximum limit of 16MB (and 65535 bytes for any VARCHAR fields within the JSON
-record) to store the raw JSON record data. Thus, when a row is too big to fit, the destination
-connector will do one of the following.
-
-1. Null the value if the varchar size > 65535, The corresponding key information is added to
-   `_airbyte_meta`.
-2. Null the whole record while trying to preserve the Primary Keys and cursor field declared as part
-   of your stream configuration, if the total record size is > 16MB.
-   - For DEDUPE sync mode, if we do not find Primary key(s), we fail the sync.
-   - For OVERWRITE and APPEND mode, syncs will succeed with empty records emitted, if we fail to
-     find Primary key(s).
-
-See AWS docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and
-[SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
+| Sync Mode                                                                                                                                     | Supported? |
+|:----------------------------------------------------------------------------------------------------------------------------------------------|:----------:|
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)                   |    Yes     |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)                         |    Yes     |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) |    Yes     |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)                      |    Yes     |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)    |    Yes     |
 
 ### Encryption
 
 All Redshift connections are encrypted using SSL.
 
-### Output schema
+## Troubleshooting
 
-Each stream will be output into its own raw table in Redshift. Each table will contain 3 columns:
+### 'Cannot connect to Redshift cluster'
 
-- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed. The column type in
-  Redshift is `VARCHAR`.
-- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
-  The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
-- `_airbyte_loaded_at`: a timestamp representing when the row was processed into final table. The
-  column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is
-  `SUPER`.
+If your Redshift cluster is in a private VPC, you may need to:
 
-## Data type map
+1. [Allow connections](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) from
+   Airbyte to your Redshift cluster (if they exist in separate VPCs).
+2. Configure an SSH Bastion Host (see [Step 2](#optional-ssh-bastion-host)) to tunnel through to the private cluster.
+3. For Airbyte Cloud, ensure
+   the [Airbyte IP addresses](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#allow-list-ip-addresses)
+   are allowed in your Redshift cluster's security group and network policy.
 
-| Airbyte type                        | Redshift type                          |
-| :---------------------------------- | :------------------------------------- |
-| STRING                              | VARCHAR                                |
-| STRING (BASE64)                     | VARCHAR                                |
-| STRING (BIG_NUMBER)                 | VARCHAR                                |
-| STRING (BIG_INTEGER)                | VARCHAR                                |
-| NUMBER                              | DECIMAL / NUMERIC                      |
-| INTEGER                             | BIGINT / INT8                          |
-| BOOLEAN                             | BOOLEAN / BOOL                         |
-| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ / TIMESTAMP WITH TIME ZONE |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP                              |
-| STRING (TIME_WITH_TIMEZONE)         | TIMETZ / TIME WITH TIME ZONE           |
-| STRING (TIME_WITHOUT_TIMEZONE)      | TIME                                   |
-| DATE                                | DATE                                   |
-| OBJECT                              | SUPER                                  |
-| ARRAY                               | SUPER                                  |
+### 'S3 access denied' during staging
+
+Ensure your IAM credentials
+have [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
+to the staging S3 bucket. Verify that:
+
+- The Access Key ID and Secret Access Key are correct.
+- The IAM user has a policy allowing `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, and `s3:ListBucket` on the
+  staging bucket.
+- There is no S3 bucket policy blocking access.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Redshift schema.
 
 ## Changelog
 
@@ -221,25 +274,30 @@ Each stream will be output into its own raw table in Redshift. Each table will c
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.3 | 2026-07-09 | [81552](https://github.com/airbytehq/airbyte/pull/81552) | fix: narrow SQLException handling to only treat table-not-found as missing |
+| 4.0.2 | 2026-06-05 | [79161](https://github.com/airbytehq/airbyte/pull/79161) | fix: validate nested string sizes within SUPER columns to prevent COPY error 1224 |
+| 4.0.1 | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135) | fix: resolve sslmode/sslfactory conflict in jdbc_url_params |
+| 4.0.0 | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095) | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1 |
+| 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
 | 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
-| 3.5.2 | 2025-01-10 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
-| 3.5.1 | 2024-12-18 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
+| 3.5.1 | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 3.5.0 | 2024-09-18 | [45435](https://github.com/airbytehq/airbyte/pull/45435) | upgrade all dependencies |
 | 3.4.4 | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb |
 | 3.4.3 | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526) | Revert protocol compliance fix |
 | 3.4.2 | 2024-08-15 | [42506](https://github.com/airbytehq/airbyte/pull/42506) | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance) |
-| 3.4.1   | 2024-08-13 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)       | Simplify Redshift Options                                                                                                                                                                                        |
-| 3.4.0   | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445)   | Respect the `drop cascade` option on raw tables                                                                                                                                                                  |
-| 3.3.1   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                                                       |
-| 3.3.0   | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567)   | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                 |
-| 3.2.0   | 2024-07-02 | [40201](https://github.com/airbytehq/airbyte/pull/40201)   | Add `_airbyte_generation_id` column, and add `sync_id` to `_airbyte_meta` column                                                                                                                                 |
-| 3.1.1   | 2024-06-26 | [39008](https://github.com/airbytehq/airbyte/pull/39008)   | Internal code changes                                                                                                                                                                                            |
-| 3.1.0   | 2024-06-26 | [39141](https://github.com/airbytehq/airbyte/pull/39141)   | Remove nonfunctional "encrypted staging" option                                                                                                                                                                  |
-| 3.0.0   | 2024-06-04 | [38886](https://github.com/airbytehq/airbyte/pull/38886)   | Remove standard inserts mode                                                                                                                                                                                     |
-| 2.6.4   | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825)   | Adopt CDK 0.35.15                                                                                                                                                                                                |
-| 2.6.3   | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803)   | Source auto-conversion to Kotlin                                                                                                                                                                                 |
-| 2.6.2   | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189)   | adding an option to DROP CASCADE on resets                                                                                                                                                                       |
+| 3.4.1 | 2024-08-14 | [44020](https://github.com/airbytehq/airbyte/pull/44020) | Simplify Redshift Options |
+| 3.4.0 | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445) | Respect the `drop cascade` option on raw tables |
+| 3.3.1 | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968) | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status |
+| 3.3.0 | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567) | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 3.2.0 | 2024-07-02 | [40201](https://github.com/airbytehq/airbyte/pull/40201) | Add `_airbyte_generation_id` column, and add `sync_id` to `_airbyte_meta` column |
+| 3.1.1 | 2024-06-26 | [39008](https://github.com/airbytehq/airbyte/pull/39008) | Internal code changes |
+| 3.1.0 | 2024-06-26 | [39141](https://github.com/airbytehq/airbyte/pull/39141) | Remove nonfunctional "encrypted staging" option |
+| 3.0.0 | 2024-06-04 | [38886](https://github.com/airbytehq/airbyte/pull/38886) | Remove standard inserts mode |
+| 2.6.4 | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825) | Adopt CDK 0.35.15 |
+| 2.6.3 | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803) | Source auto-conversion to Kotlin |
+| 2.6.2 | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189) | adding an option to DROP CASCADE on resets |
 | 2.6.1   | 2024-05-13 | [\#38126](https://github.com/airbytehq/airbyte/pull/38126) | Adapt to signature changes in `StreamConfig`                                                                                                                                                                     |
 | 2.6.0   | 2024-05-08 | [\#37713](https://github.com/airbytehq/airbyte/pull/37713) | Remove option for incremental typing and deduping                                                                                                                                                                |
 | 2.5.0   | 2024-05-06 | [\#34613](https://github.com/airbytehq/airbyte/pull/34613) | Upgrade Redshift driver to work with Cluster patch 181; Adapt to CDK 0.33.0; Minor signature changes                                                                                                             |
@@ -307,7 +365,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
 | 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
-| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                      |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (this version has a bug and will not work; use `0.3.56` instead)                                                                                         |
 | 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |

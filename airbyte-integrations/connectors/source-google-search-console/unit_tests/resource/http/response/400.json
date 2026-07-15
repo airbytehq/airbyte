@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": 400,
+    "message": "Invalid request",
+    "errors": [
+      {
+        "message": "Invalid request",
+        "domain": "global",
+        "reason": "badRequest"
+      }
+    ],
+    "status": "INVALID_ARGUMENT"
+  }
+}

@@ -24,6 +24,10 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 | currencies | currency_id | DefaultPaginator | ✅ |  ❌  |
 | taxes | tax_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -31,6 +35,23 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-07-14 | [82076](https://github.com/airbytehq/airbyte/pull/82076) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81308](https://github.com/airbytehq/airbyte/pull/81308) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80724](https://github.com/airbytehq/airbyte/pull/80724) | Update dependencies |
+| 0.0.54 | 2026-06-16 | [80124](https://github.com/airbytehq/airbyte/pull/80124) | Update dependencies |
+| 0.0.53 | 2026-06-09 | [79586](https://github.com/airbytehq/airbyte/pull/79586) | Update dependencies |
+| 0.0.52 | 2026-06-02 | [79072](https://github.com/airbytehq/airbyte/pull/79072) | Update dependencies |
+| 0.0.51 | 2026-04-28 | [77511](https://github.com/airbytehq/airbyte/pull/77511) | Update dependencies |
+| 0.0.50 | 2026-04-21 | [76819](https://github.com/airbytehq/airbyte/pull/76819) | Update dependencies |
+| 0.0.49 | 2026-03-31 | [75835](https://github.com/airbytehq/airbyte/pull/75835) | Update dependencies |
+| 0.0.48 | 2026-03-24 | [75367](https://github.com/airbytehq/airbyte/pull/75367) | Update dependencies |
+| 0.0.47 | 2026-03-10 | [74464](https://github.com/airbytehq/airbyte/pull/74464) | Update dependencies |
+| 0.0.46 | 2026-02-24 | [73995](https://github.com/airbytehq/airbyte/pull/73995) | Update dependencies |
+| 0.0.45 | 2026-02-17 | [73585](https://github.com/airbytehq/airbyte/pull/73585) | Update dependencies |
+| 0.0.44 | 2026-02-10 | [73213](https://github.com/airbytehq/airbyte/pull/73213) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72084](https://github.com/airbytehq/airbyte/pull/72084) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71383](https://github.com/airbytehq/airbyte/pull/71383) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70801](https://github.com/airbytehq/airbyte/pull/70801) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70139](https://github.com/airbytehq/airbyte/pull/70139) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69432](https://github.com/airbytehq/airbyte/pull/69432) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68939](https://github.com/airbytehq/airbyte/pull/68939) | Update dependencies |
@@ -40,8 +61,8 @@ Zoho Expense connector enables seamless data synchronization between Zoho Expens
 | 0.0.34 | 2025-09-30 | [66945](https://github.com/airbytehq/airbyte/pull/66945) | Update dependencies |
 | 0.0.33 | 2025-09-24 | [66460](https://github.com/airbytehq/airbyte/pull/66460) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65743](https://github.com/airbytehq/airbyte/pull/65743) | Update dependencies |
-| 0.0.31 | 2025-08-23 | [65395](https://github.com/airbytehq/airbyte/pull/65395) | Update dependencies |
-| 0.0.30 | 2025-08-09 | [64814](https://github.com/airbytehq/airbyte/pull/64814) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65395](https://github.com/airbytehq/airbyte/pull/65395) | Update dependencies |
+| 0.0.30 | 2025-08-10 | [64814](https://github.com/airbytehq/airbyte/pull/64814) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64332](https://github.com/airbytehq/airbyte/pull/64332) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [64062](https://github.com/airbytehq/airbyte/pull/64062) | Update dependencies |
 | 0.0.27 | 2025-07-20 | [63665](https://github.com/airbytehq/airbyte/pull/63665) | Update dependencies |

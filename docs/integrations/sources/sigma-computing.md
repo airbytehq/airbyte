@@ -31,6 +31,10 @@ Next, head over to Developer Access and click on create. This will generate your
 | workspaces | workspaceId | DefaultPaginator | ✅ |  ❌  |
 | workbooks | workbookId | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,18 @@ Next, head over to Developer Access and click on create. This will generate your
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-07-14 | [82019](https://github.com/airbytehq/airbyte/pull/82019) | Update dependencies |
+| 0.0.51 | 2026-06-30 | [81246](https://github.com/airbytehq/airbyte/pull/81246) | Update dependencies |
+| 0.0.50 | 2026-06-23 | [80648](https://github.com/airbytehq/airbyte/pull/80648) | Update dependencies |
+| 0.0.49 | 2026-06-16 | [80022](https://github.com/airbytehq/airbyte/pull/80022) | Update dependencies |
+| 0.0.48 | 2026-06-09 | [79515](https://github.com/airbytehq/airbyte/pull/79515) | Update dependencies |
+| 0.0.47 | 2026-06-02 | [78926](https://github.com/airbytehq/airbyte/pull/78926) | Update dependencies |
+| 0.0.46 | 2026-04-28 | [77444](https://github.com/airbytehq/airbyte/pull/77444) | Update dependencies |
+| 0.0.45 | 2026-04-21 | [75121](https://github.com/airbytehq/airbyte/pull/75121) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [73971](https://github.com/airbytehq/airbyte/pull/73971) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [72124](https://github.com/airbytehq/airbyte/pull/72124) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71649](https://github.com/airbytehq/airbyte/pull/71649) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70695](https://github.com/airbytehq/airbyte/pull/70695) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [70098](https://github.com/airbytehq/airbyte/pull/70098) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69474](https://github.com/airbytehq/airbyte/pull/69474) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68781](https://github.com/airbytehq/airbyte/pull/68781) | Update dependencies |
@@ -47,7 +63,7 @@ Next, head over to Developer Access and click on create. This will generate your
 | 0.0.34 | 2025-09-30 | [66908](https://github.com/airbytehq/airbyte/pull/66908) | Update dependencies |
 | 0.0.33 | 2025-09-24 | [66268](https://github.com/airbytehq/airbyte/pull/66268) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [66130](https://github.com/airbytehq/airbyte/pull/66130) | Update dependencies |
-| 0.0.31 | 2025-08-23 | [65410](https://github.com/airbytehq/airbyte/pull/65410) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65410](https://github.com/airbytehq/airbyte/pull/65410) | Update dependencies |
 | 0.0.30 | 2025-08-16 | [64477](https://github.com/airbytehq/airbyte/pull/64477) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [63968](https://github.com/airbytehq/airbyte/pull/63968) | Update dependencies |
 | 0.0.28 | 2025-07-12 | [63069](https://github.com/airbytehq/airbyte/pull/63069) | Update dependencies |

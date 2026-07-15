@@ -122,6 +122,10 @@ To filter messages after extraction, you can:
 
 For more information about Microsoft Graph Mail API capabilities, see the [Microsoft Graph Mail API documentation](https://learn.microsoft.com/en-us/graph/api/user-list-messages).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -129,6 +133,19 @@ For more information about Microsoft Graph Mail API capabilities, see the [Micro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2026-07-14 | [81937](https://github.com/airbytehq/airbyte/pull/81937) | Update dependencies |
+| 0.0.23 | 2026-06-30 | [81193](https://github.com/airbytehq/airbyte/pull/81193) | Update dependencies |
+| 0.0.22 | 2026-06-23 | [80580](https://github.com/airbytehq/airbyte/pull/80580) | Update dependencies |
+| 0.0.21 | 2026-06-16 | [79998](https://github.com/airbytehq/airbyte/pull/79998) | Update dependencies |
+| 0.0.20 | 2026-06-09 | [79429](https://github.com/airbytehq/airbyte/pull/79429) | Update dependencies |
+| 0.0.19 | 2026-06-02 | [78902](https://github.com/airbytehq/airbyte/pull/78902) | Update dependencies |
+| 0.0.18 | 2026-04-28 | [77353](https://github.com/airbytehq/airbyte/pull/77353) | Update dependencies |
+| 0.0.17 | 2026-04-21 | [76688](https://github.com/airbytehq/airbyte/pull/76688) | Update dependencies |
+| 0.0.16 | 2026-03-17 | [74968](https://github.com/airbytehq/airbyte/pull/74968) | Update dependencies |
+| 0.0.15 | 2026-03-03 | [73816](https://github.com/airbytehq/airbyte/pull/73816) | Update dependencies |
+| 0.0.14 | 2026-01-20 | [72166](https://github.com/airbytehq/airbyte/pull/72166) | Update dependencies |
+| 0.0.13 | 2026-01-14 | [71676](https://github.com/airbytehq/airbyte/pull/71676) | Update dependencies |
+| 0.0.12 | 2025-12-18 | [70526](https://github.com/airbytehq/airbyte/pull/70526) | Update dependencies |
 | 0.0.11 | 2025-11-25 | [70123](https://github.com/airbytehq/airbyte/pull/70123) | Update dependencies |
 | 0.0.10 | 2025-11-18 | [69707](https://github.com/airbytehq/airbyte/pull/69707) | Update dependencies |
 | 0.0.9 | 2025-10-29 | [69010](https://github.com/airbytehq/airbyte/pull/69010) | Update dependencies |
@@ -138,7 +155,7 @@ For more information about Microsoft Graph Mail API capabilities, see the [Micro
 | 0.0.5 | 2025-09-30 | [66389](https://github.com/airbytehq/airbyte/pull/66389) | Update dependencies |
 | 0.0.4 | 2025-09-09 | [65826](https://github.com/airbytehq/airbyte/pull/65826) | Update dependencies |
 | 0.0.3 | 2025-08-23 | [65161](https://github.com/airbytehq/airbyte/pull/65161) | Update dependencies |
-| 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.0.2 | 2025-08-15 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-14 | | Initial release by [@saif-qureshi-341](https://github.com/saif-qureshi-341) via Connector Builder |
 
 </details>

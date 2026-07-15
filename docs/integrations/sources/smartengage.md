@@ -24,6 +24,10 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 - SmartEngage API Key
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -31,11 +35,21 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.42 | 2026-06-30 | [81258](https://github.com/airbytehq/airbyte/pull/81258) | Update dependencies |
+| 0.2.41 | 2026-06-23 | [80630](https://github.com/airbytehq/airbyte/pull/80630) | Update dependencies |
+| 0.2.40 | 2026-06-16 | [80027](https://github.com/airbytehq/airbyte/pull/80027) | Update dependencies |
+| 0.2.39 | 2026-06-09 | [79477](https://github.com/airbytehq/airbyte/pull/79477) | Update dependencies |
+| 0.2.38 | 2026-06-02 | [78988](https://github.com/airbytehq/airbyte/pull/78988) | Update dependencies |
+| 0.2.37 | 2026-04-28 | [77449](https://github.com/airbytehq/airbyte/pull/77449) | Update dependencies |
+| 0.2.36 | 2026-04-21 | [76745](https://github.com/airbytehq/airbyte/pull/76745) | Update dependencies |
+| 0.2.35 | 2026-03-31 | [75789](https://github.com/airbytehq/airbyte/pull/75789) | Update dependencies |
+| 0.2.34 | 2026-03-17 | [75117](https://github.com/airbytehq/airbyte/pull/75117) | Update dependencies |
+| 0.2.33 | 2026-03-03 | [67440](https://github.com/airbytehq/airbyte/pull/67440) | Update dependencies |
 | 0.2.32 | 2025-09-30 | [66915](https://github.com/airbytehq/airbyte/pull/66915) | Update dependencies |
 | 0.2.31 | 2025-09-24 | [65724](https://github.com/airbytehq/airbyte/pull/65724) | Update dependencies |
-| 0.2.30 | 2025-08-23 | [65414](https://github.com/airbytehq/airbyte/pull/65414) | Update dependencies |
+| 0.2.30 | 2025-08-24 | [65414](https://github.com/airbytehq/airbyte/pull/65414) | Update dependencies |
 | 0.2.29 | 2025-08-16 | [65021](https://github.com/airbytehq/airbyte/pull/65021) | Update dependencies |
-| 0.2.28 | 2025-08-02 | [64467](https://github.com/airbytehq/airbyte/pull/64467) | Update dependencies |
+| 0.2.28 | 2025-08-03 | [64467](https://github.com/airbytehq/airbyte/pull/64467) | Update dependencies |
 | 0.2.27 | 2025-07-26 | [63972](https://github.com/airbytehq/airbyte/pull/63972) | Update dependencies |
 | 0.2.26 | 2025-07-05 | [62694](https://github.com/airbytehq/airbyte/pull/62694) | Update dependencies |
 | 0.2.25 | 2025-06-28 | [62287](https://github.com/airbytehq/airbyte/pull/62287) | Update dependencies |

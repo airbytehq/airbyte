@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command.iceberg.parquet
@@ -126,6 +126,16 @@ data class PolarisCatalogConfiguration(
     @JsonSchemaTitle("Client Secret")
     @JsonPropertyDescription("The OAuth Client Secret for authenticating with the Polaris server.")
     val clientSecret: String,
+    @JsonSchemaTitle("OAuth Scope")
+    @JsonPropertyDescription(
+        "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>."
+    )
+    val scope: String,
+    @JsonSchemaTitle("OAuth2 Server URI")
+    @JsonPropertyDescription(
+        "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions."
+    )
+    val oauth2ServerUri: String? = null,
     @get:JsonSchemaTitle("Namespace")
     @get:JsonPropertyDescription(
         """The namespace to be used in the Table identifier.

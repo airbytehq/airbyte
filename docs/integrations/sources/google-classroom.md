@@ -19,6 +19,10 @@ Google Classroom connector enables seamless data integration between Google Clas
 | coursework | id | DefaultPaginator | ✅ |  ❌  |
 | studentsubmissions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,20 @@ Google Classroom connector enables seamless data integration between Google Clas
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-07-14 | [81847](https://github.com/airbytehq/airbyte/pull/81847) | Update dependencies |
+| 0.0.53 | 2026-06-30 | [81087](https://github.com/airbytehq/airbyte/pull/81087) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80484](https://github.com/airbytehq/airbyte/pull/80484) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79878](https://github.com/airbytehq/airbyte/pull/79878) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79337](https://github.com/airbytehq/airbyte/pull/79337) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78736](https://github.com/airbytehq/airbyte/pull/78736) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77248](https://github.com/airbytehq/airbyte/pull/77248) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76597](https://github.com/airbytehq/airbyte/pull/76597) | Update dependencies |
+| 0.0.46 | 2026-03-31 | [75660](https://github.com/airbytehq/airbyte/pull/75660) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [74656](https://github.com/airbytehq/airbyte/pull/74656) | Update dependencies |
+| 0.0.44 | 2026-02-24 | [73933](https://github.com/airbytehq/airbyte/pull/73933) | Update dependencies |
+| 0.0.43 | 2026-01-20 | [71927](https://github.com/airbytehq/airbyte/pull/71927) | Update dependencies |
+| 0.0.42 | 2026-01-14 | [71412](https://github.com/airbytehq/airbyte/pull/71412) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70700](https://github.com/airbytehq/airbyte/pull/70700) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [69900](https://github.com/airbytehq/airbyte/pull/69900) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69413](https://github.com/airbytehq/airbyte/pull/69413) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [69026](https://github.com/airbytehq/airbyte/pull/69026) | Update dependencies |

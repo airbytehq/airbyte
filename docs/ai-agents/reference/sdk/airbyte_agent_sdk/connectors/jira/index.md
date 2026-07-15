@@ -1,0 +1,932 @@
+---
+id: airbyte_agent_sdk-connectors-jira-index
+title: airbyte_agent_sdk.connectors.jira.index
+---
+
+Module airbyte_agent_sdk.connectors.jira
+========================================
+Jira connector for Airbyte SDK.
+
+Auto-generated from OpenAPI specification.
+
+Sub-modules
+-----------
+* airbyte_agent_sdk.connectors.jira.connector
+* airbyte_agent_sdk.connectors.jira.connector_model
+* airbyte_agent_sdk.connectors.jira.models
+* airbyte_agent_sdk.connectors.jira.types
+
+Classes
+-------
+
+<a id="AirbyteAuthConfig"></a>
+
+`AirbyteAuthConfig(**data: Any)`
+:   Authentication configuration for Airbyte hosted mode execution.
+    
+    Pass this to the connector's `auth_config` parameter to use hosted mode,
+    where API credentials are stored securely in Airbyte Cloud.
+    
+    For hosted mode execution, provide client credentials with either:
+    - `connector_id`: Direct connector/source ID (skips lookup)
+    - `workspace_name`: Workspace name for connector lookup
+    
+    Attributes:
+        workspace_name: Workspace name for hosted mode connector lookup
+        organization_id: Optional Airbyte organization ID for multi-org selection
+        airbyte_client_id: Airbyte OAuth client ID (required for hosted mode)
+        airbyte_client_secret: Airbyte OAuth client secret (required for hosted mode)
+        connector_id: Specific connector/source ID (skips lookup if provided)
+    
+    Examples:
+        # Hosted mode with connector_id (no lookup needed)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with workspace_name (lookup by workspace)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `airbyte_client_id: str | None`
+    :   The type of the None singleton.
+
+    `airbyte_client_secret: str | None`
+    :   The type of the None singleton.
+
+    `connector_id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `organization_id: str | None`
+    :   The type of the None singleton.
+
+    `workspace_name: str | None`
+    :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssueCommentsSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssueFieldsSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssueWorklogsSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssuesSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[ProjectsSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[UsersSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.jira.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="IssueCommentsSearchResult"></a>
+
+`IssueCommentsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssueFieldsSearchResult"></a>
+
+`IssueFieldsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssueWorklogsSearchResult"></a>
+
+`IssueWorklogsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssuesSearchResult"></a>
+
+`IssuesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ProjectsSearchResult"></a>
+
+`ProjectsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="IssueCommentsSearchData"></a>
+
+`IssueCommentsSearchData(**data: Any)`
+:   Search result data for issue_comments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author: dict[str, typing.Any] | None`
+    :   The ID of the user who created the comment
+
+    `body: dict[str, typing.Any]`
+    :   The comment text in Atlassian Document Format
+
+    `created: str`
+    :   The date and time at which the comment was created
+
+    `id: str`
+    :   The ID of the comment
+
+    `issue_id: str | None`
+    :   Id of the related issue
+
+    `jsd_public: bool`
+    :   Whether the comment is visible in Jira Service Desk
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: list[typing.Any]`
+    :   A list of comment properties
+
+    `rendered_body: str | None`
+    :   The rendered version of the comment
+
+    `self: str`
+    :   The URL of the comment
+
+    `update_author: dict[str, typing.Any] | None`
+    :   The ID of the user who updated the comment last
+
+    `updated: str`
+    :   The date and time at which the comment was updated last
+
+    `visibility: dict[str, typing.Any] | None`
+    :   The group or role to which this item is visible
+
+<a id="IssueFieldsSearchData"></a>
+
+`IssueFieldsSearchData(**data: Any)`
+:   Search result data for issue_fields entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `clause_names: list[typing.Any]`
+    :   The names that can be used to reference the field in an advanced search
+
+    `custom: bool`
+    :   Whether the field is a custom field
+
+    `id: str`
+    :   The ID of the field
+
+    `key: str | None`
+    :   The key of the field
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The name of the field
+
+    `navigable: bool`
+    :   Whether the field can be used as a column on the issue navigator
+
+    `orderable: bool`
+    :   Whether the content of the field can be used to order lists
+
+    `schema_: dict[str, typing.Any] | None`
+    :   The data schema for the field
+
+    `scope: dict[str, typing.Any] | None`
+    :   The scope of the field
+
+    `searchable: bool`
+    :   Whether the content of the field can be searched
+
+    `untranslated_name: str | None`
+    :   The untranslated name of the field
+
+<a id="IssueWorklogsSearchData"></a>
+
+`IssueWorklogsSearchData(**data: Any)`
+:   Search result data for issue_worklogs entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author: dict[str, typing.Any]`
+    :   Details of the user who created the worklog
+
+    `comment: dict[str, typing.Any] | None`
+    :   A comment about the worklog in Atlassian Document Format
+
+    `created: str`
+    :   The datetime on which the worklog was created
+
+    `id: str`
+    :   The ID of the worklog record
+
+    `issue_id: str`
+    :   The ID of the issue this worklog is for
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `properties: list[typing.Any]`
+    :   Details of properties for the worklog
+
+    `self: str`
+    :   The URL of the worklog item
+
+    `started: str`
+    :   The datetime on which the worklog effort was started
+
+    `time_spent: str | None`
+    :   The time spent working on the issue as days, hours, or minutes
+
+    `time_spent_seconds: int`
+    :   The time in seconds spent working on the issue
+
+    `update_author: dict[str, typing.Any] | None`
+    :   Details of the user who last updated the worklog
+
+    `updated: str`
+    :   The datetime on which the worklog was last updated
+
+    `visibility: dict[str, typing.Any] | None`
+    :   Details about any restrictions in the visibility of the worklog
+
+<a id="IssuesSearchData"></a>
+
+`IssuesSearchData(**data: Any)`
+:   Search result data for issues entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `changelog: dict[str, typing.Any] | None`
+    :   Details of changelogs associated with the issue
+
+    `created: str | None`
+    :   The timestamp when the issue was created
+
+    `editmeta: dict[str, typing.Any] | None`
+    :   The metadata for the fields on the issue that can be amended
+
+    `expand: str`
+    :   Expand options that include additional issue details in the response
+
+    `fields: dict[str, typing.Any]`
+    :   Details of various fields associated with the issue
+
+    `fields_to_include: dict[str, typing.Any]`
+    :   Specify the fields to include in the fetched issues data
+
+    `id: str`
+    :   The unique ID of the issue
+
+    `key: str`
+    :   The unique key of the issue
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `names: dict[str, typing.Any]`
+    :   The ID and name of each field present on the issue
+
+    `operations: dict[str, typing.Any] | None`
+    :   The operations that can be performed on the issue
+
+    `project_id: str`
+    :   The ID of the project containing the issue
+
+    `project_key: str`
+    :   The key of the project containing the issue
+
+    `properties: dict[str, typing.Any]`
+    :   Details of the issue properties identified in the request
+
+    `rendered_fields: dict[str, typing.Any]`
+    :   The rendered value of each field present on the issue
+
+    `schema_: dict[str, typing.Any]`
+    :   The schema describing each field present on the issue
+
+    `self: str`
+    :   The URL of the issue details
+
+    `transitions: list[typing.Any]`
+    :   The transitions that can be performed on the issue
+
+    `updated: str | None`
+    :   The timestamp when the issue was last updated
+
+    `versioned_representations: dict[str, typing.Any]`
+    :   The versions of each field on the issue
+
+<a id="JiraConnector"></a>
+
+`JiraConnector(auth_config: JiraAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, subdomain: str | None = None)`
+:   Type-safe Jira API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new jira connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., JiraAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)            subdomain: Your Jira Cloud subdomain
+    Examples:
+        # Local mode (direct API calls)
+        connector = JiraConnector(auth_config=JiraAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = JiraConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = JiraConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = JiraConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @JiraConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @JiraConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @JiraConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.jira.models.JiraCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            JiraCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['api_search', 'create', 'get', 'update', 'delete', 'list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="JiraOAuthCredentials"></a>
+
+`JiraOAuthCredentials(**data: Any)`
+:   Jira OAuth App Credentials - Provide your own Jira OAuth app credentials to override the default Airbyte-managed ones.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `client_id: str`
+    :   Your Jira OAuth app's client ID
+
+    `client_secret: str`
+    :   Your Jira OAuth app's client secret
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ProjectsSearchData"></a>
+
+`ProjectsSearchData(**data: Any)`
+:   Search result data for projects entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `archived: bool`
+    :   Whether the project is archived
+
+    `archived_by: dict[str, typing.Any] | None`
+    :   The user who archived the project
+
+    `archived_date: str | None`
+    :   The date when the project was archived
+
+    `assignee_type: str | None`
+    :   The default assignee when creating issues for this project
+
+    `avatar_urls: dict[str, typing.Any]`
+    :   The URLs of the project's avatars
+
+    `components: list[typing.Any]`
+    :   List of the components contained in the project
+
+    `deleted: bool`
+    :   Whether the project is marked as deleted
+
+    `deleted_by: dict[str, typing.Any] | None`
+    :   The user who marked the project as deleted
+
+    `deleted_date: str | None`
+    :   The date when the project was marked as deleted
+
+    `description: str | None`
+    :   A brief description of the project
+
+    `email: str | None`
+    :   An email address associated with the project
+
+    `entity_id: str | None`
+    :   The unique identifier of the project entity
+
+    `expand: str | None`
+    :   Expand options that include additional project details in the response
+
+    `favourite: bool`
+    :   Whether the project is selected as a favorite
+
+    `id: str`
+    :   The ID of the project
+
+    `insight: dict[str, typing.Any] | None`
+    :   Insights about the project
+
+    `is_private: bool`
+    :   Whether the project is private
+
+    `issue_type_hierarchy: dict[str, typing.Any] | None`
+    :   The issue type hierarchy for the project
+
+    `issue_types: list[typing.Any]`
+    :   List of the issue types available in the project
+
+    `key: str`
+    :   The key of the project
+
+    `lead: dict[str, typing.Any] | None`
+    :   The username of the project lead
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The name of the project
+
+    `permissions: dict[str, typing.Any] | None`
+    :   User permissions on the project
+
+    `project_category: dict[str, typing.Any] | None`
+    :   The category the project belongs to
+
+    `project_type_key: str | None`
+    :   The project type of the project
+
+    `properties: dict[str, typing.Any]`
+    :   Map of project properties
+
+    `retention_till_date: str | None`
+    :   The date when the project is deleted permanently
+
+    `roles: dict[str, typing.Any]`
+    :   The name and self URL for each role defined in the project
+
+    `self: str`
+    :   The URL of the project details
+
+    `simplified: bool`
+    :   Whether the project is simplified
+
+    `style: str | None`
+    :   The type of the project
+
+    `url: str | None`
+    :   A link to information about this project
+
+    `uuid: str | None`
+    :   Unique ID for next-gen projects
+
+    `versions: list[typing.Any]`
+    :   The versions defined in the project
+
+<a id="UsersSearchData"></a>
+
+`UsersSearchData(**data: Any)`
+:   Search result data for users entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_id: str`
+    :   The account ID of the user, uniquely identifying the user across all Atlassian products
+
+    `account_type: str | None`
+    :   The user account type (atlassian, app, or customer)
+
+    `active: bool`
+    :   Indicates whether the user is active
+
+    `application_roles: dict[str, typing.Any] | None`
+    :   The application roles assigned to the user
+
+    `avatar_urls: dict[str, typing.Any]`
+    :   The avatars of the user
+
+    `display_name: str | None`
+    :   The display name of the user
+
+    `email_address: str | None`
+    :   The email address of the user
+
+    `expand: str | None`
+    :   Options to include additional user details in the response
+
+    `groups: dict[str, typing.Any] | None`
+    :   The groups to which the user belongs
+
+    `key: str | None`
+    :   Deprecated property
+
+    `locale: str | None`
+    :   The locale of the user
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Deprecated property
+
+    `self: str`
+    :   The URL of the user
+
+    `time_zone: str | None`
+    :   The time zone specified in the user's profile

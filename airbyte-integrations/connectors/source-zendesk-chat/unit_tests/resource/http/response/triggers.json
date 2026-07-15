@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "name": "Welcome Message",
+    "description": "Send welcome message to visitors",
+    "enabled": true,
+    "definition": {
+      "condition": {
+        "type": "page_visit"
+      },
+      "actions": [
+        {
+          "type": "send_message",
+          "value": "Welcome!"
+        }
+      ]
+    }
+  }
+]

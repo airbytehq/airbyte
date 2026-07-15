@@ -1,0 +1,15 @@
+{
+  "result": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "January Newsletter",
+      "status": "draft",
+      "categories": ["newsletter", "monthly"],
+      "send_at": null,
+      "is_abtest": false,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "_metadata": {}
+}

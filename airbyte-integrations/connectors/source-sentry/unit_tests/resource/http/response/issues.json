@@ -1,0 +1,15 @@
+[
+  {
+    "id": "issue123",
+    "title": "Cannot read property error",
+    "status": "unresolved",
+    "count": "150",
+    "userCount": 45,
+    "project": {
+      "id": "proj123",
+      "name": "test-project"
+    },
+    "lastSeen": "2024-01-20T15:00:00Z",
+    "firstSeen": "2024-01-10T08:00:00Z"
+  }
+]

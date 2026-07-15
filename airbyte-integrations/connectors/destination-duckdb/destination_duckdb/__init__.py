@@ -5,4 +5,5 @@
 
 from .destination import DestinationDuckdb
 
+
 __all__ = ["DestinationDuckdb"]

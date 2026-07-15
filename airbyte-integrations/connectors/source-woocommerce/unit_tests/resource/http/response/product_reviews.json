@@ -1,0 +1,21 @@
+[
+  {
+    "id": 22,
+    "date_created": "2024-01-10T09:00:00",
+    "date_created_gmt": "2024-01-10T09:00:00",
+    "product_id": 93,
+    "product_name": "Test Product",
+    "product_permalink": "https://example.com/product/test-product",
+    "status": "approved",
+    "reviewer": "John Doe",
+    "reviewer_email": "john@example.com",
+    "review": "Great product! Highly recommended.",
+    "rating": 5,
+    "verified": true,
+    "reviewer_avatar_urls": {
+      "24": "https://secure.gravatar.com/avatar/?s=24&d=mm&r=g",
+      "48": "https://secure.gravatar.com/avatar/?s=48&d=mm&r=g",
+      "96": "https://secure.gravatar.com/avatar/?s=96&d=mm&r=g"
+    }
+  }
+]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake.check
@@ -34,14 +34,15 @@ import org.apache.iceberg.types.Types
  */
 @Singleton
 class GcsDataLakeChecker(
+    private val config: GcsDataLakeConfiguration,
     private val icebergTableCleaner: IcebergTableCleaner,
     private val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil,
     private val icebergUtil: IcebergUtil,
     private val tableIdGenerator: TableIdGenerator,
-) : DestinationChecker<GcsDataLakeConfiguration> {
+) : DestinationChecker {
 
-    override fun check(config: GcsDataLakeConfiguration) {
-        catalogValidation(config)
+    override fun check() {
+        catalogValidation()
     }
 
     /**
@@ -50,11 +51,10 @@ class GcsDataLakeChecker(
      * Creates a uniquely-named test table in the configured namespace, then immediately cleans it
      * up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
      *
-     * @param config The GCS Data Lake destination configuration
      * @throws Exception if catalog validation fails (e.g., invalid credentials, missing
      * permissions)
      */
-    private fun catalogValidation(config: GcsDataLakeConfiguration) {
+    private fun catalogValidation() {
         val catalogProperties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
         val catalog =
             icebergUtil.createCatalog(

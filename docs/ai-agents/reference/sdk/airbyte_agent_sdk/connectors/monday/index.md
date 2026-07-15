@@ -1,0 +1,928 @@
+---
+id: airbyte_agent_sdk-connectors-monday-index
+title: airbyte_agent_sdk.connectors.monday.index
+---
+
+Module airbyte_agent_sdk.connectors.monday
+==========================================
+Monday connector for Airbyte SDK.
+
+Auto-generated from OpenAPI specification.
+
+Sub-modules
+-----------
+* airbyte_agent_sdk.connectors.monday.connector
+* airbyte_agent_sdk.connectors.monday.connector_model
+* airbyte_agent_sdk.connectors.monday.models
+* airbyte_agent_sdk.connectors.monday.types
+
+Classes
+-------
+
+<a id="ActivityLogsSearchData"></a>
+
+`ActivityLogsSearchData(**data: Any)`
+:   Search result data for activity_logs entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `board_id: int | None`
+    :   Board ID the activity belongs to
+
+    `created_at: str | None`
+    :   When the activity occurred
+
+    `created_at_int: int | None`
+    :   When the activity occurred (Unix timestamp)
+
+    `data: str | None`
+    :   Event data (JSON string)
+
+    `entity: str | None`
+    :   Entity type that was affected
+
+    `event: str | None`
+    :   Event type
+
+    `id: str | None`
+    :   Unique activity log identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `pulse_id: int | None`
+    :   Item (pulse) ID the activity belongs to
+
+    `user_id: str | None`
+    :   ID of the user who performed the action
+
+<a id="AirbyteAuthConfig"></a>
+
+`AirbyteAuthConfig(**data: Any)`
+:   Authentication configuration for Airbyte hosted mode execution.
+    
+    Pass this to the connector's `auth_config` parameter to use hosted mode,
+    where API credentials are stored securely in Airbyte Cloud.
+    
+    For hosted mode execution, provide client credentials with either:
+    - `connector_id`: Direct connector/source ID (skips lookup)
+    - `workspace_name`: Workspace name for connector lookup
+    
+    Attributes:
+        workspace_name: Workspace name for hosted mode connector lookup
+        organization_id: Optional Airbyte organization ID for multi-org selection
+        airbyte_client_id: Airbyte OAuth client ID (required for hosted mode)
+        airbyte_client_secret: Airbyte OAuth client secret (required for hosted mode)
+        connector_id: Specific connector/source ID (skips lookup if provided)
+    
+    Examples:
+        # Hosted mode with connector_id (no lookup needed)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with workspace_name (lookup by workspace)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `airbyte_client_id: str | None`
+    :   The type of the None singleton.
+
+    `airbyte_client_secret: str | None`
+    :   The type of the None singleton.
+
+    `connector_id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `organization_id: str | None`
+    :   The type of the None singleton.
+
+    `workspace_name: str | None`
+    :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[ActivityLogsSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[BoardsSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[ItemsSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[TagsSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[TeamsSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[UpdatesSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[WorkspacesSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.monday.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ActivityLogsSearchResult"></a>
+
+`ActivityLogsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BoardsSearchResult"></a>
+
+`BoardsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ItemsSearchResult"></a>
+
+`ItemsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TagsSearchResult"></a>
+
+`TagsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TeamsSearchResult"></a>
+
+`TeamsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UpdatesSearchResult"></a>
+
+`UpdatesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="UsersSearchResult"></a>
+
+`UsersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="WorkspacesSearchResult"></a>
+
+`WorkspacesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BoardsSearchData"></a>
+
+`BoardsSearchData(**data: Any)`
+:   Search result data for boards entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `board_kind: str | None`
+    :   Board kind (public, private, share)
+
+    `columns: list[typing.Any] | None`
+    :   Board columns
+
+    `communication: str | None`
+    :   Board communication value
+
+    `creator: dict[str, typing.Any] | None`
+    :   Board creator
+
+    `description: str | None`
+    :   Board description
+
+    `groups: list[typing.Any] | None`
+    :   Board groups
+
+    `id: str | None`
+    :   Unique board identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Board name
+
+    `owners: list[typing.Any] | None`
+    :   Board owners
+
+    `permissions: str | None`
+    :   Board permissions
+
+    `state: str | None`
+    :   Board state (active, archived, deleted)
+
+    `subscribers: list[typing.Any] | None`
+    :   Board subscribers
+
+    `tags: list[typing.Any] | None`
+    :   Board tags
+
+    `top_group: dict[str, typing.Any] | None`
+    :   Top group on the board
+
+    `type_: str | None`
+    :   Board type
+
+    `updated_at: str | None`
+    :   When the board was last updated
+
+    `updated_at_int: int | None`
+    :   When the board was last updated (Unix timestamp)
+
+    `updates: list[typing.Any] | None`
+    :   Board updates
+
+    `views: list[typing.Any] | None`
+    :   Board views
+
+    `workspace: dict[str, typing.Any] | None`
+    :   Workspace the board belongs to
+
+<a id="ItemsSearchData"></a>
+
+`ItemsSearchData(**data: Any)`
+:   Search result data for items entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `assets: list[typing.Any] | None`
+    :   Files attached to the item
+
+    `board: dict[str, typing.Any] | None`
+    :   Board the item belongs to
+
+    `column_values: list[typing.Any] | None`
+    :   Item column values
+
+    `created_at: str | None`
+    :   When the item was created
+
+    `creator_id: str | None`
+    :   ID of the user who created the item
+
+    `group: dict[str, typing.Any] | None`
+    :   Group the item belongs to
+
+    `id: str | None`
+    :   Unique item identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Item name
+
+    `parent_item: dict[str, typing.Any] | None`
+    :   Parent item (for subitems)
+
+    `state: str | None`
+    :   Item state (active, archived, deleted)
+
+    `subscribers: list[typing.Any] | None`
+    :   Item subscribers
+
+    `updated_at: str | None`
+    :   When the item was last updated
+
+    `updated_at_int: int | None`
+    :   When the item was last updated (Unix timestamp)
+
+    `updates: list[typing.Any] | None`
+    :   Item updates
+
+<a id="MondayConnector"></a>
+
+`MondayConnector(auth_config: MondayAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Monday API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new monday connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., MondayAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = MondayConnector(auth_config=MondayAuthConfig(access_token="...", client_id="...", client_secret="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = MondayConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = MondayConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = MondayConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @MondayConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @MondayConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @MondayConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.monday.models.MondayCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            MondayCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+<a id="TagsSearchData"></a>
+
+`TagsSearchData(**data: Any)`
+:   Search result data for tags entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `color: str | None`
+    :   Tag color
+
+    `id: str | None`
+    :   Unique tag identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Tag name
+
+<a id="TeamsSearchData"></a>
+
+`TeamsSearchData(**data: Any)`
+:   Search result data for teams entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: int | None`
+    :   Unique team identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Team name
+
+    `picture_url: str | None`
+    :   Team picture URL
+
+    `users: list[typing.Any] | None`
+    :   Team members
+
+<a id="UpdatesSearchData"></a>
+
+`UpdatesSearchData(**data: Any)`
+:   Search result data for updates entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `assets: list[typing.Any] | None`
+    :   Files attached to this update
+
+    `body: str | None`
+    :   Update body (HTML)
+
+    `created_at: str | None`
+    :   When the update was created
+
+    `creator_id: str | None`
+    :   ID of the user who created the update
+
+    `id: str | None`
+    :   Unique update identifier
+
+    `item_id: str | None`
+    :   ID of the item this update belongs to
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `replies: list[typing.Any] | None`
+    :   Replies to this update
+
+    `text_body: str | None`
+    :   Update body (plain text)
+
+    `updated_at: str | None`
+    :   When the update was last modified
+
+<a id="UsersSearchData"></a>
+
+`UsersSearchData(**data: Any)`
+:   Search result data for users entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `birthday: str | None`
+    :   User's birthday
+
+    `country_code: str | None`
+    :   User's country code
+
+    `created_at: str | None`
+    :   When the user was created
+
+    `email: str | None`
+    :   User's email address
+
+    `id: str | None`
+    :   Unique user identifier
+
+    `location: str | None`
+    :   User's location
+
+    `mobile_phone: str | None`
+    :   User's mobile phone number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   User's display name
+
+    `phone: str | None`
+    :   User's phone number
+
+    `time_zone_identifier: str | None`
+    :   User's timezone identifier
+
+    `title: str | None`
+    :   User's job title
+
+    `url: str | None`
+    :   User's Monday.com profile URL
+
+    `utc_hours_diff: float | None`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
+
+<a id="WorkspacesSearchData"></a>
+
+`WorkspacesSearchData(**data: Any)`
+:   Search result data for workspaces entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_product: dict[str, typing.Any] | None`
+    :   Account product info
+
+    `created_at: str | None`
+    :   When the workspace was created
+
+    `description: str | None`
+    :   Workspace description
+
+    `id: str | None`
+    :   Unique workspace identifier
+
+    `kind: str | None`
+    :   Workspace kind (open, closed)
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Workspace name
+
+    `owners_subscribers: list[typing.Any] | None`
+    :   Owner subscribers
+
+    `settings: dict[str, typing.Any] | None`
+    :   Workspace settings
+
+    `state: str | None`
+    :   Workspace state
+
+    `team_owners_subscribers: list[typing.Any] | None`
+    :   Team owner subscribers
+
+    `teams_subscribers: list[typing.Any] | None`
+    :   Team subscribers
+
+    `users_subscribers: list[typing.Any] | None`
+    :   User subscribers

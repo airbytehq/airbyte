@@ -25,6 +25,10 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 | topics | topicId | No pagination | ✅ |  ❌  |
 | all_tags |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,23 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-07-14 | [82087](https://github.com/airbytehq/airbyte/pull/82087) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81311](https://github.com/airbytehq/airbyte/pull/81311) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80708](https://github.com/airbytehq/airbyte/pull/80708) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [80105](https://github.com/airbytehq/airbyte/pull/80105) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79567](https://github.com/airbytehq/airbyte/pull/79567) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [79061](https://github.com/airbytehq/airbyte/pull/79061) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77491](https://github.com/airbytehq/airbyte/pull/77491) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76822](https://github.com/airbytehq/airbyte/pull/76822) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75811](https://github.com/airbytehq/airbyte/pull/75811) | Update dependencies |
+| 0.0.49 | 2026-03-17 | [75048](https://github.com/airbytehq/airbyte/pull/75048) | Update dependencies |
+| 0.0.48 | 2026-03-10 | [74427](https://github.com/airbytehq/airbyte/pull/74427) | Update dependencies |
+| 0.0.47 | 2026-02-24 | [73992](https://github.com/airbytehq/airbyte/pull/73992) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73593](https://github.com/airbytehq/airbyte/pull/73593) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [73216](https://github.com/airbytehq/airbyte/pull/73216) | Update dependencies |
+| 0.0.44 | 2026-02-03 | [72076](https://github.com/airbytehq/airbyte/pull/72076) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71689](https://github.com/airbytehq/airbyte/pull/71689) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70800](https://github.com/airbytehq/airbyte/pull/70800) | Update dependencies |
 | 0.0.41 | 2025-11-25 | [70141](https://github.com/airbytehq/airbyte/pull/70141) | Update dependencies |
 | 0.0.40 | 2025-11-18 | [69541](https://github.com/airbytehq/airbyte/pull/69541) | Update dependencies |
 | 0.0.39 | 2025-10-29 | [68937](https://github.com/airbytehq/airbyte/pull/68937) | Update dependencies |
@@ -41,8 +62,8 @@ The Zoho Campaigns connector enables seamless integration of mailing lists, camp
 | 0.0.35 | 2025-09-30 | [66840](https://github.com/airbytehq/airbyte/pull/66840) | Update dependencies |
 | 0.0.34 | 2025-09-24 | [66470](https://github.com/airbytehq/airbyte/pull/66470) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65683](https://github.com/airbytehq/airbyte/pull/65683) | Update dependencies |
-| 0.0.32 | 2025-08-23 | [65411](https://github.com/airbytehq/airbyte/pull/65411) | Update dependencies |
-| 0.0.31 | 2025-08-09 | [64809](https://github.com/airbytehq/airbyte/pull/64809) | Update dependencies |
+| 0.0.32 | 2025-08-24 | [65411](https://github.com/airbytehq/airbyte/pull/65411) | Update dependencies |
+| 0.0.31 | 2025-08-10 | [64809](https://github.com/airbytehq/airbyte/pull/64809) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64404](https://github.com/airbytehq/airbyte/pull/64404) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [64073](https://github.com/airbytehq/airbyte/pull/64073) | Update dependencies |
 | 0.0.28 | 2025-07-19 | [63618](https://github.com/airbytehq/airbyte/pull/63618) | Update dependencies |

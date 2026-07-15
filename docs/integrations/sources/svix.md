@@ -21,6 +21,10 @@ API Reference: https://api.svix.com/docs#section/Introduction
 | ingest_source_endpoint | id | DefaultPaginator | ✅ |  ✅  |
 | webhook_endpoint | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,21 @@ API Reference: https://api.svix.com/docs#section/Introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2026-07-14 | [82035](https://github.com/airbytehq/airbyte/pull/82035) | Update dependencies |
+| 0.0.35 | 2026-06-30 | [81302](https://github.com/airbytehq/airbyte/pull/81302) | Update dependencies |
+| 0.0.34 | 2026-06-23 | [80668](https://github.com/airbytehq/airbyte/pull/80668) | Update dependencies |
+| 0.0.33 | 2026-06-16 | [80058](https://github.com/airbytehq/airbyte/pull/80058) | Update dependencies |
+| 0.0.32 | 2026-06-09 | [79546](https://github.com/airbytehq/airbyte/pull/79546) | Update dependencies |
+| 0.0.31 | 2026-06-02 | [78998](https://github.com/airbytehq/airbyte/pull/78998) | Update dependencies |
+| 0.0.30 | 2026-04-28 | [77447](https://github.com/airbytehq/airbyte/pull/77447) | Update dependencies |
+| 0.0.29 | 2026-04-21 | [76779](https://github.com/airbytehq/airbyte/pull/76779) | Update dependencies |
+| 0.0.28 | 2026-03-17 | [75090](https://github.com/airbytehq/airbyte/pull/75090) | Update dependencies |
+| 0.0.27 | 2026-03-03 | [73957](https://github.com/airbytehq/airbyte/pull/73957) | Update dependencies |
+| 0.0.26 | 2026-02-17 | [73122](https://github.com/airbytehq/airbyte/pull/73122) | Update dependencies |
+| 0.0.25 | 2026-02-03 | [72741](https://github.com/airbytehq/airbyte/pull/72741) | Update dependencies |
+| 0.0.24 | 2026-01-20 | [72134](https://github.com/airbytehq/airbyte/pull/72134) | Update dependencies |
+| 0.0.23 | 2026-01-14 | [71582](https://github.com/airbytehq/airbyte/pull/71582) | Update dependencies |
+| 0.0.22 | 2025-12-18 | [70637](https://github.com/airbytehq/airbyte/pull/70637) | Update dependencies |
 | 0.0.21 | 2025-11-25 | [70063](https://github.com/airbytehq/airbyte/pull/70063) | Update dependencies |
 | 0.0.20 | 2025-11-18 | [69527](https://github.com/airbytehq/airbyte/pull/69527) | Update dependencies |
 | 0.0.19 | 2025-10-29 | [68993](https://github.com/airbytehq/airbyte/pull/68993) | Update dependencies |
@@ -35,9 +54,9 @@ API Reference: https://api.svix.com/docs#section/Introduction
 | 0.0.17 | 2025-10-14 | [67884](https://github.com/airbytehq/airbyte/pull/67884) | Update dependencies |
 | 0.0.16 | 2025-10-07 | [67455](https://github.com/airbytehq/airbyte/pull/67455) | Update dependencies |
 | 0.0.15 | 2025-09-30 | [66881](https://github.com/airbytehq/airbyte/pull/66881) | Update dependencies |
-| 0.0.14 | 2025-09-23 | [66362](https://github.com/airbytehq/airbyte/pull/66362) | Update dependencies |
+| 0.0.14 | 2025-09-24 | [66362](https://github.com/airbytehq/airbyte/pull/66362) | Update dependencies |
 | 0.0.13 | 2025-09-09 | [66122](https://github.com/airbytehq/airbyte/pull/66122) | Update dependencies |
-| 0.0.12 | 2025-08-23 | [64999](https://github.com/airbytehq/airbyte/pull/64999) | Update dependencies |
+| 0.0.12 | 2025-08-24 | [64999](https://github.com/airbytehq/airbyte/pull/64999) | Update dependencies |
 | 0.0.11 | 2025-08-02 | [64458](https://github.com/airbytehq/airbyte/pull/64458) | Update dependencies |
 | 0.0.10 | 2025-07-19 | [63609](https://github.com/airbytehq/airbyte/pull/63609) | Update dependencies |
 | 0.0.9 | 2025-07-05 | [62680](https://github.com/airbytehq/airbyte/pull/62680) | Update dependencies |

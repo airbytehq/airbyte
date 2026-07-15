@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake
@@ -179,6 +179,31 @@ class SnowflakeSourceConfigurationTest {
         assertEquals("testuser", config.jdbcProperties["user"])
         assertEquals("rsa_key.p8", config.jdbcProperties["private_key_file"])
         assertEquals("password", config.jdbcProperties["private_key_file_pwd"])
+    }
+
+    @Test
+    fun testProgrammaticAccessTokenAuthenticationWithSchema() {
+        val spec =
+            SnowflakeSourceConfigurationSpecification().apply {
+                host = "test.snowflakecomputing.com"
+                role = "TEST_ROLE"
+                warehouse = "TEST_WAREHOUSE"
+                database = "TEST_DATABASE"
+                schema = "CUSTOM_SCHEMA"
+                credentials =
+                    ProgrammaticAccessTokenCredentialsSpecification(
+                        programmaticAccessToken = "test-token"
+                    )
+            }
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        assertEquals(setOf("TEST_DATABASE"), config.namespaces)
+        assertEquals("CUSTOM_SCHEMA", config.schema)
+        // PAT auth does not set a username; the token identifies the user to Snowflake.
+        assertTrue(!config.jdbcProperties.containsKey("user"))
+        assertEquals("test-token", config.jdbcProperties["token"])
+        assertEquals("programmatic_access_token", config.jdbcProperties["authenticator"])
     }
 
     @Test

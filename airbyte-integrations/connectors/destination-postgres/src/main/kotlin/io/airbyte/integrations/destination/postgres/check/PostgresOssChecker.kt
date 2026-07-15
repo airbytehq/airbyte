@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres.check
 
 import io.airbyte.cdk.command.AIRBYTE_CLOUD_ENV
-import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -14,8 +14,11 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.write.load.PostgresInsertBuffer
@@ -32,7 +35,7 @@ internal const val CHECK_COLUMN_NAME = "test_key"
 class PostgresOssChecker(
     private val postgresAirbyteClient: PostgresAirbyteClient,
     private val postgresConfiguration: PostgresConfiguration,
-) : DestinationCheckerV2 {
+) : DestinationChecker {
 
     override fun check() {
         val data =
@@ -51,19 +54,33 @@ class PostgresOssChecker(
             "_airbyte_connection_test_${
                 UUID.randomUUID().toString().replace("-".toRegex(), "")}"
         val qualifiedTableName = TableName(namespace = outputSchema, name = tableName)
+        val tempTableName = TableName(namespace = outputSchema, name = "${tableName}_tmp")
+        val checkSchema =
+            ObjectType(linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false)))
         val destinationStream =
             DestinationStream(
                 unmappedNamespace = outputSchema,
                 unmappedName = tableName,
-                importType = Append,
-                schema =
-                    ObjectType(
-                        linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
-                    ),
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,
-                namespaceMapper = NamespaceMapper()
+                namespaceMapper = NamespaceMapper(),
+                tableSchema =
+                    StreamTableSchema(
+                        tableNames =
+                            TableNames(
+                                finalTableName = qualifiedTableName,
+                                tempTableName = tempTableName,
+                            ),
+                        columnSchema =
+                            ColumnSchema(
+                                inputSchema = checkSchema.properties,
+                                inputToFinalColumnNames =
+                                    mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
+                                finalSchema = emptyMap(),
+                            ),
+                        importType = Append,
+                    ),
             )
         runBlocking {
             try {
