@@ -43,6 +43,32 @@ definitions:
         type: Bearer
 
   streams:
+    # Parent stream: resolve the destination's workspace so `connections` can be scoped
+    # server-side. Not synced directly (kept out of the top-level `streams` list); it exists only
+    # to feed the SubstreamPartitionRouter below.
+    destination:
+      type: DeclarativeStream
+      name: destination
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "destinations/{{ config['destination_id'] }}"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
     airbyte_stream:
       type: DeclarativeStream
       name: airbyte_stream
@@ -59,6 +85,14 @@ definitions:
           request_parameters:
             limit: "100"
             includeDeleted: "false"
+            workspaceIds: "{{ stream_partition.workspace_id }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/streams/destination"
+              parent_key: workspaceId
+              partition_field: workspace_id
         record_selector:
           type: RecordSelector
           extractor:
@@ -88,11 +122,8 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: connections
+          path: "destinations/{{ config['destination_id'] }}"
           http_method: GET
-          request_parameters:
-            limit: "100"
-            includeDeleted: "false"
         record_selector:
           type: RecordSelector
           extractor:

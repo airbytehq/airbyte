@@ -123,10 +123,9 @@ def test_root_extractor_emits_index_and_skill(config):
     index = next(r for r in records if r["key"] == "index")
     payload = json.loads(index["content"])
     assert payload["destination_id"] == DESTINATION_ID
-    assert payload["connection_count"] == 2
-    assert payload["stream_count"] == 3
-    assert {t["destination_table_name"] for t in payload["tables"]} == {
-        "raw_users",
-        "raw_orders",
-        "events",
-    }
+    assert payload["extensions"] == ["AIRBYTE_STREAM"]
+    # The index is response-independent: the per-stream/table inventory is a cross-page
+    # aggregation that lives in `airbyte_stream`, not summarized here.
+    assert "tables" not in payload
+    assert "connection_count" not in payload
+    assert "stream_count" not in payload

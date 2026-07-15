@@ -15,12 +15,16 @@ destination actor id, it enumerates every connection landing in that destination
   rows telling a downstream SQL agent how Airbyte lands data (namespace/prefix mapping, the
   `_airbyte_*` metadata columns, raw-vs-typed-final tables, dedup-vs-append semantics).
 
-Both streams read the public API `connections` endpoint. The two pieces of logic that genuinely
-cannot be expressed declaratively — multi-record expansion (one connection -> N stream rows) and
-physical-table-name derivation — live here as custom `RecordExtractor`s.
-"""
+`airbyte_stream` reads the public API `connections` endpoint, scoped server-side to the
+destination's workspace by a `SubstreamPartitionRouter` (the workspace is resolved from a parent
+`destination` request); `root` reads the `destinations/{id}` endpoint. The two pieces of logic that
+genuinely cannot be expressed declaratively — multi-record expansion (one connection -> N stream
+rows) and physical-table-name derivation — live here as custom `RecordExtractor`s.
 
-from __future__ import annotations
+Note: annotations are intentionally NOT deferred via `from __future__ import annotations`. The
+manifest-only custom-code loader `exec`s this module before registering it in `sys.modules`, and
+deferred (string) annotations combined with `@dataclass` fail to resolve during that window.
+"""
 
 import json
 from dataclasses import dataclass, field
@@ -154,9 +158,11 @@ Consult `primary_key` and `cursor_field` in `AGENTS.AIRBYTE_STREAM` to write cor
 class AgentsRootExtractor(RecordExtractor):
     """Synthesize the `AGENTS.ROOT` index + guidance rows for the target destination.
 
-    Emits `(provider, key, content)` rows: a JSON `index` summarizing the destination's stream/table
-    inventory (from the first page of connections) plus static `skill/…` markdown guidance. The
-    authoritative, fully-paginated per-stream list lives in the `airbyte_stream` stream.
+    Emits `(provider, key, content)` rows: a JSON `index` describing the dataset and pointing at
+    `AGENTS.AIRBYTE_STREAM` for the authoritative per-stream/table inventory, plus static `skill/…`
+    markdown guidance. This extractor is response-independent: the full stream inventory is a
+    cross-page aggregation that a per-response `RecordExtractor` cannot compute correctly, so it is
+    deliberately left to the fully-paginated `airbyte_stream` stream rather than summarized here.
     """
 
     config: Mapping[str, Any]
@@ -164,25 +170,6 @@ class AgentsRootExtractor(RecordExtractor):
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
         destination_id = self.config["destination_id"]
-        body = response.json()
-        connections = body.get("data", []) if isinstance(body, Mapping) else []
-
-        tables: list[dict[str, Any]] = []
-        connection_ids: set[str] = set()
-        for connection in _iter_target_connections(connections, destination_id):
-            connection_ids.add(connection.get("connectionId"))
-            configurations = connection.get("configurations") or {}
-            for stream in configurations.get("streams", []) or []:
-                stream_name = stream.get("name")
-                if not stream_name:
-                    continue
-                tables.append(
-                    {
-                        "stream_name": stream_name,
-                        "destination_namespace": _resolve_namespace(connection, stream),
-                        "destination_table_name": _physical_table_name(connection, stream_name),
-                    }
-                )
 
         index = {
             "description": (
@@ -190,9 +177,6 @@ class AgentsRootExtractor(RecordExtractor):
                 f"{destination_id}. See AGENTS.AIRBYTE_STREAM for the full stream-to-table mapping."
             ),
             "destination_id": destination_id,
-            "connection_count": len(connection_ids),
-            "stream_count": len(tables),
-            "tables": tables,
             "extensions": ["AIRBYTE_STREAM"],
         }
 
