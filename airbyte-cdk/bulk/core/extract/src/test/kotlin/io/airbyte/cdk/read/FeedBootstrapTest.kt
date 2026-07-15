@@ -209,6 +209,146 @@ class FeedBootstrapTest {
     }
 
     @Test
+    fun testNoPkFullRefreshStreamDoesNotGetCdcDecoration() {
+        // A no-PK FULL_REFRESH view should NOT get CDC metadata decoration,
+        // even when a global CDC feed exists for other streams in the same catalog.
+        val viewStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withName("my_view").withNamespace("ns")
+                    ),
+                schema = setOf(k, v),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = null,
+                configuredCursor = null,
+            )
+
+        // Global feed only contains the INCREMENTAL stream (not the FULL_REFRESH view).
+        val globalFeed = Global(listOf(stream))
+        val stateManager =
+            StateManager(
+                global = globalFeed,
+                initialGlobalState = Jsons.objectNode(),
+                initialStreamStates = mapOf(stream to null, viewStream to null),
+            )
+        val bootstrap = viewStream.bootstrap(stateManager)
+        val consumer = bootstrap.streamRecordConsumers().toList().first().second
+
+        val msg: NativeRecordPayload =
+            mutableMapOf(
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec)
+            )
+        consumer.accept(msg, changes = null)
+
+        val recordOutput = outputConsumer.records().map(Jsons::writeValueAsString).first()
+        val recordJson = Jsons.readTree(recordOutput)
+        val data = recordJson.get("data")
+
+        // Verify record contains only user columns, no CDC metadata
+        Assertions.assertEquals(2, data.size())
+        Assertions.assertEquals(2, data.get("k").intValue())
+        Assertions.assertEquals("bar", data.get("v").textValue())
+        Assertions.assertNull(data.get("_ab_cdc_lsn"))
+        Assertions.assertNull(data.get("_ab_cdc_updated_at"))
+        Assertions.assertNull(data.get("_ab_cdc_deleted_at"))
+    }
+
+    @Test
+    fun testNoPkFullRefreshProtobufRecordFieldsExcludeCdcMetadata() {
+        // Verify the protobuf path strips CDC meta fields from recordFields
+        // for no-PK FULL_REFRESH streams, preventing positional field shifts.
+        // This is the core regression test for the protobuf type mismatch bug.
+        val viewStreamWithCdcInSchema =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withName("my_view").withNamespace("ns")
+                    ),
+                // Schema includes CDC fields (simulating accidental decoration)
+                schema =
+                    setOf(
+                        k,
+                        v,
+                        GlobalCursor,
+                        CommonMetaField.CDC_UPDATED_AT,
+                        CommonMetaField.CDC_DELETED_AT,
+                    ),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = null,
+                configuredCursor = null,
+            )
+
+        val globalFeed = Global(listOf(stream))
+        val stateManager =
+            StateManager(
+                global = globalFeed,
+                initialGlobalState = Jsons.objectNode(),
+                initialStreamStates = mapOf(stream to null, viewStreamWithCdcInSchema to null),
+            )
+        val bootstrap =
+            FeedBootstrap.create(
+                outputConsumer,
+                metaFieldDecorator,
+                stateManager,
+                viewStreamWithCdcInSchema,
+                DataChannelFormat.PROTOBUF,
+                DataChannelMedium.SOCKET,
+                bufferSize,
+                clock,
+            )
+
+        val capturedOutput = java.io.ByteArrayOutputStream()
+        val mockSocket =
+            object : io.airbyte.cdk.output.sockets.SocketDataChannel {
+                override suspend fun initialize() {}
+                override fun shutdown() {}
+                override val status =
+                    io.airbyte.cdk.output.sockets.SocketDataChannel.SocketStatus.SOCKET_READY
+                override var isBound = true
+                override fun bind() {}
+                override fun unbind() {}
+                override var outputStream: java.io.OutputStream? = capturedOutput
+                override val isAvailable = false
+            }
+        val protoOutputConsumer =
+            io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer(
+                mockSocket,
+                clock,
+                bufferSize,
+                emptyMap(),
+            )
+
+        val protoConsumers = bootstrap.streamProtoRecordConsumers(protoOutputConsumer)
+        val protoConsumer = protoConsumers.values.first()
+
+        val msg: NativeRecordPayload =
+            mutableMapOf(
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec)
+            )
+        protoConsumer.accept(msg, changes = null)
+        protoConsumer.close()
+
+        // Parse the protobuf record written to the mock socket output
+        val input = java.io.ByteArrayInputStream(capturedOutput.toByteArray())
+        val protoMsg =
+            io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf.parseDelimitedFrom(
+                input
+            )
+        Assertions.assertNotNull(protoMsg, "Expected a protobuf message to be written")
+        // With the fix: recordFields = schema - globalMetaFields = {k, v} → 2 data entries
+        // Without the fix: stream.schema has 5 fields → 5 data entries (causes type mismatch)
+        Assertions.assertEquals(
+            2,
+            protoMsg!!.record.dataCount,
+            "No-PK FULL_REFRESH view should have only user columns (k, v) in protobuf data, " +
+                "not CDC metadata fields"
+        )
+    }
+
+    @Test
     fun testTriggerBasedCdcMetadataDecoration() {
         // Create a stream without the global cursor in its schema to simulate trigger-based CDC
         val triggerBasedStream =
