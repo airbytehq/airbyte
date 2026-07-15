@@ -11,6 +11,20 @@ from airbyte_cdk.sources.declarative.validators import ValidationStrategy
 from airbyte_cdk.utils import is_cloud_environment
 
 
+# A refreshed OAuth token can still race an in-flight request, so GitLab returns
+# a one-off 401 mid-sync even though the credentials are valid. Retrying once
+# with the refreshed token clears the transient failure instead of aborting the
+# whole sync. Healthy connections never see this path.
+UNAUTHORIZED_STATUS_CODE = 401
+
+
+def should_retry_with_refreshed_token(status_code: int) -> bool:
+    """Return whether a response `status_code` should be retried after refreshing
+    the OAuth token. Only the transient `401` produced by a token race qualifies;
+    a genuine `403` or any other status must not be retried."""
+    return status_code == UNAUTHORIZED_STATUS_CODE
+
+
 @dataclass
 class ValidateApiUrl(ValidationStrategy):
     def validate(self, value: Any) -> None:
