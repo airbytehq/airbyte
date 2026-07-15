@@ -27,7 +27,7 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, Airbyte will replicate the data for the last year.
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data.
 7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
 8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
 9. Click **Set up source**.
@@ -39,7 +39,7 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, Airbyte will replicate the data for the last year.
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data.
 7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
 8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
 9. Click **Set up source**.
@@ -133,7 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.19.0 | 2026-07-14 | [81637](https://github.com/airbytehq/airbyte/pull/81637) | Default start date to one year back when not provided |
+| 2.19.0 | 2026-07-15 | [81637](https://github.com/airbytehq/airbyte/pull/81637) | Default start date to one year back when not provided |
 | 2.18.6 | 2026-07-14 | [81870](https://github.com/airbytehq/airbyte/pull/81870) | Update dependencies |
 | 2.18.5 | 2026-06-30 | [81120](https://github.com/airbytehq/airbyte/pull/81120) | Update dependencies |
 | 2.18.4 | 2026-06-23 | [80514](https://github.com/airbytehq/airbyte/pull/80514) | Update dependencies |
