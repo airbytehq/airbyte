@@ -94,11 +94,11 @@ Semantic search is an evolving capability and is available for a limited set of 
 | Linear | Issues | Description |
 | Linear | Comments | Body |
 
-More connectors and fields will gain semantic search over time.
+Airbyte continues to add semantic search to more connectors and fields.
 
 ### Calling semantic search with the SDK or API
 
-If you build agents with the SDK or API, you can request semantic search directly by passing a `semantic` object to `context_store_search`:
+If you build agents with the SDK or API, you can request semantic search directly by passing a `semantic` object to `context_store_search`. In the SDK, use the generic `connector.execute(entity, "context_store_search", params)` method — the typed per-entity `context_store_search` helper accepts only a structured `query`, not a `semantic` object.
 
 ```json
 {
@@ -123,7 +123,7 @@ Keep these rules in mind when constructing a request:
 - **`semantic` and `query` are mutually exclusive.** Pass one or the other, never both in the same request.
 - **Results are ranked by similarity, so `sort` isn't supported.** To filter results, put the filter inside `semantic.filter` using the same operators as `query.filter`.
 - **`dedup` controls per-record deduplication.** `max` (the default) returns only the single best-scoring passage per source record. `none` returns multiple passages from the same record, still ranked by similarity and capped by `limit`.
-- **`context_size` controls how many characters of surrounding context are returned per hit,** up to the field's configured window.
+- **`context_size` controls how many characters of surrounding context are returned per hit,** up to the field's configured window. Omit it to return the full configured window.
 
 For the entities and fields available on each connector, see the individual [connector reference pages](../connectors).
 
