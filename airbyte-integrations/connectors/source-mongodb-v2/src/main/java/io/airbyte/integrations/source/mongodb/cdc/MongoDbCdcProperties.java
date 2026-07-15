@@ -47,11 +47,11 @@ public class MongoDbCdcProperties {
     props.setProperty(HEARTBEAT_INTERVAL_KEY, HEARTBEAT_FREQUENCY_MS);
     props.setProperty(TOMBSTONE_ON_DELETE_KEY, TOMBSTONE_ON_DELETE_VALUE);
     if (queueSize != null) {
-      // Debezium requires max.batch.size to be no larger than max.queue.size. Keeping both
+      // Debezium requires max.queue.size to be strictly larger than max.batch.size. Keeping both
       // bounded by the Airbyte output queue prevents a burst of large MongoDB documents from
       // retaining multiple unbounded copies in the connector heap.
       props.setProperty("max.queue.size", Integer.toString(queueSize));
-      props.setProperty("max.batch.size", Integer.toString(queueSize));
+      props.setProperty("max.batch.size", Integer.toString(queueSize - 1));
     }
 
     return props;

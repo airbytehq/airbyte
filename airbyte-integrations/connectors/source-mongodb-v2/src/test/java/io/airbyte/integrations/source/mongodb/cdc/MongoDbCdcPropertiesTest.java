@@ -37,7 +37,7 @@ class MongoDbCdcPropertiesTest {
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(8);
 
     assertEquals("8", debeziumProperties.getProperty("max.queue.size"));
-    assertEquals("8", debeziumProperties.getProperty("max.batch.size"));
+    assertEquals("7", debeziumProperties.getProperty("max.batch.size"));
   }
 
 }
