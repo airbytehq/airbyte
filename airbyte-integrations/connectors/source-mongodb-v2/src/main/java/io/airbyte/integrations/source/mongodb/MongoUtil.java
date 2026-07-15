@@ -64,7 +64,7 @@ public class MongoUtil {
    * configuration value for the queue size is less than this value
    */
   @VisibleForTesting
-  static final int MIN_QUEUE_SIZE = 64;
+  static final int MIN_QUEUE_SIZE = 8;
 
   /**
    * The maximum size of the Debezium event queue. This value will be selected if the provided

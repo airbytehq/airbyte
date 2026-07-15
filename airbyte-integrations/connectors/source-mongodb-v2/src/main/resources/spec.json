@@ -160,7 +160,7 @@
         "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
         "default": 10000,
         "order": 9,
-        "min": 64,
+        "min": 8,
         "max": 10000,
         "group": "advanced"
       },

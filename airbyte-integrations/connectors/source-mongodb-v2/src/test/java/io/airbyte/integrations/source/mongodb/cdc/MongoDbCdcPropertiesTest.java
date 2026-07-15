@@ -32,4 +32,12 @@ class MongoDbCdcPropertiesTest {
     assertEquals(TOMBSTONE_ON_DELETE_VALUE, debeziumProperties.get(TOMBSTONE_ON_DELETE_KEY));
   }
 
+  @Test
+  void testDebeziumPropertiesBoundToConfiguredQueueSize() {
+    final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(8);
+
+    assertEquals("8", debeziumProperties.getProperty("max.queue.size"));
+    assertEquals("8", debeziumProperties.getProperty("max.batch.size"));
+  }
+
 }

@@ -29,6 +29,16 @@ public class MongoDbCdcProperties {
    * @return The common Debezium CDC properties for the Debezium MongoDB connector.
    */
   public static Properties getDebeziumProperties() {
+    return getDebeziumProperties(null);
+  }
+
+  /**
+   * Returns the common MongoDB Debezium properties with bounded in-memory buffers when a CDC queue
+   * size is configured.
+   *
+   * @param queueSize maximum records buffered by Debezium and Airbyte, or {@code null} for defaults.
+   */
+  public static Properties getDebeziumProperties(final Integer queueSize) {
     final Properties props = new Properties();
 
     props.setProperty(CONNECTOR_CLASS_KEY, CONNECTOR_CLASS_VALUE);
@@ -36,6 +46,13 @@ public class MongoDbCdcProperties {
     props.setProperty(CAPTURE_MODE_KEY, CAPTURE_MODE_VALUE);
     props.setProperty(HEARTBEAT_INTERVAL_KEY, HEARTBEAT_FREQUENCY_MS);
     props.setProperty(TOMBSTONE_ON_DELETE_KEY, TOMBSTONE_ON_DELETE_VALUE);
+    if (queueSize != null) {
+      // Debezium requires max.batch.size to be no larger than max.queue.size. Keeping both
+      // bounded by the Airbyte output queue prevents a burst of large MongoDB documents from
+      // retaining multiple unbounded copies in the connector heap.
+      props.setProperty("max.queue.size", Integer.toString(queueSize));
+      props.setProperty("max.batch.size", Integer.toString(queueSize));
+    }
 
     return props;
   }

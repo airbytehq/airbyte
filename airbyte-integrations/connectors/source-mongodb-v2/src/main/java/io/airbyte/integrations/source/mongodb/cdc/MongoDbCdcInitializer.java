@@ -82,7 +82,7 @@ public class MongoDbCdcInitializer {
 
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final boolean isEnforceSchema = config.getEnforceSchema();
-    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
+    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(queueSize);
     logOplogInfo(mongoClient);
 
     final List<String> databaseNames = config.getDatabaseNames();
