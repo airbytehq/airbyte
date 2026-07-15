@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
 
 BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
+AB_CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at"
 MOTHERDUCK_SCHEME = "md"
 
 logger = logging.getLogger(__name__)
@@ -388,21 +389,31 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             return f"{cursor} DESC NULLS LAST, {extracted_at_ordering}"
         return extracted_at_ordering
 
-    def _merge_matched_condition(self, stream_name: str) -> str:
+    def _merge_matched_condition(self, stream_name: str, *, for_tombstone: bool = False) -> str:
         """Guard for MERGE's WHEN MATCHED: only apply records that are not older.
 
         Without this, any batch overwrites on primary-key match regardless of
         cursor order. NULL cursors compare as older than any value; two equal
         (or two NULL) cursors defer to extraction time.
+
+        With for_tombstone=True, a record with a NULL cursor also passes the
+        extraction-time tiebreak against a populated final cursor: CDC
+        tombstones (e.g. Debezium) may carry only the primary key, and a
+        delete must not silently no-op because its cursor column is NULL.
         """
         cursor_field = self.catalog_provider.get_configured_stream_info(stream_name).cursor_field
         if not (cursor_field and len(cursor_field) == 1):
             return ""
         cursor = self._quote_identifier(self.normalizer.normalize(cursor_field[0]))
+        tiebreak_applies = (
+            f"(tmp.{cursor} IS NULL OR tmp.{cursor} IS NOT DISTINCT FROM final.{cursor})"
+            if for_tombstone
+            else f"tmp.{cursor} IS NOT DISTINCT FROM final.{cursor}"
+        )
         return (
             f" AND ((final.{cursor} IS NULL AND tmp.{cursor} IS NOT NULL)"
             f" OR tmp.{cursor} > final.{cursor}"
-            f" OR (tmp.{cursor} IS NOT DISTINCT FROM final.{cursor}"
+            f" OR ({tiebreak_applies}"
             f" AND tmp.{AB_EXTRACTED_AT_COLUMN} >= final.{AB_EXTRACTED_AT_COLUMN}))"
         )
 
@@ -434,12 +445,28 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         set_clause = ", ".join(f"{c} = tmp.{c}" for c in non_pk_columns)
         matched_condition = self._merge_matched_condition(stream_name)
 
+        # CDC streams: tombstones are soft deletes — the row is upserted like
+        # any other record and remains in the final table with
+        # _ab_cdc_deleted_at set. The tombstone branch relaxes the cursor
+        # guard because tombstones may carry only the primary key (NULL
+        # cursor) and must not silently lose the extraction tiebreak; a stale
+        # tombstone still cannot beat a row with a newer cursor. Clause order
+        # matters: DuckDB applies the first WHEN MATCHED branch whose
+        # condition holds.
+        tombstone_clause = ""
+        if AB_CDC_DELETED_AT_COLUMN in self._get_sql_column_definitions(stream_name):
+            deleted_at = self._quote_identifier(AB_CDC_DELETED_AT_COLUMN)
+            tombstone_condition = self._merge_matched_condition(stream_name, for_tombstone=True)
+            tombstone_clause = (
+                f"WHEN MATCHED AND tmp.{deleted_at} IS NOT NULL{tombstone_condition} THEN UPDATE SET {set_clause}\n            "
+            )
+
         self._execute_sql(
             f"""
             MERGE INTO {self._fully_qualified(final_table_name)} final
             USING {self._fully_qualified(temp_table_name)} AS tmp
             ON {join_clause}
-            WHEN MATCHED{matched_condition} THEN UPDATE SET {set_clause}
+            {tombstone_clause}WHEN MATCHED{matched_condition} THEN UPDATE SET {set_clause}
             WHEN NOT MATCHED THEN INSERT ({", ".join(columns)})
             VALUES ({", ".join(f"tmp.{c}" for c in columns)})
             """
