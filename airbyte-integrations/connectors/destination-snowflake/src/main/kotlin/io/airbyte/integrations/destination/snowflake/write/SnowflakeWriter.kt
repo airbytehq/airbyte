@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.snowflake.write
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
 import io.airbyte.cdk.load.table.TempTableNameGenerator
@@ -55,6 +58,8 @@ class SnowflakeWriter(
         val tempTableName = stream.tableSchema.tableNames.tempTableName!!
         val columnNameMapping =
             ColumnNameMapping(stream.tableSchema.columnSchema.inputToFinalColumnNames)
+        val generationAwareTableOperationsClient =
+            CurrentGenerationTableOperationsClient(snowflakeClient, stream.generationId)
         return when (stream.minimumGenerationId) {
             0L ->
                 when (stream.tableSchema.importType) {
@@ -105,7 +110,7 @@ class SnowflakeWriter(
                                 tempTableName = tempTableName,
                                 columnNameMapping,
                                 snowflakeClient,
-                                snowflakeClient,
+                                generationAwareTableOperationsClient,
                                 streamStateStore,
                                 tempTableNameGenerator,
                             )
@@ -117,7 +122,7 @@ class SnowflakeWriter(
                                 tempTableName = tempTableName,
                                 columnNameMapping,
                                 snowflakeClient,
-                                snowflakeClient,
+                                generationAwareTableOperationsClient,
                                 streamStateStore,
                             )
                         }
@@ -129,7 +134,7 @@ class SnowflakeWriter(
                             tempTableName = tempTableName,
                             columnNameMapping,
                             snowflakeClient,
-                            snowflakeClient,
+                            generationAwareTableOperationsClient,
                             streamStateStore,
                         )
                 }
@@ -139,4 +144,15 @@ class SnowflakeWriter(
                 )
         }
     }
+}
+
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
+private class CurrentGenerationTableOperationsClient(
+    private val delegate: TableOperationsClient,
+    private val currentGenerationId: Long,
+) : TableOperationsClient by delegate {
+    override suspend fun getGenerationId(tableName: TableName): Long =
+        delegate.getGenerationId(tableName).takeIf {
+            it > 0 && it == currentGenerationId
+        } ?: 0
 }

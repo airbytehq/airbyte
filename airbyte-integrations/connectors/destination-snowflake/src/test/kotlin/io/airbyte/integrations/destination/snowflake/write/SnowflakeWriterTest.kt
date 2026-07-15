@@ -214,6 +214,86 @@ internal class SnowflakeWriterTest {
     }
 
     @Test
+    fun testHigherTableGenerationUsesTemporaryTable() {
+        val tableName = TableName(namespace = "test-namespace", name = "test-name")
+        val tempTableName = TableName(namespace = "test-namespace", name = "test-name-temp")
+        val tableNames = TableNames(finalTableName = tableName, tempTableName = tempTableName)
+        val stream =
+            mockk<DestinationStream> {
+                every { minimumGenerationId } returns 1L
+                every { generationId } returns 1L
+                every { tableSchema } returns
+                    StreamTableSchema(
+                        tableNames = tableNames,
+                        columnSchema =
+                            ColumnSchema(
+                                inputToFinalColumnNames = emptyMap(),
+                                finalSchema = emptyMap(),
+                                inputSchema = emptyMap()
+                            ),
+                        importType = Append
+                    )
+                every { mappedDescriptor } returns
+                    DestinationStream.Descriptor(
+                        namespace = tableName.namespace,
+                        name = tableName.name
+                    )
+            }
+        val catalog = DestinationCatalog(listOf(stream))
+        val snowflakeClient =
+            mockk<SnowflakeAirbyteClient>(relaxed = true) {
+                coEvery { getGenerationId(tableName) } returns 2L
+            }
+        val stateGatherer =
+            mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>> {
+                coEvery { gatherInitialStatus() } returns
+                    mapOf(
+                        stream to
+                            DirectLoadInitialStatus(
+                                realTable = DirectLoadTableStatus(false),
+                                tempTable = null,
+                            )
+                    )
+            }
+        val streamStateStore =
+            mockk<StreamStateStore<DirectLoadTableExecutionConfig>>(relaxed = true)
+        val writer =
+            SnowflakeWriter(
+                catalog = catalog,
+                stateGatherer = stateGatherer,
+                streamStateStore = streamStateStore,
+                snowflakeClient = snowflakeClient,
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration =
+                    mockk(relaxed = true) {
+                        every { internalTableSchema } returns "internal_schema"
+                    },
+            )
+
+        runBlocking {
+            writer.setup()
+            val streamLoader = writer.createStreamLoader(stream)
+            streamLoader.start()
+            streamLoader.teardown(completedSuccessfully = true)
+        }
+
+        coVerify(exactly = 1) {
+            snowflakeClient.createTable(
+                stream,
+                tempTableName,
+                any(),
+                replace = true,
+            )
+        }
+        coVerify(exactly = 1) {
+            snowflakeClient.overwriteTable(
+                sourceTableName = tempTableName,
+                targetTableName = tableName,
+            )
+        }
+    }
+
+    @Test
     fun testCreateStreamLoaderHybrid() {
         val tableName = TableName(namespace = "test-namespace", name = "test-name")
         val tempTableName = TableName(namespace = "test-namespace", name = "test-name-temp")
