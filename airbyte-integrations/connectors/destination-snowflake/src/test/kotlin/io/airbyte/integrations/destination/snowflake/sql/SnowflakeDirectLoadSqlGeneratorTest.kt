@@ -219,9 +219,9 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
         val expectedSql =
             """
-            SELECT MIN("${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}") AS "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
+            SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
             FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}
-            HAVING MIN("${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}") = MAX("${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}")
+            LIMIT 1
         """.trimIndent()
         assertEquals(expectedSql, sql)
     }

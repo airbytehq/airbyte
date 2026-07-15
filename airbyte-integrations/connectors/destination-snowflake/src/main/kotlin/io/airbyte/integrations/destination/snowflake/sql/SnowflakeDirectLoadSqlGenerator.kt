@@ -303,11 +303,10 @@ class SnowflakeDirectLoadSqlGenerator(
     fun getGenerationId(
         tableName: TableName,
     ): String {
-        val generationIdColumnName = "\"${columnManager.getGenerationIdColumnName()}\""
         return """
-            SELECT MIN($generationIdColumnName) AS $generationIdColumnName
+            SELECT "${columnManager.getGenerationIdColumnName()}"
             FROM ${fullyQualifiedName(tableName)}
-            HAVING MIN($generationIdColumnName) = MAX($generationIdColumnName)
+            LIMIT 1
         """
             .trimIndent()
             .andLog()
