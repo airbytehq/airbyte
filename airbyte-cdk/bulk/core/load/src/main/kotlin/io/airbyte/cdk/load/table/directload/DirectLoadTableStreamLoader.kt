@@ -16,6 +16,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+private fun Long.isCompatibleGeneration(stream: DestinationStream) =
+    this > 0 && this == stream.generationId
+
 /*
  * For non-truncate modes (Append, Dedup), real table creation uses replace=false
  * to prevent accidental data loss. Using replace=true was unnecessarily risky and
@@ -176,7 +179,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
                 val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                if (generationId.isCompatibleGeneration(stream)) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -184,7 +187,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (incompatible generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
                     tableOperationsClient.createTempTable(
                         stream,
@@ -213,8 +216,9 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 isWritingToTemporaryTable = false
             } else if (
                 initialStatus.realTable.isEmpty ||
-                    tableOperationsClient.getGenerationId(realTableName) >=
-                        stream.minimumGenerationId
+                    tableOperationsClient
+                        .getGenerationId(realTableName)
+                        .isCompatibleGeneration(stream)
             ) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
                 isWritingToTemporaryTable = false
@@ -304,7 +308,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
                 val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                if (generationId.isCompatibleGeneration(stream)) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -312,7 +316,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     )
                 } else {
                     logger.info {
-                        "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
+                        "Recreating temp table ${tempTableName.toPrettyString()} (incompatible generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
                     tableOperationsClient.createTempTable(
                         stream,
@@ -365,8 +369,9 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
             // Case 2: Real table exists but is empty or has correct generation ID
             initialStatus.realTable.isEmpty ||
-                tableOperationsClient.getGenerationId(realTableName) >=
-                    stream.minimumGenerationId -> true
+                tableOperationsClient
+                    .getGenerationId(realTableName)
+                    .isCompatibleGeneration(stream) -> true
 
             // Case 3: Real table exists with data - needs more stringent approach
             else -> false

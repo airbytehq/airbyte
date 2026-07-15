@@ -24,6 +24,7 @@ class DirectLoadTableStreamLoaderTest {
         mockk<DestinationStream>(relaxed = true) {
             every { mappedDescriptor } returns
                 DestinationStream.Descriptor("test_namespace", "test_stream")
+            every { generationId } returns 1L
             every { minimumGenerationId } returns 1L
         }
     private val realTableName = TableName("real_namespace", "real_table")
@@ -37,6 +38,161 @@ class DirectLoadTableStreamLoaderTest {
         mockk<TempTableNameGenerator> {
             every { generate(tempTableName) } returns tempTempTableName
         }
+
+    @Test
+    fun `AppendTruncateStreamLoader overwrites a table from a higher generation`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = null,
+            )
+        coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 2L
+
+        val loader =
+            DirectLoadTableAppendTruncateStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+            )
+
+        loader.start()
+        loader.teardown(completedSuccessfully = true)
+
+        coVerify(exactly = 1) {
+            tableOperationsClient.createTempTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        }
+        coVerify(exactly = 1) {
+            tableOperationsClient.overwriteTable(
+                sourceTableName = tempTableName,
+                targetTableName = realTableName,
+            )
+        }
+    }
+
+    @Test
+    fun `AppendTruncateStreamLoader writes directly to a table from the current generation`() =
+        runTest {
+            val initialStatus =
+                DirectLoadInitialStatus(
+                    realTable = DirectLoadTableStatus(isEmpty = false),
+                    tempTable = null,
+                )
+            coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 1L
+
+            val loader =
+                DirectLoadTableAppendTruncateStreamLoader(
+                    stream = stream,
+                    initialStatus = initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping = columnNameMapping,
+                    schemaEvolutionClient = schemaEvolutionClient,
+                    tableOperationsClient = tableOperationsClient,
+                    streamStateStore = streamStateStore,
+                )
+
+            loader.start()
+            loader.teardown(completedSuccessfully = true)
+
+            coVerify(exactly = 1) {
+                schemaEvolutionClient.ensureSchemaMatches(
+                    stream,
+                    realTableName,
+                    columnNameMapping,
+                )
+            }
+            coVerify(exactly = 0) {
+                tableOperationsClient.createTempTable(any(), any(), any(), any())
+            }
+            coVerify(exactly = 0) { tableOperationsClient.overwriteTable(any(), any()) }
+        }
+
+    @Test
+    fun `AppendTruncateStreamLoader recreates a temp table from a higher generation`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = DirectLoadTableStatus(isEmpty = false),
+            )
+        coEvery { tableOperationsClient.getGenerationId(tempTableName) } returns 2L
+
+        val loader =
+            DirectLoadTableAppendTruncateStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+            )
+
+        loader.start()
+
+        coVerify(exactly = 1) {
+            tableOperationsClient.createTempTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        }
+        coVerify(exactly = 0) {
+            schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
+        }
+    }
+
+    @Test
+    fun `DedupTruncateStreamLoader overwrites a table from a higher generation`() = runTest {
+        val initialStatus =
+            DirectLoadInitialStatus(
+                realTable = DirectLoadTableStatus(isEmpty = false),
+                tempTable = null,
+            )
+        coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 2L
+
+        val loader =
+            DirectLoadTableDedupTruncateStreamLoader(
+                stream = stream,
+                initialStatus = initialStatus,
+                realTableName = realTableName,
+                tempTableName = tempTableName,
+                columnNameMapping = columnNameMapping,
+                schemaEvolutionClient = schemaEvolutionClient,
+                tableOperationsClient = tableOperationsClient,
+                streamStateStore = streamStateStore,
+                tempTableNameGenerator = tempTableNameGenerator,
+            )
+
+        loader.start()
+        loader.teardown(completedSuccessfully = true)
+
+        coVerify(exactly = 1) {
+            tableOperationsClient.createTempTable(
+                stream,
+                tempTempTableName,
+                columnNameMapping,
+                replace = true,
+            )
+        }
+        coVerify(exactly = 1) {
+            tableOperationsClient.overwriteTable(
+                sourceTableName = tempTempTableName,
+                targetTableName = realTableName,
+            )
+        }
+    }
 
     @Test
     fun `AppendTruncateStreamLoader teardown overwrites real table with temp on success`() =
