@@ -81,7 +81,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -164,7 +164,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -263,7 +263,7 @@ definitions:
         cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -349,7 +349,7 @@ definitions:
         lookback_window: "P{{ config.get('lookback_window', 0) }}D"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -424,7 +424,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -518,7 +518,7 @@ definitions:
         cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -616,7 +616,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -708,7 +708,7 @@ definitions:
         cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -772,7 +772,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -891,7 +891,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -965,7 +965,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -1029,7 +1029,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -1162,7 +1162,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1312,7 +1312,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1390,7 +1390,7 @@ spec:
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated. This field is optional - if not
-          provided, all data will be replicated.
+          provided, Airbyte will replicate the data for the last year.
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
