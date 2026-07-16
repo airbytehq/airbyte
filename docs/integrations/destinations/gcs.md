@@ -2,9 +2,8 @@
 
 ## Overview
 
-This destination writes data to GCS bucket.
-
-The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
+The Google Cloud Storage (GCS) destination writes each stream as one or more objects in a GCS
+bucket. By default, each stream has its own directory under the configured bucket path.
 
 ## Supported sync modes
 
@@ -20,52 +19,63 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 ### Requirements
 
-1. Allow connections from Airbyte server to your GCS cluster \(if they exist in separate VPCs\).
-2. A GCP bucket with credentials.
+- A GCS bucket.
+- A Google Cloud service account with an active HMAC key.
+- Network access from the Airbyte deployment to `https://storage.googleapis.com`.
 
 ### Setup guide
 
-- Fill up GCS info
-  - **GCS Bucket Name**
-    - See [this](https://cloud.google.com/storage/docs/creating-buckets) for instructions on how to create a GCS bucket. The bucket cannot have a retention policy. Set Protection Tools to none or Object versioning.
-  - **GCS Bucket Region**
-  - **HMAC Key Access ID**
-    - See [this](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) on how to generate an access key. For more information on hmac keys please reference the [GCP docs](https://cloud.google.com/storage/docs/authentication/hmackeys)
-    - We recommend creating an Airbyte-specific user or service account. This user or account will require the following permissions for the bucket:
-      ```
-      storage.multipartUploads.abort
-      storage.multipartUploads.create
-      storage.objects.create
-      storage.objects.delete
-      storage.objects.get
-      storage.objects.list
-      ```
-      You can set those by going to the permissions tab in the GCS bucket and adding the appropriate the email address of the service account or user and adding the aforementioned permissions.
-  - **Secret Access Key**
-    - Corresponding key to the above access ID.
-- Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
+1. [Create a GCS bucket](https://cloud.google.com/storage/docs/creating-buckets), or select an
+   existing bucket. The connection check writes, lists, and deletes a probe object. Ensure that
+   retention policies and object holds permit this deletion.
+2. Create a dedicated service account for Airbyte and
+   [create an HMAC key](https://cloud.google.com/storage/docs/authentication/managing-hmackeys) for
+   it. If your organization uses the `constraints/storage.restrictAuthTypes` organization policy,
+   it must allow HMAC authentication. Save the HMAC secret when you create the key because Google
+   Cloud doesn't provide it again.
+3. Grant the service account the **Storage Object User** role (`roles/storage.objectUser`) on the
+   bucket. If you use a custom role, include these permissions:
+
+   ```text
+   storage.multipartUploads.abort
+   storage.multipartUploads.create
+   storage.objects.create
+   storage.objects.delete
+   storage.objects.list
+   ```
+
+   Delete access is required because the connection check deletes its probe object and Full Refresh
+   - Overwrite syncs delete existing objects under the stream's output prefix.
+4. In Airbyte, enter the bucket name, bucket path, bucket region, HMAC access key, HMAC secret, and
+   output format.
+5. Test the connection. If your deployment restricts outbound network traffic, allow access to the
+   GCS XML API endpoint at `https://storage.googleapis.com`.
 
 ## Configuration
 
-| Parameter          |  Type  | Required | Notes                                                                                                                                                                                                                                                                      |
-|:-------------------|:------:|:--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| GCS Bucket Name    | string |   Yes    | Name of the bucket to sync data into.                                                                                                                                                                                                                                      |
-| GCS Bucket Path    | string |   Yes    | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                 |
-| GCS Region         | string |    No    | GCS bucket region. Defaults to `us`. See [here](https://cloud.google.com/storage/docs/locations) for all region codes.                                                                                                                                                     |
-| HMAC Key Access ID | string |   Yes    | HMAC key access ID. The access ID for the GCS bucket. When linked to a service account, this ID is 61 characters long; when linked to a user account, it is 24 characters long. See [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) for details. |
-| HMAC Key Secret    | string |   Yes    | The corresponding secret for the access ID. It is a 40-character base-64 encoded string.                                                                                                                                                                                   |
-| Format             | object |   Yes    | Format specific configuration. See below [for details](https://docs.airbyte.com/integrations/destinations/gcs#output-schema).                                                                                                                                              |
-| GCS Path Format    | string |    No    | Format string for the directory layout under the bucket path. Defaults to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`. See [GCS Path Format](#gcs-path-format) for available variables.                                                                |
-| File Name Pattern  | string |    No    | Pattern for output file names. Defaults to `{part_number}{format_extension}`. See [File Name Pattern](#file-name-pattern) for available variables.                                                                                                                         |
+| Parameter | Type | Required | Notes |
+| :--- | :---: | :---: | :--- |
+| GCS Bucket Name | string | Yes | Name of the bucket to sync data into. |
+| GCS Bucket Path | string | Yes | Path within the bucket where the connector writes data. |
+| GCS Bucket Region | string | No | Bucket region. Defaults to `us`. See [GCS locations](https://cloud.google.com/storage/docs/locations). |
+| HMAC Access Key | string | Yes | Access ID from the service account's HMAC key. |
+| HMAC Secret | string | Yes | Secret associated with the HMAC access key. |
+| Output Format | object | Yes | Format-specific configuration. See [Output Schema](#output-schema). |
+| GCS Path Format | string | No | Directory layout under the bucket path. Defaults to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`. See [GCS Path Format](#gcs-path-format). |
+| File Name Pattern | string | No | Output file naming pattern. Defaults to `{part_number}{format_extension}`. See [File Name Pattern](#file-name-pattern). |
 
-Currently, only the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys) is supported. More credential types will be added in the future, please [submit an issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+needs-triage&template=feature-request.md&title=) with your request.
+The connector supports only
+[HMAC key authentication](https://cloud.google.com/storage/docs/authentication/hmackeys), using
+the GCS S3-compatible XML API.
 
 Both Google-managed and customer-managed encryption keys (CMEK) are supported. You can view the encryption setting under
 the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
 
-⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each
-sync. We recommend you provision a dedicated GCS bucket for this sync to prevent unexpected data deletion from
-misconfiguration. ⚠️
+:::warning
+Full Refresh - Overwrite syncs delete existing objects under each stream's output prefix before
+writing new objects. Use a dedicated bucket or bucket path and verify your path configuration to
+avoid deleting unrelated data.
+:::
 
 The full path of the output data is:
 
@@ -98,7 +108,7 @@ A data sync may create multiple files as the output files can be partitioned by 
 
 The **GCS Path Format** field controls the directory structure under the bucket path. The default value is:
 
-```
+```text
 ${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_
 ```
 
@@ -123,7 +133,7 @@ The following variables are available for path format:
 
 The **File Name Pattern** field controls the name of each output file. The default value is:
 
-```
+```text
 {part_number}{format_extension}
 ```
 
@@ -147,7 +157,7 @@ Multiple `/` characters in the resolved path are collapsed into a single `/`.
 
 Each stream will be outputted to its dedicated directory according to the configuration. The complete datastore of each stream includes all the output files under that directory. You can think of the directory as equivalent of a Table in the database world.
 
-- Under Full Refresh Sync mode, old output files will be purged before new files are created.
+- Under Full Refresh - Overwrite mode, old output files are deleted before new files are created.
 - Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
 
 ### Avro
@@ -189,14 +199,31 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 ### CSV
 
-Like most of the other Airbyte destination connectors, usually the output has three columns: a UUID, an emission timestamp, and the data blob. With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
+With the CSV output, it is possible to normalize \(flatten\) the data blob to multiple columns.
 
-| Column                | Condition                                                                                         | Description                                                              |
-| :-------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
-| `_airbyte_ab_id`      | Always exists                                                                                     | A uuid assigned by Airbyte to each processed record.                     |
-| `_airbyte_emitted_at` | Always exists.                                                                                    | A timestamp representing when the event was pulled from the data source. |
-| `_airbyte_data`       | When no normalization \(flattening\) is needed, all data reside under this column as a json blob. |                                                                          |
-| root level fields     | When root level normalization \(flattening\) is selected, the root level fields are expanded.     |                                                                          |
+| Column | Condition | Description |
+| :--- | :--- | :--- |
+| `_airbyte_raw_id` | Always exists. | UUID assigned by Airbyte to the record. |
+| `_airbyte_extracted_at` | Always exists. | Time the record was extracted, in Unix epoch milliseconds. |
+| `_airbyte_meta` | Always exists. | Record metadata serialized as a JSON object. |
+| `_airbyte_generation_id` | Always exists. | Stream generation identifier associated with the record. |
+| `_airbyte_data` | Exists with no flattening. | Source record serialized as a JSON object. |
+| Source fields | Exist with root-level flattening. | Top-level source fields are expanded into individual columns. |
+
+The schema for `_airbyte_meta` is:
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `sync_id` | integer | Identifier of the sync job. |
+| `changes` | array | Changes Airbyte made to the record while processing it. |
+
+The schema for a change object is:
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `field` | string | Name of the field that changed. |
+| `change` | string | Change applied to the field, such as `NULLED` or `TRUNCATED`. |
+| `reason` | string | Reason for the change, including whether it originated in the source, destination, or platform. |
 
 For example, given the following json object from a source:
 
@@ -212,33 +239,27 @@ For example, given the following json object from a source:
 
 With no normalization, the output CSV is:
 
-| `_airbyte_ab_id`                       | `_airbyte_emitted_at` | `_airbyte_data`                                                |
-| :------------------------------------- | :-------------------- | :------------------------------------------------------------- |
-| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000         | `{ "user_id": 123, name: { "first": "John", "last": "Doe" } }` |
+| `_airbyte_raw_id` | `_airbyte_extracted_at` | `_airbyte_meta` | `_airbyte_generation_id` | `_airbyte_data` |
+| :--- | :--- | :--- | :--- | :--- |
+| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | `{"sync_id":10111,"changes":[]}` | 11 | `{"user_id":123,"name":{"first":"John","last":"Doe"}}` |
 
 With root level normalization, the output CSV is:
 
-| `_airbyte_ab_id`                       | `_airbyte_emitted_at` | `user_id` | `name`                               |
-| :------------------------------------- | :-------------------- | :-------- | :----------------------------------- |
-| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000         | 123       | `{ "first": "John", "last": "Doe" }` |
+| `_airbyte_raw_id` | `_airbyte_extracted_at` | `_airbyte_meta` | `_airbyte_generation_id` | `user_id` | `name` |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `26d73cde-7eb1-4e1e-b7db-a4c03b4cf206` | 1622135805000 | `{"sync_id":10111,"changes":[]}` | 11 | 123 | `{"first":"John","last":"Doe"}` |
 
 Output files can be compressed. In v1.0.0 and later, CSV output is **GZIP-compressed by default** (`.csv.gz`). Set
 `format.compression.compression_type = "No Compression"` for uncompressed `.csv` output.
 
 ### JSON Lines \(JSONL\)
 
-[Json Lines](https://jsonlines.org/) is a text format with one JSON per line. Like CSV, JSONL supports optional *
-*flattening** (`"No flattening"` or `"Root level flattening"`). Each line has a structure as follows:
+[JSON Lines](https://jsonlines.org/) is a text format with one JSON object per line. Like CSV, JSONL
+supports `"No flattening"` and `"Root level flattening"`. With no flattening, source fields are
+nested under `_airbyte_data`. With root-level flattening, source fields appear alongside the
+Airbyte metadata fields.
 
-```json
-{
-  "_airbyte_ab_id": "<uuid>",
-  "_airbyte_emitted_at": "<timestamp-in-millis>",
-  "_airbyte_data": "<json-data-from-source>"
-}
-```
-
-For example, given the following two json objects from a source:
+For example, given the following two JSON objects from a source:
 
 ```json
 [
@@ -259,11 +280,11 @@ For example, given the following two json objects from a source:
 ]
 ```
 
-They will be like this in the output file:
+With no flattening, the output file contains:
 
-```text
-{ "_airbyte_ab_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_emitted_at": "1622135805000", "_airbyte_data": { "user_id": 123, "name": { "first": "John", "last": "Doe" } } }
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "_airbyte_data": { "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } }
+```json
+{"_airbyte_raw_id":"26d73cde-7eb1-4e1e-b7db-a4c03b4cf206","_airbyte_extracted_at":1622135805000,"_airbyte_meta":{"sync_id":10111,"changes":[]},"_airbyte_generation_id":11,"_airbyte_data":{"user_id":123,"name":{"first":"John","last":"Doe"}}}
+{"_airbyte_raw_id":"0a61de1b-9cdd-4455-a739-93572c9a5f20","_airbyte_extracted_at":1631948170000,"_airbyte_meta":{"sync_id":10112,"changes":[]},"_airbyte_generation_id":12,"_airbyte_data":{"user_id":456,"name":{"first":"Jane","last":"Roe"}}}
 ```
 
 Output files can be compressed. In v1.0.0 and later, JSONL output is **GZIP-compressed by default** (`.jsonl.gz`). Set
@@ -316,7 +337,7 @@ and upload parallelism from the negotiated CPU limits automatically.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0   | 2026-07-02 | [81376](https://github.com/airbytehq/airbyte/pull/81376) | Migrate to the Bulk Load CDK for significantly higher throughput. Preserves HMAC-key auth and AVRO+snappy/CSV/JSONL/Parquet output, with the same object paths and `<date>_<epoch>_0` file names as 0.4.x (verified byte-for-byte against a production object — see "Upgrading to 1.0.0"). Advertises the SOCKET/PROTOBUF high-throughput data channel (`connectorIPCOptions`), with STDIO/JSONL as the negotiated fallback. Ships tuned ObjectLoader defaults with no user-facing tuning knobs, matching the other Bulk-CDK object-storage destinations. |
+| 1.0.0   | 2026-07-15 | [81376](https://github.com/airbytehq/airbyte/pull/81376) | Migrate to the Bulk Load CDK for significantly higher throughput on large syncs through parallel, back-pressured multipart uploads and SOCKET/PROTOBUF data transfer with compatible sources. Streams larger than approximately 200 MB may produce multiple objects, CSV and JSONL output is GZIP-compressed by default, and Airbyte metadata field names change. See [Upgrading to 1.0.0](gcs-migrations.md#upgrading-to-100).                                                                                                                           |
 | 0.4.9   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | Use M4 Compatible base image.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 0.4.8   | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479) | Use a non root base image                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 0.4.7   | 2024-12-18 | [49884](https://github.com/airbytehq/airbyte/pull/49884) | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
