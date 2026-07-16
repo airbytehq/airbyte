@@ -317,7 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.10 | 2026-07-16 | [82230](https://github.com/airbytehq/airbyte/pull/82230) | Capture more invoice status changes on incremental syncs by adding a minimum 7-day overlap window to the `invoices` events-based cursor |
+| 6.0.10 | 2026-07-16 | [82228](https://github.com/airbytehq/airbyte/pull/82228) | Capture more invoice status changes on incremental syncs by adding a minimum 7-day overlap window to the `invoices` events-based cursor |
 | 6.0.9 | 2026-07-14 | [82034](https://github.com/airbytehq/airbyte/pull/82034) | Update dependencies |
 | 6.0.8 | 2026-06-30 | [81285](https://github.com/airbytehq/airbyte/pull/81285) | Update dependencies |
 | 6.0.7 | 2026-06-23 | [80686](https://github.com/airbytehq/airbyte/pull/80686) | Update dependencies |
