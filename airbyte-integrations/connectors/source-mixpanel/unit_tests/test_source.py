@@ -131,6 +131,38 @@ def test_streams_filtering(requests_mock, config_raw, selected_streams, expected
         assert {s.name for s in streams} == expected_names
 
 
+@pytest.mark.parametrize(
+    "enable_export_raw,selected_streams,expected_names",
+    [
+        pytest.param(False, ["export"], {"export"}, id="disabled"),
+        pytest.param(True, ["export"], {"export"}, id="enabled_but_filtered"),
+        pytest.param(True, ["export_raw"], {"export_raw"}, id="enabled_and_selected"),
+        pytest.param(
+            True, None, {"cohorts", "engage", "annotations", "cohort_members", "funnels", "export", "export_raw"}, id="enabled_all"
+        ),
+    ],
+)
+def test_export_raw_stream_selection(requests_mock, config_raw, enable_export_raw, selected_streams, expected_names):
+    requests_mock.register_uri("POST", "https://mixpanel.com/api/query/engage?page_size=1000", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/cohorts/list", setup_response(200, {"id": 123}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/query/funnels", setup_response(200, {}))
+    requests_mock.register_uri(
+        "GET", "https://mixpanel.com/api/query/funnels/list", setup_response(200, {"funnel_id": 123, "name": "name"})
+    )
+
+    config = copy.deepcopy(config_raw)
+    config["enable_export_raw"] = enable_export_raw
+    if selected_streams is not None:
+        config["streams"] = selected_streams
+
+    streams = SourceMixpanel(MagicMock(), config, MagicMock()).streams(config)
+
+    assert {stream.name for stream in streams} == expected_names
+
+
 def test_streams_string_date(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/engage/properties", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", setup_response(200, {}))

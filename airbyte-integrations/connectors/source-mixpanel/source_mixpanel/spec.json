@@ -159,7 +159,8 @@
             "annotations",
             "cohort_members",
             "funnels",
-            "export"
+            "export",
+            "export_raw"
           ]
         },
         "uniqueItems": true
@@ -185,6 +186,14 @@
           "minLength": 1
         },
         "uniqueItems": true
+      },
+      "enable_export_raw": {
+        "order": 15,
+        "title": "Enable Raw Export Stream",
+        "description": "Adds an export_raw stream that preserves the complete typed Mixpanel properties object. The existing export stream remains unchanged.",
+        "type": "boolean",
+        "default": false,
+        "airbyte_hidden": true
       }
     }
   }

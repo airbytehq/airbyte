@@ -16,7 +16,7 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from source_mixpanel.streams import Export
+from source_mixpanel.streams import Export, ExportRaw
 
 
 def adapt_validate_if_testing(func):
@@ -159,6 +159,8 @@ class SourceMixpanel(YamlDeclarativeSource):
         auth = self.get_authenticator(config)
 
         all_streams.append(Export(authenticator=auth, **config_transformed))
+        if config.get("enable_export_raw", False):
+            all_streams.append(ExportRaw(authenticator=auth, **config_transformed))
 
         if selected_streams:
             all_streams = [s for s in all_streams if s.name in selected_streams]

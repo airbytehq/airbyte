@@ -540,3 +540,41 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"stream": True}
+
+
+class ExportRaw(Export):
+    name = "export_raw"
+
+    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
+            properties = record["properties"]
+            timestamp = properties["time"] if "time" in properties else properties["$time"]
+            yield {
+                "event": record["event"],
+                "time": pendulum.from_timestamp(int(timestamp), tz="UTC").to_iso8601_string(),
+                "properties": properties,
+            }
+
+    @cache
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "event": {
+                    "description": "Event type captured",
+                    "type": ["null", "string"],
+                },
+                "time": {
+                    "description": "Timestamp of the event",
+                    "type": ["null", "string"],
+                    "format": "date-time",
+                },
+                "properties": {
+                    "description": "Complete typed Mixpanel event properties",
+                    "type": ["null", "object"],
+                    "additionalProperties": True,
+                },
+            },
+        }
