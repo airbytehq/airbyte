@@ -299,6 +299,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.14  | 2026-07-16 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM)   | Speed up sync startup by checking table emptiness with an `EXISTS` query instead of a full `COUNT(*)` (Upgrade CDK to 1.0.17).                                                          |
 | 3.0.13  | 2026-04-16 | [76409](https://github.com/airbytehq/airbyte/pull/76409)   | Upgrade CDK to 1.0.9.                                                                                                                                                                  |
 | 3.0.12  | 2026-03-25 | | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert |
 | 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |

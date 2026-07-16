@@ -21,6 +21,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.schema.PostgresColumnManager
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.postgres.sql.IS_EMPTY_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -60,6 +61,13 @@ class PostgresAirbyteClient(
                 "Table ${tableName.namespace}.${tableName.name} does not exist. Returning a null count to signal a missing table."
             }
             null
+        }
+
+    override suspend fun tableIsEmpty(tableName: TableName): Boolean =
+        executeQuery(sqlGenerator.tableIsEmpty(tableName)) { resultSet ->
+            // EXISTS always returns a single row, but guard against an empty result set just in
+            // case; a table we cannot read from is treated as non-empty so we don't skip work.
+            resultSet.next() && resultSet.getBoolean(IS_EMPTY_ALIAS)
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
