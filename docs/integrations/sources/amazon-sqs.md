@@ -32,6 +32,7 @@ Other Actions are in beta which might require more/less parameters
 
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
+| 1.0.16 | 2026-07-16 | [82234](https://github.com/airbytehq/airbyte/pull/82234) | Bump base image to python-connector-base 4.1.1-dev (Python 3.13.14) |
 | Full Refresh Sync | Yes                  |       |
 | Incremental Sync  | No                   |       |
 | Namespaces        | No                   |       |
