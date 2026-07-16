@@ -8,7 +8,7 @@ The Google-Drive connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download) |
+| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download), [Context Store Search](#files-context-store-search) |
 | Files Upload | [Create](#files-upload-create) |
 | Files Export | [Download](#files-export-download) |
 | Drives | [List](#drives-list), [Get](#drives-get) |
@@ -625,9 +625,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Files Download
 
-Downloads the binary content of a file. This works for non-Google Workspace files
-(PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-use the export action instead.
+Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+The Drive `alt=media` query parameter is applied automatically by this action, so you
+normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+`alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+directly returns 403.
 
 
 #### CLI
@@ -639,8 +643,7 @@ airbyte-agent connectors execute --json '{
   "entity": "files",
   "action": "download",
   "params": {
-    "fileId": "<str>",
-    "alt": "<str>"
+    "fileId": "<str>"
   }
 }'
 ```
@@ -648,7 +651,7 @@ airbyte-agent connectors execute --json '{
 #### Python SDK
 
 ```python
-async for chunk in google_drive.files.download(    file_id="<str>",    alt="<str>"):# Process each chunk (e.g., write to file)
+async for chunk in google_drive.files.download(    file_id="<str>"):# Process each chunk (e.g., write to file)
     file.write(chunk)
 ```
 
@@ -664,8 +667,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "files",
     "action": "download",
     "params": {
-        "fileId": "<str>",
-        "alt": "<str>"
+        "fileId": "<str>"
     }
 }'
 ```
@@ -676,11 +678,99 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `fileId` | `string` | Yes | The ID of the file to download |
-| `alt` | `"media"` | Yes | Must be set to 'media' to download file content |
+| `alt` | `"media"` | No | Applied automatically as 'media' by this action; you do not need to set it. |
 | `acknowledgeAbuse` | `boolean` | No | Whether the user is acknowledging the risk of downloading known malware or other abusive files |
 | `supportsAllDrives` | `boolean` | No | Whether the requesting application supports both My Drives and shared drives |
 | `range_header` | `string` | No | Optional Range header for partial downloads (e.g., 'bytes=0-99') |
 
+
+### Files Context Store Search
+
+Search and filter files records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await google_drive.files.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier of the file in Google Drive. |
+| `updated_at` | `string` | Timestamp of the last modification to the file. |
+| `file_name` | `string` | Name of the file. |
+| `file_path` | `string` | Full path of the file within the synced Drive folder. |
+| `mime_type` | `string` | MIME type of the file. |
+| `content` | `string` | Extracted text content of the file. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier of the file in Google Drive. |
+| `data[].updated_at` | `string` | Timestamp of the last modification to the file. |
+| `data[].file_name` | `string` | Name of the file. |
+| `data[].file_path` | `string` | Full path of the file within the synced Drive folder. |
+| `data[].mime_type` | `string` | MIME type of the file. |
+| `data[].content` | `string` | Extracted text content of the file. |
+
+</details>
 
 ## Files Upload
 
@@ -843,7 +933,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Files Export Download
 
-Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+of a file's type, check its `mimeType` with `files.get` first.
 Common export formats:
 - application/pdf (all types)
 - text/plain (Docs)
