@@ -89,4 +89,10 @@ data:
     - title: PayPal Status
       url: https://www.paypal-status.com/
       type: status_page
+    - title: PayPal deprecated resources
+      url: https://developer.paypal.com/api/rest/deprecated-resources/
+      type: api_deprecations
+    - title: PayPal API lifecycle definition
+      url: https://developer.paypal.com/docs/archive/lifecycle
+      type: api_deprecations
 metadataSpecVersion: "1.0"
