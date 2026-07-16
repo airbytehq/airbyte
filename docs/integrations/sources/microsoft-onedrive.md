@@ -232,6 +232,7 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 | Integration Type | Airbyte Type |
 | :--------------- | :----------- |
+| 0.2.45 | 2026-07-16 | [82235](https://github.com/airbytehq/airbyte/pull/82235) | Bump base image to python-connector-base 4.1.1-dev (Python 3.13.14) |
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
