@@ -1,5 +1,20 @@
 # Airbyte Agents release notes
 
+## July 16, 2026
+
+Web app
+
+- Workspace options are now sorted alphabetically when you create an API key, making it easier to select the correct workspace.
+
+SDK
+
+- The Google Drive SDK now supports typed Context Store searches across file content. Downloads also apply the required media parameter automatically, so you no longer need to pass it yourself to retrieve file bytes.
+
+Connectors
+
+- You can now use semantic search across synced Google Drive files, including text extracted from PDFs, Word documents, spreadsheets, presentations, CSV files, and plain text files. Supported file downloads return readable text so your agent can use the contents directly.
+- Context Store now keeps the newest source version of a record when incremental syncs contain conflicting versions, preventing stale records from replacing fresher data in search results.
+
 ## July 14, 2026
 
 SDK
