@@ -21,11 +21,14 @@ single-stream uploader.
 ### Output paths and file names
 
 With the same config as 0.4.x (path template in `gcs_bucket_path`, `gcs_path_format` left empty),
-object keys are byte-for-byte identical to 0.4.x, including the `<date>_<epoch>_0.<ext>` file name
-and the directory layout — verified against a real 0.4.x production object. `gcs_bucket_path` is now
-a substituted path template composed with `gcs_path_format`; when `gcs_path_format` is empty it
-falls back to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`, exactly reproducing
-0.4.x behaviour (namespace/stream appended after the bucket-path template).
+the directory layout and first object name remain unchanged for Avro, Parquet, and uncompressed
+CSV or JSONL output. The connector still uses the
+`${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_` path format and a `0` part-number
+suffix for the first object.
+
+CSV and JSONL now use GZIP compression by default, so their default extensions change from `.csv`
+and `.jsonl` to `.csv.gz` and `.jsonl.gz`. Larger streams can also create additional objects with
+part-number suffixes such as `1` and `2`.
 
 ### What changes
 
@@ -39,6 +42,13 @@ falls back to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`, e
 - CSV and JSONL are **GZIP-compressed by default** (`.csv.gz` / `.jsonl.gz`); set
   `format.compression.compression_type = "No Compression"` for uncompressed output. Avro and Parquet
   are not affected (their compression is internal to the container).
+
+:::warning
+After an append sync upgrade, a stream prefix can contain both legacy 0.4.x objects and new 1.0.0
+objects. These objects can use different compression and Airbyte metadata fields. Ensure downstream
+consumers can read both formats, use a new bucket path for 1.0.0 output, or run a Full Refresh -
+Overwrite sync to clear the existing stream prefix before writing 1.0.0 objects.
+:::
 
 ### Configuration changes
 
@@ -54,6 +64,8 @@ falls back to `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`, e
   [File Name Pattern](gcs.md#file-name-pattern) documentation for available variables.
 - **Changed**: `gcs_bucket_region` is now optional with a default of `"us"`. Existing configs that
   include this field are unaffected.
+- **Changed**: CSV's `flattening` property is now required, but it defaults to `"No flattening"`.
+  Existing CSV configs therefore remain valid without changes.
 
 ### Upgrading
 
@@ -62,5 +74,7 @@ Review your downstream consumers to make sure they:
 - Read every object under a stream's prefix instead of assuming one file per stream.
 - Use the new Airbyte metadata field names.
 - Support GZIP-compressed CSV and JSONL output, or configure `"No Compression"`.
+- Account for mixed 0.4.x and 1.0.0 objects after append syncs, or start 1.0.0 writes in a clean
+  stream prefix.
 
 No connector configuration change is required, but downstream readers may require changes.

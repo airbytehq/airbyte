@@ -66,7 +66,7 @@ bucket. By default, each stream has its own directory under the configured bucke
 
 The connector supports only
 [HMAC key authentication](https://cloud.google.com/storage/docs/authentication/hmackeys), using
-GCS's S3-compatible XML API.
+the GCS S3-compatible XML API.
 
 Both Google-managed and customer-managed encryption keys (CMEK) are supported. You can view the encryption setting under
 the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
@@ -108,7 +108,7 @@ A data sync may create multiple files as the output files can be partitioned by 
 
 The **GCS Path Format** field controls the directory structure under the bucket path. The default value is:
 
-```
+```text
 ${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_
 ```
 
@@ -133,7 +133,7 @@ The following variables are available for path format:
 
 The **File Name Pattern** field controls the name of each output file. The default value is:
 
-```
+```text
 {part_number}{format_extension}
 ```
 
@@ -337,7 +337,7 @@ and upload parallelism from the negotiated CPU limits automatically.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0   | 2026-07-15 | [81376](https://github.com/airbytehq/airbyte/pull/81376) | Migrate to the Bulk Load CDK. Streams larger than approximately 200 MB may produce multiple objects, CSV and JSONL output is GZIP-compressed by default, and Airbyte metadata field names change. See [Upgrading to 1.0.0](gcs-migrations.md#upgrading-to-100). |
+| 1.0.0   | 2026-07-15 | [81376](https://github.com/airbytehq/airbyte/pull/81376) | Migrate to the Bulk Load CDK for significantly higher throughput on large syncs through parallel, back-pressured multipart uploads and SOCKET/PROTOBUF data transfer with compatible sources. Streams larger than approximately 200 MB may produce multiple objects, CSV and JSONL output is GZIP-compressed by default, and Airbyte metadata field names change. See [Upgrading to 1.0.0](gcs-migrations.md#upgrading-to-100).                                                                                                                           |
 | 0.4.9   | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | Use M4 Compatible base image.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 0.4.8   | 2025-01-10 | [51479](https://github.com/airbytehq/airbyte/pull/51479) | Use a non root base image                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 0.4.7   | 2024-12-18 | [49884](https://github.com/airbytehq/airbyte/pull/49884) | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
