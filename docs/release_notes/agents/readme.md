@@ -13,6 +13,9 @@ SDK
 Connectors
 
 - You can now use semantic search across synced Google Drive files, including text extracted from PDFs, Word documents, spreadsheets, presentations, CSV files, and plain text files. Supported file downloads return readable text so your agent can use the contents directly.
+
+Other
+
 - Context Store now keeps the newest source version of a record when incremental syncs contain conflicting versions, preventing stale records from replacing fresher data in search results.
 
 ## July 14, 2026
