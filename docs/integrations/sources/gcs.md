@@ -246,6 +246,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.23 | 2026-07-16 | [82238](https://github.com/airbytehq/airbyte/pull/82238) | Bump base image to python-connector-base 4.1.1-dev (Python 3.13.14) |
 | 0.10.22 | 2026-07-14 | [81818](https://github.com/airbytehq/airbyte/pull/81818) | Update dependencies |
 | 0.10.21 | 2026-07-07 | [81441](https://github.com/airbytehq/airbyte/pull/81441) | Update dependencies |
 | 0.10.20 | 2026-06-30 | [81081](https://github.com/airbytehq/airbyte/pull/81081) | Update dependencies |
