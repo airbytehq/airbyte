@@ -140,6 +140,46 @@ def test_stream_extractor_tolerates_malformed_selected_fields(config, selected_f
     assert records[0]["selected_fields"] == expected
 
 
+def test_stream_extractor_is_stateless_across_pages(config):
+    """`airbyte_stream` uses `CursorPagination`, so the extractor is invoked once per page.
+
+    It must be response-scoped: each page yields exactly its own rows, and re-extracting a page
+    produces identical output (no cross-page accumulation), so a page retry/rollback cannot
+    duplicate or drop rows.
+    """
+    page_one = Mock()
+    page_one.json.return_value = {
+        "next": "https://api.airbyte.com/v1/connections?cursor=abc",
+        "data": [
+            {
+                "connectionId": "conn-a",
+                "destinationId": DESTINATION_ID,
+                "configurations": {"streams": [{"name": "users"}, {"name": "orders"}]},
+            }
+        ],
+    }
+    page_two = Mock()
+    page_two.json.return_value = {
+        "data": [
+            {
+                "connectionId": "conn-b",
+                "destinationId": DESTINATION_ID,
+                "configurations": {"streams": [{"name": "events"}]},
+            }
+        ]
+    }
+
+    extractor = components.AgentsStreamExtractor(config=config)
+    first = list(extractor.extract_records(page_one))
+    second = list(extractor.extract_records(page_two))
+
+    assert {r["stream_name"] for r in first} == {"users", "orders"}
+    assert {r["stream_name"] for r in second} == {"events"}
+
+    # Re-extracting a page is deterministic and carries no state from prior pages.
+    assert list(extractor.extract_records(page_one)) == first
+
+
 def test_root_extractor_emits_index_and_skill(config):
     extractor = components.AgentsRootExtractor(config=config)
     records = list(extractor.extract_records(_connections_response()))
