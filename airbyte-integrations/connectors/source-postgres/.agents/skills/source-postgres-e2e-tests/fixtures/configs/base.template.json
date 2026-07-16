@@ -1,0 +1,17 @@
+{
+  "host": "source-postgres-db-backend",
+  "port": 5432,
+  "database": "test_db",
+  "username": "postgres",
+  "password": "test_password",
+  "schemas": ["public"],
+  "ssl_mode": {
+    "mode": "disable"
+  },
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "Standard"
+  }
+}
