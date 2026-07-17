@@ -34,6 +34,12 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, attachment_index: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads an attachment (resume, cover letter, etc.) for an application by index.
+        The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
+        Files should be downloaded immediately after retrieval.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, attachment_index: str, path: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads an attachment (resume, cover letter, etc.) for an application by index.
         The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
@@ -49,6 +55,12 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, attachment_index: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads an attachment (resume, cover letter, etc.) for an application by index.
+        The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
+        Files should be downloaded immediately after retrieval.
+         and return a JSON-safe UTF-8 text chunk.
 
 <a id="ApplicationsQuery"></a>
 
@@ -151,6 +163,12 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, attachment_index: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads an attachment (resume, cover letter, etc.) for a candidate by index.
+        The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
+        Files should be downloaded immediately after retrieval.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, attachment_index: str, path: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads an attachment (resume, cover letter, etc.) for a candidate by index.
         The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
@@ -166,6 +184,12 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, attachment_index: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads an attachment (resume, cover letter, etc.) for a candidate by index.
+        The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
+        Files should be downloaded immediately after retrieval.
+         and return a JSON-safe UTF-8 text chunk.
 
 <a id="CandidatesQuery"></a>
 

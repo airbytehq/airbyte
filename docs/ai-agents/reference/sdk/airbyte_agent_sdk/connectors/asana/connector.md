@@ -271,6 +271,11 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, attachment_gid: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the file content of an attachment. This operation first retrieves the attachment
+        metadata to get the download_url, then downloads the file from that URL.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, attachment_gid: str, path: str, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the file content of an attachment. This operation first retrieves the attachment
         metadata to get the download_url, then downloads the file from that URL.
@@ -284,6 +289,11 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, attachment_gid: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the file content of an attachment. This operation first retrieves the attachment
+        metadata to get the download_url, then downloads the file from that URL.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, attachment_gid: str, **kwargs) ‑> airbyte_agent_sdk.connectors.asana.models.Attachment`
     :   Get details for a single attachment by its GID

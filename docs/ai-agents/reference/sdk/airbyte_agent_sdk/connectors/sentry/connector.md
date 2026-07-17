@@ -270,10 +270,11 @@ Classes
         Returns:
             ProjectDetail
 
-    `list(self, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.sentry.models.SentryExecuteResultWithMeta[list[Project], ProjectsListResultMeta]`
-    :   Return a list of projects available to the authenticated user.
+    `list(self, organization_slug: str, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.sentry.models.SentryExecuteResultWithMeta[list[Project], ProjectsListResultMeta]`
+    :   Return a list of projects the authenticated user has access to within the given organization. Requires the token to have the `org:read` scope. Note: unlike the deprecated `/projects/` endpoint, this only returns projects belonging to the configured organization and omits the `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` fields (use the project_detail action to retrieve those).
         
         Args:
+            organization_slug: The slug of the organization to list projects for.
             cursor: Pagination cursor for next page of results.
             **kwargs: Additional parameters
         

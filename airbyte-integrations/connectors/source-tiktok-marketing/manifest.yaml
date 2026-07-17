@@ -3403,6 +3403,11 @@ definitions:
         ad_name:
           description: The name of the ad
           type: string
+        smart_plus_ad_id:
+          description: The unique identifier of the Smart+ ad. Only present for Smart+ ads.
+          type:
+            - "null"
+            - integer
         tracking_app_id:
           description: The unique identifier of the tracking app
           type:

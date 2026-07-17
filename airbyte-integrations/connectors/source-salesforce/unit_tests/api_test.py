@@ -631,9 +631,11 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream_config_date_format.update({"start_date": "2023-01-01"})
     state = StateBuilder().with_stream_state("Account", {"LastModifiedDate": "2023-01-01T10:20:10.000Z"}).build()
 
-    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.full_refresh).build(), _ANY_CONFIG, _ANY_STATE)
+    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.incremental).build(), _ANY_CONFIG, state)
     source.streams = Mock()
-    source.streams.return_value = [generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False)]
+    source.streams.return_value = [
+        generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False, source=source)
+    ]
 
     # using legacy state to configure HTTP requests
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
@@ -722,3 +724,83 @@ def test_request_params_substream(stream_config_date_format, stream_api):
     params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
+
+
+def test_source_uses_ordered_concurrent_message_repository():
+    """State checkpoints must be emitted in-order with records to avoid advancing the cursor past
+    records not yet durably committed on an ungraceful termination. This requires the ordered
+    ConcurrentMessageRepository (sharing the concurrent source's queue) rather than the default
+    InMemoryMessageRepository."""
+    from airbyte_cdk.sources.message.concurrent_repository import ConcurrentMessageRepository
+
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    assert isinstance(source.message_repository, ConcurrentMessageRepository)
+    # The ordering guarantee only holds if the repository writes to the same queue the concurrent
+    # source drains on the main thread. Assert they are the very same object, not just the right type.
+    assert source.message_repository._queue is source._concurrent_source._queue
+
+
+def _a_state_message():
+    from airbyte_cdk.models import (
+        AirbyteMessage,
+        AirbyteStateMessage,
+        AirbyteStateType,
+        AirbyteStreamState,
+        StreamDescriptor,
+    )
+
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="Account"), stream_state=AirbyteStateBlob()),
+        ),
+    )
+
+
+def test_state_checkpoint_is_delivered_after_records_it_follows():
+    """Behavioral regression for oncall #13081.
+
+    The concurrent source drains a single FIFO queue on the main thread. PartitionReader enqueues a
+    partition's records first and only then calls close_partition, which emits the state checkpoint
+    through the message repository. Because the connector routes state through that same queue, the
+    checkpoint is dequeued AFTER the records it follows - so an ungraceful termination can never
+    persist a cursor that has advanced past records still waiting to be delivered.
+    """
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    queue = source._concurrent_source._queue
+
+    # Records are placed on the shared queue before the checkpoint is emitted (as PartitionReader does).
+    record_a, record_b = object(), object()
+    queue.put(record_a)
+    queue.put(record_b)
+
+    state_message = _a_state_message()
+    source.message_repository.emit_message(state_message)
+
+    drained = []
+    while not queue.empty():
+        drained.append(queue.get_nowait())
+
+    # FIFO: the checkpoint is delivered strictly after the records that preceded it.
+    assert drained == [record_a, record_b, state_message]
+
+
+def test_plain_in_memory_repository_does_not_order_state_with_records():
+    """Control for the fix: the pre-fix InMemoryMessageRepository keeps state on its own channel,
+    NOT the record queue, so it provides no ordering guarantee relative to queued records. This is
+    the behavior that allowed a checkpoint to be flushed ahead of pending records."""
+    from queue import Queue
+
+    from airbyte_cdk.models import Level
+    from airbyte_cdk.sources.message import InMemoryMessageRepository
+
+    record_queue = Queue()
+    record_queue.put(object())
+
+    plain_repo = InMemoryMessageRepository(Level.INFO)
+    plain_repo.emit_message(_a_state_message())
+
+    # The state never landed on the record queue; it lives on a separate channel.
+    assert record_queue.qsize() == 1
+    assert [m.type for m in plain_repo.consume_queue()] == [Type.STATE]
