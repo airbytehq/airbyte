@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 4.0.1
+  dockerImageTag: 3.6.3
   dockerRepository: airbyte/source-mixpanel
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
@@ -33,12 +33,6 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
-      4.0.0:
-        message: The Revenue stream has been removed because Mixpanel no longer provides a documented or working revenue Query API endpoint. Users syncing the Revenue stream must refresh the source schema and remove the stream from their connections before upgrading.
-        upgradeDeadline: "2026-06-02"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes: ["revenue"]
       3.0.0:
         message:
           In this release, CohortMembers stream has changed due to changes in primary key and an improper state format.
@@ -66,6 +60,7 @@ data:
       - cohort_members
       - engage
       - annotations
+      - revenue
       - funnels
   supportLevel: community
   tags:
