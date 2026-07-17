@@ -40,11 +40,11 @@ internal const val DATA_SOURCE_CONNECTION_TIMEOUT_MS = 30000L
 internal const val DATA_SOURCE_IDLE_TIMEOUT_MS = 600000L
 
 /**
- * SQL run on every pooled connection to disable server-side statement timeouts for the destination's
- * session. The destination issues long-running maintenance statements (deduplicating upserts, CDC
- * deletes, index creation, table copies) that can exceed a server-enforced `statement_timeout`
- * (e.g. the low defaults imposed by managed poolers such as Supabase), which surfaces as
- * `canceling statement due to statement timeout`.
+ * SQL run on every pooled connection to disable server-side statement timeouts for the
+ * destination's session. The destination issues long-running maintenance statements (deduplicating
+ * upserts, CDC deletes, index creation, table copies) that can exceed a server-enforced
+ * `statement_timeout` (e.g. the low defaults imposed by managed poolers such as Supabase), which
+ * surfaces as `canceling statement due to statement timeout`.
  */
 internal const val DISABLE_STATEMENT_TIMEOUT_SQL = "SET SESSION statement_timeout = 0"
 

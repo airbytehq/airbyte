@@ -50,9 +50,7 @@ internal class PostgresBeanFactoryTest {
         val dataSource =
             factory.postgresDataSource(
                 postgresConfiguration =
-                    configuration(
-                        jdbcUrlParams = "options=-c%20statement_timeout%3D60000"
-                    ),
+                    configuration(jdbcUrlParams = "options=-c%20statement_timeout%3D60000"),
                 resolvedHost = "localhost",
                 resolvedPort = 5432,
             )
