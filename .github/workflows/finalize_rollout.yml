@@ -148,14 +148,14 @@ jobs:
           # Get repo version to decide if a PR is needed
           CURRENT_VERSION="$(airbyte-ops local connector get-version --name "${CONNECTOR_NAME}" --repo-path "${{ github.workspace }}")"
 
-          # Determine if we need a finalize PR (only when repo version is RC
-          # AND matches the version being promoted)
+          # A finalize PR is needed whenever we are promoting and the repo
+          # metadata is still on a release candidate: the PR bumps the repo
+          # from the -rc tag to the GA stem (e.g. 7.2.0-rc.2 -> 7.2.0). Gate on
+          # the version being finalized matching the repo's current rc tag, so a
+          # divergent version never bumps the wrong release.
           NEEDS_PR="false"
-          if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* ]]; then
-            RC_BASE="${CURRENT_VERSION%%-rc.*}"
-            if [[ "${RC_BASE}" == "${VERSION}" ]]; then
-              NEEDS_PR="true"
-            fi
+          if [[ "${ACTION}" == "promote" && "${CURRENT_VERSION}" == *-rc.* && "${VERSION}" == "${CURRENT_VERSION}" ]]; then
+            NEEDS_PR="true"
           fi
 
           # Emit all outputs with tee so they appear in logs
@@ -318,10 +318,10 @@ jobs:
 
       - name: Notify Slack on rollback success
         if: success() && steps.resolve-vars.outputs.action == 'rollback'
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
+          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "channel": "#connector-publish-failures",
@@ -331,10 +331,10 @@ jobs:
 
       - name: Notify Slack on promote success (no PR needed)
         if: success() && steps.resolve-vars.outputs.action == 'promote' && steps.resolve-vars.outputs.needs_pr == 'false'
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
+          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "channel": "#connector-publish-updates",
@@ -344,10 +344,10 @@ jobs:
 
       - name: Notify Slack on promote success (PR merged)
         if: success() && steps.create-pr.outputs.pull-request-number
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
+          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "channel": "#connector-publish-updates",
@@ -357,10 +357,10 @@ jobs:
 
       - name: Notify Slack on failure
         if: failure()
-        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
         with:
+          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "channel": "#connector-publish-failures",

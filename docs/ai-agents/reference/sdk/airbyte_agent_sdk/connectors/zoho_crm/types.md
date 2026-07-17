@@ -155,67 +155,67 @@ Classes
 
     ### Class variables
 
-    `Account_Name: str`
+    `account_name: str`
     :   The type of the None singleton.
 
-    `Account_Number: str`
+    `account_number: str`
     :   The type of the None singleton.
 
-    `Account_Type: str`
+    `account_type: str`
     :   The type of the None singleton.
 
-    `Annual_Revenue: float`
+    `annual_revenue: float`
     :   The type of the None singleton.
 
-    `Billing_City: str`
+    `billing_city: str`
     :   The type of the None singleton.
 
-    `Billing_Code: str`
+    `billing_code: str`
     :   The type of the None singleton.
 
-    `Billing_Country: str`
+    `billing_country: str`
     :   The type of the None singleton.
 
-    `Billing_State: str`
+    `billing_state: str`
     :   The type of the None singleton.
 
-    `Billing_Street: str`
+    `billing_street: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Employees: int`
+    `employees: int`
     :   The type of the None singleton.
 
-    `Industry: str`
+    `industry: str`
     :   The type of the None singleton.
 
-    `Ownership: str`
+    `ownership: str`
     :   The type of the None singleton.
 
-    `Phone: str`
+    `phone: str`
     :   The type of the None singleton.
 
-    `Rating: str`
+    `rating: str`
     :   The type of the None singleton.
 
-    `Shipping_City: str`
+    `shipping_city: str`
     :   The type of the None singleton.
 
-    `Shipping_Code: str`
+    `shipping_code: str`
     :   The type of the None singleton.
 
-    `Shipping_Country: str`
+    `shipping_country: str`
     :   The type of the None singleton.
 
-    `Shipping_State: str`
+    `shipping_state: str`
     :   The type of the None singleton.
 
-    `Shipping_Street: str`
+    `shipping_street: str`
     :   The type of the None singleton.
 
-    `Website: str`
+    `website: str`
     :   The type of the None singleton.
 
 <a id="AccountsEqCondition"></a>
@@ -743,67 +743,67 @@ Classes
 
     ### Class variables
 
-    `Account_Name: str`
+    `account_name: str`
     :   The type of the None singleton.
 
-    `Account_Number: str`
+    `account_number: str`
     :   The type of the None singleton.
 
-    `Account_Type: str`
+    `account_type: str`
     :   The type of the None singleton.
 
-    `Annual_Revenue: float`
+    `annual_revenue: float`
     :   The type of the None singleton.
 
-    `Billing_City: str`
+    `billing_city: str`
     :   The type of the None singleton.
 
-    `Billing_Code: str`
+    `billing_code: str`
     :   The type of the None singleton.
 
-    `Billing_Country: str`
+    `billing_country: str`
     :   The type of the None singleton.
 
-    `Billing_State: str`
+    `billing_state: str`
     :   The type of the None singleton.
 
-    `Billing_Street: str`
+    `billing_street: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Employees: int`
+    `employees: int`
     :   The type of the None singleton.
 
-    `Industry: str`
+    `industry: str`
     :   The type of the None singleton.
 
-    `Ownership: str`
+    `ownership: str`
     :   The type of the None singleton.
 
-    `Phone: str`
+    `phone: str`
     :   The type of the None singleton.
 
-    `Rating: str`
+    `rating: str`
     :   The type of the None singleton.
 
-    `Shipping_City: str`
+    `shipping_city: str`
     :   The type of the None singleton.
 
-    `Shipping_Code: str`
+    `shipping_code: str`
     :   The type of the None singleton.
 
-    `Shipping_Country: str`
+    `shipping_country: str`
     :   The type of the None singleton.
 
-    `Shipping_State: str`
+    `shipping_state: str`
     :   The type of the None singleton.
 
-    `Shipping_Street: str`
+    `shipping_street: str`
     :   The type of the None singleton.
 
-    `Website: str`
+    `website: str`
     :   The type of the None singleton.
 
 <a id="AirbyteSearchParams"></a>
@@ -2103,49 +2103,49 @@ Classes
 
     ### Class variables
 
-    `Date_of_Birth: str`
+    `date_of_birth: str`
     :   The type of the None singleton.
 
-    `Department: str`
+    `department: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Email: str`
+    `email: str`
     :   The type of the None singleton.
 
-    `First_Name: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `Last_Name: str`
+    `last_name: str`
     :   The type of the None singleton.
 
-    `Lead_Source: str`
+    `lead_source: str`
     :   The type of the None singleton.
 
-    `Mailing_City: str`
+    `mailing_city: str`
     :   The type of the None singleton.
 
-    `Mailing_Country: str`
+    `mailing_country: str`
     :   The type of the None singleton.
 
-    `Mailing_State: str`
+    `mailing_state: str`
     :   The type of the None singleton.
 
-    `Mailing_Street: str`
+    `mailing_street: str`
     :   The type of the None singleton.
 
-    `Mailing_Zip: str`
+    `mailing_zip: str`
     :   The type of the None singleton.
 
-    `Mobile: str`
+    `mobile: str`
     :   The type of the None singleton.
 
-    `Phone: str`
+    `phone: str`
     :   The type of the None singleton.
 
-    `Title: str`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -2673,49 +2673,49 @@ Classes
 
     ### Class variables
 
-    `Date_of_Birth: str`
+    `date_of_birth: str`
     :   The type of the None singleton.
 
-    `Department: str`
+    `department: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Email: str`
+    `email: str`
     :   The type of the None singleton.
 
-    `First_Name: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `Last_Name: str`
+    `last_name: str`
     :   The type of the None singleton.
 
-    `Lead_Source: str`
+    `lead_source: str`
     :   The type of the None singleton.
 
-    `Mailing_City: str`
+    `mailing_city: str`
     :   The type of the None singleton.
 
-    `Mailing_Country: str`
+    `mailing_country: str`
     :   The type of the None singleton.
 
-    `Mailing_State: str`
+    `mailing_state: str`
     :   The type of the None singleton.
 
-    `Mailing_Street: str`
+    `mailing_street: str`
     :   The type of the None singleton.
 
-    `Mailing_Zip: str`
+    `mailing_zip: str`
     :   The type of the None singleton.
 
-    `Mobile: str`
+    `mobile: str`
     :   The type of the None singleton.
 
-    `Phone: str`
+    `phone: str`
     :   The type of the None singleton.
 
-    `Title: str`
+    `title: str`
     :   The type of the None singleton.
 
 <a id="DealsAndCondition"></a>
@@ -2848,31 +2848,31 @@ Classes
 
     ### Class variables
 
-    `Amount: float`
+    `amount: float`
     :   The type of the None singleton.
 
-    `Closing_Date: str`
+    `closing_date: str`
     :   The type of the None singleton.
 
-    `Deal_Name: str`
+    `deal_name: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Lead_Source: str`
+    `lead_source: str`
     :   The type of the None singleton.
 
-    `Next_Step: str`
+    `next_step: str`
     :   The type of the None singleton.
 
-    `Probability: int`
+    `probability: int`
     :   The type of the None singleton.
 
-    `Stage: str`
+    `stage: str`
     :   The type of the None singleton.
 
-    `Type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DealsEqCondition"></a>
@@ -3340,31 +3340,31 @@ Classes
 
     ### Class variables
 
-    `Amount: float`
+    `amount: float`
     :   The type of the None singleton.
 
-    `Closing_Date: str`
+    `closing_date: str`
     :   The type of the None singleton.
 
-    `Deal_Name: str`
+    `deal_name: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Lead_Source: str`
+    `lead_source: str`
     :   The type of the None singleton.
 
-    `Next_Step: str`
+    `next_step: str`
     :   The type of the None singleton.
 
-    `Probability: int`
+    `probability: int`
     :   The type of the None singleton.
 
-    `Stage: str`
+    `stage: str`
     :   The type of the None singleton.
 
-    `Type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="EventsAndCondition"></a>
@@ -4641,64 +4641,64 @@ Classes
 
     ### Class variables
 
-    `Annual_Revenue: float`
+    `annual_revenue: float`
     :   The type of the None singleton.
 
-    `City: str`
+    `city: str`
     :   The type of the None singleton.
 
-    `Company: str`
+    `company: str`
     :   The type of the None singleton.
 
-    `Country: str`
+    `country: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Email: str`
+    `email: str`
     :   The type of the None singleton.
 
-    `First_Name: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `Industry: str`
+    `industry: str`
     :   The type of the None singleton.
 
-    `Last_Name: str`
+    `last_name: str`
     :   The type of the None singleton.
 
-    `Lead_Source: str`
+    `lead_source: str`
     :   The type of the None singleton.
 
-    `Lead_Status: str`
+    `lead_status: str`
     :   The type of the None singleton.
 
-    `Mobile: str`
+    `mobile: str`
     :   The type of the None singleton.
 
-    `No_of_Employees: int`
+    `no_of_employees: int`
     :   The type of the None singleton.
 
-    `Phone: str`
+    `phone: str`
     :   The type of the None singleton.
 
-    `Rating: str`
+    `rating: str`
     :   The type of the None singleton.
 
-    `State: str`
+    `state: str`
     :   The type of the None singleton.
 
-    `Street: str`
+    `street: str`
     :   The type of the None singleton.
 
-    `Title: str`
+    `title: str`
     :   The type of the None singleton.
 
-    `Website: str`
+    `website: str`
     :   The type of the None singleton.
 
-    `Zip_Code: str`
+    `zip_code: str`
     :   The type of the None singleton.
 
 <a id="LeadsEqCondition"></a>
@@ -5286,64 +5286,64 @@ Classes
 
     ### Class variables
 
-    `Annual_Revenue: float`
+    `annual_revenue: float`
     :   The type of the None singleton.
 
-    `City: str`
+    `city: str`
     :   The type of the None singleton.
 
-    `Company: str`
+    `company: str`
     :   The type of the None singleton.
 
-    `Country: str`
+    `country: str`
     :   The type of the None singleton.
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Email: str`
+    `email: str`
     :   The type of the None singleton.
 
-    `First_Name: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `Industry: str`
+    `industry: str`
     :   The type of the None singleton.
 
-    `Last_Name: str`
+    `last_name: str`
     :   The type of the None singleton.
 
-    `Lead_Source: str`
+    `lead_source: str`
     :   The type of the None singleton.
 
-    `Lead_Status: str`
+    `lead_status: str`
     :   The type of the None singleton.
 
-    `Mobile: str`
+    `mobile: str`
     :   The type of the None singleton.
 
-    `No_of_Employees: int`
+    `no_of_employees: int`
     :   The type of the None singleton.
 
-    `Phone: str`
+    `phone: str`
     :   The type of the None singleton.
 
-    `Rating: str`
+    `rating: str`
     :   The type of the None singleton.
 
-    `State: str`
+    `state: str`
     :   The type of the None singleton.
 
-    `Street: str`
+    `street: str`
     :   The type of the None singleton.
 
-    `Title: str`
+    `title: str`
     :   The type of the None singleton.
 
-    `Website: str`
+    `website: str`
     :   The type of the None singleton.
 
-    `Zip_Code: str`
+    `zip_code: str`
     :   The type of the None singleton.
 
 <a id="ProductsAndCondition"></a>
@@ -6644,22 +6644,22 @@ Classes
 
     ### Class variables
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Due_Date: str`
+    `due_date: str`
     :   The type of the None singleton.
 
-    `Priority: str`
+    `priority: str`
     :   The type of the None singleton.
 
-    `Send_Notification_Email: bool`
+    `send_notification_email: bool`
     :   The type of the None singleton.
 
-    `Status: str`
+    `status: str`
     :   The type of the None singleton.
 
-    `Subject: str`
+    `subject: str`
     :   The type of the None singleton.
 
 <a id="TasksEqCondition"></a>
@@ -7103,20 +7103,20 @@ Classes
 
     ### Class variables
 
-    `Description: str`
+    `description: str`
     :   The type of the None singleton.
 
-    `Due_Date: str`
+    `due_date: str`
     :   The type of the None singleton.
 
-    `Priority: str`
+    `priority: str`
     :   The type of the None singleton.
 
-    `Send_Notification_Email: bool`
+    `send_notification_email: bool`
     :   The type of the None singleton.
 
-    `Status: str`
+    `status: str`
     :   The type of the None singleton.
 
-    `Subject: str`
+    `subject: str`
     :   The type of the None singleton.

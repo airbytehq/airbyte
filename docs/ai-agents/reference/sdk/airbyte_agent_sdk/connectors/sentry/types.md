@@ -2053,6 +2053,9 @@ Classes
     `cursor: str`
     :   The type of the None singleton.
 
+    `organization_slug: str`
+    :   The type of the None singleton.
+
 <a id="ProjectsLtCondition"></a>
 
 `ProjectsLtCondition(*args, **kwargs)`

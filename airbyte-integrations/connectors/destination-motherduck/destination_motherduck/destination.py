@@ -258,7 +258,10 @@ class DestinationMotherDuck(Destination):
                     motherduck_api_key=motherduck_api_key,
                     stream_name=stream_name,
                 )
-                buffer = defaultdict(lambda: defaultdict(list))
+                # Only clear the flushed stream's buffer. Reallocating the whole
+                # `buffer` here would silently discard other streams' buffered-but-
+                # unflushed records, causing silent data loss on interleaved syncs.
+                buffer[stream_name] = defaultdict(list)
                 records_buffered[stream_name] = 0
 
                 # Annotate the state message with the number of records processed
@@ -325,7 +328,9 @@ class DestinationMotherDuck(Destination):
                         motherduck_api_key=motherduck_api_key,
                         stream_name=stream_name,
                     )
-                    buffer = defaultdict(lambda: defaultdict(list))
+                    # Only clear the flushed stream's buffer to avoid discarding
+                    # other streams' buffered-but-unflushed records (silent data loss).
+                    buffer[stream_name] = defaultdict(list)
                     records_processed[stream_name] += records_buffered[stream_name]
                     records_buffered[stream_name] = 0
                     logger.info(

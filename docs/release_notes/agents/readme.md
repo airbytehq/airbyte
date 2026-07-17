@@ -1,5 +1,53 @@
 # Airbyte Agents release notes
 
+## July 14, 2026
+
+SDK
+
+- Connector download operations can now return file content in structured, JSON-safe chunks that tell you the byte range returned and whether more content remains, so your agents can page through large downloads instead of only receiving a raw byte stream.
+
+Connectors
+
+- You can now manage associations between records with the HubSpot connector. Your agents can link records such as a contact to a deal or company, create labeled associations, list all associations for a record, and remove associations, making it easier to manage how your CRM records relate to one another.
+
+## July 10, 2026
+
+Web app
+
+- New workspaces you create now have Context Store search enabled automatically, so your agents can search that workspace's synced data right away.
+- During connector setup, your data entity selection is now locked while a connector is saving or checking its configuration, so your choices can't change unexpectedly mid-save.
+
+## July 9, 2026
+
+Web app
+
+- When you create or edit a workspace, you no longer need to choose a Context Store region. That field has been removed to simplify workspace setup.
+- Connector setup and configuration forms have a refreshed, more consistent appearance.
+- The floating support button no longer appears while you're on a workspace chat page, reducing clutter in the chat view.
+
+Connectors
+
+- Fixed an issue where the Gong connector could lose access and stop syncing when its authorization token was rotated. Gong connections now stay authenticated reliably.
+- The Slack connector now requests fewer permissions when you connect it, since direct message and channel-invite permissions that weren't used have been removed.
+
+## July 8, 2026
+
+Connectors
+
+- You can now create, update, and delete notes, calls, emails, meetings, and tasks with the HubSpot connector, so your agents can log and manage CRM engagement activity such as adding a note to a contact or logging a call.
+
+## July 7, 2026
+
+Web app
+
+- When you use chat to explore a workspace's connected data, the assistant now gathers more results before it stops, so answers to broad questions are more complete. If it reaches the limit, it lets you know the results are partial instead of stopping without explanation.
+
+## July 6, 2026
+
+Connectors
+
+- When you query Google Ads campaigns, you now get each campaign's start and end dates. The Google Ads connector was also updated to a newer version of the Google Ads API, so your Google Ads data keeps flowing reliably.
+
 ## July 3, 2026
 
 Web app

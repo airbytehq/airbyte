@@ -123,6 +123,7 @@ jobs:
               docs/ai-agents/connectors/*) ;;
               docs/ai-agents/reference/*) ;;
               docs/developers/pyairbyte/*) ;;
+              docs/release_notes/*) ;;
               docusaurus/src/data/*) ;;
               *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
             esac
