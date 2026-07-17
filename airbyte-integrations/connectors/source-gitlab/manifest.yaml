@@ -800,6 +800,16 @@ definitions:
   issues_stream:
     name: "issues"
     $ref: "#/definitions/base_projects_incremental_child_stream"
+    retriever:
+      $ref: "#/definitions/projects_child_streams_retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('state') == 'opened' }}"
     transformations:
       - type: AddFields
         fields:
