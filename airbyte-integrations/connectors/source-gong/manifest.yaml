@@ -358,8 +358,10 @@ definitions:
                       - 404
           request_body_json:
             filter:
-              callIds:
-                - "{{ stream_partition.call_id }}"
+              # stream_partition.call_id is a list of up to `group_size` call
+              # ids supplied by the GroupingPartitionRouter below, so a single
+              # request fetches transcripts for many calls at once.
+              callIds: "{{ stream_partition.call_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,16 +379,23 @@ definitions:
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: call_id
-              stream:
-                $ref: "#/definitions/streams/calls"
-              incremental_dependency: true
-              extra_fields:
-                - - started
+          # Batch call ids so one POST /calls/transcript request covers up to
+          # `group_size` calls instead of one request per call. This avoids
+          # exhausting Gong's rate limit and daily quota on large backfills.
+          type: GroupingPartitionRouter
+          group_size: 100
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: call_id
+                stream:
+                  $ref: "#/definitions/streams/calls"
+                incremental_dependency: true
+                extra_fields:
+                  - - started
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: started
@@ -406,7 +415,10 @@ definitions:
           fields:
             - path:
                 - started
-              value: "{{ stream_slice.extra_fields['started'] }}"
+              # After grouping, extra_fields['started'] is a list (one value per
+              # batched call); stamp `started` with the newest so the cursor
+              # advances to the latest call time in the batch.
+              value: "{{ stream_slice.extra_fields['started'] | max }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
