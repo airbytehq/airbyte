@@ -360,6 +360,24 @@ definitions:
             - path: ["unblocked"]
               value: "{{ {'type': ['null', 'string']} }}"
 
+  # No API docs! build based on singer source
+  revenue_stream:
+    $ref: "#/definitions/stream_base"
+    primary_key: "date"
+    $parameters:
+      name: revenue
+      path: query/engage/revenue
+      extractor_field_path: results
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          class_name: "source_mixpanel.components.RevenueDpathExtractor"
+          field_path:
+            - "{{ parameters['extractor_field_path'] }}"
+    incremental_sync: "#/definitions/incremental_sync"
+
   # https://developer.mixpanel.com/reference/list-all-annotations-for-project
   annotations_stream:
     $ref: "#/definitions/stream_base"
@@ -788,6 +806,7 @@ definitions:
 streams:
   - "#/definitions/cohorts_stream"
   - "#/definitions/engage_stream"
+  - "#/definitions/revenue_stream"
   - "#/definitions/annotations_stream"
   - "#/definitions/cohort_members_stream"
   - "#/definitions/funnels_stream"
@@ -811,7 +830,7 @@ api_budget:
           interval: PT60S
       matchers: []
 
-# concurrent streams: cohorts, engage, annotations, cohort_members, funnels
+# concurrent streams: cohorts, engage, revenue, annotations, cohort_members, funnels
 # synchronous streams: export
 # https://developer.mixpanel.com/reference/rate-limits
 # A maximum of 5 concurrent queries and 60 queries per hour.

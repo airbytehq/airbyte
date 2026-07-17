@@ -14,6 +14,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "date": "2030-01-01" },
+      "stream_descriptor": { "name": "revenue" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "created": "2030-01-01 00:00:00" },
       "stream_descriptor": { "name": "cohorts" }
     }
