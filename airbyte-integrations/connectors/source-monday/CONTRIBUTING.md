@@ -30,7 +30,9 @@ Monday.com's `items_page`/`next_items_page` pagination cursors expire after 60 m
 
 The connector handles this by triggering `RESET_PAGINATION`, which restarts pagination from the beginning of the current stream. This means all records fetched before the expiration are re-read. See [Monday.com community discussion](https://developer-community.monday.com/api-apps-framework-4/cursor-used-for-pagination-expires-alternate-way-to-paginate-4083) for API context.
 
-**Why this matters:** For large boards, cursor expiration can cause repeated full re-reads if processing consistently takes longer than an hour. Each reset restarts from page 1, so syncs may never complete for very large boards if the processing time per page exceeds the cursor TTL.
+Two API facts make this unavoidable rather than a bug that can be fixed locally: cursors are generated on the first request for a board and are cached for exactly 60 minutes, and the API does **not** return items in a stable order. Because items are unordered, the connector cannot checkpoint partial progress within a board and resume — it can only restart from the beginning. Note also that the underlying symptom is sometimes surfaced first as a `ComplexityException` with `status_code: 429`; the root cause in that case is still the expired cursor, not query complexity.
+
+**Why this matters:** For large boards, cursor expiration can cause repeated full re-reads if processing consistently takes longer than an hour. Each reset restarts from page 1, so syncs may never complete for very large boards if the processing time per page exceeds the cursor TTL. Do not assume a `429 ComplexityException` on the items stream is purely a rate-limit/complexity issue — check whether the board's 60-minute cursor has expired.
 
 ## Incremental Stream Considerations
 
