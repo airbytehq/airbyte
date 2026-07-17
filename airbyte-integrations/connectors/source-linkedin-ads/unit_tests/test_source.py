@@ -158,6 +158,34 @@ class TestAllStreams:
         assert analytics_requesters
         assert all(requester["error_handler"] == {"$ref": "#/definitions/ad_analytics_error_handler"} for requester in analytics_requesters)
 
+    def test_member_demographic_analytics_configuration(self):
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        streams = yaml.safe_load(manifest_path.read_text())["definitions"]["streams"]
+        member_streams = {
+            "ad_member_company_analytics": "MEMBER_COMPANY",
+            "ad_member_company_size_analytics": "MEMBER_COMPANY_SIZE",
+            "ad_member_country_analytics": "MEMBER_COUNTRY_V2",
+            "ad_member_industry_analytics": "MEMBER_INDUSTRY",
+            "ad_member_job_function_analytics": "MEMBER_JOB_FUNCTION",
+            "ad_member_job_title_analytics": "MEMBER_JOB_TITLE",
+            "ad_member_region_analytics": "MEMBER_REGION_V2",
+            "ad_member_seniority_analytics": "MEMBER_SENIORITY",
+        }
+
+        for stream_name, pivot in member_streams.items():
+            stream = streams[stream_name]
+            request_parameters = stream["retriever"]["requester"]["request_parameters"]
+            partition_router = stream["retriever"]["partition_router"]
+            sponsored_campaign = stream["transformations"][0]["fields"][0]
+
+            assert request_parameters["q"] == "analytics"
+            assert request_parameters["pivot"] == f"(value:{pivot})"
+            assert "pivots" not in request_parameters
+            assert request_parameters["campaigns"] == ("List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})")
+            assert partition_router["type"] == "SubstreamPartitionRouter"
+            assert partition_router["parent_stream_configs"][0]["stream"] == {"$ref": "#/definitions/streams/campaigns"}
+            assert sponsored_campaign["value"] == "{{ stream_partition.get('campaign_id') }}"
+
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
         streams = get_source(config).streams(config=config)
@@ -415,15 +443,15 @@ class TestLinkedinAdsStream:
                 id="creative_analytics",
             ),
             pytest.param(
-                "ad_member_country_analytics",
-                "q=statistics&pivots=List(CAMPAIGN,MEMBER_COUNTRY_V2)",
-                ["urn:li:sponsoredCampaign:1111", "urn:li:geo:103644278"],
+                "ad_impression_device_analytics",
+                "q=statistics&pivots=List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)",
+                ["urn:li:sponsoredCampaign:1111", "CONNECTED_TV"],
                 {
                     "sponsoredCampaign": "1111",
-                    "pivot": "MEMBER_COUNTRY_V2",
-                    "string_of_pivot_values": "urn:li:geo:103644278",
+                    "pivot": "IMPRESSION_DEVICE_TYPE",
+                    "string_of_pivot_values": "CONNECTED_TV",
                 },
-                id="statistics_analytics",
+                id="impression_device_statistics",
             ),
         ],
     )

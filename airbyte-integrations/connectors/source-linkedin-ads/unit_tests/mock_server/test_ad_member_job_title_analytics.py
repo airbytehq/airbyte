@@ -67,13 +67,13 @@ def _create_analytics_record(
             "start": {"year": 2024, "month": 6, "day": 1},
             "end": {"year": 2024, "month": 6, "day": 1},
         },
-        "pivotValues": [f"urn:li:sponsoredCampaign:{campaign_id}", "urn:li:title:123"],
+        "pivotValues": [f"urn:li:sponsoredCampaign:{campaign_id}"],
         "impressions": impressions,
         "clicks": clicks,
         "costInLocalCurrency": "10.00",
         "costInUsd": "10.00",
         "end_date": end_date,
-        "string_of_pivot_values": "urn:li:title:123",
+        "string_of_pivot_values": f"urn:li:sponsoredCampaign:{campaign_id}",
     }
 
 

@@ -34,10 +34,10 @@ Records from multiple chunks are stitched back together using `GroupByKeyMergeSt
 `["end_date", "string_of_pivot_values"]`.
 
 **Why this matters:** With ~90 analytics fields defined, each analytics record requires approximately 5
-separate HTTP requests to assemble. Every analytics stream is also partitioned by parent entity (one
-campaign or creative per partition), so the total API call count is roughly
-`num_entities * num_date_slices * 5`. Adding new analytics fields increases the chunk count and
-silently multiplies API usage across every partition.
+separate HTTP requests to assemble. Campaign, creative, and impression-device analytics batch up to 50
+campaign URNs per partition. Member-demographic analytics remain on the `q=analytics` finder with one
+campaign per request because the `q=statistics` finder does not support `MEMBER_*` pivots. Adding new
+analytics fields increases the chunk count and silently multiplies API usage across every partition.
 
 ---
 

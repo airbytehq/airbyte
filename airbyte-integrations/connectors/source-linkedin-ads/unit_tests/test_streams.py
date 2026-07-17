@@ -33,13 +33,13 @@ TEST_CONFIG: dict = {
 def test_analytics_stream_slices(requests_mock):
     expected_partitions = [
         {
-            "campaign_id": "urn%3Ali%3AsponsoredCampaign%3A123",
+            "campaign_id": 123,
             "start_time": "2021-01-01",
             "end_time": "2021-01-31",
             "parent_slice": {"account_id": 1, "parent_slice": {}},
         },
         {
-            "campaign_id": "urn%3Ali%3AsponsoredCampaign%3A123",
+            "campaign_id": 123,
             "start_time": "2021-01-31",
             "end_time": "2021-03-01",
             "parent_slice": {"account_id": 1, "parent_slice": {}},
@@ -58,7 +58,7 @@ def test_analytics_stream_batches_campaigns_at_manifest_limit(requests_mock):
     campaign_ids = list(range(1, 52))
     expected_campaigns = [f"urn%3Ali%3AsponsoredCampaign%3A{campaign_id}" for campaign_id in campaign_ids]
 
-    stream = find_stream("ad_member_country_analytics", config)
+    stream = find_stream("ad_campaign_analytics", config)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get(
         "https://api.linkedin.com/rest/adAccounts/1/adCampaigns",
