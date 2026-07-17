@@ -474,6 +474,11 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                 // VARCHAR -> SUPER: parse if valid JSON, otherwise NULL
                 oldType.startsWith("varchar") && newType == RedshiftDataType.SUPER.typeName ->
                     "CASE WHEN IS_VALID_JSON($quotedName) OR IS_VALID_JSON_ARRAY($quotedName) THEN JSON_PARSE($quotedName) END"
+                // VARCHAR -> numeric: tolerant cast (Redshift lacks TRY_CAST and a plain
+                // CAST aborts the whole transaction on un-parseable values such as
+                // scientific notation).
+                oldType.startsWith("varchar") && isNumericType(newType) ->
+                    buildTolerantNumericCast(quotedName, newType)
                 // All other conversions: standard CAST
                 else -> "CAST($quotedName AS $newType)"
             }
@@ -526,6 +531,36 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |)
             |WHERE $quotedOriginalColumn IS NOT NULL
             |AND $quotedTempColumn IS NULL;
+        """.trimMargin()
+    }
+
+    /** Returns true if the Redshift type is a numeric type (decimal or bigint). */
+    private fun isNumericType(type: String): Boolean =
+        type.startsWith("decimal") || type == RedshiftDataType.BIGINT.typeName
+
+    /**
+     * Builds a fault-tolerant VARCHAR -> numeric cast expression.
+     *
+     * Redshift has no `TRY_CAST`, and a plain `CAST(varchar AS decimal/bigint)` raises a hard,
+     * transaction-aborting error (e.g. `Invalid exponent` / `Invalid digit`) when the string is not
+     * a value Redshift's numeric parser accepts — notably numbers in scientific notation such as
+     * `1.5e8`. That aborts the schema-evolution transaction and fails the whole sync.
+     *
+     * To keep the existing `DESTINATION_TYPECAST_ERROR` bookkeeping working (un-castable values
+     * become `NULL` and are flagged, rather than failing the sync), the string is validated first:
+     * - Plain integers/decimals are cast directly, preserving full precision.
+     * - Scientific-notation values are routed through `double precision`, which Redshift parses.
+     * - Anything else becomes `NULL`.
+     */
+    private fun buildTolerantNumericCast(quotedColumn: String, newType: String): String {
+        val plainNumber = "^[+-]?[0-9]+([.][0-9]+)?$"
+        val scientificNumber = "^[+-]?[0-9]+([.][0-9]+)?[eE][+-]?[0-9]+$"
+        return """
+            |CASE
+            |    WHEN $quotedColumn ~ '$plainNumber' THEN CAST(CAST($quotedColumn AS decimal(38,9)) AS $newType)
+            |    WHEN $quotedColumn ~ '$scientificNumber' THEN CAST(CAST($quotedColumn AS double precision) AS $newType)
+            |    ELSE NULL
+            |END
         """.trimMargin()
     }
 

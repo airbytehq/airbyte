@@ -703,6 +703,66 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
     }
 
+    @Test
+    fun `matchSchemas VARCHAR to decimal uses tolerant cast for scientific notation`() {
+        val tableName = TableName(namespace = "ns", name = "tbl")
+        val sql =
+            sqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd = emptyMap(),
+                columnsToRemove = emptyMap(),
+                columnsToModify =
+                    mapOf(
+                        "num_col" to
+                            ColumnTypeChange(
+                                originalType = ColumnType("varchar(65535)", true),
+                                newType = ColumnType("decimal(38,9)", true),
+                            )
+                    ),
+            )
+
+        // Must NOT use a bare CAST, which aborts the transaction on scientific-notation values.
+        assertFalse(sql.contains("""SET "_airbyte_tmp_num_col" = CAST("num_col" AS decimal(38,9));"""))
+        // Plain numbers cast directly (full precision); scientific notation routes through double.
+        assertTrue(sql.contains("""WHEN "num_col" ~ '^[+-]?[0-9]+([.][0-9]+)?$'"""))
+        assertTrue(
+            sql.contains("""THEN CAST(CAST("num_col" AS decimal(38,9)) AS decimal(38,9))""")
+        )
+        assertTrue(sql.contains("""WHEN "num_col" ~ '^[+-]?[0-9]+([.][0-9]+)?[eE][+-]?[0-9]+$'"""))
+        assertTrue(
+            sql.contains("""THEN CAST(CAST("num_col" AS double precision) AS decimal(38,9))""")
+        )
+        assertTrue(sql.contains("ELSE NULL"))
+        // Un-castable values still recorded as typecast errors.
+        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
+        assertTrue(sql.contains(""""num_col" IS NOT NULL"""))
+        assertTrue(sql.contains(""""_airbyte_tmp_num_col" IS NULL"""))
+    }
+
+    @Test
+    fun `matchSchemas VARCHAR to bigint uses tolerant cast`() {
+        val tableName = TableName(namespace = "ns", name = "tbl")
+        val sql =
+            sqlGenerator.matchSchemas(
+                tableName,
+                columnsToAdd = emptyMap(),
+                columnsToRemove = emptyMap(),
+                columnsToModify =
+                    mapOf(
+                        "int_col" to
+                            ColumnTypeChange(
+                                originalType = ColumnType("varchar(65535)", true),
+                                newType = ColumnType("bigint", true),
+                            )
+                    ),
+            )
+
+        assertFalse(sql.contains("""SET "_airbyte_tmp_int_col" = CAST("int_col" AS bigint);"""))
+        assertTrue(sql.contains("""THEN CAST(CAST("int_col" AS decimal(38,9)) AS bigint)"""))
+        assertTrue(sql.contains("""THEN CAST(CAST("int_col" AS double precision) AS bigint)"""))
+        assertTrue(sql.contains("ELSE NULL"))
+    }
+
     // ================================================================
     // Staging & schema discovery
     // ================================================================
