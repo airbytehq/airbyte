@@ -44,14 +44,17 @@ export stream has historically hit.
 
 ## 3. Export Error Handler: Retry on ConnectionResetError and Timezone Mismatch
 
-`ExportErrorHandler` (a `DefaultErrorHandler` subclass) adds two export-specific cases:
+Two export-specific error cases are handled in different places:
 
-- It pre-parses the streamed response with `iter_dicts` so that a `ConnectionResetError` raised mid-parse
-  is caught and turned into a transient-error **retry** instead of a hard failure.
-- It handles the `400` response with message `to_date cannot be later than today`, which indicates a
-  project-timezone mismatch. `ExportHttpRequester` defaults the project timezone to `US/Pacific`
-  (`default_project_timezone`) and derives `end_date` from `pendulum.today(tz=project_timezone)` minus a
-  one-day lookback, so a wrong `project_timezone` config can push `to_date` past Mixpanel's "today".
+- `ExportErrorHandler` (a `DefaultErrorHandler` subclass in `components.py`) pre-parses the streamed
+  response with `iter_dicts` so that a `ConnectionResetError` raised mid-parse is caught and turned into a
+  transient-error **retry** instead of a hard failure.
+- The connector's shared `default_error_handler` in `manifest.yaml` maps the `400` response
+  `to_date cannot be later than today` to `FAIL` with a clear message ("Your project timezone must be
+  misconfigured…"). This indicates a project-timezone mismatch: `ExportHttpRequester` defaults the project
+  timezone to `US/Pacific` (`default_project_timezone`) and derives `end_date` from
+  `pendulum.today(tz=project_timezone)` minus a one-day lookback, so a wrong `project_timezone` config can
+  push `to_date` past Mixpanel's "today".
 
 **Why this matters:** Export failures are frequently environmental (dropped connection) or
 config-driven (timezone), not connector bugs. Removing this handler would surface those as fatal errors.
