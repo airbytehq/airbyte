@@ -5,23 +5,20 @@ standard connector patterns. Read this before making changes to the connector.
 
 ---
 
-## 1. Hybrid Connector: Declarative Streams + One Legacy Python `Export` Stream
+## 1. Hybrid Connector: Declarative Streams Plus a Python `Export` Stream
 
 `source-mixpanel` is a `YamlDeclarativeSource`, but it is **not** fully declarative. `SourceMixpanel.streams()`
-takes the declarative streams from `manifest.yaml` and then **appends a hand-written Python `Export`
-stream** from `source_mixpanel/streams.py`:
+takes the declarative streams from `manifest.yaml` and then appends a Python `Export` stream from
+`source_mixpanel/streams.py`:
 
 - Declarative streams (registered in `manifest.yaml` `streams:`): `cohorts`, `engage`, `annotations`,
   `cohort_members`, `funnels` (with `funnel_ids` as a parent).
 - Python stream (appended in `source.py`): `export` (`streams.py` `Export`), which also uses the internal
   Python `ExportSchema` stream to build its dynamic schema.
 
-**Gotcha — dead parallel export code:** `components.py` *also* contains a declarative export
-implementation (`ExportHttpRequester`, `ExportDpathExtractor`, `ExportErrorHandler`, `iter_dicts`) and
-`manifest.yaml` contains `export` stream definitions, but `export` is **not** in the manifest's registered
-`streams:` list, so that path is currently unused. The runtime `export` stream is the Python `Export`
-class. When changing export behavior, edit `streams.py` — editing the `components.py`/manifest export code
-has no effect unless the connector is actually switched over to it.
+**Why this matters:** The `export` stream is implemented in `streams.py`, not in the manifest. Changes to
+export behavior belong in `streams.py`; the other five streams are defined declaratively in `manifest.yaml`
+with Python custom components in `components.py`.
 
 ---
 
@@ -61,25 +58,19 @@ export stream has historically hit.
 
 ---
 
-## 4. `export` Timezone Mismatch Stops the Stream; ConnectionReset Retry Is a Latent No-Op
+## 4. `export` Timezone Mismatch Stops the Stream
 
-The active export error handling lives in `streams.py` `ExportErrorHandler` (an `HttpStatusErrorHandler`
-subclass returned by `Export.get_error_handler`):
+The export error handling lives in `streams.py` `ExportErrorHandler` (an `HttpStatusErrorHandler` subclass
+returned by `Export.get_error_handler`). A `400` whose body contains `to_date cannot be later than today`
+sets the stream's `_timezone_mismatch = True` and returns `ResponseAction.IGNORE` with a `config_error`
+("Your project timezone must be misconfigured…"). `DateSlicesMixin` then short-circuits `parse_response`
+and `stream_slices`, so the stream **stops** rather than failing hard. This happens because the project
+timezone (default `US/Pacific`) is used to compute `end_date` (`today - 1 day`); a wrong `project_timezone`
+pushes `to_date` past Mixpanel's "today". The handler also maps `Unable to authenticate request` and `402`
+to `FAIL`.
 
-- **Timezone mismatch:** a `400` whose body contains `to_date cannot be later than today` sets the stream's
-  `_timezone_mismatch = True` and returns `ResponseAction.IGNORE` with a `config_error`
-  ("Your project timezone must be misconfigured…"). `DateSlicesMixin` then short-circuits `parse_response`
-  and `stream_slices`, so the stream **stops** rather than failing hard. This happens because the project
-  timezone (default `US/Pacific`) is used to compute `end_date` (`today - 1 day`); a wrong `project_timezone`
-  pushes `to_date` past Mixpanel's "today". It also maps `Unable to authenticate request` and `402` to
-  `FAIL`.
-- **ConnectionResetError — latent no-op (bug):** the handler tries to "pre-parse" the response with
-  `self.stream.iter_dicts(response.iter_lines(decode_unicode=True))` inside a `try/except
-  ConnectionResetError`. But `iter_dicts` is a **generator**, so calling it without iterating never runs its
-  body — the response is never actually read here, so a `ConnectionResetError` would not be raised at this
-  point and the `except` branch is effectively dead. Treat the "retry on ConnectionResetError" as *intended*
-  rather than *working* behavior; if you need that retry, the generator must be consumed (e.g. wrap in
-  `list(...)`). The same dormant pattern exists in the unused `components.py` copy.
+**Why this matters:** A timezone misconfiguration surfaces as a silently stopped export rather than a hard
+failure, so check the project timezone if the `export` stream returns no data.
 
 ---
 
