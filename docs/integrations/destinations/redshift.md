@@ -275,7 +275,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.4 | 2026-07-17 | [PLACEHOLDER_PR](https://github.com/airbytehq/airbyte/pull/PLACEHOLDER_PR) | Fix schema-evolution sync failure by tolerantly casting VARCHAR to numeric types (scientific-notation and un-castable values no longer abort the sync) |
+| 4.0.4 | 2026-07-17 | [82250](https://github.com/airbytehq/airbyte/pull/82250) | Fix schema-evolution sync failure by tolerantly casting VARCHAR to numeric types (scientific-notation and un-castable values no longer abort the sync) |
 | 4.0.3 | 2026-07-09 | [81552](https://github.com/airbytehq/airbyte/pull/81552) | fix: narrow SQLException handling to only treat table-not-found as missing |
 | 4.0.2 | 2026-06-05 | [79161](https://github.com/airbytehq/airbyte/pull/79161) | fix: validate nested string sizes within SUPER columns to prevent COPY error 1224 |
 | 4.0.1 | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135) | fix: resolve sslmode/sslfactory conflict in jdbc_url_params |
