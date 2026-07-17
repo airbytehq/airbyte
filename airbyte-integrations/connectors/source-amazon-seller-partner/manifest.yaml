@@ -9355,6 +9355,10 @@ schemas:
         type:
         - 'null'
         - string
+      customerReturns:
+        type:
+        - 'null'
+        - number
       orderedUnits:
         type:
         - 'null'
@@ -9402,6 +9406,16 @@ schemas:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
       asin:
         type:
         - 'null'
@@ -9476,6 +9490,21 @@ schemas:
         - 'null'
         - number
       aged90PlusDaysSellableInventoryCost:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      unhealthyInventoryUnits:
+        type:
+        - 'null'
+        - number
+      unhealthyInventoryCost:
         type: object
         properties:
           amount:
