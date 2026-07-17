@@ -722,12 +722,12 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         // Must NOT use a bare CAST, which aborts the transaction on scientific-notation values.
-        assertFalse(sql.contains("""SET "_airbyte_tmp_num_col" = CAST("num_col" AS decimal(38,9));"""))
+        assertFalse(
+            sql.contains("""SET "_airbyte_tmp_num_col" = CAST("num_col" AS decimal(38,9));""")
+        )
         // Plain numbers cast directly (full precision); scientific notation routes through double.
         assertTrue(sql.contains("""WHEN "num_col" ~ '^[+-]?[0-9]+([.][0-9]+)?$'"""))
-        assertTrue(
-            sql.contains("""THEN CAST(CAST("num_col" AS decimal(38,9)) AS decimal(38,9))""")
-        )
+        assertTrue(sql.contains("""THEN CAST(CAST("num_col" AS decimal(38,9)) AS decimal(38,9))"""))
         assertTrue(sql.contains("""WHEN "num_col" ~ '^[+-]?[0-9]+([.][0-9]+)?[eE][+-]?[0-9]+$'"""))
         assertTrue(
             sql.contains("""THEN CAST(CAST("num_col" AS double precision) AS decimal(38,9))""")
