@@ -155,7 +155,11 @@ Classes
     ### Methods
 
     `download(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
-    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
         Common export formats:
         - application/pdf (all types)
         - text/plain (Docs)
@@ -183,7 +187,11 @@ Classes
                     AsyncIterator[bytes]
 
     `download_base64(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
-    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
         Common export formats:
         - application/pdf (all types)
         - text/plain (Docs)
@@ -195,7 +203,11 @@ Classes
          and return a JSON-safe base64 chunk.
 
     `download_local(self, file_id: str, mime_type: str, path: str, range_header: str | None = None, **kwargs) ‑> Path`
-    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
         Common export formats:
         - application/pdf (all types)
         - text/plain (Docs)
@@ -224,7 +236,11 @@ Classes
                     str: Path to the downloaded file
 
     `download_text(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
-    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
         Common export formats:
         - application/pdf (all types)
         - text/plain (Docs)
@@ -243,6 +259,34 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: FilesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult[FilesSearchData]`
+    :   Search files records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (FilesSearchFilter):
+        - id: Unique identifier of the file in Google Drive.
+        - updated_at: Timestamp of the last modification to the file.
+        - file_name: Name of the file.
+        - file_path: Full path of the file within the synced Drive folder.
+        - mime_type: MIME type of the file.
+        - content: Extracted text content of the file.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            FilesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `create(self, name: str, mime_type: str | None = None, parents: list[str] | None = None, description: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_drive.models.File`
     :   Creates a new file or folder in Google Drive (metadata only, no content).
@@ -275,15 +319,19 @@ Classes
         Returns:
             dict[str, Any]
 
-    `download(self, file_id: str, alt: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
-    :   Downloads the binary content of a file. This works for non-Google Workspace files
-        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-        use the export action instead.
+    `download(self, file_id: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
         
         
                 Args:
                     file_id: The ID of the file to download
-                    alt: Must be set to 'media' to download file content
+                    alt: Applied automatically as 'media' by this action; you do not need to set it.
                     acknowledge_abuse: Whether the user is acknowledging the risk of downloading known malware or other abusive files
                     supports_all_drives: Whether the requesting application supports both My Drives and shared drives
                     range_header: Optional Range header for partial downloads (e.g., 'bytes=0-99')
@@ -292,21 +340,29 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
-    `download_base64(self, file_id: str, alt: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
-    :   Downloads the binary content of a file. This works for non-Google Workspace files
-        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-        use the export action instead.
+    `download_base64(self, file_id: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
          and return a JSON-safe base64 chunk.
 
-    `download_local(self, file_id: str, alt: str, path: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> Path`
-    :   Downloads the binary content of a file. This works for non-Google Workspace files
-        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-        use the export action instead.
+    `download_local(self, file_id: str, path: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> Path`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
          and save to file.
         
                 Args:
                     file_id: The ID of the file to download
-                    alt: Must be set to 'media' to download file content
+                    alt: Applied automatically as 'media' by this action; you do not need to set it.
                     acknowledge_abuse: Whether the user is acknowledging the risk of downloading known malware or other abusive files
                     supports_all_drives: Whether the requesting application supports both My Drives and shared drives
                     range_header: Optional Range header for partial downloads (e.g., 'bytes=0-99')
@@ -316,10 +372,14 @@ Classes
                 Returns:
                     str: Path to the downloaded file
 
-    `download_text(self, file_id: str, alt: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
-    :   Downloads the binary content of a file. This works for non-Google Workspace files
-        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-        use the export action instead.
+    `download_text(self, file_id: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
          and return a JSON-safe UTF-8 text chunk.
 
     `get(self, file_id: str, fields: str | None = None, supports_all_drives: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_drive.models.File`
@@ -565,7 +625,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'download']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
