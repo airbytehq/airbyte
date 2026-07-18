@@ -27,9 +27,17 @@ out, without any write access to the destination warehouse.
 | Stream | Agents Schema analog | Grain | Description |
 | --- | --- | --- | --- |
 | `root` | `AGENTS.ROOT` | one row per `(provider, key)` | A JSON `index` of the destination's stream/table inventory plus `skill/…` markdown guidance on how to query Airbyte-landed data. |
-| `airbyte_stream` | `AGENTS.DBT_MODEL` | one row per selected stream | Logical stream identity (source, namespace, name, primary key, cursor, sync mode, selected fields) plus the derived physical destination table name. |
+| `airbyte_stream` | `AGENTS.DBT_MODEL` | one row per selected stream | Logical stream identity (source, namespace, name, primary key, cursor, sync mode) plus typed `columns` (field name + JSON Schema type), sync freshness (`last_sync_status`, `last_sync_at`, `is_syncing`), and the derived physical destination table name. |
 
 Sync these with namespace `AGENTS` to produce real `AGENTS.ROOT` / `AGENTS.AIRBYTE_STREAM` tables.
+
+### How the catalog is read
+
+Connection enumeration uses the Airbyte **public API** (`/connections`), scoped server-side to the
+destination's workspace and filtered to the destination id. Each connection's full configured
+catalog — which the public API does not expose — is then read from the Airbyte **Config API**
+(`web_backend/connections/get`, the same endpoint PyAirbyte uses), authenticated with the same
+bearer token. This is what supplies field-level column types and sync freshness on `airbyte_stream`.
 
 ## How the physical table name is derived
 
@@ -45,8 +53,11 @@ case, Postgres lower-cases) and is documented in the `root` guidance rather than
 
 ## Limitations
 
-- The Airbyte **public API** exposes stream selection, primary key, cursor, and namespace/prefix, but
-  not field-level column *types*. `selected_fields` therefore carries field names, not typed columns.
+- Column types and freshness come from the **Config API** (`web_backend/connections/get`), which is
+  Airbyte's internal API and carries no public stability contract. The public-API fields (selection,
+  primary key, cursor, namespace/prefix) remain available even when the Config API is not.
+- `destination_namespace` is null when a connection uses `namespaceDefinition: destination`; the
+  destination's default schema is not exposed by either API.
 - Incremental sync is not yet implemented. A follow-up will add a cursor on connection `updatedAt`.
 - The `root` index is intentionally response-independent (dataset description + pointer to
   `AGENTS.AIRBYTE_STREAM`); the fully-paginated, authoritative per-stream/table inventory lives in
@@ -56,5 +67,6 @@ case, Postgres lower-cases) and is documented in the `root` guidance rather than
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
+| 0.3.0 | 2026-07-08 | [81596](https://github.com/airbytehq/airbyte/pull/81596) | Enrich `airbyte_stream` with typed columns and sync freshness by reading each connection's configured catalog from the Config API. |
 | 0.2.0 | 2026-07-15 | [81596](https://github.com/airbytehq/airbyte/pull/81596) | Scope `connections` to the destination's workspace (resolve via `destinations/{id}`) so enumeration no longer paginates the whole org; make the `root` index response-independent. |
 | 0.1.0 | 2026-07-08 | | Initial release: `root` and `airbyte_stream` streams from Airbyte config metadata. |

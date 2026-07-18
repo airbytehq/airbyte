@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3de7c77e-29fb-48d4-aa1b-c757406ccff8
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-airbyte-agents-schema
   githubIssueLabel: source-airbyte-agents-schema
   icon: icon.svg

@@ -15,11 +15,14 @@ destination actor id, it enumerates every connection landing in that destination
   rows telling a downstream SQL agent how Airbyte lands data (namespace/prefix mapping, the
   `_airbyte_*` metadata columns, raw-vs-typed-final tables, dedup-vs-append semantics).
 
-`airbyte_stream` reads the public API `connections` endpoint, scoped server-side to the
+Connection enumeration uses the public API `connections` endpoint, scoped server-side to the
 destination's workspace by a `SubstreamPartitionRouter` (the workspace is resolved from a parent
-`destination` request); `root` reads the `destinations/{id}` endpoint. The two pieces of logic that
-genuinely cannot be expressed declaratively — multi-record expansion (one connection -> N stream
-rows) and physical-table-name derivation — live here as custom `RecordExtractor`s.
+`destination` request) and filtered to the destination id. Each connection's configured catalog is
+then read per connection from the internal Config API (`web_backend/connections/get`, the same
+endpoint PyAirbyte uses), which — unlike the public API — returns field-level types plus sync
+freshness. `root` reads the `destinations/{id}` endpoint. The pieces of logic that genuinely cannot
+be expressed declaratively — multi-record expansion (one connection -> N stream rows), typed-column
+flattening, and physical-table-name derivation — live here as custom `RecordExtractor`s.
 
 The human-facing help text surfaced through `root` (and the small helpers that render it) is kept
 in the `PROMPT / DOCS CONTENT` block at the top of this module, insulated from the connector logic
@@ -60,6 +63,11 @@ a logical stream to its physical table:
 - **Table name** is `prefix` + stream name (`destination_table_name`). Final identifier casing and
   truncation are destination-specific — Snowflake upper-cases unquoted identifiers, BigQuery
   preserves case, Postgres lower-cases. Match casing accordingly when you write SQL.
+- **Columns** (`columns`) lists each field with its JSON Schema `type`; use it to pick columns and
+  reason about types without reading the table. `selected_fields` is populated only when a connection
+  syncs an explicit subset (otherwise all `columns` sync).
+- **Freshness** (`last_sync_status`, `last_sync_at`, `is_syncing`) tells you whether a table is
+  current before you trust it — treat streams whose last sync failed or is stale with caution.
 
 ## Destinations V2 layout
 
@@ -153,56 +161,99 @@ def _physical_table_name(connection: Mapping[str, Any], stream_name: str) -> str
     return f"{prefix}{stream_name}"
 
 
-def _iter_target_connections(records: Iterable[Mapping[str, Any]], destination_id: str) -> Iterable[Mapping[str, Any]]:
-    """Yield only connections that land in the requested destination actor."""
-    for connection in records:
-        if connection.get("destinationId") == destination_id:
-            yield connection
+def _selected_field_names(stream_config: Mapping[str, Any]) -> list:
+    """Return the explicitly selected top-level field names, or `[]` when all fields sync."""
+    if not stream_config.get("fieldSelectionEnabled"):
+        return []
+    names = []
+    for selected in stream_config.get("selectedFields") or []:
+        if not isinstance(selected, Mapping):
+            continue
+        path = selected.get("fieldPath") or []
+        if path:
+            names.append(path[0])
+    return names
+
+
+def _typed_columns(stream: Mapping[str, Any], stream_config: Mapping[str, Any]) -> list:
+    """Flatten the stream's JSON Schema into `{name, type}` column records.
+
+    When field selection is enabled the list is restricted to the selected top-level fields;
+    otherwise every property in the catalog's JSON Schema is emitted. `type` is the raw JSON Schema
+    type (typically a `["null", "<type>"]` list) and is intentionally left un-normalized.
+    """
+    properties = (stream.get("jsonSchema") or {}).get("properties") or {}
+    selected = _selected_field_names(stream_config)
+    names = selected if selected else list(properties.keys())
+    columns = []
+    for name in names:
+        prop = properties.get(name)
+        column_type = prop.get("type") if isinstance(prop, Mapping) else None
+        columns.append({"name": name, "type": column_type})
+    return columns
+
+
+def _workspace_id(connection: Mapping[str, Any]) -> Optional[str]:
+    """Resolve the workspace id from the Config API connection's source/destination actor."""
+    for actor_key in ("destination", "source"):
+        actor = connection.get(actor_key)
+        if isinstance(actor, Mapping) and actor.get("workspaceId"):
+            return actor["workspaceId"]
+    return connection.get("workspaceId")
 
 
 @dataclass
-class AgentsStreamExtractor(RecordExtractor):
-    """Explode the `connections` response into one record per selected stream.
+class AgentsStreamCatalogExtractor(RecordExtractor):
+    """Explode a single Config API `web_backend/connections/get` response into per-stream records.
 
-    Scoped to `config['destination_id']`: only connections whose `destinationId` matches are expanded,
-    so a token with visibility into multiple workspaces never leaks sibling-destination streams.
+    Each partition is one connection landing in `config['destination_id']` (the parent
+    `connections_index` stream already scopes to the destination). For every *selected* stream in the
+    connection's configured catalog it emits the logical identity, the derived physical destination
+    table, typed columns from the stream's JSON Schema, and connection-level sync freshness.
     """
 
     config: Mapping[str, Any]
     parameters: Mapping[str, Any] = field(default_factory=dict)
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
-        destination_id = self.config["destination_id"]
-        body = response.json()
-        connections = body.get("data", []) if isinstance(body, Mapping) else []
-        for connection in _iter_target_connections(connections, destination_id):
-            configurations = connection.get("configurations") or {}
-            for stream in configurations.get("streams", []) or []:
-                stream_name = stream.get("name")
-                if not stream_name:
-                    continue
-                selected_fields = [
-                    (f.get("fieldPath") or [None])[0] if isinstance(f, Mapping) else f for f in (stream.get("selectedFields") or [])
-                ]
-                yield {
-                    "connection_id": connection.get("connectionId"),
-                    "connection_name": connection.get("name"),
-                    "workspace_id": connection.get("workspaceId"),
-                    "source_id": connection.get("sourceId"),
-                    "destination_id": connection.get("destinationId"),
-                    "stream_name": stream_name,
-                    "stream_namespace": stream.get("namespace"),
-                    "sync_mode": stream.get("syncMode"),
-                    "primary_key": stream.get("primaryKey"),
-                    "cursor_field": stream.get("cursorField"),
-                    "selected_fields": [f for f in selected_fields if f],
-                    "destination_namespace": _resolve_namespace(connection, stream),
-                    "destination_table_name": _physical_table_name(connection, stream_name),
-                    "prefix": connection.get("prefix"),
-                    "namespace_definition": connection.get("namespaceDefinition"),
-                    "namespace_format": connection.get("namespaceFormat"),
-                    "connection_status": connection.get("status"),
-                }
+        connection = response.json()
+        if not isinstance(connection, Mapping):
+            return
+        workspace_id = _workspace_id(connection)
+        last_sync_at = connection.get("latestSyncJobCreatedAt")
+        sync_catalog = connection.get("syncCatalog") or {}
+        for entry in sync_catalog.get("streams", []) or []:
+            stream = entry.get("stream") or {}
+            stream_config = entry.get("config") or {}
+            if not stream_config.get("selected", True):
+                continue
+            stream_name = stream.get("name")
+            if not stream_name:
+                continue
+            yield {
+                "connection_id": connection.get("connectionId"),
+                "connection_name": connection.get("name"),
+                "workspace_id": workspace_id,
+                "source_id": connection.get("sourceId"),
+                "destination_id": connection.get("destinationId"),
+                "stream_name": stream_name,
+                "stream_namespace": stream.get("namespace"),
+                "sync_mode": stream_config.get("syncMode"),
+                "destination_sync_mode": stream_config.get("destinationSyncMode"),
+                "primary_key": stream_config.get("primaryKey"),
+                "cursor_field": stream_config.get("cursorField"),
+                "selected_fields": _selected_field_names(stream_config),
+                "columns": _typed_columns(stream, stream_config),
+                "destination_namespace": _resolve_namespace(connection, stream),
+                "destination_table_name": _physical_table_name(connection, stream_name),
+                "prefix": connection.get("prefix"),
+                "namespace_definition": connection.get("namespaceDefinition"),
+                "namespace_format": connection.get("namespaceFormat"),
+                "connection_status": connection.get("status"),
+                "last_sync_status": connection.get("latestSyncJobStatus"),
+                "last_sync_at": last_sync_at,
+                "is_syncing": connection.get("isSyncing"),
+            }
 
 
 @dataclass

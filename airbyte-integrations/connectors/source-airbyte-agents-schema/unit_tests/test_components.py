@@ -19,63 +19,68 @@ _spec.loader.exec_module(components)
 
 
 DESTINATION_ID = "dest-1111"
-OTHER_DESTINATION_ID = "dest-9999"
 
 
-def _connections_response():
-    """A `connections` list response spanning two destinations."""
+def _connection_catalog_response():
+    """A single Config API `web_backend/connections/get` response for one connection."""
     body = {
-        "data": [
-            {
-                "connectionId": "conn-a",
-                "name": "Postgres to Warehouse",
-                "workspaceId": "ws-1",
-                "sourceId": "src-a",
-                "destinationId": DESTINATION_ID,
-                "status": "active",
-                "prefix": "raw_",
-                "namespaceDefinition": "source",
-                "namespaceFormat": None,
-                "configurations": {
-                    "streams": [
-                        {
-                            "name": "users",
-                            "namespace": "public",
-                            "syncMode": "incremental_deduped_history",
-                            "primaryKey": [["id"]],
-                            "cursorField": ["updated_at"],
-                            "selectedFields": [
-                                {"fieldPath": ["id"]},
-                                {"fieldPath": ["email"]},
-                            ],
+        "connectionId": "conn-a",
+        "name": "Postgres to Warehouse",
+        "sourceId": "src-a",
+        "destinationId": DESTINATION_ID,
+        "status": "active",
+        "prefix": "raw_",
+        "namespaceDefinition": "source",
+        "namespaceFormat": None,
+        "latestSyncJobStatus": "succeeded",
+        "latestSyncJobCreatedAt": 1775182720,
+        "isSyncing": False,
+        "source": {"workspaceId": "ws-1"},
+        "destination": {"workspaceId": "ws-1"},
+        "syncCatalog": {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "users",
+                        "namespace": "public",
+                        "jsonSchema": {
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "email": {"type": ["null", "string"]},
+                                "note": {"type": ["null", "string"]},
+                            }
                         },
-                        {
-                            "name": "orders",
-                            "namespace": "public",
-                            "syncMode": "full_refresh_overwrite",
-                        },
-                    ]
+                    },
+                    "config": {
+                        "selected": True,
+                        "syncMode": "incremental",
+                        "destinationSyncMode": "append_dedup",
+                        "primaryKey": [["id"]],
+                        "cursorField": ["updated_at"],
+                        "fieldSelectionEnabled": True,
+                        "selectedFields": [{"fieldPath": ["id"]}, {"fieldPath": ["email"]}],
+                    },
                 },
-            },
-            {
-                "connectionId": "conn-b",
-                "name": "Custom NS",
-                "destinationId": DESTINATION_ID,
-                "prefix": None,
-                "namespaceDefinition": "custom_format",
-                "namespaceFormat": "analytics_${SOURCE_NAMESPACE}",
-                "configurations": {
-                    "streams": [
-                        {"name": "events", "namespace": "app"},
-                    ]
+                {
+                    "stream": {
+                        "name": "orders",
+                        "namespace": "public",
+                        "jsonSchema": {"properties": {"order_id": {"type": "integer"}}},
+                    },
+                    "config": {
+                        "selected": True,
+                        "syncMode": "full_refresh",
+                        "destinationSyncMode": "overwrite",
+                        "fieldSelectionEnabled": False,
+                        "selectedFields": [],
+                    },
                 },
-            },
-            {
-                "connectionId": "conn-other",
-                "destinationId": OTHER_DESTINATION_ID,
-                "configurations": {"streams": [{"name": "should_not_appear"}]},
-            },
-        ]
+                {
+                    "stream": {"name": "unselected", "namespace": "public", "jsonSchema": {"properties": {}}},
+                    "config": {"selected": False},
+                },
+            ]
+        },
     }
     response = Mock()
     response.json.return_value = body
@@ -87,28 +92,42 @@ def config():
     return {"destination_id": DESTINATION_ID, "client_id": "x", "client_secret": "y"}
 
 
-def test_stream_extractor_scopes_to_destination(config):
-    extractor = components.AgentsStreamExtractor(config=config)
-    records = list(extractor.extract_records(_connections_response()))
+def test_catalog_extractor_emits_selected_streams_only(config):
+    extractor = components.AgentsStreamCatalogExtractor(config=config)
+    records = list(extractor.extract_records(_connection_catalog_response()))
 
     names = {r["stream_name"] for r in records}
-    assert names == {"users", "orders", "events"}
-    assert "should_not_appear" not in names
+    assert names == {"users", "orders"}
+    assert "unselected" not in names
 
 
-def test_stream_extractor_derives_table_name_and_namespace(config):
-    extractor = components.AgentsStreamExtractor(config=config)
-    by_name = {r["stream_name"]: r for r in extractor.extract_records(_connections_response())}
+def test_catalog_extractor_derives_table_namespace_columns_and_freshness(config):
+    extractor = components.AgentsStreamCatalogExtractor(config=config)
+    by_name = {r["stream_name"]: r for r in extractor.extract_records(_connection_catalog_response())}
 
-    # source namespace + prefix
-    assert by_name["users"]["destination_namespace"] == "public"
-    assert by_name["users"]["destination_table_name"] == "raw_users"
-    assert by_name["users"]["primary_key"] == [["id"]]
-    assert by_name["users"]["selected_fields"] == ["id", "email"]
+    users = by_name["users"]
+    assert users["destination_namespace"] == "public"
+    assert users["destination_table_name"] == "raw_users"
+    assert users["primary_key"] == [["id"]]
+    assert users["destination_sync_mode"] == "append_dedup"
+    assert users["workspace_id"] == "ws-1"
 
-    # custom_format namespace, no prefix
-    assert by_name["events"]["destination_namespace"] == "analytics_app"
-    assert by_name["events"]["destination_table_name"] == "events"
+    # freshness surfaced from the connection level
+    assert users["last_sync_status"] == "succeeded"
+    assert users["last_sync_at"] == 1775182720
+    assert users["is_syncing"] is False
+
+    # field selection on: selected_fields + columns restricted to selection, with types
+    assert users["selected_fields"] == ["id", "email"]
+    assert users["columns"] == [
+        {"name": "id", "type": "integer"},
+        {"name": "email", "type": ["null", "string"]},
+    ]
+
+    # field selection off: all JSON Schema properties become typed columns
+    orders = by_name["orders"]
+    assert orders["selected_fields"] == []
+    assert orders["columns"] == [{"name": "order_id", "type": "integer"}]
 
 
 @pytest.mark.parametrize(
@@ -121,68 +140,16 @@ def test_stream_extractor_derives_table_name_and_namespace(config):
         pytest.param([{"fieldPath": ["id"]}, {"fieldPath": None}], ["id"], id="mixed_valid_and_null"),
     ],
 )
-def test_stream_extractor_tolerates_malformed_selected_fields(config, selected_fields, expected):
-    body = {
-        "data": [
-            {
-                "connectionId": "conn-a",
-                "destinationId": DESTINATION_ID,
-                "configurations": {"streams": [{"name": "users", "selectedFields": selected_fields}]},
-            }
-        ]
-    }
-    response = Mock()
-    response.json.return_value = body
-
-    extractor = components.AgentsStreamExtractor(config=config)
-    records = list(extractor.extract_records(response))
-
-    assert records[0]["selected_fields"] == expected
-
-
-def test_stream_extractor_is_stateless_across_pages(config):
-    """`airbyte_stream` uses `CursorPagination`, so the extractor is invoked once per page.
-
-    It must be response-scoped: each page yields exactly its own rows, and re-extracting a page
-    produces identical output (no cross-page accumulation), so a page retry/rollback cannot
-    duplicate or drop rows.
-    """
-    page_one = Mock()
-    page_one.json.return_value = {
-        "next": "https://api.airbyte.com/v1/connections?cursor=abc",
-        "data": [
-            {
-                "connectionId": "conn-a",
-                "destinationId": DESTINATION_ID,
-                "configurations": {"streams": [{"name": "users"}, {"name": "orders"}]},
-            }
-        ],
-    }
-    page_two = Mock()
-    page_two.json.return_value = {
-        "data": [
-            {
-                "connectionId": "conn-b",
-                "destinationId": DESTINATION_ID,
-                "configurations": {"streams": [{"name": "events"}]},
-            }
-        ]
-    }
-
-    extractor = components.AgentsStreamExtractor(config=config)
-    first = list(extractor.extract_records(page_one))
-    second = list(extractor.extract_records(page_two))
-
-    assert {r["stream_name"] for r in first} == {"users", "orders"}
-    assert {r["stream_name"] for r in second} == {"events"}
-
-    # Re-extracting a page is deterministic and carries no state from prior pages.
-    assert list(extractor.extract_records(page_one)) == first
+def test_selected_field_names_tolerates_malformed_selected_fields(selected_fields, expected):
+    stream_config = {"fieldSelectionEnabled": True, "selectedFields": selected_fields}
+    assert components._selected_field_names(stream_config) == expected
 
 
 def test_root_extractor_emits_index_and_skill(config):
     extractor = components.AgentsRootExtractor(config=config)
-    records = list(extractor.extract_records(_connections_response()))
+    response = Mock()
+    response.json.return_value = {"destinationId": DESTINATION_ID}
+    records = list(extractor.extract_records(response))
 
     keys = {r["key"] for r in records}
     assert "index" in keys

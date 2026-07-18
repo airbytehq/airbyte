@@ -15,32 +15,49 @@ check:
     - root
 
 definitions:
+  # Shared bearer authenticator. The access token is minted against the public API token endpoint
+  # and reused unchanged against both the public API (`base_requester`) and the internal Config API
+  # (`config_requester`) — the same pattern PyAirbyte uses.
+  authenticator:
+    type: SessionTokenAuthenticator
+    login_requester:
+      type: HttpRequester
+      url_base: >-
+        {{ "https://{}/api/public/v1/applications/token".format(config['host'])
+        if config['host'] else
+        "https://api.airbyte.com/v1/applications/token" }}
+      authenticator:
+        type: NoAuth
+      http_method: POST
+      request_parameters: {}
+      request_headers: {}
+      request_body_json:
+        client_id: "{{ config['client_id'] }}"
+        grant-type: client_credentials
+        client_secret: "{{ config['client_secret'] }}"
+    session_token_path:
+      - access_token
+    request_authentication:
+      type: Bearer
+
   base_requester:
     type: HttpRequester
     url_base: >-
       {{ "https://{}/api/public/v1/".format(config['host']) if config['host']
       else "https://api.airbyte.com/v1/" }}
     authenticator:
-      type: SessionTokenAuthenticator
-      login_requester:
-        type: HttpRequester
-        url_base: >-
-          {{ "https://{}/api/public/v1/applications/token".format(config['host'])
-          if config['host'] else
-          "https://api.airbyte.com/v1/applications/token" }}
-        authenticator:
-          type: NoAuth
-        http_method: POST
-        request_parameters: {}
-        request_headers: {}
-        request_body_json:
-          client_id: "{{ config['client_id'] }}"
-          grant-type: client_credentials
-          client_secret: "{{ config['client_secret'] }}"
-      session_token_path:
-        - access_token
-      request_authentication:
-        type: Bearer
+      $ref: "#/definitions/authenticator"
+
+  # Internal Config API (`web_backend/*`). Unlike the public API it returns each connection's full
+  # configured catalog with field-level types plus sync freshness. Cloud host is `cloud.airbyte.com`
+  # (not `api.airbyte.com`); self-managed swaps the public suffix `/api/public/v1` for `/api/v1`.
+  config_requester:
+    type: HttpRequester
+    url_base: >-
+      {{ "https://{}/api/v1/".format(config['host']) if config['host']
+      else "https://cloud.airbyte.com/api/v1/" }}
+    authenticator:
+      $ref: "#/definitions/authenticator"
 
   streams:
     # Parent stream: resolve the destination's workspace so `connections` can be scoped
@@ -69,13 +86,14 @@ definitions:
         schema:
           type: object
           additionalProperties: true
-    airbyte_stream:
+    # Parent stream: the connections landing in the target destination, scoped server-side to the
+    # destination's workspace (via the `destination` parent) and filtered to the destination id.
+    # Not synced directly; it feeds one partition per connection to `airbyte_stream`.
+    connections_index:
       type: DeclarativeStream
-      name: airbyte_stream
+      name: connections_index
       primary_key:
-        - connection_id
-        - stream_namespace
-        - stream_name
+        - connectionId
       retriever:
         type: SimpleRetriever
         requester:
@@ -96,8 +114,12 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.AgentsStreamExtractor
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['destinationId'] == config['destination_id'] }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -106,6 +128,51 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('next', {}) }}"
             stop_condition: "{{ not response.get('next', {}) }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            connectionId:
+              type: string
+    airbyte_stream:
+      type: DeclarativeStream
+      name: airbyte_stream
+      primary_key:
+        - connection_id
+        - stream_namespace
+        - stream_name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/config_requester"
+          path: web_backend/connections/get
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+            # The Config API edge (cloud.airbyte.com) rejects the default client User-Agent with a
+            # 403; a non-default User-Agent is required to reach the API.
+            User-Agent: airbyte-source-airbyte-agents-schema
+          request_body_json:
+            connectionId: "{{ stream_partition.connection_id }}"
+            withRefreshedCatalog: false
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/streams/connections_index"
+              parent_key: connectionId
+              partition_field: connection_id
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.AgentsStreamCatalogExtractor
+        paginator:
+          type: NoPagination
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -260,6 +327,41 @@ schemas:
           type:
             - string
             - "null"
+      columns:
+        type:
+          - array
+          - "null"
+        description: >-
+          Typed column list from the connection's configured catalog. Each item is
+          `{name, type}` where `type` is the stream's JSON Schema type for that field.
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            type:
+              type:
+                - string
+                - array
+                - "null"
+      destination_sync_mode:
+        type:
+          - string
+          - "null"
+      last_sync_status:
+        type:
+          - string
+          - "null"
+        description: Status of the connection's most recent sync job (e.g. succeeded, failed).
+      last_sync_at:
+        type:
+          - integer
+          - "null"
+        description: Epoch seconds when the connection's most recent sync job was created.
+      is_syncing:
+        type:
+          - boolean
+          - "null"
       destination_namespace:
         type:
           - string
