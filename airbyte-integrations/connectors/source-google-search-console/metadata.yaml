@@ -19,6 +19,9 @@ data:
     - title: Reference
       url: https://developers.google.com/webmaster-tools/v1/api_reference_index
       type: api_reference
+    - title: Google Search Documentation Updates
+      url: https://developers.google.com/search/updates
+      type: api_release_history
   erdUrl: https://dbdocs.io/airbyteio/source-google-search-console?view=relationships
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
