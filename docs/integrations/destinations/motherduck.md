@@ -75,6 +75,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.0 | 2026-07-14 | [82127](https://github.com/airbytehq/airbyte/pull/82127) | Use native MERGE INTO for append_dedup and order deduplication by the stream's cursor field, falling back to extraction-time ordering when the cursor is not a single top-level field. CDC tombstones remain soft deletes (row kept with `_ab_cdc_deleted_at` set) and now respect cursor ordering |
 | 0.2.4 | 2026-07-08 | [81511](https://github.com/airbytehq/airbyte/pull/81511) | Fix silent data loss on multi-stream syncs by no longer discarding other streams' buffered records when one stream is flushed |
 | 0.2.3 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to certified |
 | 0.2.2 | 2025-02-02 | [70438](https://github.com/airbytehq/airbyte/pull/70438) | Fix for camelCase columns being `NULL` |

@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Connection, Engine
 
 BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
+AB_CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at"
 MOTHERDUCK_SCHEME = "md"
 
 logger = logging.getLogger(__name__)
@@ -159,7 +160,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     so we insert as values instead.
     """
 
-    supports_merge_insert = False
+    supports_merge_insert = True
     sql_config: DuckDBConfig
 
     def _execute_sql(self, sql: str | TextClause | Executable) -> Sequence[Any]:
@@ -222,6 +223,41 @@ class DuckDBSqlProcessor(SqlProcessorBase):
         )
         """
         _ = self._execute_sql(cmd)
+
+    @overrides
+    def _ensure_compatible_table_schema(
+        self,
+        stream_name: str,
+        table_name: str,
+    ) -> None:
+        """Add columns present in the stream schema but missing from the table.
+
+        Overrides the CDK implementation, which reflects the table through
+        SQLAlchemy. duckdb-engine's pg_catalog-based reflection has broken
+        against past DuckDB releases (1.4.x removed pg_collation);
+        information_schema is stable across DuckDB versions and MotherDuck,
+        and avoids the multi-view reflection query on every write.
+
+        Like the CDK implementation, this only adds missing columns; neither
+        checks column types for compatibility (an upstream TODO, see
+        airbytehq/airbyte#321).
+
+        Comparison is case-insensitive to match DuckDB identifier resolution:
+        a table created with column "ID" satisfies a stream column "id".
+        """
+        existing_columns = {
+            row[0].lower()
+            for row in self._execute_sql(
+                text(
+                    "SELECT column_name FROM information_schema.columns" " WHERE table_schema = :schema_name AND table_name = :table_name"
+                ).bindparams(schema_name=self.sql_config.schema_name, table_name=table_name)
+            )
+        }
+        for column_name, sql_type in self._get_sql_column_definitions(stream_name).items():
+            if column_name.lower() not in existing_columns:
+                self._execute_sql(
+                    f"ALTER TABLE {self._fully_qualified(table_name)} " f"ADD COLUMN {self._quote_identifier(column_name)} {sql_type}"
+                )
 
     def _do_checkpoint(
         self,
@@ -337,6 +373,105 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             },
         )
 
+    def _cursor_ordering(self, stream_name: str) -> str:
+        """Ordering that keeps the latest record per primary key.
+
+        Records are ordered by the stream's cursor first so that a batch
+        extracted late (e.g. a backfill) cannot beat records carrying newer
+        cursor values. Extraction time is the tiebreak. Streams without a
+        single-column cursor fall back to extraction time alone.
+        """
+        cursor_field = self.catalog_provider.get_configured_stream_info(stream_name).cursor_field
+        extracted_at_ordering = f"{AB_EXTRACTED_AT_COLUMN} DESC"
+        if cursor_field and len(cursor_field) == 1:
+            cursor = self._quote_identifier(self.normalizer.normalize(cursor_field[0]))
+            # NULLS LAST: a record without a cursor value never beats one with a value.
+            return f"{cursor} DESC NULLS LAST, {extracted_at_ordering}"
+        return extracted_at_ordering
+
+    def _merge_matched_condition(self, stream_name: str, *, for_tombstone: bool = False) -> str:
+        """Guard for MERGE's WHEN MATCHED: only apply records that are not older.
+
+        Without this, any batch overwrites on primary-key match regardless of
+        cursor order. NULL cursors compare as older than any value; two equal
+        (or two NULL) cursors defer to extraction time.
+
+        With for_tombstone=True, a record with a NULL cursor also passes the
+        extraction-time tiebreak against a populated final cursor: CDC
+        tombstones (e.g. Debezium) may carry only the primary key, and a
+        delete must not silently no-op because its cursor column is NULL.
+        """
+        cursor_field = self.catalog_provider.get_configured_stream_info(stream_name).cursor_field
+        if not (cursor_field and len(cursor_field) == 1):
+            return ""
+        cursor = self._quote_identifier(self.normalizer.normalize(cursor_field[0]))
+        tiebreak_applies = (
+            f"(tmp.{cursor} IS NULL OR tmp.{cursor} IS NOT DISTINCT FROM final.{cursor})"
+            if for_tombstone
+            else f"tmp.{cursor} IS NOT DISTINCT FROM final.{cursor}"
+        )
+        return (
+            f" AND ((final.{cursor} IS NULL AND tmp.{cursor} IS NOT NULL)"
+            f" OR tmp.{cursor} > final.{cursor}"
+            f" OR ({tiebreak_applies}"
+            f" AND tmp.{AB_EXTRACTED_AT_COLUMN} >= final.{AB_EXTRACTED_AT_COLUMN}))"
+        )
+
+    @overrides
+    def _merge_temp_table_to_final_table(
+        self,
+        stream_name: str,
+        temp_table_name: str,
+        final_table_name: str,
+    ) -> None:
+        """Native MERGE with latest-record-wins semantics.
+
+        The CDK's MERGE updates unconditionally on primary-key match, which
+        lets late-arriving batches overwrite rows carrying newer cursor
+        values. This override adds the cursor guard from
+        _merge_matched_condition.
+        """
+        primary_keys = self.catalog_provider.get_primary_keys(stream_name)
+        if not primary_keys:
+            raise exc.AirbyteInternalError(
+                message="Cannot merge tables without primary keys.",
+                context={"stream_name": stream_name},
+            )
+        columns = [self._quote_identifier(c) for c in self._get_sql_column_definitions(stream_name)]
+        pk_columns = [self._quote_identifier(c) for c in primary_keys]
+        non_pk_columns = [c for c in columns if c not in set(pk_columns)]
+
+        join_clause = " AND ".join(f"tmp.{c} = final.{c}" for c in pk_columns)
+        set_clause = ", ".join(f"{c} = tmp.{c}" for c in non_pk_columns)
+        matched_condition = self._merge_matched_condition(stream_name)
+
+        # CDC streams: tombstones are soft deletes — the row is upserted like
+        # any other record and remains in the final table with
+        # _ab_cdc_deleted_at set. The tombstone branch relaxes the cursor
+        # guard because tombstones may carry only the primary key (NULL
+        # cursor) and must not silently lose the extraction tiebreak; a stale
+        # tombstone still cannot beat a row with a newer cursor. Clause order
+        # matters: DuckDB applies the first WHEN MATCHED branch whose
+        # condition holds.
+        tombstone_clause = ""
+        if AB_CDC_DELETED_AT_COLUMN in self._get_sql_column_definitions(stream_name):
+            deleted_at = self._quote_identifier(AB_CDC_DELETED_AT_COLUMN)
+            tombstone_condition = self._merge_matched_condition(stream_name, for_tombstone=True)
+            tombstone_clause = (
+                f"WHEN MATCHED AND tmp.{deleted_at} IS NOT NULL{tombstone_condition} THEN UPDATE SET {set_clause}\n            "
+            )
+
+        self._execute_sql(
+            f"""
+            MERGE INTO {self._fully_qualified(final_table_name)} final
+            USING {self._fully_qualified(temp_table_name)} AS tmp
+            ON {join_clause}
+            {tombstone_clause}WHEN MATCHED{matched_condition} THEN UPDATE SET {set_clause}
+            WHEN NOT MATCHED THEN INSERT ({", ".join(columns)})
+            VALUES ({", ".join(f"tmp.{c}" for c in columns)})
+            """
+        )
+
     def _drop_duplicates(self, table_name: str, stream_name: str) -> str:
         primary_keys = self.catalog_provider.get_primary_keys(stream_name)
         new_table_name = f"{table_name}_deduped"
@@ -346,7 +481,7 @@ class DuckDBSqlProcessor(SqlProcessorBase):
             -- Drop duplicates from temp table
             CREATE TABLE {self._fully_qualified(new_table_name)} AS (
                 SELECT * FROM {self._fully_qualified(table_name)}
-                QUALIFY row_number() OVER (PARTITION BY ({pks}) ORDER BY {AB_EXTRACTED_AT_COLUMN} DESC) = 1
+                QUALIFY row_number() OVER (PARTITION BY ({pks}) ORDER BY {self._cursor_ordering(stream_name)}) = 1
             )
             """
             self._execute_sql(sql)
