@@ -19,8 +19,7 @@ include = "source_salesforce"
 python = "^3.10,<3.12"
 airbyte-cdk = "^7.23.5"
 pendulum = "^3.0.0"
-pyjwt = "^2.8.0"
-cryptography = ">=42.0.0"
+pyjwt = { version = "^2.8.0", extras = ["crypto"] }
 
 [tool.poetry.scripts]
 source-salesforce = "source_salesforce.run:run"

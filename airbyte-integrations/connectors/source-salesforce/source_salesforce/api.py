@@ -402,9 +402,16 @@ class Salesforce:
                     failure_type=FailureType.config_error,
                     message=f"JWT authentication requires the following fields: {', '.join(missing_fields)}.",
                 )
+            try:
+                assertion = self._build_jwt_assertion()
+            except (ValueError, jwt.exceptions.PyJWTError) as e:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"Invalid private key for JWT authentication: {e}.",
+                ) from e
             login_body = {
                 "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-                "assertion": self._build_jwt_assertion(),
+                "assertion": assertion,
             }
         else:
             missing_fields = [field for field in ("client_id", "client_secret", "refresh_token") if not getattr(self, field)]

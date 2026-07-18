@@ -45,12 +45,10 @@ connectionSpecification:
     auth_type:
       title: Authentication Type
       description: >-
-        The authentication method to use. <b>Client (OAuth)</b> uses a refresh token
-        (the default; obtained via the "Authenticate" button on Airbyte Cloud).
-        <b>JWT</b> uses the Salesforce <a
-        href="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5">OAuth
-        2.0 JWT Bearer Flow</a> — sign a token with your connected app's private key,
-        no refresh token required. Fill in the fields that match the selected type.
+        How to log in. <b>Client (OAuth)</b>: default, uses a refresh token from the
+        "Authenticate" button. <b>JWT</b>: signs a <a
+        href="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5">JWT
+        Bearer Flow</a> token with your app's private key, no refresh token needed.
       type: string
       enum:
         - Client
@@ -154,10 +152,10 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 10
+      order: 11
     streams_criteria:
       type: array
-      order: 11
+      order: 12
       items:
         type: object
         required:

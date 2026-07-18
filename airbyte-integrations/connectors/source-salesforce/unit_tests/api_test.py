@@ -234,6 +234,22 @@ def test_jwt_login_requires_required_fields(client_id, username, include_private
     assert expected_field in err.value.message
 
 
+def test_jwt_login_rejects_malformed_private_key():
+    malformed_pem = "not-a-valid-pem-key"
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id="consumer_key",
+        username="user@example.com",
+        private_key=malformed_pem,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "Invalid private key" in err.value.message
+
+
 @pytest.mark.parametrize(
     "client_id, client_secret, refresh_token, expected_field",
     [
