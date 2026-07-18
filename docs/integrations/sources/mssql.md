@@ -392,8 +392,8 @@ test!
 
 | MSSQL Type                                              | Resulting Type          | Notes |
 | :------------------------------------------------------ | :---------------------- | :---- |
-| `bigint`                                                | number                  |       |
-| `binary`                                                | string                  |       |
+| `bigint`                                                | integer                 |       |
+| `binary`                                                | binary                  |       |
 | `bit`                                                   | boolean                 |       |
 | `char`                                                  | string                  |       |
 | `date`                                                  | date                    |       |
@@ -401,7 +401,7 @@ test!
 | `datetime2`                                             | timestamp               |       |
 | `datetimeoffset`                                        | timestamp with timezone |       |
 | `decimal`                                               | number / integer        | maps to `integer` when the column scale is 0      |
-| `int`                                                   | number                  |       |
+| `int`                                                   | integer                 |       |
 | `float`                                                 | number                  |       |
 | `geography`                                             | string                  |       |
 | `geometry`                                              | string                  |       |
@@ -412,16 +412,17 @@ test!
 | `nvarchar(max)`                                         | string                  |       |
 | `real`                                                  | number                  |       |
 | `smalldatetime`                                         | timestamp               |       |
-| `smallint`                                              | number                  |       |
+| `smallint`                                              | integer                 |       |
 | `smallmoney`                                            | number                  |       |
 | `sql_variant`                                           | string                  |       |
 | `uniqueidentifier`                                      | string                  |       |
 | `text`                                                  | string                  |       |
 | `time`                                                  | time                    |       |
-| `tinyint`                                               | number                  |       |
-| `varbinary`                                             | string                  |       |
+| `tinyint`                                               | integer                 |       |
+| `varbinary`                                             | binary                  |       |
 | `varchar`                                               | string                  |       |
 | `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string                  |       |
+| `hierarchyid`                                           | string                  | Non-CDC only |
 | `xml`                                                   | string                  |       |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take
@@ -489,8 +490,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0       | 2026-05-01 | [10595](https://github.com/airbytehq/oncall/issues/10595)                                                         | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics. |
-| 4.4.12      | 2026-06-16 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
+| 5.0.0       | 2026-06-23 | [77672](https://github.com/airbytehq/airbyte/pull/77672)                                                          | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics. |
+| 4.4.12      | 2026-06-17 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
 | 4.4.11      | 2026-06-11 | [79128](https://github.com/airbytehq/airbyte/pull/79128)                                                          | Fix incremental sync failure when the saved state has a null cursor (table was empty on prior CDK version).                                     |
 | 4.4.10      | 2026-06-10 | [79149](https://github.com/airbytehq/airbyte/pull/79149)                                                          | Update cursor-based incremental query to prevent missing rows with high-precision datetime cursors.                                             |
 | 4.4.9       | 2026-06-02 | [77998](https://github.com/airbytehq/airbyte/pull/77998)                                                          | Validate CDC access per configured stream to prevent zero-LSN errors caused by missing permissions.                                             |
