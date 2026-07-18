@@ -145,6 +145,16 @@ connectionSpecification:
         - PT10M
         - PT30M
         - PT1H
+    preserve_na_values:
+      title: Preserve "NA" and similar string values
+      type: boolean
+      description: >-
+        By default, string values such as "NA", "N/A", "NULL", "None" and "NaN" returned by the
+        Salesforce Bulk API are treated as missing and synced as null. Enable this option to keep
+        these values as literal strings (for example, "NA" meaning "North America"). Empty fields
+        are still synced as null. Leaving this disabled preserves the connector's historical behavior.
+      default: false
+      order: 10
     streams_criteria:
       type: array
       order: 11

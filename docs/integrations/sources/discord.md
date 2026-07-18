@@ -126,6 +126,8 @@ The connector automatically handles rate limiting by reading the `Retry-After` h
 
 | Version | Date       | Pull Request | Subject                         |
 | :------ | :--------- | :----------- | :------------------------------ |
+| 0.1.5 | 2026-07-14 | [81769](https://github.com/airbytehq/airbyte/pull/81769) | Update dependencies |
+| 0.1.4 | 2026-06-30 | [81015](https://github.com/airbytehq/airbyte/pull/81015) | Update dependencies |
 | 0.1.3 | 2026-06-23 | [80400](https://github.com/airbytehq/airbyte/pull/80400) | Update dependencies |
 | 0.1.2 | 2026-06-16 | [79820](https://github.com/airbytehq/airbyte/pull/79820) | Update dependencies |
 | 0.1.1 | 2026-06-09 | [79241](https://github.com/airbytehq/airbyte/pull/79241) | Update dependencies |

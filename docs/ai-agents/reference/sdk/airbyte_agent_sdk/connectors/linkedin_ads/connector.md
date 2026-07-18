@@ -48,7 +48,7 @@ Classes
     :   Returns a list of users associated with ad accounts
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying by account URN
             accounts: Account URN, e.g. urn:li:sponsoredAccount:123456
             count: Number of items per page
             start: Offset for pagination
@@ -112,11 +112,11 @@ Classes
         Returns:
             Account
 
-    `list(self, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
+    `list(self, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], AccountsListResultMeta]`
     :   Returns a list of ad accounts the authenticated user has access to
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad accounts
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -199,7 +199,7 @@ Classes
         
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad analytics
             pivot: Pivot dimension for analytics grouping
             time_granularity: Time granularity for analytics data
             date_range: Date range in LinkedIn format, e.g. (start:(year:2024,month:1,day:1),end:(year:2024,month:12,day:31))
@@ -285,7 +285,7 @@ Classes
         
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying ad analytics
             pivot: Pivot dimension for analytics grouping
             time_granularity: Time granularity for analytics data
             date_range: Date range in LinkedIn format, e.g. (start:(year:2024,month:1,day:1),end:(year:2024,month:12,day:31))
@@ -353,7 +353,7 @@ Classes
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying campaign groups
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -427,12 +427,12 @@ Classes
         Returns:
             Campaign
 
-    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
+    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CampaignsListResultMeta]`
     :   Returns a list of campaigns for an ad account
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying campaigns
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -499,7 +499,7 @@ Classes
     :   Returns a list of conversion rules for an ad account
         
         Args:
-            q: Parameter q
+            q: LinkedIn API finder method for querying conversions by account
             account: Account URN, e.g. urn:li:sponsoredAccount:123456
             count: Number of items per page
             start: Offset for pagination
@@ -563,12 +563,12 @@ Classes
         Returns:
             Creative
 
-    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[Creative], CreativesListResultMeta]`
+    `list(self, account_id: str, q: str, page_size: int | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linkedin_ads.models.LinkedinAdsExecuteResultWithMeta[list[dict[str, Any]], CreativesListResultMeta]`
     :   Returns a list of creatives for an ad account
         
         Args:
             account_id: Ad account ID
-            q: Parameter q
+            q: LinkedIn API finder method for querying creatives
             page_size: Number of items per page
             page_token: Token for the next page of results
             **kwargs: Additional parameters
@@ -630,47 +630,73 @@ Classes
     ### Static methods
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    :   Add connector-specific documentation and runtime safeguards to one tool.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
         
-        Usage:
-            @mcp.tool()
-            @LinkedinAdsConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
         
-            @mcp.tool()
-            @LinkedinAdsConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
         
-            @mcp.tool()
-            @LinkedinAdsConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = LinkedinAdsConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @LinkedinAdsConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @LinkedinAdsConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @LinkedinAdsConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 

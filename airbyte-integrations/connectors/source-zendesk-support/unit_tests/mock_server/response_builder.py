@@ -1045,6 +1045,17 @@ class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
         return self
 
 
+class TicketEventsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_events_record(cls) -> "TicketEventsRecordBuilder":
+        record_template = cls.extract_record("ticket_events", __file__, NestedPath(["ticket_events", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
+
+    def with_id(self, id: int) -> "TicketEventsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
 class TicketSkipsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_skips_record(cls) -> "TicketSkipsRecordBuilder":
@@ -1207,6 +1218,16 @@ class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
         )
 
 
+class TicketEventsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketEventsResponseBuilder":
+        return cls(
+            find_template("ticket_events", __file__),
+            FieldPath("ticket_events"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
 class TicketSkipsResponseBuilder(HttpResponseBuilder):
     @classmethod
     def ticket_skips_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketSkipsResponseBuilder":
@@ -1291,4 +1312,27 @@ class UserIdentitiesResponseBuilder(HttpResponseBuilder):
             find_template("user_identities", __file__),
             FieldPath("identities"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
+        )
+
+
+class SideConversationsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def side_conversations_record(cls) -> "SideConversationsRecordBuilder":
+        record_template = cls.extract_record("side_conversations", __file__, NestedPath(["side_conversations", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: str) -> "SideConversationsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class SideConversationsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def side_conversations_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "SideConversationsResponseBuilder":
+        return cls(
+            find_template("side_conversations", __file__),
+            FieldPath("side_conversations"),
+            NextPagePaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
