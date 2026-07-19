@@ -1988,18 +1988,10 @@ class CommitDetails(SemiIncrementalMixin, GithubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/commits/{stream_slice['sha']}"
 
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         self._starting_point_cache.clear()
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
+        for stream_slice in self.parent.stream_slices(**kwargs):
+            for record in self.parent.read_records(stream_slice=stream_slice, **kwargs):
                 yield {"repository": record["repository"], "sha": record["sha"], "branch": record["branch"]}
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
