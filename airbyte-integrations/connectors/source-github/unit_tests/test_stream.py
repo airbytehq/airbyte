@@ -940,9 +940,7 @@ def test_stream_commit_details_path():
     }
     commits_stream = Commits(**repository_args, branches_to_pull=[])
     stream = CommitDetails(parent=commits_stream, **{k: v for k, v in repository_args.items() if k != "start_date"})
-    assert stream.path(stream_slice={"repository": "org/repo", "sha": "deadbeef", "branch": "main"}) == (
-        "repos/org/repo/commits/deadbeef"
-    )
+    assert stream.path(stream_slice={"repository": "org/repo", "sha": "deadbeef", "branch": "main"}) == ("repos/org/repo/commits/deadbeef")
 
 
 def test_stream_commit_details_incremental(requests_mock):
