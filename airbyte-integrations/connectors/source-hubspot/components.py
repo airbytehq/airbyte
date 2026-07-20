@@ -682,7 +682,7 @@ def build_associations_retriever(
         client_id=config.get("credentials", {}).get("client_id", "client_id"),
         client_secret=config.get("credentials", {}).get("client_secret", "client_secret"),
         refresh_token=config.get("credentials", {}).get("refresh_token", "refresh_token"),
-        token_refresh_endpoint="https://api.hubapi.com/oauth/v1/token",
+        token_refresh_endpoint="https://api.hubapi.com/oauth/v3/token",
     )
 
     authenticator = SelectiveAuthenticator(

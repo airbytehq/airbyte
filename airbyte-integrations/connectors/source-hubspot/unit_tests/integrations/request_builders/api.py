@@ -6,7 +6,7 @@ from . import AbstractRequestBuilder
 
 
 class OAuthRequestBuilder(AbstractRequestBuilder):
-    URL = "https://api.hubapi.com/oauth/v1/token"
+    URL = "https://api.hubapi.com/oauth/v3/token"
 
     def __init__(self):
         self._params = {}
