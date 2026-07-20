@@ -547,12 +547,44 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/triggers"
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth_refresh_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    grant_type: refresh_token
+    expires_in_name: expires_in
+    token_refresh_endpoint: "https://{{ config['subdomain'] }}.zendesk.com/oauth2/chat/token"
+    refresh_request_body:
+      grant_type: "refresh_token"
+      expires_in: 172800
+      refresh_token: "{{ config['credentials']['refresh_token'] }}"
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path:
+        - credentials
+        - access_token
+      token_expiry_date_config_path:
+        - credentials
+        - token_expiry_date
+      refresh_token_config_path:
+        - credentials
+        - refresh_token
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/chat/
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['credentials']['access_token'] }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "credentials"]
+      authenticators:
+        oauth2.0: "#/definitions/bearer_authenticator"
+        oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
+        access_token: "#/definitions/bearer_authenticator"
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -604,6 +636,41 @@ spec:
         title: Authorization Method
         oneOf:
           - type: object
+            title: OAuth2.0 (Refresh Token)
+            required:
+              - credentials
+            properties:
+              credentials:
+                type: string
+                const: oauth2_refresh
+                order: 0
+              client_id:
+                type: string
+                description: >-
+                  The Client ID of your OAuth application. See <a
+                  href="https://developer.zendesk.com/api-reference/live-chat/chat-api/oauth_clients/">Zendesk
+                  Chat OAuth Clients</a>.
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: >-
+                  The Client Secret of your OAuth application. See <a
+                  href="https://developer.zendesk.com/api-reference/live-chat/chat-api/oauth_clients/">Zendesk
+                  Chat OAuth Clients</a>.
+                title: Client Secret
+                airbyte_secret: true
+              access_token:
+                type: string
+                description: Access Token for making authenticated requests.
+                title: Access Token
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                description: Refresh Token to obtain new Access Token, when it's expired.
+                title: Refresh Token
+                airbyte_secret: true
+          - type: object
             title: OAuth2.0
             required:
               - credentials
@@ -652,7 +719,7 @@ spec:
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key: ["credentials", "credentials"]
-    predicate_value: oauth2.0
+    predicate_value: oauth2_refresh
     oauth_config_specification:
       complete_oauth_output_specification:
         type: object
