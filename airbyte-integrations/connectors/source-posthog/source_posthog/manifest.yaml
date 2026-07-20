@@ -146,6 +146,14 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              error_message_contains: "Max supported offset value is 50000"
+              error_message: "PostHog Events API does not support offset pagination above 50000."
+              failure_type: system_error
       paginator:
         type: "DefaultPaginator"
         page_size_option:
