@@ -270,6 +270,15 @@ definitions:
       field_name: "created[lte]"
       inject_into: "request_parameter"
 
+  # Events-based incremental cursor with a minimum overlap window. Stripe invoices have no native
+  # `updated` field, so status transitions (e.g. draft -> paid) are only observable through the Events
+  # API. Enforcing a minimum 7-day overlap on each incremental sync ensures invoice status-change events
+  # emitted after the entity snapshot or near a sync boundary are not silently dropped. Users can widen
+  # the overlap via `lookback_window_days`; the floor stays well within Stripe's 30-day event retention.
+  events_read_slice_cursor_with_lookback:
+    $ref: "#/definitions/events_read_slice_cursor"
+    lookback_window: P{{ [config.get('lookback_window_days', 0) | int, 7] | max }}D
+
   streams:
     events:
       $ref: "#/definitions/created_stream"
@@ -396,6 +405,8 @@ definitions:
             $ref: "#/schemas/invoices"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
+        incremental_sync:
+          $ref: "#/definitions/events_read_slice_cursor_with_lookback"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
