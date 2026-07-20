@@ -2,23 +2,44 @@
 
 ### Pull Request Title Convention
 
-When creating a pull request follow the naming conventions depending on the change being made.
-In general, the pull request title starts with an emoji with the connector you're doing the changes, eg (✨ Source E-Commerce: add new stream `Users`).
-Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
+Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/) format. CI enforces this automatically, and Airbyte uses these titles to generate release notes and changelogs.
 
-| Pull Request Type                      | Emoji | Examples                                               |
-| -------------------------------------- | ----- | ------------------------------------------------------ |
-| New Connector (Source or Destination)  | 🎉    | 🎉 New Destination: Database                           |
-| Add a feature to an existing connector | ✨    | ✨ Source E-Commerce: add new stream `Users`           |
-| Fix a bug                              | 🐛    | 🐛 Source E-Commerce: fix start date parameter in spec |
-| Documentation (updates or new entries) | 📝    | 📝 Fix Database connector changelog                    |
-| It's a breaking change                 | 🚨    | 🚨🚨🐛 Source Kafka: fix a complex bug                 |
+The format is:
 
-For more information about [breaking changes](#breaking-changes-to-connectors). A maintainer will help and instruct about possible breaking changes.
+```text
+type(optional-scope): description
+```
 
-Any refactors, cleanups, etc.. that are not visible improvements to the user should not have emojis.
+For breaking changes, add `!` after the type or scope:
 
-If your code change is doing more than one change type at once, we strongly recommend to break it into multiple pull requests. It helps us to review and merge your contribution.
+```text
+type!: description
+type(scope)!: description
+```
+
+The following table lists the valid types and examples of each:
+
+| Type       | Description                                      | Example                                                  |
+| ---------- | ------------------------------------------------ | -------------------------------------------------------- |
+| `feat`     | Add a new feature or connector                   | `feat(source-postgres): add new stream Users`            |
+| `fix`      | Fix a bug                                        | `fix(source-shopify): fix start date parameter in spec`  |
+| `docs`     | Documentation changes                            | `docs: update connector setup guide`                     |
+| `refactor` | Code restructuring without behavior changes      | `refactor(destination-bigquery): simplify error handler` |
+| `perf`     | Performance improvements                         | `perf(source-mysql): optimize large table reads`         |
+| `test`     | Add or update tests                              | `test(source-github): add unit tests for rate limiting`  |
+| `ci`       | CI/CD workflow changes                           | `ci: update workflow-actions pinned SHA`                 |
+| `build`    | Build system or external dependency changes      | `build: upgrade CDK to v6`                               |
+| `chore`    | Maintenance tasks                                | `chore(source-github): update dependencies`              |
+| `deps`     | Dependency updates                               | `deps: bump airbyte-cdk version`                         |
+| `style`    | Code style changes without logic changes         | `style: fix formatting in manifest`                      |
+| `revert`   | Revert a previous commit                         | `revert: undo stream removal`                            |
+| `release`  | Release-related changes                          | `release(source-stripe): promote 5.15.18`                |
+
+The scope is optional but recommended for connector changes. Use the connector's name as the scope, for example `source-postgres` or `destination-bigquery`.
+
+For [more information about breaking changes](#semantic-versioning-for-connectors), contact a maintainer who can help identify possible breaking changes.
+
+If your code change involves more than one change type, break it into multiple pull requests. This helps maintainers review and merge your contribution.
 
 ## Descriptions
 
