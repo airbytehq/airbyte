@@ -4,8 +4,9 @@
 
 import concurrent.futures
 import logging
+import threading
 import time
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Callable, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
 from requests import adapters as request_adapters
@@ -256,17 +257,12 @@ class SalesforceTokenProvider(TokenProvider):
 
     def __init__(self, sf_api: "Salesforce") -> None:
         self._sf_api = sf_api
-        self._last_refresh_time: float = time.monotonic()
 
     def get_token(self) -> str:
-        elapsed = time.monotonic() - self._last_refresh_time
-        if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
-            try:
-                logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
-                self._sf_api.login()
-                self._last_refresh_time = time.monotonic()
-            except Exception:
-                logger.warning("Proactive token refresh failed; will use existing token", exc_info=True)
+        # Timing and locking live on the shared Salesforce object so that, no matter how many
+        # per-stream providers/threads ask, at most one refresh happens per interval and every
+        # rotated refresh token is persisted (see Salesforce.login).
+        self._sf_api.refresh_access_token_if_stale()
         return self._sf_api.access_token
 
     def force_refresh(self) -> None:
@@ -278,7 +274,6 @@ class SalesforceTokenProvider(TokenProvider):
         try:
             logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
             self._sf_api.login()
-            self._last_refresh_time = time.monotonic()
         except Exception:
             logger.error("Forced token refresh failed; subsequent requests will likely fail", exc_info=True)
 
@@ -317,6 +312,19 @@ class Salesforce:
         if self.is_sandbox:
             self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
+
+        # Refresh Token Rotation (RTR): every login() may return a new single-use refresh token that
+        # invalidates the previous one. login() is called at startup and again mid-sync (proactive
+        # refresh and on INVALID_SESSION_ID), from multiple concurrent stream threads that share this
+        # instance. The lock serializes those logins so concurrent refreshes cannot race and strand a
+        # rotated token, and the observer lets the source persist every rotation (not just the first).
+        self._login_lock = threading.Lock()
+        self._last_login_time: Optional[float] = None
+        self._refresh_token_observer: Optional[Callable[[str], None]] = None
+
+    def set_refresh_token_observer(self, observer: Callable[[str], None]) -> None:
+        """Register a callback invoked with the new refresh token whenever login() rotates it."""
+        self._refresh_token_observer = observer
 
     def _get_standard_headers(self) -> Mapping[str, str]:
         return {"Authorization": "Bearer {}".format(self.access_token)}
@@ -370,6 +378,28 @@ class Salesforce:
         return resp
 
     def login(self):
+        with self._login_lock:
+            self._perform_login()
+
+    def refresh_access_token_if_stale(self) -> None:
+        """Proactively refresh the access token once it is older than the refresh interval.
+
+        Called from every stream/thread that shares this instance; the lock plus the re-check
+        inside it ensure at most one login happens per interval instead of one per caller.
+        """
+        if self._last_login_time is None or time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
+            return
+        with self._login_lock:
+            if self._last_login_time is not None and time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
+                return
+            try:
+                logger.info("Refreshing Salesforce OAuth token (%.0fs since last login)", time.monotonic() - self._last_login_time)
+                self._perform_login()
+            except Exception:
+                logger.warning("Proactive token refresh failed; will use existing token", exc_info=True)
+
+    def _perform_login(self) -> None:
+        """Perform the refresh_token grant. Must be called while holding ``self._login_lock``."""
         login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
         login_body = {
             "grant_type": "refresh_token",
@@ -381,9 +411,14 @@ class Salesforce:
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
+        self._last_login_time = time.monotonic()
         # Salesforce returns a new refresh token only when Refresh Token Rotation is enabled on the connected app.
-        if auth.get("refresh_token"):
-            self.refresh_token = auth["refresh_token"]
+        # It is single-use and invalidates the previous one, so every rotation must be persisted, not just the first.
+        new_refresh_token = auth.get("refresh_token")
+        if new_refresh_token and new_refresh_token != self.refresh_token:
+            self.refresh_token = new_refresh_token
+            if self._refresh_token_observer:
+                self._refresh_token_observer(new_refresh_token)
 
     def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""
