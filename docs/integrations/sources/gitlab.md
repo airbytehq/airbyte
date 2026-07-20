@@ -143,6 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.34 | 2026-07-20 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Update stale `openapi_spec` external documentation URL to the publicly accessible GitLab OpenAPI spec |
 | 4.4.33 | 2026-07-14 | [81830](https://github.com/airbytehq/airbyte/pull/81830) | Update dependencies |
 | 4.4.32 | 2026-06-30 | [81041](https://github.com/airbytehq/airbyte/pull/81041) | Update dependencies |
 | 4.4.31 | 2026-06-23 | [80476](https://github.com/airbytehq/airbyte/pull/80476) | Update dependencies |
