@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1-dev@sha256:b167704c741671820f70c5f734034429db269eee076779eb01287b4af82f8ece
   connectorSubtype: api
   connectorType: source
   definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
-  dockerImageTag: 0.3.55
+  dockerImageTag: 0.3.56
   dockerRepository: airbyte/source-cart
   documentationUrl: https://docs.airbyte.com/integrations/sources/cart
   githubIssueLabel: source-cart
