@@ -105,6 +105,10 @@ class LinkedInAdsRequestBuilder:
         self._query_params = ANY_QUERY_PARAMS
         return self
 
+    def with_header(self, key: str, value: str) -> "LinkedInAdsRequestBuilder":
+        self._headers[key] = value
+        return self
+
     def build(self) -> HttpRequest:
         url = f"{self._BASE_URL}{self._path}"
 
