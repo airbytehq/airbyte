@@ -175,12 +175,10 @@ class PostgresAirbyteClient(
         // In typed mode, finalSchema contains the mapped user columns
         val columnsInStream = stream.tableSchema.columnSchema.finalSchema
 
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
+        val (addedColumns, _, modifiedColumns) = generateSchemaChanges(columnsInDb, columnsInStream)
 
         log.info { "Summary of the table alterations:" }
         log.info { "Added columns: $addedColumns" }
-        log.info { "Deleted columns: $deletedColumns" }
         log.info { "Modified columns: $modifiedColumns" }
 
         // In raw tables mode, skip primary key and cursor indexes since those columns don't exist
@@ -190,7 +188,6 @@ class PostgresAirbyteClient(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = addedColumns,
-                columnsToRemove = deletedColumns,
                 columnsToModify = modifiedColumns,
                 recreatePrimaryKeyIndex =
                     !isRawTablesMode && shouldRecreatePrimaryKeyIndex(stream, tableName),
@@ -234,19 +231,16 @@ class PostgresAirbyteClient(
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
-                columnChangeset.columnsToDrop.isNotEmpty() ||
                 columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
-            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
             log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
 
             execute(
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = columnChangeset.columnsToAdd,
-                    columnsToRemove = columnChangeset.columnsToDrop,
                     columnsToModify = columnChangeset.columnsToChange,
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
