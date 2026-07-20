@@ -61,7 +61,7 @@ jobs:
 
       - name: Post start comment
         if: inputs.comment-id != ''
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
