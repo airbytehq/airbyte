@@ -513,6 +513,58 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/lead_form_responses"
+    videos:
+      type: DeclarativeStream
+      name: videos
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: videos
+          http_method: GET
+          request_parameters:
+            q: associatedAccount
+            associatedAccount: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
+            count: "500"
+          request_headers:
+            Linkedin-Version: "202601"
+            X-Restli-Protocol-Version: 2.0.0
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: account_id
+              stream:
+                $ref: "#/definitions/streams/accounts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/videos"
     ad_campaign_analytics:
       type: DeclarativeStream
       name: ad_campaign_analytics
@@ -1610,6 +1662,7 @@ streams:
   - $ref: "#/definitions/streams/conversions"
   - $ref: "#/definitions/streams/lead_forms"
   - $ref: "#/definitions/streams/lead_form_responses"
+  - $ref: "#/definitions/streams/videos"
   - $ref: "#/definitions/streams/ad_member_seniority_analytics"
   - $ref: "#/definitions/streams/ad_campaign_analytics"
   - $ref: "#/definitions/streams/ad_creative_analytics"
@@ -3023,6 +3076,94 @@ schemas:
         type:
           - "null"
           - string
+
+  videos:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: "Videos"
+    description: |
+      Videos uploaded to a sponsored account's media library, including their duration and other media metadata.
+      These media assets can be referenced by creatives in sponsored video ads.
+      For details: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
+    additionalProperties: true
+    properties:
+      id:
+        description: The unique video URN (e.g. urn:li:video:C4E10AQGUkQY7trgh-Q).
+        type:
+          - string
+      owner:
+        description: URN of the entity that owns this asset. Can be a person or organization URN.
+        type:
+          - "null"
+          - string
+      duration:
+        description: The length of the video in milliseconds. Empty if the media asset isn't available or failed processing.
+        type:
+          - "null"
+          - integer
+      aspectRatioWidth:
+        description: Aspect ratio width of the media. For media with a 16:9 ratio, it's 16.
+        type:
+          - "null"
+          - number
+      aspectRatioHeight:
+        description: Aspect ratio height of the media. For media with a 16:9 ratio, it's 9.
+        type:
+          - "null"
+          - number
+      downloadUrl:
+        description: Public URL to download/view the media asset.
+        type:
+          - "null"
+          - string
+      downloadUrlExpiresAt:
+        description: Milliseconds since the epoch when the download URL expires.
+        type:
+          - "null"
+          - integer
+      thumbnail:
+        description: File identifier to retrieve the thumbnail file.
+        type:
+          - "null"
+          - string
+      captions:
+        description: File identifier to retrieve the caption file.
+        type:
+          - "null"
+          - string
+      status:
+        description: "Processing status of the asset: PROCESSING, PROCESSING_FAILED, AVAILABLE or WAITING_UPLOAD."
+        type:
+          - "null"
+          - string
+      processingFailureReason:
+        description: Reason for video processing failure. Only present if status is PROCESSING_FAILED.
+        type:
+          - "null"
+          - string
+      mediaLibraryMetadata:
+        description: Metadata for assets stored in the media library, tied to a specific sponsored account.
+        type:
+          - "null"
+          - object
+        properties:
+          associatedAccount:
+            description: The associated account that owns the media library (e.g. urn:li:sponsoredAccount:123).
+            type:
+              - "null"
+              - string
+          assetName:
+            description: The name of the asset in the associated account's library.
+            type:
+              - "null"
+              - string
+          mediaLibraryStatus:
+            description: Status of the asset's entry in the media library (ACTIVE or ARCHIVED).
+            type:
+              - "null"
+              - string
 
   ad_campaign_analytics:
     $schema: "http://json-schema.org/draft-07/schema#"
