@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -55,6 +56,7 @@ import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 public class MongoUtilTest {
 
@@ -277,6 +279,42 @@ public class MongoUtilTest {
     final Set<String> authorizedCollections = MongoUtil.getAuthorizedCollections(mongoClient, databaseName);
 
     assertEquals(Set.of(collectionName), authorizedCollections);
+
+    final ArgumentCaptor<Document> commandCaptor = ArgumentCaptor.forClass(Document.class);
+    verify(mongoDatabase).runCommand(commandCaptor.capture());
+    final Document capturedCommand = commandCaptor.getValue();
+    assertEquals(1, capturedCommand.get("listCollections"));
+    assertEquals(true, capturedCommand.get("authorizedCollections"));
+    assertEquals(true, capturedCommand.get("nameOnly"));
+    final Document filter = capturedCommand.get("filter", Document.class);
+    assertNotNull(filter);
+    assertEquals("collection", filter.getString("type"));
+  }
+
+  @Test
+  void testGetAuthorizedCollectionsExcludesViews() {
+    final String databaseName = "test-database";
+    final Document result = new Document(Map.of("cursor", Map.of("firstBatch", List.of(
+        Map.of("name", "real-collection"),
+        Map.of("name", "my-view"),
+        Map.of("name", "another-collection")))));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoDatabase.runCommand(any())).thenReturn(result);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final Set<String> authorizedCollections = MongoUtil.getAuthorizedCollections(mongoClient, databaseName);
+
+    assertEquals(Set.of("real-collection", "my-view", "another-collection"), authorizedCollections);
+
+    final ArgumentCaptor<Document> commandCaptor = ArgumentCaptor.forClass(Document.class);
+    verify(mongoDatabase).runCommand(commandCaptor.capture());
+    final Document capturedCommand = commandCaptor.getValue();
+    final Document filter = capturedCommand.get("filter", Document.class);
+    assertNotNull(filter, "The listCollections command must include a filter Document to exclude views");
+    assertEquals("collection", filter.getString("type"),
+        "The filter must restrict results to type 'collection' so that views are excluded");
   }
 
   @Test
