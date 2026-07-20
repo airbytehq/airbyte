@@ -122,6 +122,4 @@ def test_incremental_cursor_advances_to_newest_call_in_batch():
     stream_state = output.most_recent_state.stream_state
     state_value = stream_state if isinstance(stream_state, dict) else stream_state.__dict__
     cursor = state_value.get("state", state_value).get("started")
-    assert cursor == "2024-03-05T12:00:00Z", (
-        f"expected cursor to advance to newest call time in batch, got {cursor}"
-    )
+    assert cursor == "2024-03-05T12:00:00Z", f"expected cursor to advance to newest call time in batch, got {cursor}"
