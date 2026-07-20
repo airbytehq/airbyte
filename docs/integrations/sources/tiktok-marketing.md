@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 **For Airbyte Cloud:**
 
-- A Tiktok Ads Business account with permission to access data from accounts you want to sync
+- A TikTok Ads Business account with permission to access data from the accounts you want to sync
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -35,9 +35,9 @@ To access the Sandbox environment:
 
 ### Step 1: Set up TikTok Marketing
 
-1. Create a TikTok For Business account: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250) <!-- env:oss -->
-2. Create developer application: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
-3. For a sandbox environment: create a Sandbox Ad Account [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026)
+1. [Create a TikTok For Business account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250). <!-- env:oss -->
+2. [Create a developer application](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450).
+3. For a sandbox environment, [create a Sandbox Ad Account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026).
 <!-- /env:oss -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -133,6 +133,10 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | AdGroupsReportsByCountryHourly             | Prod         | adgroup_id, stat_time_hour, country_code   | Yes         |
 
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
+
+### Smart+ ad coverage
+
+The `ads` stream uses `modify_time` as its incremental cursor and skips records where TikTok doesn't return this field. TikTok can omit `modify_time` from Smart+ ad records, so those records don't appear in the stream.
 
 :::info
 
