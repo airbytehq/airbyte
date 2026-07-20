@@ -70,7 +70,7 @@ jobs:
             > **AI Resolve Conflicts Started**
             >
             > Merging the latest `master` into the PR branch and resolving conflicts.
-            > A fresh `/ai-review` runs automatically once the conflict is resolved.
+            > Once resolved and pushed, hands-free resumes the PR at its correct next stage.
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Resolve Conflicts
@@ -83,7 +83,7 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
-          start-message: "🔀 **AI Resolve Conflicts session starting...** Merging the latest `master` into the PR branch, resolving conflicts, and re-triggering `/ai-review` on the new HEAD. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/resolve_merge_conflicts.md)"
+          start-message: "🔀 **AI Resolve Conflicts session starting...** Merging the latest `master` into the PR branch and resolving conflicts, then pushing the resolved branch. The next hands-free pass resumes the PR at its correct stage. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/resolve_merge_conflicts.md)"
           tags: |
             ai-oncall
             conflict-resolution
