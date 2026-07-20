@@ -255,6 +255,7 @@ class ConnectorConfig(BaseConfig):
             'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),
         airbyte_secret=True,
+        airbyte_hidden=True,
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(

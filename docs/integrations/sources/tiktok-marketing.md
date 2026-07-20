@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the [TikTok Mar
 
 **For Airbyte Cloud:**
 
-- A Tiktok Ads Business account with permission to access data from accounts you want to sync
+- A TikTok Ads Business account with permission to access data from the accounts you want to sync
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -35,9 +35,9 @@ To access the Sandbox environment:
 
 ### Step 1: Set up TikTok Marketing
 
-1. Create a TikTok For Business account: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250) <!-- env:oss -->
-2. Create developer application: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
-3. For a sandbox environment: create a Sandbox Ad Account [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026)
+1. [Create a TikTok For Business account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250). <!-- env:oss -->
+2. [Create a developer application](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450).
+3. For a sandbox environment, [create a Sandbox Ad Account](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026).
 <!-- /env:oss -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -134,6 +134,10 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 
 The Campaigns stream retrieves campaigns of all buying types: Auction, TopView (Reservation), and Reach & Frequency (Reservation). The connector makes a separate API call per buying type because the TikTok API does not support combining TopView with other buying types in a single request.
 
+### Smart+ ad coverage
+
+The `ads` stream uses `modify_time` as its incremental cursor and skips records where TikTok doesn't return this field. TikTok can omit `modify_time` from Smart+ ad records, so those records don't appear in the stream.
+
 :::info
 
 The TikTok Reporting API has [data latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337) of approximately 11 hours. To ensure that the connector captures updated metrics in existing records, use an attribution window of at least 3 days for incremental syncs.
@@ -167,6 +171,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.4 | 2026-07-14 | [81448](https://github.com/airbytehq/airbyte/pull/81448) | Add `smart_plus_ad_id` field to `ads` stream |
+| 5.1.3 | 2026-07-14 | [82045](https://github.com/airbytehq/airbyte/pull/82045) | Update dependencies |
 | 5.1.2 | 2026-06-30 | [81267](https://github.com/airbytehq/airbyte/pull/81267) | Update dependencies |
 | 5.1.1 | 2026-06-23 | [80705](https://github.com/airbytehq/airbyte/pull/80705) | Update dependencies |
 | 5.1.0 | 2026-06-18 | [80061](https://github.com/airbytehq/airbyte/pull/80061) | Add configurable `report_granularity` setting (default 30 days) to control daily report date step size; surfaces error 40067 as a config error with actionable guidance on daily report streams |

@@ -43,8 +43,8 @@ class SentryRequestBuilder:
     def build(self) -> HttpRequest:
         # Build URL based on resource type
         if self._resource == "projects":
-            # Projects endpoint: /api/0/projects/
-            url = f"https://{self._hostname}/api/0/projects/"
+            # Projects endpoint: /api/0/organizations/{org}/projects/
+            url = f"https://{self._hostname}/api/0/organizations/{self._organization}/projects/"
         elif self._resource == "releases":
             # Releases endpoint: /api/0/organizations/{org}/releases/
             url = f"https://{self._hostname}/api/0/organizations/{self._organization}/releases/"
