@@ -601,7 +601,8 @@
         },
         "accepts_marketing_updated_at": {
           "description": "Timestamp when marketing acceptance was last updated",
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "marketing_opt_in_level": {
           "description": "Level of marketing opt-in for the customer",
