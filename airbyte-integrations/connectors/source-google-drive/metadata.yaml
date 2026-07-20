@@ -6,11 +6,11 @@ data:
     hosts:
       - "www.googleapis.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1-dev@sha256:b167704c741671820f70c5f734034429db269eee076779eb01287b4af82f8ece
   connectorSubtype: file
   connectorType: source
   definitionId: 9f8dda77-1048-4368-815b-269bf54ee9b8
-  dockerImageTag: 0.5.24
+  dockerImageTag: 0.5.25
   dockerRepository: airbyte/source-google-drive
   githubIssueLabel: source-google-drive
   icon: google-drive.svg
