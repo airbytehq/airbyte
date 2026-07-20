@@ -102,3 +102,34 @@ def test_attribute_definitions_extractor(response_data, expected_records, compon
 
     # Assert that the returned records match the expected records
     assert records == expected_records, f"Expected records to be {expected_records}, but got {records}"
+
+
+# 2026-03-01T00:00:00Z
+_BACKFILL_FLOOR = 1772323200
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        ({"updated_at": "1780000000"}, True),
+        ({}, False),
+        ({"generated_timestamp": 123}, False),
+    ],
+)
+def test_tickets_state_migration_should_migrate(stream_state, expected, components_module):
+    migration = components_module.TicketsStateMigration()
+    assert migration.should_migrate(stream_state) is expected
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected",
+    [
+        # Above the floor -> clamped down to the floor.
+        ({"updated_at": "1780000000"}, {"generated_timestamp": _BACKFILL_FLOOR}),
+        # Below the floor -> left unchanged.
+        ({"updated_at": "1000000000"}, {"generated_timestamp": 1000000000}),
+    ],
+)
+def test_tickets_state_migration_migrate(stream_state, expected, components_module):
+    migration = components_module.TicketsStateMigration()
+    assert migration.migrate(stream_state) == expected
