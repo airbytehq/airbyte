@@ -84,12 +84,11 @@ class SnowflakeDirectLoadSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
-        // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
-        val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val createTableStatement =
             """
-            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |$createPrefix ${fullyQualifiedName(tableName)} (
             |    $columnDeclarations
             |)
             """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin

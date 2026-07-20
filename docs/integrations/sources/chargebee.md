@@ -111,7 +111,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.36-rc.5 | 2026-05-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove the local API budget limiter while keeping the default worker count at 5. |
+| 0.10.39 | 2026-06-30 | [81013](https://github.com/airbytehq/airbyte/pull/81013) | Update dependencies |
+| 0.10.38 | 2026-06-23 | [80404](https://github.com/airbytehq/airbyte/pull/80404) | Update dependencies |
+| 0.10.37 | 2026-06-16 | [78619](https://github.com/airbytehq/airbyte/pull/78619) | Update dependencies |
+| 0.10.36 | 2026-06-09 | [79604](https://github.com/airbytehq/airbyte/pull/79604) | Clean up cancelled RC; revert source to previous stable |
+| 0.10.36-rc.5 | 2026-05-27 | [78469](https://github.com/airbytehq/airbyte/pull/78469) | Remove the local API budget limiter while keeping the default worker count at 5. |
 | 0.10.36-rc.4 | 2026-05-26 | [78435](https://github.com/airbytehq/airbyte/pull/78435) | Reduce default concurrent threads to 3 after rollout duration regressions at 5. |
 | 0.10.36-rc.3 | 2026-05-22 | [78366](https://github.com/airbytehq/airbyte/pull/78366) | Revert `default_concurrency` to 5, activate tier-aware `HTTPAPIBudget`, and document `subscription_tier` for GA rollout |
 | 0.10.36-rc.2 | 2026-05-20 | [78300](https://github.com/airbytehq/airbyte/pull/78300) | Raise `default_concurrency` to 6 after Phase 1 monitoring of 0.10.36-rc.1 showed no rate-limit signal and faster high-volume sync averages excluding a stable-precedent multi-attempt outlier |

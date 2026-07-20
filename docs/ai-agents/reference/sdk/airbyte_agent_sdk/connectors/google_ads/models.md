@@ -2142,7 +2142,7 @@ Classes
     `campaign_budget: str | None`
     :   Campaign budget resource name
 
-    `end_date: str | None`
+    `end_date_time: str | None`
     :   Campaign end date
 
     `id: str | None`
@@ -2166,7 +2166,7 @@ Classes
     `serving_status: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | None`
+    `start_date_time: str | None`
     :   Campaign start date
 
     `status: str | None`
@@ -2856,7 +2856,7 @@ Classes
     `campaign_campaign_budget: str | None`
     :   Campaign budget resource name
 
-    `campaign_end_date: str | None`
+    `campaign_end_date_time: str | None`
     :   Campaign end date
 
     `campaign_id: int | None`
@@ -2886,7 +2886,7 @@ Classes
     `campaign_serving_status: str | None`
     :   Campaign serving status
 
-    `campaign_start_date: str | None`
+    `campaign_start_date_time: str | None`
     :   Campaign start date
 
     `campaign_status: str | None`

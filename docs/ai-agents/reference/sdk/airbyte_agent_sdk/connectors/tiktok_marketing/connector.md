@@ -323,6 +323,207 @@ Classes
         Returns:
             AdsReportsDailyListResult
 
+<a id="AdsReportsHourlyQuery"></a>
+
+`AdsReportsHourlyQuery(connector: TiktokMarketingConnector)`
+:   Query class for AdsReportsHourly entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AdsReportsHourlySearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsHourlySearchData]`
+    :   Search ads_reports_hourly records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AdsReportsHourlySearchFilter):
+        - ad_id: The unique identifier for the ad.
+        - stat_time_hour: The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+        - campaign_name: The name of the marketing campaign.
+        - campaign_id: The unique identifier for the campaign.
+        - adgroup_name: The name of the ad group.
+        - adgroup_id: The unique identifier for the ad group.
+        - ad_name: The name of the ad.
+        - ad_text: The text content of the ad.
+        - placement_type: Type of ad placement.
+        - spend: Total amount of money spent.
+        - cpc: Cost per click.
+        - cpm: Cost per thousand impressions.
+        - impressions: Number of times the ad was displayed.
+        - clicks: Number of clicks on the ad.
+        - ctr: Click-through rate.
+        - reach: Total number of unique users reached.
+        - cost_per_1000_reached: Cost per 1000 unique users reached.
+        - conversion: Number of conversions.
+        - cost_per_conversion: Cost per conversion.
+        - conversion_rate: Rate of conversions.
+        - real_time_conversion: Real-time conversions.
+        - real_time_cost_per_conversion: Real-time cost per conversion.
+        - real_time_conversion_rate: Real-time conversion rate.
+        - result: Number of results.
+        - cost_per_result: Cost per result.
+        - result_rate: Rate of results.
+        - real_time_result: Real-time results.
+        - real_time_cost_per_result: Real-time cost per result.
+        - real_time_result_rate: Real-time result rate.
+        - secondary_goal_result: Results for secondary goals.
+        - cost_per_secondary_goal_result: Cost per secondary goal result.
+        - secondary_goal_result_rate: Rate of secondary goal results.
+        - frequency: Average number of times each person saw the ad.
+        - video_play_actions: Number of video play actions.
+        - video_watched_2s: Number of times video was watched for at least 2 seconds.
+        - video_watched_6s: Number of times video was watched for at least 6 seconds.
+        - average_video_play: Average video play duration.
+        - average_video_play_per_user: Average video play duration per user.
+        - video_views_p25: Number of times video was watched to 25%.
+        - video_views_p50: Number of times video was watched to 50%.
+        - video_views_p75: Number of times video was watched to 75%.
+        - video_views_p100: Number of times video was watched to 100%.
+        - profile_visits: Number of profile visits.
+        - likes: Number of likes.
+        - comments: Number of comments.
+        - shares: Number of shares.
+        - follows: Number of follows.
+        - clicks_on_music_disc: Number of clicks on the music disc.
+        - real_time_app_install: Real-time app installations.
+        - real_time_app_install_cost: Cost of real-time app installations.
+        - app_install: Number of app installations.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AdsReportsHourlySearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, advertiser_id: str, service_type: str, report_type: str, data_level: str, dimensions: str, metrics: str, start_date: str, end_date: str, page: int | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[AdsReportHourly], AdsReportsHourlyListResultMeta]`
+    :   Get hourly performance reports at the ad level
+        
+        Args:
+            advertiser_id: Advertiser ID
+            service_type: Service type
+            report_type: Report type
+            data_level: Data level for the report
+            dimensions: Dimensions for the report (JSON array)
+            metrics: Metrics to retrieve (JSON array)
+            start_date: Report start date (YYYY-MM-DD)
+            end_date: Report end date (YYYY-MM-DD)
+            page: Page number
+            page_size: Number of items per page
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdsReportsHourlyListResult
+
+<a id="AdsReportsLifetimeQuery"></a>
+
+`AdsReportsLifetimeQuery(connector: TiktokMarketingConnector)`
+:   Query class for AdsReportsLifetime entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AdsReportsLifetimeSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[AdsReportsLifetimeSearchData]`
+    :   Search ads_reports_lifetime records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AdsReportsLifetimeSearchFilter):
+        - ad_id: The unique identifier for the ad.
+        - campaign_name: The name of the marketing campaign.
+        - campaign_id: The unique identifier for the campaign.
+        - adgroup_name: The name of the ad group.
+        - adgroup_id: The unique identifier for the ad group.
+        - ad_name: The name of the ad.
+        - ad_text: The text content of the ad.
+        - placement_type: Type of ad placement.
+        - spend: Total amount of money spent.
+        - cpc: Cost per click.
+        - cpm: Cost per thousand impressions.
+        - impressions: Number of times the ad was displayed.
+        - clicks: Number of clicks on the ad.
+        - ctr: Click-through rate.
+        - reach: Total number of unique users reached.
+        - cost_per_1000_reached: Cost per 1000 unique users reached.
+        - conversion: Number of conversions.
+        - cost_per_conversion: Cost per conversion.
+        - conversion_rate: Rate of conversions.
+        - real_time_conversion: Real-time conversions.
+        - real_time_cost_per_conversion: Real-time cost per conversion.
+        - real_time_conversion_rate: Real-time conversion rate.
+        - result: Number of results.
+        - cost_per_result: Cost per result.
+        - result_rate: Rate of results.
+        - real_time_result: Real-time results.
+        - real_time_cost_per_result: Real-time cost per result.
+        - real_time_result_rate: Real-time result rate.
+        - secondary_goal_result: Results for secondary goals.
+        - cost_per_secondary_goal_result: Cost per secondary goal result.
+        - secondary_goal_result_rate: Rate of secondary goal results.
+        - frequency: Average number of times each person saw the ad.
+        - video_play_actions: Number of video play actions.
+        - video_watched_2s: Number of times video was watched for at least 2 seconds.
+        - video_watched_6s: Number of times video was watched for at least 6 seconds.
+        - average_video_play: Average video play duration.
+        - average_video_play_per_user: Average video play duration per user.
+        - video_views_p25: Number of times video was watched to 25%.
+        - video_views_p50: Number of times video was watched to 50%.
+        - video_views_p75: Number of times video was watched to 75%.
+        - video_views_p100: Number of times video was watched to 100%.
+        - profile_visits: Number of profile visits.
+        - likes: Number of likes.
+        - comments: Number of comments.
+        - shares: Number of shares.
+        - follows: Number of follows.
+        - clicks_on_music_disc: Number of clicks on the music disc.
+        - real_time_app_install: Real-time app installations.
+        - real_time_app_install_cost: Cost of real-time app installations.
+        - app_install: Number of app installations.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AdsReportsLifetimeSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, advertiser_id: str, service_type: str, report_type: str, data_level: str, dimensions: str, metrics: str, start_date: str, end_date: str, page: int | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[AdsReportLifetime], AdsReportsLifetimeListResultMeta]`
+    :   Get lifetime performance reports at the ad level
+        
+        Args:
+            advertiser_id: Advertiser ID
+            service_type: Service type
+            report_type: Report type
+            data_level: Data level for the report
+            dimensions: Dimensions for the report (JSON array)
+            metrics: Metrics to retrieve (JSON array)
+            start_date: Report start date (YYYY-MM-DD)
+            end_date: Report end date (YYYY-MM-DD)
+            page: Page number
+            page_size: Number of items per page
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdsReportsLifetimeListResult
+
 <a id="AdvertisersQuery"></a>
 
 `AdvertisersQuery(connector: TiktokMarketingConnector)`
@@ -672,6 +873,28 @@ Classes
         Returns:
             CampaignsReportsDailyListResult
 
+<a id="CatalogsQuery"></a>
+
+`CatalogsQuery(connector: TiktokMarketingConnector)`
+:   Query class for Catalogs entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `list(self, advertiser_id: str, bc_id: str | None = None, page: int | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[Catalog], CatalogsListResultMeta]`
+    :   Get product catalogs for an advertiser
+        
+        Args:
+            advertiser_id: Advertiser ID
+            bc_id: Business Center ID. Required by the TikTok API to scope catalog results.
+            page: Page number
+            page_size: Number of items per page
+            **kwargs: Additional parameters
+        
+        Returns:
+            CatalogsListResult
+
 <a id="CreativeAssetsImagesQuery"></a>
 
 `CreativeAssetsImagesQuery(connector: TiktokMarketingConnector)`
@@ -777,6 +1000,53 @@ Classes
         Returns:
             CreativeAssetsVideosListResult
 
+<a id="SparkAdsQuery"></a>
+
+`SparkAdsQuery(connector: TiktokMarketingConnector)`
+:   Query class for SparkAds entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: SparkAdsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.AirbyteSearchResult[SparkAdsSearchData]`
+    :   Search spark_ads records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SparkAdsSearchFilter):
+        - item_info: Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+        - user_info: Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+        - auth_info: Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+        - video_info: Video post details including duration, preview_url, poster_url, height, width, and size.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SparkAdsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, advertiser_id: str, page: int | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.tiktok_marketing.models.TiktokMarketingExecuteResultWithMeta[list[SparkAd], SparkAdsListResultMeta]`
+    :   Get Spark Ad posts that have been authorized to an ad account
+        
+        Args:
+            advertiser_id: Advertiser ID
+            page: Page number
+            page_size: Number of items per page
+            **kwargs: Additional parameters
+        
+        Returns:
+            SparkAdsListResult
+
 <a id="TiktokMarketingConnector"></a>
 
 `TiktokMarketingConnector(auth_config: TiktokMarketingAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
@@ -831,47 +1101,73 @@ Classes
     ### Static methods
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    :   Add connector-specific documentation and runtime safeguards to one tool.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
         
-        Usage:
-            @mcp.tool()
-            @TiktokMarketingConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
         
-            @mcp.tool()
-            @TiktokMarketingConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
         
-            @mcp.tool()
-            @TiktokMarketingConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = TiktokMarketingConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @TiktokMarketingConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @TiktokMarketingConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @TiktokMarketingConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -916,7 +1212,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -928,6 +1224,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation

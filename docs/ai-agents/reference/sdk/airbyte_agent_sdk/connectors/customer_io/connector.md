@@ -313,47 +313,73 @@ Classes
     ### Static methods
 
     `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    :   Add connector-specific documentation and runtime safeguards to one tool.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
         
-        Usage:
-            @mcp.tool()
-            @CustomerIoConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
         
-            @mcp.tool()
-            @CustomerIoConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
         
-            @mcp.tool()
-            @CustomerIoConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = CustomerIoConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @CustomerIoConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @CustomerIoConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @CustomerIoConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -398,7 +424,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -410,6 +436,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -786,6 +815,69 @@ Classes
         
         Returns:
             TransactionalSendResponse
+
+<a id="TransactionalMessageContentsQuery"></a>
+
+`TransactionalMessageContentsQuery(connector: CustomerIoConnector)`
+:   Query class for TransactionalMessageContents entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `list(self, transactional_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[TransactionalMessageContent]]`
+    :   Returns all content variants (including language translations) for a transactional message template.
+        
+        Args:
+            transactional_id: The transactional message identifier
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionalMessageContentsListResult
+
+    `update(self, transactional_id: str, content_id: str, body: str | None = None, from_id: int | None = None, reply_to_id: int | None | None = None, recipient: str | None = None, subject: str | None = None, preheader_text: str | None = None, body_amp: str | None = None, headers: list[TransactionalMessageContentsUpdateParamsHeadersItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.TransactionalMessageContent`
+    :   Updates the content of a specific variant of a transactional message template by content ID.
+        
+        Args:
+            body: HTML body content of the message
+            from_id: Sender identity ID
+            reply_to_id: Reply-to sender identity ID
+            recipient: Recipient expression (e.g. "\{\{customer.email\}\}")
+            subject: Email subject line
+            preheader_text: Email preheader/preview text
+            body_amp: AMP HTML body content
+            headers: Custom email headers as an array of name-value objects
+            transactional_id: The transactional message identifier
+            content_id: The content variant identifier
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionalMessageContent
+
+<a id="TransactionalMessagesQuery"></a>
+
+`TransactionalMessagesQuery(connector: CustomerIoConnector)`
+:   Query class for TransactionalMessages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `get(self, transactional_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.TransactionalMessage`
+    :   Returns a single transactional message template by ID.
+        
+        Args:
+            transactional_id: The transactional message identifier
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionalMessage
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[TransactionalMessage]]`
+    :   Returns a list of all transactional message templates in the workspace.
+        
+        Returns:
+            TransactionalMessagesListResult
 
 <a id="TransactionalPushQuery"></a>
 

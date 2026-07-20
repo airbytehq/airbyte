@@ -6,8 +6,9 @@ Slack is a business communication platform that offers messaging, file sharing, 
 with other tools. This connector provides read access to users, channels, channel members, channel
 messages, and threads for workspace analytics. It also supports write operations including sending,
 updating, deleting, and scheduling messages, sending ephemeral messages, creating and renaming
-channels, archiving channels, removing users from channels, setting channel topics and purposes,
-adding and removing reactions, pinning messages, adding bookmarks, and inviting users to channels.
+channels, archiving channels, joining channels, removing users from channels, setting channel topics
+and purposes, adding and removing reactions, pinning messages, adding bookmarks, and inviting users
+to channels.
 
 
 ## Example prompts
@@ -45,6 +46,8 @@ The Slack connector is optimized to handle prompts like these.
 - Remove a user from the #team channel
 - Pin the latest important message in a channel
 - Add a bookmark link to a channel
+- Join the #announcements channel
+- Have the bot join a public channel
 - What messages were posted in channel \{channel_id\} last week?
 - Show me the conversation history for channel \{channel_id\}
 - Search for messages mentioning \{keyword\} in channel \{channel_id\}
@@ -77,6 +80,7 @@ This connector supports the following entities and actions. For more details, se
 | Scheduled Messages | [Create](./REFERENCE.md#scheduled-messages-create) |
 | Channel Archives | [Create](./REFERENCE.md#channel-archives-create) |
 | Channel Kicks | [Create](./REFERENCE.md#channel-kicks-create) |
+| Channel Joins | [Create](./REFERENCE.md#channel-joins-create) |
 | Pins | [Create](./REFERENCE.md#pins-create) |
 | Bookmarks | [Create](./REFERENCE.md#bookmarks-create) |
 
@@ -85,17 +89,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Slack API reference](https://api.slack.com/methods).
 
-## SDK installation
+## Interfaces
+
+Use the Slack connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -105,6 +158,83 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `SlackConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+
+connector = connect("slack", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+
+connector = connect("slack", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+
+connector = connect("slack", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Slack Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+
+connector = connect("slack", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Slack Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `SlackConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -179,12 +309,15 @@ async def slack_execute(entity: str, action: str, params: dict | None = None):
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.slack import SlackConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -198,18 +331,15 @@ connector = SlackConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@SlackConnector.tool_utils
-async def slack_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.slack import SlackConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -222,18 +352,21 @@ connector = SlackConnector(
     )
 )
 
-@tool
-@SlackConnector.tool_utils
-async def slack_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Slack connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.slack import SlackConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -247,21 +380,16 @@ connector = SlackConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@SlackConnector.tool_utils(framework="openai_agents")
-async def slack_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Slack connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Slack Assistant", tools=[slack_execute])
+agent = Agent(name="Slack Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.slack import SlackConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -277,18 +405,108 @@ connector = SlackConnector(
 
 mcp = FastMCP("Slack Agent")
 
-@mcp.tool
-@SlackConnector.tool_utils
-async def slack_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Slack connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
 
-### Open source
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.connectors.slack.models import SlackTokenAuthenticationAuthConfig
+
+connector = SlackConnector(
+    auth_config=SlackTokenAuthenticationAuthConfig(
+        bot_key="<Your Slack Bot Key (xoxb-) or User Token (xoxp-)>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.connectors.slack.models import SlackTokenAuthenticationAuthConfig
+
+connector = SlackConnector(
+    auth_config=SlackTokenAuthenticationAuthConfig(
+        bot_key="<Your Slack Bot Key (xoxb-) or User Token (xoxp-)>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.connectors.slack.models import SlackTokenAuthenticationAuthConfig
+
+connector = SlackConnector(
+    auth_config=SlackTokenAuthenticationAuthConfig(
+        bot_key="<Your Slack Bot Key (xoxb-) or User Token (xoxp-)>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Slack Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.slack import SlackConnector
+from airbyte_agent_sdk.connectors.slack.models import SlackTokenAuthenticationAuthConfig
+
+connector = SlackConnector(
+    auth_config=SlackTokenAuthenticationAuthConfig(
+        bot_key="<Your Slack Bot Key (xoxb-) or User Token (xoxp-)>"
+    )
+)
+
+mcp = FastMCP("Slack Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `SlackConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -379,6 +597,7 @@ async def slack_execute(entity: str, action: str, params: dict | None = None):
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 
@@ -390,4 +609,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.21
+**Connector version:** 0.1.22

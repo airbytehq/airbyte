@@ -69,6 +69,7 @@ jobs:
             build-connector-images
             bump-progressive-rollout-version
             bump-version
+            enable-autopilot-rollouts
             force-merge
             format-fix
             poe
@@ -79,6 +80,7 @@ jobs:
             run-regression-tests
             test-performance
             update-connector-cdk-version
+            version-yank
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.

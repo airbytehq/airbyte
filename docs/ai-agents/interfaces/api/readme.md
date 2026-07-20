@@ -1,6 +1,6 @@
 ---
 plan: all
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
@@ -29,7 +29,7 @@ The four pages in this section are designed to map one-to-one with the [SDK](../
 
 2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
 
-3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
+3. **[Execute operations](./execute)**: First introspect the connector (`GET /integrations/connectors/<connector_id>/inspect`, then `GET /skills/docs`) to discover its entities, actions, and usage guidance, then call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
 4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
 

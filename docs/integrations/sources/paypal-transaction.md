@@ -268,6 +268,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.39 | 2026-07-14 | [81962](https://github.com/airbytehq/airbyte/pull/81962) | Update dependencies |
+| 2.6.38 | 2026-06-30 | [81175](https://github.com/airbytehq/airbyte/pull/81175) | Update dependencies |
+| 2.6.37 | 2026-06-23 | [80610](https://github.com/airbytehq/airbyte/pull/80610) | Update dependencies |
+| 2.6.36 | 2026-06-16 | [79986](https://github.com/airbytehq/airbyte/pull/79986) | Update dependencies |
+| 2.6.35 | 2026-06-09 | [79456](https://github.com/airbytehq/airbyte/pull/79456) | Update dependencies |
+| 2.6.34 | 2026-06-02 | [78907](https://github.com/airbytehq/airbyte/pull/78907) | Update dependencies |
 | 2.6.33 | 2026-04-28 | [77335](https://github.com/airbytehq/airbyte/pull/77335) | Update dependencies |
 | 2.6.32 | 2026-04-21 | [76710](https://github.com/airbytehq/airbyte/pull/76710) | Update dependencies |
 | 2.6.31 | 2026-04-07 | [76135](https://github.com/airbytehq/airbyte/pull/76135) | Fix undefined `security_context` variable in payments generator utility script |

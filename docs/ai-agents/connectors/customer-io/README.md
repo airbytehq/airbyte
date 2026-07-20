@@ -80,17 +80,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Customer-Io API reference](https://customer.io/docs/api/app/).
 
-## SDK installation
+## Interfaces
+
+Use the Customer-Io connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "customer-io",
+  "entity": "campaigns",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -100,6 +149,83 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `CustomerIoConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+
+connector = connect("customer-io", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+
+connector = connect("customer-io", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+
+connector = connect("customer-io", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Customer-Io Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+
+connector = connect("customer-io", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Customer-Io Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `CustomerIoConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -174,12 +300,15 @@ async def customer_io_execute(entity: str, action: str, params: dict | None = No
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -193,18 +322,15 @@ connector = CustomerIoConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@CustomerIoConnector.tool_utils
-async def customer_io_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -217,18 +343,21 @@ connector = CustomerIoConnector(
     )
 )
 
-@tool
-@CustomerIoConnector.tool_utils
-async def customer_io_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Customer-Io connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -242,21 +371,16 @@ connector = CustomerIoConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@CustomerIoConnector.tool_utils(framework="openai_agents")
-async def customer_io_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Customer-Io connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Customer-Io Assistant", tools=[customer_io_execute])
+agent = Agent(name="Customer-Io Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -272,18 +396,112 @@ connector = CustomerIoConnector(
 
 mcp = FastMCP("Customer-Io Agent")
 
-@mcp.tool
-@CustomerIoConnector.tool_utils
-async def customer_io_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Customer-Io connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
 
-### Open source
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+from airbyte_agent_sdk.connectors.customer_io.models import CustomerIoAuthConfig
+
+connector = CustomerIoConnector(
+    auth_config=CustomerIoAuthConfig(
+        app_api_key="<Your Customer.io App API key. Generate one in your workspace settings at Settings > API Credentials > App API Key.
+>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+from airbyte_agent_sdk.connectors.customer_io.models import CustomerIoAuthConfig
+
+connector = CustomerIoConnector(
+    auth_config=CustomerIoAuthConfig(
+        app_api_key="<Your Customer.io App API key. Generate one in your workspace settings at Settings > API Credentials > App API Key.
+>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+from airbyte_agent_sdk.connectors.customer_io.models import CustomerIoAuthConfig
+
+connector = CustomerIoConnector(
+    auth_config=CustomerIoAuthConfig(
+        app_api_key="<Your Customer.io App API key. Generate one in your workspace settings at Settings > API Credentials > App API Key.
+>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Customer-Io Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.customer_io import CustomerIoConnector
+from airbyte_agent_sdk.connectors.customer_io.models import CustomerIoAuthConfig
+
+connector = CustomerIoConnector(
+    auth_config=CustomerIoAuthConfig(
+        app_api_key="<Your Customer.io App API key. Generate one in your workspace settings at Settings > API Credentials > App API Key.
+>"
+    )
+)
+
+mcp = FastMCP("Customer-Io Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `CustomerIoConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -378,6 +596,7 @@ async def customer_io_execute(entity: str, action: str, params: dict | None = No
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 

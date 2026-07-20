@@ -968,6 +968,8 @@ Classes
     * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[ReportingWebhook]]
     * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[Segment]]
     * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[Snippet]]
+    * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[TransactionalMessageContent]]
+    * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult[list[TransactionalMessage]]
 
     ### Class variables
 
@@ -1476,6 +1478,92 @@ Classes
 <a id="SnippetsListResult"></a>
 
 `SnippetsListResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`CustomerIoExecuteResult[list[TransactionalMessageContent]](**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessageContentsListResult"></a>
+
+`TransactionalMessageContentsListResult(**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`CustomerIoExecuteResult[list[TransactionalMessage]](**data: Any)`
+:   Response envelope with data only.
+    
+    Used for actions that return data without metadata.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.customer_io.models.CustomerIoExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessagesListResult"></a>
+
+`TransactionalMessagesListResult(**data: Any)`
 :   Response envelope with data only.
     
     Used for actions that return data without metadata.
@@ -2389,6 +2477,210 @@ Classes
 
     `transactional_message_id: Any`
     :   The type of the None singleton.
+
+<a id="TransactionalMessage"></a>
+
+`TransactionalMessage(**data: Any)`
+:   TransactionalMessage type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: int | None`
+    :   The type of the None singleton.
+
+    `description: str | None`
+    :   The type of the None singleton.
+
+    `hide_message_body: bool | None`
+    :   The type of the None singleton.
+
+    `id: int | None`
+    :   The type of the None singleton.
+
+    `link_tracking: bool | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `open_tracking: bool | None`
+    :   The type of the None singleton.
+
+    `queue_drafts: bool | None`
+    :   The type of the None singleton.
+
+    `send_to_unsubscribed: bool | None`
+    :   The type of the None singleton.
+
+    `trigger_name: str | None`
+    :   The type of the None singleton.
+
+    `updated_at: int | None`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessageContent"></a>
+
+`TransactionalMessageContent(**data: Any)`
+:   TransactionalMessageContent type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `bcc: str | None`
+    :   The type of the None singleton.
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `body_amp: str | None`
+    :   The type of the None singleton.
+
+    `created: int | None`
+    :   The type of the None singleton.
+
+    `fake_bcc: bool | None`
+    :   The type of the None singleton.
+
+    `from_: str | None`
+    :   The type of the None singleton.
+
+    `from_id: int | None`
+    :   The type of the None singleton.
+
+    `headers: str | None`
+    :   The type of the None singleton.
+
+    `id: int | None`
+    :   The type of the None singleton.
+
+    `language: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `preheader_text: str | None`
+    :   The type of the None singleton.
+
+    `preprocessor: str | None`
+    :   The type of the None singleton.
+
+    `recipient: str | None`
+    :   The type of the None singleton.
+
+    `reply_to: str | None`
+    :   The type of the None singleton.
+
+    `reply_to_id: int | None`
+    :   The type of the None singleton.
+
+    `subject: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `updated: int | None`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessageContentUpdateParams"></a>
+
+`TransactionalMessageContentUpdateParams(**data: Any)`
+:   TransactionalMessageContentUpdateParams type definition
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body: str | None`
+    :   The type of the None singleton.
+
+    `body_amp: str | None`
+    :   The type of the None singleton.
+
+    `from_id: int | None`
+    :   The type of the None singleton.
+
+    `headers: list[airbyte_agent_sdk.connectors.customer_io.models.TransactionalMessageContentUpdateParamsHeadersItem] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `preheader_text: str | None`
+    :   The type of the None singleton.
+
+    `recipient: str | None`
+    :   The type of the None singleton.
+
+    `reply_to_id: int | None`
+    :   The type of the None singleton.
+
+    `subject: str | None`
+    :   The type of the None singleton.
+
+<a id="TransactionalMessageContentUpdateParamsHeadersItem"></a>
+
+`TransactionalMessageContentUpdateParamsHeadersItem(**data: Any)`
+:   Nested schema for TransactionalMessageContentUpdateParams.headers_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Header name
+
+    `value: str | None`
+    :   Header value
 
 <a id="TransactionalPushParams"></a>
 

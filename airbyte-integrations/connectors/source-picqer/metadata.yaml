@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-picqer
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.5@sha256:e18095bba3f7852bb7ae0a50d13fe532cee803cf8f273f5e8faf51fd93e401e4
   connectorSubtype: api
   connectorType: source
   definitionId: 860ca029-c88c-4c0a-a7d8-08ce6e84729c
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-picqer
   githubIssueLabel: source-picqer
   icon: icon.svg

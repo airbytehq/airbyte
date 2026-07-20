@@ -88,6 +88,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.22 | 2026-07-14 | [81833](https://github.com/airbytehq/airbyte/pull/81833) | Update dependencies |
+| 3.2.21 | 2026-06-30 | [81070](https://github.com/airbytehq/airbyte/pull/81070) | Update dependencies |
+| 3.2.20 | 2026-06-23 | [80437](https://github.com/airbytehq/airbyte/pull/80437) | Update dependencies |
+| 3.2.19 | 2026-06-16 | [79864](https://github.com/airbytehq/airbyte/pull/79864) | Update dependencies |
+| 3.2.18 | 2026-06-09 | [79322](https://github.com/airbytehq/airbyte/pull/79322) | Update dependencies |
+| 3.2.17 | 2026-06-02 | [76596](https://github.com/airbytehq/airbyte/pull/76596) | Update dependencies |
 | 3.2.16 | 2026-04-24 | | Add subscription_tier spec field with dynamic plan-based rate limiting |
 | 3.2.15 | 2026-04-24 | [76979](https://github.com/airbytehq/airbyte/pull/76979) | Update source-declarative-manifest base image to 7.17.4 |
 | 3.2.14 | 2026-04-23 | [76957](https://github.com/airbytehq/airbyte/pull/76957) | Promoted release candidate to GA |

@@ -26,6 +26,17 @@ The Zoho-Crm connector supports the following entities and actions.
 
 Returns a paginated list of leads
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "leads",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -108,6 +119,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new lead record in Zoho CRM
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "leads",
+  "action": "create",
+  "params": {
+    "data": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -184,6 +209,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single lead by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "leads",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -218,6 +257,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Leads Update
 
 Updates an existing lead record in Zoho CRM
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "leads",
+  "action": "update",
+  "params": {
+    "data": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -297,6 +351,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Leads Context Store Search
 
 Search and filter leads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "leads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -400,6 +474,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of contacts
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -482,6 +567,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new contact record in Zoho CRM
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "contacts",
+  "action": "create",
+  "params": {
+    "data": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -553,6 +652,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single contact by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -587,6 +700,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Update
 
 Updates an existing contact record in Zoho CRM
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "contacts",
+  "action": "update",
+  "params": {
+    "data": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -661,6 +789,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -754,6 +902,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of accounts
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "accounts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -838,6 +997,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new account record in Zoho CRM
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "accounts",
+  "action": "create",
+  "params": {
+    "data": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -915,6 +1088,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single account by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "accounts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -949,6 +1136,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts Update
 
 Updates an existing account record in Zoho CRM
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "accounts",
+  "action": "update",
+  "params": {
+    "data": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1029,6 +1231,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1122,6 +1344,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of deals
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "deals",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1194,6 +1427,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new deal record in Zoho CRM
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "deals",
+  "action": "create",
+  "params": {
+    "data": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1259,6 +1506,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single deal by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "deals",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1293,6 +1554,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Deals Update
 
 Updates an existing deal record in Zoho CRM
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "deals",
+  "action": "update",
+  "params": {
+    "data": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1361,6 +1637,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Deals Context Store Search
 
 Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "deals",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1444,6 +1740,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of campaigns
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "campaigns",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1514,6 +1821,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single campaign by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1548,6 +1869,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1635,6 +1976,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of tasks
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "tasks",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1705,6 +2057,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new task record in Zoho CRM
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "tasks",
+  "action": "create",
+  "params": {
+    "data": []
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1767,6 +2133,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single task by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "tasks",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1801,6 +2181,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tasks Update
 
 Updates an existing task record in Zoho CRM
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "tasks",
+  "action": "update",
+  "params": {
+    "data": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1866,6 +2261,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tasks Context Store Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1945,6 +2360,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of events (meetings/calendar events)
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "events",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2015,6 +2441,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single event by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "events",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2049,6 +2489,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Events Context Store Search
 
 Search and filter events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "events",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2126,6 +2586,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of calls
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "calls",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2197,6 +2668,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single call by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "calls",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2231,6 +2716,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Calls Context Store Search
 
 Search and filter calls records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "calls",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2316,6 +2821,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of products
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "products",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2394,6 +2910,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single product by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "products",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2428,6 +2958,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Products Context Store Search
 
 Search and filter products records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "products",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2519,6 +3069,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of quotes
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "quotes",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2602,6 +3163,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single quote by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "quotes",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2636,6 +3211,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Quotes Context Store Search
 
 Search and filter quotes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "quotes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2722,6 +3317,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices List
 
 Returns a paginated list of invoices
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "invoices",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -2810,6 +3416,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single invoice by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "invoices",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2844,6 +3464,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zoho-crm",
+  "entity": "invoices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

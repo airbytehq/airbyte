@@ -27,7 +27,7 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data.
 7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
 8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
 9. Click **Set up source**.
@@ -39,7 +39,7 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data.
 7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
 8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
 9. Click **Set up source**.
@@ -68,6 +68,7 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
 - [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
+- [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
 
 ### Analytics streams
 
@@ -132,6 +133,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.19.0 | 2026-07-15 | [81637](https://github.com/airbytehq/airbyte/pull/81637) | Default start date to one year back when not provided |
+| 2.18.6 | 2026-07-14 | [81870](https://github.com/airbytehq/airbyte/pull/81870) | Update dependencies |
+| 2.18.5 | 2026-06-30 | [81120](https://github.com/airbytehq/airbyte/pull/81120) | Update dependencies |
+| 2.18.4 | 2026-06-23 | [80514](https://github.com/airbytehq/airbyte/pull/80514) | Update dependencies |
+| 2.18.3 | 2026-06-18 | [76919](https://github.com/airbytehq/airbyte/pull/76919) | fix(source-klaviyo): Add missing unsubscribe and spam complaint fields to reporting streams |
+| 2.18.2 | 2026-06-16 | [79898](https://github.com/airbytehq/airbyte/pull/79898) | Update dependencies |
+| 2.18.1 | 2026-06-09 | [79342](https://github.com/airbytehq/airbyte/pull/79342) | Update dependencies |
+| 2.18.0 | 2026-06-04 | [76941](https://github.com/airbytehq/airbyte/pull/76941) | Add new `segments` stream |
+| 2.17.9 | 2026-06-02 | [78784](https://github.com/airbytehq/airbyte/pull/78784) | Update dependencies |
 | 2.17.8 | 2026-04-28 | [77313](https://github.com/airbytehq/airbyte/pull/77313) | Update dependencies |
 | 2.17.7 | 2026-04-25 | [77008](https://github.com/airbytehq/airbyte/pull/77008) | Fix sync failure when conversion metrics do not support values data queries in flow_series_reports and campaign_values_reports streams |
 | 2.17.6 | 2026-04-21 | [75707](https://github.com/airbytehq/airbyte/pull/75707) | Update dependencies |
