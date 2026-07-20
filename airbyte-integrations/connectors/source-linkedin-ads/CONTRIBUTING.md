@@ -41,7 +41,36 @@ analytics fields increases the chunk count and silently multiplies API usage acr
 
 ---
 
-## 3. DNS Resolution Errors Treated as Transient
+## 3. Analytics Request Batching (`batch_size`)
+
+The analytics streams `ad_campaign_analytics`, `ad_creative_analytics`, and
+`ad_impression_device_analytics` batch multiple campaign URNs into a single `adAnalytics` request via
+`LinkedInAdsBatchedPartitionRouter` with `batch_size: 50`, instead of issuing one request per campaign.
+This is the core scaling fix: on large accounts, it reduces analytics request volume by approximately
+98–99%.
+
+Why 50 campaigns per request:
+
+- LinkedIn does not document a maximum number of campaign URNs per request. The binding constraint is URL
+  length: the query string is capped at 4 KB, and the raw URL is capped at 8 KB. Exceeding either limit
+  returns HTTP 414 `REQUEST_URI_TOO_LONG`.
+- Each URL-encoded campaign URN (`urn%3Ali%3AsponsoredCampaign%3A<id>`) is approximately 42 bytes: a 31-byte
+  fixed prefix, an approximately 9–10 digit ID, and a comma separator. Each request also carries one field
+  chunk, so the worst-case query length is approximately `643 + n × (32 + id_digits)` bytes.
+- At `batch_size: 50`, the worst-case query string is approximately 3 KB, leaving approximately 900 bytes
+  of headroom under the 4 KB cap even with long campaign IDs. A batch size of 60 is also safe, but 80
+  exceeds the cap with IDs of 12 or more digits and is unsafe as a default.
+- The connector fails fast on HTTP 414 with `LinkedIn Ads request URL exceeds the API length limit` rather
+  than silently truncating the request.
+
+The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
+to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.
+However, `q=statistics` does not accept `MEMBER_*` pivots. The `q=analytics` finder is single-pivot, so
+member-demographic streams cannot batch campaigns and remain one request per campaign.
+
+---
+
+## 4. DNS Resolution Errors Treated as Transient
 
 The `LinkedInAdsErrorHandler` catches Python `InvalidURL` exceptions and classifies them as transient
 (retryable) errors rather than failing the sync. This is a workaround for intermittent DNS resolution
@@ -54,7 +83,7 @@ intermittently.
 
 ---
 
-## 4. Millisecond Timestamps and Multiple Datetime Formats
+## 5. Millisecond Timestamps and Multiple Datetime Formats
 
 LinkedIn's API returns timestamps in inconsistent formats across different endpoints. Entity streams
 (accounts, campaigns, creatives) return `lastModified` and `created` as millisecond Unix timestamps
@@ -71,7 +100,7 @@ or skipping records entirely.
 
 ---
 
-## 5. Reserved Keyword Renaming for Destination Compatibility
+## 6. Reserved Keyword Renaming for Destination Compatibility
 
 The `transform_data` function renames the `pivot` field to `_pivot` in every analytics record. This is
 because `PIVOT` is a reserved keyword in Amazon Redshift, and using it as a column name causes
@@ -84,7 +113,7 @@ conflicts with reserved keywords in common destinations (Redshift, BigQuery, Sno
 
 ---
 
-## 6. Unpublished Rate Limits with Per-Endpoint Daily Caps
+## 7. Unpublished Rate Limits with Per-Endpoint Daily Caps
 
 LinkedIn does not publish standard API rate limits. The connector's comments document that each endpoint
 has its own individually tracked rate limit that resets daily, with tiers that vary by account. The
