@@ -362,7 +362,7 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
             fullyQualifiedName(sourceTableName)
         } COPY GRANTS
         """

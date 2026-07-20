@@ -396,7 +396,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val targetTableName = TableName(namespace = "namespace", name = "target")
         val sql = snowflakeDirectLoadSqlGenerator.cloneTableWith(sourceTableName, targetTableName)
         assertEquals(
-            "REPLACE TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} CLONE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} COPY GRANTS",
+            "CREATE OR REPLACE TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} CLONE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} COPY GRANTS",
             sql
         )
     }
