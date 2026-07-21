@@ -102,6 +102,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
 | 1.3.0 | 2026-07-20 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and raw recording/phone transcript streams; migrate to fully declarative (no custom Python components) |
+| 1.2.56 | 2026-07-21 | [82672](https://github.com/airbytehq/airbyte/pull/82672) | Update dependencies |
 | 1.2.55 | 2026-07-14 | [82073](https://github.com/airbytehq/airbyte/pull/82073) | Update dependencies |
 | 1.2.54 | 2026-06-30 | [81304](https://github.com/airbytehq/airbyte/pull/81304) | Update dependencies |
 | 1.2.53 | 2026-06-23 | [80722](https://github.com/airbytehq/airbyte/pull/80722) | Update dependencies |
