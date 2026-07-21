@@ -35,18 +35,13 @@ Semantic search comes in two flavors, depending on the connector. Both use the s
 
 ## Supported connectors and fields
 
-| Connector | Type | Entity | Field | A hit is |
-| --------- | ---- | ------ | ----- | -------- |
-| Gong | Data | `call_transcripts` | `transcript` | A passage of a call transcript |
-| Linear | Data | `issues` | `description` | A passage of an issue description |
-| Linear | Data | `comments` | `body` | A passage of a comment |
-| Google Drive | File | `files` | `content` | A passage of a file's contents |
+Semantic search is available on a growing set of connectors and fields, so this page doesn't maintain a fixed list. To check whether a connector supports it, open its [connector reference page](../connectors): an entity supports semantic search when its reference lists a **Semantic Search** action, which documents the exact field, request, and response for that connector.
 
-Airbyte continues to add semantic search to more connectors and fields. The [connector reference pages](../connectors) are the source of truth for which entities and fields a connector indexes; look for the **Semantic Search** action on an entity.
+The examples on this page use Gong (a data connector) and Google Drive (a file connector).
 
 ## How you invoke it
 
-- **Web app.** In the agent chat, ask in natural language. The agent uses semantic search automatically when it's available for the data you're asking about; you don't choose the mode. Supported entities show a **Semantic search** badge so you can see which data is indexed.
+- **Web app.** In the agent chat, ask in natural language. The agent uses semantic search automatically when it's available for the data you're asking about.
 - **Agent MCP.** Same as the web app. Semantic search isn't a separate MCP tool. Your agent calls the connector's `context_store_search` action with a `semantic` object when your prompt calls for meaning-based retrieval.
 - **CLI, API, and SDK.** You build the request yourself by passing a `semantic` object to the `context_store_search` action. The two sections below show complete examples for each.
 
@@ -56,7 +51,7 @@ Whether the connector is a data connector or a file connector, a semantic search
 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
-| `semantic.field` | `string` | Sometimes | The indexed field to search. Optional when the connector indexes a single field (for example, a file `content` field), which Airbyte selects automatically. Set it explicitly to choose among multiple indexed fields. |
+| `semantic.field` | `string` | Yes | The indexed field to search, as listed on the connector's reference page. |
 | `semantic.prompt` | `string` | Yes | The natural-language query. Airbyte embeds it and compares it against the field's stored passages. |
 | `semantic.filter` | `object` | No | A filter applied alongside the similarity match, using the same operators and dot notation as `query.filter`. |
 | `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, centered on the match and capped at the field's configured window. Omit it to return the full window. |
@@ -104,7 +99,7 @@ Data connectors search a text field of a structured record. The example below se
 <Tabs groupId="interface">
 <TabItem value="cli" label="CLI" default>
 
-```bash
+```bash title="Request"
 airbyte-agent connectors execute --json '{
   "workspace": "default",
   "name": "Gong",
@@ -196,7 +191,7 @@ A hit looks like this. The call's own fields are under `entity`; the score, matc
       },
       "metadata": {
         "score": 0.79,
-        "context": "...honestly the current pricing is a stretch for a team our size...",
+        "context": "...honestly that number is more than we budgeted for a team our size...",
         "speakerName": "Jordan Lee",
         "speakerTitle": "VP Finance",
         "speakerAffiliation": "external"
@@ -209,12 +204,12 @@ A hit looks like this. The call's own fields are under `entity`; the score, matc
 
 ## Search file connectors
 
-File connectors search the extracted text content of the files they sync. The example below searches a Google Drive connector for passages about renewal terms. Each hit is a passage of a document's content, attributed to its source file. Because Google Drive indexes a single field (`content`), you can omit `semantic.field` and pass only a `prompt`; it's shown below for clarity.
+File connectors search the extracted text content of the files they sync. The example below searches a Google Drive connector for passages about renewal terms. Each hit is a passage of a document's content, attributed to its source file.
 
 <Tabs groupId="interface">
 <TabItem value="cli" label="CLI" default>
 
-```bash
+```bash title="Request"
 airbyte-agent connectors execute --json '{
   "workspace": "default",
   "name": "Google Drive",
@@ -309,7 +304,7 @@ A hit looks like this. The source file's attribution fields are under `entity`; 
       },
       "metadata": {
         "score": 0.84,
-        "context": "...this agreement auto-renews for successive one-year terms unless either party..."
+        "context": "...this agreement continues for successive one-year periods unless either party gives written notice 30 days beforehand..."
       }
     }
   ],
