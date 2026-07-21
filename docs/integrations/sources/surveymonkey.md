@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.49 | 2026-07-21 | [79014](https://github.com/airbytehq/airbyte/pull/79014) | Update dependencies |
 | 0.3.48 | 2026-02-24 | [73720](https://github.com/airbytehq/airbyte/pull/73720) | fix(source-surveymonkey): use lowercase sort_order parameter to match SurveyMonkey API validation |
 | 0.3.47 | 2025-10-21 | [68542](https://github.com/airbytehq/airbyte/pull/68542) | Update dependencies |
 | 0.3.46 | 2025-10-14 | [67916](https://github.com/airbytehq/airbyte/pull/67916) | Update dependencies |
