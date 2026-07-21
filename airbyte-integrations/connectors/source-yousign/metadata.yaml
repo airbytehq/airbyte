@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e107a778-0a16-48fb-a2e5-bbd7b1aabc6e
-  dockerImageTag: 0.0.44
+  dockerImageTag: 0.0.45
   dockerRepository: airbyte/source-yousign
   githubIssueLabel: source-yousign
   icon: icon.svg
