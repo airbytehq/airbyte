@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6eaa4fc5-cf11-413d-a0d6-0023402f71f6
-  dockerImageTag: 0.0.45
+  dockerImageTag: 0.0.46
   dockerRepository: airbyte/source-dbt
   githubIssueLabel: source-dbt
   icon: icon.svg
