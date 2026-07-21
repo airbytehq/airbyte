@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 353443ba-1330-409e-83b5-b0a2dfc88540
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-zonka-feedback
   githubIssueLabel: source-zonka-feedback
   icon: icon.svg
