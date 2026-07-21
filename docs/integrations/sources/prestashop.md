@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.2.8 | 2026-07-21 | [78888](https://github.com/airbytehq/airbyte/pull/78888) | Update dependencies |
 | 1.2.7 | 2025-09-07 | [64127](https://github.com/airbytehq/airbyte/pull/64127) | Change user agent string |
 | 1.2.6 | 2025-05-24 | [60072](https://github.com/airbytehq/airbyte/pull/60072) | Update dependencies |
 | 1.2.5 | 2025-05-04 | [59516](https://github.com/airbytehq/airbyte/pull/59516) | Update dependencies |
