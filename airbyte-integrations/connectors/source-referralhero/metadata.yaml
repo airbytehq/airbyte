@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4a0df9e1-dadc-4828-a88d-afd8b3c0106d
-  dockerImageTag: 0.0.47
+  dockerImageTag: 0.0.48
   dockerRepository: airbyte/source-referralhero
   githubIssueLabel: source-referralhero
   icon: icon.svg
