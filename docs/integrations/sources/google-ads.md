@@ -396,6 +396,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.1 | 2026-07-21 | [78740](https://github.com/airbytehq/airbyte/pull/78740) | Update dependencies |
 | 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
 | 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
 | 5.0.2 | 2026-05-29 | [78514](https://github.com/airbytehq/airbyte/pull/78514) | Remove the Google Ads 400 response filter predicate to avoid buffering large streaming responses. |
