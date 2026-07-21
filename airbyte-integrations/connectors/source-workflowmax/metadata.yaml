@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a3eb6410-f3c3-48ba-8b27-29a56de1e9db
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-workflowmax
   githubIssueLabel: source-workflowmax
   icon: icon.svg
