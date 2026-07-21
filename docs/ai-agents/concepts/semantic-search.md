@@ -35,7 +35,7 @@ Semantic search comes in two flavors, depending on the connector. Both use the s
 
 ## Supported connectors and fields
 
-Semantic search is available on a growing set of connectors and fields, so this page doesn't maintain a fixed list. To check whether a connector supports it, open its [connector reference page](../connectors): an entity supports semantic search when its reference lists a **Semantic Search** action, which documents the exact field, request, and response for that connector.
+Semantic search is available on a growing set of connectors and fields, so this page doesn't maintain a fixed list. To check whether a connector supports it, open its [connector documentation](../connectors): an entity supports semantic search when a **Semantic Search** action appears in its list of actions. This action shows up in the entity table on the connector's overview page and in its full reference, which documents the exact field, request, and response.
 
 The examples on this page use Gong (a data connector) and Google Drive (a file connector).
 
