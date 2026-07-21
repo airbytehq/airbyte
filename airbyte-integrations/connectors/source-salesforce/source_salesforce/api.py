@@ -239,6 +239,14 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 API_VERSION = "v62.0"
 
 _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
+# After a failed proactive refresh, wait this long before the next attempt instead of retrying on every
+# request. _perform_login stamps _last_login_time only on success, so without a backoff a failed refresh
+# would leave the staleness check permanently satisfied and turn every subsequent request into a full
+# retrying login under the login lock (a login storm). This is short relative to the ~90-minute margin
+# between the proactive refresh and the default 2-hour session timeout, so retries stay frequent enough
+# to recover from a transient outage; force_refresh on INVALID_SESSION_ID remains the backstop for
+# genuine expiry.
+_REFRESH_FAILURE_BACKOFF_SECONDS = 300  # 5 minutes
 
 logger = logging.getLogger("airbyte")
 
@@ -396,7 +404,17 @@ class Salesforce:
                 logger.info("Refreshing Salesforce OAuth token (%.0fs since last login)", time.monotonic() - self._last_login_time)
                 self._perform_login()
             except Exception:
-                logger.warning("Proactive token refresh failed; will use existing token", exc_info=True)
+                # _perform_login stamps _last_login_time only on success, so on failure we back it off
+                # ourselves. Without this the staleness check would stay True and every following request
+                # would re-run a full retrying login under the lock. Pretend the last login was
+                # (_TOKEN_REFRESH_INTERVAL_SECONDS - _REFRESH_FAILURE_BACKOFF_SECONDS) ago so the next
+                # proactive attempt is allowed only after the backoff window.
+                self._last_login_time = time.monotonic() - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+                logger.warning(
+                    "Proactive token refresh failed; will use existing token and retry in ~%ds",
+                    _REFRESH_FAILURE_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
 
     def _perform_login(self) -> None:
         """Perform the refresh_token grant. Must be called while holding ``self._login_lock``."""

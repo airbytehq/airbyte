@@ -8,7 +8,13 @@ import pytest
 import requests
 import requests_mock
 from requests.exceptions import ChunkedEncodingError
-from source_salesforce.api import _TOKEN_REFRESH_INTERVAL_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
+from source_salesforce.api import (
+    _REFRESH_FAILURE_BACKOFF_SECONDS,
+    _TOKEN_REFRESH_INTERVAL_SECONDS,
+    API_VERSION,
+    Salesforce,
+    SalesforceTokenProvider,
+)
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
 
 from airbyte_cdk.models import FailureType
@@ -94,6 +100,33 @@ class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
             sf.refresh_access_token_if_stale()  # should not raise
 
         sf._perform_login.assert_called_once()
+
+    def test_failed_refresh_backs_off_then_retries(self) -> None:
+        """A failed proactive refresh must not turn every subsequent request into a fresh login.
+
+        _perform_login only stamps _last_login_time on success, so refresh_access_token_if_stale backs
+        the timer off by _REFRESH_FAILURE_BACKOFF_SECONDS on failure: further requests within that
+        window are no-ops (no login storm under the lock), and the next attempt fires once the window
+        elapses.
+        """
+        sf = self._make_sf()
+        sf._perform_login.side_effect = Exception("network error")
+        sf._last_login_time = 0.0
+
+        fail_time = float(_TOKEN_REFRESH_INTERVAL_SECONDS + 1)
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # Within the backoff window: no retry (this is the storm guard).
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS - 1):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # After the backoff window elapses: a new attempt fires.
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+        assert sf._perform_login.call_count == 2
 
 
 class SalesforceErrorHandlerTest(TestCase):
