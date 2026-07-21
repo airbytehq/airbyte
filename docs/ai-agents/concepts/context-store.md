@@ -78,6 +78,14 @@ The Context Store supports structured search with filter operators, field select
 
 If you build agents with the SDK or API, you can call `context_store_search` directly and pass structured filters. For details on the query model, see the individual [connector reference pages](../connectors), which document the available entities, filter fields, and search parameters for each connector.
 
+### Semantic search
+
+Structured search matches records by exact or fuzzy field values. Some connectors also support **semantic search**: a similarity search that finds relevant passages by meaning rather than by keyword. Instead of matching a filter, Airbyte embeds your natural-language prompt and returns the most similar passages of text, ranked by relevance. It suits long, unstructured text such as call transcripts, issue descriptions, or the contents of a document, where you don't know the exact wording of a match in advance.
+
+Agents choose semantic search automatically when a prompt calls for meaning-based retrieval over a supported field, so you don't need to specify the search mode in your prompts. If you build agents with the CLI, API, or SDK, you can also request it directly.
+
+To learn how semantic search works, which connectors and fields support it, and to see complete CLI, API, and SDK examples, see [Semantic search](./semantic-search).
+
 ## Initial index
 
 When the Context Store populates data for a connector, Airbyte runs an initial index. Indexing time depends on the amount of data and third-party API rate limits, and can range from minutes to days.
