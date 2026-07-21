@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 09f894a4-d2fb-488f-b0eb-640205314296
-  dockerImageTag: 0.0.62
+  dockerImageTag: 0.0.63
   dockerRepository: airbyte/source-piwik
   githubIssueLabel: source-piwik
   icon: icon.svg
