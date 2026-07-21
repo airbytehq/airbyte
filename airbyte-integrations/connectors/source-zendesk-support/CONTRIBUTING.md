@@ -33,6 +33,14 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 
 **Why this matters:** This stream is distinct from `ticket_comments` — both use the same API endpoint but extract different data. `ticket_comments` uses a custom extractor (`ZendeskSupportExtractorEvents`) to drill into `child_events` and filter for Comment events. `ticket_events` uses the default `DpathExtractor` to return the raw ticket event envelope, giving users access to all event types and metadata.
 
+## 5. OAuth Completion Must Extract `expires_in` to Persist Token Expiry
+
+Zendesk OAuth uses **rotating, single-use refresh tokens** — each refresh returns a new refresh token and invalidates the previous one. The connector authenticates with `DeclarativeSingleUseRefreshTokenOauth2Authenticator` (via `refresh_token_updater`), which decides whether to refresh by comparing `credentials.token_expiry_date` against now. When that field is empty/absent, the CDK treats the token as already expired (`now - 1 day`) and refreshes on the very first `check`.
+
+Because of this, the `oauth_connector_input_specification.extract_output` list **must include `expires_in`**. The platform's declarative OAuth handler only converts the token response into a persisted `token_expiry_date` when `expires_in` is among the extracted fields. Without it, `token_expiry_date` is never written to the config, so every `check`/`discover`/`read` triggers an immediate refresh — consuming the freshly minted single-use refresh token and (in setup/check lifecycles that don't persist the rotated token) leaving the stored config holding an already-invalidated token, which fails with `invalid_grant`.
+
+**Why this matters:** Removing `expires_in` from `extract_output` reintroduces the premature-refresh loop. See `airbytehq/oncall#13130`.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
