@@ -161,6 +161,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-07-21 | [73740](https://github.com/airbytehq/airbyte/pull/73740) | Upgrade the Uptick API to v2.15 and remove deprecated fields from the branches, defectquotelineitems, servicetasks, and tasksessions streams |
 | 0.5.16 | 2026-07-21 | [82628](https://github.com/airbytehq/airbyte/pull/82628) | Update dependencies |
 | 0.5.15 | 2026-07-14 | [81991](https://github.com/airbytehq/airbyte/pull/81991) | Update dependencies |
 | 0.5.14 | 2026-06-30 | [81268](https://github.com/airbytehq/airbyte/pull/81268) | Update dependencies |
