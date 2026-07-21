@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d4154c0b-7737-42c3-92dc-7a8e046e6456
-  dockerImageTag: 0.0.31
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-bluetally
   githubIssueLabel: source-bluetally
   icon: icon.svg
