@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2e731a08-e503-4caf-998a-92bd4afd80c1
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-systeme
   githubIssueLabel: source-systeme
   icon: icon.svg
