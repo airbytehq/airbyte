@@ -100,8 +100,6 @@ The Connectors page also shows every connector that's already been added across 
 
 - **Open a connector's detail page**. Click **Details** on a row to open the connector's detail page. The page shows the connector's metadata (connector ID, workspace, and when it was created and last used), its [Context Store](../../concepts/context-store) entities, and an **Activity** section with the agent-request history for that connector, including which tool calls hit it, when, and whether they succeeded. Filter the Activity list by request type (**Direct API** or **Search**) and status, and page through older requests.
 
-- **View a connector in Airbyte Cloud**. From the connector detail page header, click **View in Airbyte Cloud** to open the underlying source in Airbyte Cloud, where you can inspect its connections.
-
 - **Re-authenticate a connector**. If credentials expire or get revoked on the third-party side, click the pencil icon on a row, or **Edit** on the connector detail page, to re-launch the authentication module and update them. The connector keeps its identity, so Chats that reference it don't need to be rewired.
 
 - **Remove a connector**. Click the trash icon on a row, or **Delete** on the connector detail page, to delete that connector. The credential is removed from the workspace immediately. Any Chat that was relying on it needs a replacement connector, or a different approach, the next time it runs.
