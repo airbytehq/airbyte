@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d59cce29-baa8-4202-b1ca-a4759c20c908
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-onepagecrm
   githubIssueLabel: source-onepagecrm
   icon: icon.svg
