@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: afdc7cc3-a424-4118-9714-c8faca04c72c
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-papersign
   githubIssueLabel: source-papersign
   icon: icon.svg
