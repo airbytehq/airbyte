@@ -149,7 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 2.0.2 | 2026-07-06 | [78362](https://github.com/airbytehq/airbyte/pull/78362) | Expose Bulk Export Window in Days so large incremental Marketo syncs can use smaller Bulk Extract jobs. |
+| 2.1.0 | 2026-07-17 | [78362](https://github.com/airbytehq/airbyte/pull/78362) | Expose Bulk Export Window in Days so large incremental Marketo syncs can use smaller Bulk Extract jobs. |
 | 2.0.1 | 2026-06-04 | [78428](https://github.com/airbytehq/airbyte/pull/78428) | Stream Marketo bulk export downloads to reduce memory usage for large CSV exports. |
 | 2.0.0 | 2026-05-07 | [76892](https://github.com/airbytehq/airbyte/pull/76892) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
