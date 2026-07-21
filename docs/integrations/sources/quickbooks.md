@@ -112,6 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.1.9 | 2026-07-21 | [78925](https://github.com/airbytehq/airbyte/pull/78925) | Update dependencies |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
@@ -128,29 +129,29 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.0.1 | 2025-02-15 | [46789](https://github.com/airbytehq/airbyte/pull/46789) | Update dependencies |
 | 4.0.0 | 2025-01-18 | [51615](https://github.com/airbytehq/airbyte/pull/51615) | Remove nested credentials object from config to enable overwriting of new refresh token in config |
 | 3.0.26 | 2024-11-01 | [48089](https://github.com/airbytehq/airbyte/pull/48089) | Promoting release candidate 3.0.26-rc.1 to a main version. |
-| 3.0.26-rc.1 | 2024-09-10 | [44560](https://github.com/airbytehq/airbyte/pull/44560) | Replace Custom Components with Airbyte CDK features                |
-| 3.0.25      | 2024-10-05 | [46424](https://github.com/airbytehq/airbyte/pull/46424) | Update dependencies                                                |
-| 3.0.24      | 2024-09-28 | [46142](https://github.com/airbytehq/airbyte/pull/46142) | Update dependencies                                                |
-| 3.0.23      | 2024-09-21 | [45727](https://github.com/airbytehq/airbyte/pull/45727) | Update dependencies                                                |
-| 3.0.22      | 2024-09-14 | [45517](https://github.com/airbytehq/airbyte/pull/45517) | Update dependencies                                                |
-| 3.0.21      | 2024-09-07 | [45231](https://github.com/airbytehq/airbyte/pull/45231) | Update dependencies                                                |
-| 3.0.20      | 2024-08-31 | [44961](https://github.com/airbytehq/airbyte/pull/44961) | Update dependencies                                                |
-| 3.0.19      | 2024-08-24 | [44713](https://github.com/airbytehq/airbyte/pull/44713) | Update dependencies                                                |
-| 3.0.18      | 2024-08-17 | [44282](https://github.com/airbytehq/airbyte/pull/44282) | Update dependencies                                                |
-| 3.0.17      | 2024-08-12 | [43829](https://github.com/airbytehq/airbyte/pull/43829) | Update dependencies                                                |
-| 3.0.16      | 2024-08-10 | [43563](https://github.com/airbytehq/airbyte/pull/43563) | Update dependencies                                                |
-| 3.0.15      | 2024-08-03 | [43052](https://github.com/airbytehq/airbyte/pull/43052) | Update dependencies                                                |
-| 3.0.14      | 2024-07-27 | [42666](https://github.com/airbytehq/airbyte/pull/42666) | Update dependencies                                                |
-| 3.0.13      | 2024-07-20 | [42358](https://github.com/airbytehq/airbyte/pull/42358) | Update dependencies                                                |
-| 3.0.12      | 2024-07-13 | [41745](https://github.com/airbytehq/airbyte/pull/41745) | Update dependencies                                                |
-| 3.0.11      | 2024-07-10 | [41414](https://github.com/airbytehq/airbyte/pull/41414) | Update dependencies                                                |
-| 3.0.10      | 2024-07-10 | [41325](https://github.com/airbytehq/airbyte/pull/41325) | Update dependencies                                                |
-| 3.0.9       | 2024-07-09 | [40660](https://github.com/airbytehq/airbyte/pull/40660) | Fix configured catalog, inline schemas                             |
-| 3.0.8       | 2024-07-06 | [40885](https://github.com/airbytehq/airbyte/pull/40885) | Update dependencies                                                |
-| 3.0.7       | 2024-06-25 | [40355](https://github.com/airbytehq/airbyte/pull/40355) | Update dependencies                                                |
-| 3.0.6       | 2024-06-22 | [39955](https://github.com/airbytehq/airbyte/pull/39955) | Update dependencies                                                |
-| 3.0.5       | 2024-06-06 | [39285](https://github.com/airbytehq/airbyte/pull/39285) | [autopull] Upgrade base image to v1.2.2                            |
-| 3.0.4       | 2024-05-21 | [38518](https://github.com/airbytehq/airbyte/pull/38518) | [autopull] base image + poetry + up_to_date                        |
+| 3.0.26-rc.1 | 2024-09-10 | [44560](https://github.com/airbytehq/airbyte/pull/44560) | Replace Custom Components with Airbyte CDK features |
+| 3.0.25 | 2024-10-05 | [46424](https://github.com/airbytehq/airbyte/pull/46424) | Update dependencies |
+| 3.0.24 | 2024-09-28 | [46142](https://github.com/airbytehq/airbyte/pull/46142) | Update dependencies |
+| 3.0.23 | 2024-09-21 | [45727](https://github.com/airbytehq/airbyte/pull/45727) | Update dependencies |
+| 3.0.22 | 2024-09-14 | [45517](https://github.com/airbytehq/airbyte/pull/45517) | Update dependencies |
+| 3.0.21 | 2024-09-07 | [45231](https://github.com/airbytehq/airbyte/pull/45231) | Update dependencies |
+| 3.0.20 | 2024-08-31 | [44961](https://github.com/airbytehq/airbyte/pull/44961) | Update dependencies |
+| 3.0.19 | 2024-08-24 | [44713](https://github.com/airbytehq/airbyte/pull/44713) | Update dependencies |
+| 3.0.18 | 2024-08-17 | [44282](https://github.com/airbytehq/airbyte/pull/44282) | Update dependencies |
+| 3.0.17 | 2024-08-12 | [43829](https://github.com/airbytehq/airbyte/pull/43829) | Update dependencies |
+| 3.0.16 | 2024-08-10 | [43563](https://github.com/airbytehq/airbyte/pull/43563) | Update dependencies |
+| 3.0.15 | 2024-08-03 | [43052](https://github.com/airbytehq/airbyte/pull/43052) | Update dependencies |
+| 3.0.14 | 2024-07-27 | [42666](https://github.com/airbytehq/airbyte/pull/42666) | Update dependencies |
+| 3.0.13 | 2024-07-20 | [42358](https://github.com/airbytehq/airbyte/pull/42358) | Update dependencies |
+| 3.0.12 | 2024-07-13 | [41745](https://github.com/airbytehq/airbyte/pull/41745) | Update dependencies |
+| 3.0.11 | 2024-07-10 | [41414](https://github.com/airbytehq/airbyte/pull/41414) | Update dependencies |
+| 3.0.10 | 2024-07-10 | [41325](https://github.com/airbytehq/airbyte/pull/41325) | Update dependencies |
+| 3.0.9 | 2024-07-09 | [40660](https://github.com/airbytehq/airbyte/pull/40660) | Fix configured catalog, inline schemas |
+| 3.0.8 | 2024-07-06 | [40885](https://github.com/airbytehq/airbyte/pull/40885) | Update dependencies |
+| 3.0.7 | 2024-06-25 | [40355](https://github.com/airbytehq/airbyte/pull/40355) | Update dependencies |
+| 3.0.6 | 2024-06-22 | [39955](https://github.com/airbytehq/airbyte/pull/39955) | Update dependencies |
+| 3.0.5 | 2024-06-06 | [39285](https://github.com/airbytehq/airbyte/pull/39285) | [autopull] Upgrade base image to v1.2.2 |
+| 3.0.4 | 2024-05-21 | [38518](https://github.com/airbytehq/airbyte/pull/38518) | [autopull] base image + poetry + up_to_date |
 | `3.0.3`     | 2024-03-22 | [36389](https://github.com/airbytehq/airbyte/pull/36389) | Add refresh token updater and add missing properties to streams    |
 | `3.0.2`     | 2024-02-20 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Small typo in spec correction                                      |
 | `3.0.1`     | 2023-11-06 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Upgrade to `airbyte-cdk>=0.52.10` to resolve refresh token issues  |
