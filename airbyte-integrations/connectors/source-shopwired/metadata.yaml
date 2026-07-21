@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 41b34d94-1704-48b0-b921-cb3009ae69c1
-  dockerImageTag: 0.0.34
+  dockerImageTag: 0.0.35
   dockerRepository: airbyte/source-shopwired
   githubIssueLabel: source-shopwired
   icon: icon.svg
