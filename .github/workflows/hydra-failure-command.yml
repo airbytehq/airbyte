@@ -1,0 +1,74 @@
+name: Hydra Failure Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number (if triggered from a PR)"
+        type: number
+        required: false
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+
+run-name: "Hydra Failure for PR #${{ github.event.inputs.pr }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  hydra-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte,oncall"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Post start comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **Hydra Failure Started**
+            >
+            > Turning the reported playbook failure into a regression eval, then fixing the playbook so the eval passes.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Run Hydra Failure
+        uses: aaronsteers/devin-action@main
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          playbook-macro: "!hydra_failure"
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          start-message: "🐍 **Hydra Failure session starting...** Reproducing the reported playbook failure as a failing eval, then fixing the playbook so the same eval passes. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/hydra_failure.md)"
+          tags: |
+            ai-oncall
