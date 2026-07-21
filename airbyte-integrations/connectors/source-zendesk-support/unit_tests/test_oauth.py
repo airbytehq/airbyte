@@ -43,9 +43,9 @@ def test_oauth_input_specification_extracts_expires_in():
     and bricking the connection (oncall #13130).
     """
     manifest = _load_manifest()
-    extract_output = manifest["spec"]["advanced_auth"]["oauth_config_specification"][
-        "oauth_connector_input_specification"
-    ]["extract_output"]
+    extract_output = manifest["spec"]["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"][
+        "extract_output"
+    ]
     assert "expires_in" in extract_output
 
 
