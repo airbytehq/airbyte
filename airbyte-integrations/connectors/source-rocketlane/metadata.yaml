@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6c817011-0b41-47ce-9b50-0274e0c6b127
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-rocketlane
   githubIssueLabel: source-rocketlane
   icon: icon.svg
