@@ -18,7 +18,7 @@ on:
         description: "Git ref (passed by slash command dispatcher)"
         required: false
 
-run-name: "Hydra Failure for PR #${{ github.event.inputs.pr }}"
+run-name: "Hydra Failure (comment ${{ github.event.inputs.comment-id }})"
 
 permissions:
   contents: read
@@ -46,13 +46,45 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
+      - name: Resolve issue number
+        id: resolve
+        env:
+          INPUT_PR_NUMBER: ${{ inputs.pr }}
+          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          issue_number="$INPUT_PR_NUMBER"
+          comment_id="$INPUT_COMMENT_ID"
+
+          # The dispatcher passes an empty `pr` when the command is invoked from
+          # an issue (not a PR). Resolve the issue number from the comment-id in
+          # that case so the start comment and Devin session target the right thread.
+          if [[ -z "$issue_number" || "$issue_number" == "0" ]] && [[ -n "$comment_id" ]]; then
+            echo "Resolving issue number from comment-id..."
+            issue_number=$(curl -s \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" \
+              | jq -r '.issue_url | split("/") | last')
+            if [[ -z "$issue_number" || "$issue_number" == "null" ]]; then
+              echo "::warning::Could not resolve issue number from comment-id $comment_id"
+              issue_number=""
+            else
+              echo "Resolved issue number: $issue_number"
+            fi
+          fi
+
+          echo "issue_number=${issue_number}" >> $GITHUB_OUTPUT
+
       - name: Post start comment
         if: inputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           comment-id: ${{ inputs.comment-id }}
-          issue-number: ${{ inputs.pr }}
+          issue-number: ${{ steps.resolve.outputs.issue_number }}
           body: |
             > **Hydra Failure Started**
             >
@@ -63,7 +95,7 @@ jobs:
         uses: aaronsteers/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
-          issue-number: ${{ inputs.pr }}
+          issue-number: ${{ steps.resolve.outputs.issue_number }}
           playbook-macro: "!hydra_failure"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
