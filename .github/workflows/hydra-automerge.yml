@@ -348,6 +348,7 @@ jobs:
           ref: ${{ steps.pr-head.outputs.sha }}
           path: _pr_head
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Install uv
         if: >
