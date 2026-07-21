@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 896dc0b3-9b46-4ff4-8ba6-cfd7460a3895
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-smartreach
   githubIssueLabel: source-smartreach
   icon: icon.svg
