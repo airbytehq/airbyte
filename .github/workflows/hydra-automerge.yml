@@ -391,10 +391,11 @@ jobs:
             echo "::warning::Connectors modified in this PR without autopilot rollouts enabled:"
             echo "$missing"
             echo "enabled=false" | tee -a "$GITHUB_OUTPUT"
+            delimiter="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
             {
-              echo "missing<<MISSING_EOF"
+              echo "missing<<${delimiter}"
               echo "$missing"
-              echo "MISSING_EOF"
+              echo "${delimiter}"
             } >> "$GITHUB_OUTPUT"
           fi
 
