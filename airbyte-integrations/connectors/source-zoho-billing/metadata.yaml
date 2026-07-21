@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cd0c7d19-6189-4ed2-9c9f-663d1bea7789
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-zoho-billing
   githubIssueLabel: source-zoho-billing
   icon: icon.svg
