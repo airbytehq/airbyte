@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d75a7792-e5db-4645-93c3-b4a16ad62ab0
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-uppromote
   githubIssueLabel: source-uppromote
   icon: icon.svg
