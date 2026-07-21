@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e1e86c88-fdd6-41d3-9516-3564021a1902
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-freshbooks
   githubIssueLabel: source-freshbooks
   icon: icon.svg
