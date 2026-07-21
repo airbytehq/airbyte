@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6ad23bfc-cb11-4faa-a243-f9ccdb0145cc
-  dockerImageTag: 0.0.53
+  dockerImageTag: 0.0.54
   dockerRepository: airbyte/source-buzzsprout
   githubIssueLabel: source-buzzsprout
   icon: icon.svg
