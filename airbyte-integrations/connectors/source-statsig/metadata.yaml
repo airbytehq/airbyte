@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c8f77358-755a-4778-a1fc-c23c3cee7d83
-  dockerImageTag: 0.0.55
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-statsig
   githubIssueLabel: source-statsig
   icon: icon.svg
