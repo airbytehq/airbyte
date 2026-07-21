@@ -21,7 +21,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   dockerRepository: airbyte/source-fauna
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   githubIssueLabel: source-fauna
