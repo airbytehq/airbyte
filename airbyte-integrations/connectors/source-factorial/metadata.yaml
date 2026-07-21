@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 02e8708f-3270-4f13-8b67-257b8ef439f0
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-factorial
   githubIssueLabel: source-factorial
   icon: icon.svg
