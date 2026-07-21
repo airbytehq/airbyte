@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.23.6@sha256:9b7d308cba381c3fb2f107af5adc6360a49a19f451738f1beb99f3708a043cd2
   connectorType: source
   definitionId: 6ff73a16-05a8-4f7e-8771-5433764678f1
-  dockerImageTag: 0.0.60
+  dockerImageTag: 0.0.61
   dockerRepository: airbyte/source-xsolla
   githubIssueLabel: source-xsolla
   icon: icon.svg
