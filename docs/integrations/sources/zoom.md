@@ -28,10 +28,10 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
 - [Recordings](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Cloud recordings including video, audio, and transcript files (supports incremental sync)
-  - [Recording Transcript Content](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Parsed transcript content from VTT files with timestamps and speaker identification (supports incremental sync)
+  - [Recording Transcript Content](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Raw transcript content from VTT files, one row per line, for downstream parsing
 - [Phone Call History](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/accountCallHistory) - Zoom Phone call logs (supports incremental sync on `start_time`)
 - [Phone Recordings](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/getPhoneRecordings) - Zoom Phone call recordings (supports incremental sync on `date_time`)
-  - [Phone Recording Transcripts](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/phoneDownloadRecordingTranscript) - Parsed Zoom Phone recording transcripts, flattened to one row per utterance (supports incremental sync on `call_date_time`)
+  - [Phone Recording Transcripts](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/phoneDownloadRecordingTranscript) - Raw Zoom Phone recording transcript content, one row per line, for downstream parsing
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -46,7 +46,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Namespaces                    | No          |
 
 :::note Incremental Sync
-Incremental sync is supported for the `recordings`, `recording_transcript_content`, `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams. Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
+Incremental sync is supported for the `recordings`, `phone_call_history`, and `phone_recordings` streams. The `recording_transcript_content` and `phone_recording_transcripts` streams sync in full refresh mode. Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
 :::
 
 ### Performance considerations

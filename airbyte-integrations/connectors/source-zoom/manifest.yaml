@@ -4,12 +4,16 @@ definitions:
     url_base: "https://api.zoom.us/v2"
     http_method: "GET"
     authenticator:
-      class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+      type: OAuthAuthenticator
+      token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
       client_id: "{{ config['client_id'] }}"
-      account_id: "{{ config['account_id'] }}"
       client_secret: "{{ config['client_secret'] }}"
-      authorization_endpoint: "{{ config['authorization_endpoint'] }}"
       grant_type: "account_credentials"
+      send_refresh_request_as_query_params: true
+      refresh_request_headers:
+        Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+      refresh_request_body:
+        account_id: "{{ config['account_id'] }}"
   zoom_paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -29,24 +33,32 @@ definitions:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
   users_stream:
     retriever:
       requester:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -192,12 +204,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/users/{{ stream_partition.parent_id }}/meetings"
       paginator:
         type: DefaultPaginator
@@ -227,12 +243,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -380,12 +400,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/meetings/{{ stream_partition.parent_id }}"
       paginator:
         type: NoPagination
@@ -402,12 +426,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -437,13 +465,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1209,12 +1240,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/meetings/{{ stream_partition.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
@@ -1252,12 +1287,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -1287,13 +1326,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1556,12 +1598,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/meetings/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -1588,12 +1634,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -1623,13 +1673,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1905,12 +1958,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/past_meetings/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -1938,12 +1995,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -1973,13 +2034,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2190,12 +2254,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/meetings/{{ stream_partition.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
@@ -2221,12 +2289,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -2256,13 +2328,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2474,12 +2549,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/users/{{ stream_partition.parent_id }}/webinars"
         error_handler:
           type: CompositeErrorHandler
@@ -2518,12 +2597,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2671,12 +2754,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/webinars/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -2703,12 +2790,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -2747,13 +2838,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3299,12 +3393,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/webinars/{{ stream_partition.parent_id }}/panelists"
         error_handler:
           type: CompositeErrorHandler
@@ -3332,12 +3430,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -3376,13 +3478,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3584,12 +3689,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/webinars/{{ stream_partition.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
@@ -3629,12 +3738,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -3673,13 +3786,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3942,12 +4058,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
         error_handler:
           type: CompositeErrorHandler
@@ -3987,12 +4107,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4031,13 +4155,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4300,12 +4427,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/webinars/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -4333,12 +4464,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4377,13 +4512,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4659,12 +4797,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -4691,12 +4833,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -4735,13 +4881,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4940,12 +5089,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/webinars/{{ stream_partition.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
@@ -4971,12 +5124,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -5015,13 +5172,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5233,12 +5393,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/webinars/{{ stream_partition.parent_id }}/tracking_sources"
         error_handler:
           type: CompositeErrorHandler
@@ -5265,12 +5429,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -5309,13 +5477,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5501,12 +5672,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
         error_handler:
           type: CompositeErrorHandler
@@ -5534,12 +5709,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -5578,13 +5757,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5775,12 +5957,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/report/meetings/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -5807,12 +5993,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -5842,13 +6032,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6094,12 +6287,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/report/meetings/{{ stream_partition.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
@@ -6139,12 +6336,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/meetings"
               paginator:
                 type: DefaultPaginator
@@ -6174,13 +6375,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6406,12 +6610,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/report/webinars/{{ stream_partition.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -6437,12 +6645,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -6481,13 +6693,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6735,12 +6950,16 @@ definitions:
         url_base: "https://api.zoom.us/v2"
         http_method: "GET"
         authenticator:
-          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+          type: OAuthAuthenticator
+          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
           client_id: "{{ config['client_id'] }}"
-          account_id: "{{ config['account_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          authorization_endpoint: "{{ config['authorization_endpoint'] }}"
           grant_type: "account_credentials"
+          send_refresh_request_as_query_params: true
+          refresh_request_headers:
+            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+          refresh_request_body:
+            account_id: "{{ config['account_id'] }}"
         path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
@@ -6779,12 +6998,16 @@ definitions:
                 url_base: "https://api.zoom.us/v2"
                 http_method: "GET"
                 authenticator:
-                  class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                  type: OAuthAuthenticator
+                  token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                   client_id: "{{ config['client_id'] }}"
-                  account_id: "{{ config['account_id'] }}"
                   client_secret: "{{ config['client_secret'] }}"
-                  authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                   grant_type: "account_credentials"
+                  send_refresh_request_as_query_params: true
+                  refresh_request_headers:
+                    Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                  refresh_request_body:
+                    account_id: "{{ config['account_id'] }}"
                 path: "/users/{{ stream_partition.parent_id }}/webinars"
                 error_handler:
                   type: CompositeErrorHandler
@@ -6823,13 +7046,16 @@ definitions:
                         url_base: "https://api.zoom.us/v2"
                         http_method: "GET"
                         authenticator:
-                          class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                          type: OAuthAuthenticator
+                          token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                           client_id: "{{ config['client_id'] }}"
-                          account_id: "{{ config['account_id'] }}"
                           client_secret: "{{ config['client_secret'] }}"
-                          authorization_endpoint: "{{ config['authorization_endpoint']
-                            }}"
                           grant_type: "account_credentials"
+                          send_refresh_request_as_query_params: true
+                          refresh_request_headers:
+                            Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                          refresh_request_body:
+                            account_id: "{{ config['account_id'] }}"
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -7039,13 +7265,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       type: HttpRequester
       path: "/users"
     paginator:
@@ -7198,13 +7427,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/meetings/{{ stream_partition.parent_id }}"
       type: HttpRequester
     paginator:
@@ -7223,13 +7455,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -7262,14 +7497,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8052,13 +8289,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/meetings/{{ stream_partition.parent_id }}/registrants"
       error_handler:
         type: CompositeErrorHandler
@@ -8100,13 +8340,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -8139,14 +8382,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8427,13 +8672,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/meetings/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
@@ -8463,13 +8711,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -8502,14 +8753,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -8803,13 +9056,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/past_meetings/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
@@ -8840,13 +9096,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -8879,14 +9138,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -9114,13 +9375,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/meetings/{{ stream_partition.parent_id }}/registrants/questions"
       error_handler:
         type: CompositeErrorHandler
@@ -9149,13 +9413,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -9188,14 +9455,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -9424,13 +9693,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/webinars/{{ stream_partition.parent_id }}"
       error_handler:
         type: CompositeErrorHandler
@@ -9460,13 +9732,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -9509,14 +9784,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10079,13 +10356,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/webinars/{{ stream_partition.parent_id }}/panelists"
       error_handler:
         type: CompositeErrorHandler
@@ -10116,13 +10396,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -10165,14 +10448,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10391,13 +10676,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/webinars/{{ stream_partition.parent_id }}/registrants"
       error_handler:
         type: CompositeErrorHandler
@@ -10441,13 +10729,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -10490,14 +10781,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -10777,13 +11070,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/past_webinars/{{ stream_partition.parent_uuid }}/absentees"
       error_handler:
         type: CompositeErrorHandler
@@ -10827,13 +11123,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -10876,14 +11175,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11164,13 +11465,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/webinars/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
@@ -11201,13 +11505,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -11250,14 +11557,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11550,13 +11859,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/past_webinars/{{ stream_partition.parent_id }}/polls"
       error_handler:
         type: CompositeErrorHandler
@@ -11586,13 +11898,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -11635,14 +11950,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -11858,13 +12175,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/webinars/{{ stream_partition.parent_id }}/registrants/questions"
       error_handler:
         type: CompositeErrorHandler
@@ -11893,13 +12213,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -11942,14 +12265,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12178,13 +12503,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/webinars/{{ stream_partition.parent_id }}/tracking_sources"
       error_handler:
         type: CompositeErrorHandler
@@ -12214,13 +12542,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -12263,14 +12594,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12474,13 +12807,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/past_webinars/{{ stream_partition.parent_id }}/qa"
       error_handler:
         type: CompositeErrorHandler
@@ -12511,13 +12847,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -12560,14 +12899,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -12775,13 +13116,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/report/meetings/{{ stream_partition.parent_id }}"
       error_handler:
         type: CompositeErrorHandler
@@ -12811,13 +13155,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -12850,14 +13197,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13120,13 +13469,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/report/meetings/{{ stream_partition.parent_id }}/participants"
       error_handler:
         type: CompositeErrorHandler
@@ -13170,13 +13522,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/meetings"
               type: HttpRequester
             paginator:
@@ -13209,14 +13564,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13460,13 +13817,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/report/webinars/{{ stream_partition.parent_id }}"
       error_handler:
         type: CompositeErrorHandler
@@ -13495,13 +13855,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -13544,14 +13907,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -13816,13 +14181,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/report/webinars/{{ stream_partition.parent_id }}/participants"
       error_handler:
         type: CompositeErrorHandler
@@ -13865,13 +14233,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               path: "/users/{{ stream_partition.parent_id }}/webinars"
               error_handler:
                 type: CompositeErrorHandler
@@ -13914,14 +14285,16 @@ streams:
                       url_base: "https://api.zoom.us/v2"
                       http_method: "GET"
                       authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                         client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
                         client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint']
-                          }}"
                         grant_type: "account_credentials"
-                        type: CustomAuthenticator
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
                       type: HttpRequester
                       path: "/users"
                     paginator:
@@ -14148,13 +14521,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/users/{{ stream_partition.parent_id }}/recordings"
       type: HttpRequester
     paginator:
@@ -14187,13 +14563,16 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
               type: HttpRequester
               path: "/users"
             paginator:
@@ -14538,37 +14917,35 @@ streams:
   primary_key: "uuid"
 - retriever:
     requester:
-      url_base: "https://api.zoom.us/v2"
+      url_base: "{{ stream_partition.download_url }}"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/users/{{ stream_partition.parent_id }}/recordings"
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       type: HttpRequester
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - http_codes:
+          - 404
+          action: IGNORE
+          error_message: "Transcript file is not available for download."
     paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response.next_page_token }}"
-        stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 30
-      page_size_option:
-        field_name: "page_size"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestOption
-        field_name: "next_page_token"
-        inject_into: "request_parameter"
+      type: NoPagination
+    decoder:
+      type: IterableDecoder
     record_selector:
       extractor:
-        class_name: source_declarative_manifest.components.TranscriptContentExtractor
-        type: CustomRecordExtractor
+        type: DpathExtractor
+        field_path: []
       type: RecordSelector
     partition_router:
       type: SubstreamPartitionRouter
@@ -14579,15 +14956,18 @@ streams:
               url_base: "https://api.zoom.us/v2"
               http_method: "GET"
               authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
                 client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
                 client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
                 grant_type: "account_credentials"
-                type: CustomAuthenticator
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
+              path: "/users/{{ stream_partition.parent_id }}/recordings"
               type: HttpRequester
-              path: "/users"
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -14607,25 +14987,160 @@ streams:
               extractor:
                 type: DpathExtractor
                 field_path:
-                - "users"
+                - "meetings"
+                - "*"
+                - "recording_files"
+                - "*"
+              record_filter:
+                type: RecordFilter
+                condition: "{{ record.get('file_type') == 'TRANSCRIPT' or record.get('recording_type') == 'audio_transcript' }}"
               type: RecordSelector
+            partition_router:
+              type: SubstreamPartitionRouter
+              parent_stream_configs:
+              - stream:
+                  retriever:
+                    requester:
+                      url_base: "https://api.zoom.us/v2"
+                      http_method: "GET"
+                      authenticator:
+                        type: OAuthAuthenticator
+                        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
+                        client_id: "{{ config['client_id'] }}"
+                        client_secret: "{{ config['client_secret'] }}"
+                        grant_type: "account_credentials"
+                        send_refresh_request_as_query_params: true
+                        refresh_request_headers:
+                          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                        refresh_request_body:
+                          account_id: "{{ config['account_id'] }}"
+                      type: HttpRequester
+                      path: "/users"
+                    paginator:
+                      type: DefaultPaginator
+                      pagination_strategy:
+                        type: "CursorPagination"
+                        cursor_value: "{{ response.next_page_token }}"
+                        stop_condition: "{{ response.next_page_token == '' }}"
+                        page_size: 30
+                      page_size_option:
+                        field_name: "page_size"
+                        inject_into: "request_parameter"
+                        type: RequestOption
+                      page_token_option:
+                        type: RequestOption
+                        field_name: "next_page_token"
+                        inject_into: "request_parameter"
+                    record_selector:
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                        - "users"
+                      type: RecordSelector
+                    type: SimpleRetriever
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: http://json-schema.org/draft-07/schema#
+                      properties:
+                        id:
+                          type:
+                          - 'null'
+                          - string
+                  type: DeclarativeStream
+                  name: "users"
+                  primary_key: "id"
+                parent_key: "id"
+                partition_field: "parent_id"
+                type: ParentStreamConfig
             type: SimpleRetriever
           schema_loader:
             type: InlineSchemaLoader
             schema:
               $schema: http://json-schema.org/draft-07/schema#
+              type: object
               properties:
                 id:
                   type:
                   - 'null'
                   - string
+                meeting_id:
+                  type:
+                  - 'null'
+                  - string
+                download_url:
+                  type:
+                  - 'null'
+                  - string
+                file_type:
+                  type:
+                  - 'null'
+                  - string
+                recording_type:
+                  type:
+                  - 'null'
+                  - string
+                recording_start:
+                  type:
+                  - 'null'
+                  - string
+                recording_end:
+                  type:
+                  - 'null'
+                  - string
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: "recording_start"
+            cursor_datetime_formats:
+              - "%Y-%m-%dT%H:%M:%SZ"
+            datetime_format: "%Y-%m-%d"
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "2020-01-01T00:00:00Z"
+              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            end_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            start_time_option:
+              type: RequestOption
+              field_name: "from"
+              inject_into: "request_parameter"
+            end_time_option:
+              type: RequestOption
+              field_name: "to"
+              inject_into: "request_parameter"
+            cursor_granularity: "P1D"
+            step: "P1M"
           type: DeclarativeStream
-          name: "users"
+          name: "recording_transcript_files"
           primary_key: "id"
-        parent_key: "id"
-        partition_field: "parent_id"
+        parent_key: "download_url"
+        partition_field: "download_url"
+        extra_fields:
+        - ["id"]
+        - ["meeting_id"]
+        - ["recording_start"]
+        - ["recording_end"]
         type: ParentStreamConfig
     type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path: ["meeting_id"]
+      value: "{{ stream_slice.extra_fields.get('meeting_id') }}"
+    - path: ["recording_id"]
+      value: "{{ stream_slice.extra_fields.get('id') }}"
+    - path: ["recording_start"]
+      value: "{{ stream_slice.extra_fields.get('recording_start') }}"
+    - path: ["recording_end"]
+      value: "{{ stream_slice.extra_fields.get('recording_end') }}"
+    - path: ["content"]
+      value: "{{ record.record }}"
+      value_type: string
+  - type: RemoveFields
+    field_pointers:
+    - ["record"]
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -14637,97 +15152,43 @@ streams:
           - 'null'
           - string
           description: "The unique identifier of the meeting"
-        meeting_uuid:
-          type:
-          - 'null'
-          - string
-          description: "The UUID of the meeting"
-        meeting_topic:
-          type:
-          - 'null'
-          - string
-          description: "The topic/title of the meeting"
-        host_id:
-          type:
-          - 'null'
-          - string
-          description: "The user ID of the meeting host"
-        meeting_start_time:
-          type:
-          - 'null'
-          - string
-          description: "The start time of the meeting"
         recording_id:
           type:
           - 'null'
           - string
-          description: "The unique identifier of the recording file"
-        sequence_number:
-          type:
-          - 'null'
-          - integer
-          description: "The sequence number of this transcript segment"
-        timestamp_start:
+          description: "The unique identifier of the transcript recording file"
+        recording_start:
           type:
           - 'null'
           - string
-          description: "Start timestamp of the transcript segment (HH:MM:SS.mmm)"
-        timestamp_end:
+          description: "Start time of the recording"
+        recording_end:
           type:
           - 'null'
           - string
-          description: "End timestamp of the transcript segment (HH:MM:SS.mmm)"
-        speaker:
+          description: "End time of the recording"
+        content:
           type:
           - 'null'
           - string
-          description: "The name of the speaker (if identified in the transcript)"
-        text:
-          type:
-          - 'null'
-          - string
-          description: "The transcribed text content"
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "meeting_start_time"
-    cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%d"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "2020-01-01T00:00:00Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    start_time_option:
-      type: RequestOption
-      field_name: "from"
-      inject_into: "request_parameter"
-    end_time_option:
-      type: RequestOption
-      field_name: "to"
-      inject_into: "request_parameter"
-    cursor_granularity: "P1D"
-    step: "P1M"
+          description: "A raw line of the VTT transcript file, unparsed"
   type: DeclarativeStream
   name: "recording_transcript_content"
-  primary_key:
-  - "recording_id"
-  - "sequence_number"
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/phone/call_history"
       type: HttpRequester
       error_handler:
@@ -14921,13 +15382,16 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
       path: "/phone/recordings"
       type: HttpRequester
       error_handler:
@@ -15118,14 +15582,17 @@ streams:
       url_base: "https://api.zoom.us/v2"
       http_method: "GET"
       authenticator:
-        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        type: OAuthAuthenticator
+        token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
         client_id: "{{ config['client_id'] }}"
-        account_id: "{{ config['account_id'] }}"
         client_secret: "{{ config['client_secret'] }}"
-        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
         grant_type: "account_credentials"
-        type: CustomAuthenticator
-      path: "/phone/recordings"
+        send_refresh_request_as_query_params: true
+        refresh_request_headers:
+          Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+        refresh_request_body:
+          account_id: "{{ config['account_id'] }}"
+      path: "/phone/recording_transcript/download/{{ stream_partition.recording_id }}"
       type: HttpRequester
       error_handler:
         type: CompositeErrorHandler
@@ -15133,32 +15600,172 @@ streams:
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
+            - 404
+            action: IGNORE
+            error_message: "No transcript is available for this phone recording."
+          - http_codes:
+            - 400
+            action: IGNORE
+            error_message: "Transcript could not be downloaded for this phone recording."
+          - http_codes:
             - 403
             predicate: "{{ response.get('code') == 2031 }}"
             action: IGNORE
             error_message: "Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing."
         - type: DefaultErrorHandler
     paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response.next_page_token }}"
-        stop_condition: "{{ response.next_page_token == '' }}"
-        page_size: 300  # Zoom Phone endpoints support up to 300 (default 30); use max to reduce request count
-      page_size_option:
-        field_name: "page_size"
-        inject_into: "request_parameter"
-        type: RequestOption
-      page_token_option:
-        type: RequestOption
-        field_name: "next_page_token"
-        inject_into: "request_parameter"
+      type: NoPagination
+    decoder:
+      type: IterableDecoder
     record_selector:
       extractor:
-        class_name: source_declarative_manifest.components.PhoneTranscriptContentExtractor
-        type: CustomRecordExtractor
+        type: DpathExtractor
+        field_path: []
       type: RecordSelector
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+      - stream:
+          retriever:
+            requester:
+              url_base: "https://api.zoom.us/v2"
+              http_method: "GET"
+              authenticator:
+                type: OAuthAuthenticator
+                token_refresh_endpoint: "{{ config['authorization_endpoint'] }}"
+                client_id: "{{ config['client_id'] }}"
+                client_secret: "{{ config['client_secret'] }}"
+                grant_type: "account_credentials"
+                send_refresh_request_as_query_params: true
+                refresh_request_headers:
+                  Authorization: "Basic {{ (config['client_id'] + ':' + config['client_secret']) | base64encode }}"
+                refresh_request_body:
+                  account_id: "{{ config['account_id'] }}"
+              path: "/phone/recordings"
+              type: HttpRequester
+              error_handler:
+                type: CompositeErrorHandler
+                error_handlers:
+                - type: DefaultErrorHandler
+                  response_filters:
+                  - http_codes:
+                    - 403
+                    predicate: "{{ response.get('code') == 2031 }}"
+                    action: IGNORE
+                    error_message: "Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing."
+                - type: DefaultErrorHandler
+            paginator:
+              type: DefaultPaginator
+              pagination_strategy:
+                type: "CursorPagination"
+                cursor_value: "{{ response.next_page_token }}"
+                stop_condition: "{{ response.next_page_token == '' }}"
+                page_size: 300
+              page_size_option:
+                field_name: "page_size"
+                inject_into: "request_parameter"
+                type: RequestOption
+              page_token_option:
+                type: RequestOption
+                field_name: "next_page_token"
+                inject_into: "request_parameter"
+            record_selector:
+              extractor:
+                type: DpathExtractor
+                field_path:
+                - "recordings"
+              type: RecordSelector
+            type: SimpleRetriever
+          schema_loader:
+            type: InlineSchemaLoader
+            schema:
+              $schema: http://json-schema.org/draft-07/schema#
+              type: object
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                date_time:
+                  type:
+                  - 'null'
+                  - string
+          incremental_sync:
+            type: DatetimeBasedCursor
+            cursor_field: "date_time"
+            cursor_datetime_formats:
+              - "%Y-%m-%dT%H:%M:%SZ"
+            datetime_format: "%Y-%m-%d"
+            start_datetime:
+              type: MinMaxDatetime
+              datetime: "2020-01-01T00:00:00Z"
+              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            end_datetime:
+              type: MinMaxDatetime
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            start_time_option:
+              type: RequestOption
+              field_name: "from"
+              inject_into: "request_parameter"
+            end_time_option:
+              type: RequestOption
+              field_name: "to"
+              inject_into: "request_parameter"
+            cursor_granularity: "P1D"
+            step: "P1M"
+          type: DeclarativeStream
+          name: "phone_recordings"
+          primary_key: "id"
+        parent_key: "id"
+        partition_field: "recording_id"
+        extra_fields:
+        - ["call_id"]
+        - ["call_log_id"]
+        - ["caller_name"]
+        - ["caller_number"]
+        - ["callee_name"]
+        - ["callee_number"]
+        - ["direction"]
+        - ["date_time"]
+        - ["duration"]
+        - ["owner"]
+        type: ParentStreamConfig
     type: SimpleRetriever
+  transformations:
+  - type: AddFields
+    fields:
+    - path: ["recording_id"]
+      value: "{{ stream_slice.recording_id }}"
+    - path: ["call_id"]
+      value: "{{ stream_slice.extra_fields.get('call_id') }}"
+    - path: ["call_log_id"]
+      value: "{{ stream_slice.extra_fields.get('call_log_id') }}"
+    - path: ["caller_name"]
+      value: "{{ stream_slice.extra_fields.get('caller_name') }}"
+    - path: ["caller_number"]
+      value: "{{ stream_slice.extra_fields.get('caller_number') }}"
+    - path: ["callee_name"]
+      value: "{{ stream_slice.extra_fields.get('callee_name') }}"
+    - path: ["callee_number"]
+      value: "{{ stream_slice.extra_fields.get('callee_number') }}"
+    - path: ["direction"]
+      value: "{{ stream_slice.extra_fields.get('direction') }}"
+    - path: ["call_date_time"]
+      value: "{{ stream_slice.extra_fields.get('date_time') }}"
+    - path: ["call_duration"]
+      value: "{{ stream_slice.extra_fields.get('duration') }}"
+      value_type: integer
+    - path: ["owner_id"]
+      value: "{{ stream_slice.extra_fields.get('owner').get('id') if stream_slice.extra_fields.get('owner') else none }}"
+    - path: ["owner_name"]
+      value: "{{ stream_slice.extra_fields.get('owner').get('name') if stream_slice.extra_fields.get('owner') else none }}"
+    - path: ["content"]
+      value: "{{ record.record }}"
+      value_type: string
+  - type: RemoveFields
+    field_pointers:
+    - ["record"]
   schema_loader:
     type: InlineSchemaLoader
     schema:
@@ -15225,60 +15832,13 @@ streams:
           - 'null'
           - string
           description: "Name of the recording owner"
-        sequence_number:
-          type:
-          - 'null'
-          - integer
-          description: "The sequence number of this transcript segment"
-        timestamp_start:
+        content:
           type:
           - 'null'
           - string
-          description: "Start timestamp of the transcript segment (HH:MM:SS.mmm)"
-        timestamp_end:
-          type:
-          - 'null'
-          - string
-          description: "End timestamp of the transcript segment (HH:MM:SS.mmm)"
-        speaker:
-          type:
-          - 'null'
-          - string
-          description: "The name of the speaker (if identified in the transcript)"
-        text:
-          type:
-          - 'null'
-          - string
-          description: "The transcribed text content"
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "call_date_time"
-    cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%SZ"
-    datetime_format: "%Y-%m-%d"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "2020-01-01T00:00:00Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    end_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    start_time_option:
-      type: RequestOption
-      field_name: "from"
-      inject_into: "request_parameter"
-    end_time_option:
-      type: RequestOption
-      field_name: "to"
-      inject_into: "request_parameter"
-    cursor_granularity: "P1D"
-    step: "P1M"
+          description: "A raw line of the transcript file, unparsed"
   type: DeclarativeStream
   name: "phone_recording_transcripts"
-  primary_key:
-  - "recording_id"
-  - "sequence_number"
 check:
   stream_names:
   - "users"
