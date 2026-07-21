@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 49897212-53be-4898-ba2e-b73e72d645ef
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-ninjaone-rmm
   githubIssueLabel: source-ninjaone-rmm
   icon: icon.svg
