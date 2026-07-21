@@ -80,62 +80,11 @@ If you build agents with the SDK or API, you can call `context_store_search` dir
 
 ## Semantic search
 
-Structured search matches records by exact or fuzzy field values. Some connectors also support **semantic search**: a similarity search that finds relevant passages by meaning rather than by keyword. Instead of matching a filter, Airbyte embeds your natural-language query and returns the most similar chunks of text, ranked by relevance.
+Structured search matches records by exact or fuzzy field values. Some connectors also support **semantic search**: a similarity search that finds relevant passages by meaning rather than by keyword. Instead of matching a filter, Airbyte embeds your natural-language prompt and returns the most similar passages of text, ranked by relevance. It suits long, unstructured text such as call transcripts, issue descriptions, or the contents of a document, where you don't know the exact wording of a match in advance.
 
-Semantic search is useful for long, unstructured text, such as call transcripts, issue descriptions, or the contents of a document, where the exact wording of a match isn't known in advance. For example, an agent can answer "find call passages where a customer raised pricing concerns" by searching the meaning of the transcript text, not a specific phrase.
+Agents choose semantic search automatically when a prompt calls for meaning-based retrieval over a supported field, so you don't need to specify the search mode in your prompts. If you build agents with the CLI, API, or SDK, you can also request it directly.
 
-Semantic search is an evolving capability and is available for a limited set of connectors and fields today. Agents choose it automatically when a prompt calls for meaning-based retrieval over a supported field. As with structured search, you don't need to specify the search mode in your prompts.
-
-### Record text vs. file content
-
-Semantic search comes in two flavors, depending on the connector:
-
-- **Record text.** Data connectors (such as Gong and Linear) embed a text field of a structured record — a transcript, an issue description, a comment body. Each hit is a passage of that field, attributed to the record it came from.
-- **File content.** File connectors (such as Google Drive) embed the extracted text of the files they sync. Each hit is a passage of a document's content, attributed to its source file (name, path, and other file metadata).
-
-Both flavors use the same request shape — a `semantic` object passed to `context_store_search` — so agents call them the same way. The difference is what a passage represents: a field of a record, or a span of a file's contents.
-
-### Connectors and fields that support semantic search
-
-| Connector | Entity | Field | Searches |
-| --------- | ------ | ----- | -------- |
-| Gong | Call transcripts | Transcript text | Record text |
-| Linear | Issues | Description | Record text |
-| Linear | Comments | Body | Record text |
-| Google Drive | Files | Content | File content |
-
-Airbyte continues to add semantic search to more connectors and fields.
-
-### Calling semantic search with the SDK or API
-
-If you build agents with the SDK or API, you can request semantic search directly by passing a `semantic` object to `context_store_search`. In the SDK, use the generic `connector.execute(entity, "context_store_search", params)` method — the typed per-entity `context_store_search` helper accepts only a structured `query`, not a `semantic` object.
-
-```json
-{
-  "entity": "call_transcripts",
-  "action": "context_store_search",
-  "params": {
-    "semantic": {
-      "field": "transcript",
-      "prompt": "customer raised pricing concerns",
-      "context_size": 2048,
-      "dedup": "max"
-    },
-    "limit": 20
-  }
-}
-```
-
-Each hit is returned as an `{entity, metadata}` object, where `metadata` includes the similarity `score`, the matched `context` text, and connector-specific attribution fields.
-
-Keep these rules in mind when constructing a request:
-
-- **`semantic` and `query` are mutually exclusive.** Pass one or the other, never both in the same request.
-- **Results are ranked by similarity, so `sort` isn't supported.** To filter results, put the filter inside `semantic.filter` using the same operators as `query.filter`.
-- **`dedup` controls per-record deduplication.** `max` (the default) returns only the single best-scoring passage per source record. `none` returns multiple passages from the same record, still ranked by similarity and capped by `limit`.
-- **`context_size` controls how many characters of surrounding context are returned per hit,** up to the field's configured window. Omit it to return the full configured window.
-
-For the entities and fields available on each connector, see the individual [connector reference pages](../connectors).
+For how semantic search works, which connectors and fields support it, and complete CLI, API, and SDK examples, see [Semantic search](./semantic-search).
 
 ## Initial index
 
