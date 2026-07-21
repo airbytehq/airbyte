@@ -45,7 +45,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "This release upgrades the Uptick API from v2.14 to v2.15 and removes fields from the `branches`, `defectquotelineitems`, `servicetasks`, and `tasksessions` streams. Users syncing these streams must update downstream references and refresh the source schema after upgrading. See the [Uptick migration guide](https://docs.airbyte.com/integrations/sources/uptick-migrations#upgrading-to-100) for details and replacement fields."
-        upgradeDeadline: "2026-08-03"
+        upgradeDeadline: "2026-08-20"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
