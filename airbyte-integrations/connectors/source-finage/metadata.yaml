@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5220663f-d87b-498e-8aed-1f2d59371a61
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-finage
   githubIssueLabel: source-finage
   icon: icon.svg
