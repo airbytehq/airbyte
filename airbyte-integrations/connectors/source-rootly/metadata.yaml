@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2f111b00-0b92-4329-8481-6d7aa27a3991
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-rootly
   githubIssueLabel: source-rootly
   icon: icon.svg
