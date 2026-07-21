@@ -64,7 +64,17 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
 
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) For **Streams with API Data Retention Validation**, select which streams should validate cursor age against Stripe's 30-day event retention period. When a selected stream's cursor is older than 30 days, the connector performs a full refresh to avoid missing data due to the [Events API retention limit](https://stripe.com/docs/api/events). Streams not selected here will always use incremental sync regardless of cursor age.
+
+   By default, no streams are selected — all streams will use incremental sync without cursor age validation. You can add streams to this list based on your account's usage patterns. For high-usage streams like `charges`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, and `payouts`, enabling cursor age validation is recommended since a stale cursor likely indicates missed data rather than normal inactivity.
+
+   Streams like `customers`, `subscriptions`, `products`, and `plans` may not need validation because some accounts legitimately have no new records in 30+ days, and forcing a full refresh would be unnecessary.
+
+11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+
+12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+
+13. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -79,7 +89,7 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 
 The Stripe source connector supports the following streams:
 
-- [Accounts](https://stripe.com/docs/api/accounts/list)
+- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list) \(Incremental\)
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
@@ -105,7 +115,7 @@ The Stripe source connector supports the following streams:
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
-- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
+- [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines) \(Incremental\)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
@@ -114,7 +124,7 @@ The Stripe source connector supports the following streams:
   :::note
   This stream is built with a call using payout_id from the payout stream (parent) as a parameter to the balance transaction API to get balance transactions that comprised the actual amount of the payout. Check [the Stripe docs](https://docs.stripe.com/api/balance_transactions/list) for more details.
   :::
-- [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
+- [Promotion Codes](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Prices](https://stripe.com/docs/api/prices/list) \(Incremental\)
@@ -124,13 +134,13 @@ The Stripe source connector supports the following streams:
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Setup Intents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Shipping Rates](https://stripe.com/docs/api/shipping_rates/list) \(Incremental\)
-- [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
+- [Subscription Items](https://stripe.com/docs/api/subscription_items/list) \(Incremental\)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
-- [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+- [Transactions](https://stripe.com/docs/api/issuing/transactions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
-- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
+- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list) \(Incremental\)
 - [Usage Records](https://stripe.com/docs/api/usage_records)
 
 ### Entity-Relationship Diagram (ERD)
@@ -139,6 +149,10 @@ The Stripe source connector supports the following streams:
 ### Data type map
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+
+### Stripe API version
+
+This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
 
 ## Limitations & Troubleshooting
 
@@ -160,11 +174,13 @@ Please be aware: this also means that any change older than 30 days will not be 
 
 #### Cursor age validation and automatic full refresh
 
-To prevent data loss caused by the 30-day Events API retention limit, the connector validates the age of each stream's cursor before choosing between incremental and full refresh sync. If a stream's cursor is older than 30 days, the connector automatically falls back to a full refresh for that stream instead of using the Events API, which would only return the last 30 days of data.
+To prevent data loss caused by the 30-day Events API retention limit, the connector can validate the age of each stream's cursor before choosing between incremental and full refresh sync. If a stream's cursor is older than 30 days, the connector automatically falls back to a full refresh for that stream instead of using the Events API, which would only return the last 30 days of data.
 
-This means that streams with no new records in the source within the last 30 days will perform a full refresh on subsequent syncs. This is expected behavior and ensures that all records are read from the source, given the Events API's 30-day data limitation. The impact is low, as it only affects streams where no records have been created or updated in the last 30 days.
+**This behavior is configurable via the "Streams with API Data Retention Validation" setting** (see [setup guide](#step-2-set-up-the-stripe-connector-in-airbyte) step 10). Only streams listed in this setting will have their cursor age validated. By default, no streams are selected — all streams will use incremental sync without cursor age validation.
 
-The following streams are affected by cursor age validation:
+For high-usage streams like `Charges`, `Invoice Items`, `Invoice Line Items`, `Invoices`, `Payment Intents`, and `Payouts`, enabling cursor age validation is recommended since a stale cursor likely indicates missed data rather than normal inactivity. Streams like `Customers`, `Subscriptions`, `Products`, and `Plans` may not need validation because some accounts legitimately have no new records in 30+ days, making a full refresh unnecessary.
+
+You can customize which streams have cursor age validation by modifying the **Streams with API Data Retention Validation** list in your connection settings. The full list of streams eligible for cursor age validation is:
 
 - `Accounts`
 - `Application Fees`
@@ -172,7 +188,6 @@ The following streams are affected by cursor age validation:
 - `Authorizations`
 - `Bank Accounts`
 - `Cardholders`
-- `Cards`
 - `Charges`
 - `Checkout Sessions`
 - `Coupons`
@@ -203,17 +218,23 @@ The following streams are affected by cursor age validation:
 - `Transactions`
 - `Transfers`
 
+:::warning
+**Important**: If a stream is removed from the validation list and its cursor becomes stale (older than 30 days), the connector will continue using the Events API for incremental sync, which only returns the last 30 days of data. This may result in missed updates for records older than 30 days. Only remove streams from the validation list if you are confident that a stale cursor is acceptable for your use case.
+:::
+
 ### Troubleshooting
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 
 - `Balance Transactions`
+- `Customer Balance Transactions`
 - `Events`
 - `File Links`
 - `Files`
 - `Setup Attempts`
 - `Shipping Rates`
+- `Transfer Reversals`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
 
@@ -223,6 +244,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 
 :::
 
+- `Accounts`
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
@@ -234,7 +256,6 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Checkout Session Line Items` (cursor field is `checkout_session_updated`)
 - `Coupons`
 - `Credit Notes`
-- `Customer Balance Transactions`
 - `Customers`
 - `Disputes`
 - `Early Fraud Warnings`
@@ -244,6 +265,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Invoice Line Items`
 - `Invoices`
 - `Payment Intents`
+- `Payment Methods`
 - `Payouts`
 - `Payout Balance Transactions`
 - `Promotion Codes`
@@ -284,6 +306,10 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -291,6 +317,22 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.9 | 2026-07-14 | [82034](https://github.com/airbytehq/airbyte/pull/82034) | Update dependencies |
+| 6.0.8 | 2026-06-30 | [81285](https://github.com/airbytehq/airbyte/pull/81285) | Update dependencies |
+| 6.0.7 | 2026-06-23 | [80686](https://github.com/airbytehq/airbyte/pull/80686) | Update dependencies |
+| 6.0.6 | 2026-06-16 | [80070](https://github.com/airbytehq/airbyte/pull/80070) | Update dependencies |
+| 6.0.5 | 2026-06-09 | [79523](https://github.com/airbytehq/airbyte/pull/79523) | Update dependencies |
+| 6.0.4 | 2026-06-03 | [79042](https://github.com/airbytehq/airbyte/pull/79042) | Update dependencies |
+| 6.0.3 | 2026-04-28 | [77424](https://github.com/airbytehq/airbyte/pull/77424) | Update dependencies |
+| 6.0.2 | 2026-04-21 | [76777](https://github.com/airbytehq/airbyte/pull/76777) | Update dependencies |
+| 6.0.1 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 6.0.0 | 2026-04-13 | [76095](https://github.com/airbytehq/airbyte/pull/76095) | Fix missing records in `invoice_line_items` and `subscription_items` incremental streams by replacing `DpathFlattenFields` with `RecordExpander` to correctly expand nested line items from Stripe events. This is a breaking change — previously synced data for these streams may be incomplete. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-600) for details. |
+| 5.15.23 | 2026-03-31 | [75864](https://github.com/airbytehq/airbyte/pull/75864) | Update dependencies |
+| 5.15.22 | 2026-03-12 | [74770](https://github.com/airbytehq/airbyte/pull/74770) | Upgrade CDK to 7.13.0 |
+| 5.15.21 | 2026-03-06 | [74342](https://github.com/airbytehq/airbyte/pull/74342) | Promoting release candidate 5.15.21-rc.5 to a main version. |
+| 5.15.21-rc.5 | 2026-03-06 | [74337](https://github.com/airbytehq/airbyte/pull/74337) | Make API data retention validation optional per stream via new `api_retention_streams` config field, upgrade CDK to 7.8.1.post54 |
+| 5.15.21-rc.4 | 2026-03-04 | [74290](https://github.com/airbytehq/airbyte/pull/74290) | Lower default concurrency from 25 to 10 and increase default data request time increment from 30 to 365 days to reduce rate limiting |
+| 5.15.21-rc.3 | 2026-03-03 | [74259](https://github.com/airbytehq/airbyte/pull/74259) | Fix cursor age validation to clear state before constructing full refresh stream, ensuring true full refresh from start_date |
 | 5.15.21-rc.2 | 2026-02-25 | [74051](https://github.com/airbytehq/airbyte/pull/74051) | Fix sync failure when unselected parent streams have stale cursor state during cursor age validation |
 | 5.15.21-rc.1 | 2026-02-25 | [73646](https://github.com/airbytehq/airbyte/pull/73646) | Add cursor age validation for StateDelegatingStream streams to prevent data loss when initial sync fails mid-way |
 | 5.15.20 | 2026-02-24 | [73944](https://github.com/airbytehq/airbyte/pull/73944) | Update dependencies |
@@ -315,29 +357,29 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 5.15.2 | 2025-08-03 | [64439](https://github.com/airbytehq/airbyte/pull/64439) | Update dependencies |
 | 5.15.1 | 2025-07-26 | [60561](https://github.com/airbytehq/airbyte/pull/60561) | Update dependencies |
 | 5.15.0 | 2025-07-23 | [63743](https://github.com/airbytehq/airbyte/pull/63743) | Promoting release candidate 5.15.0-rc.1 to a main version. |
-| 5.15.0-rc.1 | 2025-07-21 | [63370](https://github.com/airbytehq/airbyte/pull/63370)     | Migrate to manifest-only format.                                                                                                                                                                                              |
-| 5.14.1      | 2025-07-15 | [62893](https://github.com/airbytehq/airbyte/pull/62893)     | Increase the timeout for syncs that fail without any records to one day.                                                                                                                                                      |
-| 5.14.0      | 2025-07-15 | [63303](https://github.com/airbytehq/airbyte/pull/63303)     | Promoting release candidate 5.14.0-rc.1 to a main version.                                                                                                                                                                    |
-| 5.14.0-rc.1 | 2025-06-12 | [60846](https://github.com/airbytehq/airbyte/pull/60846)     | Rollback Low Code per partition streams; update slicer for invoice_line_items and normalization for events based streams                                                                                                      |
-| 5.13.0      | 2025-05-22 | [60846](https://github.com/airbytehq/airbyte/pull/60846)     | Update subscription_items and usage_records stream to python implementation                                                                                                                                                   |
-| 5.12.0      | 2025-05-12 | [59743](https://github.com/airbytehq/airbyte/pull/59743)     | Update invoice_line_items stream to python implementation                                                                                                                                                                     |
-| 5.11.3      | 2025-05-10 | [60053](https://github.com/airbytehq/airbyte/pull/60053)     | Update dependencies                                                                                                                                                                                                           |
-| 5.11.2      | 2025-05-04 | [59645](https://github.com/airbytehq/airbyte/pull/59645)     | Update dependencies                                                                                                                                                                                                           |
-| 5.11.1      | 2025-04-27 | [58979](https://github.com/airbytehq/airbyte/pull/58979)     | Update dependencies                                                                                                                                                                                                           |
-| 5.11.0      | 2025-04-24 | [58637](https://github.com/airbytehq/airbyte/pull/58637)     | Promoting release candidate 5.11.0-rc.2 to a main version.                                                                                                                                                                    |
-| 5.11.0-rc.2 | 2025-04-18 | [58136](https://github.com/airbytehq/airbyte/pull/58136)     | Enable progressive rollout                                                                                                                                                                                                    |
-| 5.11.0-rc.1 | 2025-04-18 | [54162](https://github.com/airbytehq/airbyte/pull/54162)     | Migrate to low-code                                                                                                                                                                                                           |
-| 5.10.1      | 2025-04-17 | [58124](https://github.com/airbytehq/airbyte/pull/58124)     | Extend safe state to support nested states                                                                                                                                                                                    |
-| 5.10.0      | 2025-04-17 | [58117](https://github.com/airbytehq/airbyte/pull/58117)     | Promoting release candidate 5.10.0-rc.1 to a main version.                                                                                                                                                                    |
-| 5.10.0-rc.1 | 2025-04-13 | [58060](https://github.com/airbytehq/airbyte/pull/58060)     | Migrate application_fees, authorizations, cardholders, cards, early_fraud_warnings, external_account_bank_accounts and external_account_cards to low-code                                                                     |
-| 5.9.2       | 2025-04-15 | [58072](https://github.com/airbytehq/airbyte/pull/58072)     | Add safe state data type handling                                                                                                                                                                                             |
-| 5.9.1       | 2025-04-15 | [58068](https://github.com/airbytehq/airbyte/pull/58068)     | Add documentation url back in spec                                                                                                                                                                                            |
-| 5.9.0       | 2025-04-14 | [58065](https://github.com/airbytehq/airbyte/pull/58065)     | Promoting release candidate 5.9.0-rc.1 to a main version.                                                                                                                                                                     |
-| 5.9.0-rc.1  | 2025-03-04 | [54162](https://github.com/airbytehq/airbyte/pull/54162)     | Migrate events, shipping_rates, balance_transactions, files and file_links to low-code                                                                                                                                        |
-| 5.8.14      | 2025-03-29 | [56871](https://github.com/airbytehq/airbyte/pull/56871)     | Update dependencies                                                                                                                                                                                                           |
-| 5.8.13      | 2025-03-22 | [56276](https://github.com/airbytehq/airbyte/pull/56276)     | Update dependencies                                                                                                                                                                                                           |
-| 5.8.12      | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682)     | Promoting release candidate 5.8.10-rc.1 to a main version.                                                                                                                                                                    |
-| 5.8.11      | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598)     | Update dependencies                                                                                                                                                                                                           |
+| 5.15.0-rc.1 | 2025-07-21 | [63370](https://github.com/airbytehq/airbyte/pull/63370) | Migrate to manifest-only format. |
+| 5.14.1 | 2025-07-15 | [62893](https://github.com/airbytehq/airbyte/pull/62893) | Increase the timeout for syncs that fail without any records to one day. |
+| 5.14.0 | 2025-07-15 | [63303](https://github.com/airbytehq/airbyte/pull/63303) | Promoting release candidate 5.14.0-rc.1 to a main version. |
+| 5.14.0-rc.1 | 2025-06-12 | [60846](https://github.com/airbytehq/airbyte/pull/60846) | Rollback Low Code per partition streams; update slicer for invoice_line_items and normalization for events based streams |
+| 5.13.0 | 2025-05-22 | [60846](https://github.com/airbytehq/airbyte/pull/60846) | Update subscription_items and usage_records stream to python implementation |
+| 5.12.0 | 2025-05-12 | [59743](https://github.com/airbytehq/airbyte/pull/59743) | Update invoice_line_items stream to python implementation |
+| 5.11.3 | 2025-05-10 | [60053](https://github.com/airbytehq/airbyte/pull/60053) | Update dependencies |
+| 5.11.2 | 2025-05-04 | [59645](https://github.com/airbytehq/airbyte/pull/59645) | Update dependencies |
+| 5.11.1 | 2025-04-27 | [58979](https://github.com/airbytehq/airbyte/pull/58979) | Update dependencies |
+| 5.11.0 | 2025-04-24 | [58637](https://github.com/airbytehq/airbyte/pull/58637) | Promoting release candidate 5.11.0-rc.2 to a main version. |
+| 5.11.0-rc.2 | 2025-04-18 | [58136](https://github.com/airbytehq/airbyte/pull/58136) | Enable progressive rollout |
+| 5.11.0-rc.1 | 2025-04-18 | [54162](https://github.com/airbytehq/airbyte/pull/54162) | Migrate to low-code |
+| 5.10.1 | 2025-04-17 | [58124](https://github.com/airbytehq/airbyte/pull/58124) | Extend safe state to support nested states |
+| 5.10.0 | 2025-04-17 | [58117](https://github.com/airbytehq/airbyte/pull/58117) | Promoting release candidate 5.10.0-rc.1 to a main version. |
+| 5.10.0-rc.1 | 2025-04-13 | [58060](https://github.com/airbytehq/airbyte/pull/58060) | Migrate application_fees, authorizations, cardholders, cards, early_fraud_warnings, external_account_bank_accounts and external_account_cards to low-code |
+| 5.9.2 | 2025-04-15 | [58072](https://github.com/airbytehq/airbyte/pull/58072) | Add safe state data type handling |
+| 5.9.1 | 2025-04-15 | [58068](https://github.com/airbytehq/airbyte/pull/58068) | Add documentation url back in spec |
+| 5.9.0 | 2025-04-14 | [58065](https://github.com/airbytehq/airbyte/pull/58065) | Promoting release candidate 5.9.0-rc.1 to a main version. |
+| 5.9.0-rc.1 | 2025-03-04 | [54162](https://github.com/airbytehq/airbyte/pull/54162) | Migrate events, shipping_rates, balance_transactions, files and file_links to low-code |
+| 5.8.14 | 2025-03-29 | [56871](https://github.com/airbytehq/airbyte/pull/56871) | Update dependencies |
+| 5.8.13 | 2025-03-22 | [56276](https://github.com/airbytehq/airbyte/pull/56276) | Update dependencies |
+| 5.8.12 | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682) | Promoting release candidate 5.8.10-rc.1 to a main version. |
+| 5.8.11 | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598) | Update dependencies |
 | 5.8.10-rc1  | 2025-02-22 | [53670](https://github.com/airbytehq/airbyte/pull/53670)     | Update pritbuffer logic                                                                                                                                                                                                       |
 | 5.8.9       | 2025-03-01 | [55117](https://github.com/airbytehq/airbyte/pull/55117)     | Update dependencies                                                                                                                                                                                                           |
 | 5.8.8       | 2025-02-28 | [54711](https://github.com/airbytehq/airbyte/pull/54711)     | Add retry error handler for `requests.exceptions.InvalidURL'                                                                                                                                                                  |

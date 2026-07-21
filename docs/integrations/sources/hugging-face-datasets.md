@@ -16,6 +16,10 @@ Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/
 | rows |  | DefaultPaginator | ✅ |  ❌  |
 | splits |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,17 @@ Only datasets with [Parquet exports](https://huggingface.co/docs/dataset-viewer/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-07-14 | [81860](https://github.com/airbytehq/airbyte/pull/81860) | Update dependencies |
+| 0.0.54 | 2026-06-30 | [81111](https://github.com/airbytehq/airbyte/pull/81111) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80530](https://github.com/airbytehq/airbyte/pull/80530) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [79903](https://github.com/airbytehq/airbyte/pull/79903) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79343](https://github.com/airbytehq/airbyte/pull/79343) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78783](https://github.com/airbytehq/airbyte/pull/78783) | Update dependencies |
+| 0.0.49 | 2026-04-28 | [77280](https://github.com/airbytehq/airbyte/pull/77280) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76633](https://github.com/airbytehq/airbyte/pull/76633) | Update dependencies |
+| 0.0.47 | 2026-03-31 | [75656](https://github.com/airbytehq/airbyte/pull/75656) | Update dependencies |
+| 0.0.46 | 2026-03-17 | [74523](https://github.com/airbytehq/airbyte/pull/74523) | Update dependencies |
+| 0.0.45 | 2026-03-03 | [73521](https://github.com/airbytehq/airbyte/pull/73521) | Update dependencies |
 | 0.0.44 | 2026-02-10 | [73049](https://github.com/airbytehq/airbyte/pull/73049) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71918](https://github.com/airbytehq/airbyte/pull/71918) | Update dependencies |
 | 0.0.42 | 2026-01-14 | [71724](https://github.com/airbytehq/airbyte/pull/71724) | Update dependencies |

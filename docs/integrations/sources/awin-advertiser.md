@@ -18,6 +18,10 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 | campaign_performance | date.publisherId.campaign | No pagination | ✅ |  ✅  |
 | transactions | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,16 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.29 | 2026-07-14 | [81720](https://github.com/airbytehq/airbyte/pull/81720) | Update dependencies |
+| 0.0.28 | 2026-06-30 | [80977](https://github.com/airbytehq/airbyte/pull/80977) | Update dependencies |
+| 0.0.27 | 2026-06-23 | [80361](https://github.com/airbytehq/airbyte/pull/80361) | Update dependencies |
+| 0.0.26 | 2026-06-16 | [79758](https://github.com/airbytehq/airbyte/pull/79758) | Update dependencies |
+| 0.0.25 | 2026-06-09 | [79209](https://github.com/airbytehq/airbyte/pull/79209) | Update dependencies |
+| 0.0.24 | 2026-06-02 | [78592](https://github.com/airbytehq/airbyte/pull/78592) | Update dependencies |
+| 0.0.23 | 2026-04-28 | [77154](https://github.com/airbytehq/airbyte/pull/77154) | Update dependencies |
+| 0.0.22 | 2026-04-21 | [76491](https://github.com/airbytehq/airbyte/pull/76491) | Update dependencies |
+| 0.0.21 | 2026-03-24 | [75313](https://github.com/airbytehq/airbyte/pull/75313) | Update dependencies |
+| 0.0.20 | 2026-03-10 | [74511](https://github.com/airbytehq/airbyte/pull/74511) | Update dependencies |
 | 0.0.19 | 2026-02-24 | [73820](https://github.com/airbytehq/airbyte/pull/73820) | Update dependencies |
 | 0.0.18 | 2026-02-17 | [73393](https://github.com/airbytehq/airbyte/pull/73393) | Update dependencies |
 | 0.0.17 | 2026-02-03 | [72722](https://github.com/airbytehq/airbyte/pull/72722) | Update dependencies |

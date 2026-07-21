@@ -19,6 +19,10 @@ Using this connector we can extract data from products , packages , orders , dis
 | orders | id | DefaultPaginator | ✅ |  ✅  |
 | subscriptions | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,16 @@ Using this connector we can extract data from products , packages , orders , dis
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-07-14 | [82004](https://github.com/airbytehq/airbyte/pull/82004) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81237](https://github.com/airbytehq/airbyte/pull/81237) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80653](https://github.com/airbytehq/airbyte/pull/80653) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80016](https://github.com/airbytehq/airbyte/pull/80016) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79514](https://github.com/airbytehq/airbyte/pull/79514) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78941](https://github.com/airbytehq/airbyte/pull/78941) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77443](https://github.com/airbytehq/airbyte/pull/77443) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [76739](https://github.com/airbytehq/airbyte/pull/76739) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [75109](https://github.com/airbytehq/airbyte/pull/75109) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [74230](https://github.com/airbytehq/airbyte/pull/74230) | Update dependencies |
 | 0.0.43 | 2026-02-17 | [73536](https://github.com/airbytehq/airbyte/pull/73536) | Update dependencies |
 | 0.0.42 | 2026-02-10 | [73184](https://github.com/airbytehq/airbyte/pull/73184) | Update dependencies |
 | 0.0.41 | 2026-02-03 | [72551](https://github.com/airbytehq/airbyte/pull/72551) | Update dependencies |

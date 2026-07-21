@@ -19,6 +19,10 @@ Documentation: https://developer.ebay.com/api-docs/sell/fulfillment/overview.htm
 |-------------|-------------|------------|---------------------|----------------------|
 | orders | orderId | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,14 @@ Documentation: https://developer.ebay.com/api-docs/sell/fulfillment/overview.htm
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2026-07-14 | [81806](https://github.com/airbytehq/airbyte/pull/81806) | Update dependencies |
+| 0.0.29 | 2026-06-30 | [81069](https://github.com/airbytehq/airbyte/pull/81069) | Update dependencies |
+| 0.0.28 | 2026-06-23 | [80449](https://github.com/airbytehq/airbyte/pull/80449) | Update dependencies |
+| 0.0.27 | 2026-06-16 | [79834](https://github.com/airbytehq/airbyte/pull/79834) | Update dependencies |
+| 0.0.26 | 2026-06-09 | [79288](https://github.com/airbytehq/airbyte/pull/79288) | Update dependencies |
+| 0.0.25 | 2026-06-02 | [78677](https://github.com/airbytehq/airbyte/pull/78677) | Update dependencies |
+| 0.0.24 | 2026-04-28 | [77216](https://github.com/airbytehq/airbyte/pull/77216) | Update dependencies |
+| 0.0.23 | 2026-04-21 | [72627](https://github.com/airbytehq/airbyte/pull/72627) | Update dependencies |
 | 0.0.22 | 2026-01-20 | [71892](https://github.com/airbytehq/airbyte/pull/71892) | Update dependencies |
 | 0.0.21 | 2026-01-14 | [71557](https://github.com/airbytehq/airbyte/pull/71557) | Update dependencies |
 | 0.0.20 | 2025-12-18 | [70581](https://github.com/airbytehq/airbyte/pull/70581) | Update dependencies |

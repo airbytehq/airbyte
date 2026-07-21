@@ -37,6 +37,10 @@ Docs : https://twelvedata.com/docs
 | EOD Price |  | No pagination | ✅ |  ❌  |
 | Mutual Funds | symbol | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -44,6 +48,15 @@ Docs : https://twelvedata.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.57 | 2026-07-14 | [82042](https://github.com/airbytehq/airbyte/pull/82042) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81284](https://github.com/airbytehq/airbyte/pull/81284) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80057](https://github.com/airbytehq/airbyte/pull/80057) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79520](https://github.com/airbytehq/airbyte/pull/79520) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [79002](https://github.com/airbytehq/airbyte/pull/79002) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77487](https://github.com/airbytehq/airbyte/pull/77487) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76812](https://github.com/airbytehq/airbyte/pull/76812) | Update dependencies |
+| 0.0.50 | 2026-03-31 | [75697](https://github.com/airbytehq/airbyte/pull/75697) | Update dependencies |
+| 0.0.49 | 2026-03-17 | [75049](https://github.com/airbytehq/airbyte/pull/75049) | Update dependencies |
 | 0.0.48 | 2026-02-24 | [73887](https://github.com/airbytehq/airbyte/pull/73887) | Update dependencies |
 | 0.0.47 | 2026-02-17 | [73525](https://github.com/airbytehq/airbyte/pull/73525) | Update dependencies |
 | 0.0.46 | 2026-02-10 | [73136](https://github.com/airbytehq/airbyte/pull/73136) | Update dependencies |

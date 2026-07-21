@@ -50,6 +50,10 @@ Here are some optional fields:
 
 - `Include Closed Tasks`: Toggle to include or exclude closed tasks. By default, they are excluded.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -57,6 +61,17 @@ Here are some optional fields:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.3.53 | 2026-07-14 | [81779](https://github.com/airbytehq/airbyte/pull/81779) | Update dependencies |
+| 0.3.52 | 2026-06-30 | [81027](https://github.com/airbytehq/airbyte/pull/81027) | Update dependencies |
+| 0.3.51 | 2026-06-23 | [80401](https://github.com/airbytehq/airbyte/pull/80401) | Update dependencies |
+| 0.3.50 | 2026-06-16 | [79811](https://github.com/airbytehq/airbyte/pull/79811) | Update dependencies |
+| 0.3.49 | 2026-06-09 | [79270](https://github.com/airbytehq/airbyte/pull/79270) | Update dependencies |
+| 0.3.48 | 2026-06-02 | [78627](https://github.com/airbytehq/airbyte/pull/78627) | Update dependencies |
+| 0.3.47 | 2026-04-28 | [77210](https://github.com/airbytehq/airbyte/pull/77210) | Update dependencies |
+| 0.3.46 | 2026-04-21 | [76539](https://github.com/airbytehq/airbyte/pull/76539) | Update dependencies |
+| 0.3.45 | 2026-03-31 | [75750](https://github.com/airbytehq/airbyte/pull/75750) | Update dependencies |
+| 0.3.44 | 2026-03-17 | [75076](https://github.com/airbytehq/airbyte/pull/75076) | Update dependencies |
+| 0.3.43 | 2026-03-03 | [74217](https://github.com/airbytehq/airbyte/pull/74217) | Update dependencies |
 | 0.3.42 | 2026-02-17 | [72740](https://github.com/airbytehq/airbyte/pull/72740) | Update dependencies |
 | 0.3.41 | 2026-01-20 | [72123](https://github.com/airbytehq/airbyte/pull/72123) | Update dependencies |
 | 0.3.40 | 2026-01-14 | [71682](https://github.com/airbytehq/airbyte/pull/71682) | Update dependencies |

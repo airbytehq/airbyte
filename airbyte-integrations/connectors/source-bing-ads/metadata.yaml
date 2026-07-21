@@ -12,11 +12,11 @@ data:
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.0@sha256:caac8e8f74b2b64d13ec5956ac93c87dd3d50b0c7975de4e81c938e2f215d1d6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.5@sha256:e18095bba3f7852bb7ae0a50d13fe532cee803cf8f273f5e8faf51fd93e401e4
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.23.11
+  dockerImageTag: 3.0.2
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   externalDocumentationUrls:
@@ -58,6 +58,70 @@ data:
           Users will need to refresh the source schema and reset affected streams
           after upgrading.
         upgradeDeadline: "2023-12-11"
+      3.0.0:
+        message: >
+          Version 3.0.0 expands the primary keys of all report streams to include every
+          attribute (dimension) column the connector requests from Microsoft's reporting
+          API. Microsoft returns one row per unique combination of all requested attribute
+          columns, so when the previous (narrower) primary keys were used for
+          incremental append+dedup, destinations silently collapsed rows that differed
+          only on a requested-but-not-in-PK attribute, causing significant data loss
+          (see https://github.com/airbytehq/oncall/issues/12253). Users must refresh the
+          source schema and reset the affected report streams after upgrading for the
+          new primary keys to take effect and previously-collapsed rows to be backfilled.
+        upgradeDeadline: "2026-07-16"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "age_gender_audience_report_hourly"
+              - "age_gender_audience_report_daily"
+              - "age_gender_audience_report_weekly"
+              - "age_gender_audience_report_monthly"
+              - "campaign_performance_report_hourly"
+              - "campaign_performance_report_daily"
+              - "campaign_performance_report_weekly"
+              - "campaign_performance_report_monthly"
+              - "ad_group_performance_report_hourly"
+              - "ad_group_performance_report_daily"
+              - "ad_group_performance_report_weekly"
+              - "ad_group_performance_report_monthly"
+              - "keyword_performance_report_hourly"
+              - "keyword_performance_report_daily"
+              - "keyword_performance_report_weekly"
+              - "keyword_performance_report_monthly"
+              - "ad_group_impression_performance_report_hourly"
+              - "ad_group_impression_performance_report_daily"
+              - "ad_group_impression_performance_report_weekly"
+              - "ad_group_impression_performance_report_monthly"
+              - "audience_performance_report_hourly"
+              - "audience_performance_report_daily"
+              - "audience_performance_report_weekly"
+              - "audience_performance_report_monthly"
+              - "goals_and_funnels_report_hourly"
+              - "goals_and_funnels_report_daily"
+              - "goals_and_funnels_report_weekly"
+              - "goals_and_funnels_report_monthly"
+              - "user_location_performance_report_hourly"
+              - "user_location_performance_report_daily"
+              - "user_location_performance_report_weekly"
+              - "user_location_performance_report_monthly"
+              - "budget_summary_report"
+              - "account_performance_report_hourly"
+              - "account_performance_report_daily"
+              - "account_performance_report_weekly"
+              - "account_performance_report_monthly"
+              - "ad_performance_report_hourly"
+              - "ad_performance_report_daily"
+              - "ad_performance_report_weekly"
+              - "ad_performance_report_monthly"
+              - "search_query_performance_report_hourly"
+              - "search_query_performance_report_daily"
+              - "search_query_performance_report_weekly"
+              - "search_query_performance_report_monthly"
+              - "product_search_query_performance_report_hourly"
+              - "product_search_query_performance_report_daily"
+              - "product_search_query_performance_report_weekly"
+              - "product_search_query_performance_report_monthly"
   suggestedStreams:
     streams:
       - campaigns

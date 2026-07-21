@@ -31,6 +31,10 @@ Visit the [OpenWeather](https://openweathermap.org) to create a user account and
 
 The free plan allows 60 calls per minute and 1,000,000 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,17 @@ The free plan allows 60 calls per minute and 1,000,000 calls per month, you won'
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.56 | 2026-07-14 | [81955](https://github.com/airbytehq/airbyte/pull/81955) | Update dependencies |
+| 0.3.55 | 2026-06-30 | [81190](https://github.com/airbytehq/airbyte/pull/81190) | Update dependencies |
+| 0.3.54 | 2026-06-23 | [80595](https://github.com/airbytehq/airbyte/pull/80595) | Update dependencies |
+| 0.3.53 | 2026-06-16 | [79974](https://github.com/airbytehq/airbyte/pull/79974) | Update dependencies |
+| 0.3.52 | 2026-06-09 | [79459](https://github.com/airbytehq/airbyte/pull/79459) | Update dependencies |
+| 0.3.51 | 2026-06-02 | [78879](https://github.com/airbytehq/airbyte/pull/78879) | Update dependencies |
+| 0.3.50 | 2026-04-28 | [77330](https://github.com/airbytehq/airbyte/pull/77330) | Update dependencies |
+| 0.3.49 | 2026-04-21 | [76719](https://github.com/airbytehq/airbyte/pull/76719) | Update dependencies |
+| 0.3.48 | 2026-03-17 | [74974](https://github.com/airbytehq/airbyte/pull/74974) | Update dependencies |
+| 0.3.47 | 2026-03-10 | [74630](https://github.com/airbytehq/airbyte/pull/74630) | Update dependencies |
+| 0.3.46 | 2026-03-03 | [73568](https://github.com/airbytehq/airbyte/pull/73568) | Update dependencies |
 | 0.3.45 | 2026-02-10 | [73079](https://github.com/airbytehq/airbyte/pull/73079) | Update dependencies |
 | 0.3.44 | 2026-01-20 | [72182](https://github.com/airbytehq/airbyte/pull/72182) | Update dependencies |
 | 0.3.43 | 2026-01-14 | [71667](https://github.com/airbytehq/airbyte/pull/71667) | Update dependencies |

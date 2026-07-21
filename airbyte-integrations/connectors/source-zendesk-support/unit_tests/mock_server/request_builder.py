@@ -201,8 +201,8 @@ class ZendeskSupportRequestBuilder:
 
     @classmethod
     def tickets_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
-        """Create a request builder for the /incremental/tickets/cursor.json endpoint."""
-        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/tickets/cursor.json").with_authenticator(authenticator)
+        """Create a request builder for the /search/export endpoint (Export Search Results API)."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "search/export").with_authenticator(authenticator)
 
     @classmethod
     def ticket_forms_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
@@ -325,6 +325,11 @@ class ZendeskSupportRequestBuilder:
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
 
     @classmethod
+    def ticket_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /incremental/ticket_events.json endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_events.json").with_authenticator(authenticator)
+
+    @classmethod
     def ticket_metric_events_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /incremental/ticket_metric_events endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, "incremental/ticket_metric_events").with_authenticator(authenticator)
@@ -343,6 +348,11 @@ class ZendeskSupportRequestBuilder:
     def audit_logs_endpoint(cls, authenticator: Authenticator) -> "ZendeskSupportRequestBuilder":
         """Create a request builder for the /audit_logs endpoint."""
         return cls(cls.DEFAULT_SUBDOMAIN, "audit_logs").with_authenticator(authenticator)
+
+    @classmethod
+    def side_conversations_endpoint(cls, authenticator: Authenticator, ticket_id: int) -> "ZendeskSupportRequestBuilder":
+        """Create a request builder for the /tickets/{ticket_id}/side_conversations endpoint."""
+        return cls(cls.DEFAULT_SUBDOMAIN, f"tickets/{ticket_id}/side_conversations").with_authenticator(authenticator)
 
     @classmethod
     def article_comments_endpoint(cls, authenticator: Authenticator, article_id: int) -> "ZendeskSupportRequestBuilder":

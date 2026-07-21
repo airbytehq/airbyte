@@ -41,7 +41,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+    url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -50,7 +50,7 @@ definitions:
     type: DefaultErrorHandler
     response_filters:
       - type: HttpResponseFilter
-        action: FAIL
+        action: RETRY
         http_codes:
           - 500
         error_message: >-
@@ -157,10 +157,12 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1110, format='%Y-%m-%d') }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('end_date', today_utc()) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1109, format='%Y-%m-%d') }}"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
@@ -195,7 +197,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+          url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -220,7 +222,7 @@ definitions:
     incremental_stream:
       $ref: "#/definitions/incremental_stream_base"
       $parameters:
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:searchStream"
       retriever:
         type: CustomRetriever
         class_name: "source_google_ads.components.CriterionRetriever"
@@ -291,7 +293,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers"
+        url_base: "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers"
         http_method: GET
       record_selector:
         type: RecordSelector
@@ -306,7 +308,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -344,7 +346,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -402,7 +404,7 @@ definitions:
         name: "custom_requester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -426,6 +428,8 @@ definitions:
       - type: CustomTransformation
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
+        class_name: "source_google_ads.components.SerializeMessageFieldsTransformation"
+      - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
@@ -440,7 +444,7 @@ definitions:
       class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
       requester:
         $ref: "#/definitions/base_requester"
-        url: "https://googleads.googleapis.com/v20/googleAdsFields"
+        url: "https://googleads.googleapis.com/v23/googleAdsFields"
         http_method: GET
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -525,12 +529,33 @@ definitions:
       schema:
         $ref: "#/schemas/ad_group_ad_legacy"
 
+  ad_performance_stream:
+    $ref: "#/definitions/incremental_non_manager_stream_base"
+    name: ad_performance
+    primary_key:
+      - ad_group.id
+      - ad_group_ad.ad.id
+      - segments.date
+      - segments.ad_network_type
+      - segments.device
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/ad_performance"
+
   ad_group_bidding_strategy_stream:
     $ref: "#/definitions/incremental_stream_base"
     name: ad_group_bidding_strategy
     primary_key:
       - ad_group.id
-      - bidding_strategy.id
       - segments.date
     schema_loader:
       type: InlineSchemaLoader
@@ -595,7 +620,6 @@ definitions:
     name: campaign_bidding_strategy
     primary_key:
       - campaign.id
-      - bidding_strategy.id
       - segments.date
     schema_loader:
       type: InlineSchemaLoader
@@ -655,7 +679,7 @@ definitions:
             $ref: "#/schemas/click_view"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -670,10 +694,12 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1110, format='%Y-%m-%d') }}"
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}"
         datetime_format: "%Y-%m-%d"
+        min_datetime: "{{ day_delta(-1109, format='%Y-%m-%d') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -755,6 +781,39 @@ definitions:
       schema:
         $ref: "#/schemas/geographic_view"
 
+  geographic_view_with_metrics_stream:
+    $ref: "#/definitions/incremental_non_manager_stream_base"
+    name: geographic_view_with_metrics
+    primary_key:
+      - customer.id
+      - geographic_view.country_criterion_id
+      - geographic_view.location_type
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/geographic_view_with_metrics"
+
+  geo_performance_stream:
+    $ref: "#/definitions/incremental_non_manager_stream_base"
+    name: geo_performance
+    primary_key:
+      - customer.id
+      - ad_group.id
+      - geographic_view.country_criterion_id
+      - geographic_view.location_type
+      - segments.date
+      - segments.ad_network_type
+      - segments.device
+      - segments.geo_target_region
+      - segments.geo_target_metro
+      - segments.geo_target_city
+      - segments.geo_target_most_specific_location
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/geo_performance"
+
   keyword_view_stream:
     $ref: "#/definitions/incremental_non_manager_stream_base"
     name: keyword_view
@@ -831,7 +890,7 @@ definitions:
     $ref: "#/definitions/incremental_stream_base"
     name: change_status
     $parameters:
-      url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+      url_base: "https://googleads.googleapis.com/v23/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
       type: SimpleRetriever
       requester:
@@ -994,12 +1053,14 @@ definitions:
               "start_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
-                "datetime_format": "%Y-%m-%d"
+                "datetime_format": "%Y-%m-%d",
+                "min_datetime": "{{ day_delta(-1110, format='%Y-%m-%d') }}"
               },
               "end_datetime": {
                 "type": "MinMaxDatetime",
                 "datetime": "{{ config.get('end_date', today_utc()) }}",
-                "datetime_format": "%Y-%m-%d"
+                "datetime_format": "%Y-%m-%d",
+                "min_datetime": "{{ day_delta(-1109, format='%Y-%m-%d') }}"
               }
             }
           condition: >-
@@ -1092,7 +1153,8 @@ definitions:
             {
               "type": "MinMaxDatetime",
               "datetime": "{{ max(config.get('start_date', day_delta(-90, format='%Y-%m-%d')), day_delta(-90, format='%Y-%m-%d')) }}",
-              "datetime_format": "%Y-%m-%d"
+              "datetime_format": "%Y-%m-%d",
+              "min_datetime": "{{ day_delta(-1110, format='%Y-%m-%d') }}"
             }
           condition: >-
             {{
@@ -1118,7 +1180,8 @@ definitions:
             {
               "type": "MinMaxDatetime",
               "datetime": "{{ format_datetime((str_to_datetime(config.get('end_date')) if config.get('end_date') else now_utc()) + duration('P1D'), '%Y-%m-%d') }}",
-              "datetime_format": "%Y-%m-%d"
+              "datetime_format": "%Y-%m-%d",
+              "min_datetime": "{{ day_delta(-1109, format='%Y-%m-%d') }}"
             }
           condition: >-
             {{
@@ -1231,6 +1294,7 @@ streams:
   - "#/definitions/ad_group_ad_stream"
   - "#/definitions/ad_group_ad_label_stream"
   - "#/definitions/ad_group_ad_legacy_stream"
+  - "#/definitions/ad_performance_stream"
   - "#/definitions/ad_group_bidding_strategy_stream"
   - "#/definitions/ad_group_criterion_stream"
   - "#/definitions/ad_group_label_stream"
@@ -1247,6 +1311,8 @@ streams:
   - "#/definitions/customer_label_stream"
   - "#/definitions/display_keyword_view_stream"
   - "#/definitions/geographic_view_stream"
+  - "#/definitions/geographic_view_with_metrics_stream"
+  - "#/definitions/geo_performance_stream"
   - "#/definitions/keyword_view_stream"
   - "#/definitions/label_stream"
   - "#/definitions/shopping_performance_view_stream"
@@ -2080,7 +2146,7 @@ schemas:
         type:
           - "null"
           - boolean
-      campaign.end_date:
+      campaign.end_date_time:
         description: The end date of the campaign.
         type:
           - "null"
@@ -2259,7 +2325,7 @@ schemas:
         type:
           - "null"
           - integer
-      campaign.start_date:
+      campaign.start_date_time:
         description: The start date of the campaign.
         type:
           - "null"
@@ -2407,7 +2473,7 @@ schemas:
         type:
           - "null"
           - integer
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views in the campaign.
         type:
           - "null"
@@ -2710,7 +2776,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view
         type:
           - "null"
@@ -2989,12 +3055,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The video view rate
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views
         type:
           - "null"
@@ -3061,6 +3127,490 @@ schemas:
           - "null"
           - string
         format: date
+    additionalProperties: true
+
+  geographic_view_with_metrics:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      customer.id:
+        description: The ID of the customer associated with the geographic report data.
+        type:
+          - "null"
+          - integer
+      customer.descriptive_name:
+        description: The descriptive name of the customer.
+        type:
+          - "null"
+          - string
+      customer.currency_code:
+        description: The currency code used by the customer.
+        type:
+          - "null"
+          - string
+      customer.time_zone:
+        description: The time zone set for the customer.
+        type:
+          - "null"
+          - string
+      geographic_view.country_criterion_id:
+        description: The criterion ID for the country in the geographic view data.
+        type:
+          - "null"
+          - integer
+      geographic_view.location_type:
+        description: The type of location (such as city or region) in the geographic view data.
+        type:
+          - "null"
+          - string
+      geographic_view.resource_name:
+        description: The resource name of the geographic view.
+        type:
+          - "null"
+          - string
+      ad_group.id:
+        description: The ID of the ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.status:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.base_ad_group:
+        description: The base ad group resource name.
+        type:
+          - "null"
+          - string
+      campaign.base_campaign:
+        description: The base campaign resource name.
+        type:
+          - "null"
+          - string
+      campaign.id:
+        description: The ID of the campaign.
+        type:
+          - "null"
+          - integer
+      campaign.name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      campaign.status:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date segment for the geographic report data.
+        type:
+          - "null"
+          - string
+        format: date
+      segments.day_of_week:
+        description: The day of the week.
+        type:
+          - "null"
+          - string
+      segments.month:
+        description: The month.
+        type:
+          - "null"
+          - string
+      segments.week:
+        description: The week of the year.
+        type:
+          - "null"
+          - string
+      segments.quarter:
+        description: The quarter of the year.
+        type:
+          - "null"
+          - string
+      segments.year:
+        description: The year.
+        type:
+          - "null"
+          - integer
+      metrics.all_conversions:
+        description: Total number of conversions for all actions.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions_from_interactions_rate:
+        description: The rate of all conversions from interactions.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions_value:
+        description: The total value of all conversions.
+        type:
+          - "null"
+          - number
+      metrics.average_cost:
+        description: The average cost of all clicks.
+        type:
+          - "null"
+          - number
+      metrics.average_cpc:
+        description: The average cost per click.
+        type:
+          - "null"
+          - number
+      metrics.average_cpm:
+        description: The average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      metrics.trueview_average_cpv:
+        description: The average cost per view.
+        type:
+          - "null"
+          - number
+      metrics.clicks:
+        description: Total number of clicks.
+        type:
+          - "null"
+          - integer
+      metrics.conversions:
+        description: Total number of conversions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_from_interactions_rate:
+        description: The rate of conversions from interactions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_value:
+        description: The total value of conversions.
+        type:
+          - "null"
+          - number
+      metrics.cost_micros:
+        description: The cost in micros (millionths of the currency).
+        type:
+          - "null"
+          - integer
+      metrics.cost_per_all_conversions:
+        description: Cost per all conversions.
+        type:
+          - "null"
+          - number
+      metrics.cost_per_conversion:
+        description: Cost per conversion.
+        type:
+          - "null"
+          - number
+      metrics.cross_device_conversions:
+        description: Total number of cross-device conversions.
+        type:
+          - "null"
+          - number
+      metrics.ctr:
+        description: Click-through rate.
+        type:
+          - "null"
+          - number
+      metrics.impressions:
+        description: Total number of times the ad was shown.
+        type:
+          - "null"
+          - integer
+      metrics.interaction_rate:
+        description: The rate of interactions.
+        type:
+          - "null"
+          - number
+      metrics.interactions:
+        description: Total number of interactions.
+        type:
+          - "null"
+          - integer
+      metrics.value_per_all_conversions:
+        description: Value per all conversions.
+        type:
+          - "null"
+          - number
+      metrics.value_per_conversion:
+        description: Value per conversion.
+        type:
+          - "null"
+          - number
+      metrics.video_trueview_view_rate:
+        description: The rate of video views.
+        type:
+          - "null"
+          - number
+      metrics.video_trueview_views:
+        description: Total number of video views.
+        type:
+          - "null"
+          - integer
+      metrics.view_through_conversions:
+        description: Total number of view-through conversions.
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+
+  geo_performance:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      customer.id:
+        description: The ID of the customer associated with the geographic report data.
+        type:
+          - "null"
+          - integer
+      customer.descriptive_name:
+        description: The descriptive name of the customer.
+        type:
+          - "null"
+          - string
+      customer.currency_code:
+        description: The currency code used by the customer.
+        type:
+          - "null"
+          - string
+      customer.time_zone:
+        description: The time zone set for the customer.
+        type:
+          - "null"
+          - string
+      campaign.id:
+        description: The ID of the campaign.
+        type:
+          - "null"
+          - integer
+      campaign.name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      campaign.status:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      ad_group.id:
+        description: The ID of the ad group.
+        type:
+          - "null"
+          - integer
+      ad_group.name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.status:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      geographic_view.country_criterion_id:
+        description: The criterion ID for the country in the geographic view data.
+        type:
+          - "null"
+          - integer
+      geographic_view.location_type:
+        description: The type of location targeting (LOCATION_OF_PRESENCE or AREA_OF_INTEREST).
+        type:
+          - "null"
+          - string
+      geographic_view.resource_name:
+        description: The resource name of the geographic view.
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date segment for the geographic report data.
+        type:
+          - "null"
+          - string
+        format: date
+      segments.day_of_week:
+        description: The day of the week.
+        type:
+          - "null"
+          - string
+      segments.week:
+        description: The week of the year.
+        type:
+          - "null"
+          - string
+      segments.month:
+        description: The month.
+        type:
+          - "null"
+          - string
+      segments.quarter:
+        description: The quarter of the year.
+        type:
+          - "null"
+          - string
+      segments.year:
+        description: The year.
+        type:
+          - "null"
+          - integer
+      segments.ad_network_type:
+        description: The ad network type (e.g., SEARCH, DISPLAY, YOUTUBE).
+        type:
+          - "null"
+          - string
+      segments.device:
+        description: The device on which the ad was served.
+        type:
+          - "null"
+          - string
+      segments.geo_target_region:
+        description: Resource name of the geo target constant for the region.
+        type:
+          - "null"
+          - string
+      segments.geo_target_metro:
+        description: Resource name of the geo target constant for the metro area.
+        type:
+          - "null"
+          - string
+      segments.geo_target_city:
+        description: Resource name of the geo target constant for the city.
+        type:
+          - "null"
+          - string
+      segments.geo_target_most_specific_location:
+        description: Resource name of the geo target constant for the most specific location.
+        type:
+          - "null"
+          - string
+      metrics.clicks:
+        description: Total number of clicks.
+        type:
+          - "null"
+          - integer
+      metrics.impressions:
+        description: Total number of times the ad was shown.
+        type:
+          - "null"
+          - integer
+      metrics.ctr:
+        description: Click-through rate.
+        type:
+          - "null"
+          - number
+      metrics.average_cpc:
+        description: The average cost per click.
+        type:
+          - "null"
+          - number
+      metrics.average_cpm:
+        description: The average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      metrics.trueview_average_cpv:
+        description: The average cost per view.
+        type:
+          - "null"
+          - number
+      metrics.average_cost:
+        description: The average cost of all interactions.
+        type:
+          - "null"
+          - number
+      metrics.cost_micros:
+        description: The cost in micros (millionths of the currency).
+        type:
+          - "null"
+          - integer
+      metrics.interactions:
+        description: Total number of interactions.
+        type:
+          - "null"
+          - integer
+      metrics.interaction_rate:
+        description: The rate of interactions.
+        type:
+          - "null"
+          - number
+      metrics.conversions:
+        description: Total number of conversions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_value:
+        description: The total value of conversions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_from_interactions_rate:
+        description: The rate of conversions from interactions.
+        type:
+          - "null"
+          - number
+      metrics.cost_per_conversion:
+        description: Cost per conversion.
+        type:
+          - "null"
+          - number
+      metrics.value_per_conversion:
+        description: Value per conversion.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions:
+        description: Total number of conversions for all actions.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions_value:
+        description: The total value of all conversions.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions_from_interactions_rate:
+        description: The rate of all conversions from interactions.
+        type:
+          - "null"
+          - number
+      metrics.cost_per_all_conversions:
+        description: Cost per all conversions.
+        type:
+          - "null"
+          - number
+      metrics.value_per_all_conversions:
+        description: Value per all conversions.
+        type:
+          - "null"
+          - number
+      metrics.cross_device_conversions:
+        description: Total number of cross-device conversions.
+        type:
+          - "null"
+          - number
+      metrics.view_through_conversions:
+        description: Total number of view-through conversions.
+        type:
+          - "null"
+          - integer
+      metrics.video_trueview_views:
+        description: Total number of video views.
+        type:
+          - "null"
+          - integer
+      metrics.video_trueview_view_rate:
+        description: The rate of video views per impression.
+        type:
+          - "null"
+          - number
     additionalProperties: true
 
   keyword_view:
@@ -3631,7 +4181,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average CPV (Cost Per View) metric.
         type:
           - "null"
@@ -3923,12 +4473,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The video view rate metric.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views metric.
         type:
           - "null"
@@ -4102,7 +4652,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view.
         type:
           - "null"
@@ -4187,12 +4737,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views.
         type:
           - "null"
@@ -4483,7 +5033,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: The average cost per view for the campaign.
         type:
           - "null"
@@ -4577,12 +5127,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: The view rate for video ads in the campaign.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: The total number of video views for the campaign.
         type:
           - "null"
@@ -4687,7 +5237,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: Average cost per view
         type:
           - "null"
@@ -4861,12 +5411,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: Rate of video views
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Total number of video views
         type:
           - "null"
@@ -4969,76 +5519,6 @@ schemas:
           - array
         items:
           type: string
-      ad_group_ad.ad.call_ad.business_name:
-        description: The business name for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.call_tracked:
-        description: Indicates if calls are being tracked for Call ads.
-        type:
-          - "null"
-          - boolean
-      ad_group_ad.ad.call_ad.conversion_action:
-        description: The conversion action for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.conversion_reporting_state:
-        description: The state of conversion reporting for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.country_code:
-        description: The country code for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.description1:
-        description: Description line 1 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.description2:
-        description: Description line 2 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.disable_call_conversion:
-        description: Indicates if call conversions are disabled for Call ads.
-        type:
-          - "null"
-          - boolean
-      ad_group_ad.ad.call_ad.headline1:
-        description: Headline 1 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.headline2:
-        description: Headline 2 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.path1:
-        description: Path field 1 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.path2:
-        description: Path field 2 for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.phone_number:
-        description: The phone number for Call ads.
-        type:
-          - "null"
-          - string
-      ad_group_ad.ad.call_ad.phone_number_verification_url:
-        description: The phone number verification URL for Call ads.
-        type:
-          - "null"
-          - string
       ad_group_ad.ad.device_preference:
         description: The device preference for the ad.
         type:
@@ -5796,7 +6276,7 @@ schemas:
         type:
           - "null"
           - number
-      metrics.average_cpv:
+      metrics.trueview_average_cpv:
         description: Average cost per view.
         type:
           - "null"
@@ -6375,12 +6855,12 @@ schemas:
         type:
           - "null"
           - number
-      metrics.video_view_rate:
+      metrics.video_trueview_view_rate:
         description: Rate of video views.
         type:
           - "null"
           - number
-      metrics.video_views:
+      metrics.video_trueview_views:
         description: Number of video views.
         type:
           - "null"
@@ -6400,6 +6880,332 @@ schemas:
         type:
           - "null"
           - integer
+
+  ad_performance:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      customer.id:
+        description: The ID of the customer that owns the ad.
+        type:
+          - "null"
+          - integer
+      customer.descriptive_name:
+        description: The descriptive name of the customer.
+        type:
+          - "null"
+          - string
+      customer.currency_code:
+        description: The currency code used by the customer.
+        type:
+          - "null"
+          - string
+      customer.time_zone:
+        description: The time zone set for the customer.
+        type:
+          - "null"
+          - string
+      campaign.id:
+        description: The ID of the campaign the ad belongs to.
+        type:
+          - "null"
+          - integer
+      campaign.name:
+        description: The name of the campaign.
+        type:
+          - "null"
+          - string
+      campaign.status:
+        description: The status of the campaign.
+        type:
+          - "null"
+          - string
+      ad_group.id:
+        description: The ID of the ad group the ad belongs to.
+        type:
+          - "null"
+          - integer
+      ad_group.name:
+        description: The name of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group.status:
+        description: The status of the ad group.
+        type:
+          - "null"
+          - string
+      ad_group_ad.ad.id:
+        description: The ID of the ad.
+        type:
+          - "null"
+          - integer
+      ad_group_ad.ad.name:
+        description: The name of the ad.
+        type:
+          - "null"
+          - string
+      ad_group_ad.ad.type:
+        description: The type of the ad (e.g., RESPONSIVE_SEARCH_AD).
+        type:
+          - "null"
+          - string
+      ad_group_ad.status:
+        description: The status of the ad within the ad group.
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: The date of the performance data.
+        type:
+          - "null"
+          - string
+        format: date
+      segments.day_of_week:
+        description: The day of the week.
+        type:
+          - "null"
+          - string
+      segments.week:
+        description: The week of the year.
+        type:
+          - "null"
+          - string
+      segments.month:
+        description: The month.
+        type:
+          - "null"
+          - string
+      segments.quarter:
+        description: The quarter of the year.
+        type:
+          - "null"
+          - string
+      segments.year:
+        description: The year.
+        type:
+          - "null"
+          - integer
+      segments.ad_network_type:
+        description: The ad network type (e.g., SEARCH, DISPLAY, YOUTUBE).
+        type:
+          - "null"
+          - string
+      segments.device:
+        description: The device on which the ad was served.
+        type:
+          - "null"
+          - string
+      metrics.clicks:
+        description: Total number of clicks.
+        type:
+          - "null"
+          - integer
+      metrics.impressions:
+        description: Total number of times the ad was shown.
+        type:
+          - "null"
+          - integer
+      metrics.ctr:
+        description: Click-through rate.
+        type:
+          - "null"
+          - number
+      metrics.average_cpc:
+        description: The average cost per click.
+        type:
+          - "null"
+          - number
+      metrics.average_cpm:
+        description: The average cost per thousand impressions.
+        type:
+          - "null"
+          - number
+      metrics.trueview_average_cpv:
+        description: The average cost per view.
+        type:
+          - "null"
+          - number
+      metrics.average_cost:
+        description: The average cost of all interactions.
+        type:
+          - "null"
+          - number
+      metrics.cost_micros:
+        description: The cost in micros (millionths of the currency).
+        type:
+          - "null"
+          - integer
+      metrics.interactions:
+        description: Total number of interactions.
+        type:
+          - "null"
+          - integer
+      metrics.interaction_rate:
+        description: The rate of interactions.
+        type:
+          - "null"
+          - number
+      metrics.interaction_event_types:
+        description: The types of payable and free interactions.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      metrics.engagements:
+        description: Total number of engagements.
+        type:
+          - "null"
+          - integer
+      metrics.engagement_rate:
+        description: The rate of engagements per impression.
+        type:
+          - "null"
+          - number
+      metrics.active_view_impressions:
+        description: Active view viewable impressions.
+        type:
+          - "null"
+          - integer
+      metrics.active_view_measurable_impressions:
+        description: Impressions measurable by Active View.
+        type:
+          - "null"
+          - integer
+      metrics.active_view_measurability:
+        description: Ratio of measurable to total impressions.
+        type:
+          - "null"
+          - number
+      metrics.active_view_measurable_cost_micros:
+        description: Cost of measurable impressions in micros.
+        type:
+          - "null"
+          - integer
+      metrics.active_view_cpm:
+        description: Active view average cost per thousand viewable impressions.
+        type:
+          - "null"
+          - number
+      metrics.active_view_ctr:
+        description: Active view click-through rate.
+        type:
+          - "null"
+          - number
+      metrics.active_view_viewability:
+        description: Ratio of viewable to measurable impressions.
+        type:
+          - "null"
+          - number
+      metrics.conversions:
+        description: Total number of conversions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_value:
+        description: The total value of conversions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_from_interactions_rate:
+        description: The rate of conversions from interactions.
+        type:
+          - "null"
+          - number
+      metrics.conversions_by_conversion_date:
+        description: Conversions attributed to the conversion date.
+        type:
+          - "null"
+          - number
+      metrics.cost_per_conversion:
+        description: Cost per conversion.
+        type:
+          - "null"
+          - number
+      metrics.value_per_conversion:
+        description: Value per conversion.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions:
+        description: Total number of conversions for all actions.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions_value:
+        description: The total value of all conversions.
+        type:
+          - "null"
+          - number
+      metrics.all_conversions_from_interactions_rate:
+        description: The rate of all conversions from interactions.
+        type:
+          - "null"
+          - number
+      metrics.cost_per_all_conversions:
+        description: Cost per all conversions.
+        type:
+          - "null"
+          - number
+      metrics.value_per_all_conversions:
+        description: Value per all conversions.
+        type:
+          - "null"
+          - number
+      metrics.cross_device_conversions:
+        description: Total number of cross-device conversions.
+        type:
+          - "null"
+          - number
+      metrics.view_through_conversions:
+        description: Total number of view-through conversions.
+        type:
+          - "null"
+          - integer
+      metrics.video_trueview_views:
+        description: Total number of video views.
+        type:
+          - "null"
+          - integer
+      metrics.video_trueview_view_rate:
+        description: The rate of video views per impression.
+        type:
+          - "null"
+          - number
+      metrics.video_quartile_p25_rate:
+        description: Percentage of impressions where the video was played to 25%.
+        type:
+          - "null"
+          - number
+      metrics.video_quartile_p50_rate:
+        description: Percentage of impressions where the video was played to 50%.
+        type:
+          - "null"
+          - number
+      metrics.video_quartile_p75_rate:
+        description: Percentage of impressions where the video was played to 75%.
+        type:
+          - "null"
+          - number
+      metrics.video_quartile_p100_rate:
+        description: Percentage of impressions where the video was played to 100%.
+        type:
+          - "null"
+          - number
+      metrics.top_impression_percentage:
+        description: Percentage of impressions shown at the top of the page.
+        type:
+          - "null"
+          - number
+      metrics.absolute_top_impression_percentage:
+        description: Percentage of impressions shown at the very top of the page.
+        type:
+          - "null"
+          - number
+    additionalProperties: true
 
   audience:
     $schema: http://json-schema.org/draft-07/schema#

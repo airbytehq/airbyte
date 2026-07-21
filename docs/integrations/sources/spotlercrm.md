@@ -20,6 +20,10 @@ The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless d
 | opportunity_histories | id | DefaultPaginator | ✅ |  ❌  |
 | opportunity_lines | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -27,6 +31,16 @@ The Airbyte connector for [Spotler CRM](https://spotler.com/) enables seamless d
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-07-14 | [82018](https://github.com/airbytehq/airbyte/pull/82018) | Update dependencies |
+| 0.0.52 | 2026-06-30 | [81259](https://github.com/airbytehq/airbyte/pull/81259) | Update dependencies |
+| 0.0.51 | 2026-06-23 | [80660](https://github.com/airbytehq/airbyte/pull/80660) | Update dependencies |
+| 0.0.50 | 2026-06-16 | [80046](https://github.com/airbytehq/airbyte/pull/80046) | Update dependencies |
+| 0.0.49 | 2026-06-09 | [79502](https://github.com/airbytehq/airbyte/pull/79502) | Update dependencies |
+| 0.0.48 | 2026-06-02 | [78987](https://github.com/airbytehq/airbyte/pull/78987) | Update dependencies |
+| 0.0.47 | 2026-04-28 | [77467](https://github.com/airbytehq/airbyte/pull/77467) | Update dependencies |
+| 0.0.46 | 2026-04-21 | [75889](https://github.com/airbytehq/airbyte/pull/75889) | Update dependencies |
+| 0.0.45 | 2026-03-24 | [74610](https://github.com/airbytehq/airbyte/pull/74610) | Update dependencies |
+| 0.0.44 | 2026-03-03 | [74212](https://github.com/airbytehq/airbyte/pull/74212) | Update dependencies |
 | 0.0.43 | 2026-02-17 | [73123](https://github.com/airbytehq/airbyte/pull/73123) | Update dependencies |
 | 0.0.42 | 2026-02-03 | [72767](https://github.com/airbytehq/airbyte/pull/72767) | Update dependencies |
 | 0.0.41 | 2026-01-20 | [72109](https://github.com/airbytehq/airbyte/pull/72109) | Update dependencies |

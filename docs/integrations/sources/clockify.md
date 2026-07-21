@@ -2,6 +2,10 @@
 
 The Airbyte Source for [Clockify](https://clockify.me)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -9,6 +13,17 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.57 | 2026-07-14 | [81771](https://github.com/airbytehq/airbyte/pull/81771) | Update dependencies |
+| 0.4.56 | 2026-06-30 | [81021](https://github.com/airbytehq/airbyte/pull/81021) | Update dependencies |
+| 0.4.55 | 2026-06-23 | [80417](https://github.com/airbytehq/airbyte/pull/80417) | Update dependencies |
+| 0.4.54 | 2026-06-16 | [79801](https://github.com/airbytehq/airbyte/pull/79801) | Update dependencies |
+| 0.4.53 | 2026-06-09 | [79260](https://github.com/airbytehq/airbyte/pull/79260) | Update dependencies |
+| 0.4.52 | 2026-06-02 | [78671](https://github.com/airbytehq/airbyte/pull/78671) | Update dependencies |
+| 0.4.51 | 2026-04-28 | [77172](https://github.com/airbytehq/airbyte/pull/77172) | Update dependencies |
+| 0.4.50 | 2026-04-21 | [76573](https://github.com/airbytehq/airbyte/pull/76573) | Update dependencies |
+| 0.4.49 | 2026-03-17 | [75105](https://github.com/airbytehq/airbyte/pull/75105) | Update dependencies |
+| 0.4.48 | 2026-03-10 | [74433](https://github.com/airbytehq/airbyte/pull/74433) | Update dependencies |
+| 0.4.47 | 2026-03-03 | [73828](https://github.com/airbytehq/airbyte/pull/73828) | Update dependencies |
 | 0.4.46 | 2026-02-17 | [73450](https://github.com/airbytehq/airbyte/pull/73450) | Update dependencies |
 | 0.4.45 | 2026-02-10 | [72983](https://github.com/airbytehq/airbyte/pull/72983) | Update dependencies |
 | 0.4.44 | 2026-02-03 | [72702](https://github.com/airbytehq/airbyte/pull/72702) | Update dependencies |

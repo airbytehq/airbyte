@@ -46,7 +46,8 @@ You'll need the following information to configure the Postgres destination:
 #### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
-may need to allow access from the IP you're using to expose Airbyte.
+may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ## Step 1: Set up Postgres
 
@@ -181,14 +182,15 @@ Mode**; otherwise, the connection will fail.
 ## Supported sync modes
 
 The Postgres destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Schema map
 
@@ -286,6 +288,10 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 For vendor-specific limitations and known issues, see the [Postgres Troubleshooting Guide](postgres/postgres-troubleshooting.md#vendor-specific-connector-limitations).
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Postgres schema.
+
 ## Changelog
 
 <details>
@@ -293,6 +299,8 @@ For vendor-specific limitations and known issues, see the [Postgres Troubleshoot
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.13  | 2026-04-16 | [76409](https://github.com/airbytehq/airbyte/pull/76409)   | Upgrade CDK to 1.0.9.                                                                                                                                                                  |
+| 3.0.12  | 2026-03-25 | | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert |
 | 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
 | 3.0.10  | 2026-02-04 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
 | 3.0.9   | 2026-01-28 | [72292](https://github.com/airbytehq/airbyte/pull/72292)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |

@@ -16,6 +16,10 @@ The JobNimbus Airbyte connector enables seamless integration between JobNimbus, 
 | activities | jnid | DefaultPaginator | ✅ |  ❌  |
 | files | jnid | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,17 @@ The JobNimbus Airbyte connector enables seamless integration between JobNimbus, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.56 | 2026-07-14 | [81888](https://github.com/airbytehq/airbyte/pull/81888) | Update dependencies |
+| 0.0.55 | 2026-06-30 | [81116](https://github.com/airbytehq/airbyte/pull/81116) | Update dependencies |
+| 0.0.54 | 2026-06-23 | [80493](https://github.com/airbytehq/airbyte/pull/80493) | Update dependencies |
+| 0.0.53 | 2026-06-16 | [79910](https://github.com/airbytehq/airbyte/pull/79910) | Update dependencies |
+| 0.0.52 | 2026-06-09 | [79364](https://github.com/airbytehq/airbyte/pull/79364) | Update dependencies |
+| 0.0.51 | 2026-06-02 | [78795](https://github.com/airbytehq/airbyte/pull/78795) | Update dependencies |
+| 0.0.50 | 2026-04-28 | [77305](https://github.com/airbytehq/airbyte/pull/77305) | Update dependencies |
+| 0.0.49 | 2026-04-21 | [76619](https://github.com/airbytehq/airbyte/pull/76619) | Update dependencies |
+| 0.0.48 | 2026-03-31 | [75685](https://github.com/airbytehq/airbyte/pull/75685) | Update dependencies |
+| 0.0.47 | 2026-03-24 | [75346](https://github.com/airbytehq/airbyte/pull/75346) | Update dependencies |
+| 0.0.46 | 2026-03-10 | [74494](https://github.com/airbytehq/airbyte/pull/74494) | Update dependencies |
 | 0.0.45 | 2026-02-24 | [73896](https://github.com/airbytehq/airbyte/pull/73896) | Update dependencies |
 | 0.0.44 | 2026-02-17 | [73086](https://github.com/airbytehq/airbyte/pull/73086) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71940](https://github.com/airbytehq/airbyte/pull/71940) | Update dependencies |

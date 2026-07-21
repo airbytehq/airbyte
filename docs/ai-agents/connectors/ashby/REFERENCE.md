@@ -8,13 +8,13 @@ The Ashby connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](#candidates-list), [Get](#candidates-get) |
-| Applications | [List](#applications-list), [Get](#applications-get) |
-| Jobs | [List](#jobs-list), [Get](#jobs-get) |
+| Candidates | [List](#candidates-list), [Get](#candidates-get), [Context Store Search](#candidates-context-store-search) |
+| Applications | [List](#applications-list), [Get](#applications-get), [Context Store Search](#applications-context-store-search) |
+| Jobs | [List](#jobs-list), [Get](#jobs-get), [Context Store Search](#jobs-context-store-search) |
 | Departments | [List](#departments-list), [Get](#departments-get) |
 | Locations | [List](#locations-list), [Get](#locations-get) |
-| Users | [List](#users-list), [Get](#users-get) |
-| Job Postings | [List](#job-postings-list), [Get](#job-postings-get) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Job Postings | [List](#job-postings-list), [Get](#job-postings-get), [Context Store Search](#job-postings-context-store-search) |
 | Sources | [List](#sources-list) |
 | Archive Reasons | [List](#archive-reasons-list) |
 | Candidate Tags | [List](#candidate-tags-list) |
@@ -26,6 +26,17 @@ The Ashby connector supports the following entities and actions.
 ### Candidates List
 
 Lists all candidates in the organization
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "candidates",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -91,6 +102,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single candidate by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "candidates",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -122,11 +147,108 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Candidate ID |
 
 
+### Candidates Context Store Search
+
+Search and filter candidates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "candidates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await ashby.candidates.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "candidates",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the candidate |
+| `name` | `string` | Full name of the candidate |
+| `company` | `string` | Candidate's current company |
+| `position` | `string` | Candidate's current position or title |
+| `school` | `string` | School associated with the candidate's education |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the candidate |
+| `data[].name` | `string` | Full name of the candidate |
+| `data[].company` | `string` | Candidate's current company |
+| `data[].position` | `string` | Candidate's current position or title |
+| `data[].school` | `string` | School associated with the candidate's education |
+
+</details>
+
 ## Applications
 
 ### Applications List
 
 Gets all applications in the organization
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "applications",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -193,6 +315,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single application by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "applications",
+  "action": "get",
+  "params": {
+    "applicationId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -224,11 +360,108 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `applicationId` | `string` | Yes | Application ID |
 
 
+### Applications Context Store Search
+
+Search and filter applications records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "applications",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await ashby.applications.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "applications",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the application |
+| `status` | `string` | Current application status (e.g. active, archived, hired) |
+| `archiveReason` | `string` | Reason the application was archived, if applicable |
+| `createdAt` | `string` | Timestamp when the application was created, in ISO 8601 format |
+| `updatedAt` | `string` | Timestamp when the application was last updated, in ISO 8601 format |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the application |
+| `data[].status` | `string` | Current application status (e.g. active, archived, hired) |
+| `data[].archiveReason` | `string` | Reason the application was archived, if applicable |
+| `data[].createdAt` | `string` | Timestamp when the application was created, in ISO 8601 format |
+| `data[].updatedAt` | `string` | Timestamp when the application was last updated, in ISO 8601 format |
+
+</details>
+
 ## Jobs
 
 ### Jobs List
 
 List all open, closed, and archived jobs
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "jobs",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -298,6 +531,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single job by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "jobs",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -329,11 +576,108 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | Yes | Job ID |
 
 
+### Jobs Context Store Search
+
+Search and filter jobs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "jobs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await ashby.jobs.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "jobs",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the job |
+| `title` | `string` | Title of the job |
+| `status` | `string` | Current status of the job (e.g. open, closed, draft) |
+| `departmentId` | `string` | Identifier of the department the job belongs to |
+| `locationId` | `string` | Identifier of the primary location of the job |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the job |
+| `data[].title` | `string` | Title of the job |
+| `data[].status` | `string` | Current status of the job (e.g. open, closed, draft) |
+| `data[].departmentId` | `string` | Identifier of the department the job belongs to |
+| `data[].locationId` | `string` | Identifier of the primary location of the job |
+
+</details>
+
 ## Departments
 
 ### Departments List
 
 List all departments
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "departments",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -392,6 +736,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single department by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "departments",
+  "action": "get",
+  "params": {
+    "departmentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -428,6 +786,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Locations List
 
 List all locations
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "locations",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -488,6 +857,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single location by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "locations",
+  "action": "get",
+  "params": {
+    "locationId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -524,6 +907,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users List
 
 List all users in the organization
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -581,6 +975,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "userId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -612,11 +1020,106 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `userId` | `string` | Yes | User ID |
 
 
+### Users Context Store Search
+
+Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await ashby.users.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "users",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the user |
+| `firstName` | `string` | First name of the user |
+| `lastName` | `string` | Last name of the user |
+| `email` | `string` | Primary email address of the user |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the user |
+| `data[].firstName` | `string` | First name of the user |
+| `data[].lastName` | `string` | Last name of the user |
+| `data[].email` | `string` | Primary email address of the user |
+
+</details>
+
 ## Job Postings
 
 ### Job Postings List
 
 List all job postings
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "job_postings",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -685,6 +1188,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single job posting by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "job_postings",
+  "action": "get",
+  "params": {
+    "jobPostingId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -716,11 +1233,108 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `jobPostingId` | `string` | Yes | Job posting ID |
 
 
+### Job Postings Context Store Search
+
+Search and filter job postings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "job_postings",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await ashby.job_postings.context_store_search(
+    query={"filter": {"eq": {"id": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "job_postings",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` | Unique identifier for the job posting |
+| `title` | `string` | Title of the job posting |
+| `isListed` | `boolean` | Whether the job posting is currently published/listed |
+| `jobId` | `string` | Identifier of the job this posting belongs to |
+| `locationName` | `string` | Name of the location associated with the posting |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique identifier for the job posting |
+| `data[].title` | `string` | Title of the job posting |
+| `data[].isListed` | `boolean` | Whether the job posting is currently published/listed |
+| `data[].jobId` | `string` | Identifier of the job this posting belongs to |
+| `data[].locationName` | `string` | Name of the location associated with the posting |
+
+</details>
+
 ## Sources
 
 ### Sources List
 
 List all candidate sources
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "sources",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -777,6 +1391,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all archive reasons
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "archive_reasons",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -832,6 +1457,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all candidate tags
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "candidate_tags",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -885,6 +1521,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Custom Fields List
 
 List all custom fields
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "custom_fields",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -942,6 +1589,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Feedback Form Definitions List
 
 List all feedback form definitions
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "ashby",
+  "entity": "feedback_form_definitions",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 

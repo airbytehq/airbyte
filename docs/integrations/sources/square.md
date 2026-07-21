@@ -4,50 +4,30 @@ This page contains the setup guide and reference information for the Square sour
 
 ## Prerequisites
 
-To set up the Square source connector with Airbyte, you'll need to create your Square Application and use Personal token or Oauth access token.
+- A [Square Developer account](https://developer.squareup.com/apps) with an application created.
+- A personal access token or OAuth credentials (Client ID, Client Secret, and refresh token). See [Square access tokens](https://developer.squareup.com/docs/build-basics/access-tokens) for details.
 
 ## Setup guide
 
 ### Step 1: Set up Square
 
-1. Create [Square Application](https://developer.squareup.com/apps)
-2. Obtain [Personal token](https://developer.squareup.com/docs/build-basics/access-tokens) or [Oauth access token](https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization).
+1. Create a [Square Application](https://developer.squareup.com/apps).
+2. Obtain a [personal access token](https://developer.squareup.com/docs/build-basics/access-tokens) or complete the [OAuth flow](https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization) to get a Client ID, Client Secret, and refresh token.
 
 ### Step 2: Set up the Square connector in Airbyte
 
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
-4. Choose authentication method:
-   - Api-Key
-     - Fill in API key token with "Access token" from Square Application settings page (Credentials on the left)
-   - Oauth authentication
-     - Fill in Client ID and Client secret with data from Square Application settings page (Oauth on the left)
-     - Fill in refresh token with one obtained during the authentication process
-5. Choose if your account is sandbox
-6. Choose start date
-7. Choose if you would like to include Deleted objects (for streams: Items, Categories, Discounts, Taxes)
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
-4. Choose authentication method:
-   - Api-Key
-     - Fill in API key token with "Access token" from Square Application settings page (Credentials on the left)
-   - Oauth authentication
-     - Fill in Client ID and Client secret with data from Square Application settings page (Oauth on the left)
-     - Fill in refresh token with one obtained during the authentication process
-5. Choose if your account is sandbox
-6. Choose start date
-7. Choose if you would like to include Deleted objects (for streams: Items, Categories, Discounts, Taxes)
+1. In Airbyte, navigate to **Sources** and click **+ New source**.
+2. Select **Square** from the source type dropdown.
+3. Choose an authentication method:
+   - **API Key**: Enter the access token from your Square Application settings page (under **Credentials**).
+   - **OAuth**: Enter the Client ID and Client Secret from your Square Application settings page (under **OAuth**), along with the refresh token obtained during the authorization flow.
+4. Set **Sandbox** to `true` if you are using a Square sandbox environment.
+5. Set a **Start Date** (UTC, format `YYYY-MM-DD`). Data before this date is not replicated.
+6. Optionally enable **Include Deleted Objects** to sync deleted Items, Categories, Discounts, and Taxes.
 
 ## Supported sync modes
 
-The Square source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Square source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -56,45 +36,39 @@ The Square source connector supports the following [ sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Items](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Categories](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Discounts](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Taxes](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [ModifierLists](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) \(Incremental\)
-- [Payments](https://developer.squareup.com/reference/square_2022-10-19/payments-api/list-payments) \(Incremental\)
-- [Refunds](https://developer.squareup.com/reference/square_2022-10-19/refunds-api/list-payment-refunds) \(Incremental\)
+- [Items](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) (Incremental)
+- [Categories](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) (Incremental)
+- [Discounts](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) (Incremental)
+- [Taxes](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) (Incremental)
+- [Modifier Lists](https://developer.squareup.com/explorer/square/catalog-api/search-catalog-objects) (Incremental)
+- [Payments](https://developer.squareup.com/reference/square/payments-api/list-payments) (Incremental)
+- [Refunds](https://developer.squareup.com/reference/square/refunds-api/list-payment-refunds) (Incremental)
+- [Orders](https://developer.squareup.com/reference/square/orders-api/search-orders) (Incremental)
 - [Locations](https://developer.squareup.com/explorer/square/locations-api/list-locations)
-- [Team Members](https://developer.squareup.com/reference/square_2022-10-19/team-api/search-team-members)
-- [List Team Member Wages](https://developer.squareup.com/explorer/square/labor-api/list-team-member-wages)
+- [Team Members](https://developer.squareup.com/reference/square/team-api/search-team-members)
+- [Team Member Wages](https://developer.squareup.com/explorer/square/labor-api/list-team-member-wages)
 - [Customers](https://developer.squareup.com/explorer/square/customers-api/list-customers)
 - [Shifts](https://developer.squareup.com/reference/square/labor-api/search-shifts)
 - [Inventory](https://developer.squareup.com/reference/square/inventory-api/batch-retrieve-inventory-counts)
-- [Orders](https://developer.squareup.com/reference/square/orders-api/search-orders)
-- [Cash drawers](https://developer.squareup.com/explorer/square/cash-drawers-api/list-cash-drawer-shifts)
+- [Bank Accounts](https://developer.squareup.com/reference/square/bank-accounts-api/list-bank-accounts)
+- [Cash Drawers](https://developer.squareup.com/explorer/square/cash-drawers-api/list-cash-drawer-shifts)
 - [Loyalty](https://developer.squareup.com/explorer/square/loyalty-api/search-loyalty-accounts)
 
-## Connector-specific features & highlights
+## Limitations and considerations
 
-Useful links:
+Square uses dynamic rate limiting that varies by endpoint and current API load. The connector handles `429 Too Many Requests` responses with a 30-second constant backoff before retrying. For more details, see [Square's rate limit guidance](https://developer.squareup.com/forums/t/current-square-api-rate-limit/449).
+
+The Orders stream is partitioned by location. Each location's orders are fetched independently via the [SearchOrders](https://developer.squareup.com/reference/square/orders-api/search-orders) endpoint with a page size of 1,000 records per request.
+
+## Useful links
 
 - [Square API Explorer](https://developer.squareup.com/explorer/square)
-- [Square API Docs](https://developer.squareup.com/reference/square)
+- [Square API Reference](https://developer.squareup.com/reference/square)
 - [Square Developer Dashboard](https://developer.squareup.com/apps)
 
-## Performance considerations (if any)
+## IP allow list
 
-No defined API rate limits were found in Square documentation however considering [this information](https://stackoverflow.com/questions/28033966/whats-the-rate-limit-on-the-square-connect-api/28053836#28053836) it has 10 QPS limits. The connector doesn't handle rate limits exceptions, but no errors were raised during testing.
-Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api-rate-limit/449) strategy recommended.
-
-## Data type map
-
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `integer`        | `integer`    |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
-| `boolean`        | `boolean`    |       |
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -103,6 +77,17 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.22 | 2026-07-14 | [82047](https://github.com/airbytehq/airbyte/pull/82047) | Update dependencies |
+| 1.7.21 | 2026-06-30 | [81274](https://github.com/airbytehq/airbyte/pull/81274) | Update dependencies |
+| 1.7.20 | 2026-06-23 | [80667](https://github.com/airbytehq/airbyte/pull/80667) | Update dependencies |
+| 1.7.19 | 2026-06-16 | [80085](https://github.com/airbytehq/airbyte/pull/80085) | Update dependencies |
+| 1.7.18 | 2026-06-15 | [77704](https://github.com/airbytehq/airbyte/pull/77704) | Fix `orders` stream pagination — was silently capping at 500 records per location partition; now follows Square's `cursor` to fetch all pages |
+| 1.7.17 | 2026-06-09 | [79525](https://github.com/airbytehq/airbyte/pull/79525) | Update dependencies |
+| 1.7.16 | 2026-06-02 | [78955](https://github.com/airbytehq/airbyte/pull/78955) | Update dependencies |
+| 1.7.15 | 2026-04-28 | [77463](https://github.com/airbytehq/airbyte/pull/77463) | Update dependencies |
+| 1.7.14 | 2026-04-21 | [75866](https://github.com/airbytehq/airbyte/pull/75866) | Update dependencies |
+| 1.7.13 | 2026-03-17 | [75101](https://github.com/airbytehq/airbyte/pull/75101) | Update dependencies |
+| 1.7.12 | 2026-03-10 | [74570](https://github.com/airbytehq/airbyte/pull/74570) | Update dependencies |
 | 1.7.11 | 2026-02-17 | [72374](https://github.com/airbytehq/airbyte/pull/72374) | Update dependencies |
 | 1.7.10 | 2025-11-25 | [70017](https://github.com/airbytehq/airbyte/pull/70017) | Update dependencies |
 | 1.7.9 | 2025-11-18 | [69524](https://github.com/airbytehq/airbyte/pull/69524) | Update dependencies |

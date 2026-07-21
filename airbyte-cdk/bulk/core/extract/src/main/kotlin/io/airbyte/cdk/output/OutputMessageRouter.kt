@@ -6,7 +6,7 @@ package io.airbyte.cdk.output
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
@@ -40,7 +40,7 @@ class OutputMessageRouter(
         Map<StreamIdentifier, FeedBootstrap<*>.ProtoEfficientStreamRecordConsumer>
     private lateinit var simpleEfficientStreamConsumers: Map<StreamIdentifier, StreamRecordConsumer>
     var recordAcceptors:
-        Map<StreamIdentifier, (NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit>
+        Map<StreamIdentifier, (NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit>
 
     init {
         when (recordsDataChannelMedium) {
@@ -64,7 +64,7 @@ class OutputMessageRouter(
                                     it.key to
                                         {
                                             record: NativeRecordPayload,
-                                            changes: Map<Field, FieldValueChange>? ->
+                                            changes: Map<EmittedField, FieldValueChange>? ->
                                             it.value.accept(record, changes)
                                         }
                                 }
@@ -90,7 +90,7 @@ class OutputMessageRouter(
                                     it.key to
                                         {
                                             record: NativeRecordPayload,
-                                            changes: Map<Field, FieldValueChange>? ->
+                                            changes: Map<EmittedField, FieldValueChange>? ->
                                             it.value.accept(record, changes)
                                         }
                                 }
@@ -106,7 +106,7 @@ class OutputMessageRouter(
                             it.key to
                                 {
                                     record: NativeRecordPayload,
-                                    changes: Map<Field, FieldValueChange>? ->
+                                    changes: Map<EmittedField, FieldValueChange>? ->
                                     it.value.accept(record, changes)
                                 }
                         }

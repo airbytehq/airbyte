@@ -24,6 +24,10 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 | invoices | id | DefaultPaginator | ✅ |  ❌  |
 | holidays | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -31,6 +35,17 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-07-14 | [81981](https://github.com/airbytehq/airbyte/pull/81981) | Update dependencies |
+| 0.0.51 | 2026-06-30 | [81220](https://github.com/airbytehq/airbyte/pull/81220) | Update dependencies |
+| 0.0.50 | 2026-06-23 | [80652](https://github.com/airbytehq/airbyte/pull/80652) | Update dependencies |
+| 0.0.49 | 2026-06-16 | [80009](https://github.com/airbytehq/airbyte/pull/80009) | Update dependencies |
+| 0.0.48 | 2026-06-09 | [79511](https://github.com/airbytehq/airbyte/pull/79511) | Update dependencies |
+| 0.0.47 | 2026-06-02 | [78928](https://github.com/airbytehq/airbyte/pull/78928) | Update dependencies |
+| 0.0.46 | 2026-04-28 | [77411](https://github.com/airbytehq/airbyte/pull/77411) | Update dependencies |
+| 0.0.45 | 2026-04-21 | [76741](https://github.com/airbytehq/airbyte/pull/76741) | Update dependencies |
+| 0.0.44 | 2026-03-31 | [75847](https://github.com/airbytehq/airbyte/pull/75847) | Update dependencies |
+| 0.0.43 | 2026-03-24 | [75341](https://github.com/airbytehq/airbyte/pull/75341) | Update dependencies |
+| 0.0.42 | 2026-03-10 | [74700](https://github.com/airbytehq/airbyte/pull/74700) | Update dependencies |
 | 0.0.41 | 2026-02-24 | [73772](https://github.com/airbytehq/airbyte/pull/73772) | Update dependencies |
 | 0.0.40 | 2026-02-10 | [73185](https://github.com/airbytehq/airbyte/pull/73185) | Update dependencies |
 | 0.0.39 | 2026-02-03 | [72549](https://github.com/airbytehq/airbyte/pull/72549) | Update dependencies |

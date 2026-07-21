@@ -20,6 +20,10 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 | timezones | value | No pagination | ✅ |  ❌  |
 | analytics_episodes | id | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -27,6 +31,16 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-07-14 | [81992](https://github.com/airbytehq/airbyte/pull/81992) | Update dependencies |
+| 0.0.53 | 2026-06-30 | [81257](https://github.com/airbytehq/airbyte/pull/81257) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80636](https://github.com/airbytehq/airbyte/pull/80636) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [80015](https://github.com/airbytehq/airbyte/pull/80015) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79473](https://github.com/airbytehq/airbyte/pull/79473) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78946](https://github.com/airbytehq/airbyte/pull/78946) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77402](https://github.com/airbytehq/airbyte/pull/77402) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76799](https://github.com/airbytehq/airbyte/pull/76799) | Update dependencies |
+| 0.0.46 | 2026-03-24 | [75333](https://github.com/airbytehq/airbyte/pull/75333) | Update dependencies |
+| 0.0.45 | 2026-03-10 | [74602](https://github.com/airbytehq/airbyte/pull/74602) | Update dependencies |
 | 0.0.44 | 2026-02-24 | [73203](https://github.com/airbytehq/airbyte/pull/73203) | Update dependencies |
 | 0.0.43 | 2026-02-03 | [72705](https://github.com/airbytehq/airbyte/pull/72705) | Update dependencies |
 | 0.0.42 | 2026-01-20 | [71656](https://github.com/airbytehq/airbyte/pull/71656) | Update dependencies |

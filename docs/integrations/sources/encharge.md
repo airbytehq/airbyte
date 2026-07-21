@@ -18,6 +18,10 @@ Airbyte connector for [Encharge](https://encharge.io/) enables seamless data int
 | fields | name | No pagination | ✅ |  ❌  |
 | schemas | name | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -25,6 +29,16 @@ Airbyte connector for [Encharge](https://encharge.io/) enables seamless data int
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.55 | 2026-07-14 | [81823](https://github.com/airbytehq/airbyte/pull/81823) | Update dependencies |
+| 0.0.54 | 2026-06-30 | [81065](https://github.com/airbytehq/airbyte/pull/81065) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80462](https://github.com/airbytehq/airbyte/pull/80462) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [79841](https://github.com/airbytehq/airbyte/pull/79841) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79325](https://github.com/airbytehq/airbyte/pull/79325) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78691](https://github.com/airbytehq/airbyte/pull/78691) | Update dependencies |
+| 0.0.49 | 2026-04-28 | [77253](https://github.com/airbytehq/airbyte/pull/77253) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76564](https://github.com/airbytehq/airbyte/pull/76564) | Update dependencies |
+| 0.0.47 | 2026-03-17 | [74994](https://github.com/airbytehq/airbyte/pull/74994) | Update dependencies |
+| 0.0.46 | 2026-03-10 | [73486](https://github.com/airbytehq/airbyte/pull/73486) | Update dependencies |
 | 0.0.45 | 2026-02-10 | [73016](https://github.com/airbytehq/airbyte/pull/73016) | Update dependencies |
 | 0.0.44 | 2026-02-03 | [72604](https://github.com/airbytehq/airbyte/pull/72604) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71896](https://github.com/airbytehq/airbyte/pull/71896) | Update dependencies |

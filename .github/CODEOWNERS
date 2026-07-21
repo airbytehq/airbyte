@@ -7,30 +7,30 @@
 # -----------------------------------------------------------------------------
 # Protocol
 # -----------------------------------------------------------------------------
-/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/move-destinations
+/docs/understanding-airbyte/airbyte-protocol.md @airbytehq/destinations
 
 # -----------------------------------------------------------------------------
 # BULK CDK (Kotlin-based modern CDK)
 # -----------------------------------------------------------------------------
-/airbyte-cdk/bulk/ @airbytehq/dbsources @airbytehq/move-destinations
+/airbyte-cdk/bulk/ @airbytehq/dbsources @airbytehq/destinations
 /airbyte-cdk/bulk/core/extract/ @airbytehq/dbsources
-/airbyte-cdk/bulk/core/load/ @airbytehq/move-destinations
+/airbyte-cdk/bulk/core/load/ @airbytehq/destinations
 /airbyte-cdk/bulk/toolkits/extract-*/ @airbytehq/dbsources
-/airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/move-destinations
-/airbyte-cdk/bulk/toolkits/legacy-task-*/ @airbytehq/move-destinations
+/airbyte-cdk/bulk/toolkits/load-*/ @airbytehq/destinations
+/airbyte-cdk/bulk/toolkits/legacy-task-*/ @airbytehq/destinations
 
 # -----------------------------------------------------------------------------
 # JAVA CDK
 # -----------------------------------------------------------------------------
-/airbyte-cdk/java/airbyte-cdk/ @airbytehq/dbsources @airbytehq/move-destinations
+/airbyte-cdk/java/airbyte-cdk/ @airbytehq/dbsources @airbytehq/destinations
 /airbyte-cdk/java/airbyte-cdk/*-sources/ @airbytehq/dbsources
-/airbyte-cdk/java/airbyte-cdk/*-destinations/ @airbytehq/move-destinations
-/airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/move-destinations
+/airbyte-cdk/java/airbyte-cdk/*-destinations/ @airbytehq/destinations
+/airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/destinations
 
 # -----------------------------------------------------------------------------
 # BUILD INFRASTRUCTURE
 # -----------------------------------------------------------------------------
-/buildSrc/ @airbytehq/dbsources @airbytehq/move-destinations
+/buildSrc/ @airbytehq/dbsources @airbytehq/destinations
 
 # -----------------------------------------------------------------------------
 # SOURCE CONNECTORS
@@ -38,12 +38,27 @@
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
 
 # -----------------------------------------------------------------------------
-# DESTINATION CONNECTORS
+# DESTINATION CONNECTORS (certified + JDK-based only)
 # -----------------------------------------------------------------------------
-/airbyte-integrations/connectors/destination-*/ @airbytehq/move-destinations
+# Only destination connectors that are both certified AND JDK-based are owned
+# by @airbytehq/destinations. This avoids unnecessary review requests on
+# community or non-JDK connectors (e.g. dependabot bumps).
+/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-customer-io/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-databricks/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-gcs-data-lake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-hubspot/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-mssql/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-s3-data-lake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
 
 # Destination documentation
-/docs/integrations/destinations/ @airbytehq/move-destinations
+/docs/integrations/destinations/ @airbytehq/destinations
 
 # -----------------------------------------------------------------------------
 # OAUTH

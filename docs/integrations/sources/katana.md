@@ -38,6 +38,10 @@ To generate a live API key: log in to your Katana account.  Go to Settings &gt; 
 | manufacturing_orders | id | DefaultPaginator | ✅ |  ✅  |
 | materials | id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -45,6 +49,16 @@ To generate a live API key: log in to your Katana account.  Go to Settings &gt; 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.58 | 2026-07-14 | [81885](https://github.com/airbytehq/airbyte/pull/81885) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81105](https://github.com/airbytehq/airbyte/pull/81105) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80506](https://github.com/airbytehq/airbyte/pull/80506) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79920](https://github.com/airbytehq/airbyte/pull/79920) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79348](https://github.com/airbytehq/airbyte/pull/79348) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78790](https://github.com/airbytehq/airbyte/pull/78790) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77349](https://github.com/airbytehq/airbyte/pull/77349) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76655](https://github.com/airbytehq/airbyte/pull/76655) | Update dependencies |
+| 0.0.50 | 2026-03-17 | [75002](https://github.com/airbytehq/airbyte/pull/75002) | Update dependencies |
+| 0.0.49 | 2026-03-10 | [74444](https://github.com/airbytehq/airbyte/pull/74444) | Update dependencies |
 | 0.0.48 | 2026-02-24 | [73943](https://github.com/airbytehq/airbyte/pull/73943) | Update dependencies |
 | 0.0.47 | 2026-02-17 | [73559](https://github.com/airbytehq/airbyte/pull/73559) | Update dependencies |
 | 0.0.46 | 2026-02-10 | [73036](https://github.com/airbytehq/airbyte/pull/73036) | Update dependencies |

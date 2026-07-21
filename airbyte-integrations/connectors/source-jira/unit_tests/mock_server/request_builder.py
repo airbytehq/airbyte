@@ -62,11 +62,6 @@ class JiraRequestBuilder:
         return cls(domain, "field", api_version="v3")
 
     @classmethod
-    def issue_field_configurations_endpoint(cls, domain: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /fieldconfiguration endpoint."""
-        return cls(domain, "fieldconfiguration", api_version="v3")
-
-    @classmethod
     def issue_custom_field_contexts_endpoint(cls, domain: str, field_id: str) -> "JiraRequestBuilder":
         """Create a request builder for the /field/{fieldId}/context endpoint."""
         return cls(domain, f"field/{field_id}/context", api_version="v3")
@@ -288,8 +283,8 @@ class JiraRequestBuilder:
 
     @classmethod
     def workflows_endpoint(cls, domain: str) -> "JiraRequestBuilder":
-        """Create a request builder for the /workflow/search endpoint."""
-        return cls(domain, "workflow/search", api_version="v3")
+        """Create a request builder for the /workflows/search endpoint."""
+        return cls(domain, "workflows/search", api_version="v3")
 
     @classmethod
     def workflow_schemes_endpoint(cls, domain: str) -> "JiraRequestBuilder":

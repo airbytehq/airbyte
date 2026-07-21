@@ -25,21 +25,26 @@ if test -z "$base_tag" || test "$base_tag" = "null"; then
   echo "Error: dockerImageTag missing in ${meta}" >&2
   exit 1
 fi
-case "$semver_suffix" in
-  none)
-    docker_tag="$base_tag"
-    ;;
-  preview)
-    docker_tag=$(generate_dev_tag "$base_tag")
-    ;;
-  rc)
-    docker_tag=$(generate_rc_tag "$base_tag")
-    ;;
-  *)
-    echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
-    exit 1
-    ;;
-esac
+if [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
+  # When set by the publish workflow, use the pre-resolved tag directly.
+  docker_tag="$CONNECTOR_VERSION_TAG"
+else
+  case "$semver_suffix" in
+    none)
+      docker_tag="$base_tag"
+      ;;
+    preview)
+      docker_tag=$(generate_dev_tag "$base_tag")
+      ;;
+    rc)
+      docker_tag=$(generate_rc_tag "$base_tag")
+      ;;
+    *)
+      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+      exit 1
+      ;;
+  esac
+fi
 
 gcloud_activate_service_account "$GCS_CREDENTIALS"
 gcloud storage cp "$tar_file_path" "gs://${metadata_bucket}/resources/java/${connector}/${docker_tag}/"

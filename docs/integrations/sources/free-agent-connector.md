@@ -47,6 +47,10 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 | Timeslips | url | DefaultPaginator | ✅ |  ✅  |
 | Project Notes | | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +58,15 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.18 | 2026-07-14 | [81843](https://github.com/airbytehq/airbyte/pull/81843) | Update dependencies |
+| 0.1.17 | 2026-06-30 | [81083](https://github.com/airbytehq/airbyte/pull/81083) | Update dependencies |
+| 0.1.16 | 2026-06-23 | [80460](https://github.com/airbytehq/airbyte/pull/80460) | Update dependencies |
+| 0.1.15 | 2026-06-16 | [79843](https://github.com/airbytehq/airbyte/pull/79843) | Update dependencies |
+| 0.1.14 | 2026-06-09 | [79298](https://github.com/airbytehq/airbyte/pull/79298) | Update dependencies |
+| 0.1.13 | 2026-06-02 | [78698](https://github.com/airbytehq/airbyte/pull/78698) | Update dependencies |
+| 0.1.12 | 2026-04-28 | [77231](https://github.com/airbytehq/airbyte/pull/77231) | Update dependencies |
+| 0.1.11 | 2026-04-21 | [76604](https://github.com/airbytehq/airbyte/pull/76604) | Update dependencies |
+| 0.1.10 | 2026-03-17 | [74673](https://github.com/airbytehq/airbyte/pull/74673) | Update dependencies |
 | 0.1.9 | 2026-02-24 | [73756](https://github.com/airbytehq/airbyte/pull/73756) | Update dependencies |
 | 0.1.8 | 2026-02-10 | [73160](https://github.com/airbytehq/airbyte/pull/73160) | Update dependencies |
 | 0.1.7 | 2026-01-20 | [71932](https://github.com/airbytehq/airbyte/pull/71932) | Update dependencies |

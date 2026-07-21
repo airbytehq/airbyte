@@ -44,6 +44,10 @@ After logging in, you can create your personal token by navigating to Setup -&gt
 | consignments | id | CursorPagination | ✅ |  ❌  |
 | consignment_products | product_id | CursorPagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -51,6 +55,16 @@ After logging in, you can create your personal token by navigating to Setup -&gt
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.59 | 2026-07-14 | [81894](https://github.com/airbytehq/airbyte/pull/81894) | Update dependencies |
+| 0.0.58 | 2026-06-30 | [81128](https://github.com/airbytehq/airbyte/pull/81128) | Update dependencies |
+| 0.0.57 | 2026-06-23 | [80547](https://github.com/airbytehq/airbyte/pull/80547) | Update dependencies |
+| 0.0.56 | 2026-06-16 | [79955](https://github.com/airbytehq/airbyte/pull/79955) | Update dependencies |
+| 0.0.55 | 2026-06-09 | [79408](https://github.com/airbytehq/airbyte/pull/79408) | Update dependencies |
+| 0.0.54 | 2026-06-02 | [78825](https://github.com/airbytehq/airbyte/pull/78825) | Update dependencies |
+| 0.0.53 | 2026-04-28 | [77314](https://github.com/airbytehq/airbyte/pull/77314) | Update dependencies |
+| 0.0.52 | 2026-04-21 | [76659](https://github.com/airbytehq/airbyte/pull/76659) | Update dependencies |
+| 0.0.51 | 2026-03-31 | [75728](https://github.com/airbytehq/airbyte/pull/75728) | Update dependencies |
+| 0.0.50 | 2026-03-24 | [75033](https://github.com/airbytehq/airbyte/pull/75033) | Update dependencies |
 | 0.0.49 | 2026-02-24 | [73954](https://github.com/airbytehq/airbyte/pull/73954) | Update dependencies |
 | 0.0.48 | 2026-02-17 | [73541](https://github.com/airbytehq/airbyte/pull/73541) | Update dependencies |
 | 0.0.47 | 2026-02-10 | [73050](https://github.com/airbytehq/airbyte/pull/73050) | Update dependencies |

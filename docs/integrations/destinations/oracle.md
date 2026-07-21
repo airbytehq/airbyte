@@ -1,17 +1,5 @@
 # Oracle DB
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes                                                                 |
-| :----------------------------- | :------------------- | :-------------------------------------------------------------------- |
-| Full Refresh Sync              | Yes                  |                                                                       |
-| Incremental - Append Sync      | Yes                  |                                                                       |
-| Incremental - Append + Deduped | Yes                  |                                                                       |
-| Namespaces                     | Yes                  |                                                                       |
-| Basic Normalization            | Yes                  | Doesn't support for nested json yet                                   |
-| SSH Tunnel Connection          | Yes                  |                                                                       |
-| Encryption                     | Yes                  | Support Native Network Encryption (NNE) as well as TLS using SSL cert |
-
 ## Output Schema
 
 By default, each stream will be output into its own table in Oracle. Each table will contain 3 columns:
@@ -21,6 +9,16 @@ By default, each stream will be output into its own table in Oracle. Each table 
 - `_AIRBYTE_DATA`: a json blob representing with the event data. The column type in Oracles is `NCLOB`.
 
 Enabling normalization will also create normalized, strongly typed tables.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -86,6 +84,10 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 2. `Native network encryption` gives you the ability to encrypt database connections, without the configuration overhead of TCP / IP and SSL / TLS and without the need to open and listen on different ports. In this case, the _SQLNET.ENCRYPTION_CLIENT_
    option will always be set as _REQUIRED_ by default: The client or server will only accept encrypted traffic, but the user has the opportunity to choose an `Encryption algorithm` according to the security policies he needs.
 3. `TLS Encrypted` (verify certificate) - if this option is selected, data transfer will be transferred using the TLS protocol, taking into account the handshake procedure and certificate verification. To use this option, insert the content of the certificate issued by the server into the `SSL PEM file` field
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to an Oracle schema.
 
 ## Changelog
 

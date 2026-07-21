@@ -1,36 +1,57 @@
 # PokéAPI
 
+<HideInUI>
+
+This page contains the setup guide and reference information for the [PokéAPI](https://pokeapi.co/) source connector.
+
+</HideInUI>
+
+## Overview
+
+The PokéAPI source retrieves one Pokémon resource from the [PokéAPI REST API](https://pokeapi.co/docs/v2#pokemon) for each sync. Use it primarily for tutorials, testing, and demonstrations.
+
+## Prerequisites
+
+None. PokéAPI is public and doesn't require authentication.
+
+## Setup guide
+
+1. Add a new PokéAPI source.
+2. For **Pokemon Name**, select the Pokémon whose data you want to sync.
+3. Test and save the source.
+
+## Supported sync modes
+
+The connector supports full refresh syncs. It doesn't support incremental syncs.
+
+## Supported streams
+
+This source provides one stream:
+
+| Stream | Description |
+| :--- | :--- |
+| `pokemon` | One record containing details for the configured Pokémon, including its abilities, base stats, forms, held items, moves, sprites, and types. |
+
+## Limitations
+
+- A source configuration syncs one Pokémon. Create a separate source for each additional Pokémon you want to sync.
+- The connector restricts **Pokemon Name** to 898 defined values, ending with `calyrex`. You can't select Pokémon that aren't in this list.
+
+## Rate limits
+
+PokéAPI doesn't enforce rate limits on its REST API, but its [fair use policy](https://pokeapi.co/docs/v2#fairuse) asks clients to limit request frequency and cache responses. Schedule syncs responsibly. PokéAPI may permanently ban IP addresses that violate this policy.
+
 ## Tutorials
 
-The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
+These tutorials use PokéAPI as an example source:
 
 - [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
 - [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
 
-## Features
+## IP allow list
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental - Append Sync     | No         |
-| Replicate Incremental Deletes | No         |
-| SSL connection                | No         |
-| Namespaces                    | No         |
-
-This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to serve and retrieve information about Pokémon. This connector should be primarily used for educational purposes or for getting a trial source up and running without needing any dependencies. As this API is fully open and is not rate-limited, no authentication or rate-limiting is performed, so you can use this connector right out of the box without any further configuration.
-
-## Output Schema
-
-Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json).
-
-## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
-
-According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
-
-## Data Type Mapping
-
-The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -39,6 +60,18 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.62 | 2026-07-14 | [81961](https://github.com/airbytehq/airbyte/pull/81961) | Update dependencies |
+| 0.3.61 | 2026-07-10 | [81655](https://github.com/airbytehq/airbyte/pull/81655) | chore(source-pokeapi): dummy version bump for progressive rollout (autopilot) testing |
+| 0.3.60 | 2026-06-30 | [81200](https://github.com/airbytehq/airbyte/pull/81200) | Update dependencies |
+| 0.3.59 | 2026-06-25 | [80885](https://github.com/airbytehq/airbyte/pull/80885) | POC: Test autopilot rollout pipeline |
+| 0.3.58 | 2026-06-23 | [80588](https://github.com/airbytehq/airbyte/pull/80588) | Update dependencies |
+| 0.3.57 | 2026-06-16 | [79995](https://github.com/airbytehq/airbyte/pull/79995) | Update dependencies |
+| 0.3.56 | 2026-06-09 | [79458](https://github.com/airbytehq/airbyte/pull/79458) | Update dependencies |
+| 0.3.55 | 2026-06-02 | [78874](https://github.com/airbytehq/airbyte/pull/78874) | Update dependencies |
+| 0.3.54 | 2026-04-28 | [77372](https://github.com/airbytehq/airbyte/pull/77372) | Update dependencies |
+| 0.3.53 | 2026-04-21 | [76700](https://github.com/airbytehq/airbyte/pull/76700) | Update dependencies |
+| 0.3.52 | 2026-03-31 | [75872](https://github.com/airbytehq/airbyte/pull/75872) | Update dependencies |
+| 0.3.51 | 2026-03-24 | [75403](https://github.com/airbytehq/airbyte/pull/75403) | Update dependencies |
 | 0.3.50 | 2026-02-24 | [73837](https://github.com/airbytehq/airbyte/pull/73837) | Update dependencies |
 | 0.3.49 | 2026-02-10 | [73196](https://github.com/airbytehq/airbyte/pull/73196) | Update dependencies |
 | 0.3.48 | 2026-02-02 | [72538](https://github.com/airbytehq/airbyte/pull/72538) | Promoting release candidate 0.3.48-rc.1 to a main version. |

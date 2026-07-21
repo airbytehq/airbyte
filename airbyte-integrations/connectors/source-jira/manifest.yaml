@@ -6,9 +6,19 @@ definitions:
   # Authenticators
 
   authenticator:
-    type: BasicHttpAuthenticator
-    username: "{{ config['email'] }}"
-    password: "{{ config['api_token'] }}"
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      "API Token":
+        type: BasicHttpAuthenticator
+        username: "{{ config['credentials']['email'] }}"
+        password: "{{ config['credentials']['api_token'] }}"
+      "Service Account":
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.JiraServiceAccountAuthenticator
+      "OAuth2.0":
+        type: CustomAuthenticator
+        class_name: source_declarative_manifest.components.JiraOAuthAuthenticator
 
   # Error handler
   error_handler:
@@ -23,13 +33,13 @@ definitions:
   requester:
     type: HttpRequester
     http_method: GET
-    url_base: "https://{{ config['domain'] }}/rest/api/3/"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/api/3/{% else %}https://{{ config['domain'] }}/rest/api/3/{% endif %}"
     authenticator: "#/definitions/authenticator"
     error_handler: "#/definitions/error_handler"
 
   requester_v1:
     $ref: "#/definitions/requester"
-    url_base: "https://{{ config['domain'] }}/rest/agile/1.0/"
+    url_base: "{% if config.get('credentials', {}).get('auth_type') in ['OAuth2.0', 'Service Account'] %}https://api.atlassian.com/ex/jira/{{ config['credentials']['cloud_id'] }}/rest/agile/1.0/{% else %}https://{{ config['domain'] }}/rest/agile/1.0/{% endif %}"
 
   # Selector
 
@@ -5082,34 +5092,6 @@ definitions:
         additionalProperties: true
         description: Details about a field.
 
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
-  issue_field_configurations_stream:
-    $ref: "#/definitions/full_refresh_stream"
-    name: issue_field_configurations
-    primary_key: "id"
-    $parameters:
-      path: "fieldconfiguration"
-      extract_field: "values"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          id:
-            description: The ID of the field configuration.
-            type: integer
-          name:
-            description: The name of the field configuration.
-            type: string
-          description:
-            description: The description of the field configuration.
-            type: string
-          isDefault:
-            description: Whether the field configuration is the default.
-            type: boolean
-        additionalProperties: true
-        description: Details of a field configuration.
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
   issue_link_types_stream:
@@ -7349,161 +7331,221 @@ definitions:
         xml:
           name: user
 
-  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
+  # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflows-search-get
   workflows_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: workflows
-    primary_key: [["entityId"], ["name"]]
+    primary_key: [["id"]]
     $parameters:
-      path: "workflow/search"
+      path: "workflows/search"
       extract_field: "values"
-    transformations:
-    - type: AddFields
-      fields:
-      - path: ["entityId"]
-        value_type: string
-        value: "{{ record.id.entityId }}"
-      - path: ["name"]
-        value_type: string
-        value: "{{ record.id.name }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
+        additionalProperties: true
         properties:
           id:
-            description: The unique identifier and name of the workflow.
-            type: object
-            properties:
-              entityId:
-                type:
-                - 'null'
-                - string
-              name:
-                description: The name of the workflow.
-                type: string
-          entityId:
-            description: The unique identifier of the workflow.
+            description: The ID of the workflow.
             type:
             - 'null'
             - string
           name:
-            description: The unique name the workflow.
+            description: The name of the workflow.
             type:
             - 'null'
             - string
           description:
-            description: The detailed description of the workflow.
-            type: string
-          transitions:
-            description: The transitions available within the workflow.
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  description: The unique identifier of the transition.
-                  type: string
-                name:
-                  description: The name of the transition.
-                  type: string
-                description:
-                  description: The detailed description of the transition.
-                  type: string
-                from:
-                  description: The statuses the transition can start from.
-                  type: array
-                  items:
-                    description: The statuses the transition can start from.
-                    type: string
-                to:
-                  description: The status that the transition moves the issue to.
-                  type: string
+            description: The description of the workflow.
+            type:
+            - 'null'
+            - string
+          isEditable:
+            description: Indicates whether the workflow can be edited.
+            type:
+            - 'null'
+            - boolean
+          scope:
+            description: The scope of the workflow.
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              type:
                 type:
-                  description: The type of the transition.
-                  type: string
-                  enum:
-                  - global
-                  - initial
-                  - directed
-                screen:
-                  description: The screen associated with the transition.
-                  type: object
-                  properties:
-                    id:
-                      description: The unique identifier of the screen.
-                      type: string
-                rules:
-                  type: object
-                  properties:
-                    conditions:
-                      description: The conditions that must be met for the transition
-                        to occur.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            description: The type of the transition rule.
-                            type: string
-                          configuration:
-                            description: The configuration of the transition rule
-                              (availability may vary).
-                    validators:
-                      description: Validation checks performed during the transition.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            description: The type of the validator.
-                            type: string
-                          configuration:
-                            description: The configuration of the validator (availability
-                              may vary).
-                    postFunctions:
-                      description: Actions that occur after a transition.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            description: The type of the post function.
-                            type: string
-                          configuration:
-                            description: The configuration of the post function (availability
-                              may vary).
+                - 'null'
+                - string
+              project:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
           statuses:
-            description: The various statuses that the workflow can have.
-            type: array
+            description: The statuses referenced in this workflow.
+            type:
+            - 'null'
+            - array
             items:
               type: object
+              additionalProperties: true
               properties:
                 id:
-                  description: The unique identifier of the issue status.
-                  type: string
+                  type:
+                  - 'null'
+                  - string
                 name:
-                  description: The name of the status in the workflow.
-                  type: string
+                  type:
+                  - 'null'
+                  - string
+                description:
+                  type:
+                  - 'null'
+                  - string
+                statusReference:
+                  type:
+                  - 'null'
+                  - string
+                statusCategory:
+                  type:
+                  - 'null'
+                  - string
                 properties:
-                  type: object
-                  properties:
-                    issueEditable:
-                      description: Indicates whether issues are editable in this status.
-                      type: boolean
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                layout:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                scope:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                usages:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+          transitions:
+            description: The transitions of the workflow.
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                description:
+                  type:
+                  - 'null'
+                  - string
+                type:
+                  type:
+                  - 'null'
+                  - string
+                toStatusReference:
+                  type:
+                  - 'null'
+                  - string
+                customIssueEventId:
+                  type:
+                  - 'null'
+                  - string
+                links:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                actions:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                conditions:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                validators:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                triggers:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                properties:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                transitionScreen:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+          taskId:
+            description: ID of an in-progress asynchronous operation for this workflow,
+              if any.
+            type:
+            - 'null'
+            - string
+          version:
+            description: Details about the workflow document version.
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          loopedTransitionContainerLayout:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          startPointLayout:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
           created:
-            description: The date and time when the workflow was created.
+            description: The creation date of the workflow.
             type:
             - 'null'
             - string
-            format: date-time
           updated:
-            description: The date and time when the workflow was last updated.
+            description: The last edited date of the workflow.
             type:
             - 'null'
             - string
-            format: date-time
         readOnly: true
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
@@ -14562,7 +14604,6 @@ streams:
 - "#/definitions/filters_stream"
 - "#/definitions/groups_stream"
 - "#/definitions/issue_fields_stream"
-- "#/definitions/issue_field_configurations_stream"
 - "#/definitions/issue_link_types_stream"
 - "#/definitions/issue_navigator_settings_stream"
 - "#/definitions/issue_notification_schemes_stream"
@@ -14625,8 +14666,6 @@ check:
   type: CheckStream
   stream_names:
   - projects
-  - users
-  - issues
 
 # Defining a value here is difficult because the Jira API documentation mentions "REST API rate limits are not published because the computation logic is evolving continuously to maximize reliability and performance for customers" regarding the API budget. Hence, we will need to empirically validate the values that are set here.
 concurrency_level:
@@ -14637,40 +14676,142 @@ concurrency_level:
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/jira
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate flat api_token/email config to nested credentials structure for OAuth 2.0 support
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "API Token"
+            condition: "{{ not config.get('credentials') and config.get('api_token') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['api_token'] }}"
+            condition: "{{ not config.get('credentials', {}).get('api_token') and config.get('api_token') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "email"]
+                value: "{{ config['email'] }}"
+            condition: "{{ not config.get('credentials', {}).get('email') and config.get('email') }}"
+      - type: ConfigMigration
+        description: Normalize domain by stripping protocol prefix and trailing slashes
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["domain"]
+                value: "{{ config.get('domain', '').split('://', 1)[-1].rstrip('/') }}"
+            condition: "{{ config.get('domain') and ('://' in config.get('domain', '') or config.get('domain', '').endswith('/')) }}"
+    validations:
+      - type: DpathValidator
+        field_path: ["domain"]
+        validation_strategy:
+          type: CustomValidationStrategy
+          class_name: source_declarative_manifest.components.ValidateJiraDomain
+        skip_condition: "{{ not config.get('domain') }}"
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Jira Spec
     type: object
     required:
-    - api_token
+    - credentials
     - domain
-    - email
     additionalProperties: true
     properties:
-      api_token:
-        type: string
-        title: API Token
-        description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
-          for more information on how to generate this key. API Token is used for Authorization
-          to your account by BasicAuth.
-        airbyte_secret: true
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Jira.
         order: 0
+        oneOf:
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+              - email
+            properties:
+              auth_type:
+                type: string
+                const: "API Token"
+                order: 0
+              email:
+                type: string
+                title: Email
+                description: The user email for your Jira account which you used to generate
+                  the API token. This field is used for Authorization to your account by BasicAuth.
+                order: 1
+              api_token:
+                type: string
+                title: API Token
+                description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
+                  for more information on how to generate this key. API Token is used for Authorization
+                  to your account by BasicAuth.
+                airbyte_secret: true
+                order: 2
+          - type: object
+            title: Service Account
+            required:
+              - auth_type
+              - service_account_token
+            properties:
+              auth_type:
+                type: string
+                const: "Service Account"
+                order: 0
+              service_account_token:
+                type: string
+                title: Service Account Token
+                description: Atlassian Service Account API token. Service account API tokens authenticate with Bearer authentication and use Atlassian's Platform API Gateway.
+                airbyte_secret: true
+                order: 1
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: "OAuth2.0"
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Atlassian OAuth application.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Atlassian OAuth application.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: The Refresh Token obtained after completing the OAuth flow.
+                airbyte_secret: true
+                order: 3
       domain:
         type: string
         title: Domain
+        pattern_descriptor: "<your-domain>.atlassian.net"
         examples:
         - "<your-domain>.atlassian.net"
         - "<your-domain>.jira.com"
         - jira.<your-domain>.com
-        description: The Domain for your Jira account, e.g. airbyteio.atlassian.net,
-          airbyteio.jira.com, jira.your-domain.com
+        description: "Your Jira host (full domain — do not include 'https://' or paths). Examples: airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com."
         order: 1
-      email:
-        type: string
-        title: Email
-        description: The user email for your Jira account which you used to generate
-          the API token. This field is used for Authorization to your account by BasicAuth.
-        order: 2
       projects:
         type: array
         title: Projects
@@ -14740,13 +14881,97 @@ spec:
         order: 5
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 3
+        default: 5
         examples:
         - 1
         - 2
-        - 3
+        - 5
         description: The number of worker threads to use for the sync.
         order: 6
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: "OAuth2.0"
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "read:jira-work"
+          - scope: "read:jql:jira"
+          - scope: "read:group:jira"
+          - scope: "read:project-role:jira"
+          - scope: "read:issue-details:jira"
+          - scope: "read:status:jira"
+          - scope: "read:jira-user"
+          - scope: "read:user:jira"
+          - scope: "read:avatar:jira"
+          - scope: "read:webhook:jira"
+          - scope: "read:project-category:jira"
+          - scope: "read:screenable-field:jira"
+          - scope: "read:screen-field:jira"
+          - scope: "offline_access"
+          - scope: "read:board-scope:jira-software"
+          - scope: "read:project:jira"
+          - scope: "read:sprint:jira-software"
+          - scope: "read:application-role:jira"
+          - scope: "read:notification-scheme:jira"
+          - scope: "read:issue-security-scheme:jira"
+          - scope: "read:issue-security-level:jira"
+          - scope: "read:issue-type-scheme:jira"
+          - scope: "read:issue-type-screen-scheme:jira"
+          - scope: "read:permission-scheme:jira"
+          - scope: "read:screen:jira"
+          - scope: "read:screen-scheme:jira"
+          - scope: "read:screen-tab:jira"
+          - scope: "read:workflow:jira"
+          - scope: "read:workflow-scheme:jira"
+          - scope: "read:project.email:jira"
+          - scope: "read:custom-field-contextual-configuration:jira"
+          - scope: "manage:jira-configuration"
+        consent_url: "https://auth.atlassian.com/authorize?audience=api.atlassian.com&{{client_id_param}}&{{scopes_param}}&{{redirect_uri_param}}&{{state_param}}&response_type=code&prompt=consent"
+        access_token_url: "https://auth.atlassian.com/oauth/token"
+        access_token_headers:
+          Content-Type: "application/json"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret

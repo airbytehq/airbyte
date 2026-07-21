@@ -10,10 +10,11 @@ import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import groupby
-from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import anyascii
 import requests
+from requests.adapters import HTTPAdapter
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
 from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
@@ -36,13 +37,50 @@ from .google_ads import GoogleAds
 
 logger = logging.getLogger("airbyte")
 
+# Default socket-level timeout (in seconds) for all Google Ads API HTTP calls.
+# This is an idle timeout per recv() call, not a total request timeout,
+# so streaming responses that keep sending data are unaffected.
+DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
+
+
+class TimeoutHTTPAdapter(HTTPAdapter):
+    """
+    HTTP adapter that enforces a default socket timeout on every request.
+    Prevents workers from hanging indefinitely on unresponsive API calls.
+    """
+
+    def __init__(self, timeout: int = DEFAULT_HTTP_TIMEOUT, *args: Any, **kwargs: Any) -> None:
+        self.timeout = timeout
+        super().__init__(*args, **kwargs)
+
+    def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
+        kwargs.setdefault("timeout", self.timeout)
+        return super().send(request, **kwargs)
+
+
+def _mount_timeout_adapter(requester: Any) -> None:
+    """Mount `TimeoutHTTPAdapter` on a requester's HTTP session.
+
+    Ensures every Google Ads HTTP call has a default socket-level idle timeout,
+    including parent-stream fetches that route through the stock CDK `HttpRequester`
+    (e.g. `customer_client`, `customer_client_non_manager`, `accessible_accounts`).
+    """
+    http_client = getattr(requester, "_http_client", None)
+    session = getattr(http_client, "_session", None) if http_client is not None else None
+    if session is not None:
+        session.mount("https://", TimeoutHTTPAdapter(timeout=DEFAULT_HTTP_TIMEOUT))
+
+
 REPORT_MAPPING = {
     "account_performance_report": "customer",
     "ad_group_ad_legacy": "ad_group_ad",
+    "ad_performance": "ad_group_ad",
     "ad_group_bidding_strategy": "ad_group",
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
+    "geographic_view_with_metrics": "geographic_view",
+    "geo_performance": "geographic_view",
     "service_accounts": "customer",
 }
 
@@ -144,6 +182,55 @@ class FlattenNestedDictsTransformation(RecordTransformation):
         for top_key in [k for k, v in list(record.items()) if isinstance(v, dict)]:
             nested = record.pop(top_key)
             _flatten(top_key, nested)
+
+
+@dataclass
+class SerializeMessageFieldsTransformation(RecordTransformation):
+    """
+    Serializes MESSAGE-type fields (nested dict values) to JSON strings before
+    flattening occurs. This prevents FlattenNestedDictsTransformation from
+    recursively flattening MESSAGE fields like change_event.old_resource and
+    change_event.new_resource, which would create sub-keys not present in
+    the schema and cause the original field values to be lost (returned as NULL).
+
+    This transformation must run AFTER KeysToSnakeCaseGoogleAdsTransformation
+    and BEFORE FlattenNestedDictsTransformation in the custom query stream
+    transformation chain.
+
+    The set of MESSAGE-type field names is populated by
+    CustomGAQuerySchemaLoader.get_json_schema() during stream initialization
+    and stored on the CustomGAQuerySchemaLoader class.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        message_fields: set = CustomGAQuerySchemaLoader._all_message_fields
+        if not message_fields:
+            return
+
+        for field_name in message_fields:
+            parts = field_name.split(".")
+            current = record
+            for part in parts[:-1]:
+                if isinstance(current, dict) and part in current:
+                    current = current[part]
+                else:
+                    current = None
+                    break
+
+            if current is not None and isinstance(current, dict):
+                last_part = parts[-1]
+                if last_part in current:
+                    value = current[last_part]
+                    if isinstance(value, dict):
+                        current[last_part] = json.dumps(value)
+                    elif isinstance(value, list):
+                        current[last_part] = [json.dumps(item) if isinstance(item, dict) else item for item in value]
 
 
 class DoubleQuotedDictTypeTransformer(TypeTransformer):
@@ -293,6 +380,7 @@ class GoogleAdsHttpRequester(HttpRequester):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
         self.stream_response = True
+        _mount_timeout_adapter(self)
 
     def get_request_body_json(
         self,
@@ -465,6 +553,7 @@ class CriterionRetriever(SimpleRetriever):
         # available after the retriever is fully constructed; propagate it here.
         if hasattr(self.requester, "name"):
             self.requester.name = self.name
+        _mount_timeout_adapter(self.requester)
 
     def _read_pages(
         self,
@@ -551,6 +640,7 @@ class GoogleAdsRetriever(SimpleRetriever):
             self.requester.name = self.name
         if self.decoder and isinstance(self.record_selector.extractor, DpathExtractor):
             self.record_selector.extractor.decoder = self.decoder
+        _mount_timeout_adapter(self.requester)
 
     def _read_pages(
         self,
@@ -839,6 +929,7 @@ class CustomGAQueryHttpRequester(HttpRequester):
         super().__post_init__(parameters=parameters)
         self.query = GAQL.parse(parameters.get("query"))
         self.stream_response = True
+        _mount_timeout_adapter(self)
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
@@ -927,6 +1018,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     _google_ads_client: Optional[GoogleAds] = None
     _client_lock = threading.Lock()
+    _all_message_fields: ClassVar[Set[str]] = set()
 
     def __post_init__(self):
         self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
@@ -963,10 +1055,14 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         fields = self._get_list_of_fields()
         fields_metadata = self.google_ads_client(self.config).get_fields_metadata(fields)
 
+        message_fields: set = set()
         for field, field_metadata in fields_metadata.items():
+            if field_metadata.data_type.name == "MESSAGE":
+                message_fields.add(field)
             field_value = self._build_field_value(field, field_metadata)
             local_json_schema["properties"][field] = field_value
 
+        CustomGAQuerySchemaLoader._all_message_fields = CustomGAQuerySchemaLoader._all_message_fields | message_fields
         return local_json_schema
 
     def _build_field_value(self, field: str, field_metadata) -> Any:
@@ -1014,8 +1110,8 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         except ValueError:
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
             )
 
 

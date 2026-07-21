@@ -84,12 +84,11 @@ class SnowflakeDirectLoadSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
-        // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
-        val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val createTableStatement =
             """
-            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |$createPrefix ${fullyQualifiedName(tableName)} (
             |    $columnDeclarations
             |)
             """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin
@@ -347,7 +346,7 @@ class SnowflakeDirectLoadSqlGenerator(
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            |    TRIM_SPACE = TRUE
+            |    TRIM_SPACE = ${config.trimSpace.toString().uppercase()}
             |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             |    REPLACE_INVALID_CHARACTERS = TRUE
             |    ESCAPE = NONE
@@ -361,13 +360,11 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+    fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
-            fullyQualifiedName(
-                targetTableName,
-            )
-        }
+            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            fullyQualifiedName(sourceTableName)
+        } COPY GRANTS
         """
             .trimIndent()
             .andLog()

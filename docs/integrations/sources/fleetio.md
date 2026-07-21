@@ -47,10 +47,24 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 4. Authenticate using the credentials generated in step 1.
 5. Click **Set up source**
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.2.56 | 2026-07-14 | [81842](https://github.com/airbytehq/airbyte/pull/81842) | Update dependencies |
+| 0.2.55 | 2026-06-30 | [81064](https://github.com/airbytehq/airbyte/pull/81064) | Update dependencies |
+| 0.2.54 | 2026-06-23 | [80450](https://github.com/airbytehq/airbyte/pull/80450) | Update dependencies |
+| 0.2.53 | 2026-06-16 | [79839](https://github.com/airbytehq/airbyte/pull/79839) | Update dependencies |
+| 0.2.52 | 2026-06-09 | [79293](https://github.com/airbytehq/airbyte/pull/79293) | Update dependencies |
+| 0.2.51 | 2026-06-02 | [78731](https://github.com/airbytehq/airbyte/pull/78731) | Update dependencies |
+| 0.2.50 | 2026-04-28 | [77234](https://github.com/airbytehq/airbyte/pull/77234) | Update dependencies |
+| 0.2.49 | 2026-04-21 | [76580](https://github.com/airbytehq/airbyte/pull/76580) | Update dependencies |
+| 0.2.48 | 2026-03-31 | [75725](https://github.com/airbytehq/airbyte/pull/75725) | Update dependencies |
+| 0.2.47 | 2026-03-17 | [74637](https://github.com/airbytehq/airbyte/pull/74637) | Update dependencies |
 | 0.2.46 | 2026-02-24 | [73754](https://github.com/airbytehq/airbyte/pull/73754) | Update dependencies |
 | 0.2.45 | 2026-02-17 | [73378](https://github.com/airbytehq/airbyte/pull/73378) | Update dependencies |
 | 0.2.44 | 2026-02-10 | [73166](https://github.com/airbytehq/airbyte/pull/73166) | Update dependencies |

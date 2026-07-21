@@ -4,7 +4,11 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+- A Harvest account.
+- Your Harvest Account ID. You can find it in the [Developers](https://id.getharvest.com/developers) section of Harvest ID, listed alongside any Personal Access Tokens you create.
+- One of the following authentication methods:
+  - **OAuth** (recommended for Airbyte Cloud). Airbyte Cloud completes the Harvest OAuth flow for you, so no developer application or tokens are required up front. You authorize the connection from the source setup page.
+  - **Personal Access Token** (recommended for Airbyte Open Source). Create a [Personal Access Token](https://id.getharvest.com/developers) from the Developers section of Harvest ID. The token has the `all` scope and grants access to every Harvest account on your user.
 
 ## Setup guide
 
@@ -16,9 +20,9 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
+5. For **Authentication mechanism**, select **Authenticate via Harvest (OAuth)** from the dropdown, then click **Authenticate your Harvest account** and authorize the requested account.
+6. Enter your Harvest **Account ID**.
+7. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:mm:ssZ` format. Data created or updated on and after this date is replicated.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -30,22 +34,22 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
-5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
+5. For **Authentication mechanism**, select **Authenticate with Personal Access Token** and paste your [Personal Access Token](https://id.getharvest.com/developers).
+6. Enter your Harvest **Account ID**.
+7. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:mm:ssZ` format. Data created or updated on and after this date is replicated.
 8. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
 
-The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
 - [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
@@ -82,7 +86,26 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
+The connector is restricted by [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting). Harvest enforces two separate rate limits:
+
+- **General API requests**: 100 requests per 15 seconds
+- **Reports API requests**: 100 requests per 15 minutes
+
+The connector automatically enforces these limits using a built-in HTTP API budget and retries throttled requests using the `Retry-After` header provided by the API.
+
+You can configure the number of concurrent threads using the **Number of Concurrent Threads** field. Higher values can speed up syncs but increase API rate limit usage. The default is 4 threads, and the allowed range is 2 to 10. Lower this value when other applications share your Harvest API quota.
+
+Report streams (Expense Reports, Time Reports, Uninvoiced Report, and Project Budget Report) retrieve data in 365-day date windows. For accounts with a long history, initial syncs of these streams may take longer.
+
+## Limitations and troubleshooting
+
+This connector uses Harvest's granular permission model. If your credentials lack access to a specific resource, the corresponding stream produces zero records instead of failing the sync. If a stream returns no data, verify that the Harvest user behind the credentials has the required permissions for that resource.
+
+When authenticating with OAuth, the granted scopes determine which Harvest accounts are reachable through the connection. Personal Access Tokens always have the `all` scope and reach every Harvest account on your user, while OAuth applications can be limited to a single account, depending on how you registered the application.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -91,6 +114,22 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.44 | 2026-07-14 | [81874](https://github.com/airbytehq/airbyte/pull/81874) | Update dependencies |
+| 1.2.43 | 2026-06-30 | [81106](https://github.com/airbytehq/airbyte/pull/81106) | Update dependencies |
+| 1.2.42 | 2026-06-23 | [80488](https://github.com/airbytehq/airbyte/pull/80488) | Update dependencies |
+| 1.2.41 | 2026-06-16 | [79882](https://github.com/airbytehq/airbyte/pull/79882) | Update dependencies |
+| 1.2.40 | 2026-06-09 | [79365](https://github.com/airbytehq/airbyte/pull/79365) | Update dependencies |
+| 1.2.39 | 2026-06-02 | [78755](https://github.com/airbytehq/airbyte/pull/78755) | Update dependencies |
+| 1.2.38 | 2026-05-06 | [77821](https://github.com/airbytehq/airbyte/pull/77821) | Set `Content-Type: application/x-www-form-urlencoded` on OAuth access token request |
+| 1.2.37 | 2026-05-05 | [77778](https://github.com/airbytehq/airbyte/pull/77778) | Reorder spec fields so `credentials` appears before `account_id` and `replication_start_date` |
+| 1.2.36 | 2026-05-04 | [76217](https://github.com/airbytehq/airbyte/pull/76217) | Declare OAuth2 flow inline via `advanced_auth` and `oauthConnectorInputSpecification` |
+| 1.2.35 | 2026-04-28 | [75371](https://github.com/airbytehq/airbyte/pull/75371) | Update dependencies |
+| 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
+| 1.2.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 1.2.32 | 2026-04-10 | [76247](https://github.com/airbytehq/airbyte/pull/76247) | Promoted release candidate to GA |
+| 1.2.32-rc.4 | 2026-04-08 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added configurable concurrency level with `num_workers` parameter and HTTP API budget rate limiting |
+| 1.2.32-rc.1 | 2026-03-24 | [75409](https://github.com/airbytehq/airbyte/pull/75409) | Test dev image of source-declarative-manifest (7.13.0.post6.dev23497311155) |
+| 1.2.31 | 2026-03-10 | [74687](https://github.com/airbytehq/airbyte/pull/74687) | Update dependencies |
 | 1.2.30 | 2026-02-24 | [73930](https://github.com/airbytehq/airbyte/pull/73930) | Update dependencies |
 | 1.2.29 | 2026-02-10 | [73113](https://github.com/airbytehq/airbyte/pull/73113) | Update dependencies |
 | 1.2.28 | 2026-02-03 | [72645](https://github.com/airbytehq/airbyte/pull/72645) | Update dependencies |

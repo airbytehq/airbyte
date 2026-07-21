@@ -19,6 +19,10 @@ Buy and sell tickets online for concerts, sports, theater, family and other even
 | suggest | id | No pagination | ✅ |  ❌  |
 | event_images | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,16 @@ Buy and sell tickets online for concerts, sports, theater, family and other even
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.54 | 2026-07-14 | [82027](https://github.com/airbytehq/airbyte/pull/82027) | Update dependencies |
+| 0.0.53 | 2026-06-30 | [81291](https://github.com/airbytehq/airbyte/pull/81291) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80680](https://github.com/airbytehq/airbyte/pull/80680) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [80078](https://github.com/airbytehq/airbyte/pull/80078) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79483](https://github.com/airbytehq/airbyte/pull/79483) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [79046](https://github.com/airbytehq/airbyte/pull/79046) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77435](https://github.com/airbytehq/airbyte/pull/77435) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [75360](https://github.com/airbytehq/airbyte/pull/75360) | Update dependencies |
+| 0.0.46 | 2026-03-10 | [74578](https://github.com/airbytehq/airbyte/pull/74578) | Update dependencies |
+| 0.0.45 | 2026-03-03 | [73884](https://github.com/airbytehq/airbyte/pull/73884) | Update dependencies |
 | 0.0.44 | 2026-02-17 | [73108](https://github.com/airbytehq/airbyte/pull/73108) | Update dependencies |
 | 0.0.43 | 2026-02-03 | [72778](https://github.com/airbytehq/airbyte/pull/72778) | Update dependencies |
 | 0.0.42 | 2026-01-20 | [72000](https://github.com/airbytehq/airbyte/pull/72000) | Update dependencies |

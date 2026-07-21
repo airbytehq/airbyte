@@ -70,6 +70,10 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 | SSL connection    | Yes                  |       |
 | Namespaces        | No                   |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -77,6 +81,15 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1.51 | 2026-07-14 | [81931](https://github.com/airbytehq/airbyte/pull/81931) | Update dependencies |
+| 2.1.50 | 2026-06-30 | [81145](https://github.com/airbytehq/airbyte/pull/81145) | Update dependencies |
+| 2.1.49 | 2026-06-23 | [80555](https://github.com/airbytehq/airbyte/pull/80555) | Update dependencies |
+| 2.1.48 | 2026-06-16 | [79950](https://github.com/airbytehq/airbyte/pull/79950) | Update dependencies |
+| 2.1.47 | 2026-06-09 | [79392](https://github.com/airbytehq/airbyte/pull/79392) | Update dependencies |
+| 2.1.46 | 2026-06-02 | [78845](https://github.com/airbytehq/airbyte/pull/78845) | Update dependencies |
+| 2.1.45 | 2026-04-28 | [77344](https://github.com/airbytehq/airbyte/pull/77344) | Update dependencies |
+| 2.1.44 | 2026-04-21 | [75839](https://github.com/airbytehq/airbyte/pull/75839) | Update dependencies |
+| 2.1.43 | 2026-03-17 | [74977](https://github.com/airbytehq/airbyte/pull/74977) | Update dependencies |
 | 2.1.42 | 2026-02-24 | [73804](https://github.com/airbytehq/airbyte/pull/73804) | Update dependencies |
 | 2.1.41 | 2026-02-17 | [73224](https://github.com/airbytehq/airbyte/pull/73224) | Update dependencies |
 | 2.1.40 | 2026-01-20 | [72020](https://github.com/airbytehq/airbyte/pull/72020) | Update dependencies |

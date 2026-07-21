@@ -14,6 +14,9 @@ An Airbyte source for Breezy applicant tracking system.
 | candidates |  | No pagination | ✅ |  ❌  |
 | pipelines |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -22,6 +25,18 @@ An Airbyte source for Breezy applicant tracking system.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.51 | 2026-07-14 | [81745](https://github.com/airbytehq/airbyte/pull/81745) | Update dependencies |
+| 0.0.50 | 2026-06-30 | [80988](https://github.com/airbytehq/airbyte/pull/80988) | Update dependencies |
+| 0.0.49 | 2026-06-23 | [80350](https://github.com/airbytehq/airbyte/pull/80350) | Update dependencies |
+| 0.0.48 | 2026-06-16 | [79763](https://github.com/airbytehq/airbyte/pull/79763) | Update dependencies |
+| 0.0.47 | 2026-06-09 | [79219](https://github.com/airbytehq/airbyte/pull/79219) | Update dependencies |
+| 0.0.46 | 2026-06-02 | [78551](https://github.com/airbytehq/airbyte/pull/78551) | Update dependencies |
+| 0.0.45 | 2026-04-28 | [77176](https://github.com/airbytehq/airbyte/pull/77176) | Update dependencies |
+| 0.0.44 | 2026-04-21 | [76529](https://github.com/airbytehq/airbyte/pull/76529) | Update dependencies |
+| 0.0.43 | 2026-04-15 | [76372](https://github.com/airbytehq/airbyte/pull/76372) | Update dependencies |
+| 0.0.42 | 2026-03-24 | [75321](https://github.com/airbytehq/airbyte/pull/75321) | Update dependencies |
+| 0.0.41 | 2026-03-10 | [74605](https://github.com/airbytehq/airbyte/pull/74605) | Update dependencies |
+| 0.0.40 | 2026-03-03 | [74197](https://github.com/airbytehq/airbyte/pull/74197) | Update dependencies |
 | 0.0.39 | 2026-02-17 | [73429](https://github.com/airbytehq/airbyte/pull/73429) | Update dependencies |
 | 0.0.38 | 2026-02-03 | [72643](https://github.com/airbytehq/airbyte/pull/72643) | Update dependencies |
 | 0.0.37 | 2026-01-20 | [71501](https://github.com/airbytehq/airbyte/pull/71501) | Update dependencies |

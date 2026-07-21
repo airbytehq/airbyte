@@ -9,7 +9,7 @@ Reports are retrieved via the GA4 Data API v1beta using configurable date ranges
 property IDs. Requires OAuth2 authentication with Google Analytics read-only scope.
 
 
-## Example questions
+## Example prompts
 
 The Google-Analytics-Data-Api connector is optimized to handle prompts like these.
 
@@ -27,7 +27,7 @@ The Google-Analytics-Data-Api connector is optimized to handle prompts like thes
 - Which countries send the most traffic?
 - How has daily active users changed over the last month?
 
-## Unsupported questions
+## Unsupported prompts
 
 The Google-Analytics-Data-Api connector isn't currently able to handle prompts like these.
 
@@ -37,23 +37,364 @@ The Google-Analytics-Data-Api connector isn't currently able to handle prompts l
 - Run a custom report with arbitrary dimensions
 - Access real-time analytics data
 
-## Installation
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Website Overview | [List](./REFERENCE.md#website-overview-list), [Context Store Search](./REFERENCE.md#website-overview-context-store-search) |
+| Daily Active Users | [List](./REFERENCE.md#daily-active-users-list), [Context Store Search](./REFERENCE.md#daily-active-users-context-store-search) |
+| Weekly Active Users | [List](./REFERENCE.md#weekly-active-users-list), [Context Store Search](./REFERENCE.md#weekly-active-users-context-store-search) |
+| Four Weekly Active Users | [List](./REFERENCE.md#four-weekly-active-users-list), [Context Store Search](./REFERENCE.md#four-weekly-active-users-context-store-search) |
+| Traffic Sources | [List](./REFERENCE.md#traffic-sources-list), [Context Store Search](./REFERENCE.md#traffic-sources-context-store-search) |
+| Pages | [List](./REFERENCE.md#pages-list), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
+| Devices | [List](./REFERENCE.md#devices-list), [Context Store Search](./REFERENCE.md#devices-context-store-search) |
+| Locations | [List](./REFERENCE.md#locations-list), [Context Store Search](./REFERENCE.md#locations-context-store-search) |
+
+
+## Google-Analytics-Data-Api API docs
+
+See the official [Google-Analytics-Data-Api API reference](https://developers.google.com/analytics/devguides/reporting/data/v1/rest).
+
+## Interfaces
+
+Use the Google-Analytics-Data-Api connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
 
 ```bash
-uv pip install airbyte-agent-google-analytics-data-api
+curl -fsSL https://airbyte.ai/install.sh | bash
 ```
 
-## Usage
+Authenticate with Airbyte:
 
-Connectors can run in open source or hosted mode.
+```bash
+airbyte-agent login
+```
 
-### Open source
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `GoogleAnalyticsDataApiConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleAnalyticsDataApiConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity, action, params or {})
+```
+
+**LangChain**
+
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+@tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GoogleAnalyticsDataApiConnector.tool_utils(framework="openai_agents")
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=[google_analytics_data_api_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+
+connector = connect("google-analytics-data-api", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+@mcp.tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
-```python
-from airbyte_agent_google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
     auth_config=GoogleAnalyticsDataApiAuthConfig(
@@ -63,66 +404,193 @@ connector = GoogleAnalyticsDataApiConnector(
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
-@GoogleAnalyticsDataApiConnector.tool_utils
-async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
-### Hosted
+**LangChain**
 
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
-
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
-
-```python
-from airbyte_agent_google_analytics_data_api import GoogleAnalyticsDataApiConnector, AirbyteAuthConfig
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
-        organization_id="<your_organization_id>",  # Optional for multi-org clients
-        airbyte_client_id="<your-client-id>",
-        airbyte_client_secret="<your-client-secret>"
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleAnalyticsDataApiConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @GoogleAnalyticsDataApiConnector.tool_utils
 async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-## Full documentation
+**LangChain**
 
-### Entities and actions
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
 
-This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
 
-| Entity | Actions |
-|--------|---------|
-| Website Overview | [List](./REFERENCE.md#website-overview-list), [Search](./REFERENCE.md#website-overview-search) |
-| Daily Active Users | [List](./REFERENCE.md#daily-active-users-list), [Search](./REFERENCE.md#daily-active-users-search) |
-| Weekly Active Users | [List](./REFERENCE.md#weekly-active-users-list), [Search](./REFERENCE.md#weekly-active-users-search) |
-| Four Weekly Active Users | [List](./REFERENCE.md#four-weekly-active-users-list), [Search](./REFERENCE.md#four-weekly-active-users-search) |
-| Traffic Sources | [List](./REFERENCE.md#traffic-sources-list), [Search](./REFERENCE.md#traffic-sources-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Search](./REFERENCE.md#pages-search) |
-| Devices | [List](./REFERENCE.md#devices-list), [Search](./REFERENCE.md#devices-search) |
-| Locations | [List](./REFERENCE.md#locations-list), [Search](./REFERENCE.md#locations-search) |
+@tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@GoogleAnalyticsDataApiConnector.tool_utils(framework="openai_agents")
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Google-Analytics-Data-Api Assistant", tools=[google_analytics_data_api_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiAuthConfig(
+        client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
+        client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
+        refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
+    )
+)
+
+mcp = FastMCP("Google-Analytics-Data-Api Agent")
+
+@mcp.tool
+@GoogleAnalyticsDataApiConnector.tool_utils
+async def google_analytics_data_api_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Google-Analytics-Data-Api connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
 
 
-### Authentication
+## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-### Google-Analytics-Data-Api API docs
+## IP allow list
 
-See the official [Google-Analytics-Data-Api API reference](https://developers.google.com/analytics/devguides/reporting/data/v1/rest).
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 4047b2be8c79b9f3d50547f54e50c8a4b5cc67d8
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-analytics-data-api/CHANGELOG.md)
+**Connector version:** 1.0.5

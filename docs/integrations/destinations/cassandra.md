@@ -24,7 +24,6 @@ contain the following columns.
 | Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured DynamoDB table. |
 | Incremental - Append Sync      |   ✅    |                                                                                         |
 | Incremental - Append + Deduped |   ❌    |                                                                                         |
-| Namespaces                     |   ✅    | Namespace will be used as part of the table name.                                       |
 
 ### Performance considerations
 
@@ -45,6 +44,10 @@ data from the connector.
   - Port [default: 9042]
   - Datacenter [optional] [default: datacenter1]
   - Replication [optional] [default: 1]
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Cassandra keyspace and is used as part of the table name.
 
 ## Changelog
 

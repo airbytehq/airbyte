@@ -52,7 +52,7 @@ This page contains the setup guide and reference information for the [Airtable](
    - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
    - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
      :::info
-     When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
+     When using OAuth, you may see a `400` or `401` error causing a failed sync. If this occurs, re-authenticate your Airtable connector by clicking **Authenticate your Airtable account** again in the connector settings.
      :::
 
 6. Click **Set up source**.
@@ -73,7 +73,7 @@ This page contains the setup guide and reference information for the [Airtable](
 
 The Airtable connector provides the following optional configuration settings:
 
-- **Number of Concurrent Workers**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when syncing multiple bases or when there is I/O wait time. The connector automatically respects Airtable's rate limit of 5 requests per second per base, so increasing this value will not cause rate limit errors.
+- **Number of Concurrent Threads**: Controls the number of concurrent threads used for syncing (default: 5, minimum: 2, maximum: 40). Higher values can improve sync performance when syncing multiple bases or when there is I/O wait time. The connector automatically respects Airtable's rate limit of 5 requests per second per base, so increasing this value will not cause rate limit errors.
 - **Add Base ID to Stream Name**: When enabled, includes the Airtable base ID in stream names to ensure uniqueness. This is useful if you have cloned Airtable bases with tables that share the same name. Enabling this option changes stream names and requires a full refresh of your data.
 
 ### Note on changed table names and deleted tables
@@ -89,31 +89,38 @@ The Airtable source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog.
+This source syncs all tables from your Airtable bases using the Metadata API. If you rename or add a column to an existing table, refresh the source schema in Airbyte to update the catalog.
 
-### Performance Considerations
+### Performance considerations
 
-See information about rate limits [here](https://airtable.com/developers/web/api/rate-limits).
+Airtable enforces the following [rate limits](https://airtable.com/developers/web/api/rate-limits):
+
+- 5 requests per second per base
+- 50 requests per second across all requests from a given user or service account
+
+If either limit is exceeded, the API returns a `429` status code and requests must wait 30 seconds before retrying. The connector handles this automatically with built-in backoff and retry logic.
 
 ## Data type map
 
 | Integration Type        | Airbyte Type                           | Nullable |
 | :---------------------- | :------------------------------------- | -------- |
 | `multipleAttachments`   | `string`                               | Yes      |
-| `autoNumber`            | `string`                               | Yes      |
+| `autoNumber`            | `number`                               | Yes      |
 | `barcode`               | `string`                               | Yes      |
 | `button`                | `string`                               | Yes      |
 | `checkbox`              | `boolean`                              | Yes      |
 | `singleCollaborator`    | `string`                               | Yes      |
 | `count`                 | `number`                               | Yes      |
 | `createdBy`             | `string`                               | Yes      |
-| `createdTime`           | `datetime`, `format: date-time`        | Yes      |
+| `aiText`                | `string`                               | Yes      |
+| `createdTime`           | `datetime` or `date`                   | Yes      |
 | `currency`              | `number`                               | Yes      |
 | `email`                 | `string`                               | Yes      |
 | `date`                  | `string`, `format: date`               | Yes      |
 | `duration`              | `number`                               | Yes      |
 | `lastModifiedBy`        | `string`                               | Yes      |
-| `lastModifiedTime`      | `datetime`, `format: date-time`        | Yes      |
+| `dateTime`              | `datetime`, `format: date-time`        | Yes      |
+| `lastModifiedTime`      | `datetime`, `date`, or `string`        | Yes      |
 | `multipleRecordLinks`   | `array with strings`                   | Yes      |
 | `multilineText`         | `string`                               | Yes      |
 | `multipleCollaborators` | `array with strings`                   | Yes      |
@@ -124,18 +131,24 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 | `rating`                | `number`                               | Yes      |
 | `richText`              | `string`                               | Yes      |
 | `singleLineText`        | `string`                               | Yes      |
+| `singleSelect`          | `string`                               | Yes      |
+| `simpleText`            | `string`                               | Yes      |
+| `manualSort`            | `string`                               | Yes      |
 | `externalSyncSource`    | `string`                               | Yes      |
 | `url`                   | `string`                               | Yes      |
-| `formula`               | `string`, `number` or `array with any` | Yes      |
-| `lookup`                | `array with any`                       | Yes      |
-| `multipleLookupValues`  | `array with any`                       | Yes      |
-| `rollup`                | `array with any`                       | Yes      |
+| `formula`               | `string`, `number`, or `array`         | Yes      |
+| `lookup`                | `array` (typed by result field)        | Yes      |
+| `multipleLookupValues`  | `array` (typed by result field)        | Yes      |
+| `rollup`                | `array` (typed by result field)        | Yes      |
 
-- All the fields are `nullable` by default, meaning that the field could be empty.
-- The `array with any` - represents the classic array with one of the other Airtable data types inside, such as:
-  - string
-  - number/integer
-  - nested lists/objects
+- All fields are nullable, meaning any field value could be empty.
+- `createdTime` and `lastModifiedTime` emit `datetime` or `date` depending on the field's display configuration in Airtable. If no result type is configured for `lastModifiedTime`, it emits `string`.
+- `formula` emits `number` when the result type is numeric (number, currency, percent, duration), `array` for array-producing formulas (ARRAYCOMPACT, ARRAYFLATTEN, ARRAYUNIQUE, ARRAYSLICE), and `string` otherwise.
+- `lookup`, `multipleLookupValues`, and `rollup` emit typed arrays matching the referenced field's type (e.g., array of numbers for numeric fields, array of strings for text fields).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -144,6 +157,15 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.32 | 2026-07-14 | [81711](https://github.com/airbytehq/airbyte/pull/81711) | Update dependencies |
+| 4.6.31 | 2026-07-07 | [80955](https://github.com/airbytehq/airbyte/pull/80955) | Update dependencies |
+| 4.6.30 | 2026-06-24 | [80771](https://github.com/airbytehq/airbyte/pull/80771) | Upgrade CDK to 7.23.3 |
+| 4.6.29 | 2026-06-23 | [80374](https://github.com/airbytehq/airbyte/pull/80374) | Update dependencies |
+| 4.6.28 | 2026-06-16 | [79749](https://github.com/airbytehq/airbyte/pull/79749) | Update dependencies |
+| 4.6.27 | 2026-06-09 | [79201](https://github.com/airbytehq/airbyte/pull/79201) | Update dependencies |
+| 4.6.26 | 2026-06-02 | [76518](https://github.com/airbytehq/airbyte/pull/76518) | Update dependencies |
+| 4.6.25 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 4.6.24 | 2026-03-10 | [74540](https://github.com/airbytehq/airbyte/pull/74540) | Update dependencies |
 | 4.6.23 | 2026-02-24 | [73755](https://github.com/airbytehq/airbyte/pull/73755) | Update dependencies |
 | 4.6.22 | 2026-02-17 | [73390](https://github.com/airbytehq/airbyte/pull/73390) | Update dependencies |
 | 4.6.21 | 2026-02-10 | [72993](https://github.com/airbytehq/airbyte/pull/72993) | Update dependencies |
@@ -172,39 +194,39 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 | 4.5.1 | 2025-02-13 | [53672](https://github.com/airbytehq/airbyte/pull/53672) | Add type for aiText and lastModifiedTime, when result type is null |
 | 4.5.0 | 2025-02-12 | [53657](https://github.com/airbytehq/airbyte/pull/53657) | Promoting release candidate 4.5.0-rc.4 to a main version. |
 | 4.5.0-rc.4 | 2025-02-04 | [53156](https://github.com/airbytehq/airbyte/pull/53156) | Add default type for `rollup`, `lookuo` and `multiplelookup`, add new type `manualSort` |
-| 4.5.0-rc.3 | 2025-01-29 | [52624](https://github.com/airbytehq/airbyte/pull/52624) | Fix type for multipleLookupValues fields                                                |
-| 4.5.0-rc.2 | 2025-01-28 | [52595](https://github.com/airbytehq/airbyte/pull/52595) | Fix type for datetime fields                                                            |
-| 4.5.0-rc.1 | 2025-01-27 | [49813](https://github.com/airbytehq/airbyte/pull/49813) | Update to low-code                                                                      |
-| 4.4.0      | 2024-07-16 | [41160](https://github.com/airbytehq/airbyte/pull/41160) | Update CDK version to v3.5.2                                                            |
-| 4.3.1      | 2024-07-16 | [41536](https://github.com/airbytehq/airbyte/pull/41536) | Update dependencies                                                                     |
-| 4.3.0      | 2024-07-16 | [41072](https://github.com/airbytehq/airbyte/pull/41072) | Update CDK version to v2.4.0                                                            |
-| 4.2.6      | 2024-07-09 | [41080](https://github.com/airbytehq/airbyte/pull/41080) | Update dependencies                                                                     |
-| 4.2.5      | 2024-07-06 | [40789](https://github.com/airbytehq/airbyte/pull/40789) | Update dependencies                                                                     |
-| 4.2.4      | 2024-06-25 | [40290](https://github.com/airbytehq/airbyte/pull/40290) | Update dependencies                                                                     |
-| 4.2.3      | 2024-06-22 | [40085](https://github.com/airbytehq/airbyte/pull/40085) | Update dependencies                                                                     |
-| 4.2.2      | 2024-06-04 | [39089](https://github.com/airbytehq/airbyte/pull/39089) | [autopull] Upgrade base image to v1.2.1                                                 |
-| 4.2.1      | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface                       |
-| 4.2.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                         |
-| 4.1.6      | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry.                                                        |
-| 4.1.5      | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image         |
-| 4.1.4      | 2023-10-19 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update docstings                                                                        |
-| 4.1.3      | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions                                            |
-| 4.1.2      | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission                                                        |
-| 4.1.1      | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired                          |
-| 4.1.0      | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records                                                 |
-| 4.0.0      | 2023-10-09 | [31181](https://github.com/airbytehq/airbyte/pull/31181) | Additional schema processing for the FORMULA schema type: Convert to simple data types  |
-| 3.0.1      | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog                                            |
-| 3.0.0      | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                                          |
-| 2.0.4      | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc                                                                     |
-| 2.0.3      | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema                                |
-| 2.0.2      | 2023-02-01 | [22245](https://github.com/airbytehq/airbyte/pull/22245) | Fix for empty `result` object when discovering the schema                               |
-| 2.0.1      | 2023-02-01 | [22224](https://github.com/airbytehq/airbyte/pull/22224) | Fixed broken `API Key` authentication                                                   |
-| 2.0.0      | 2023-01-27 | [21962](https://github.com/airbytehq/airbyte/pull/21962) | Added casting of native Airtable data types to JsonSchema types                         |
-| 1.0.2      | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support                                                 |
-| 1.0.1      | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names                                                                         |
-| 1.0.0      | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation                                  |
-| 0.1.3      | 2022-10-26 | [18491](https://github.com/airbytehq/airbyte/pull/18491) | Improve schema discovery logic                                                          |
-| 0.1.2      | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                        |
-| 0.1.1      | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                |
+| 4.5.0-rc.3 | 2025-01-29 | [52624](https://github.com/airbytehq/airbyte/pull/52624) | Fix type for multipleLookupValues fields |
+| 4.5.0-rc.2 | 2025-01-28 | [52595](https://github.com/airbytehq/airbyte/pull/52595) | Fix type for datetime fields |
+| 4.5.0-rc.1 | 2025-01-27 | [49813](https://github.com/airbytehq/airbyte/pull/49813) | Update to low-code |
+| 4.4.0 | 2024-07-16 | [41160](https://github.com/airbytehq/airbyte/pull/41160) | Update CDK version to v3.5.2 |
+| 4.3.1 | 2024-07-16 | [41536](https://github.com/airbytehq/airbyte/pull/41536) | Update dependencies |
+| 4.3.0 | 2024-07-16 | [41072](https://github.com/airbytehq/airbyte/pull/41072) | Update CDK version to v2.4.0 |
+| 4.2.6 | 2024-07-09 | [41080](https://github.com/airbytehq/airbyte/pull/41080) | Update dependencies |
+| 4.2.5 | 2024-07-06 | [40789](https://github.com/airbytehq/airbyte/pull/40789) | Update dependencies |
+| 4.2.4 | 2024-06-25 | [40290](https://github.com/airbytehq/airbyte/pull/40290) | Update dependencies |
+| 4.2.3 | 2024-06-22 | [40085](https://github.com/airbytehq/airbyte/pull/40085) | Update dependencies |
+| 4.2.2 | 2024-06-04 | [39089](https://github.com/airbytehq/airbyte/pull/39089) | [autopull] Upgrade base image to v1.2.1 |
+| 4.2.1 | 2024-05-29 | [38765](https://github.com/airbytehq/airbyte/pull/38765) | Fix next_page_token() to correctly adhere to HttpStream interface |
+| 4.2.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 4.1.6 | 2024-02-12 | [35149](https://github.com/airbytehq/airbyte/pull/35149) | Manage dependencies with Poetry. |
+| 4.1.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 4.1.4 | 2023-10-19 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update docstings |
+| 4.1.3 | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions |
+| 4.1.2 | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission |
+| 4.1.1 | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired |
+| 4.1.0 | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records |
+| 4.0.0 | 2023-10-09 | [31181](https://github.com/airbytehq/airbyte/pull/31181) | Additional schema processing for the FORMULA schema type: Convert to simple data types |
+| 3.0.1 | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog |
+| 3.0.0 | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness |
+| 2.0.4 | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc |
+| 2.0.3 | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema |
+| 2.0.2 | 2023-02-01 | [22245](https://github.com/airbytehq/airbyte/pull/22245) | Fix for empty `result` object when discovering the schema |
+| 2.0.1 | 2023-02-01 | [22224](https://github.com/airbytehq/airbyte/pull/22224) | Fixed broken `API Key` authentication |
+| 2.0.0 | 2023-01-27 | [21962](https://github.com/airbytehq/airbyte/pull/21962) | Added casting of native Airtable data types to JsonSchema types |
+| 1.0.2 | 2023-01-25 | [20934](https://github.com/airbytehq/airbyte/pull/20934) | Added `OAuth2.0` authentication support |
+| 1.0.1 | 2023-01-10 | [21215](https://github.com/airbytehq/airbyte/pull/21215) | Fix field names |
+| 1.0.0 | 2022-12-22 | [20846](https://github.com/airbytehq/airbyte/pull/20846) | Migrated to Metadata API for dynamic schema generation |
+| 0.1.3 | 2022-10-26 | [18491](https://github.com/airbytehq/airbyte/pull/18491) | Improve schema discovery logic |
+| 0.1.2 | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy |
+| 0.1.1 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
 
 </details>

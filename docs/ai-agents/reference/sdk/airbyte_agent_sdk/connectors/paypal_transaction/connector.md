@@ -1,0 +1,686 @@
+---
+id: airbyte_agent_sdk-connectors-paypal_transaction-connector
+title: airbyte_agent_sdk.connectors.paypal_transaction.connector
+---
+
+Module airbyte_agent_sdk.connectors.paypal_transaction.connector
+================================================================
+Paypal-Transaction connector.
+
+Classes
+-------
+
+<a id="BalancesQuery"></a>
+
+`BalancesQuery(connector: PaypalTransactionConnector)`
+:   Query class for Balances entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: BalancesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[BalancesSearchData]`
+    :   Search balances records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (BalancesSearchFilter):
+        - account_id: The unique identifier of the account.
+        - as_of_time: The timestamp when the balances data was reported.
+        - balances: Object containing information about the account balances.
+        - last_refresh_time: The timestamp when the balances data was last refreshed.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            BalancesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, as_of_time: str | None = None, currency_code: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResult[BalancesResponse]`
+    :   List all balances for a PayPal account. Specify date time to list balances for that time. It takes a maximum of three hours for balances to appear. Lists balances up to the previous three years.
+        
+        
+        Args:
+            as_of_time: List balances at the date time provided in ISO 8601 format. Returns the last refreshed balance when not provided.
+        
+            currency_code: Three-character ISO-4217 currency code to filter balances.
+        
+            **kwargs: Additional parameters
+        
+        Returns:
+            BalancesListResult
+
+<a id="ListDisputesQuery"></a>
+
+`ListDisputesQuery(connector: PaypalTransactionConnector)`
+:   Query class for ListDisputes entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ListDisputesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[ListDisputesSearchData]`
+    :   Search list_disputes records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ListDisputesSearchFilter):
+        - create_time: The timestamp when the dispute was created.
+        - dispute_amount: Details about the disputed amount.
+        - dispute_channel: The channel through which the dispute was initiated.
+        - dispute_id: The unique identifier for the dispute.
+        - dispute_life_cycle_stage: The stage in the life cycle of the dispute.
+        - dispute_state: The current state of the dispute.
+        - disputed_transactions: Details of transactions involved in the dispute.
+        - links: Links related to the dispute.
+        - outcome: The outcome of the dispute resolution.
+        - reason: The reason for the dispute.
+        - status: The current status of the dispute.
+        - update_time: The timestamp when the dispute was last updated.
+        - updated_time_cut: The cut-off timestamp for the last update.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ListDisputesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, update_time_after: str | None = None, update_time_before: str | None = None, page_size: int | None = None, next_page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResultWithMeta[list[Dispute], ListDisputesListResultMeta]`
+    :   Lists disputes for the PayPal account. Supports filtering by update time range.
+        
+        
+        Args:
+            update_time_after: Filter disputes updated after this time in ISO 8601 format.
+            update_time_before: Filter disputes updated before this time in ISO 8601 format.
+            page_size: Number of items per page (max 50).
+            next_page_token: Token for retrieving the next page of results.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ListDisputesListResult
+
+<a id="ListPaymentsQuery"></a>
+
+`ListPaymentsQuery(connector: PaypalTransactionConnector)`
+:   Query class for ListPayments entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ListPaymentsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[ListPaymentsSearchData]`
+    :   Search list_payments records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ListPaymentsSearchFilter):
+        - cart: Details of the cart associated with the payment.
+        - create_time: The date and time when the payment was created.
+        - id: Unique identifier for the payment.
+        - intent: The intention or purpose behind the payment.
+        - links: Collection of links related to the payment
+        - payer: Details of the payer who made the payment
+        - state: The state of the payment.
+        - transactions: List of transactions associated with the payment
+        - update_time: The date and time when the payment was last updated.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ListPaymentsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, start_time: str | None = None, end_time: str | None = None, count: int | None = None, start_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResultWithMeta[list[Payment], ListPaymentsListResultMeta]`
+    :   Lists payments for the PayPal account. Supports filtering by start and end times.
+        
+        
+        Args:
+            start_time: Start time in ISO 8601 format.
+            end_time: End time in ISO 8601 format.
+            count: Number of items per page (max 20).
+            start_id: Starting resource ID for pagination.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ListPaymentsListResult
+
+<a id="ListProductsQuery"></a>
+
+`ListProductsQuery(connector: PaypalTransactionConnector)`
+:   Query class for ListProducts entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ListProductsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[ListProductsSearchData]`
+    :   Search list_products records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ListProductsSearchFilter):
+        - create_time: The time when the product was created
+        - description: Detailed information or features of the product
+        - id: Unique identifier for the product
+        - links: List of links related to the fetched products.
+        - name: The name or title of the product
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ListProductsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, page_size: int | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResultWithMeta[list[Product], ListProductsListResultMeta]`
+    :   Lists all catalog products for the PayPal account.
+        
+        Args:
+            page_size: Number of items per page (max 20).
+            page: Page number starting from 1.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ListProductsListResult
+
+<a id="PaypalTransactionConnector"></a>
+
+`PaypalTransactionConnector(auth_config: PaypalTransactionAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Paypal-Transaction API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new paypal-transaction connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., PaypalTransactionAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = PaypalTransactionConnector(auth_config=PaypalTransactionAuthConfig(client_id="...", client_secret="...", access_token="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = PaypalTransactionConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = PaypalTransactionConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
+        
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
+        
+        Usage:
+            connector = PaypalTransactionConnector(...)
+        
+            @PaypalTransactionConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
+        
+            @PaypalTransactionConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @PaypalTransactionConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
+        
+        Args:
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = PaypalTransactionConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @PaypalTransactionConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @PaypalTransactionConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @PaypalTransactionConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            PaypalTransactionCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="SearchInvoicesQuery"></a>
+
+`SearchInvoicesQuery(connector: PaypalTransactionConnector)`
+:   Query class for SearchInvoices entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: SearchInvoicesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[SearchInvoicesSearchData]`
+    :   Search search_invoices records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (SearchInvoicesSearchFilter):
+        - additional_recipients: List of additional recipients associated with the invoice
+        - amount: Detailed breakdown of the invoice amount
+        - configuration: Configuration settings related to the invoice
+        - detail: Detailed information about the invoice
+        - due_amount: Due amount remaining to be paid for the invoice
+        - gratuity: Gratuity amount included in the invoice
+        - id: Unique identifier of the invoice
+        - invoicer: Information about the invoicer associated with the invoice
+        - last_update_time: Date and time of the last update made to the invoice
+        - links: Links associated with the invoice
+        - payments: Payment transactions associated with the invoice
+        - primary_recipients: Primary recipients associated with the invoice
+        - refunds: Refund transactions associated with the invoice
+        - status: Current status of the invoice
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            SearchInvoicesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, creation_date_range: SearchInvoicesListParamsCreationDateRange | None = None, page_size: int | None = None, page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResultWithMeta[list[Invoice], SearchInvoicesListResultMeta]`
+    :   Searches for invoices matching the specified criteria. Uses POST with a JSON body for filtering.
+        
+        
+        Args:
+            creation_date_range: Filter by invoice creation date range.
+            page_size: Number of items per page (max 100).
+            page: Page number starting from 1.
+            **kwargs: Additional parameters
+        
+        Returns:
+            SearchInvoicesListResult
+
+<a id="ShowProductDetailsQuery"></a>
+
+`ShowProductDetailsQuery(connector: PaypalTransactionConnector)`
+:   Query class for ShowProductDetails entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ShowProductDetailsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[ShowProductDetailsSearchData]`
+    :   Search show_product_details records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ShowProductDetailsSearchFilter):
+        - category: The category to which the product belongs
+        - create_time: The date and time when the product was created
+        - description: The detailed description of the product
+        - home_url: The URL for the home page of the product
+        - id: The unique identifier for the product
+        - image_url: The URL to the image representing the product
+        - links: Contains links related to the product details.
+        - name: The name of the product
+        - type_: The type or category of the product
+        - update_time: The date and time when the product was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ShowProductDetailsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.ProductDetails`
+    :   Shows details for a catalog product by ID.
+        
+        Args:
+            id: Product ID.
+            **kwargs: Additional parameters
+        
+        Returns:
+            ProductDetails
+
+<a id="TransactionsQuery"></a>
+
+`TransactionsQuery(connector: PaypalTransactionConnector)`
+:   Query class for Transactions entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: TransactionsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.AirbyteSearchResult[TransactionsSearchData]`
+    :   Search transactions records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TransactionsSearchFilter):
+        - auction_info: Information related to an auction
+        - cart_info: Details of items in the cart
+        - incentive_info: Details of any incentives applied
+        - payer_info: Information about the payer
+        - shipping_info: Shipping information
+        - store_info: Information about the store
+        - transaction_id: Unique ID of the transaction
+        - transaction_info: Detailed information about the transaction
+        - transaction_initiation_date: Date and time when the transaction was initiated
+        - transaction_updated_date: Date and time when the transaction was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TransactionsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, start_date: str, end_date: str, transaction_id: str | None = None, transaction_type: str | None = None, transaction_status: str | None = None, transaction_currency: str | None = None, fields: str | None = None, page_size: int | None = None, page: int | None = None, balance_affecting_records_only: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.paypal_transaction.models.PaypalTransactionExecuteResultWithMeta[list[Transaction], TransactionsListResultMeta]`
+    :   Lists transactions for a PayPal account. Specify one or more query parameters to filter the transactions. Requires start_date and end_date parameters. The maximum supported date range is 31 days. It takes a maximum of three hours for executed transactions to appear.
+        
+        
+        Args:
+            start_date: Start date and time in ISO 8601 format. Seconds are required.
+        
+            end_date: End date and time in ISO 8601 format. Seconds are required. Maximum supported range is 31 days.
+        
+            transaction_id: Filters by PayPal transaction ID (17-19 characters).
+            transaction_type: Filters by PayPal transaction event code.
+            transaction_status: Filters by PayPal transaction status code. D=Denied, P=Pending, S=Successful, V=Reversed.
+        
+            transaction_currency: Three-character ISO-4217 currency code.
+            fields: Fields to include in the response. Comma-separated list. Use 'all' to include all fields. Default is transaction_info.
+        
+            page_size: Number of items per page (1-500).
+            page: Page number to return.
+            balance_affecting_records_only: Y to include only balance-impacting transactions (default). N to include all transactions.
+        
+            **kwargs: Additional parameters
+        
+        Returns:
+            TransactionsListResult

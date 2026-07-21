@@ -7,12 +7,16 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator.Companion.PARENT_CHILD_SEPARATOR
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTypesComparator.Companion.splitIntoParentAndLeaf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SortDirection
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Type.PrimitiveType
+
+private val logger = KotlinLogging.logger {}
 
 /** Describes how the [IcebergTableSynchronizer] handles column type changes. */
 enum class ColumnTypeChangeBehavior {
@@ -86,6 +90,27 @@ class IcebergTableSynchronizer(
             return SchemaUpdateResult(existingSchema, pendingUpdates = emptyList())
         }
 
+        // Update the sort order before creating the UpdateSchema, because:
+        // 1. Deleting a column referenced by the sort order will cause
+        //    SortOrder.checkCompatibility to throw ValidationException on commit.
+        // 2. UpdateSchema captures the table's metadata version at creation time.
+        //    If we replace the sort order after creating it, the commit would fail
+        //    with a stale metadata error.
+        val columnsBeingDeleted = buildList {
+            addAll(diff.removedColumns)
+            if (columnTypeChangeBehavior == ColumnTypeChangeBehavior.OVERWRITE) {
+                // In OVERWRITE mode, type-changed columns are deleted and re-added
+                // with new field IDs. The old sort field references become invalid.
+                addAll(diff.updatedDataTypes)
+            }
+        }
+        replaceSortOrderIfNeeded(
+            table = table,
+            columnsBeingDeleted = columnsBeingDeleted,
+            identifierFieldsChanged = diff.identifierFieldsChanged,
+            incomingIdentifierFieldNames = incomingSchema.identifierFieldNames(),
+        )
+
         val update: UpdateSchema = table.updateSchema().allowIncompatibleChanges()
 
         // 1) Remove columns that no longer exist in the incoming schema
@@ -94,6 +119,7 @@ class IcebergTableSynchronizer(
         // 2) Update types => find a supertype for each changed column
         val columnsToReplaceInSecondCommit =
             mutableMapOf<String, org.apache.iceberg.types.Types.NestedField>()
+        val replacedColumns = mutableSetOf<String>()
 
         diff.updatedDataTypes.forEach { columnName ->
             val existingField =
@@ -134,6 +160,7 @@ class IcebergTableSynchronizer(
                         update.deleteColumn(columnName)
                         update.addColumn(columnName, incomingField.type())
                     }
+                    replacedColumns.add(columnName)
                 }
             }
         }
@@ -188,8 +215,17 @@ class IcebergTableSynchronizer(
         }
 
         // 5) Update identifier fields
-        if (diff.identifierFieldsChanged) {
-            val updatedIdentifierFields = incomingSchema.identifierFieldNames().toList()
+        // Iceberg's requireColumn() fails for columns pending deletion (even if they're
+        // being re-added in the same update). When replaced columns are also identifier
+        // fields, we must defer the identifier field update to a follow-up commit.
+        val updatedIdentifierFields =
+            if (diff.identifierFieldsChanged) incomingSchema.identifierFieldNames().toList()
+            else emptyList()
+        val hasReplacedIdentifierFields =
+            replacedColumns.any { it in updatedIdentifierFields.toSet() }
+
+        if (diff.identifierFieldsChanged && !hasReplacedIdentifierFields) {
+            // No conflict: can update identifier fields in the same update
             updatedIdentifierFields.forEach { update.requireColumn(it) }
             update.setIdentifierFields(updatedIdentifierFields)
         }
@@ -211,6 +247,12 @@ class IcebergTableSynchronizer(
                 addUpdate.addColumn(null, columnName, field.type())
             }
 
+            // If identifier fields were deferred, handle them now (columns have been re-added)
+            if (hasReplacedIdentifierFields) {
+                updatedIdentifierFields.forEach { addUpdate.requireColumn(it) }
+                addUpdate.setIdentifierFields(updatedIdentifierFields)
+            }
+
             // Commit or defer the add operation based on columnTypeChangeBehavior
             val finalSchema = addUpdate.apply()
             return if (columnTypeChangeBehavior.commitImmediately) {
@@ -218,6 +260,25 @@ class IcebergTableSynchronizer(
                 SchemaUpdateResult(finalSchema, pendingUpdates = emptyList())
             } else {
                 SchemaUpdateResult(finalSchema, pendingUpdates = listOf(addUpdate))
+            }
+        }
+
+        // If replaced columns are also identifier fields, commit column replacements first,
+        // then handle identifier fields in a follow-up update.
+        if (hasReplacedIdentifierFields) {
+            update.commit()
+            table.refresh()
+
+            val identifierUpdate = table.updateSchema().allowIncompatibleChanges()
+            updatedIdentifierFields.forEach { identifierUpdate.requireColumn(it) }
+            identifierUpdate.setIdentifierFields(updatedIdentifierFields)
+
+            val newSchema = identifierUpdate.apply()
+            return if (columnTypeChangeBehavior.commitImmediately) {
+                identifierUpdate.commit()
+                SchemaUpdateResult(newSchema, pendingUpdates = emptyList())
+            } else {
+                SchemaUpdateResult(newSchema, pendingUpdates = listOf(identifierUpdate))
             }
         }
 
@@ -230,6 +291,90 @@ class IcebergTableSynchronizer(
         } else {
             return SchemaUpdateResult(newSchema, pendingUpdates = listOf(update))
         }
+    }
+
+    /**
+     * Update the table's sort order if it would conflict with pending schema changes.
+     *
+     * Sort orders are set at table creation from identifier fields (PKs) and never updated. This
+     * causes [org.apache.iceberg.exceptions.ValidationException] when schema evolution deletes a
+     * column referenced by the sort order.
+     *
+     * This method handles three cases:
+     * 1. Identifier fields changed → rebuild sort order from new identifiers (covers
+     * ```
+     *    Dedupe→Append, PK changes within Dedupe)
+     * ```
+     * 2. Columns being deleted conflict with sort order → remove those fields
+     * 3. Neither → no-op
+     *
+     * Must be called BEFORE creating the [UpdateSchema], since this commits a metadata change and
+     * the subsequent UpdateSchema needs the refreshed metadata version.
+     */
+    private fun replaceSortOrderIfNeeded(
+        table: Table,
+        columnsBeingDeleted: List<String>,
+        identifierFieldsChanged: Boolean,
+        incomingIdentifierFieldNames: Set<String>,
+    ) {
+        val currentSortOrder = table.sortOrder()
+
+        // If the table has no sort order, there's nothing to conflict and nothing to update.
+        // (Append→Dedupe would need a sort order added, but that case requires a reset.)
+        if (currentSortOrder.isUnsorted) {
+            return
+        }
+
+        if (identifierFieldsChanged) {
+            // Rebuild sort order from the new identifier fields.
+            // For Dedupe→Append: incoming identifiers are empty → unsorted.
+            // For PK changes within Dedupe: new identifiers → new sort order.
+            val builder = table.replaceSortOrder()
+            for (fieldName in incomingIdentifierFieldNames) {
+                // Only include fields that exist in the current schema. Fields being
+                // added in the same schema change can't be referenced yet.
+                if (table.schema().findField(fieldName) != null) {
+                    builder.asc(fieldName)
+                }
+            }
+            logger.info {
+                "Replacing sort order due to identifier field change. " +
+                    "New sort fields: ${incomingIdentifierFieldNames.ifEmpty { setOf("(unsorted)") }}"
+            }
+            builder.commit()
+            table.refresh()
+            return
+        }
+
+        // No identifier change — check if any deleted columns conflict with the sort order.
+        if (columnsBeingDeleted.isEmpty()) {
+            return
+        }
+
+        val schema = table.schema()
+        val fieldIdsBeingDeleted =
+            columnsBeingDeleted.mapNotNull { schema.findField(it)?.fieldId() }.toSet()
+
+        val hasConflict = currentSortOrder.fields().any { it.sourceId() in fieldIdsBeingDeleted }
+        if (!hasConflict) {
+            return
+        }
+
+        // Rebuild the sort order, keeping only fields that aren't being deleted.
+        val builder = table.replaceSortOrder()
+        for (sortField in currentSortOrder.fields()) {
+            if (sortField.sourceId() !in fieldIdsBeingDeleted) {
+                val fieldName = schema.findColumnName(sortField.sourceId())
+                when (sortField.direction()) {
+                    SortDirection.ASC -> builder.asc(fieldName, sortField.nullOrder())
+                    SortDirection.DESC -> builder.desc(fieldName, sortField.nullOrder())
+                    else -> builder.asc(fieldName, sortField.nullOrder())
+                }
+            }
+        }
+        logger.info { "Replacing sort order to remove fields being deleted: $columnsBeingDeleted" }
+        builder.commit()
+        table.refresh()
     }
 }
 

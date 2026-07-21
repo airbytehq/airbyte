@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Platform
+# Data replication platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -11,6 +11,10 @@ import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 Use Airbyte's data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
 
 Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you. Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
+
+## Interactive product tour
+
+<Navattic id="cmhfnvz6w000004jrbwla348h" title="Airbyte Interactive Product Tour" />
 
 ## Why Airbyte?
 
@@ -73,11 +77,11 @@ Airbyte's data replication platform is available as a self-managed, hybrid, or f
 
 <CardWithIcon title="Standard" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
-<CardWithIcon title="Plus" description="A cloud solution with all the capabilities of Standard, plus higher priority support and predictable, capacity-based annual pricing." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+<CardWithIcon title="Plus" description="A self-serve upgrade with everything in Standard, plus 15-minute sync schedules, mappings, and higher priority support." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
 <CardWithIcon title="Pro" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Pro is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution for organizations seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade, hybrid solution for organizations seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="/platform/enterprise-flex/" icon="fa-lock" />
 
 </Grid>
 

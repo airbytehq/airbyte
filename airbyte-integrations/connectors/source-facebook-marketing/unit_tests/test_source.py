@@ -9,7 +9,7 @@ from unittest.mock import call
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
-from source_facebook_marketing.spec import ConnectorConfig
+from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
     Status,
     SyncMode,
 )
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 
 from .utils import command_check
 
@@ -123,7 +124,7 @@ class TestSourceFacebookMarketing:
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)
 
-        assert len(streams) == 30
+        assert len(streams) == 31
 
     def test_spec(self, fb_marketing):
         spec = fb_marketing.spec()
@@ -141,6 +142,22 @@ class TestSourceFacebookMarketing:
         ]
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
+
+    def test_get_custom_insights_streams_with_time_increment_period(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "test_weekly",
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+                "time_increment_period": "weekly",
+            },
+        ]
+        config = ConnectorConfig.parse_obj(config)
+        streams = fb_marketing.get_custom_insights_streams(api, config)
+        assert len(streams) == 1
+        assert streams[0].time_increment_period == TimeIncrementPeriod.weekly
+        assert streams[0].time_increment == 7
 
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [
@@ -167,6 +184,33 @@ class TestSourceFacebookMarketing:
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
+
+    def test_deprecated_dma_breakdown_removed_from_spec(self, fb_marketing):
+        # Meta replaced `dma` with `comscore_market` (oncall #12940). `dma` must no longer be a
+        # selectable breakdown, so a Custom Insights config still using it is rejected by the CDK's
+        # config-vs-spec validation. `comscore_market` remains available as the replacement.
+        spec = fb_marketing.spec(None).connectionSpecification
+        breakdowns_enum = spec["properties"]["custom_insights"]["items"]["properties"]["breakdowns"]["items"]["enum"]
+        assert "dma" not in breakdowns_enum
+        assert "comscore_market" in breakdowns_enum
+
+    def test_dma_breakdown_config_rejected_with_config_error(self, config, fb_marketing):
+        """Validate the actual error users see when their saved config still references dma."""
+        config["custom_insights"] = [
+            {
+                "name": "test_dma_stream",
+                "fields": ["account_id"],
+                "breakdowns": ["dma"],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+        source_spec = fb_marketing.spec(None)
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            check_config_against_spec_or_exit(config, source_spec)
+
+        assert exc_info.value.failure_type.value == "config_error"
+        assert "dma" in exc_info.value.message
+        assert "Config validation error" in exc_info.value.message
 
     def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
         catalog = ConfiguredAirbyteCatalog(

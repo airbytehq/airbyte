@@ -159,6 +159,9 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
         }
     }
 
+    fun withHeartbeatTimeout(timeout: Duration): DebeziumPropertiesBuilder =
+        with(AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS, timeout.seconds.toString())
+
     companion object {
         private const val BYTE_VALUE_256_MB = (256 * 1024 * 1024).toString()
 

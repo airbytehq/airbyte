@@ -3,13 +3,13 @@
 The Notion agent connector is a Python package that equips AI agents to interact with Notion through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Notion is an all-in-one workspace for notes, docs, wikis, projects, and collaboration.
-This connector provides read access to Notion workspaces including users, pages, data sources,
+This connector provides read and write access to Notion workspaces including users, pages, data sources,
 blocks, and comments through the Notion REST API (version 2025-09-03). It enables querying
-workspace structure, page content, data source schemas, and collaboration data for productivity
-analysis and content management insights.
+workspace structure, page content, data source schemas, and collaboration data, as well as
+creating and updating pages, appending and updating blocks, and creating comments.
 
 
-## Example questions
+## Example prompts
 
 The Notion connector is optimized to handle prompts like these.
 
@@ -21,100 +21,561 @@ The Notion connector is optimized to handle prompts like these.
 - Show me comments on a specific page
 - What is the schema of a specific data source?
 - Who are the bot users in my workspace?
+- Create a new page titled 'Meeting Notes' under page X
+- Update the icon of page X to a rocket emoji
+- Add a paragraph block saying 'Hello World' to page X
+- Mark the to-do block as completed
+- Add a comment to page X saying 'Looks good!'
+- Archive page X
+- Update the title of data source X to 'Project Tracker'
 - Find pages created in the last week
 - List data sources that have been recently edited
 - Show me all archived pages
 
-## Unsupported questions
+## Unsupported prompts
 
 The Notion connector isn't currently able to handle prompts like these.
 
-- Create a new page in Notion
-- Update a data source property
-- Delete a block
-- Add a comment to a page
+- Delete a page permanently
+- Delete a block permanently
+- Delete a comment
+- Create a new user
 
-## Installation
+## Entities and actions
+
+This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+
+| Entity | Actions |
+|--------|---------|
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Pages | [List](./REFERENCE.md#pages-list), [Create](./REFERENCE.md#pages-create), [Get](./REFERENCE.md#pages-get), [Update](./REFERENCE.md#pages-update), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
+| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Update](./REFERENCE.md#data-sources-update), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
+| Blocks | [List](./REFERENCE.md#blocks-list), [Create](./REFERENCE.md#blocks-create), [Get](./REFERENCE.md#blocks-get), [Update](./REFERENCE.md#blocks-update), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
+| Comments | [List](./REFERENCE.md#comments-list), [Create](./REFERENCE.md#comments-create), [Context Store Search](./REFERENCE.md#comments-context-store-search) |
+
+
+## Notion API docs
+
+See the official [Notion API reference](https://developers.notion.com/reference/intro).
+
+## Interfaces
+
+Use the Notion connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
 
 ```bash
-uv pip install airbyte-agent-notion
+curl -fsSL https://airbyte.ai/install.sh | bash
 ```
 
-## Usage
+Authenticate with Airbyte:
 
-Connectors can run in open source or hosted mode.
+```bash
+airbyte-agent login
+```
 
-### Open source
+Create the connector. The CLI opens the hosted setup flow:
 
-In open source mode, you provide API credentials directly to the connector.
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion"
+}'
+```
 
-```python
-from airbyte_agent_notion import NotionConnector
-from airbyte_agent_notion.models import NotionAuthConfig
+Describe the connector to see its supported entities and actions:
 
-connector = NotionConnector(
-    auth_config=NotionAuthConfig(
-        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "notion",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
+
+```bash
+uv pip install airbyte-agent-sdk
+```
+
+#### Usage
+
+Connectors can run in hosted or open source mode.
+
+##### Hosted
+
+In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
+If your Airbyte client can access multiple organizations, also set `organization_id`.
+
+This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
+
+The `connect()` factory returns a fully typed `NotionConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
+
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
     )
-)
+    for tool in tools.as_list()
+]
+```
 
-@agent.tool_plain # assumes you're using Pydantic AI
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Notion Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Notion Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `NotionConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @NotionConnector.tool_utils
 async def notion_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-### Hosted
+**LangChain**
 
-In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
-If your Airbyte client can access multiple organizations, also set `organization_id`.
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
 
-This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
+connector = connect("notion", workspace_name="<your_workspace_name>")
 
-```python
-from airbyte_agent_notion import NotionConnector, AirbyteAuthConfig
+@tool
+@NotionConnector.tool_utils
+async def notion_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Notion connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@NotionConnector.tool_utils(framework="openai_agents")
+async def notion_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Notion connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Notion Assistant", tools=[notion_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+
+connector = connect("notion", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Notion Agent")
+
+@mcp.tool
+@NotionConnector.tool_utils
+async def notion_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Notion connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+
+Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
+
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
 
 connector = NotionConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
 )
 
-@agent.tool_plain # assumes you're using Pydantic AI
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = NotionConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = NotionConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Notion Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.types import AirbyteAuthConfig
+
+connector = NotionConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="<your_workspace_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
+)
+
+mcp = FastMCP("Notion Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+
+##### Open source
+
+In open source mode, you provide API credentials directly to the connector.
+
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Notion Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+mcp = FastMCP("Notion Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `NotionConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+agent = Agent("openai:gpt-4o")
+
+@agent.tool_plain
 @NotionConnector.tool_utils
 async def notion_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
-## Full documentation
+**LangChain**
 
-### Entities and actions
+```python title="LangChain"
+from langchain_core.tools import tool
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
 
-This connector supports the following entities and actions. For more details, see this connector's [full reference documentation](REFERENCE.md).
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
 
-| Entity | Actions |
-|--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Search](./REFERENCE.md#pages-search) |
-| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Search](./REFERENCE.md#data-sources-search) |
-| Blocks | [List](./REFERENCE.md#blocks-list), [Get](./REFERENCE.md#blocks-get), [Search](./REFERENCE.md#blocks-search) |
-| Comments | [List](./REFERENCE.md#comments-list) |
+@tool
+@NotionConnector.tool_utils
+async def notion_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Notion connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+# strict_mode=False because `params: dict` is permissive and the default strict
+# JSON schema rejects objects with additionalProperties.
+@function_tool(strict_mode=False)
+@NotionConnector.tool_utils(framework="openai_agents")
+async def notion_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Notion connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+
+agent = Agent(name="Notion Assistant", tools=[notion_execute])
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
+
+connector = NotionConnector(
+    auth_config=NotionAccessTokenAuthConfig(
+        token="<Notion internal integration token (starts with ntn_ or secret_)>"
+    )
+)
+
+mcp = FastMCP("Notion Agent")
+
+@mcp.tool
+@NotionConnector.tool_utils
+async def notion_execute(entity: str, action: str, params: dict | None = None):
+    """Execute Notion connector operations."""
+    result = await connector.execute(entity, action, params or {})
+    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+```
 
 
-### Authentication
+## Authentication
 
 For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
-### Notion API docs
+## IP allow list
 
-See the official [Notion API reference](https://developers.notion.com/reference/intro).
+If your organization restricts access to specific IPs, add the [Airbyte Agents IP addresses](https://docs.airbyte.com/ai-agents/admin/ip-allowlist) to your allow list.
 
 ## Version information
 
-- **Package version:** 0.1.7
-- **Connector version:** 0.1.4
-- **Generated with Connector SDK commit SHA:** 62fbfc1f7b4889639e5a0245203b250cbd0315ae
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/notion/CHANGELOG.md)
+**Connector version:** 0.1.12

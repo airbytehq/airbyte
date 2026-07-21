@@ -64,6 +64,10 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 :::
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -71,6 +75,17 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.55 | 2026-07-14 | [82073](https://github.com/airbytehq/airbyte/pull/82073) | Update dependencies |
+| 1.2.54 | 2026-06-30 | [81304](https://github.com/airbytehq/airbyte/pull/81304) | Update dependencies |
+| 1.2.53 | 2026-06-23 | [80722](https://github.com/airbytehq/airbyte/pull/80722) | Update dependencies |
+| 1.2.52 | 2026-06-16 | [80114](https://github.com/airbytehq/airbyte/pull/80114) | Update dependencies |
+| 1.2.51 | 2026-06-09 | [79582](https://github.com/airbytehq/airbyte/pull/79582) | Update dependencies |
+| 1.2.50 | 2026-06-02 | [79076](https://github.com/airbytehq/airbyte/pull/79076) | Update dependencies |
+| 1.2.49 | 2026-04-28 | [77500](https://github.com/airbytehq/airbyte/pull/77500) | Update dependencies |
+| 1.2.48 | 2026-04-21 | [76821](https://github.com/airbytehq/airbyte/pull/76821) | Update dependencies |
+| 1.2.47 | 2026-03-31 | [75837](https://github.com/airbytehq/airbyte/pull/75837) | Update dependencies |
+| 1.2.46 | 2026-03-24 | [75052](https://github.com/airbytehq/airbyte/pull/75052) | Update dependencies |
+| 1.2.45 | 2026-03-10 | [74448](https://github.com/airbytehq/airbyte/pull/74448) | Update dependencies |
 | 1.2.44 | 2026-02-24 | [73991](https://github.com/airbytehq/airbyte/pull/73991) | Update dependencies |
 | 1.2.43 | 2026-02-17 | [73592](https://github.com/airbytehq/airbyte/pull/73592) | Update dependencies |
 | 1.2.42 | 2026-02-10 | [73211](https://github.com/airbytehq/airbyte/pull/73211) | Update dependencies |

@@ -4,67 +4,110 @@ This page contains the setup guide and reference information for the Sentry sour
 
 ## Prerequisites
 
-To set up the Sentry source connector, you'll need the Sentry [project name](https://docs.sentry.io/product/projects/), [authentication token](https://docs.sentry.io/api/auth/#auth-tokens), and [organization](https://docs.sentry.io/product/accounts/membership/).
+To set up the Sentry source connector, you need:
+
+- A Sentry [organization slug](https://docs.sentry.io/product/accounts/membership/)
+- A [project slug](https://docs.sentry.io/product/projects/) in that organization
+- A Sentry [authentication token](https://docs.sentry.io/api/auth/#auth-tokens) with the scopes required by the streams you sync
+
+For Sentry SaaS, you can create an organization-wide token with a Sentry [internal integration](https://docs.sentry.io/integrations/integration-platform/internal-integration/). Configure the integration with read access for organizations, projects, and issues and events to sync every stream.
 
 ## Set up the Sentry connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Sentry** from the Source type dropdown.
-4. Enter the name for the Sentry connector.
-5. For **Project**, enter the name of the [Sentry project](https://docs.sentry.io/product/projects/) you want to sync.
-6. For **Host Name**, enter the host name of your self-hosted Sentry API Server. If your server isn't self-hosted, leave the field blank.
-7. For **Authentication Tokens**, enter the [Sentry authentication token](https://docs.sentry.io/api/auth/#auth-tokens).
-8. For **Organization**, enter the [Sentry Organization](https://docs.sentry.io/product/accounts/membership/) the groups belong to.
-9. Click **Set up source**.
+1. In Airbyte, select **Sources**, then select **New source**.
+2. Select **Sentry**.
+3. For **Authentication Tokens**, enter your Sentry authentication token.
+4. For **Host Name**, keep `sentry.io` for Sentry SaaS, or enter the hostname of your self-hosted Sentry server without `https://` or a path. You can also use your Sentry SaaS [region-specific domain](https://docs.sentry.io/api/#choosing-the-right-api-base-domain), such as `us.sentry.io`, `us2.sentry.io`, or `de.sentry.io`.
+5. For **Organization**, enter the organization slug.
+6. For **Project**, enter the project slug. This setting determines which project the `events`, `issues`, and `project_detail` streams sync. Organization-level streams aren't limited to this project.
+7. Optionally, for **Number of concurrent workers**, enter a value from 1 through 20. The default is 5.
+8. Select **Set up source**.
 
 ## Supported sync modes
 
-The Sentry source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Sentry source connector supports these [sync modes](/platform/using-airbyte/core-concepts/sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
+- [Full Refresh - Overwrite](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-- [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/)
-- [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
-- [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
-- [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
+| Stream | Data synced | Supported sync modes |
+| :--- | :--- | :--- |
+| [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/) | Error events for the configured project | Full refresh, incremental |
+| [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/) | Issues for the configured project | Full refresh, incremental |
+| [Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Projects in the configured organization | Full refresh, incremental |
+| [Project Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for the configured project | Full refresh |
+| [All Projects Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for every project in the configured organization | Full refresh |
+| [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/) | Releases in the configured organization | Full refresh, incremental |
 
-## Limitations & Troubleshooting
+The `all_projects_detail` stream makes one project-detail request for every project returned by the organization-level list endpoint.
 
-<details>
-<summary>
-Expand to see details about Sentry connector limitations and troubleshooting.
-</summary>
+:::note Version 1.0.0
 
-### Connector limitations
+The `projects` stream now returns only projects in the configured organization. The `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` fields return `null` in this stream. Sync `all_projects_detail` to retrieve these fields for every project. For upgrade instructions, see the [Sentry migration guide](/integrations/sources/sentry-migrations).
 
-:::warning
-**Sentry API Restriction on Events Data**: Access to the events endpoint is guaranteed only for the last 90 days by Sentry. If you use the Full Refresh Overwrite sync, be aware that any events data older than 90 days will be **deleted** from your target destination and replaced with the data from the last 90 days only. Use an Append sync mode to ensure historical data is retained.
-Please be aware: this also means that any change older than 90 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 90 days.
 :::
 
-</details>
+## Authentication token scopes
 
-## Data type map
+The authentication token must include the scopes required by the streams you sync. To sync every stream, grant `org:read`, `event:read`, and `project:read`.
 
-| Integration Type    | Airbyte Type |
-| :------------------ | :----------- |
-| `string`            | `string`     |
-| `integer`, `number` | `number`     |
-| `array`             | `array`      |
-| `object`            | `object`     |
+| Stream              | Endpoint                                                          | Required scope             |
+| :------------------ | :---------------------------------------------------------------- | :------------------------- |
+| Events              | `GET /api/0/projects/{organization}/{project}/events/`            | `project:read`             |
+| Issues              | `GET /api/0/projects/{organization}/{project}/issues/`            | `event:read`               |
+| Projects            | `GET /api/0/organizations/{organization}/projects/`               | `org:read`                 |
+| Project Detail      | `GET /api/0/projects/{organization}/{project}/`                   | `project:read`             |
+| All Projects Detail | `GET /api/0/projects/{organization}/{project}/` (per org project) | `org:read`, `project:read` |
+| Releases            | `GET /api/0/organizations/{organization}/releases/`               | `project:read`             |
+
+If the token is missing a scope, the corresponding stream returns an HTTP 403 error. See the Sentry [permissions and scopes](https://docs.sentry.io/api/permissions/) reference for details.
+
+## Limitations and troubleshooting
+
+### Event retention
+
+:::warning
+
+Sentry SaaS retains error events for 30 or 90 days, depending on your plan. If you use Full Refresh - Overwrite, a sync replaces older destination records with only the events still available from Sentry. Use an append mode if you need to keep events beyond Sentry's [data retention period](https://docs.sentry.io/security-legal-pii/security/data-retention-periods/).
+
+:::
+
+### Rate limits
+
+Sentry applies request and concurrency limits per caller and endpoint. The limits are returned in the `X-Sentry-Rate-Limit-*` response headers and can vary by endpoint. If syncs receive HTTP 429 responses, reduce **Number of concurrent workers**. See Sentry's [rate limit documentation](https://docs.sentry.io/api/ratelimits/).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
+
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2026-07-14 | [82008](https://github.com/airbytehq/airbyte/pull/82008) | Update dependencies |
+| 1.0.1 | 2026-07-13 | [81707](https://github.com/airbytehq/airbyte/pull/81707) | Scope the 1.0.0 breaking change to the `projects` stream and emphasize the risk of data loss in the migration guide |
+| 1.0.0 | 2026-07-13 | [80190](https://github.com/airbytehq/airbyte/pull/80190) | Breaking: migrate the `projects` stream to the org-scoped endpoint (Sentry deprecated the legacy `/projects/` endpoint). The stream now returns only projects belonging to the configured organization, and no longer returns `avatar`, `color`, `isInternal`, `isPublic`, `organization`, `status`. Added the `all_projects_detail` stream, which returns full project details (including those six fields) for every project in the organization. See the [migration guide](/integrations/sources/sentry-migrations). |
+| 0.9.27 | 2026-06-30 | [81219](https://github.com/airbytehq/airbyte/pull/81219) | Update dependencies |
+| 0.9.26 | 2026-06-23 | [80622](https://github.com/airbytehq/airbyte/pull/80622) | Update dependencies |
+| 0.9.25 | 2026-06-16 | [80036](https://github.com/airbytehq/airbyte/pull/80036) | Update dependencies |
+| 0.9.24 | 2026-06-09 | [79482](https://github.com/airbytehq/airbyte/pull/79482) | Update dependencies |
+| 0.9.23 | 2026-06-02 | [78975](https://github.com/airbytehq/airbyte/pull/78975) | Update dependencies |
+| 0.9.22 | 2026-06-01 | [78537](https://github.com/airbytehq/airbyte/pull/78537) | Add user-configurable `num_workers` concurrency setting (default 5, tested optimal at 7) |
+| 0.9.22-rc.2 | 2026-05-27 | [78468](https://github.com/airbytehq/airbyte/pull/78468) | Concurrency tuning iteration 2 — bump default_concurrency from 7 to 8 |
+| 0.9.22-rc.1 | 2026-05-26 | [78444](https://github.com/airbytehq/airbyte/pull/78444) | Concurrency tuning — bump default_concurrency from 5 to 7 for progressive rollout |
+| 0.9.21 | 2026-04-28 | [77407](https://github.com/airbytehq/airbyte/pull/77407) | Update dependencies |
+| 0.9.20 | 2026-04-21 | [76772](https://github.com/airbytehq/airbyte/pull/76772) | Update dependencies |
+| 0.9.19 | 2026-03-31 | [75797](https://github.com/airbytehq/airbyte/pull/75797) | Update dependencies |
+| 0.9.18 | 2026-03-24 | [75330](https://github.com/airbytehq/airbyte/pull/75330) | Update dependencies |
+| 0.9.17 | 2026-03-10 | [74601](https://github.com/airbytehq/airbyte/pull/74601) | Update dependencies |
+| 0.9.16 | 2026-03-03 | [73562](https://github.com/airbytehq/airbyte/pull/73562) | Update dependencies |
 | 0.9.15 | 2026-02-03 | [72578](https://github.com/airbytehq/airbyte/pull/72578) | Update dependencies |
 | 0.9.14 | 2026-01-20 | [72096](https://github.com/airbytehq/airbyte/pull/72096) | Update dependencies |
 | 0.9.13 | 2026-01-14 | [71517](https://github.com/airbytehq/airbyte/pull/71517) | Update dependencies |

@@ -49,6 +49,10 @@ The Drift connector should not run into Drift API limitations under normal usage
 2. Click on `Authenticate your Drift account`
 3. Proceed the authentication in order to obtain the `access_token`
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -56,6 +60,17 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.55 | 2026-07-14 | [81788](https://github.com/airbytehq/airbyte/pull/81788) | Update dependencies |
+| 0.4.54 | 2026-06-30 | [81023](https://github.com/airbytehq/airbyte/pull/81023) | Update dependencies |
+| 0.4.53 | 2026-06-23 | [80397](https://github.com/airbytehq/airbyte/pull/80397) | Update dependencies |
+| 0.4.52 | 2026-06-16 | [79825](https://github.com/airbytehq/airbyte/pull/79825) | Update dependencies |
+| 0.4.51 | 2026-06-09 | [79266](https://github.com/airbytehq/airbyte/pull/79266) | Update dependencies |
+| 0.4.50 | 2026-06-02 | [78620](https://github.com/airbytehq/airbyte/pull/78620) | Update dependencies |
+| 0.4.49 | 2026-04-28 | [77262](https://github.com/airbytehq/airbyte/pull/77262) | Update dependencies |
+| 0.4.48 | 2026-04-21 | [76575](https://github.com/airbytehq/airbyte/pull/76575) | Update dependencies |
+| 0.4.47 | 2026-03-31 | [75779](https://github.com/airbytehq/airbyte/pull/75779) | Update dependencies |
+| 0.4.46 | 2026-03-24 | [75036](https://github.com/airbytehq/airbyte/pull/75036) | Update dependencies |
+| 0.4.45 | 2026-03-03 | [74193](https://github.com/airbytehq/airbyte/pull/74193) | Update dependencies |
 | 0.4.44 | 2026-02-03 | [72603](https://github.com/airbytehq/airbyte/pull/72603) | Update dependencies |
 | 0.4.43 | 2026-01-20 | [71884](https://github.com/airbytehq/airbyte/pull/71884) | Update dependencies |
 | 0.4.42 | 2026-01-14 | [71604](https://github.com/airbytehq/airbyte/pull/71604) | Update dependencies |

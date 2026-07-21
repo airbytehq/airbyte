@@ -89,6 +89,10 @@ GET https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles?api_key={ap
 
 TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/introduction) has v3 at present and v4 is at development. The connector as default uses v3.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -96,6 +100,16 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.51 | 2026-07-14 | [82041](https://github.com/airbytehq/airbyte/pull/82041) | Update dependencies |
+| 1.1.50 | 2026-06-30 | [81289](https://github.com/airbytehq/airbyte/pull/81289) | Update dependencies |
+| 1.1.49 | 2026-06-23 | [80690](https://github.com/airbytehq/airbyte/pull/80690) | Update dependencies |
+| 1.1.48 | 2026-06-16 | [80097](https://github.com/airbytehq/airbyte/pull/80097) | Update dependencies |
+| 1.1.47 | 2026-06-09 | [79550](https://github.com/airbytehq/airbyte/pull/79550) | Update dependencies |
+| 1.1.46 | 2026-06-02 | [79048](https://github.com/airbytehq/airbyte/pull/79048) | Update dependencies |
+| 1.1.45 | 2026-04-28 | [77431](https://github.com/airbytehq/airbyte/pull/77431) | Update dependencies |
+| 1.1.44 | 2026-04-21 | [76797](https://github.com/airbytehq/airbyte/pull/76797) | Update dependencies |
+| 1.1.43 | 2026-03-24 | [75357](https://github.com/airbytehq/airbyte/pull/75357) | Update dependencies |
+| 1.1.42 | 2026-03-03 | [74187](https://github.com/airbytehq/airbyte/pull/74187) | Update dependencies |
 | 1.1.41 | 2026-02-17 | [73514](https://github.com/airbytehq/airbyte/pull/73514) | Update dependencies |
 | 1.1.40 | 2026-02-10 | [73105](https://github.com/airbytehq/airbyte/pull/73105) | Update dependencies |
 | 1.1.39 | 2026-02-03 | [72771](https://github.com/airbytehq/airbyte/pull/72771) | Update dependencies |
