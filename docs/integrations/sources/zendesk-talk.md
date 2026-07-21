@@ -95,6 +95,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.0.19 | 2026-07-21 | [82651](https://github.com/airbytehq/airbyte/pull/82651) | Update dependencies |
+| 2.0.18 | 2026-07-14 | [82090](https://github.com/airbytehq/airbyte/pull/82090) | Update dependencies |
 | 2.0.17 | 2026-07-10 | [81516](https://github.com/airbytehq/airbyte/pull/81516) | Fix infinite pagination loop on `call_legs` and `calls` incremental streams |
 | 2.0.16 | 2026-06-30 | [81319](https://github.com/airbytehq/airbyte/pull/81319) | Update dependencies |
 | 2.0.15 | 2026-06-23 | [80706](https://github.com/airbytehq/airbyte/pull/80706) | Update dependencies |
@@ -148,7 +150,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.2.2 | 2025-04-05 | [56838](https://github.com/airbytehq/airbyte/pull/56838) | Update dependencies |
 | 1.2.1 | 2025-03-22 | [48245](https://github.com/airbytehq/airbyte/pull/48245) | Update dependencies |
 | 1.2.0 | 2025-02-07 | [50956](https://github.com/airbytehq/airbyte/pull/50956) | Restore Unit Test |
-| 1.1.0-rc.1  | 2024-10-31 | [47313](https://github.com/airbytehq/airbyte/pull/47313) | Migrate to Manifest-only |
+| 1.1.0-rc.1 | 2024-10-31 | [47313](https://github.com/airbytehq/airbyte/pull/47313) | Migrate to Manifest-only |
 | 1.0.21 | 2024-10-29 | [47082](https://github.com/airbytehq/airbyte/pull/47082) | Update dependencies |
 | 1.0.20 | 2024-10-12 | [46861](https://github.com/airbytehq/airbyte/pull/46861) | Update dependencies |
 | 1.0.19 | 2024-10-05 | [46394](https://github.com/airbytehq/airbyte/pull/46394) | Update dependencies |

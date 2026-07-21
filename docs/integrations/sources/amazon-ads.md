@@ -185,6 +185,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.0.5 | 2026-07-21 | [82341](https://github.com/airbytehq/airbyte/pull/82341) | Update dependencies |
+| 9.0.4 | 2026-07-14 | [81732](https://github.com/airbytehq/airbyte/pull/81732) | Update dependencies |
 | 9.0.3 | 2026-07-01 | [81333](https://github.com/airbytehq/airbyte/pull/81333) | Use `min_datetime` to cap report start date to Amazon's 60-day data retention limit, fixing off-by-one that requested 61 days back |
 | 9.0.2 | 2026-06-30 | [80957](https://github.com/airbytehq/airbyte/pull/80957) | Update dependencies |
 | 9.0.1 | 2026-06-23 | [80363](https://github.com/airbytehq/airbyte/pull/80363) | Update dependencies |

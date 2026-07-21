@@ -284,8 +284,10 @@ Functions
         func: The function to wrap (when used without arguments, e.g.
             `@translate_exceptions`).
         framework: One of `"pydantic_ai" | "langchain" | "openai_agents" |
-            "mcp"`. Defaults to None → auto-detect by attempting each
-            framework's canonical import in order. Explicit always wins.
+            "mcp" | "none"`. Defaults to None → auto-detect by attempting each
+            framework's canonical import in order, falling back to `"none"`
+            (failures raise `AirbyteToolError`) when nothing is installed.
+            Explicit always wins.
         max_output_chars: Maximum serialized output size (`json.dumps`,
             `default=str`). Excess raises the framework's signal asking the
             LLM to narrow the query. Set to `None` or `0` to disable.
@@ -413,6 +415,8 @@ Classes
     * ``ExecutorError`` and subclasses (``EntityNotFoundError``,
       ``ActionNotSupportedError``, ``MissingParameterError``,
       ``InvalidParameterError``) raised by the local executor.
+    * ``AirbyteToolError`` raised by the framework-neutral
+      (``framework="none"``) tool-error translation strategy.
     
     Not caught by ``AirbyteError``:
     
@@ -436,8 +440,25 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.errors.AirbyteToolError
     * airbyte_agent_sdk.executor.models.ExecutorError
     * airbyte_agent_sdk.http.exceptions.HTTPClientError
+
+<a id="AirbyteToolError"></a>
+
+`AirbyteToolError(*args, **kwargs)`
+:   Tool failure surfaced by the framework-neutral translation strategy.
+    
+    Raised by ``translate_exceptions(framework="none")`` (and decorators
+    composing it) in place of a framework-specific retry signal. The message
+    carries the formatted underlying failure; ``__cause__`` preserves the
+    original exception.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.errors.AirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
 <a id="AuthenticationError"></a>
 
@@ -611,6 +632,39 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="DownloadChunkResult"></a>
+
+`DownloadChunkResult(content: str, encoding: "Literal['utf-8', 'base64']", bytes_returned: int, range_requested: str, next_range_header: str | None, has_more: bool, content_type: str | None = None)`
+:   JSON-safe result for a bounded download byte range.
+
+    ### Instance variables
+
+    `bytes_returned: int`
+    :   The type of the None singleton.
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `content_type: str | None`
+    :   The type of the None singleton.
+
+    `encoding: Literal['utf-8', 'base64']`
+    :   The type of the None singleton.
+
+    `has_more: bool`
+    :   The type of the None singleton.
+
+    `next_range_header: str | None`
+    :   The type of the None singleton.
+
+    `range_requested: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `to_dict(self) ‑> dict[str, typing.Any]`
+    :
+
 <a id="EntityNotFoundError"></a>
 
 `EntityNotFoundError(*args, **kwargs)`
@@ -686,7 +740,8 @@ Classes
         success: True if execution completed successfully, False if it failed
         data: Response data from the execution
             - dict[str, Any] for standard operations (GET, LIST, CREATE, etc.)
-            - AsyncIterator[bytes] for download operations (streaming file content)
+            - AsyncIterator[bytes] for streaming download operations
+            - dict[str, Any] for structured download chunks
         error: Error message if success=False, None otherwise
         meta: Optional metadata extracted from response (e.g., pagination info)
     
@@ -1020,6 +1075,37 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="SkillDocsAccessor"></a>
+
+`SkillDocsAccessor(connector: Any, *, docs_provider: ConnectorDocsProvider | None = None)`
+:   Stateful access to one connector's skill docs.
+    
+    Owns the ``docs_skill_id`` cache: populated after the first successful
+    :meth:`inspect`, re-inspected only when missing, never populated on
+    failure. Cache lifetime is the accessor instance — `build_connector_tools`
+    shares one across its tool closures; generated typed connectors hold one
+    per connector instance.
+
+    ### Instance variables
+
+    `provider: ConnectorDocsProvider | None`
+    :
+
+    ### Methods
+
+    `inspect(self) ‑> dict[str, typing.Any]`
+    :   Inspect the connector's hosted metadata and resolve its docs skill id.
+        
+        Local/offline connectors (no docs provider) get a local-mode payload
+        with a warning instead of a hosted inspection.
+
+    `read(self, section: str | None = None) ‑> str`
+    :   Read the connector's usage docs, rendered to text.
+        
+        Omit ``section`` for the outline and general guidance; pass an exact
+        section id for full details. Local/offline connectors return the full
+        generated docs and ignore ``section``.
 
 <a id="TimeoutError"></a>
 

@@ -64,7 +64,7 @@ Classes
 
     ### Class variables
 
-    `exposedFields: airbyte_agent_sdk.connectors.gong.types.CallAudioDownloadParamsContentselectorExposedfields`
+    `exposed_fields: airbyte_agent_sdk.connectors.gong.types.CallAudioDownloadParamsContentselectorExposedfields`
     :   The type of the None singleton.
 
 <a id="CallAudioDownloadParamsContentselectorExposedfields"></a>
@@ -92,7 +92,7 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="CallTranscriptsAndCondition"></a>
@@ -327,13 +327,13 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
-    `fromDateTime: str`
+    `from_date_time: str`
     :   The type of the None singleton.
 
-    `toDateTime: str`
+    `to_date_time: str`
     :   The type of the None singleton.
 
 <a id="CallTranscriptsLtCondition"></a>
@@ -530,7 +530,7 @@ Classes
 
     ### Class variables
 
-    `exposedFields: airbyte_agent_sdk.connectors.gong.types.CallVideoDownloadParamsContentselectorExposedfields`
+    `exposed_fields: airbyte_agent_sdk.connectors.gong.types.CallVideoDownloadParamsContentselectorExposedfields`
     :   The type of the None singleton.
 
 <a id="CallVideoDownloadParamsContentselectorExposedfields"></a>
@@ -558,7 +558,7 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="CallsAndCondition"></a>
@@ -978,10 +978,10 @@ Classes
     `context: str`
     :   The type of the None singleton.
 
-    `contextTiming: list[str]`
+    `context_timing: list[str]`
     :   The type of the None singleton.
 
-    `exposedFields: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveListParamsContentselectorExposedfields`
+    `exposed_fields: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveListParamsContentselectorExposedfields`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveListParamsContentselectorExposedfields"></a>
@@ -1021,7 +1021,7 @@ Classes
 
     ### Class variables
 
-    `publicComments: bool`
+    `public_comments: bool`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveListParamsContentselectorExposedfieldsContent"></a>
@@ -1038,19 +1038,19 @@ Classes
     `brief: bool`
     :   The type of the None singleton.
 
-    `callOutcome: bool`
+    `call_outcome: bool`
     :   The type of the None singleton.
 
     `highlights: bool`
     :   The type of the None singleton.
 
-    `keyPoints: bool`
+    `key_points: bool`
     :   The type of the None singleton.
 
     `outline: bool`
     :   The type of the None singleton.
 
-    `pointsOfInterest: bool`
+    `points_of_interest: bool`
     :   The type of the None singleton.
 
     `structure: bool`
@@ -1059,7 +1059,7 @@ Classes
     `topics: bool`
     :   The type of the None singleton.
 
-    `trackerOccurrences: bool`
+    `tracker_occurrences: bool`
     :   The type of the None singleton.
 
     `trackers: bool`
@@ -1076,7 +1076,7 @@ Classes
 
     ### Class variables
 
-    `personInteractionStats: bool`
+    `person_interaction_stats: bool`
     :   The type of the None singleton.
 
     `questions: bool`
@@ -1099,16 +1099,16 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
-    `fromDateTime: str`
+    `from_date_time: str`
     :   The type of the None singleton.
 
-    `toDateTime: str`
+    `to_date_time: str`
     :   The type of the None singleton.
 
-    `workspaceId: str`
+    `workspace_id: str`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveLtCondition"></a>
@@ -2390,13 +2390,13 @@ Classes
 
     ### Class variables
 
-    `fromDate: str`
+    `from_date: str`
     :   The type of the None singleton.
 
-    `toDate: str`
+    `to_date: str`
     :   The type of the None singleton.
 
-    `userIds: list[str]`
+    `user_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="StatsActivityDayByDayListParams"></a>
@@ -2424,13 +2424,13 @@ Classes
 
     ### Class variables
 
-    `fromDate: str`
+    `from_date: str`
     :   The type of the None singleton.
 
-    `toDate: str`
+    `to_date: str`
     :   The type of the None singleton.
 
-    `userIds: list[str]`
+    `user_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsAndCondition"></a>
@@ -2707,22 +2707,22 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
-    `fromDateTime: str`
+    `from_date_time: str`
     :   The type of the None singleton.
 
-    `reviewedUserIds: list[str]`
+    `reviewed_user_ids: list[str]`
     :   The type of the None singleton.
 
-    `reviewerUserIds: list[str]`
+    `reviewer_user_ids: list[str]`
     :   The type of the None singleton.
 
-    `scorecardIds: list[str]`
+    `scorecard_ids: list[str]`
     :   The type of the None singleton.
 
-    `toDateTime: str`
+    `to_date_time: str`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsLtCondition"></a>
@@ -2976,13 +2976,13 @@ Classes
 
     ### Class variables
 
-    `fromDate: str`
+    `from_date: str`
     :   The type of the None singleton.
 
-    `toDate: str`
+    `to_date: str`
     :   The type of the None singleton.
 
-    `userIds: list[str]`
+    `user_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="UsersAndCondition"></a>
