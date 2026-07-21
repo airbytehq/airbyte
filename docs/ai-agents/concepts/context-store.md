@@ -82,17 +82,27 @@ If you build agents with the SDK or API, you can call `context_store_search` dir
 
 Structured search matches records by exact or fuzzy field values. Some connectors also support **semantic search**: a similarity search that finds relevant passages by meaning rather than by keyword. Instead of matching a filter, Airbyte embeds your natural-language query and returns the most similar chunks of text, ranked by relevance.
 
-Semantic search is useful for long, unstructured text fields, such as call transcripts or issue descriptions, where the exact wording of a match isn't known in advance. For example, an agent can answer "find call passages where a customer raised pricing concerns" by searching the meaning of the transcript text, not a specific phrase.
+Semantic search is useful for long, unstructured text, such as call transcripts, issue descriptions, or the contents of a document, where the exact wording of a match isn't known in advance. For example, an agent can answer "find call passages where a customer raised pricing concerns" by searching the meaning of the transcript text, not a specific phrase.
 
 Semantic search is an evolving capability and is available for a limited set of connectors and fields today. Agents choose it automatically when a prompt calls for meaning-based retrieval over a supported field. As with structured search, you don't need to specify the search mode in your prompts.
 
+### Record text vs. file content
+
+Semantic search comes in two flavors, depending on the connector:
+
+- **Record text.** Data connectors (such as Gong and Linear) embed a text field of a structured record — a transcript, an issue description, a comment body. Each hit is a passage of that field, attributed to the record it came from.
+- **File content.** File connectors (such as Google Drive) embed the extracted text of the files they sync. Each hit is a passage of a document's content, attributed to its source file (name, path, and other file metadata).
+
+Both flavors use the same request shape — a `semantic` object passed to `context_store_search` — so agents call them the same way. The difference is what a passage represents: a field of a record, or a span of a file's contents.
+
 ### Connectors and fields that support semantic search
 
-| Connector | Entity | Field |
-| --------- | ------ | ----- |
-| Gong | Call transcripts | Transcript text |
-| Linear | Issues | Description |
-| Linear | Comments | Body |
+| Connector | Entity | Field | Searches |
+| --------- | ------ | ----- | -------- |
+| Gong | Call transcripts | Transcript text | Record text |
+| Linear | Issues | Description | Record text |
+| Linear | Comments | Body | Record text |
+| Google Drive | Files | Content | File content |
 
 Airbyte continues to add semantic search to more connectors and fields.
 
