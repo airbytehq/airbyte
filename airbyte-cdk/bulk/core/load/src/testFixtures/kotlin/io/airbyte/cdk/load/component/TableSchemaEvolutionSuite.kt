@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
@@ -42,6 +43,13 @@ interface TableSchemaEvolutionSuite {
     val opsClient: TableOperationsClient
     val testClient: TestTableOperationsClient
     val schemaFactory: TableSchemaFactory
+
+    /**
+     * Whether the destination drops columns that no longer exist in the new schema during schema
+     * evolution. Override to [ColumnDropBehavior.RETAIN] if the destination keeps old columns.
+     */
+    val columnDropBehavior: ColumnDropBehavior
+        get() = ColumnDropBehavior.DROP
 
     private val harness: TableOperationsTestHarness
         get() =
@@ -452,26 +460,38 @@ interface TableSchemaEvolutionSuite {
         // Many destinations fully recreate the table when changing the sync mode,
         // so don't use harness.readTableWithoutMetaColumns.
         // We need to assert that the meta columns were preserved.
+        // When columnDropBehavior is RETAIN, the initial column name mapping is needed to
+        // reverse-map retained columns (e.g. TO_DROP -> to_drop in Snowflake).
+        val reverseMapping =
+            if (columnDropBehavior == ColumnDropBehavior.RETAIN) {
+                ColumnNameMapping(initialColumnNameMapping + modifiedColumnNameMapping)
+            } else {
+                modifiedColumnNameMapping
+            }
         val postAlterationRecords =
             testClient
                 .readTable(testTable)
                 .removeNulls()
-                .reverseColumnNameMapping(modifiedColumnNameMapping, airbyteMetaColumnMapping)
+                .reverseColumnNameMapping(reverseMapping, airbyteMetaColumnMapping)
+        val expectedRecord =
+            mutableMapOf<String, Any?>(
+                "_airbyte_raw_id" to "fcc784dd-bf06-468e-ad59-666d5aaceae8",
+                "_airbyte_extracted_at" to expectedExtractedAt,
+                "_airbyte_meta" to linkedMapOf<String, Any?>(),
+                "_airbyte_generation_id" to 1L,
+                "id" to 1234L,
+                "updated_at" to 5678L,
+                "to_retain" to "to_retain original value",
+                // changed from int to string
+                "to_change" to "42",
+                // note the lack of `to_add` - new columns should be initialized to null
+                )
+        if (columnDropBehavior == ColumnDropBehavior.RETAIN) {
+            // When columns are not dropped, the old column value is still present
+            expectedRecord["to_drop"] = "to_drop original value"
+        }
         assertEquals(
-            listOf(
-                mapOf(
-                    "_airbyte_raw_id" to "fcc784dd-bf06-468e-ad59-666d5aaceae8",
-                    "_airbyte_extracted_at" to expectedExtractedAt,
-                    "_airbyte_meta" to linkedMapOf<String, Any?>(),
-                    "_airbyte_generation_id" to 1L,
-                    "id" to 1234L,
-                    "updated_at" to 5678L,
-                    "to_retain" to "to_retain original value",
-                    // changed from int to string
-                    "to_change" to "42",
-                    // note the lack of `to_add` - new columns should be initialized to null
-                    )
-            ),
+            listOf(expectedRecord.toMap()),
             postAlterationRecords,
             "id",
             "Expected records were not in the overwritten table."
