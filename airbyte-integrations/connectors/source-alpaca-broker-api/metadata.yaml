@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9065ae98-3c65-4283-b858-d22772b6fab5
-  dockerImageTag: 0.0.30
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-alpaca-broker-api
   githubIssueLabel: source-alpaca-broker-api
   icon: icon.svg
