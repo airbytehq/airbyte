@@ -160,6 +160,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.9 | 2026-07-21 | [82618](https://github.com/airbytehq/airbyte/pull/82618) | Update dependencies |
 | 1.0.8 | 2026-07-14 | [82053](https://github.com/airbytehq/airbyte/pull/82053) | Update dependencies |
 | 1.0.7 | 2026-07-09 | [80330](https://github.com/airbytehq/airbyte/pull/80330) | Add `Status` filter to `conferences` and `conference_participants` streams to retrieve conferences in all statuses (`init`, `in-progress`, `completed`) after Twilio's July 2026 API default change |
 | 1.0.6 | 2026-06-30 | [81294](https://github.com/airbytehq/airbyte/pull/81294) | Update dependencies |
