@@ -215,6 +215,8 @@ definitions:
           field_path: []
         record_filter:
           type: RecordFilter
+          # When config has no wildcard patterns, all org repos intentionally pass,
+          # preserving the legacy `Repositories(pattern=None)` behavior.
           condition: >-
             {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
                or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
@@ -918,7 +920,7 @@ spec:
           - airbytehq/*
           - airbytehq/airbyte
         title: GitHub Repositories
-        description: (DEPRCATED) Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.
+        description: (DEPRECATED) Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.
         airbyte_hidden: true
         pattern: ^([\w.-]+/(\*|[\w.-]+(?<!\.git))\s+)*[\w.-]+/(\*|[\w.-]+(?<!\.git))$
         pattern_descriptor: org/repo org/another-repo org/*
@@ -934,7 +936,7 @@ spec:
           - airbytehq/*
           - airbytehq/a*
         title: GitHub Repositories
-        description: List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a* for matching multiple repositories by pattern.
+        description: List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a*` for matching multiple repositories by pattern.
         order: 1
         pattern_descriptor: org/repo org/another-repo org/* org/a*
       start_date:
@@ -961,7 +963,7 @@ spec:
         title: Branch
         examples:
           - airbytehq/airbyte/master airbytehq/airbyte/my-branch
-        description: (DEPRCATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.
+        description: (DEPRECATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.
         airbyte_hidden: true
         pattern_descriptor: org/repo/branch1 org/repo/branch2
       branches:

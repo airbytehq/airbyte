@@ -136,12 +136,11 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
     @staticmethod
     def _get_resolved_repositories(
         config: Mapping[str, Any],
-    ) -> Tuple[List[str], List[str], Optional[str]]:
+    ) -> Tuple[List[str], List[str]]:
         """Read pre-resolved repository data injected by `RepositoryListResolver` config transformation."""
         organizations = config.get("_resolved_organizations", [])
         repositories = config.get("_resolved_repositories", [])
-        pattern = config.get("_repository_pattern") or None
-        return organizations, repositories, pattern
+        return organizations, repositories
 
     @staticmethod
     def get_access_token(config: Mapping[str, Any]):
@@ -226,7 +225,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
         try:
-            _, repositories, _ = self._get_resolved_repositories(config)
+            _, repositories = self._get_resolved_repositories(config)
             if not repositories:
                 return (
                     False,
@@ -246,7 +245,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
 
-        organizations, repositories, pattern = self._get_resolved_repositories(config)
+        organizations, repositories = self._get_resolved_repositories(config)
 
         if not any((organizations, repositories)):
             user_message = (

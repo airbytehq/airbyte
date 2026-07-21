@@ -2,10 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
+
 import pytest
 from source_github.components import RepositoryListResolver
 
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+
+def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
+    requests_mock.get(
+        f"{api_url}/rate_limit",
+        json={"resources": {"core": {"remaining": 5000, "reset": int(time.time()) + 3600, "limit": 5000}}},
+    )
 
 
 @pytest.mark.parametrize(
@@ -50,8 +59,18 @@ def test_transform_raises_on_no_tokens():
         resolver.transform(config)
 
 
-def test_transform_explicit_repos():
-    """Explicit repos are trusted without HTTP validation; orgs derived from name."""
+def test_transform_explicit_repos(requests_mock):
+    """Explicit repos are validated via `GET /repos/{name}`; org derived from `organization.login`."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte",
+        json={"full_name": "airbytehq/airbyte", "organization": {"login": "airbytehq"}},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/cdk",
+        json={"full_name": "airbytehq/cdk", "organization": {"login": "airbytehq"}},
+    )
+
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -61,10 +80,29 @@ def test_transform_explicit_repos():
 
     assert set(config["_resolved_repositories"]) == {"airbytehq/airbyte", "airbytehq/cdk"}
     assert set(config["_resolved_organizations"]) == {"airbytehq"}
-    assert config["_repository_pattern"] == ""
+
+
+def test_transform_user_owned_repo_registers_no_organization(requests_mock):
+    """User-owned repos contribute a repository but no organization partition."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/repos/someuser/repo",
+        json={"full_name": "someuser/repo", "owner": {"login": "someuser", "type": "User"}},
+    )
+
+    resolver = RepositoryListResolver(parameters={})
+    config = {
+        "credentials": {"personal_access_token": "test_token"},
+        "repositories": ["someuser/repo"],
+    }
+    resolver.transform(config)
+
+    assert config["_resolved_repositories"] == ["someuser/repo"]
+    assert config["_resolved_organizations"] == []
 
 
 def test_transform_wildcard_orgs(requests_mock):
+    _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
@@ -82,16 +120,20 @@ def test_transform_wildcard_orgs(requests_mock):
 
     assert set(config["_resolved_repositories"]) == {"docker/docker-py", "docker/compose"}
     assert set(config["_resolved_organizations"]) == {"docker"}
-    assert config["_repository_pattern"] == "(docker/.*)"
 
 
 def test_transform_mixed_explicit_and_wildcard(requests_mock):
+    _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
         json=[
             {"full_name": "docker/docker-py", "owner": {"login": "docker"}},
             {"full_name": "docker/compose", "owner": {"login": "docker"}},
         ],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte",
+        json={"full_name": "airbytehq/airbyte", "organization": {"login": "airbytehq"}},
     )
 
     resolver = RepositoryListResolver(parameters={})
@@ -106,6 +148,7 @@ def test_transform_mixed_explicit_and_wildcard(requests_mock):
 
 
 def test_transform_wildcard_pattern_filtering(requests_mock):
+    _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/org/repos",
         json=[
@@ -126,8 +169,15 @@ def test_transform_wildcard_pattern_filtering(requests_mock):
     assert "org/destination-postgres" not in config["_resolved_repositories"]
 
 
-def test_transform_explicit_repos_trusted():
-    """Explicit repos are added without HTTP validation; even non-existent repos are trusted."""
+def test_transform_skip_404_repo(requests_mock):
+    """Explicit repos that 404 are skipped with a warning instead of passing through unvalidated."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/repos/org/missing-repo",
+        json={"message": "Not Found"},
+        status_code=404,
+    )
+
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -135,11 +185,12 @@ def test_transform_explicit_repos_trusted():
     }
     resolver.transform(config)
 
-    assert config["_resolved_repositories"] == ["org/missing-repo"]
-    assert config["_resolved_organizations"] == ["org"]
+    assert config["_resolved_repositories"] == []
+    assert config["_resolved_organizations"] == []
 
 
 def test_transform_skip_404_org(requests_mock):
+    _mock_rate_limit(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/missing-org/repos",
         json={"message": "Not Found"},
@@ -157,21 +208,35 @@ def test_transform_skip_404_org(requests_mock):
     assert config["_resolved_organizations"] == []
 
 
-def test_transform_custom_api_url():
-    """Custom API URL is stored but explicit repos don't need HTTP calls."""
+def test_transform_custom_api_url(requests_mock):
+    api_url = "https://github.example.com/api/v3"
+    _mock_rate_limit(requests_mock, api_url)
+    requests_mock.get(
+        f"{api_url}/repos/org/repo",
+        json={"full_name": "org/repo", "organization": {"login": "org"}},
+    )
+
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
         "repositories": ["org/repo"],
-        "api_url": "https://github.example.com/api/v3",
+        "api_url": api_url,
     }
     resolver.transform(config)
 
     assert config["_resolved_repositories"] == ["org/repo"]
+    assert config["_resolved_organizations"] == ["org"]
 
 
-def test_transform_legacy_repository_field():
-    """Legacy space-delimited `repository` field is parsed without HTTP calls."""
+def test_transform_legacy_repository_field(requests_mock):
+    """Legacy space-delimited `repository` field is parsed and validated."""
+    _mock_rate_limit(requests_mock)
+    for repo in ("org/repo1", "org/repo2"):
+        requests_mock.get(
+            f"https://api.github.com/repos/{repo}",
+            json={"full_name": repo, "organization": {"login": "org"}},
+        )
+
     resolver = RepositoryListResolver(parameters={})
     config = {
         "credentials": {"personal_access_token": "test_token"},
@@ -180,9 +245,11 @@ def test_transform_legacy_repository_field():
     resolver.transform(config)
 
     assert set(config["_resolved_repositories"]) == {"org/repo1", "org/repo2"}
+    assert config["_resolved_organizations"] == ["org"]
 
 
 def test_transform_pagination(requests_mock):
+    _mock_rate_limit(requests_mock)
     page1 = [{"full_name": f"org/repo{i}", "owner": {"login": "org"}} for i in range(100)]
     page2 = [{"full_name": "org/repo100", "owner": {"login": "org"}}]
 
