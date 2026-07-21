@@ -1,0 +1,826 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  Reprise is the demo creation platform enterprise sales and marketing teams
+  trust to build no-code, interactive product demos that win more deals.
+
+check:
+  type: CheckStream
+  stream_names:
+    - replay_session_activity
+
+definitions:
+  linked:
+    HttpRequester:
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 408
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 2
+      request_headers:
+        Authorization: Bearer {{ config['api_token'] }}
+      authenticator:
+        type: SessionTokenAuthenticator
+        login_requester:
+          type: HttpRequester
+          url: https://app.getreprise.com/api/warehouse/token
+          http_method: POST
+          error_handler:
+            $ref: "#/definitions/linked/HttpRequester/error_handler"
+          request_headers:
+            $ref: "#/definitions/linked/HttpRequester/request_headers"
+        session_token_path:
+          - token
+        expiration_duration: PT55M
+        request_authentication:
+          type: ApiKey
+          inject_into:
+            type: RequestOption
+            field_name: token
+            inject_into: request_parameter
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 10000
+          inject_on_first_request: true
+    WarehouseTokenAuthenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url: https://app.getreprise.com/api/warehouse/token
+        http_method: POST
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 408
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_headers:
+          Authorization: Bearer {{ config['api_token'] }}
+      session_token_path:
+        - token
+      expiration_duration: PT55M
+      request_authentication:
+        type: ApiKey
+        inject_into:
+          type: RequestOption
+          field_name: token
+          inject_into: request_parameter
+    ClientClockSinceCreatedAtField:
+      type: AddedFieldDefinition
+      path:
+        - since_created_at
+      value: >-
+        {%- set raw = record['create_at'] -%} {%- set now_str =
+        now_utc().strftime('%Y-%m-%d %H:%M:%S') -%} {%- if raw and raw[:19] >
+        now_str -%} {{- now_str -}} {%- else -%} {{- raw -}} {%- endif -%}
+
+streams:
+  - type: DeclarativeStream
+    name: replay_session_activity
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.us-east.tinybird.co/v0/pipes/replay_session_activity.json
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          visitor_key: "1"
+          start_timestamp: "{{ stream_interval.start_time }}"
+          visitor_company: "1"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - - activity_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          link_id:
+            type:
+              - string
+              - "null"
+          guide_id:
+            type:
+              - string
+              - "null"
+          link_url:
+            type:
+              - string
+              - "null"
+          client_id:
+            type:
+              - string
+              - "null"
+          create_at:
+            type:
+              - string
+              - "null"
+          guide_text:
+            type:
+              - string
+              - "null"
+          link_title:
+            type:
+              - string
+              - "null"
+          session_id:
+            type:
+              - string
+              - "null"
+          activity_id:
+            type:
+              - string
+              - "null"
+          button_text:
+            type:
+              - string
+              - "null"
+          snapshot_id:
+            type:
+              - string
+              - "null"
+          visitor_key:
+            type:
+              - string
+              - "null"
+          visitor_name:
+            type:
+              - string
+              - "null"
+          activity_type:
+            type:
+              - string
+              - "null"
+          button_action:
+            type:
+              - string
+              - "null"
+          distinct_user:
+            type:
+              - string
+              - "null"
+          guide_trigger:
+            type:
+              - string
+              - "null"
+          visitor_email:
+            type:
+              - string
+              - "null"
+          link_is_active:
+            type:
+              - string
+              - "null"
+          snapshot_title:
+            type:
+              - string
+              - "null"
+          draft_replay_id:
+            type:
+              - string
+              - "null"
+          link_created_at:
+            type:
+              - string
+              - "null"
+          link_deleted_at:
+            type:
+              - string
+              - "null"
+          link_is_default:
+            type:
+              - string
+              - "null"
+          visitor_company:
+            type:
+              - string
+              - "null"
+          link_description:
+            type:
+              - string
+              - "null"
+          since_created_at:
+            type:
+              - string
+              - "null"
+          guide_step_number:
+            type:
+              - string
+              - "null"
+          link_show_welcome:
+            type:
+              - string
+              - "null"
+          link_welcome_note:
+            type:
+              - string
+              - "null"
+          draft_replay_title:
+            type:
+              - string
+              - "null"
+          link_welcome_title:
+            type:
+              - string
+              - "null"
+          session_created_at:
+            type:
+              - string
+              - "null"
+          published_replay_id:
+            type:
+              - string
+              - "null"
+          link_viewer_email_req:
+            type:
+              - string
+              - "null"
+          published_replay_title:
+            type:
+              - string
+              - "null"
+          link_viewer_password_req:
+            type:
+              - string
+              - "null"
+          published_replay_created_at:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - visitor_name
+          - - distinct_user
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - since_created_at
+            value: >-
+              {%- set raw = record['create_at'] -%} {%- set now_str =
+              now_utc().strftime('%Y-%m-%d %H:%M:%S') -%} {%- if raw and
+              raw[:19] > now_str -%} {{- now_str -}} {%- else -%} {{- raw -}}
+              {%- endif -%}
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: since_created_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      end_time_option:
+        type: RequestOption
+        field_name: end_timestamp
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: since_created_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      is_compare_strictly: false
+      is_compared_strictly: false
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S.%f"
+        - "%Y-%m-%d %H:%M:%S"
+      is_client_side_incremental: false
+  - type: DeclarativeStream
+    name: replay_session_summary
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.us-east.tinybird.co/v0/pipes/replay_session_summary.json
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          start_timestamp: "{{ stream_interval.start_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - - session_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          link_id:
+            type:
+              - string
+              - "null"
+          client_id:
+            type:
+              - string
+              - "null"
+          link_title:
+            type:
+              - string
+              - "null"
+          session_id:
+            type:
+              - string
+              - "null"
+          visitor_key:
+            type:
+              - string
+              - "null"
+          activity_count:
+            type:
+              - number
+              - string
+              - "null"
+          last_activity_at:
+            type:
+              - string
+              - "null"
+          since_created_at:
+            type:
+              - string
+              - "null"
+          first_activity_at:
+            type:
+              - string
+              - "null"
+          session_created_at:
+            type:
+              - string
+              - "null"
+          published_replay_id:
+            type:
+              - string
+              - "null"
+          published_replay_title:
+            type:
+              - string
+              - "null"
+          session_duration_seconds:
+            type:
+              - number
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - since_created_at
+            value: "{{ record['session_created_at'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: since_created_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      end_time_option:
+        type: RequestOption
+        field_name: end_timestamp
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: since_created_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      is_compare_strictly: false
+      is_compared_strictly: false
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+      is_client_side_incremental: false
+  - type: DeclarativeStream
+    name: replay_metrics
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.us-east.tinybird.co/v0/pipes/replay_metrics.json
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - - entity_type
+      - - entity_id
+      - - window_start
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - entity_type
+          - entity_id
+          - window_start
+        properties:
+          entity_id:
+            type: string
+          window_end:
+            type: string
+          bounce_rate:
+            type:
+              - number
+              - string
+              - "null"
+          entity_type:
+            type: string
+          mean_seconds:
+            type:
+              - number
+              - string
+              - "null"
+          window_start:
+            type: string
+          distinct_views:
+            type:
+              - number
+              - string
+              - "null"
+          median_seconds:
+            type:
+              - number
+              - string
+              - "null"
+          total_sessions:
+            type:
+              - number
+              - string
+              - "null"
+          mean_click_events:
+            type:
+              - number
+              - string
+              - "null"
+          mean_screen_events:
+            type:
+              - number
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - window_start
+            value: "{{ stream_interval.start_time }}"
+            value_type: string
+          - type: AddedFieldDefinition
+            path:
+              - window_end
+            value: "{{ stream_interval.end_time }}"
+            value_type: string
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: window_start
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      end_time_option:
+        type: RequestOption
+        field_name: end_timestamp
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: start_timestamp
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      is_compare_strictly: false
+      is_compared_strictly: false
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+      is_client_side_incremental: false
+  - type: DeclarativeStream
+    name: replay_change_feed
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.us-east.tinybird.co/v0/pipes/replay_change_feed.json
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - - entity_type
+      - - entity_id
+      - - ingested_at
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - entity_type
+          - entity_id
+          - ingested_at
+        properties:
+          entity_id:
+            type: string
+          changed_at:
+            type:
+              - string
+              - "null"
+          change_type:
+            type:
+              - string
+              - "null"
+          entity_type:
+            type: string
+          ingested_at:
+            type: string
+          since_ingested_at:
+            type:
+              - string
+              - "null"
+          published_replay_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - since_ingested_at
+            value: "{{ record['ingested_at'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: since_ingested_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_time_option:
+        type: RequestOption
+        field_name: since_ingested_at
+        inject_into: request_parameter
+      is_compare_strictly: false
+      is_compared_strictly: false
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+      is_client_side_incremental: false
+  - type: DeclarativeStream
+    name: replicate
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.us-east.tinybird.co/v0/pipes/replicate_session_activity.json
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_parameters:
+          viewer_pii: "1"
+          start_timestamp: "{{ stream_interval.start_time }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - - session_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - session_id
+        properties:
+          client_id:
+            type:
+              - string
+              - "null"
+          demo_title:
+            type:
+              - string
+              - "null"
+          session_id:
+            type: string
+          shard_name:
+            type:
+              - string
+              - "null"
+          visitor_key:
+            type:
+              - string
+              - "null"
+          session_date:
+            type:
+              - string
+              - "null"
+          since_created_at:
+            type:
+              - string
+              - "null"
+          viewer_is_internal:
+            type:
+              - string
+              - "null"
+          demo_published_date:
+            type:
+              - string
+              - "null"
+          published_replay_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - since_created_at
+            value: "{{ record['session_date'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - viewer_is_internal
+            value: >-
+              {{ ( record['viewer'] | string |
+              regex_search('^[\\w\\.-]+@(agilebits\\.\\w+)$')) if
+              (record['viewer'] | string) and 'agilebits' and (record['viewer']
+              | string  | regex_search('^[\\w\\.-]+@(agilebits\\.\\w+)$')) is
+              not none else none }}
+      - type: RemoveFields
+        field_pointers:
+          - - viewer
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: since_created_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      end_time_option:
+        type: RequestOption
+        field_name: end_timestamp
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: since_created_at
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      is_compare_strictly: false
+      is_compared_strictly: false
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S.%f"
+        - "%Y-%m-%d %H:%M:%S"
+      is_client_side_incremental: false
+
+spec:
+  type: Spec
+  documentation_url: https://reprise.zendesk.com/hc/en-us/articles/18940321925659-Replay-Data-API
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - start_time
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Reprise portal API key (Settings > API Management). Exchanged for a
+          scoped warehouse JWT via POST
+          https://app.getreprise.com/api/warehouse/token before each replay /
+          replicate sync.
+        name: api_token
+        order: 0
+        title: API Token
+        airbyte_secret: true
+      start_time:
+        type: string
+        order: 2
+        title: start_time
+        default: "2022-01-01 00:00:00"
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    replay_session_activity:
+      streamHash: 9bb5b5baf1fe42e38182d39997e47c1d33386189
+    replay_session_summary:
+      streamHash: 7cb5b7083a8a36d1ecb552190450409320963f1d
+    replay_metrics:
+      streamHash: c56dbaf71f76ef1509e53e4d52f4b8aa851dc8a3
+    replay_change_feed:
+      streamHash: c4e9c2d95507af4113230af6f82fa1b0f96ad6cf
+    replicate:
+      streamHash: a0fa73bf1774538bc57b69a1008cbdb0693082ea
+
+dynamic_streams: []
