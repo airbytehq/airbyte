@@ -577,6 +577,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
+        global_substream_cursor: true
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -628,7 +629,7 @@ definitions:
             q: analytics
             pivot: "(value:CREATIVE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List({{ stream_partition.get('campaign_id') }})"
+            creatives: "List({{ stream_partition.get('creative_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -648,20 +649,22 @@ definitions:
           type: CustomPartitionRouter
           class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
           batch_size: 50
+          urn_prefix: "urn%3Ali%3AsponsoredCreative%3A"
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
-              partition_field: campaign_id
+              partition_field: creative_id
               stream:
-                $ref: "#/definitions/streams/campaigns"
+                $ref: "#/definitions/streams/creatives"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
+        global_substream_cursor: true
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P0D
-        step: P1D
+        step: P30D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -737,6 +740,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
+        global_substream_cursor: true
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -1800,7 +1804,6 @@ spec:
                 - MEMBER_COMPANY
                 - PLACEMENT_NAME
                 - IMPRESSION_DEVICE_TYPE
-                - CAMPAIGN
             time_granularity:
               title: Time Granularity
               description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."

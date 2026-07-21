@@ -31,25 +31,27 @@ uses `QueryProperties` with `PropertyChunking` configured at a limit of 18 field
 2 slots for the mandatory `dateRange` and `pivotValues` fields that are always included).
 
 Records from multiple chunks are stitched back together using `GroupByKeyMergeStrategy` keyed on
-`["end_date", "string_of_pivot_values"]`.
+`["end_date", "string_of_pivot_values"]`. Impression-device analytics also includes
+`sponsoredCampaign` in its merge key so records for different campaigns are not combined.
 
 **Why this matters:** With ~90 analytics fields defined, each analytics record requires approximately 5
-separate HTTP requests to assemble. Campaign, creative, and impression-device analytics batch up to 50
-campaign URNs per partition. Member-demographic analytics remain on the `q=analytics` finder with one
-campaign per request because the `q=statistics` finder does not support `MEMBER_*` pivots. Adding new
-analytics fields increases the chunk count and silently multiplies API usage across every partition.
+separate HTTP requests to assemble. Campaign and impression-device analytics batch up to 50 campaign
+URNs per partition, while creative analytics batches up to 50 creative URNs. Member-demographic
+analytics remain on the `q=analytics` finder with one campaign per request because the `q=statistics`
+finder does not support `MEMBER_*` pivots. Adding new analytics fields increases the chunk count and
+silently multiplies API usage across every partition.
 
 ---
 
 ## 3. Analytics Request Batching (`batch_size`)
 
 The analytics streams `ad_campaign_analytics`, `ad_creative_analytics`, and
-`ad_impression_device_analytics` batch multiple campaign URNs into a single `adAnalytics` request via
-`LinkedInAdsBatchedPartitionRouter` with `batch_size: 50`, instead of issuing one request per campaign.
-This is the core scaling fix: on large accounts, it reduces analytics request volume by approximately
-98–99%.
+`ad_impression_device_analytics` batch multiple parent-entity URNs into a single `adAnalytics` request
+via `LinkedInAdsBatchedPartitionRouter` with `batch_size: 50`. Campaign and impression-device
+analytics batch campaign URNs; creative analytics batches creative URNs. Compared with one request per
+parent entity, a full 50-entity batch reduces analytics request volume by 98%.
 
-Why 50 campaigns per request:
+Why 50 entities per request:
 
 - LinkedIn does not document a maximum number of campaign URNs per request. The binding constraint is URL
   length: the query string is capped at 4 KB, and the raw URL is capped at 8 KB. Exceeding either limit
@@ -64,15 +66,21 @@ Why 50 campaigns per request:
   than silently truncating the request.
 
 The `adAnalytics` API does not support pagination and caps each response at 15,000 elements. Campaign
-analytics can return at most 1,550 daily rows per 50-campaign `P30D` request. Impression-device
-analytics can return at most 7,750 rows for the five documented device categories over the same range.
-Creative analytics can return up to 100 creatives per campaign, so it uses `P1D` intervals. With the
-API's inclusive date range, a 50-campaign request can therefore return at most 10,000 rows.
+and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` request.
+Impression-device analytics can return at most 7,750 rows for the five documented device categories
+over the same range. The record extractor fails if an analytics response reaches 15,000 elements
+rather than emitting a potentially truncated response.
 
-Batch membership can change when campaigns are added or removed. Before each sync, the three batched
-streams migrate saved per-partition state to the earliest partition cursor. This safely seeds every
-current batch without skipping a campaign that was behind the global cursor, at the cost of re-reading
-some already-synced dates.
+Batch membership can change when campaigns or creatives are added or removed, so the three batched
+streams use a global substream cursor. Existing per-partition state is migrated once to the earliest
+partition cursor, after which subsequent syncs emit global state and do not repeat the migration. The
+one-time migration can re-read already-synced dates, but it does not skip an entity that was behind the
+other partitions.
+
+The emitted primary key for `ad_impression_device_analytics` remains
+`["string_of_pivot_values", "end_date"]` for compatibility. Because `string_of_pivot_values` contains
+only the device type, this pre-existing key does not distinguish campaigns. Correcting it requires a
+major-version breaking change even though property-chunk merging already keeps campaigns separate.
 
 The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
 to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.

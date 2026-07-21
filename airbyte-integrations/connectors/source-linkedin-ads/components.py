@@ -34,6 +34,7 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException,
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.types import Config, StreamSlice
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 # replace `pivot` with `_pivot`, to allow redshift normalization,
@@ -46,6 +47,7 @@ _DATA_VOLUME_RATE_LIMIT_MESSAGE_PARTS = (
     "data request limit has been exceeded",
     "45 million metric values",
 )
+_AD_ANALYTICS_RESPONSE_LIMIT = 15_000
 
 
 def _is_data_volume_rate_limit(response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
@@ -165,7 +167,16 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         """
         Extracts and transforms records from an HTTP response.
         """
-        for record in transform_data(response.json().get("elements")):
+        response_body = response.json()
+        records = response_body.get("elements", [])
+        if "/adAnalytics" in (response.url or "") and len(records) >= _AD_ANALYTICS_RESPONSE_LIMIT:
+            raise AirbyteTracedException(
+                message="LinkedIn Ads analytics response reaches the 15,000-record limit.",
+                internal_message="The adAnalytics endpoint returned 15,000 elements without pagination, so records may be truncated.",
+                failure_type=FailureType.system_error,
+            )
+
+        for record in transform_data(records):
             yield self._date_time_to_rfc3339(record)
 
 
@@ -204,7 +215,7 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
 
 @dataclass
 class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
-    """Partition router that batches parent campaign records for efficient LinkedIn adAnalytics API calls."""
+    """Batch parent entities for LinkedIn adAnalytics API calls."""
 
     parent_stream_configs: List[ParentStreamConfig] = field(default_factory=list)
     config: Config = field(default_factory=dict)
@@ -268,8 +279,8 @@ class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
         partition_field: str,
         parent_partition: Mapping[str, Any],
     ) -> StreamSlice:
-        """Create a `StreamSlice` containing batched URL-encoded campaign URNs."""
-        urns = ",".join(f"{self.urn_prefix}{campaign_id}" for campaign_id in batch)
+        """Create a `StreamSlice` containing batched URL-encoded entity URNs."""
+        urns = ",".join(f"{self.urn_prefix}{entity_id.split(':')[-1]}" for entity_id in batch)
         return StreamSlice(
             partition={
                 partition_field: urns,
@@ -285,7 +296,7 @@ class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
 
 @dataclass
 class LinkedInAdsBatchedAnalyticsStateMigration(StateMigration):
-    """Seed campaign batches from the earliest saved partition cursor."""
+    """Convert per-partition analytics state to a global cursor once."""
 
     config: Config
     declarative_stream: DeclarativeStreamModel

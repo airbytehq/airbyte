@@ -196,8 +196,9 @@ class TestAllStreams:
         ]
 
         assert streams["ad_campaign_analytics"]["incremental_sync"]["step"] == "P30D"
-        assert streams["ad_creative_analytics"]["incremental_sync"]["step"] == "P1D"
+        assert streams["ad_creative_analytics"]["incremental_sync"]["step"] == "P30D"
         assert streams["ad_impression_device_analytics"]["incremental_sync"]["step"] == "P30D"
+        assert all(streams[stream_name]["incremental_sync"]["global_substream_cursor"] is True for stream_name in batched_stream_names)
         assert all(streams[stream_name]["retriever"]["paginator"]["type"] == "NoPagination" for stream_name in batched_stream_names)
         assert all(
             streams[stream_name]["state_migrations"]
@@ -442,12 +443,29 @@ class TestLinkedinAdsStream:
         assert records == expected_records
 
     @pytest.mark.parametrize(
-        ("stream_name", "query", "interval_end_day", "pivot_values", "expected_data"),
+        (
+            "stream_name",
+            "query",
+            "parent_path",
+            "parent_records",
+            "facet",
+            "partition_field",
+            "encoded_urns",
+            "pivot_values",
+            "expected_data",
+        ),
         [
             pytest.param(
                 "ad_campaign_analytics",
                 "q=analytics&pivot=(value:CAMPAIGN)",
-                31,
+                "adCampaigns",
+                [
+                    {"id": 1111, "lastModified": "2021-01-15"},
+                    {"id": 2222, "lastModified": "2021-01-16"},
+                ],
+                "campaigns",
+                "campaign_id",
+                "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222",
                 ["urn:li:sponsoredCampaign:1111"],
                 {
                     "sponsoredCampaign": "1111",
@@ -459,7 +477,14 @@ class TestLinkedinAdsStream:
             pytest.param(
                 "ad_creative_analytics",
                 "q=analytics&pivot=(value:CREATIVE)",
-                2,
+                "creatives",
+                [
+                    {"id": "urn:li:sponsoredCreative:1111", "lastModifiedAt": 1610668800000},
+                    {"id": "urn:li:sponsoredCreative:2222", "lastModifiedAt": 1610755200000},
+                ],
+                "creatives",
+                "creative_id",
+                "urn%3Ali%3AsponsoredCreative%3A1111,urn%3Ali%3AsponsoredCreative%3A2222",
                 ["urn:li:sponsoredCreative:2222"],
                 {
                     "sponsoredCreative": "2222",
@@ -471,7 +496,14 @@ class TestLinkedinAdsStream:
             pytest.param(
                 "ad_impression_device_analytics",
                 "q=statistics&pivots=List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)",
-                31,
+                "adCampaigns",
+                [
+                    {"id": 1111, "lastModified": "2021-01-15"},
+                    {"id": 2222, "lastModified": "2021-01-16"},
+                ],
+                "campaigns",
+                "campaign_id",
+                "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222",
                 ["urn:li:sponsoredCampaign:1111", "CONNECTED_TV"],
                 {
                     "sponsoredCampaign": "1111",
@@ -487,7 +519,11 @@ class TestLinkedinAdsStream:
         requests_mock,
         stream_name,
         query,
-        interval_end_day,
+        parent_path,
+        parent_records,
+        facet,
+        partition_field,
+        encoded_urns,
         pivot_values,
         expected_data,
     ):
@@ -496,20 +532,14 @@ class TestLinkedinAdsStream:
 
         requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
         requests_mock.get(
-            "https://api.linkedin.com/rest/adAccounts/1/adCampaigns?q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,"
-            "COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
-            json={
-                "elements": [
-                    {"id": 1111, "lastModified": "2021-01-15"},
-                    {"id": 2222, "lastModified": "2021-01-16"},
-                ]
-            },
+            f"https://api.linkedin.com/rest/adAccounts/1/{parent_path}",
+            complete_qs=False,
+            json={"elements": parent_records},
         )
         requests_mock.get(
             "https://api.linkedin.com/rest/adAnalytics?"
-            f"{query}&timeGranularity=(value:DAILY)&campaigns=List(urn%3Ali%3AsponsoredCampaign%3A1111,"
-            "urn%3Ali%3AsponsoredCampaign%3A2222)&dateRange=(start:(year:2021,month:1,day:1),"
-            f"end:(year:2021,month:1,day:{interval_end_day}))",
+            f"{query}&timeGranularity=(value:DAILY)&{facet}=List({encoded_urns})&"
+            "dateRange=(start:(year:2021,month:1,day:1),end:(year:2021,month:1,day:31))",
             complete_qs=False,
             json={
                 "elements": [
@@ -529,7 +559,7 @@ class TestLinkedinAdsStream:
         partition = next(iter(stream.generate_partitions()))
         records = list(partition.read())
 
-        assert partition.to_slice()["campaign_id"] == "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222"
+        assert partition.to_slice()[partition_field] == encoded_urns
         assert len(records) == 1
         for field, value in expected_data.items():
             assert records[0].data[field] == value

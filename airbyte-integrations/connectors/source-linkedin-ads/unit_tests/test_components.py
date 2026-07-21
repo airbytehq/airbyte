@@ -14,6 +14,7 @@ from requests.models import PreparedRequest
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
@@ -32,6 +33,7 @@ def _response(status_code: int, body: Union[Mapping[str, str], bytes]) -> Respon
 @pytest.fixture
 def mock_response():
     response = MagicMock(spec=Response)
+    response.url = ""
     response.json.return_value = {
         "elements": [
             {"lastModified": "2024-09-01T00:00:00Z", "created": "2024-08-01T00:00:00Z", "data": "value1"},
@@ -109,6 +111,17 @@ def test_linkedin_ads_record_extractor_extract_records(components_module, mock_r
     for i, record in enumerate(records):
         assert record["lastModified"] == expected_records[i]["lastModified"]
         assert record["created"] == expected_records[i]["created"]
+
+
+def test_linkedin_ads_record_extractor_rejects_capped_analytics_response(components_module):
+    response = _response(200, {"elements": [{}] * 15_000})
+    response.url = "https://api.linkedin.com/rest/adAnalytics"
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(components_module.LinkedInAdsRecordExtractor().extract_records(response))
+
+    assert exc_info.value.message == "LinkedIn Ads analytics response reaches the 15,000-record limit."
+    assert exc_info.value.failure_type == FailureType.system_error
 
 
 def test_date_str_from_date_range(components_module):
@@ -246,6 +259,20 @@ def test_linkedin_ads_data_volume_backoff_strategy(components_module, response_o
         ),
         pytest.param(
             {
+                "use_global_cursor": True,
+                "state": {"end_date": "2024-06-01"},
+                "parent_state": {"campaigns": {"lastModified": "2024-06-06T00:00:00Z"}},
+            },
+            False,
+            {
+                "use_global_cursor": True,
+                "state": {"end_date": "2024-06-01"},
+                "parent_state": {"campaigns": {"lastModified": "2024-06-06T00:00:00Z"}},
+            },
+            id="current_global_state_does_not_migrate_again",
+        ),
+        pytest.param(
+            {
                 "states": [
                     {
                         "partition": {"campaign_id": "urn%3Ali%3AsponsoredCampaign%3A1,urn%3Ali%3AsponsoredCampaign%3A2"},
@@ -273,4 +300,6 @@ def test_linkedin_ads_batched_analytics_state_migration(
     migration = components_module.LinkedInAdsBatchedAnalyticsStateMigration(config={}, declarative_stream=MagicMock())
 
     assert migration.should_migrate(stream_state) is expected_should_migrate
-    assert (migration.migrate(stream_state) if expected_should_migrate else stream_state) == expected_state
+    migrated_state = migration.migrate(stream_state) if expected_should_migrate else stream_state
+    assert migrated_state == expected_state
+    assert not migration.should_migrate(migrated_state)
