@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 874cbc8d-6b04-4da6-9f88-881da2b0febe
-  dockerImageTag: 0.0.34
+  dockerImageTag: 0.0.35
   dockerRepository: airbyte/source-aviationstack
   githubIssueLabel: source-aviationstack
   icon: icon.svg
