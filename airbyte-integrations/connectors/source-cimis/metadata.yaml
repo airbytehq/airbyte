@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d169ef9b-6741-4af6-b4c8-7ec4410d7f0e
-  dockerImageTag: 0.0.60
+  dockerImageTag: 0.0.61
   dockerRepository: airbyte/source-cimis
   githubIssueLabel: source-cimis
   icon: icon.svg
