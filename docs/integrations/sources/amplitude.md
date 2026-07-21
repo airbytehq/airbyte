@@ -67,6 +67,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.36 | 2026-07-21 | [82323](https://github.com/airbytehq/airbyte/pull/82323) | Update dependencies |
 | 0.7.35 | 2026-07-14 | [81744](https://github.com/airbytehq/airbyte/pull/81744) | Update dependencies |
 | 0.7.34 | 2026-07-07 | [80954](https://github.com/airbytehq/airbyte/pull/80954) | Update dependencies |
 | 0.7.33 | 2026-07-02 | [81393](https://github.com/airbytehq/airbyte/pull/81393) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
