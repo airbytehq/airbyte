@@ -125,6 +125,13 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.8 | 2026-07-21 | [82437](https://github.com/airbytehq/airbyte/pull/82437) | Update dependencies |
+| 0.2.7 | 2026-07-14 | [81869](https://github.com/airbytehq/airbyte/pull/81869) | Update dependencies |
+| 0.2.6 | 2026-06-30 | [81096](https://github.com/airbytehq/airbyte/pull/81096) | Update dependencies |
+| 0.2.5 | 2026-06-23 | [80491](https://github.com/airbytehq/airbyte/pull/80491) | Update dependencies |
+| 0.2.4 | 2026-06-16 | [79886](https://github.com/airbytehq/airbyte/pull/79886) | Update dependencies |
+| 0.2.3 | 2026-06-09 | [79357](https://github.com/airbytehq/airbyte/pull/79357) | Update dependencies |
+| 0.2.2 | 2026-06-02 | [77288](https://github.com/airbytehq/airbyte/pull/77288) | Update dependencies |
 | 0.2.1 | 2026-05-15 | [78117](https://github.com/airbytehq/airbyte/pull/78117) | Update API key setup instructions |
 | 0.2.0 | 2026-05-07 | [77861](https://github.com/airbytehq/airbyte/pull/77861) | Promoted release candidate to GA |
 | 0.2.0-rc.4 | 2026-05-01 | [77698](https://github.com/airbytehq/airbyte/pull/77698) | Revert default_concurrency from 6 to 5 (optimal value from tuning) and add HTTP API budget matching Granola's documented rate limit (25 req/5s burst) |

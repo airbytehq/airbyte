@@ -109,12 +109,28 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "REAL",
             LeafAirbyteSchemaType.NUMBER,
-            AnsiSql.realValues.plus(preservedInfinities).plus(preservedNaN),
+            AnsiSql.realValues,
+            baseTestName = "REAL SUPPORTED VALS",
+        )
+        scalarAndArray(
+            "REAL",
+            LeafAirbyteSchemaType.NUMBER,
+            nulledInfinities.plus(nulledNaN),
+            arrayIsNulled = true,
+            baseTestName = "REAL UNSUPPORTED VALS",
         )
         scalarAndArray(
             "DOUBLE PRECISION",
             LeafAirbyteSchemaType.NUMBER,
-            AnsiSql.doubleValues.plus(preservedInfinities).plus(preservedNaN)
+            AnsiSql.doubleValues,
+            baseTestName = "DOUBLE PRECISION SUPPORTED VALS",
+        )
+        scalarAndArray(
+            "DOUBLE PRECISION",
+            LeafAirbyteSchemaType.NUMBER,
+            nulledInfinities.plus(nulledNaN),
+            arrayIsNulled = true,
+            baseTestName = "DOUBLE PRECISION UNSUPPORTED VALS",
         )
 
         // Character types
@@ -401,17 +417,11 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             val executor = JdbcTestDbExecutor(schema, jdbcConfig)
             executor.executeUpdate("CREATE EXTENSION IF NOT EXISTS hstore;")
         }
-        private val preservedInfinities =
-            mapOf(
-                "'Infinity'" to "\"Infinity\"",
-                "'-Infinity'" to "\"-Infinity\"",
-            )
         private val nulledInfinities =
             mapOf(
                 "'Infinity'" to "null",
                 "'-Infinity'" to "null",
             )
-        private val preservedNaN = mapOf("'NaN'" to "\"NaN\"")
         private val nulledNaN = mapOf("'NaN'" to "null")
     }
 

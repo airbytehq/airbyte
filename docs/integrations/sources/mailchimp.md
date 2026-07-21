@@ -132,6 +132,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.32 | 2026-07-21 | [82491](https://github.com/airbytehq/airbyte/pull/82491) | Update dependencies |
+| 2.1.31 | 2026-07-14 | [81912](https://github.com/airbytehq/airbyte/pull/81912) | Update dependencies |
+| 2.1.30 | 2026-06-30 | [81135](https://github.com/airbytehq/airbyte/pull/81135) | Update dependencies |
+| 2.1.29 | 2026-06-23 | [80520](https://github.com/airbytehq/airbyte/pull/80520) | Update dependencies |
+| 2.1.28 | 2026-06-16 | [79931](https://github.com/airbytehq/airbyte/pull/79931) | Update dependencies |
+| 2.1.27 | 2026-06-09 | [79396](https://github.com/airbytehq/airbyte/pull/79396) | Update dependencies |
+| 2.1.26 | 2026-06-02 | [78809](https://github.com/airbytehq/airbyte/pull/78809) | Update dependencies |
 | 2.1.25 | 2026-04-28 | [77289](https://github.com/airbytehq/airbyte/pull/77289) | Update dependencies |
 | 2.1.24 | 2026-04-21 | [76663](https://github.com/airbytehq/airbyte/pull/76663) | Update dependencies |
 | 2.1.23 | 2026-04-17 | [76453](https://github.com/airbytehq/airbyte/pull/76453) | Promoted release candidate to GA |

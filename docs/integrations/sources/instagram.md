@@ -119,6 +119,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.35 | 2026-07-21 | [82447](https://github.com/airbytehq/airbyte/pull/82447) | Update dependencies |
+| 4.2.34 | 2026-07-14 | [81881](https://github.com/airbytehq/airbyte/pull/81881) | Update dependencies |
+| 4.2.33 | 2026-06-30 | [81123](https://github.com/airbytehq/airbyte/pull/81123) | Update dependencies |
+| 4.2.32 | 2026-06-23 | [80500](https://github.com/airbytehq/airbyte/pull/80500) | Update dependencies |
+| 4.2.31 | 2026-06-16 | [79913](https://github.com/airbytehq/airbyte/pull/79913) | Update dependencies |
+| 4.2.30 | 2026-06-09 | [78774](https://github.com/airbytehq/airbyte/pull/78774) | Update dependencies |
+| 4.2.29 | 2026-06-02 | [79099](https://github.com/airbytehq/airbyte/pull/79099) | Promoted release candidate to GA |
+| 4.2.29-rc.2 | 2026-05-26 | [78440](https://github.com/airbytehq/airbyte/pull/78440) | Add HTTPAPIBudget for rate limit protection |
 | 4.2.29-rc.1 | 2026-05-26 | [78440](https://github.com/airbytehq/airbyte/pull/78440) | Enable progressive rollout for concurrency tuning |
 | 4.2.28 | 2026-04-28 | [77272](https://github.com/airbytehq/airbyte/pull/77272) | Update dependencies |
 | 4.2.27 | 2026-04-21 | [76627](https://github.com/airbytehq/airbyte/pull/76627) | Update dependencies |

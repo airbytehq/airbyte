@@ -4,13 +4,13 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
-To use the Uptick connector, you need:
+The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 
-- An Uptick account with API access enabled
-- OAuth credentials (Client ID and Client Secret) generated from your Uptick instance
-- Your Uptick instance URL (for example, `https://yourcompany.onuptick.com`)
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- An OAuth Client ID and Client Secret generated from your Uptick instance.
+- The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance and select **Create Application**. For more information, see the [Uptick API documentation](https://support.uptickhq.com/en/collections/9129536-uptick-api).
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
 
 ## Configuration
 
@@ -150,6 +150,14 @@ The Uptick connector syncs data from the following streams, organized by functio
 | `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
 
+### Incremental sync
+
+For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+
+## Rate limits
+
+Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -161,6 +169,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.0 | 2026-07-21 | [73740](https://github.com/airbytehq/airbyte/pull/73740) | Upgrade the Uptick API to v2.15 and remove deprecated fields from the branches, defectquotelineitems, servicetasks, and tasksessions streams |
+| 0.5.16 | 2026-07-21 | [82628](https://github.com/airbytehq/airbyte/pull/82628) | Update dependencies |
+| 0.5.15 | 2026-07-14 | [81991](https://github.com/airbytehq/airbyte/pull/81991) | Update dependencies |
+| 0.5.14 | 2026-06-30 | [81268](https://github.com/airbytehq/airbyte/pull/81268) | Update dependencies |
+| 0.5.13 | 2026-06-23 | [80682](https://github.com/airbytehq/airbyte/pull/80682) | Update dependencies |
+| 0.5.12 | 2026-06-16 | [80076](https://github.com/airbytehq/airbyte/pull/80076) | Update dependencies |
+| 0.5.11 | 2026-06-09 | [79539](https://github.com/airbytehq/airbyte/pull/79539) | Update dependencies |
+| 0.5.10 | 2026-06-02 | [79025](https://github.com/airbytehq/airbyte/pull/79025) | Update dependencies |
 | 0.5.9 | 2026-04-28 | [77504](https://github.com/airbytehq/airbyte/pull/77504) | Update dependencies |
 | 0.5.8 | 2026-04-21 | [76809](https://github.com/airbytehq/airbyte/pull/76809) | Update dependencies |
 | 0.5.7 | 2026-03-31 | [75703](https://github.com/airbytehq/airbyte/pull/75703) | Update dependencies |

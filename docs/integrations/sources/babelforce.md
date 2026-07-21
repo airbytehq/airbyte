@@ -53,6 +53,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.3.33 | 2026-07-21 | [82313](https://github.com/airbytehq/airbyte/pull/82313) | Update dependencies |
+| 0.3.32 | 2026-07-14 | [81734](https://github.com/airbytehq/airbyte/pull/81734) | Update dependencies |
+| 0.3.31 | 2026-06-30 | [80980](https://github.com/airbytehq/airbyte/pull/80980) | Update dependencies |
+| 0.3.30 | 2026-06-23 | [80377](https://github.com/airbytehq/airbyte/pull/80377) | Update dependencies |
+| 0.3.29 | 2026-06-16 | [79766](https://github.com/airbytehq/airbyte/pull/79766) | Update dependencies |
+| 0.3.28 | 2026-06-09 | [79222](https://github.com/airbytehq/airbyte/pull/79222) | Update dependencies |
+| 0.3.27 | 2026-06-02 | [78561](https://github.com/airbytehq/airbyte/pull/78561) | Update dependencies |
 | 0.3.26 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.3.25 | 2025-05-17 | [60625](https://github.com/airbytehq/airbyte/pull/60625) | Update dependencies |
 | 0.3.24 | 2025-05-10 | [59821](https://github.com/airbytehq/airbyte/pull/59821) | Update dependencies |

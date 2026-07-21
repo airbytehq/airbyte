@@ -48,7 +48,8 @@ For more information, see the [Linear OAuth 2.0 authentication documentation](ht
 4. For **Authentication**, choose **API Key** or **OAuth 2.0**.
 5. Enter the required credentials for your authentication method.
 6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
-7. Click **Set up source** and wait for the connection test to complete.
+7. Optionally, adjust the **Number of concurrent workers** (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting Linear's rate limits. Users on API key authentication (2,500 requests/hour) should generally stay at or below the default. Users on OAuth authentication (5,000 requests/hour) may increase this value if they have observed headroom in their rate-limit usage.
+8. Click **Set up source** and wait for the connection test to complete.
 
 Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.1` or later. If you upgraded an API key connection to `0.2.0` and it no longer passes connection checks, upgrade to `0.2.1` or later.
 
@@ -92,9 +93,15 @@ The Linear source connector supports the following streams. Streams marked as in
 
 ### Rate limiting
 
-The Linear API uses a leaky bucket algorithm for rate limiting. The connector handles rate limiting automatically, but syncs may slow down if you are making many concurrent requests to the Linear API.
+The Linear API uses a leaky bucket algorithm for rate limiting. The connector detects rate-limit errors returned by the API and automatically backs off until the rate-limit window resets. Syncs may slow down during backoff periods but will resume without manual intervention.
 
-Linear currently allows up to 2,500 API key requests per user per hour and 5,000 OAuth app requests per user or app user per hour. Linear also applies query complexity limits, including a maximum complexity of 10,000 points for a single query. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
+Linear enforces three types of rate limits:
+
+- **Request limits**: 2,500 requests per user per hour for API key authentication, 5,000 for OAuth app authentication. All requests by the same user share the same quota.
+- **Endpoint-specific limits**: Certain queries have lower per-endpoint limits. The connector respects the `X-RateLimit-Endpoint-Requests-Reset` header when these are hit.
+- **Complexity limits**: Each query's complexity is calculated based on the number of requested fields and pagination depth. The maximum single-query complexity is 10,000 points. The hourly complexity budget is 3,000,000 points for API key authentication and 2,000,000 for OAuth.
+
+Workspace-level OAuth applications receive dynamically increased limits based on the number of paid seats. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
 ### Data availability
 
@@ -118,6 +125,7 @@ For programmatic configuration, use these parameter names:
 | `credentials.client_secret` | Required for OAuth 2.0 authentication | Client secret of your Linear OAuth app. |
 | `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Linear OAuth flow. |
 | `start_date` | No | UTC date and time in ISO 8601 format. Records updated before this date aren't replicated for streams that support incremental sync. If unset, defaults to two years before the first sync. |
+| `num_workers` | No | Number of worker threads used to read streams in parallel (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting rate limits. |
 
 ## Changelog
 
@@ -126,6 +134,14 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.10 | 2026-07-21 | [82509](https://github.com/airbytehq/airbyte/pull/82509) | Update dependencies |
+| 0.2.9 | 2026-07-14 | [81930](https://github.com/airbytehq/airbyte/pull/81930) | Update dependencies |
+| 0.2.8 | 2026-06-30 | [81147](https://github.com/airbytehq/airbyte/pull/81147) | Update dependencies |
+| 0.2.7 | 2026-06-23 | [80554](https://github.com/airbytehq/airbyte/pull/80554) | Update dependencies |
+| 0.2.6 | 2026-06-16 | [79947](https://github.com/airbytehq/airbyte/pull/79947) | Update dependencies |
+| 0.2.5 | 2026-06-10 | [78237](https://github.com/airbytehq/airbyte/pull/78237) | fix(source-linear): Handle GraphQL rate-limit errors |
+| 0.2.4 | 2026-06-09 | [79388](https://github.com/airbytehq/airbyte/pull/79388) | Update dependencies |
+| 0.2.3 | 2026-06-02 | [78816](https://github.com/airbytehq/airbyte/pull/78816) | Update dependencies |
 | 0.2.2 | 2026-05-18 | [78160](https://github.com/airbytehq/airbyte/pull/78160) | Promoted release candidate to GA |
 | 0.2.2-rc.2 | 2026-05-15 | [78124](https://github.com/airbytehq/airbyte/pull/78124) | Expose `num_workers` in connector spec (default 4, min 1, max 10) so users can override the per-connection concurrency from the UI |
 | 0.2.2-rc.1 | 2026-05-12 | [78034](https://github.com/airbytehq/airbyte/pull/78034) | Resume concurrency tuning at default_concurrency=4 (Path A, 2,500 req/hr API key ceiling); re-enable progressive rollout |

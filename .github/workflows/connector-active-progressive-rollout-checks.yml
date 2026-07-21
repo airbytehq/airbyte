@@ -178,8 +178,12 @@ jobs:
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
-          VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)
-          echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+          if VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master 2>/dev/null); then
+            echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+          else
+            echo "Connector ${CONNECTOR_NAME} not found on master (net-new connector). Skipping version check."
+            echo "version=" | tee -a "${GITHUB_OUTPUT}"
+          fi
 
       - name: Resolve rollout gate state
         if: matrix.connector

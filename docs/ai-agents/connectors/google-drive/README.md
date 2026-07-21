@@ -46,7 +46,7 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Create](./REFERENCE.md#files-create), [Update](./REFERENCE.md#files-update), [Delete](./REFERENCE.md#files-delete), [Download](./REFERENCE.md#files-download) |
+| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Create](./REFERENCE.md#files-create), [Update](./REFERENCE.md#files-update), [Delete](./REFERENCE.md#files-delete), [Download](./REFERENCE.md#files-download), [Context Store Search](./REFERENCE.md#files-context-store-search) |
 | Files Upload | [Create](./REFERENCE.md#files-upload-create) |
 | Files Export | [Download](./REFERENCE.md#files-export-download) |
 | Drives | [List](./REFERENCE.md#drives-list), [Get](./REFERENCE.md#drives-get) |
@@ -63,17 +63,66 @@ This connector supports the following entities and actions. For more details, se
 
 See the official [Google-Drive API reference](https://developers.google.com/workspace/drive/api/reference/rest/v3).
 
-## SDK installation
+## Interfaces
+
+Use the Google-Drive connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -83,6 +132,83 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `GoogleDriveConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+
+connector = connect("google-drive", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+
+connector = connect("google-drive", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+
+connector = connect("google-drive", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Google-Drive Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+
+connector = connect("google-drive", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Google-Drive Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleDriveConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -157,12 +283,15 @@ async def google_drive_execute(entity: str, action: str, params: dict | None = N
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -176,18 +305,15 @@ connector = GoogleDriveConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@GoogleDriveConnector.tool_utils
-async def google_drive_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -200,18 +326,21 @@ connector = GoogleDriveConnector(
     )
 )
 
-@tool
-@GoogleDriveConnector.tool_utils
-async def google_drive_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Google-Drive connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -225,21 +354,16 @@ connector = GoogleDriveConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@GoogleDriveConnector.tool_utils(framework="openai_agents")
-async def google_drive_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Google-Drive connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Google-Drive Assistant", tools=[google_drive_execute])
+agent = Agent(name="Google-Drive Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -255,18 +379,120 @@ connector = GoogleDriveConnector(
 
 mcp = FastMCP("Google-Drive Agent")
 
-@mcp.tool
-@GoogleDriveConnector.tool_utils
-async def google_drive_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Google-Drive connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
 
-### Open source
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+from airbyte_agent_sdk.connectors.google_drive.models import GoogleDriveAuthConfig
+
+connector = GoogleDriveConnector(
+    auth_config=GoogleDriveAuthConfig(
+        access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
+        refresh_token="<Your Google OAuth2 Refresh Token>",
+        client_id="<Your Google OAuth2 Client ID>",
+        client_secret="<Your Google OAuth2 Client Secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+from airbyte_agent_sdk.connectors.google_drive.models import GoogleDriveAuthConfig
+
+connector = GoogleDriveConnector(
+    auth_config=GoogleDriveAuthConfig(
+        access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
+        refresh_token="<Your Google OAuth2 Refresh Token>",
+        client_id="<Your Google OAuth2 Client ID>",
+        client_secret="<Your Google OAuth2 Client Secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+from airbyte_agent_sdk.connectors.google_drive.models import GoogleDriveAuthConfig
+
+connector = GoogleDriveConnector(
+    auth_config=GoogleDriveAuthConfig(
+        access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
+        refresh_token="<Your Google OAuth2 Refresh Token>",
+        client_id="<Your Google OAuth2 Client ID>",
+        client_secret="<Your Google OAuth2 Client Secret>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Google-Drive Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.google_drive import GoogleDriveConnector
+from airbyte_agent_sdk.connectors.google_drive.models import GoogleDriveAuthConfig
+
+connector = GoogleDriveConnector(
+    auth_config=GoogleDriveAuthConfig(
+        access_token="<Your Google OAuth2 Access Token (optional, will be obtained via refresh)>",
+        refresh_token="<Your Google OAuth2 Refresh Token>",
+        client_id="<Your Google OAuth2 Client ID>",
+        client_secret="<Your Google OAuth2 Client Secret>"
+    )
+)
+
+mcp = FastMCP("Google-Drive Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `GoogleDriveConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -369,6 +595,7 @@ async def google_drive_execute(entity: str, action: str, params: dict | None = N
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 

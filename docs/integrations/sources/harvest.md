@@ -114,6 +114,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.45 | 2026-07-21 | [82454](https://github.com/airbytehq/airbyte/pull/82454) | Update dependencies |
+| 1.2.44 | 2026-07-14 | [81874](https://github.com/airbytehq/airbyte/pull/81874) | Update dependencies |
+| 1.2.43 | 2026-06-30 | [81106](https://github.com/airbytehq/airbyte/pull/81106) | Update dependencies |
+| 1.2.42 | 2026-06-23 | [80488](https://github.com/airbytehq/airbyte/pull/80488) | Update dependencies |
+| 1.2.41 | 2026-06-16 | [79882](https://github.com/airbytehq/airbyte/pull/79882) | Update dependencies |
+| 1.2.40 | 2026-06-09 | [79365](https://github.com/airbytehq/airbyte/pull/79365) | Update dependencies |
+| 1.2.39 | 2026-06-02 | [78755](https://github.com/airbytehq/airbyte/pull/78755) | Update dependencies |
 | 1.2.38 | 2026-05-06 | [77821](https://github.com/airbytehq/airbyte/pull/77821) | Set `Content-Type: application/x-www-form-urlencoded` on OAuth access token request |
 | 1.2.37 | 2026-05-05 | [77778](https://github.com/airbytehq/airbyte/pull/77778) | Reorder spec fields so `credentials` appears before `account_id` and `replication_start_date` |
 | 1.2.36 | 2026-05-04 | [76217](https://github.com/airbytehq/airbyte/pull/76217) | Declare OAuth2 flow inline via `advanced_auth` and `oauthConnectorInputSpecification` |

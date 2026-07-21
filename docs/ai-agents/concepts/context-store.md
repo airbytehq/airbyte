@@ -54,14 +54,14 @@ Ready and Preview are both usable states for agents. Preview means newer records
 
 ### Per-entity status
 
-Click the status badge on a connector to open a detailed view. The view lists every entity Airbyte populates for the connector, along with:
+To see per-entity status, open the connector's detail page. From the Connectors list, click the connector's status badge or its **Details** button. The **Entities and Context Store** section on that page lists every entity Airbyte populates for the connector, along with:
 
 - **Entity.** The entity name, for example `contacts`, `deals`, or `products`.
-- **Status.** `Ready`, `Preview`, `Building Preview`, `Initializing`, or `Updating`.
+- **Context Store status.** `Ready`, `Preview`, `Building Preview`, `Initializing`, or `Updating`.
 - **Records.** The number of records currently searchable for that entity.
 - **Last Synced** or **Last Updated.** The most recent time Airbyte refreshed that entity.
 
-Use this view to confirm which entities are ready to query and which are still populating.
+Use this section to confirm which entities are ready to query and which are still populating.
 
 ## How agents use the Context Store
 
@@ -84,7 +84,7 @@ When the Context Store populates data for a connector, Airbyte runs an initial i
 
 During the initial index, Airbyte makes data available to agents progressively. You don't have to wait for the index to finish before agents can search. An entity in **Preview** status already has partial data that agents can query. As indexing continues, more records become searchable until the entity reaches **Ready** status.
 
-The per-entity detail view on the Connectors page shows record counts and timestamps so you can track indexing progress.
+The **Entities and Context Store** section on the connector detail page shows record counts and timestamps so you can track indexing progress.
 
 ## When to use the Context Store
 

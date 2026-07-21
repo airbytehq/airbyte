@@ -1,0 +1,6 @@
+version: "7.12.0"
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names: []
+streams: []

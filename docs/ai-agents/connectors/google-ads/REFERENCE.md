@@ -24,6 +24,17 @@ The Google-Ads connector supports the following entities and actions.
 
 Returns resource names of customers directly accessible by the user authenticating the call. No customer_id is required for this endpoint.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "accessible_customers",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -49,6 +60,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts List
 
 Retrieves customer account details using GAQL query.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "accounts",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -105,6 +130,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts Context Store Search
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "customer.auto_tagging_enabled": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -206,6 +251,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves campaign data using GAQL query.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -265,6 +324,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates campaign properties such as status (enable/pause), name, or other mutable fields using the Google Ads CampaignService mutate endpoint.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "campaigns",
+  "action": "update",
+  "params": {
+    "operations": [],
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -320,6 +394,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "campaign.id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -367,8 +461,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `campaign.bidding_strategy_type` | `string` | Bidding strategy type |
 | `campaign.campaign_budget` | `string` | Campaign budget resource name |
 | `campaign_budget.amount_micros` | `integer` | Campaign budget amount in micros |
-| `campaign.start_date` | `string` | Campaign start date |
-| `campaign.end_date` | `string` | Campaign end date |
+| `campaign.start_date_time` | `string` | Campaign start date |
+| `campaign.end_date_time` | `string` | Campaign end date |
 | `campaign.serving_status` | `string` | Campaign serving status |
 | `campaign.resource_name` | `string` | Resource name of the campaign |
 | `campaign.labels` | `array` | Labels applied to the campaign |
@@ -408,8 +502,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].campaign.bidding_strategy_type` | `string` | Bidding strategy type |
 | `data[].campaign.campaign_budget` | `string` | Campaign budget resource name |
 | `data[].campaign_budget.amount_micros` | `integer` | Campaign budget amount in micros |
-| `data[].campaign.start_date` | `string` | Campaign start date |
-| `data[].campaign.end_date` | `string` | Campaign end date |
+| `data[].campaign.start_date_time` | `string` | Campaign start date |
+| `data[].campaign.end_date_time` | `string` | Campaign end date |
 | `data[].campaign.serving_status` | `string` | Campaign serving status |
 | `data[].campaign.resource_name` | `string` | Resource name of the campaign |
 | `data[].campaign.labels` | `array` | Labels applied to the campaign |
@@ -437,6 +531,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Groups List
 
 Retrieves ad group data using GAQL query.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_groups",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -497,6 +605,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates ad group properties such as status (enable/pause), name, or bid amounts using the Google Ads AdGroupService mutate endpoint.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_groups",
+  "action": "update",
+  "params": {
+    "operations": [],
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -552,6 +675,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Groups Context Store Search
 
 Search and filter ad groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "campaign.id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -655,6 +798,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves ad group ad data using GAQL query.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_ads",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -712,6 +869,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Group Ads Context Store Search
 
 Search and filter ad group ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_group.id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -807,6 +984,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves campaign label associations using GAQL query.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "campaign_labels",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -865,6 +1056,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a campaign-label association, applying an existing label to a campaign for organization and filtering.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "campaign_labels",
+  "action": "create",
+  "params": {
+    "operations": [],
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -917,6 +1123,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaign Labels Context Store Search
 
 Search and filter campaign labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "campaign_labels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "campaign.id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -986,6 +1212,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves ad group label associations using GAQL query.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_labels",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1044,6 +1284,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates an ad group-label association, applying an existing label to an ad group for organization and filtering.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_labels",
+  "action": "create",
+  "params": {
+    "operations": [],
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1096,6 +1351,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Group Labels Context Store Search
 
 Search and filter ad group labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_labels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_group.id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1165,6 +1440,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves ad group ad label associations using GAQL query.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_ad_labels",
+  "action": "list",
+  "params": {
+    "customer_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1222,6 +1511,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Group Ad Labels Context Store Search
 
 Search and filter ad group ad labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "ad_group_ad_labels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_group_ad.ad.id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1290,6 +1599,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Labels Create
 
 Creates a new label that can be applied to campaigns, ad groups, or ads for organization and reporting purposes.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-ads",
+  "entity": "labels",
+  "action": "create",
+  "params": {
+    "operations": [],
+    "customer_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

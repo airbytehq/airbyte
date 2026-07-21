@@ -139,6 +139,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.8 | 2026-07-21 | [82425](https://github.com/airbytehq/airbyte/pull/82425) | Update dependencies |
+| 0.1.7 | 2026-07-14 | [81816](https://github.com/airbytehq/airbyte/pull/81816) | Update dependencies |
+| 0.1.6 | 2026-06-30 | [81079](https://github.com/airbytehq/airbyte/pull/81079) | Update dependencies |
+| 0.1.5 | 2026-06-23 | [80468](https://github.com/airbytehq/airbyte/pull/80468) | Update dependencies |
+| 0.1.4 | 2026-06-16 | [79869](https://github.com/airbytehq/airbyte/pull/79869) | Update dependencies |
+| 0.1.3 | 2026-06-09 | [79310](https://github.com/airbytehq/airbyte/pull/79310) | Update dependencies |
+| 0.1.2 | 2026-06-02 | [78732](https://github.com/airbytehq/airbyte/pull/78732) | Update dependencies |
 | 0.1.1 | 2026-05-04 | [76065](https://github.com/airbytehq/airbyte/pull/76065) | Add OAuth flow with credentials wrapper, config migration, and Service Account auth |
 | 0.1.0 | 2026-04-29 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add `messages_details` incremental sync, optional `start_date` server-side filtering on `messages`/`drafts`/`threads`, configurable concurrency via `num_workers`, and Gmail-aware rate-limit handling (429 + 403 quota-saturation) |
 | 0.0.52 | 2026-04-28 | [77264](https://github.com/airbytehq/airbyte/pull/77264) | Update dependencies |
