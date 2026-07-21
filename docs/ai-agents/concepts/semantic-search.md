@@ -158,7 +158,7 @@ async def main():
                 "limit": 10,
             },
         )
-        for hit in result.data:
+        for hit in result.data["data"]:
             print(hit["metadata"]["score"], hit["metadata"]["context"])
     finally:
         await gong.close()
@@ -268,7 +268,7 @@ async def main():
                 "limit": 10,
             },
         )
-        for hit in result.data:
+        for hit in result.data["data"]:
             print(hit["entity"]["file_name"], hit["metadata"]["score"])
     finally:
         await google_drive.close()
