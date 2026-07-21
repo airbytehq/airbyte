@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7fc8e411-25e6-4c8a-aab0-0b662a833c8c
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-solarwinds-service-desk
   githubIssueLabel: source-solarwinds-service-desk
   icon: icon.svg
