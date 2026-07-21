@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ec1ffa33-bfd9-428a-a645-ece66a1a9f44
-  dockerImageTag: 0.0.51
+  dockerImageTag: 0.0.52
   dockerRepository: airbyte/source-canny
   githubIssueLabel: source-canny
   icon: icon.svg
