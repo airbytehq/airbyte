@@ -169,7 +169,6 @@ class DatabricksAirbyteClient(
             describeTableCache.remove(tableName)
             log.info { "Applying schema changes to ${tableName.toPrettyString()}:" }
             log.info { "  Added: ${columnChangeset.columnsToAdd.keys}" }
-            log.info { "  Dropped: ${columnChangeset.columnsToDrop.keys}" }
             log.info { "  Modified: ${columnChangeset.columnsToChange.keys}" }
             executeAll(sqlGenerator.alterTable(tableName, columnChangeset))
         }

@@ -188,7 +188,7 @@ class DatabricksSqlGenerator(
             return listOf(recreateTableWithCast(tableName, changeset))
         }
 
-        // No type changes — use standard ADD / DROP COLUMN statements.
+        // No type changes — use standard ADD COLUMN statements.
         val fqn = fullyQualifiedName(tableName)
         val statements = mutableListOf<String>()
 
@@ -201,16 +201,6 @@ class DatabricksSqlGenerator(
 
         changeset.columnsToAdd.forEach { (name, columnType) ->
             statements.add("ALTER TABLE $fqn ADD COLUMN ${name.quote()} ${columnType.type}")
-        }
-
-        if (changeset.columnsToDrop.isNotEmpty()) {
-            // Enable Column Mapping to support DROP COLUMN on Delta tables.
-            statements.add(
-                "ALTER TABLE $fqn SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name')",
-            )
-            changeset.columnsToDrop.forEach { (name, _) ->
-                statements.add("ALTER TABLE $fqn DROP COLUMN ${name.quote()}")
-            }
         }
 
         return statements
@@ -247,7 +237,8 @@ class DatabricksSqlGenerator(
                 add("CAST(NULL AS ${columnType.type}) AS ${name.quote()}")
             }
 
-            // Dropped columns — omitted from SELECT
+            // Previously-dropped columns — retained as-is
+            changeset.columnsToDrop.forEach { (name, _) -> add(name.quote()) }
         }
 
         return "CREATE OR REPLACE TABLE $fqn AS SELECT ${selectColumns.joinToString(", ")} FROM $fqn"
