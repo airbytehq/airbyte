@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 97b9e157-7645-4f39-a949-d35ce4410216
-  dockerImageTag: 0.0.39
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-giphy
   githubIssueLabel: source-giphy
   icon: icon.svg
