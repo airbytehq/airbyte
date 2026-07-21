@@ -414,7 +414,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
-        columnsToRemove: Map<String, ColumnType>,
         columnsToModify: Map<String, ColumnTypeChange>,
     ): String {
         val clauses = mutableListOf<String>()
@@ -423,11 +422,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Add new columns (no NOT NULL -- preexisting rows would have no default)
         columnsToAdd.forEach { (name, columnType) ->
             clauses.add(addColumn(tableName, name, columnType.type))
-        }
-
-        // Remove columns
-        columnsToRemove.forEach { (name, _) ->
-            clauses.add("ALTER TABLE $fqn DROP COLUMN ${quoteIdentifier(name)}$cascadeSuffix;")
         }
 
         // Modify column types via 4-step rename pattern
