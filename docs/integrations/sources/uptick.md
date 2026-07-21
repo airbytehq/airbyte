@@ -4,13 +4,13 @@ Extract data from Uptick, a field service management platform designed for the f
 
 ## Prerequisites
 
-To use the Uptick connector, you need:
+The connector authenticates with the Uptick API using OAuth 2.0 with the password grant, so you need both an OAuth application and an Uptick user account:
 
-- An Uptick account with API access enabled
-- OAuth credentials (Client ID and Client Secret) generated from your Uptick instance
-- Your Uptick instance URL (for example, `https://yourcompany.onuptick.com`)
+- Your Uptick instance URL, for example `https://yourcompany.onuptick.com`.
+- An OAuth Client ID and Client Secret generated from your Uptick instance.
+- The email address and password of an Uptick user account. The connector signs in as this user, so the account must have permission to view every resource you want to sync.
 
-To generate OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance and select **Create Application**. For more information, see the [Uptick API documentation](https://support.uptickhq.com/en/collections/9129536-uptick-api).
+To generate the OAuth credentials, go to **Control Panel > Uptick API** in your Uptick instance, select **Create Application**, provide a name, and save. Uptick generates the Client ID and Client Secret for you. For step-by-step instructions, see [Uptick API - Getting started](https://support.uptickhq.com/en/articles/6728442-uptick-api-getting-started).
 
 ## Configuration
 
@@ -149,6 +149,14 @@ The Uptick connector syncs data from the following streams, organized by functio
 | `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
+
+### Incremental sync
+
+For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+
+## Rate limits
+
+Uptick enforces rate limits and reasonable-use guidelines on its API. When Uptick throttles a request, the connector reads the `Retry-After` response header and waits the indicated time before retrying, for up to five attempts. To stay within these limits, sync only the streams and fields you need and schedule syncs no more frequently than your reporting requires.
 
 ## IP allow list
 
