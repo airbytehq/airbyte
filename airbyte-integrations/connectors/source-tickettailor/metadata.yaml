@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e5f3b2f5-5782-46d6-8c6a-980d82686ff6
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-tickettailor
   githubIssueLabel: source-tickettailor
   icon: icon.svg
