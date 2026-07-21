@@ -360,13 +360,11 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+    fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
-            fullyQualifiedName(
-                targetTableName,
-            )
-        }
+            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            fullyQualifiedName(sourceTableName)
+        } COPY GRANTS
         """
             .trimIndent()
             .andLog()
