@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6ee4ad96-368f-4c5a-85cf-d92d4b27a4dd
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.55
   dockerRepository: airbyte/source-formbricks
   githubIssueLabel: source-formbricks
   icon: icon.svg
