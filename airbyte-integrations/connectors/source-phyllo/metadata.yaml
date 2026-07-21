@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 65346f37-e31a-4c66-84c6-5c2fc060b00a
-  dockerImageTag: 0.0.43
+  dockerImageTag: 0.0.44
   dockerRepository: airbyte/source-phyllo
   githubIssueLabel: source-phyllo
   icon: icon.svg
