@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4f200d9c-08a6-4e8f-9391-ea303a5d0e4d
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-oncehub
   githubIssueLabel: source-oncehub
   icon: icon.svg
