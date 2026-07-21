@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 757a3302-b2d5-4fb5-ae7f-b161fd619215
-  dockerImageTag: 0.0.59
+  dockerImageTag: 0.0.60
   dockerRepository: airbyte/source-zoho-inventory
   githubIssueLabel: source-zoho-inventory
   icon: icon.svg
