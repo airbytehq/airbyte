@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ed2c12aa-375c-4d18-9d3b-7e1f8a23245d
-  dockerImageTag: 0.0.56
+  dockerImageTag: 0.0.57
   dockerRepository: airbyte/source-elasticemail
   githubIssueLabel: source-elasticemail
   icon: icon.svg
