@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 177c8ac0-5b2e-497d-9526-c787fb333fc9
-  dockerImageTag: 0.0.41
+  dockerImageTag: 0.0.42
   dockerRepository: airbyte/source-ebay-finance
   githubIssueLabel: source-ebay-finance
   icon: icon.svg
