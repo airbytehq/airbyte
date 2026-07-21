@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2e5fb207-5215-43ee-8b4f-88f6490e204e
-  dockerImageTag: 0.0.58
+  dockerImageTag: 0.0.59
   dockerRepository: airbyte/source-wufoo
   githubIssueLabel: source-wufoo
   icon: icon.svg
