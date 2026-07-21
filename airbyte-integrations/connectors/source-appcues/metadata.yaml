@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3bab735a-e108-4c94-ab3f-414e3447b409
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-appcues
   githubIssueLabel: source-appcues
   icon: icon.svg
