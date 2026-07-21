@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2a97bcea-a59e-4fe1-89e0-1663f11ec646
-  dockerImageTag: 0.0.19
+  dockerImageTag: 0.0.20
   dockerRepository: airbyte/source-adobe-commerce-magento
   githubIssueLabel: source-adobe-commerce-magento
   icon: icon.svg
