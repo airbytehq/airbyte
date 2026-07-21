@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6ad41bae-c3a3-4a8e-abfd-c75b8604c083
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/source-uservoice
   githubIssueLabel: source-uservoice
   icon: icon.svg
