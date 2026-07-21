@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 80e5803c-7013-4ecc-a3b1-2344ce43e054
-  dockerImageTag: 0.0.43
+  dockerImageTag: 0.0.44
   dockerRepository: airbyte/source-thinkific
   githubIssueLabel: source-thinkific
   icon: icon.svg
