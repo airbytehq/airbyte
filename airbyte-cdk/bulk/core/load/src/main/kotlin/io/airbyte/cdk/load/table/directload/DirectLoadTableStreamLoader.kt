@@ -176,7 +176,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
                 val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                if (generationId == stream.minimumGenerationId) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -213,7 +213,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 isWritingToTemporaryTable = false
             } else if (
                 initialStatus.realTable.isEmpty ||
-                    tableOperationsClient.getGenerationId(realTableName) >=
+                    tableOperationsClient.getGenerationId(realTableName) ==
                         stream.minimumGenerationId
             ) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -304,7 +304,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
                 val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                if (generationId == stream.minimumGenerationId) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -365,7 +365,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
             // Case 2: Real table exists but is empty or has correct generation ID
             initialStatus.realTable.isEmpty ||
-                tableOperationsClient.getGenerationId(realTableName) >=
+                tableOperationsClient.getGenerationId(realTableName) ==
                     stream.minimumGenerationId -> true
 
             // Case 3: Real table exists with data - needs more stringent approach
