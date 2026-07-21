@@ -38,7 +38,45 @@ class PostgresDirectLoadSqlGenerator(
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
+        private val TEXT_TYPES = setOf("varchar", "text", "character varying")
+        private val NUMERIC_TYPES = setOf("bigint", "decimal", "numeric", "integer", "int")
+
         private fun quoteIdentifier(identifier: String) = "\"${identifier}\""
+
+        /**
+         * Builds the `USING` expression for an in-place `ALTER COLUMN ... TYPE` statement.
+         *
+         * A naive `USING col::newType` cast is rejected by PostgreSQL for several type pairs that
+         * can occur during schema evolution (e.g. `jsonb`-object -> `numeric`, `boolean` ->
+         * `bigint`), which aborts the whole sync. This routes each incompatible pair through a cast
+         * that PostgreSQL accepts.
+         */
+        internal fun buildUsingClause(
+            quotedName: String,
+            oldType: String,
+            newType: String
+        ): String =
+            when {
+                // Converting to jsonb from any type.
+                newType == "jsonb" -> "USING to_jsonb($quotedName)"
+                // Converting from jsonb to a text type: extract the text value without JSON quotes.
+                oldType == "jsonb" && newType in TEXT_TYPES -> "USING $quotedName #>> '{}'"
+                // Converting from jsonb to a scalar type: extract the scalar as text and cast it.
+                // Object/array values cannot be represented as a scalar, so null them out instead
+                // of letting the cast abort the sync.
+                oldType == "jsonb" ->
+                    "USING CASE WHEN jsonb_typeof($quotedName) IN ('object', 'array') " +
+                        "THEN NULL ELSE ($quotedName #>> '{}')::$newType END"
+                // boolean -> numeric: PostgreSQL has no direct boolean->bigint/numeric cast, but
+                // boolean->int is allowed, so route through integer.
+                oldType == "boolean" && newType in NUMERIC_TYPES ->
+                    "USING $quotedName::int::$newType"
+                // numeric -> boolean: PostgreSQL has no direct numeric/bigint->boolean cast. Treat
+                // any non-zero value as true.
+                oldType in NUMERIC_TYPES && newType == "boolean" -> "USING ($quotedName <> 0)"
+                // Standard cast for other conversions.
+                else -> "USING $quotedName::$newType"
+            }
     }
 
     /**
@@ -601,19 +639,7 @@ class PostgresDirectLoadSqlGenerator(
             val newType = typeChange.newType.type
             val quotedName = quoteIdentifier(name)
 
-            val usingClause =
-                when {
-                    // Converting to jsonb from any type
-                    newType == "jsonb" -> "USING to_jsonb($quotedName)"
-                    // Converting from jsonb to varchar/text - extract text value without JSON
-                    // quotes
-                    oldType == "jsonb" &&
-                        (newType == "varchar" ||
-                            newType == "text" ||
-                            newType == "character varying") -> "USING $quotedName #>> '{}'"
-                    // Standard cast for other conversions
-                    else -> "USING $quotedName::$newType"
-                }
+            val usingClause = buildUsingClause(quotedName, oldType, newType)
             clauses.add(
                 "ALTER TABLE $fullyQualifiedTableName ALTER COLUMN $quotedName TYPE $newType $usingClause;"
             )
