@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5674ae5a-511e-4093-9da9-086bf5f0b568
-  dockerImageTag: 0.0.52
+  dockerImageTag: 0.0.53
   dockerRepository: airbyte/source-campayn
   githubIssueLabel: source-campayn
   icon: icon.svg
