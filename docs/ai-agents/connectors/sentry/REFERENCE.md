@@ -18,7 +18,7 @@ The Sentry connector supports the following entities and actions.
 
 ### Projects List
 
-Return a list of projects available to the authenticated user.
+Return a list of projects the authenticated user has access to within the given organization. Requires the token to have the `org:read` scope. Note: unlike the deprecated `/projects/` endpoint, this only returns projects belonging to the configured organization and omits the `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` fields (use the project_detail action to retrieve those).
 
 #### CLI
 
@@ -27,14 +27,19 @@ airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "sentry",
   "entity": "projects",
-  "action": "list"
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>"
+  }
 }'
 ```
 
 #### Python SDK
 
 ```python
-await sentry.projects.list()
+await sentry.projects.list(
+    organization_slug="<str>"
+)
 ```
 
 #### API
@@ -45,7 +50,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "organization_slug": "<str>"
+    }
 }'
 ```
 
@@ -54,6 +62,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `organization_slug` | `string` | Yes | The slug of the organization to list projects for. |
 | `cursor` | `string` | No | Pagination cursor for next page of results. |
 
 
@@ -102,6 +111,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `hasTraceMetrics` | `boolean \| null` |  |
 | `avatar` | `object \| null` |  |
 | `organization` | `object \| null` |  |
+| `team` | `object \| null` |  |
+| `teams` | `array \| null` |  |
+| `environments` | `array \| null` |  |
+| `platforms` | `array \| null` |  |
+| `hasUserReports` | `boolean \| null` |  |
+| `latestRelease` | `object \| null` |  |
+| `latestDeploys` | `object \| null` |  |
 
 
 #### Meta

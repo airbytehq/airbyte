@@ -95,22 +95,21 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.0.19 | 2026-07-21 | [82651](https://github.com/airbytehq/airbyte/pull/82651) | Update dependencies |
+| 2.0.18 | 2026-07-14 | [82090](https://github.com/airbytehq/airbyte/pull/82090) | Update dependencies |
+| 2.0.17 | 2026-07-10 | [81516](https://github.com/airbytehq/airbyte/pull/81516) | Fix infinite pagination loop on `call_legs` and `calls` incremental streams |
 | 2.0.16 | 2026-06-30 | [81319](https://github.com/airbytehq/airbyte/pull/81319) | Update dependencies |
 | 2.0.15 | 2026-06-23 | [80706](https://github.com/airbytehq/airbyte/pull/80706) | Update dependencies |
 | 2.0.14 | 2026-06-16 | [80118](https://github.com/airbytehq/airbyte/pull/80118) | Update dependencies |
 | 2.0.13 | 2026-06-09 | [79570](https://github.com/airbytehq/airbyte/pull/79570) | Update dependencies |
 | 2.0.12 | 2026-06-02 | [76832](https://github.com/airbytehq/airbyte/pull/76832) | Update dependencies |
 | 2.0.11 | 2026-04-30 | [77647](https://github.com/airbytehq/airbyte/pull/77647) | Promoted release candidate to GA |
-| 2.0.11-rc.1 | 2026-04-10 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
-| 2.0.10 | 2026-04-07 | [76106](https://github.com/airbytehq/airbyte/pull/76106) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
-| Version | Date       | Pull Request                                             | Subject                                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
-| 2.0.11-rc.5 | 2026-04-24 | [](https://github.com/airbytehq/airbyte/pull/) | Add subscription_tier config field and re-enable HTTPAPIBudget as dynamic tier-based budget for tuning iteration 5 |
-| 2.0.11-rc.4 | 2026-04-21 | [76872](https://github.com/airbytehq/airbyte/pull/76872) | Decrease default_concurrency from 6 to 4 and comment out HTTPAPIBudget for tuning iteration 4 |
+| 2.0.11-rc.5 | 2026-04-24 | [77007](https://github.com/airbytehq/airbyte/pull/77007) | Add subscription_tier config field and re-enable HTTPAPIBudget as dynamic tier-based budget for tuning iteration 5 |
+| 2.0.11-rc.4 | 2026-04-22 | [76872](https://github.com/airbytehq/airbyte/pull/76872) | Decrease default_concurrency from 6 to 4 and comment out HTTPAPIBudget for tuning iteration 4 |
 | 2.0.11-rc.3 | 2026-04-17 | [76449](https://github.com/airbytehq/airbyte/pull/76449) | Decrease default_concurrency from 9 to 6 for tuning iteration 3 |
 | 2.0.11-rc.2 | 2026-04-13 | [76266](https://github.com/airbytehq/airbyte/pull/76266) | Decrease default_concurrency from 12 to 9 for tuning iteration 2 |
-| 2.0.11-rc.1 | 2026-04-09 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
-| 2.0.10 | 2026-04-06 | [](https://github.com/airbytehq/airbyte/pull/) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
+| 2.0.11-rc.1 | 2026-04-10 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
+| 2.0.10 | 2026-04-07 | [76106](https://github.com/airbytehq/airbyte/pull/76106) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
 | 2.0.9 | 2026-03-31 | [75808](https://github.com/airbytehq/airbyte/pull/75808) | Update dependencies |
 | 2.0.8 | 2026-03-11 | [74395](https://github.com/airbytehq/airbyte/pull/74395) | Migrate to scopes object array format |
 | 2.0.7 | 2026-03-10 | [74446](https://github.com/airbytehq/airbyte/pull/74446) | Update dependencies |
@@ -151,7 +150,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.2.2 | 2025-04-05 | [56838](https://github.com/airbytehq/airbyte/pull/56838) | Update dependencies |
 | 1.2.1 | 2025-03-22 | [48245](https://github.com/airbytehq/airbyte/pull/48245) | Update dependencies |
 | 1.2.0 | 2025-02-07 | [50956](https://github.com/airbytehq/airbyte/pull/50956) | Restore Unit Test |
-| 1.1.0-rc.1  | 2024-10-31 | [47313](https://github.com/airbytehq/airbyte/pull/47313) | Migrate to Manifest-only |
+| 1.1.0-rc.1 | 2024-10-31 | [47313](https://github.com/airbytehq/airbyte/pull/47313) | Migrate to Manifest-only |
 | 1.0.21 | 2024-10-29 | [47082](https://github.com/airbytehq/airbyte/pull/47082) | Update dependencies |
 | 1.0.20 | 2024-10-12 | [46861](https://github.com/airbytehq/airbyte/pull/46861) | Update dependencies |
 | 1.0.19 | 2024-10-05 | [46394](https://github.com/airbytehq/airbyte/pull/46394) | Update dependencies |

@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 2.1.37-rc.1
+  dockerImageTag: 2.1.38-rc.1
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
@@ -44,7 +44,7 @@ data:
               - "releases"
               - "review_comments"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   suggestedStreams:
     streams:
       - branches

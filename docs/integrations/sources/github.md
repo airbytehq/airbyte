@@ -241,7 +241,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.37-rc.1 | 2026-07-14 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth, spec in manifest, and declarative Repositories stream |
+| 2.1.38-rc.1 | 2026-07-21 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth, spec in manifest, and declarative Repositories stream |
+| 2.1.37 | 2026-07-21 | [81799](https://github.com/airbytehq/airbyte/pull/81799) | Update dependencies |
+| 2.1.36 | 2026-07-14 | [82093](https://github.com/airbytehq/airbyte/pull/82093) | Promoted release candidate to GA |
 | 2.1.36-rc.1 | 2026-07-08 | [80133](https://github.com/airbytehq/airbyte/pull/80133) | Switch base class from AbstractSource to YamlDeclarativeSource (Step 1 of declarative migration) |
 | 2.1.35 | 2026-07-07 | [81440](https://github.com/airbytehq/airbyte/pull/81440) | Update dependencies |
 | 2.1.34 | 2026-06-30 | [81084](https://github.com/airbytehq/airbyte/pull/81084) | Update dependencies |
