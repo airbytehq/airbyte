@@ -15,6 +15,8 @@ from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import (
     ParentStreamConfig,
     SubstreamPartitionRouter,
@@ -279,6 +281,28 @@ class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger("airbyte.LinkedInAdsBatchedPartitionRouter")
+
+
+@dataclass
+class LinkedInAdsBatchedAnalyticsStateMigration(StateMigration):
+    """Seed campaign batches from the earliest saved partition cursor."""
+
+    config: Config
+    declarative_stream: DeclarativeStreamModel
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state.get("states"))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        migrated_state = dict(
+            min(
+                (state["cursor"] for state in stream_state["states"]),
+                key=lambda cursor: cursor["end_date"],
+            )
+        )
+        if stream_state.get("parent_state"):
+            migrated_state["parent_state"] = stream_state["parent_state"]
+        return migrated_state
 
 
 @dataclass

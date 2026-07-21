@@ -186,6 +186,30 @@ class TestAllStreams:
             assert partition_router["parent_stream_configs"][0]["stream"] == {"$ref": "#/definitions/streams/campaigns"}
             assert sponsored_campaign["value"] == "{{ stream_partition.get('campaign_id') }}"
 
+    def test_batched_analytics_response_limit_configuration(self):
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        streams = yaml.safe_load(manifest_path.read_text())["definitions"]["streams"]
+        batched_stream_names = [
+            "ad_campaign_analytics",
+            "ad_creative_analytics",
+            "ad_impression_device_analytics",
+        ]
+
+        assert streams["ad_campaign_analytics"]["incremental_sync"]["step"] == "P30D"
+        assert streams["ad_creative_analytics"]["incremental_sync"]["step"] == "P1D"
+        assert streams["ad_impression_device_analytics"]["incremental_sync"]["step"] == "P30D"
+        assert all(streams[stream_name]["retriever"]["paginator"]["type"] == "NoPagination" for stream_name in batched_stream_names)
+        assert all(
+            streams[stream_name]["state_migrations"]
+            == [
+                {
+                    "type": "CustomStateMigration",
+                    "class_name": "source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration",
+                }
+            ]
+            for stream_name in batched_stream_names
+        )
+
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
         streams = get_source(config).streams(config=config)
@@ -418,11 +442,12 @@ class TestLinkedinAdsStream:
         assert records == expected_records
 
     @pytest.mark.parametrize(
-        ("stream_name", "query", "pivot_values", "expected_data"),
+        ("stream_name", "query", "interval_end_day", "pivot_values", "expected_data"),
         [
             pytest.param(
                 "ad_campaign_analytics",
                 "q=analytics&pivot=(value:CAMPAIGN)",
+                31,
                 ["urn:li:sponsoredCampaign:1111"],
                 {
                     "sponsoredCampaign": "1111",
@@ -434,6 +459,7 @@ class TestLinkedinAdsStream:
             pytest.param(
                 "ad_creative_analytics",
                 "q=analytics&pivot=(value:CREATIVE)",
+                2,
                 ["urn:li:sponsoredCreative:2222"],
                 {
                     "sponsoredCreative": "2222",
@@ -445,6 +471,7 @@ class TestLinkedinAdsStream:
             pytest.param(
                 "ad_impression_device_analytics",
                 "q=statistics&pivots=List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)",
+                31,
                 ["urn:li:sponsoredCampaign:1111", "CONNECTED_TV"],
                 {
                     "sponsoredCampaign": "1111",
@@ -455,7 +482,15 @@ class TestLinkedinAdsStream:
             ),
         ],
     )
-    def test_analytics_streams_batch_campaign_partitions(self, requests_mock, stream_name, query, pivot_values, expected_data):
+    def test_analytics_streams_batch_campaign_partitions(
+        self,
+        requests_mock,
+        stream_name,
+        query,
+        interval_end_day,
+        pivot_values,
+        expected_data,
+    ):
         config = {**TEST_CONFIG}
         stream = find_stream(stream_name, config)
 
@@ -474,7 +509,7 @@ class TestLinkedinAdsStream:
             "https://api.linkedin.com/rest/adAnalytics?"
             f"{query}&timeGranularity=(value:DAILY)&campaigns=List(urn%3Ali%3AsponsoredCampaign%3A1111,"
             "urn%3Ali%3AsponsoredCampaign%3A2222)&dateRange=(start:(year:2021,month:1,day:1),"
-            "end:(year:2021,month:1,day:31))",
+            f"end:(year:2021,month:1,day:{interval_end_day}))",
             complete_qs=False,
             json={
                 "elements": [

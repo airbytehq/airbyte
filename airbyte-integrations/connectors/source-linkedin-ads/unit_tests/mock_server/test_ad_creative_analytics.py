@@ -97,14 +97,14 @@ def _create_analytics_record(
     }
 
 
-@freezegun.freeze_time("2024-06-15T00:00:00Z")
+@freezegun.freeze_time("2024-06-02T00:00:00Z")
 class TestAdCreativeAnalyticsStream(TestCase):
     """
     Tests for the LinkedIn Ads 'ad_creative_analytics' stream.
 
     This is a substream of creatives that uses:
     - NoPagination (analytics endpoints don't paginate)
-    - DatetimeBasedCursor with 30-day steps
+    - DatetimeBasedCursor with 1-day steps
     - Transformations that add 'sponsoredCreative' and 'pivot' fields
     - SubstreamPartitionRouter to iterate over parent creatives
     """

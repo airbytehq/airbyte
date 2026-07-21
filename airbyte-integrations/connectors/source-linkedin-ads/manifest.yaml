@@ -525,6 +525,9 @@ definitions:
           $ref: "#/schemas/lead_form_responses"
     ad_campaign_analytics:
       type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration
       name: ad_campaign_analytics
       primary_key:
         - string_of_pivot_values
@@ -603,6 +606,9 @@ definitions:
           $ref: "#/schemas/ad_campaign_analytics"
     ad_creative_analytics:
       type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration
       name: ad_creative_analytics
       primary_key:
         - string_of_pivot_values
@@ -655,7 +661,7 @@ definitions:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P0D
-        step: P30D
+        step: P1D
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
@@ -680,6 +686,9 @@ definitions:
           $ref: "#/schemas/ad_creative_analytics"
     ad_impression_device_analytics:
       type: DeclarativeStream
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration
       name: ad_impression_device_analytics
       primary_key:
         - string_of_pivot_values
@@ -701,7 +710,7 @@ definitions:
             timeGranularity: "(value:DAILY)"
             campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
-            fields: "#/definitions/analytics_query_properties"
+            fields: "#/definitions/impression_device_analytics_query_properties"
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
@@ -1459,7 +1468,7 @@ definitions:
   # the entire record
   analytics_query_properties:
     type: QueryProperties
-    property_list:
+    property_list: &analytics_query_property_list
       - actionClicks
       - adUnitClicks
       - approximateMemberReach
@@ -1566,6 +1575,21 @@ definitions:
       record_merge_strategy:
         type: GroupByKeyMergeStrategy
         key: ["end_date", "string_of_pivot_values"]
+    property_selector:
+      type: JsonSchemaPropertySelector
+  impression_device_analytics_query_properties:
+    type: QueryProperties
+    property_list: *analytics_query_property_list
+    always_include_properties:
+      - dateRange
+      - pivotValues
+    property_chunking:
+      type: PropertyChunking
+      property_limit_type: property_count
+      property_limit: 18
+      record_merge_strategy:
+        type: GroupByKeyMergeStrategy
+        key: ["end_date", "string_of_pivot_values", "sponsoredCampaign"]
     property_selector:
       type: JsonSchemaPropertySelector
 

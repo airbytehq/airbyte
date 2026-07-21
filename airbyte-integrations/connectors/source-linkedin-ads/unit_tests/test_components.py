@@ -217,3 +217,60 @@ def test_linkedin_ads_data_volume_backoff_strategy(components_module, response_o
     strategy = components_module.LinkedInAdsDataVolumeBackoffStrategy()
 
     assert strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=1) == expected_backoff
+
+
+@pytest.mark.parametrize(
+    "stream_state,expected_should_migrate,expected_state",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {"partition": {"campaign_id": "1"}, "cursor": {"end_date": "2024-06-05"}},
+                    {"partition": {"campaign_id": "2"}, "cursor": {"end_date": "2024-06-01"}},
+                ],
+                "state": {"end_date": "2024-06-05"},
+                "parent_state": {"campaigns": {"lastModified": "2024-06-06T00:00:00Z"}},
+            },
+            True,
+            {
+                "end_date": "2024-06-01",
+                "parent_state": {"campaigns": {"lastModified": "2024-06-06T00:00:00Z"}},
+            },
+            id="per_partition_state_uses_earliest_cursor",
+        ),
+        pytest.param(
+            {"end_date": "2024-06-01"},
+            False,
+            {"end_date": "2024-06-01"},
+            id="global_state_is_unchanged",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {"campaign_id": "urn%3Ali%3AsponsoredCampaign%3A1,urn%3Ali%3AsponsoredCampaign%3A2"},
+                        "cursor": {"end_date": "2024-06-03"},
+                    },
+                    {
+                        "partition": {"campaign_id": "urn%3Ali%3AsponsoredCampaign%3A3"},
+                        "cursor": {"end_date": "2024-06-02"},
+                    },
+                ],
+                "state": {"end_date": "2024-06-03"},
+            },
+            True,
+            {"end_date": "2024-06-02"},
+            id="batched_state_uses_earliest_cursor",
+        ),
+    ],
+)
+def test_linkedin_ads_batched_analytics_state_migration(
+    components_module,
+    stream_state,
+    expected_should_migrate,
+    expected_state,
+):
+    migration = components_module.LinkedInAdsBatchedAnalyticsStateMigration(config={}, declarative_stream=MagicMock())
+
+    assert migration.should_migrate(stream_state) is expected_should_migrate
+    assert (migration.migrate(stream_state) if expected_should_migrate else stream_state) == expected_state

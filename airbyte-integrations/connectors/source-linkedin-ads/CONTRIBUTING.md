@@ -63,6 +63,17 @@ Why 50 campaigns per request:
 - The connector fails fast on HTTP 414 with `LinkedIn Ads request URL exceeds the API length limit` rather
   than silently truncating the request.
 
+The `adAnalytics` API does not support pagination and caps each response at 15,000 elements. Campaign
+analytics can return at most 1,550 daily rows per 50-campaign `P30D` request. Impression-device
+analytics can return at most 7,750 rows for the five documented device categories over the same range.
+Creative analytics can return up to 100 creatives per campaign, so it uses `P1D` intervals. With the
+API's inclusive date range, a 50-campaign request can therefore return at most 10,000 rows.
+
+Batch membership can change when campaigns are added or removed. Before each sync, the three batched
+streams migrate saved per-partition state to the earliest partition cursor. This safely seeds every
+current batch without skipping a campaign that was behind the global cursor, at the cost of re-reading
+some already-synced dates.
+
 The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
 to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.
 However, `q=statistics` does not accept `MEMBER_*` pivots. The `q=analytics` finder is single-pivot, so

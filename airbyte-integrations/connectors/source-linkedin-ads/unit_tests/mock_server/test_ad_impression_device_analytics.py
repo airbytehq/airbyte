@@ -165,6 +165,44 @@ class TestAdImpressionDeviceAnalyticsStream(TestCase):
         assert record_data["pivot"] == _PIVOT_VALUE
 
     @HttpMocker()
+    def test_property_chunks_keep_campaign_records_separate(self, http_mocker: HttpMocker):
+        config = ConfigBuilder().with_start_date("2024-06-01").build()
+        campaign_ids = [1001, 1002]
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [_create_campaign_record(campaign_id, 111111111, f"Campaign {campaign_id}") for campaign_id in campaign_ids]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
+            LinkedInAdsAnalyticsResponseBuilder()
+            .with_records(
+                [
+                    _create_analytics_record(campaign_id, "2024-06-01", impressions=campaign_id, clicks=campaign_id)
+                    for campaign_id in campaign_ids
+                ]
+            )
+            .build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        records_by_campaign = {record.record.data["sponsoredCampaign"]: record.record.data for record in output.records}
+
+        assert records_by_campaign.keys() == {"1001", "1002"}
+        assert records_by_campaign["1001"]["impressions"] == 1001
+        assert records_by_campaign["1002"]["impressions"] == 1002
+        assert all(record["string_of_pivot_values"] == "CONNECTED_TV" for record in records_by_campaign.values())
+
+    @HttpMocker()
     def test_incremental_sync_initial(self, http_mocker: HttpMocker):
         """
         Test incremental sync without prior state (first sync).
