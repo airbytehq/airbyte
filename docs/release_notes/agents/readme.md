@@ -1,5 +1,19 @@
 # Airbyte Agents release notes
 
+## July 21, 2026
+
+Web app
+
+- You can now watch a short tutorial video directly from the connectors page. Select "How this works" to see how connectors let your agents read and write data in the apps your team already uses.
+
+SDK
+
+- Connector reference documentation now describes semantic search, showing you which fields you can search by meaning and how to run a semantic query from the SDK, CLI, or API for connectors that support it.
+
+Connectors
+
+- You can now search Granola by meaning with semantic search, so your agents can surface the most relevant meeting notes from transcripts and summaries instead of matching exact keywords.
+
 ## July 20, 2026
 
 Web app
