@@ -2,10 +2,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
 from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
+from source_zoho_crm.streams import parse_iso
 
 from airbyte_cdk.models import SyncMode
 
@@ -74,3 +76,53 @@ def test_source_defined_cursor(stream_factory):
 def test_stream_checkpoint_interval(stream_factory):
     stream = stream_factory("Leads")
     assert stream.state_checkpoint_interval is None
+
+
+def _module_with_fields(*api_names):
+    """Build a fake module whose .fields expose the given api_names."""
+    fields = [SimpleNamespace(api_name=name) for name in api_names]
+    return SimpleNamespace(fields=fields)
+
+
+def _incremental_stream_with_module(module):
+    class _Stream(BaseIncrementalZohoCrmStream):
+        url_base = "https://dummy.com"
+        primary_key = "id"
+
+    stream = _Stream(config={})
+    stream.module = module
+    return stream
+
+
+def test_parse_iso_accepts_z_suffix():
+    # Bug 1: fromisoformat on py<=3.10 rejects "Z"; parse_iso must accept it.
+    parsed_z = parse_iso("2026-06-08T00:00:00Z")
+    parsed_offset = parse_iso("2026-06-08T00:00:00+00:00")
+    assert parsed_z == parsed_offset
+
+
+def test_parse_iso_passes_through_non_strings():
+    sentinel = object()
+    assert parse_iso(sentinel) is sentinel
+
+
+def test_cursor_field_defaults_to_modified_time():
+    stream = _incremental_stream_with_module(_module_with_fields("Modified_Time", "Created_Time"))
+    assert stream.cursor_field == "Modified_Time"
+
+
+def test_cursor_field_resolves_module_specific_cursor():
+    # Bug 2: Actions_Performed has no Modified_Time; uses Action_Performed_Time.
+    stream = _incremental_stream_with_module(_module_with_fields("Action_Performed_Time", "Action_Type"))
+    assert stream.cursor_field == "Action_Performed_Time"
+
+
+def test_read_records_passes_through_record_without_cursor(mocker):
+    # A record lacking the resolved cursor should be yielded, not crash the stream.
+    stream = _incremental_stream_with_module(_module_with_fields("Modified_Time"))
+    mocker.patch(
+        "source_zoho_crm.streams.HttpStream.read_records",
+        Mock(return_value=[{"Name": "NoCursorHere"}]),
+    )
+    records = list(stream.read_records(SyncMode.incremental))
+    assert records == [{"Name": "NoCursorHere"}]
