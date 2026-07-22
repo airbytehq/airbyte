@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest
+import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
@@ -25,6 +26,7 @@ import io.airbyte.integrations.destination.mysql.MysqlTestDatabase
 import io.airbyte.integrations.destination.mysql.MysqlTestSourceOperations
 import io.airbyte.integrations.destination.mysql.typing_deduping.MysqlSqlGenerator.Companion.TIMESTAMP_FORMATTER
 import java.time.OffsetDateTime
+import java.util.Optional
 import org.jooq.DataType
 import org.jooq.Field
 import org.jooq.SQLDialect
@@ -133,6 +135,59 @@ class MysqlSqlGeneratorIntegrationTest :
             dslContext
                 .dropDatabaseIfExists(nameTransformer.getIdentifier(namespace))
                 .getSQL(ParamType.INLINED)
+        )
+    }
+
+    /**
+     * Verify that strings longer than 512 characters survive typing and deduping. MySQL's
+     * JSON_VALUE() defaults to VARCHAR(512) and silently returns NULL for longer values. See:
+     * https://github.com/airbytehq/airbyte/issues/73303
+     */
+    @Test
+    @Throws(Exception::class)
+    fun testLongStringNotTruncated() {
+        val longString = "a".repeat(600)
+
+        createRawTable(streamId)
+        createFinalTable(incrementalAppendStream, "")
+        insertRawTableRecords(
+            streamId,
+            listOf(
+                Jsons.deserialize(
+                    """
+                    {
+                        "_airbyte_raw_id": "ad3e8a20-5328-4b5f-8841-1a1264e5bfc0",
+                        "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                        "_airbyte_data": {
+                            "id1": 1,
+                            "id2": 100,
+                            "updated_at": "2023-01-01T01:00:00Z",
+                            "string": "$longString"
+                        }
+                    }
+                    """
+                )
+            ),
+        )
+
+        val sql = generator.updateTable(incrementalAppendStream, "", Optional.empty(), false)
+        destinationHandler.execute(sql)
+
+        val finalRecords = dumpFinalTableRecords(streamId, "")
+        Assertions.assertEquals(1, finalRecords.size, "Expected exactly one final record")
+        val stringValue = finalRecords[0].get("string")
+        Assertions.assertNotNull(
+            stringValue,
+            "String field should not be null after typing/deduping"
+        )
+        Assertions.assertFalse(
+            stringValue.isNull,
+            "String field should not be JSON null after typing/deduping"
+        )
+        Assertions.assertEquals(
+            longString,
+            stringValue.asText(),
+            "600-char string should survive typing/deduping without truncation"
         )
     }
 
