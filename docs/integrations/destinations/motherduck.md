@@ -112,6 +112,7 @@ If you only need local DuckDB files, consider using the [DuckDB destination](/in
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.5 | 2026-07-16 | [82244](https://github.com/airbytehq/airbyte/pull/82244) | Fix sync failures on array fields containing empty objects by serializing JSON array columns before load |
 | 0.2.4 | 2026-07-14 | [81511](https://github.com/airbytehq/airbyte/pull/81511) | Fix silent data loss on multi-stream syncs by no longer discarding other streams' buffered records when one stream is flushed |
 | 0.2.3 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for `supportLevel` change to certified |
 | 0.2.2 | 2026-03-17 | [70438](https://github.com/airbytehq/airbyte/pull/70438) | Fix for `camelCase` columns being `NULL` |
