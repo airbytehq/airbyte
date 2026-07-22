@@ -20,7 +20,6 @@ value in the JSON body and assert that the connector:
 4. Emits records from every page.
 """
 
-import pytest
 import requests_mock
 from _helpers import get_source
 
