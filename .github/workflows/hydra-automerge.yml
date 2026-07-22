@@ -667,8 +667,19 @@ jobs:
                 github.rest.repos.listCommitStatusesForRef,
                 { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
               );
+              // listCommitStatusesForRef returns historical entries; only the
+              // latest status per context reflects the current state.
+              const latestStatusByContext = new Map();
+              for (const s of statuses) {
+                const prev = latestStatusByContext.get(s.context);
+                if (!prev || new Date(s.updated_at) > new Date(prev.updated_at)) {
+                  latestStatusByContext.set(s.context, s);
+                }
+              }
               const successStatuses = new Set(
-                statuses.filter(s => s.state === 'success').map(s => s.context)
+                [...latestStatusByContext.values()]
+                  .filter(s => s.state === 'success')
+                  .map(s => s.context)
               );
 
               const checkRuns = await github.paginate(
