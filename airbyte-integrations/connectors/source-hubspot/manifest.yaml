@@ -2043,6 +2043,40 @@ definitions:
         schema:
           $ref: "#/schemas/line_items"
 
+  projects_stream:
+    $ref: "#/definitions/base_crm_object_stream"
+    name: projects
+    $parameters:
+      name: projects
+      crm_object_name: projects
+      required_scopes: crm.objects.projects.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        # Projects is only exposed through HubSpot's date-versioned CRM API
+        # (`/crm/objects/2026-03/projects`), unlike the other CRM object streams
+        # which use the legacy `/crm/v3/objects/{object}` path.
+        path: /crm/objects/2026-03/projects
+        request_parameters:
+          archived: "false"
+          properties: "hs_name,hs_description,hs_status,hs_type,hs_target_due_date,hubspot_owner_id,hs_pipeline,hs_pipeline_stage,hs_object_id,hs_createdate,hs_lastmodifieddate"
+        # The projects scope is not yet generally available; accounts without it
+        # get a 403. Skip the stream instead of failing the whole sync.
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_403"
+      record_selector:
+        $ref: "#/definitions/base_selector"
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_declarative_manifest.components.EntitySchemaNormalization
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/projects"
+
   contacts_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
     transformations:
@@ -2327,6 +2361,7 @@ streams:
   - "#/definitions/owners_stream"
   - "#/definitions/users_stream"
   - "#/definitions/products_stream"
+  - "#/definitions/projects_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
   - "#/definitions/tickets_stream"
@@ -8322,6 +8357,99 @@ schemas:
         type:
           - "null"
           - boolean
+
+  projects:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The project's unique identifier.
+        type:
+          - "null"
+          - string
+      createdAt:
+        description: The date and time when the project was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      updatedAt:
+        description: The date and time when the project was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+        __ab_apply_cast_datetime: false
+      archived:
+        description: Indicates whether the project is archived or not.
+        type:
+          - "null"
+          - boolean
+      properties:
+        description: Map of the project's HubSpot properties.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      properties_hs_name:
+        description: The project's name.
+        type:
+          - "null"
+          - string
+      properties_hs_description:
+        description: The project's description.
+        type:
+          - "null"
+          - string
+      properties_hs_status:
+        description: The project's status.
+        type:
+          - "null"
+          - string
+      properties_hs_type:
+        description: The project's type (for example sales, marketing, service, or internal_ops).
+        type:
+          - "null"
+          - string
+      properties_hs_target_due_date:
+        description: The date the project is due, provided as an ISO 8601 timestamp.
+        type:
+          - "null"
+          - string
+      properties_hubspot_owner_id:
+        description: The ID of the HubSpot user who owns the project.
+        type:
+          - "null"
+          - string
+      properties_hs_pipeline:
+        description: The internal ID of the project pipeline.
+        type:
+          - "null"
+          - string
+      properties_hs_pipeline_stage:
+        description: The internal ID of the project pipeline stage.
+        type:
+          - "null"
+          - string
+      properties_hs_object_id:
+        description: The project's internal object ID.
+        type:
+          - "null"
+          - string
+      properties_hs_createdate:
+        description: Timestamp when the project was created.
+        type:
+          - "null"
+          - string
+      properties_hs_lastmodifieddate:
+        description: Timestamp when the project was last modified.
+        type:
+          - "null"
+          - string
 
   properties:
     type: object
