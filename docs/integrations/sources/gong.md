@@ -91,7 +91,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.3.0 | 2026-07-17 | [82260](https://github.com/airbytehq/airbyte/pull/82260) | Source Gong: batch `callTranscripts` call IDs via `GroupingPartitionRouter` to avoid one request per call and the resulting rate-limit (429) / daily-quota exhaustion |
+| 1.3.0 | 2026-07-22 | [82260](https://github.com/airbytehq/airbyte/pull/82260) | Source Gong: batch `callTranscripts` call IDs via `GroupingPartitionRouter` to avoid one request per call and the resulting rate-limit (429) / daily-quota exhaustion |
+| 1.2.11 | 2026-07-21 | [82434](https://github.com/airbytehq/airbyte/pull/82434) | Update dependencies |
 | 1.2.10 | 2026-07-14 | [81846](https://github.com/airbytehq/airbyte/pull/81846) | Update dependencies |
 | 1.2.9 | 2026-07-07 | [80750](https://github.com/airbytehq/airbyte/pull/80750) | Remove 90-day default lookback window; when `start_date` is not configured the connector now syncs all available data from the earliest recorded call, matching the Gong API default and the spec description |
 | 1.2.8 | 2026-06-30 | [81076](https://github.com/airbytehq/airbyte/pull/81076) | Update dependencies |
