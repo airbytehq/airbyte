@@ -4,6 +4,7 @@
 
 import datetime
 import json
+from unittest.mock import patch
 
 import freezegun
 import pytest
@@ -397,7 +398,7 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
             "filters": [
                 {"propertyName": "hs_lastmodifieddate", "operator": "GTE", "value": 1643673000000},
                 {"propertyName": "hs_lastmodifieddate", "operator": "LTE", "value": 1645808400000},
-                {"propertyName": "hs_object_id", "operator": "GTE", "value": 0},
+                {"propertyName": "hs_object_id", "operator": "GT", "value": 0},
             ],
             "properties": fake_properties_list,
             "after": 0,
@@ -431,6 +432,103 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
     assert records
     state = stream.cursor.state
     assert state == {"updatedAt": "2022-02-25T16:43:11.000000Z"}
+
+
+@freezegun.freeze_time("2022-02-25T17:00:00Z")
+def test_crm_search_10k_boundary_emits_gt_string_id(mocker, requests_mock, fake_properties_list, config):
+    """Run the full read path and verify the 10k pagination boundary with mixed-length IDs.
+
+    Patches `RECORDS_LIMIT` to 400 (2 pages) so the boundary triggers quickly.
+    When the last ID before reset is `"7198"`, the test asserts:
+    - chunk 2's request body contains `hs_object_id GT "7198"` (not GTE "7199")
+    - records `"7198"` and `"719869649082"` are each emitted exactly once
+    - no duplicate record IDs across chunks
+    """
+    mocker.patch("airbyte_cdk.sources.streams.call_rate.MovingWindowCallRatePolicy.try_acquire")
+
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    stream_state = AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="deal_splits"),
+            stream_state=AirbyteStateBlob(updatedAt="2022-02-01T00:00:00.000000Z"),
+        ),
+    )
+    stream = find_stream("deal_splits", config, [stream_state])
+
+    captured_bodies = []
+    PAGE_SIZE = 200
+
+    def search_callback(request, context):
+        body = request.json()
+        captured_bodies.append(body)
+        after = body.get("after", 0)
+        # CDK's Jinja interpolation coerces numeric strings to int in request_body_json,
+        # so the filter value arrives as int 7198, not string "7198".
+        id_value = next(
+            (f["value"] for f in body.get("filters", []) if f["propertyName"] == "hs_object_id"),
+            None,
+        )
+        cursor = {"updatedAt": "2022-02-25T16:43:11Z"}
+
+        if str(id_value) == "7198":
+            # Chunk 2: long IDs that would be unreachable with int("7198")+1
+            context.status_code = 200
+            return {
+                "results": [
+                    {"id": "719869649082", "properties": {}} | cursor,
+                    {"id": "719869649083", "properties": {}} | cursor,
+                    {"id": "800000000001", "properties": {}} | cursor,
+                ]
+            }
+
+        # Chunk 1: two full pages; last record on page 2 has ID "7198"
+        if after >= PAGE_SIZE:
+            records = [{"id": str(PAGE_SIZE + i), "properties": {}} | cursor for i in range(PAGE_SIZE - 1)]
+            records.append({"id": "7198", "properties": {}} | cursor)
+        else:
+            records = [{"id": str(i), "properties": {}} | cursor for i in range(PAGE_SIZE)]
+        context.status_code = 200
+        return {"results": records, "paging": {"next": {"after": after + PAGE_SIZE}}}
+
+    endpoint = "https://api.hubapi.com/crm/v3/objects/deal_split/search"
+    requests_mock.register_uri("POST", endpoint, json=search_callback)
+
+    props = [{"name": p, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048} for p in fake_properties_list]
+    requests_mock.register_uri("GET", "https://api.hubapi.com/properties/v2/deal_split/properties", [dict(json=props, status_code=200)])
+    mock_v3_properties(requests_mock, "deal_split", props)
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["deal_split"])
+
+    # Patch RECORDS_LIMIT so boundary triggers after 2 pages instead of 50
+    strategy = stream._stream_partition_generator._partition_factory._retriever.paginator.pagination_strategy
+    with patch.object(type(strategy), "RECORDS_LIMIT", PAGE_SIZE * 2):
+        stream._sync_mode = SyncMode.incremental
+        records = run_read(stream)
+
+    record_ids = [r["id"] for r in records]
+
+    # "7198" must appear exactly once (from chunk 1, not re-fetched in chunk 2)
+    assert record_ids.count("7198") == 1
+    # "719869649082" must appear (proves GT "7198" correctly includes long IDs)
+    assert "719869649082" in record_ids
+    # No duplicates across chunks
+    assert len(record_ids) == len(set(record_ids)), f"Duplicate IDs: {[x for x in record_ids if record_ids.count(x) > 1]}"
+
+    # Verify chunk 2 request body uses hs_object_id GT 7198 (CDK coerces to int)
+    chunk2_bodies = [
+        b for b in captured_bodies if any(f["propertyName"] == "hs_object_id" and str(f["value"]) == "7198" for f in b.get("filters", []))
+    ]
+    assert chunk2_bodies, "Expected at least one request with hs_object_id=7198"
+    hs_filter = next(f for f in chunk2_bodies[0]["filters"] if f["propertyName"] == "hs_object_id")
+    assert hs_filter["operator"] == "GT"
+    assert str(hs_filter["value"]) == "7198"
+
+    # Must never use 7199 (old broken int("7198")+1 behaviour)
+    for b in captured_bodies:
+        for f in b.get("filters", []):
+            if f["propertyName"] == "hs_object_id":
+                assert str(f["value"]) != "7199", "Must not emit 7199 (broken int conversion)"
 
 
 @pytest.mark.parametrize(

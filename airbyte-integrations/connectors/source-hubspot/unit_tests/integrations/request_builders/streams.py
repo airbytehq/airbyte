@@ -90,7 +90,7 @@ class CRMSearchRequestBuilder(AbstractRequestBuilder):
             },
             {
                 "propertyName": "hs_object_id",
-                "operator": "GTE",
+                "operator": "GT",
                 "value": self._id_floor,
             },
         ]
