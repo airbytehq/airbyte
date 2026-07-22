@@ -1,0 +1,356 @@
+version: 7.4.2
+
+type: DeclarativeSource
+
+description: >-
+  # Bright Data SERP Scrape Connector Setup Guide
+
+
+  This guide will help you set up and configure the Bright Data SERP Scrape
+  connector for Airbyte.
+
+
+
+  ## Prerequisites
+
+
+  Before setting up the connector, ensure you have:
+
+
+  1. **Bright Data Account**
+     - An active Bright Data account
+     - API key (Bearer token)
+
+
+  2. **Search Queries**
+     - List of strings you want to search
+
+  3. **Zone**
+     - Zone to query. eg:serp_api1
+
+  ## Step 1: Obtain Bright Data Credentials
+
+
+  ### Get Your API Key
+
+
+  1. Log in to your [Bright Data dashboard](https://brightdata.com/)
+
+  2. Navigate to **Settings** → **Users and API Keys**
+
+  3. Generate a new API key or copy your existing Bearer token
+
+  4. Store this securely - you'll need it for connector configuration
+
+
+
+  ## Step 2: Configure the Connector
+
+
+  ### Required Configuration Fields
+
+
+  The connector requires the following mandatory fields:
+
+
+  | Field | Type | Description | Example |
+
+  |-------|------|-------------|---------|
+
+  | **API Key** | string (secret) | Your Bright Data Bearer token |
+  `your_api_key_here` |
+
+  | **Search Queries** | array[string] | List of queries to search | `["Pizza",
+  "Bright Data` |
+
+  | **Zone** | string | zone to search | `serp_api1` |
+
+
+
+  ### Optional Configuration Fields
+
+
+  | Field | Type | Description | Default |
+
+  |-------|------|-------------|---------|
+
+  | **Search Engine** | enum | Search engines to query | `google` |
+
+  | **Response Format** | enum | Data delivery format | `json` |
+
+  | **Data Format** | enum | Additional response format transformation |
+  `markdown` |
+
+  | **Country** | string | Two-letter ISO 3166-1 country code for proxy location
+  | `us` |
+
+check:
+  type: CheckStream
+  stream_names:
+    - Bright Data SERP
+
+streams:
+  - type: DeclarativeStream
+    name: Bright Data SERP
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.brightdata.com/request
+        http_method: POST
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            url: >-
+              {%- if config.get('search_engine', 'Google') == 'Google' -%}
+                https://www.google.com/search?q={{ stream_slice['search_query'].replace(' ', '+') }}&brd_json=1
+              {%- elif config.get('search_engine', 'Google') == 'Google Maps'
+              -%}
+                https://www.google.com/maps/search/{{ stream_slice['search_query'].replace(' ', '+') }}&brd_json=1
+              {%- elif config.get('search_engine', 'Google') == 'Google Trends'
+              -%}
+                https://trends.google.com/trends/explore?q={{ stream_slice['search_query'].replace(' ', '+') }}&brd_json=1
+              {%- elif config.get('search_engine', 'Google') == 'Yandex' -%}
+                https://yandex.com/search/?text={{ stream_slice['search_query'].replace(' ', '+') }}&brd_json=1
+              {%- elif config.get('search_engine', 'Google') == 'Bing' -%}
+                https://www.bing.com/search?q={{ stream_slice['search_query'].replace(' ', '+') }}&brd_json=1
+              {%- else -%}
+                https://www.google.com/search?q={{ stream_slice['search_query'].replace(' ', '+') }}&brd_json=1
+              {%- endif -%}
+            zone: "{{ config['zone'] }}"
+            format: "{{ config.get('format', 'json') }}"
+            method: GET
+            country: "{{ config.get('country', 'us') }}"
+            data_format: "{{ config.get('data_format') }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
+                  factor: 5
+              max_retries: 3
+        request_headers:
+          Content-Type: application/json
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config['search_queries'] }}"
+        cursor_field: search_query
+    primary_key:
+      - search_query
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - search_query
+        properties:
+          body:
+            type:
+              - string
+              - "null"
+          headers:
+            type:
+              - object
+              - "null"
+            properties:
+              p3p:
+                type:
+                  - string
+                  - "null"
+              date:
+                type:
+                  - string
+                  - "null"
+              host:
+                type:
+                  - string
+                  - "null"
+              server:
+                type:
+                  - string
+                  - "null"
+              alt-svc:
+                type:
+                  - string
+                  - "null"
+              expires:
+                type:
+                  - string
+                  - "null"
+              accept-ch:
+                type:
+                  - string
+                  - "null"
+              report-to:
+                type:
+                  - string
+                  - "null"
+              connection:
+                type:
+                  - string
+                  - "null"
+              set-cookie:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              content-type:
+                type:
+                  - string
+                  - "null"
+              cache-control:
+                type:
+                  - string
+                  - "null"
+              x-frame-options:
+                type:
+                  - string
+                  - "null"
+              x-xss-protection:
+                type:
+                  - string
+                  - "null"
+              transfer-encoding:
+                type:
+                  - string
+                  - "null"
+              permissions-policy:
+                type:
+                  - string
+                  - "null"
+              content-security-policy:
+                type:
+                  - string
+                  - "null"
+              strict-transport-security:
+                type:
+                  - string
+                  - "null"
+              x-unblocker-redirected-to:
+                type:
+                  - string
+                  - "null"
+              cross-origin-opener-policy:
+                type:
+                  - string
+                  - "null"
+          status_code:
+            type:
+              - number
+              - "null"
+          search_query:
+            type: string
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - search_query
+            value: "{{ stream_slice['search_query'] }}"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - zone
+      - search_queries
+    properties:
+      zone:
+        type: string
+        description: Bright Data zone identifier (e.g., serp_api1)
+        order: 1
+        title: Zone
+        default: serp_api1
+      format:
+        type: string
+        description: Response format
+        enum:
+          - json
+          - raw
+        order: 5
+        title: Response Format
+        default: json
+      api_key:
+        type: string
+        description: Your Bright Data API Key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      country:
+        type: string
+        description: Two-letter ISO country code for proxy location (e.g., us, gb, de)
+        order: 4
+        title: Country Code
+        default: us
+      data_format:
+        type: string
+        description: Additional response format transformation
+        enum:
+          - markdown
+          - screenshot
+        order: 6
+        title: Data Format
+      search_engine:
+        type: string
+        description: Search engine to use for scraping
+        enum:
+          - Google
+          - Bing
+          - Yandex
+          - Google Trends
+          - Google Maps
+        order: 3
+        title: Search Engine
+        default: Google
+      search_queries:
+        type: array
+        description: List of search queries to scrape
+        items:
+          type: string
+        order: 2
+        title: Search Queries
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    Bright Data SERP:
+      isStale: false
+      hasRecords: true
+      streamHash: 2ec7f2d2ab5031647f9f6bf6bdba911b14522fa0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Bright Data SERP: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2025-11-24T22:55:14.886298+00:00"
+      from_version: 0.61.2
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2025-11-24T22:55:14.886574+00:00"
+      from_version: 0.61.2
+    - migration: HttpRequesterRequestBodyJsonDataToRequestBody
+      to_version: "*"
+      migrated_at: "2025-11-24T22:55:14.886754+00:00"
+      from_version: 0.61.2
