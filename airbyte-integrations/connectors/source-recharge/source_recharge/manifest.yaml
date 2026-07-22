@@ -53,6 +53,11 @@ definitions:
       page_size: 250
       cursor_value: '{{ response.get("next_cursor", {}) }}'
       stop_condition: '{{ not response.get("next_cursor", {}) }}'
+  paginator_payment_methods:
+    $ref: "#/definitions/paginator_modern_api"
+    pagination_strategy:
+      $ref: "#/definitions/paginator_modern_api/pagination_strategy"
+      page_size: 50
 
   # REQUESTERS
   requester_base:
@@ -107,6 +112,10 @@ definitions:
     # we should ignore all other req.params once we have the `next_page_token` in response
     # for pagination in `2021-11` - modern api.
     ignore_stream_slicer_parameters_on_paginated_requests: true
+  retriever_payment_methods:
+    $ref: "#/definitions/retriever_api_modern"
+    paginator:
+      $ref: "#/definitions/paginator_payment_methods"
   # RETRIEVER FOR `METAFIELDS` STREAM
   retriever_metafields:
     $ref: "#/definitions/retriever_api_modern"
@@ -232,6 +241,8 @@ definitions:
     description: >-
       Payment Methods Stream: https://developer.rechargepayments.com/2021-11/payment_methods/payment_methods_list
     $ref: "#/definitions/base_modern_api_stream"
+    retriever:
+      $ref: "#/definitions/retriever_payment_methods"
     $parameters:
       name: "payment_methods"
       data_path: "payment_methods"

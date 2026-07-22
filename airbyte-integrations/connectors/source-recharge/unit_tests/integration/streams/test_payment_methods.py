@@ -24,7 +24,7 @@ class TestFullRefresh(StreamTestCase):
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            self.stream_request().with_limit(250).build(),
+            self.stream_request().with_limit(50).build(),
             get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id")).build(),
         )
         output = read_full_refresh(self._config, _STREAM_NAME)
@@ -33,11 +33,11 @@ class TestFullRefresh(StreamTestCase):
     @HttpMocker()
     def test_given_multiple_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            self.stream_request().with_limit(250).with_next_page_token(NEXT_PAGE_TOKEN).build(),
+            self.stream_request().with_limit(50).with_next_page_token(NEXT_PAGE_TOKEN).build(),
             get_stream_response(_STREAM_NAME).with_record(get_stream_record(_STREAM_NAME, "id")).build(),
         )
         http_mocker.get(
-            self.stream_request().with_limit(250).build(),
+            self.stream_request().with_limit(50).build(),
             get_stream_response(_STREAM_NAME).with_pagination().with_record(get_stream_record(_STREAM_NAME, "id")).build(),
         )
 

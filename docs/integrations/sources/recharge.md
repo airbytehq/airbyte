@@ -158,6 +158,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.12 | 2026-05-12 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Reduced Payment Methods page size to improve resilience to Recharge API gateway timeouts. |
 | 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
 | 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
 | 3.0.9 | 2025-10-08 | [67543](https://github.com/airbytehq/airbyte/pull/67543) | Update dependencies |
