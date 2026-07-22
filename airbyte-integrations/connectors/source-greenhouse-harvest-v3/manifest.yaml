@@ -1,0 +1,4559 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: Greenhouse v3 connection
+
+check:
+  type: CheckStream
+  stream_names:
+    - applications
+  dynamic_streams_check_configs: []
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: OAuthAuthenticator
+        scopes:
+          - harvest:applications:list
+        client_id: "{{ config[\"client_id\"] }}"
+        grant_type: client_credentials
+        client_secret: "{{ config[\"client_secret\"] }}"
+        client_id_name: client_id
+        grant_type_name: grant_type
+        access_token_name: access_token
+        client_secret_name: client_secret
+        refresh_token_name: refresh_token
+        use_profile_assertion: false
+        token_refresh_endpoint: https://auth.greenhouse.io/token
+      request_parameters:
+        updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+
+streams:
+  - type: DeclarativeStream
+    name: applications
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/applications
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties: {}
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: scorecards
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/scorecards
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          notes:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          public_notes:
+            type:
+              - string
+              - "null"
+          submitted_at:
+            type:
+              - string
+              - "null"
+          submitter_id:
+            type:
+              - number
+              - "null"
+          private_notes:
+            type:
+              - string
+              - "null"
+          application_id:
+            type:
+              - number
+              - "null"
+          interviewed_at:
+            type:
+              - string
+              - "null"
+          interviewer_id:
+            type:
+              - number
+              - "null"
+          notes_with_tags:
+            type:
+              - string
+              - "null"
+          candidate_rating:
+            type:
+              - string
+              - "null"
+          interview_kit_id:
+            type:
+              - number
+              - "null"
+          public_notes_with_tags:
+            type:
+              - string
+              - "null"
+          private_notes_with_tags:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: scorecard_question_answers
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/scorecard_question_answers
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          answer:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          scorecard_id:
+            type:
+              - number
+              - "null"
+          boolean_value:
+            type:
+              - boolean
+              - "null"
+          answer_with_tags:
+            type:
+              - string
+              - "null"
+          scorecard_question_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: scorecard_questions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/scorecard_questions
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          active:
+            type:
+              - boolean
+              - "null"
+          question:
+            type:
+              - string
+              - "null"
+          required:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          sort_order:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type: string
+          answer_type:
+            type:
+              - string
+              - "null"
+          interview_kit_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: candidates
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/candidates
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          title:
+            type:
+              - string
+              - "null"
+          company:
+            type:
+              - string
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+          addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          can_email:
+            type:
+              - boolean
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          custom_fields:
+            type:
+              - object
+              - "null"
+            properties:
+              acronym:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              location:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              resume_url:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              fr_due_date:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              interface_url:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              resume_status:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              academic_comments:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              industry_keywords:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              potential_clients:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              techs_and_pillars:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              types_of_projects:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+              fr_review_priority:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              lever_candidate_id:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              work_authorization:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              factored_resume_url:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              resume___completion:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              rw_required_service:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              fr_notes_to_consider:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              resume_last_reviewed:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              expertise__role_types_:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              first_engineer_persona:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              met_with_resume_writer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              resume_writer_assigned:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      user_id:
+                        type:
+                          - number
+                          - "null"
+              second_engineer_persona:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              short_term_placeability:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              action_items___red_flags:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              proactive_hiring_next_step:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              key_matching_considerations:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              video_recordings_folder_url:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              cover_letter___bullet_points:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              proactive_hiring_action_items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              boosting_program_specialization:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              engagement_activity_participation:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              latest_technical_calibration_video_url:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              boosting_program_time_frame_placeability:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              proactive_hiring_comments___recommendations:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              fr_next_steps_instructions_candidate_1749600845.775027:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          phone_numbers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          preferred_name:
+            type:
+              - string
+              - "null"
+          email_addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          linked_user_ids:
+            type:
+              - array
+              - "null"
+          last_activity_at:
+            type:
+              - string
+              - "null"
+          website_addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          social_media_addresses:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                value:
+                  type:
+                    - string
+                    - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: candidate_educations
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/candidate_educations
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          end_at:
+            type:
+              - string
+              - "null"
+          latest:
+            type:
+              - boolean
+              - "null"
+          start_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          candidate_id:
+            type:
+              - number
+              - "null"
+          end_date_year:
+            type:
+              - number
+              - "null"
+          end_date_month:
+            type:
+              - number
+              - "null"
+          start_date_year:
+            type:
+              - number
+              - "null"
+          start_date_month:
+            type:
+              - number
+              - "null"
+          degree_custom_field_option_id:
+            type:
+              - number
+              - "null"
+          discipline_custom_field_option_id:
+            type:
+              - number
+              - "null"
+          school_name_custom_field_option_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: candidate_employments
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/candidate_employments
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          title:
+            type:
+              - string
+              - "null"
+          latest:
+            type:
+              - boolean
+              - "null"
+          end_date:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          candidate_id:
+            type:
+              - number
+              - "null"
+          company_name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: candidate_tags
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/candidate_tags
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: jobs
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/jobs
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          closed_at:
+            type:
+              - string
+              - "null"
+          opened_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          office_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          updated_at:
+            type: string
+          is_template:
+            type:
+              - boolean
+              - "null"
+          confidential:
+            type:
+              - boolean
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+            properties:
+              lever_job_id:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              employment_type:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              reason_for_hire:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+          department_id:
+            type:
+              - number
+              - "null"
+          copied_from_id:
+            type:
+              - number
+              - "null"
+          requisition_id:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: job_posts
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/job_posts
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+          refresh_token_error_key: ""
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: number
+          title:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          demographic_question_set_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          job_id:
+            type:
+              - number
+              - "null"
+          first_published_at:
+            type:
+              - string
+              - "null"
+          public_url:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          internal:
+            type:
+              - boolean
+              - "null"
+          live:
+            type:
+              - boolean
+              - "null"
+          featured:
+            type:
+              - boolean
+              - "null"
+          job_board_id:
+            type:
+              - number
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          questions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                required:
+                  type:
+                    - boolean
+                    - "null"
+                private:
+                  type:
+                    - boolean
+                    - "null"
+                answer_type:
+                  type:
+                    - string
+                    - "null"
+                options:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      label:
+                        type:
+                          - string
+                          - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: job_interview_stages
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/job_interview_stages
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+          refresh_token_error_key: ""
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          job_id:
+            type:
+              - number
+              - "null"
+          sort_order:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: openings
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/openings
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          job_id:
+            type:
+              - number
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          opening_id:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          custom_fields:
+            type:
+              - object
+              - "null"
+          application_id:
+            type:
+              - number
+              - "null"
+          target_start_on:
+            type:
+              - string
+              - "null"
+          close_reason_id:
+            type:
+              - number
+              - "null"
+          sort_order:
+            type:
+              - number
+              - "null"
+          opened_at:
+            type:
+              - string
+              - "null"
+          closed_at:
+            type:
+              - string
+              - "null"
+          open:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: offers
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/offers
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          application_id:
+            type:
+              - number
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+            properties:
+              level:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              office:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              salary:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      unit:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                      frequency:
+                        type:
+                          - string
+                          - "null"
+                      rationale:
+                        type:
+                          - string
+                          - "null"
+              allowances:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      unit:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                      frequency:
+                        type:
+                          - string
+                          - "null"
+                      rationale:
+                        type:
+                          - string
+                          - "null"
+              hourly_rate:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              annual_bonus:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+              sign_on_bonus:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      unit:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                      frequency:
+                        type:
+                          - string
+                          - "null"
+                      rationale:
+                        type:
+                          - string
+                          - "null"
+              employment_type:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              offer_declined___other_offer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      unit:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+              enter_the_client_s_name_or__bench__:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              feedback_from_ceo_s_final_conversation:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              comments_about_the_offer_or_from_ceo_s_final_conv:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              comments_about_the_offer__equity_negotiation__salary_after_placement__level_after_placement_:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+          candidate_id:
+            type:
+              - number
+              - "null"
+          resolved_at:
+            type:
+              - string
+              - "null"
+          opening_id:
+            type:
+              - number
+              - "null"
+          starts_on:
+            type:
+              - string
+              - "null"
+          sent_on:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          job_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: prospect_pools
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/prospect_pools
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          department_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          updated_at:
+            type: string
+          office_ids:
+            type:
+              - array
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          job_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+        additionalProperties: true
+        required:
+          - id
+          - updated_at
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: interviews
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/interviews
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+          refresh_token_error_key: ""
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: number
+          application_id:
+            type:
+              - number
+              - "null"
+          external_event_id:
+            type:
+              - string
+              - "null"
+          starts_at:
+            type:
+              - string
+              - "null"
+          ends_at:
+            type:
+              - string
+              - "null"
+          location:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          organizer_id:
+            type:
+              - number
+              - "null"
+          scheduled_at:
+            type:
+              - string
+              - "null"
+          availability_received_at:
+            type:
+              - string
+              - "null"
+          job_id:
+            type:
+              - number
+              - "null"
+          job_interview_id:
+            type:
+              - number
+              - "null"
+          video_conferencing_url:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: scorecard_candidate_attributes
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/scorecard_candidate_attributes
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          job_candidate_attribute_id:
+            type:
+              - number
+              - "null"
+          candidate_attribute_rating:
+            type:
+              - string
+              - "null"
+          scorecard_id:
+            type:
+              - number
+              - "null"
+          note:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: departments
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/departments
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          parent_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: offices
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/offices
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          location:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/users
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          linked_candidate_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          interviewer_tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          department_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          primary_email:
+            type:
+              - string
+              - "null"
+          custom_fields:
+            type:
+              - object
+              - "null"
+            properties:
+              employment_level:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+          employee_id:
+            type:
+              - string
+              - "null"
+          deactivated:
+            type:
+              - boolean
+              - "null"
+          site_admin:
+            type:
+              - boolean
+              - "null"
+          office_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          job_title:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: user_job_permissions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/user_job_permissions
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          automated:
+            type:
+              - boolean
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+          role_id:
+            type:
+              - number
+              - "null"
+          job_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: user_roles
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/user_roles
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          role_type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: future_job_permissions
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/future_job_permissions
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          department_id:
+            type:
+              - number
+              - "null"
+          user_id:
+            type:
+              - number
+              - "null"
+          role_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: approval_flows
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/approval_flows
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          requested_by_id:
+            type:
+              - number
+              - "null"
+          approval_status:
+            type:
+              - string
+              - "null"
+          approval_type:
+            type:
+              - string
+              - "null"
+          sequential:
+            type:
+              - boolean
+              - "null"
+          job_id:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: approver_groups
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/approver_groups
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          required_for_exception:
+            type:
+              - boolean
+              - "null"
+          approvals_required:
+            type:
+              - number
+              - "null"
+          approval_flow_id:
+            type:
+              - number
+              - "null"
+          resolved_at:
+            type:
+              - string
+              - "null"
+          sort_order:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: close_reasons
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/close_reasons
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: rejection_reasons
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/rejection_reasons
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              key:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: rejection_details
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/rejection_details
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          question_custom_fields:
+            type:
+              - object
+              - "null"
+          rejection_reason_id:
+            type:
+              - number
+              - "null"
+          rejection_note_id:
+            type:
+              - number
+              - "null"
+          rejected_by_id:
+            type:
+              - number
+              - "null"
+          application_id:
+            type:
+              - number
+              - "null"
+          rejected_at:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: sources
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/sources
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          updated_at:
+            type: string
+          created_at:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+        additionalProperties: true
+        required:
+          - id
+          - updated_at
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: email_templates
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/email_templates
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+          refresh_token_error_key: ""
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          subject:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          recipients:
+            type:
+              - string
+              - "null"
+          default:
+            type:
+              - boolean
+              - "null"
+          html_body:
+            type:
+              - string
+              - "null"
+          office_anywhere:
+            type:
+              - boolean
+              - "null"
+          from_type:
+            type:
+              - string
+              - "null"
+          cc_recruiter:
+            type:
+              - boolean
+              - "null"
+          cc_coordinator:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          email_type:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: custom_fields
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/custom_fields
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          sort_order:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type: string
+          use_for_offer_approvals:
+            type:
+              - boolean
+              - "null"
+          expose_in_job_board_api:
+            type:
+              - boolean
+              - "null"
+          use_for_job_approvals:
+            type:
+              - boolean
+              - "null"
+          trigger_new_version:
+            type:
+              - boolean
+              - "null"
+          require_approval:
+            type:
+              - boolean
+              - "null"
+          application_type:
+            type:
+              - string
+              - "null"
+          updated_by_id:
+            type:
+              - number
+              - "null"
+          value_type:
+            type:
+              - string
+              - "null"
+          field_type:
+            type:
+              - string
+              - "null"
+          required:
+            type:
+              - boolean
+              - "null"
+          name_key:
+            type:
+              - string
+              - "null"
+          api_only:
+            type:
+              - boolean
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: custom_field_options
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/custom_field_options
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updated_at
+        properties:
+          id:
+            type: number
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          custom_field_id:
+            type:
+              - number
+              - "null"
+          sort_order:
+            type:
+              - number
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: tracking_links
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/tracking_links
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          related_post_type:
+            type:
+              - string
+              - "null"
+          related_post_id:
+            type:
+              - number
+              - "null"
+          job_board_id:
+            type:
+              - number
+              - "null"
+          referrer_id:
+            type:
+              - number
+              - "null"
+          job_post_id:
+            type:
+              - number
+              - "null"
+          updated_at:
+            type: string
+          created_at:
+            type:
+              - string
+              - "null"
+          source_id:
+            type:
+              - number
+              - "null"
+          token:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+        additionalProperties: true
+        required:
+          - id
+          - updated_at
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: eeoc
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers.link.next.url }}"
+          stop_condition: "{{ not headers.get(\"link\") }}"
+      requester:
+        type: HttpRequester
+        url: https://harvest.greenhouse.io/v3/eeoc
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - harvest:applications:list
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          client_id_name: client_id
+          grant_type_name: grant_type
+          access_token_name: access_token
+          client_secret_name: client_secret
+          refresh_token_name: refresh_token
+          use_profile_assertion: false
+          token_refresh_endpoint: https://auth.greenhouse.io/token
+          expires_in_name: ""
+          token_expiry_date: ""
+          token_expiry_date_format: ""
+          refresh_token_error_key: ""
+        request_parameters:
+          updated_at: "{{ stream_slice.start_time if not next_page_token else '' }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: number
+          application_id:
+            type:
+              - number
+              - "null"
+          submitted_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          candidate_id:
+            type:
+              - number
+              - "null"
+          gender:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+          veteran_status:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+          race:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+          disability_status:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_data_feed: false
+      start_datetime: gt|2020-01-01T00:00:00.000Z
+      datetime_format: gt|%Y-%m-%dT%H:%M:%S.%fZ
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      partition_field_end: ""
+      partition_field_start: ""
+
+spec:
+  type: Spec
+  documentation_url: https://harvestdocs.greenhouse.io/reference/generate-token
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://harvestdocs.greenhouse.io/reference/generate-token
+  testedStreams:
+    eeoc:
+      isStale: false
+      hasRecords: true
+      streamHash: bc6605d9d6caf70143a332dcf20620ede2f77a4e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    jobs:
+      isStale: false
+      hasRecords: true
+      streamHash: 7daf993f53c8139747494a09e44a894aad2a0a01
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      isStale: false
+      hasRecords: true
+      streamHash: c0f2567e005528c55f183a3477c23e12feea3aa8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offers:
+      isStale: false
+      hasRecords: true
+      streamHash: c66f5d0e44e05cdf27a690bc86fbfd39c1de5024
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offices:
+      isStale: false
+      hasRecords: true
+      streamHash: bd7660a0eb61e2f84291c8c939aaeab4a907d58c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    sources:
+      isStale: false
+      hasRecords: true
+      streamHash: da709adc017cc7cbe83687d9708d180fd3f35ba3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    openings:
+      isStale: false
+      hasRecords: true
+      streamHash: 4816ed4e935b6458209f2c95a7ff00fc13461bca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    job_posts:
+      isStale: false
+      hasRecords: true
+      streamHash: c6e4e651dd07a99a0181e74741f5d4deb061aee5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    candidates:
+      isStale: false
+      hasRecords: true
+      streamHash: 8f1c4fce34aaa947527ebf9dc518834bc2660b4b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    interviews:
+      isStale: false
+      hasRecords: true
+      streamHash: d5ef1ae7ddf0a3de144e58daf3af3268336d2285
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    scorecards:
+      isStale: false
+      hasRecords: true
+      streamHash: 5a4b89b4844ce566864396778ec1908278dc9ddf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_roles:
+      isStale: false
+      hasRecords: true
+      streamHash: 86635bbce381894c40d4cd5700d0072d27d0f16d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    departments:
+      isStale: false
+      hasRecords: true
+      streamHash: cb7f7da05bd5376109e6721d60860d26edf89752
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    applications:
+      isStale: true
+      hasRecords: true
+      streamHash: 3b970458c47c0fd2dc1afa5bca038c8ebc15a22d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activity_feed:
+      isStale: false
+      hasRecords: false
+      streamHash: 1aa47580501295e82636a6909e9eb9198a0f8696
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: false
+    close_reasons:
+      isStale: false
+      hasRecords: true
+      streamHash: d6e2176adf69003c1893d765cfe54c3bfae1769e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_fields:
+      isStale: false
+      hasRecords: true
+      streamHash: 1236cdcd4cffeaccfd37d821df0c54af9744bcad
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    approval_flows:
+      isStale: false
+      hasRecords: true
+      streamHash: b1b38d0276ec889e14cbcc4b0404321da095cfdb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    candidate_tags:
+      isStale: false
+      hasRecords: true
+      streamHash: 0c088268473b9c9f85085da9bc35c29d009a3ef3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    prospect_pools:
+      isStale: false
+      hasRecords: true
+      streamHash: 3f7ce13966152d2ee0b9192326b9f8dd339adeeb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tracking_links:
+      isStale: false
+      hasRecords: true
+      streamHash: 1a21f424bdc0f01f03a10c19ed3b9100213263f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    approver_groups:
+      isStale: false
+      hasRecords: true
+      streamHash: c24928ab675db49048cc16aad4bc84fccf53d85f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    email_templates:
+      isStale: false
+      hasRecords: true
+      streamHash: d161ade2ff8510eb904d17710d128783c969fe46
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    rejection_details:
+      isStale: false
+      hasRecords: true
+      streamHash: 201147772ffefc0a0793984d20859aab37a49fdb
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    rejection_reasons:
+      isStale: false
+      hasRecords: true
+      streamHash: 2fb9ca2f769348716ec2cc2a157891b65f17ee4d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    scorecard_questions:
+      isStale: false
+      hasRecords: true
+      streamHash: 7a930590b7c7c7b9e38f613de6d18f2971536296
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    candidate_educations:
+      isStale: false
+      hasRecords: true
+      streamHash: cc3d3e80fcc6c53440376185383d70767568a7bf
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    custom_field_options:
+      isStale: false
+      hasRecords: true
+      streamHash: 57c2d165f3baaacf016e3e7b14a0c90ddcd01899
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    user_job_permissions:
+      isStale: false
+      hasRecords: true
+      streamHash: 6779e98b248306420b113bf65acaa74bf48572f6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    candidate_employments:
+      isStale: false
+      hasRecords: true
+      streamHash: c013e0794cf811462e09dcb7d486989f0f26c8e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    future_job_permissions:
+      isStale: false
+      hasRecords: true
+      streamHash: 51695fad030c8163927571e84248e4ca35268257
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    scorecard_question_answers:
+      isStale: false
+      hasRecords: true
+      streamHash: bb85af52ac6316a7bab4d15856636b12ec86bee3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    scorecard_candidate_attributes:
+      isStale: false
+      hasRecords: true
+      streamHash: 7248d0c481cc3fcd6488a6bc4553440ff1c2d5f1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    job_interview_stages:
+      isStale: false
+      hasRecords: true
+      streamHash: 31ffe36d36367239ac89a68104e97aeaf88e55f9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    eeoc: true
+    jobs: true
+    users: true
+    offers: true
+    offices: true
+    sources: true
+    openings: true
+    job_posts: true
+    candidates: true
+    interviews: true
+    scorecards: true
+    user_roles: true
+    departments: true
+    applications: true
+    activity_feed: true
+    close_reasons: true
+    custom_fields: true
+    approval_flows: true
+    candidate_tags: true
+    prospect_pools: true
+    tracking_links: true
+    approver_groups: true
+    email_templates: true
+    rejection_details: true
+    rejection_reasons: true
+    scorecard_questions: true
+    candidate_educations: true
+    custom_field_options: true
+    user_job_permissions: true
+    candidate_employments: true
+    future_job_permissions: true
+    scorecard_question_answers: true
+    scorecard_candidate_attributes: true
+    job_interview_stages: true
