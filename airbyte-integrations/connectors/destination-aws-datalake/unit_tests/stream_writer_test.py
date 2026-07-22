@@ -9,12 +9,14 @@ from typing import Any, Dict, Mapping
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
 from destination_aws_datalake.stream_writer import DictEncoder, StreamWriter
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def get_config() -> Mapping[str, Any]:
@@ -756,3 +758,525 @@ def test_json_dict_encoder():
         json.dumps(input, cls=DictEncoder)
         == '{"boolean": false, "integer": 1, "float": 2.0, "decimal": "13.232", "datetime": "2023-08-01T23:32:11Z", "date": "2023-08-01", "timestamp": "2023-08-01T23:32:11Z", "nested": {"boolean": false, "datetime": "2023-08-01T23:32:11Z", "very_nested": {"boolean": false, "datetime": "2023-08-01T23:32:11Z"}}}'
     )
+
+
+def test_build_type_mismatch_exception_identifies_nested_field():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "location": {
+                    "city": "Paris",
+                    "country": "FR",
+                    "latitude": "48.8566;2.3522",
+                    "longitude": 2.3522,
+                    "state": "",
+                    "zipcode": "75000",
+                }
+            }
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert traced.failure_type == FailureType.config_error
+    assert 'Stream "append_stream_big"' in traced.message
+    assert 'field "location.latitude"' in traced.message
+    assert "type str" in traced.message
+    assert "declared type number" in traced.message
+
+
+def test_build_type_mismatch_exception_identifies_array_field():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "questions": [
+                    {"id": 1, "question": "q1", "answer": "a1"},
+                    {"id": "not-an-int", "question": "q2", "answer": "a2"},
+                ]
+            }
+        ]
+    )
+    ex = pa.ArrowInvalid("Conversion failed for column questions with type object")
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    # Array elements are aggregated under `[]` rather than indexed,
+    # because pyarrow's per-column type inference is also position-agnostic.
+    assert "questions[].id" in traced.message
+    assert "int" in traced.message
+    assert "str" in traced.message
+
+
+def test_build_type_mismatch_exception_falls_back_to_column_when_no_leaf_mismatch():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame([{"location": {"city": "Paris"}}])
+    ex = pa.ArrowInvalid("Conversion failed for column location with type object")
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert "location" in traced.message
+
+
+def test_build_type_mismatch_exception_when_column_unknown():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame([{"sourceId": "abc"}])
+    ex = pa.ArrowInvalid("some other pyarrow failure we cannot parse")
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+
+
+def test_build_type_mismatch_exception_filters_to_pyarrow_type_pair():
+    """When the pyarrow error names a (observed, target) pair, the walker
+    should skip unrelated mismatches in the same struct and report the field
+    that actually matches that pair."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "location": {
+                    "city": pd.Timestamp("2023-01-01"),
+                    "country": "FR",
+                    "latitude": "48.8566",
+                    "longitude": 2.3522,
+                    "state": "",
+                    "zipcode": "75000",
+                }
+            }
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.latitude"' in traced.message
+    assert "type str" in traced.message
+    assert "declared type number" in traced.message
+
+
+def test_build_type_mismatch_exception_falls_back_when_no_filter_match():
+    """If the pyarrow error names a (observed, target) pair but no field in
+    the struct matches that pair, the walker should fall back to the first
+    mismatch instead of returning nothing."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "location": {
+                    "city": pd.Timestamp("2023-01-01"),
+                    "country": "FR",
+                    "latitude": 48.8566,
+                    "longitude": 2.3522,
+                    "state": "",
+                    "zipcode": "75000",
+                }
+            }
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.city"' in traced.message
+    assert "Timestamp" in traced.message
+    assert "declared type string" in traced.message
+
+
+def test_parse_pyarrow_type_hint():
+    """Direct tests for the pyarrow error parser covering both message
+    shapes and the unparseable case."""
+    observed, declared = StreamWriter._parse_pyarrow_type_hint("object of type <class 'str'> cannot be converted to int")
+    assert observed == "str"
+    assert declared == ("integer", "number")
+
+    observed, declared = StreamWriter._parse_pyarrow_type_hint("Could not convert 'foo' with type str: tried to convert to double")
+    assert observed == "str"
+    assert declared == ("number",)
+
+    observed, declared = StreamWriter._parse_pyarrow_type_hint("completely unrelated error message")
+    assert observed is None
+    assert declared is None
+
+
+def test_build_type_mismatch_exception_finds_mixed_type_subfield_not_in_schema():
+    """The real production case: pyarrow's struct-inference fails on a sub-field
+    of `properties` that is NOT in the declared JSON schema (so the json-schema
+    cast skips it), but for which different records have different Python types.
+    The mixed-type discoverer should pinpoint that field even though the
+    json-schema walker cannot."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            # Note: `mystery_id` is not in the declared schema's `location.properties`.
+            # Without mixed-type discovery, the walker would never find it.
+            {"location": {"city": pd.Timestamp("2023-01-01"), "mystery_id": 12345}},
+            {"location": {"city": pd.Timestamp("2023-01-02"), "mystery_id": "9876;5432"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.mystery_id"' in traced.message
+    assert "int" in traced.message
+    assert "str" in traced.message
+
+
+def test_build_type_mismatch_exception_prefers_observed_type_match_over_other_mixed_paths():
+    """When several sub-paths have mixed Python types but only some contain
+    the observed type from the pyarrow error, the discoverer should prefer
+    the ones that contain that observed type."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"foo": 1, "bar": 1.5}},
+            {"location": {"foo": 2.5, "bar": "this-is-a-str"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    # `location.bar` contains `str` (matches the observed type from pyarrow);
+    # `location.foo` is mixed int/float but does not contain `str`, so it
+    # must NOT be ranked first.
+    assert 'field "location.bar"' in traced.message
+    assert 'field "location.foo"' not in traced.message
+
+
+def test_build_type_mismatch_exception_identifies_uniform_offender_subfield():
+    """When every record has the same offending Python type (for example `str`)
+    at a sub-path but pyarrow wants a different type (for example `int`), the
+    walker should still flag that path as the culprit. Mixed-type detection
+    alone misses this case because only one type is observed at the path."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"city": pd.Timestamp("2023-01-01"), "mystery_id": "9876;5432"}},
+            {"location": {"city": pd.Timestamp("2023-01-02"), "mystery_id": "1234;abcd"}},
+            {"location": {"city": pd.Timestamp("2023-01-03"), "mystery_id": "0000;0001"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.mystery_id"' in traced.message
+    assert "str" in traced.message
+    assert "int" in traced.message
+
+
+def test_build_type_mismatch_exception_prefers_mixed_over_uniform_offender():
+    """When both a mixed-type path and a uniform-offender path exist under the
+    same column, mixed-type takes priority because it's the stronger signal of
+    pyarrow's struct-inference tripping."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"uniform_str_field": "aaa", "ambiguous": 1}},
+            {"location": {"uniform_str_field": "bbb", "ambiguous": "two"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    # `ambiguous` is mixed str/int (contains both observed and target) → rank 0.
+    # `uniform_str_field` is uniform str (rank 2). Mixed should win.
+    assert 'field "location.ambiguous"' in traced.message
+
+
+def test_build_type_mismatch_exception_uniform_field_of_target_type_is_not_flagged():
+    """A uniform sub-path whose single type matches the target type (for
+    example `Decimal` when target wants `int`) is a valid field, not a
+    culprit, and must not be reported."""
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {"location": {"numeric_id": 12345}},
+            {"location": {"numeric_id": 67890}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column location with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    # No `str` sub-paths exist, so the mixed-type walker has nothing; the
+    # walker falls back to the JSON-schema walker and reports on the column
+    # as a whole.
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "location.numeric_id"' not in traced.message
+
+
+def test_collect_observed_types_aggregates_arrays_under_bracket_path():
+    """Lists are walked as a single position-agnostic group: every element
+    contributes its types to the same `<prefix>[]` path."""
+    type_map: dict = {}
+    StreamWriter._collect_observed_types(
+        {"items": [{"id": 1}, {"id": "two"}, None]},
+        prefix="root",
+        type_map=type_map,
+    )
+    assert type_map == {"root.items[].id": {"int", "str"}}
+
+
+def test_parse_pyarrow_target_python_types():
+    assert StreamWriter._parse_pyarrow_target_python_types("object of type <class 'str'> cannot be converted to int") == ("int", "Decimal")
+    assert StreamWriter._parse_pyarrow_target_python_types("Could not convert 'foo' with type str: tried to convert to double") == (
+        "float",
+        "Decimal",
+    )
+    assert StreamWriter._parse_pyarrow_target_python_types("unrelated message") is None
+
+
+def test_build_type_mismatch_exception_probe_uses_glue_dtype_to_pinpoint_culprit():
+    """The production case: every sub-path under `properties` is uniformly
+    `str`, so neither the mixed-type walker nor the JSON-schema walker
+    pinpoints a culprit. The brute-force probe should fall back to the Glue
+    dtype dict (the actual oracle pyarrow validated against) to identify
+    which sub-field expected `bigint`/`int` and verify that pyarrow's error
+    reproduces there."""
+    writer = get_big_schema_writer(get_config())
+    # Simulate awswrangler being told to expect `bigint` for `properties.foo`
+    # — for example because the existing Glue table has that column as
+    # bigint from a prior sync.
+    writer._last_flush_dtype = {"properties": "struct<foo:bigint,bar:string,baz:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    df = pd.DataFrame(
+        [
+            {"properties": {"foo": "abc", "bar": "x", "baz": "y"}},
+            {"properties": {"foo": "def", "bar": "x", "baz": "y"}},
+        ]
+    )
+    ex = pa.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column properties with type object",
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert 'field "properties.foo"' in traced.message
+    # `bar` and `baz` are declared as `string` in the dtype dict — even
+    # though they are uniform-str like `foo`, pyarrow would not have
+    # rejected them, and the probe must NOT misattribute them.
+    assert 'field "properties.bar"' not in traced.message
+    assert 'field "properties.baz"' not in traced.message
+    assert "probe_path=properties.foo" in traced.internal_message
+    assert "column_glue_type=struct<foo:bigint,bar:string,baz:string>" in traced.internal_message
+
+
+def test_probe_pyarrow_culprit_uses_glue_oracle_to_disambiguate_uniform_str_paths():
+    """When multiple sub-paths are uniform-str, the probe must use the Glue
+    dtype dict to identify which one was declared as the target type
+    (for example `bigint` for `int` target). Without this oracle, every
+    uniform-str path raises and the probe would return the first
+    iteration-order match."""
+    writer = get_big_schema_writer(get_config())
+    writer._last_flush_dtype = {"properties": "struct<a:string,b:bigint,c:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    values = [
+        {"a": "x", "b": "9876", "c": "z"},
+        {"a": "x", "b": "5432", "c": "z"},
+    ]
+    type_map = {
+        "properties.a": {"str"},
+        "properties.b": {"str"},
+        "properties.c": {"str"},
+    }
+    path, err = writer._probe_pyarrow_culprit(
+        values=values,
+        column_prefix="properties",
+        target_pa_type=pa.int64(),
+        observed_type_map=type_map,
+        observed_filter="str",
+        target_glue_types=("bigint", "int", "smallint", "tinyint", "long"),
+    )
+    assert path == "properties.b"
+    assert err is not None
+    assert "convert" in err
+
+
+def test_probe_pyarrow_culprit_returns_none_when_no_glue_target_path_reproduces_error():
+    """If every Glue-declared int sub-path converts cleanly to the target
+    type, the probe must return `(None, None)` rather than a false positive."""
+    writer = get_big_schema_writer(get_config())
+    writer._last_flush_dtype = {"properties": "struct<a:bigint,b:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    values = [{"a": 1, "b": "x"}, {"a": 2, "b": "y"}]
+    type_map = {"properties.a": {"int"}, "properties.b": {"str"}}
+    path, err = writer._probe_pyarrow_culprit(
+        values=values,
+        column_prefix="properties",
+        target_pa_type=pa.int64(),
+        observed_type_map=type_map,
+        observed_filter="str",
+        target_glue_types=("bigint",),
+    )
+    assert path is None
+    assert err is None
+
+
+def test_collect_glue_paths_matching_target_handles_nested_struct_and_array():
+    paths = StreamWriter._collect_glue_paths_matching_target(
+        glue_type="struct<a:bigint,b:string,nested:struct<n:bigint>,arr:array<struct<m:bigint>>>",
+        prefix="props",
+        target_glue_types=("bigint",),
+    )
+    assert paths == {"props.a", "props.nested.n", "props.arr[].m"}
+
+
+def test_extract_values_at_path_walks_dotted_keys():
+    values = [{"a": {"b": 1}}, {"a": {"b": 2}}, {"a": {}}]
+    extracted = StreamWriter._extract_values_at_path(values, "props.a.b", "props")
+    assert extracted == [1, 2, None]
+
+
+def test_extract_values_at_path_walks_array_marker():
+    values = [{"items": [{"id": 1}, {"id": 2}]}, {"items": [{"id": 3}]}]
+    extracted = StreamWriter._extract_values_at_path(values, "props.items[].id", "props")
+    assert extracted == [1, 2, 3]
+
+
+def test_parse_pyarrow_target_pa_type():
+    assert StreamWriter._parse_pyarrow_target_pa_type("object of type <class 'str'> cannot be converted to int") == pa.int64()
+    assert StreamWriter._parse_pyarrow_target_pa_type("Could not convert 'foo' with type str: tried to convert to double") == pa.float64()
+    assert StreamWriter._parse_pyarrow_target_pa_type("unrelated message") is None
+
+
+def test_probe_struct_subkey_culprit_finds_inferred_int_subkey_with_str_value():
+    """The first record establishes the inferred subkey type; a later
+    record with a `str` value at that subkey makes pyarrow raise. The
+    probe must surface that subkey by replaying `pa.array()` on its
+    column and matching the error's target type to `target_pa_type`."""
+    values = [
+        {"alpha": "x", "hs_object_id": 12345},
+        {"alpha": "y", "hs_object_id": 67890},
+        {"alpha": "z", "hs_object_id": "not-an-int"},
+    ]
+    culprit, err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    assert culprit == "hs_object_id"
+    assert err is not None and ("int" in err)
+    sample_dict = dict(sample)
+    assert sample_dict["alpha"] == "string"
+    assert sample_dict["hs_object_id"].startswith("ERR:")
+
+
+def test_probe_struct_subkey_culprit_returns_none_when_no_subkey_raises():
+    """If every subkey infers cleanly, the probe returns no culprit."""
+    values = [{"a": "x", "b": 1}, {"a": "y", "b": 2}]
+    culprit, err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    assert culprit is None
+    assert err is None
+    sample_dict = dict(sample)
+    assert sample_dict["a"] == "string"
+    assert sample_dict["b"] == "int64"
+
+
+def test_probe_struct_subkey_culprit_does_not_match_unrelated_target_type():
+    """A subkey that raises for a different target type must NOT be
+    surfaced as the culprit. Here pyarrow infers `int64` for `b` and
+    fails on the str — the probe is told the original error targeted
+    `double`, so the int failure is unrelated."""
+    values = [{"a": "x", "b": 1}, {"a": "y", "b": "boom"}]
+    culprit, err, _sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.float64(),
+    )
+    assert culprit is None
+    assert err is None
+
+
+def test_probe_struct_subkey_culprit_skips_all_null_keys():
+    """A subkey that's `None` in every record contributes no inference."""
+    values = [{"a": "x", "b": None}, {"a": "y", "b": None}]
+    _culprit, _err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    keys = {k for k, _ in sample}
+    assert keys == {"a"}
+
+
+def test_probe_struct_subkey_culprit_ignores_non_dict_records():
+    """`None` records (where the column is null on a row) must not crash
+    the probe — they simply don't contribute any sub-keys."""
+    values = [None, {"a": 1}, None, {"a": "boom"}]
+    culprit, err, sample = StreamWriter._probe_struct_subkey_culprit(
+        values=values,
+        target_pa_type=pa.int64(),
+    )
+    assert culprit == "a"
+    assert err is not None
+    assert dict(sample)["a"].startswith("ERR:")
+
+
+def test_build_type_mismatch_exception_subkey_probe_overrides_glue_oracle_for_undeclared_subkey():
+    """Reproduces the HubSpot scenario: every Glue sub-field is `string`
+    so the Glue oracle finds no `bigint` candidate, but pyarrow infers
+    `int64` for one undeclared subkey from the data and crashes when
+    a later record has `str` there. The new per-subkey probe must
+    pinpoint that undeclared subkey."""
+    writer = get_big_schema_writer(get_config())
+    writer._last_flush_dtype = {"properties": "struct<a:string,c:string>"}
+    writer._schema = {"properties": {"type": ["null", "object"], "additionalProperties": True}}
+    df = pd.DataFrame(
+        {
+            "properties": [
+                {"a": "x", "hs_object_id": 1},
+                {"a": "y", "hs_object_id": 2},
+                {"a": "z", "hs_object_id": "boom"},
+            ],
+        }
+    )
+    arrow_error = pa.lib.ArrowTypeError(
+        "object of type <class 'str'> cannot be converted to int",
+        "Conversion failed for column properties with type object",
+    )
+    traced = writer._build_type_mismatch_exception(df, arrow_error)
+    assert 'field "properties.hs_object_id"' in traced.message
+    assert "subkey_probe_path=properties.hs_object_id" in traced.internal_message
+    assert "subkey_inference_sample=" in traced.internal_message
