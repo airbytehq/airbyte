@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.dlq.DlqLoader
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.BatchEntryAssembler
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.IdentifierType
 import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.PersonEventBatchEntryAssembler
 import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.PersonIdentifyBatchEntryAssembler
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -90,7 +91,8 @@ class CustomerIoState(
 
 class CustomerIoLoader(
     private val httpClient: HttpClient,
-    private val catalog: DestinationCatalog
+    private val catalog: DestinationCatalog,
+    private val identifierType: IdentifierType = IdentifierType.EMAIL
 ) : DlqLoader<CustomerIoState> {
     override fun start(key: StreamKey, part: Int): CustomerIoState {
         logger.info { "CustomerIoLoader.start for ${key.serializeToString()} with part $part" }
@@ -122,8 +124,8 @@ class CustomerIoLoader(
 
     private fun selectBatchEntryAssembler(stream: DestinationStream): BatchEntryAssembler {
         return when (stream.destinationObjectName) {
-            "person_event" -> PersonEventBatchEntryAssembler()
-            "person_identify" -> PersonIdentifyBatchEntryAssembler()
+            "person_event" -> PersonEventBatchEntryAssembler(identifierType)
+            "person_identify" -> PersonIdentifyBatchEntryAssembler(identifierType)
             else ->
                 throw IllegalArgumentException(
                     "Unknown destination object name ${stream.destinationObjectName}"
