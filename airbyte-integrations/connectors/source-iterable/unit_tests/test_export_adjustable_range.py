@@ -15,7 +15,10 @@ import responses
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator
 from source_iterable.source import SourceIterable
+from source_iterable.streams import EmailSend, IterableExportStream
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models import Type as MessageType
 
 
@@ -117,3 +120,18 @@ def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_du
     assert len(ranges) == len(records)
     # since read is called on source instance, under the hood .streams() is called which triggers one more http call
     assert len(responses.calls) == 3 * len(ranges)
+
+
+def test_email_stream_chunked_encoding_error_exhausted(mocker):
+    start_date = pendulum.parse("2020-01-01T00:00:00Z")
+    stream = EmailSend(authenticator=None, start_date=str(start_date), lookback_window=0)
+    stream._adjustable_generator = AdjustableSliceGenerator(start_date, start_date + pendulum.Duration(days=100))
+    stream_slice = next(stream._adjustable_generator)
+    mocker.patch.object(IterableExportStream, "read_records", side_effect=ChunkedEncodingError())
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=[], stream_slice=stream_slice))
+
+    assert exc_info.value.message == "Iterable Export API response repeatedly closed for the selected event window."
+    assert exc_info.value.internal_message == "ChunkedEncodingError: Reached maximum number of retries: 6"
+    assert exc_info.value.failure_type == FailureType.system_error
