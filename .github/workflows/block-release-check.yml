@@ -5,7 +5,7 @@ name: Release Block Check
 # the author with the list of blocked connectors and their reasons.
 # If all blocks are later removed, updates the comment to say all-clear.
 #
-# See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
+# See: https://github.com/airbytehq/airbyte-ops/issues/686
 
 on:
   pull_request:

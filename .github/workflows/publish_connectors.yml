@@ -324,7 +324,7 @@ jobs:
       # If a block-release.yaml marker exists for this connector, skip all
       # build and publish steps with a WARNING. Other connectors in the
       # same matrix run are unaffected.
-      # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
+      # See: https://github.com/airbytehq/airbyte-ops/issues/686
       - name: Check for release block
         id: check-release-block
         if: needs.publish_options.outputs.with-semver-suffix == 'none'
@@ -455,7 +455,7 @@ jobs:
       # but the actual published tag is the preview version (e.g. 3.2.3-preview.820ce48).
       # The artifact generator reads dockerImageTag from metadata.yaml, so we need to
       # bump it in-place before generating artifacts. This is ephemeral — not committed.
-      # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/604
+      # See: https://github.com/airbytehq/airbyte-ops/issues/604
       - name: Ephemeral version bump for pre-release
         if: >
           steps.check-release-block.outputs.blocked != 'true' &&
