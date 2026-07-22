@@ -82,8 +82,10 @@ class TestAllStreams:
             elif stream_config.get("retriever", {}).get("partition_router", {}):
                 partition_router = stream_config["retriever"]["partition_router"]
 
-                if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
-                    update_with_cache_parent_configs(partition_router["parent_stream_configs"])
+                if isinstance(partition_router, dict):
+                    underlying_router = partition_router.get("underlying_partition_router", partition_router)
+                    if underlying_router.get("parent_stream_configs"):
+                        update_with_cache_parent_configs(underlying_router["parent_stream_configs"])
                 elif isinstance(partition_router, list):
                     for router in partition_router:
                         if router.get("parent_stream_configs"):
@@ -200,6 +202,11 @@ class TestAllStreams:
         assert streams["ad_impression_device_analytics"]["incremental_sync"]["step"] == "P30D"
         assert all(streams[stream_name]["incremental_sync"]["global_substream_cursor"] is True for stream_name in batched_stream_names)
         assert all(streams[stream_name]["retriever"]["paginator"]["type"] == "NoPagination" for stream_name in batched_stream_names)
+        assert all(
+            streams[stream_name]["retriever"]["partition_router"]["type"] == "GroupingPartitionRouter"
+            for stream_name in batched_stream_names
+        )
+        assert all(streams[stream_name]["retriever"]["partition_router"]["group_size"] == 50 for stream_name in batched_stream_names)
         assert all(
             streams[stream_name]["state_migrations"]
             == [
@@ -450,6 +457,7 @@ class TestLinkedinAdsStream:
             "parent_records",
             "facet",
             "partition_field",
+            "partition_values",
             "encoded_urns",
             "pivot_values",
             "expected_data",
@@ -465,6 +473,7 @@ class TestLinkedinAdsStream:
                 ],
                 "campaigns",
                 "campaign_id",
+                [1111, 2222],
                 "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222",
                 ["urn:li:sponsoredCampaign:1111"],
                 {
@@ -484,6 +493,7 @@ class TestLinkedinAdsStream:
                 ],
                 "creatives",
                 "creative_id",
+                ["urn:li:sponsoredCreative:1111", "urn:li:sponsoredCreative:2222"],
                 "urn%3Ali%3AsponsoredCreative%3A1111,urn%3Ali%3AsponsoredCreative%3A2222",
                 ["urn:li:sponsoredCreative:2222"],
                 {
@@ -503,6 +513,7 @@ class TestLinkedinAdsStream:
                 ],
                 "campaigns",
                 "campaign_id",
+                [1111, 2222],
                 "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222",
                 ["urn:li:sponsoredCampaign:1111", "CONNECTED_TV"],
                 {
@@ -523,6 +534,7 @@ class TestLinkedinAdsStream:
         parent_records,
         facet,
         partition_field,
+        partition_values,
         encoded_urns,
         pivot_values,
         expected_data,
@@ -559,7 +571,7 @@ class TestLinkedinAdsStream:
         partition = next(iter(stream.generate_partitions()))
         records = list(partition.read())
 
-        assert partition.to_slice()[partition_field] == encoded_urns
+        assert partition.to_slice()[partition_field] == partition_values
         assert len(records) == 1
         for field, value in expected_data.items():
             assert records[0].data[field] == value

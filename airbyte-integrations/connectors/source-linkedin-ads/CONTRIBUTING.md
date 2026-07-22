@@ -43,11 +43,11 @@ silently multiplies API usage across every partition.
 
 ---
 
-## 3. Analytics Request Batching (`batch_size`)
+## 3. Analytics Request Batching (`group_size`)
 
 The analytics streams `ad_campaign_analytics`, `ad_creative_analytics`, and
 `ad_impression_device_analytics` batch multiple parent-entity URNs into a single `adAnalytics` request
-via `LinkedInAdsBatchedPartitionRouter` with `batch_size: 50`. Campaign and impression-device
+via the CDK `GroupingPartitionRouter` with `group_size: 50`. Campaign and impression-device
 analytics batch campaign URNs; creative analytics batches creative URNs. Compared with one request per
 parent entity, a full 50-entity batch reduces analytics request volume by 98%.
 
@@ -59,8 +59,8 @@ Why 50 entities per request:
 - Each URL-encoded campaign URN (`urn%3Ali%3AsponsoredCampaign%3A<id>`) is approximately 42 bytes: a 31-byte
   fixed prefix, an approximately 9–10 digit ID, and a comma separator. Each request also carries one field
   chunk, so the worst-case query length is approximately `643 + n × (32 + id_digits)` bytes.
-- At `batch_size: 50`, the worst-case query string is approximately 3 KB, leaving approximately 900 bytes
-  of headroom under the 4 KB cap even with long campaign IDs. A batch size of 60 is also safe, but 80
+- At `group_size: 50`, the worst-case query string is approximately 3 KB, leaving approximately 900 bytes
+  of headroom under the 4 KB cap even with long campaign IDs. A group size of 60 is also safe, but 80
   exceeds the cap with IDs of 12 or more digits and is unsafe as a default.
 - The connector fails fast on HTTP 414 with `LinkedIn Ads request URL exceeds the API length limit` rather
   than silently truncating the request.

@@ -55,14 +55,14 @@ def test_analytics_stream_slices(requests_mock):
 
 @freeze_time("2021-01-02")
 @pytest.mark.parametrize(
-    "stream_name,parent_url,parent_records,partition_field,urn_prefix",
+    "stream_name,parent_url,parent_records,partition_field,expected_entities",
     [
         pytest.param(
             "ad_campaign_analytics",
             "https://api.linkedin.com/rest/adAccounts/1/adCampaigns",
             [{"id": entity_id} for entity_id in range(1, 52)],
             "campaign_id",
-            "urn%3Ali%3AsponsoredCampaign%3A",
+            list(range(1, 52)),
             id="campaigns",
         ),
         pytest.param(
@@ -70,7 +70,7 @@ def test_analytics_stream_slices(requests_mock):
             "https://api.linkedin.com/rest/adAccounts/1/creatives",
             [{"id": f"urn:li:sponsoredCreative:{entity_id}"} for entity_id in range(1, 52)],
             "creative_id",
-            "urn%3Ali%3AsponsoredCreative%3A",
+            [f"urn:li:sponsoredCreative:{entity_id}" for entity_id in range(1, 52)],
             id="creatives",
         ),
     ],
@@ -81,16 +81,15 @@ def test_analytics_stream_batches_entities_at_manifest_limit(
     parent_url,
     parent_records,
     partition_field,
-    urn_prefix,
+    expected_entities,
 ):
     config = {**TEST_CONFIG, "start_date": "2021-01-01", "end_date": "2021-01-02"}
-    expected_entities = [f"{urn_prefix}{entity_id}" for entity_id in range(1, 52)]
 
     stream = find_stream(stream_name, config)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get(parent_url, json={"elements": parent_records})
 
-    entity_batches = [partition.to_slice()[partition_field].split(",") for partition in list(stream.generate_partitions())]
+    entity_batches = [partition.to_slice()[partition_field] for partition in list(stream.generate_partitions())]
     emitted_entities = [entity for batch in entity_batches for entity in batch]
 
     assert [len(batch) for batch in entity_batches] == [50, 1]
