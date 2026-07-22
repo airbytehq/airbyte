@@ -1,0 +1,284 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  FMP provides financial data for historical stock prices using the stable
+  endpoint. Correctly configured to use the symbol as a path parameter.
+
+check:
+  type: CheckStream
+  stream_names:
+    - stock_historical_price
+
+definitions:
+  streams:
+    stock_historical_price:
+      type: DeclarativeStream
+      name: stock_historical_price
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: historical-price-full/{{stream_partition.symbol}}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - historical
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - AAPL
+            - AMZN
+            - META
+            - MSFT
+            - GOOG
+            - NVDA
+            - AMD
+            - INTC
+            - QCOM
+            - ARM
+            - AVGO
+            - MRVL
+            - NXPI
+            - TXN
+            - ADI
+            - "ON"
+            - MCHP
+            - MPWR
+            - QRVO
+            - SWKS
+            - WDC
+            - STX
+            - MU
+            - GFS
+            - 0981.HK
+            - 005930.KS
+            - 000660.KS
+            - STM
+            - ASX
+            - UMC
+            - TSEM
+            - TSM
+            - ASML
+            - AMAT
+            - LRCX
+            - KLAC
+            - 8035.T
+            - 6857.T
+            - CDNS
+            - SNPS
+            - 6146.T
+            - 6920.T
+            - 7735.T
+            - ENTG
+            - GLW
+            - 6488.TWO
+            - FORM
+            - APH
+            - ALAB
+            - CRDO
+            - 3661.TW
+            - 2454.TW
+            - 3034.TW
+            - 2379.TW
+            - 688256.SS
+            - 002371.SZ
+            - 688012.SS
+            - 603986.SS
+            - CRM
+            - ORCL
+            - NOD.OL
+            - AMS.SW
+            - IFX.DE
+            - AIXA.DE
+            - SMHN.DE
+            - SOI.PA
+            - XFAB.PA
+            - BESI.AS
+            - AWE.L
+            - SMH
+            - SOXX
+            - SOX
+            - EWJ
+            - EWT
+            - EWY
+            - FXI
+            - VGK
+            - AIQ
+            - ROBT
+            - WTAI
+            - IETC
+            - CIBR
+            - XLK
+            - XLC
+            - SPY
+            - IWM
+            - GLD
+            - SLV
+            - LIT
+            - SHY
+            - ^TNX
+            - USO
+            - BIL
+            - TLT
+            - ^SPX
+            - ^DJI
+            - ^NDX
+            - ^RUT
+            - ^DJUSSC
+            - ^PSE
+            - ^IRX
+            - ^VIX
+            - VXN
+            - VIX1D
+            - VIX9D
+            - VXST
+            - VSTOXX
+            - SVXY
+            - UVXY
+            - VIXY
+            - UUP
+            - ^N225
+            - ^HSI
+            - ^TWII
+            - 000001.SS
+            - KOSPI200.KS
+            - ^GDAXI
+            - ^STOXX50E
+            - ^AXMJ
+            - ^W2DOW
+            - ^SPGNRUP
+            - ^SPGSCI
+            - ^TRCCRBTR
+            - MSCIWORLD
+            - SX8P.Z
+            - XAUUSD
+            - XAGUSD
+            - XPDUSD
+            - XPTUSD
+            - COPPER
+            - ALIUSD
+            - WTI
+            - NGAS
+            - EURUSD
+            - USDJPY
+            - USDKRW
+            - USDTWD
+            - USDCNH
+            - X:BTCUSD
+            - X:ETHUSD
+          cursor_field: symbol
+          request_option:
+            type: RequestOption
+            field_name: symbol
+            inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stock_historical_price"
+  base_requester:
+    type: HttpRequester
+    url_base: https://financialmodelingprep.com/api/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: apikey
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/stock_historical_price"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    stock_historical_price:
+      hasRecords: true
+      streamHash: fb49decc01db6251efe06c05ea9d7f0aad4842c2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    stock_historical_price: false
+
+schemas:
+  stock_historical_price:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      low:
+        type:
+          - number
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      high:
+        type:
+          - number
+          - "null"
+      open:
+        type:
+          - number
+          - "null"
+      vwap:
+        type:
+          - number
+          - "null"
+      close:
+        type:
+          - number
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      change:
+        type:
+          - number
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+      adjClose:
+        type:
+          - number
+          - "null"
+      changePercent:
+        type:
+          - number
+          - "null"
+      changeOverTime:
+        type:
+          - number
+          - "null"
+      unadjustedVolume:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
