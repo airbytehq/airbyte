@@ -297,6 +297,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config.get('dispute_start_date') if config.get('dispute_start_date') and day_delta(-180) <= config.get('dispute_start_date') else day_delta(-180), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+          min_datetime: "{{ format_datetime(now_utc() - duration('P179D'), '%Y-%m-%dT%H:%M:%S.%fZ')[:23] + 'Z' }}"
         start_time_option:
           type: RequestOption
           field_name: update_time_after
