@@ -297,6 +297,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.27 | 2026-07-21 | [78964](https://github.com/airbytehq/airbyte/pull/78964) | Update dependencies |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
 | 2.7.26-rc.1 | 2026-07-14 | [81535](https://github.com/airbytehq/airbyte/pull/81535) | Use ordered `ConcurrentMessageRepository` so state checkpoints are emitted in-order with records, preventing data loss (cursor advancing past uncommitted records) when a sync is terminated ungracefully |
 | 2.7.25 | 2026-06-20 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
