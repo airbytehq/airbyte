@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedJsonFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecificationProvider
-import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 import io.airbyte.cdk.load.command.s3.S3PathSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
@@ -55,7 +54,7 @@ class S3V2Specification :
     override val s3BucketPath: String = ""
 
     @get:JsonSchemaInject(json = """{"examples":["us-east-1"],"order":5,"default":""}""")
-    override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION
+    override val s3BucketRegion: String = ""
 
     @get:JsonSchemaInject(json = """{"order":6}""")
     override val format: DeprecatedObjectStorageFormatSpecification =
