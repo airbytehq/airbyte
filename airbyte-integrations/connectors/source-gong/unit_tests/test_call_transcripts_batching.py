@@ -88,14 +88,16 @@ def test_transcript_request_excludes_private_calls():
         assert sorted(sent_ids) == ["public-1", "public-2"], f"expected only public ids, got {sent_ids}"
 
 
-def test_incremental_cursor_advances_to_newest_call_in_batch():
-    """The emitted cursor state must advance to the newest `started` in the grouped batch.
+def test_each_record_keeps_its_own_started_and_cursor_advances_to_newest():
+    """Each transcript keeps its own call's `started`, and the cursor advances to the batch max.
 
-    Records have no timestamp of their own, so the stream stamps `started` with
-    `max(extra_fields['started'])` across the grouped calls. This asserts the
-    resulting incremental state matches the newest call in the batch (so the
-    cursor never rewinds and no calls are re-fetched needlessly), covering the
-    forwards-compat / rollback concern for the GroupingPartitionRouter swap.
+    Records have no timestamp of their own, so the stream stamps `started` from
+    the parent call. Because `partition.call_id` and `extra_fields['started']` are
+    index-aligned lists after grouping, each transcript is stamped with *its own*
+    call's start time (looked up by `callId`) rather than a single batch-wide
+    value. The DatetimeBasedCursor then advances the incremental state to the
+    newest per-record value on its own, so the cursor never rewinds and calls are
+    not re-fetched needlessly -- without corrupting the per-record `started`.
     """
     source = get_source(config=_CONFIG)
     catalog = CatalogBuilder().with_stream("callTranscripts", SyncMode.incremental).build()
@@ -111,12 +113,16 @@ def test_incremental_cursor_advances_to_newest_call_in_batch():
         mocker.post("https://api.gong.io/v2/calls/transcript", json=_transcript_response("c1", "c2", "c3"))
         output = read(source, _CONFIG, catalog)
 
-    # Every emitted record should carry the batch-max `started`.
-    stamped = {record.record.data.get("started") for record in output.records}
-    assert stamped == {"2024-03-05T12:00:00Z"}, f"expected records stamped with batch-max started, got {stamped}"
+    # Every record carries its OWN call's `started`, not a shared batch value.
+    stamped = {record.record.data.get("callId"): record.record.data.get("started") for record in output.records}
+    assert stamped == {
+        "c1": "2024-03-01T09:00:00Z",
+        "c2": "2024-03-05T12:00:00Z",
+        "c3": "2024-03-03T15:00:00Z",
+    }, f"expected each record stamped with its own call's started, got {stamped}"
 
-    # The final cursor state must reflect the newest call in the batch, so the
-    # cursor never rewinds and calls are not needlessly re-fetched. With
+    # The final cursor state must still reflect the newest call in the batch, so
+    # the cursor never rewinds and calls are not needlessly re-fetched. With
     # global_substream_cursor the value lives under the "state" key.
     assert output.state_messages, "expected at least one state message for an incremental sync"
     stream_state = output.most_recent_state.stream_state

@@ -415,10 +415,11 @@ definitions:
           fields:
             - path:
                 - started
-              # After grouping, extra_fields['started'] is a list (one value per
-              # batched call); stamp `started` with the newest so the cursor
-              # advances to the latest call time in the batch.
-              value: "{{ stream_slice.extra_fields['started'] | max }}"
+              # After grouping, partition.call_id and extra_fields['started'] are
+              # index-aligned lists (one entry per batched call). Look up each
+              # record's own call by its callId so every transcript keeps its
+              # real call start time instead of a single batch-wide value.
+              value: "{{ stream_slice.extra_fields['started'][stream_slice.partition['call_id'].index(record['callId'])] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
