@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination SFTP JSON",
     "type": "object",
-    "required": ["host", "username", "password", "destination_path"],
+    "required": ["host", "username", "destination_path", "credentials"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -19,8 +19,8 @@
         "title": "Port",
         "description": "Port of the SFTP server.",
         "type": "integer",
-        "minimum": 0,
-        "maximum": 65536,
+        "minimum": 1,
+        "maximum": 65535,
         "default": 22,
         "examples": [22],
         "order": 1
@@ -31,12 +31,52 @@
         "type": "string",
         "order": 2
       },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
-        "airbyte_secret": true,
-        "order": 3
+      "credentials": {
+        "type": "object",
+        "title": "Authentication",
+        "description": "The server authentication method",
+        "order": 3,
+        "oneOf": [
+          {
+            "title": "Password Authentication",
+            "required": ["auth_method", "auth_user_password"],
+            "properties": {
+              "auth_method": {
+                "description": "Connect through password authentication",
+                "type": "string",
+                "const": "SSH_PASSWORD_AUTH",
+                "order": 0
+              },
+              "auth_user_password": {
+                "title": "Password",
+                "description": "Password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "SSH Key Authentication",
+            "required": ["auth_method", "auth_ssh_key"],
+            "properties": {
+              "auth_method": {
+                "description": "Connect through ssh key",
+                "type": "string",
+                "const": "SSH_KEY_AUTH",
+                "order": 0
+              },
+              "auth_ssh_key": {
+                "title": "SSH Private Key",
+                "description": "SSH private key (OpenSSH/PEM). Supported key types depend on Paramiko but typically include RSA, Ed25519, and ECDSA.",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              }
+            }
+          }
+        ]
       },
       "destination_path": {
         "title": "Destination path",
@@ -44,6 +84,60 @@
         "description": "Path to the directory where json files will be written.",
         "examples": ["/json_data"],
         "order": 4
+      },
+      "host_key_checking": {
+        "type": "object",
+        "title": "Host Key Checking",
+        "description": "Controls how the server's SSH host key is verified. Defaults to automatically trusting (and caching) the host key on first connection. For stronger protection against man-in-the-middle attacks, pin the expected host key.",
+        "order": 5,
+        "default": { "mode": "auto_add" },
+        "oneOf": [
+          {
+            "title": "Auto-add (trust on first use)",
+            "description": "Automatically accept and cache the server's host key the first time it is seen. Convenient but does not protect against man-in-the-middle attacks.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "auto_add",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Strict (pin host key)",
+            "description": "Reject the connection unless the server presents the host key configured below. This protects against man-in-the-middle attacks.",
+            "required": ["mode", "host_key_type", "host_key"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "strict",
+                "order": 0
+              },
+              "host_key_type": {
+                "title": "Host Key Type",
+                "description": "The algorithm of the expected host key, as reported by the server (e.g. the first field of a known_hosts entry).",
+                "type": "string",
+                "enum": [
+                  "ssh-ed25519",
+                  "ssh-rsa",
+                  "ecdsa-sha2-nistp256",
+                  "ecdsa-sha2-nistp384",
+                  "ecdsa-sha2-nistp521"
+                ],
+                "examples": ["ssh-ed25519"],
+                "order": 1
+              },
+              "host_key": {
+                "title": "Host Key",
+                "description": "The base64-encoded public host key the server is expected to present (the key field of a known_hosts entry, without the type prefix or comment).",
+                "type": "string",
+                "multiline": true,
+                "order": 2
+              }
+            }
+          }
+        ]
       }
     }
   }

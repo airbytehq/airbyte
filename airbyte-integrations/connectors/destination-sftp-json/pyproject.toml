@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.15"
+version = "0.3.0"
 name = "destination_sftp_json"
 description = "Destination implementation for Sftp Json."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -18,7 +18,6 @@ include = "destination_sftp_json"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 paramiko = "^3.5.0"
-smart-open = "^7.0.5"
 airbyte-cdk = "^6.22"
 
 [tool.poetry.scripts]
