@@ -15,7 +15,7 @@ import responses
 import source_mixpanel
 from source_mixpanel import SourceMixpanel
 from source_mixpanel.components import iter_dicts
-from source_mixpanel.streams import Export
+from source_mixpanel.streams import Export, ExportRaw, ExportSchema
 from source_mixpanel.utils import read_full_refresh
 
 from airbyte_cdk.models import (
@@ -588,13 +588,177 @@ def test_export_schema(requests_mock, export_schema_response, config_raw):
     assert schema["properties"]["browser_version"]["type"] == ["null", "string"]
 
 
-def test_export_get_json_schema(requests_mock, export_schema_response, config_raw):
+@pytest.mark.parametrize(
+    "extra_config",
+    [
+        pytest.param({}, id="omitted"),
+        pytest.param({"export_events": []}, id="empty_events"),
+        pytest.param({"export_properties": []}, id="empty_properties"),
+    ],
+)
+def test_export_get_json_schema(requests_mock, export_schema_response, config_raw, extra_config):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/query/events/properties/top", export_schema_response)
 
-    stream = init_stream("export", config_raw)
+    stream = init_stream("export", {**config_raw, **extra_config})
     schema = stream.get_json_schema()
 
     assert "DYNAMIC_FIELD" in schema["properties"]
+
+
+def test_export_get_json_schema_with_explicit_properties(requests_mock, config_raw):
+    stream = init_stream(
+        "export",
+        {**config_raw, "export_properties": ["$configured_property", "AnotherConfiguredProperty"]},
+    )
+
+    schema = stream.get_json_schema()
+
+    assert not requests_mock.called
+    assert schema["properties"]["configured_property"]["type"] == ["null", "string"]
+    assert schema["properties"]["AnotherConfiguredProperty"]["type"] == ["null", "string"]
+
+
+def test_export_get_json_schema_with_events(requests_mock, config_raw):
+    requests_mock.register_uri(
+        "GET",
+        "https://mixpanel.com/api/query/events/properties/top",
+        [
+            {"json": {"$signup_property": {"count": 2}}, "status_code": 200},
+            {"json": {"purchase_property": {"count": 3}}, "status_code": 200},
+        ],
+    )
+    stream = init_stream("export", {**config_raw, "export_events": ["Signup", "Purchase"]})
+
+    schema = stream.get_json_schema()
+
+    assert schema["properties"]["signup_property"]["type"] == ["null", "string"]
+    assert schema["properties"]["purchase_property"]["type"] == ["null", "string"]
+    assert [request.query for request in requests_mock.request_history] == ["event=signup", "event=purchase"]
+
+
+def test_export_schema_request_params(config):
+    stream = ExportSchema(authenticator=MagicMock(), event="Signup", **config)
+
+    params = stream.request_params(stream_state={})
+
+    assert params["event"] == "Signup"
+
+
+@pytest.mark.parametrize(
+    "export_events,expected_event",
+    [
+        pytest.param([], None, id="all_events"),
+        pytest.param(["Signup", "Purchase"], '["Signup", "Purchase"]', id="selected_events"),
+    ],
+)
+@pytest.mark.parametrize(
+    "stream_class",
+    [
+        pytest.param(Export, id="flattened"),
+        pytest.param(ExportRaw, id="raw"),
+    ],
+)
+def test_export_request_params(config, export_events, expected_event, stream_class):
+    stream = stream_class(authenticator=MagicMock(), export_events=export_events, **config)
+    stream_slice = {
+        "start_date": "2024-01-25",
+        "end_date": "2024-01-26",
+        "time": "2024-01-25T12:00:00Z",
+    }
+
+    params = stream.request_params(stream_state={}, stream_slice=stream_slice)
+
+    assert params["from_date"] == "2024-01-25"
+    assert params["to_date"] == "2024-01-26"
+    assert params["where"] == 'properties["$time"]>=datetime(1706184000)'
+    assert params.get("event") == expected_event
+
+
+def test_export_explicit_properties_do_not_filter_records(config):
+    stream = Export(authenticator=MagicMock(), export_properties=["selected_property"], **config)
+    response = MagicMock()
+    response.iter_lines.return_value = [
+        json.dumps(
+            {
+                "event": "Signup",
+                "properties": {
+                    "time": 1623860880,
+                    "selected_property": "selected",
+                    "unselected_property": "retained",
+                },
+            }
+        )
+    ]
+
+    records = list(stream.process_response(response))
+
+    assert records[0]["selected_property"] == "selected"
+    assert records[0]["unselected_property"] == "retained"
+
+
+def test_export_raw_process_response_preserves_typed_properties(config):
+    stream = ExportRaw(authenticator=MagicMock(), **config)
+    properties = {
+        "time": 1623860880,
+        "$insert_id": "insert-id",
+        "$browser": "Chrome",
+        "nested": {"enabled": True, "values": [1, "two", None]},
+        "boolean": False,
+        "null": None,
+    }
+    response = MagicMock()
+    response.iter_lines.return_value = [json.dumps({"event": "Signup", "properties": properties})]
+
+    records = list(stream.process_response(response))
+
+    assert records == [
+        {
+            "event": "Signup",
+            "time": "2021-06-16T16:28:00Z",
+            "properties": properties,
+        }
+    ]
+    assert stream.get_updated_state({}, records[0]) == {"time": "2021-06-16T16:28:00Z"}
+
+
+def test_export_raw_get_json_schema_skips_dynamic_discovery(requests_mock, config):
+    stream = ExportRaw(authenticator=MagicMock(), **config)
+
+    schema = stream.get_json_schema()
+
+    assert not requests_mock.called
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["properties"] == {
+        "description": "Complete typed Mixpanel event properties",
+        "type": ["null", "object"],
+        "additionalProperties": True,
+    }
+
+
+def test_export_raw_read_records_preserves_typed_properties(requests_mock, config):
+    stream = ExportRaw(authenticator=MagicMock(), **config)
+    properties = {
+        "time": 1623860880,
+        "$insert_id": "insert-id",
+        "array": [1, 2],
+        "object": {"nested": True},
+        "boolean": True,
+        "null": None,
+    }
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        text=json.dumps({"event": "Signup", "properties": properties}),
+    )
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"start_date": "2021-06-16", "end_date": "2021-06-16"},
+        )
+    )
+
+    assert records == [{"event": "Signup", "time": "2021-06-16T16:28:00Z", "properties": properties}]
 
 
 @pytest.fixture
