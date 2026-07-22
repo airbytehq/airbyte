@@ -58,6 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | 0.1.1 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock version |
+| 0.1.2 | 2026-07-21 | [78581](https://github.com/airbytehq/airbyte/pull/78581) | Update dependencies |
 | 0.1.0 | 2023-09-07 | [30222](https://github.com/airbytehq/airbyte/pull/30222) | Avni Source Connector |
 
 </details>
