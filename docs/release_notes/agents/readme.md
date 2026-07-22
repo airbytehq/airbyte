@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## July 20, 2026
+
+Web app
+
+- You can now open a connector to a dedicated detail page that brings together its entities, Context Store status, and recent agent request activity in one place. The connectors view also shows which entities your agents are allowed to access and how many times each entity has been read or written.
+
+SDK
+
+- A new `agent_tool` decorator lets you wire connector tools into agent frameworks the SDK doesn't natively support. You write your own execute, inspect, and docs functions, and the decorator steers the agent to inspect the connector and read its docs before running an action. Tool failures now raise a catchable `AirbyteToolError` you can handle in your own tool-dispatch loop.
+
 ## July 16, 2026
 
 Web app
