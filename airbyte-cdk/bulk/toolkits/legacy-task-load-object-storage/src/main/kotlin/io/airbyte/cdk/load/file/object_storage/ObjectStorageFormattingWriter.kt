@@ -14,10 +14,14 @@ import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
 import io.airbyte.cdk.load.data.csv.toCsvRecord
 import io.airbyte.cdk.load.data.dataWithAirbyteMeta
+import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.file.StreamProcessor
 import io.airbyte.cdk.load.file.avro.toAvroWriter
@@ -72,20 +76,25 @@ class DefaultObjectStorageFormattingWriterFactory(
         // TODO: FileWriter
 
         return when (formatConfigProvider.objectStorageFormatConfiguration) {
-            is JsonFormatConfiguration ->
+            is JsonFormatConfiguration -> {
+                val jsonConfig =
+                    formatConfigProvider.objectStorageFormatConfiguration as JsonFormatConfiguration
                 if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
                     ProtoToJsonFormatter(
                         stream = stream,
                         outputStream = outputStream,
                         rootLevelFlattening = flatten,
+                        stringifyObjects = jsonConfig.stringifyObjects,
                     )
                 } else {
                     JsonFormattingWriter(
                         stream = stream,
                         outputStream = outputStream,
                         rootLevelFlattening = flatten,
+                        stringifyObjects = jsonConfig.stringifyObjects,
                     )
                 }
+            }
             is AvroFormatConfiguration ->
                 if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
                     ProtoToAvroFormatter(
@@ -150,10 +159,11 @@ class JsonFormattingWriter(
     private val stream: DestinationStream,
     private val outputStream: OutputStream,
     private val rootLevelFlattening: Boolean,
+    private val stringifyObjects: Boolean = false,
 ) : ObjectStorageFormattingWriter {
 
     override fun accept(record: DestinationRecordRaw) {
-        val data =
+        var data =
             record
                 .asDestinationRecordAirbyteValue()
                 .dataWithAirbyteMeta(
@@ -161,9 +171,13 @@ class JsonFormattingWriter(
                     flatten = rootLevelFlattening,
                     airbyteRawId = record.airbyteRawId,
                 )
-                .toJson()
-                .serializeToString()
-        outputStream.write(data)
+
+        if (stringifyObjects) {
+            data = stringifyRootLevelObjects(data)
+        }
+
+        val serialized = data.toJson().serializeToString()
+        outputStream.write(serialized)
         outputStream.write("\n")
     }
 
@@ -173,6 +187,30 @@ class JsonFormattingWriter(
 
     override fun close() {
         outputStream.close()
+    }
+
+    companion object {
+        /**
+         * Converts root-level [ObjectValue] fields to JSON strings. This is useful for Hive
+         * JsonSerDe compatibility, which otherwise mishandles nested objects (including
+         * `_airbyte_data`).
+         */
+        fun stringifyRootLevelObjects(value: ObjectValue): ObjectValue {
+            val converted = linkedMapOf<String, AirbyteValue>()
+            for ((key, fieldValue) in value.values) {
+                converted[key] =
+                    when (fieldValue) {
+                        is ObjectValue -> {
+                            // Use AirbyteValue receiver so the JsonNode toJson() extension is
+                            // selected (ObjectValue also has a @JsonValue member).
+                            val asAirbyteValue: AirbyteValue = fieldValue
+                            StringValue(asAirbyteValue.toJson().serializeToString())
+                        }
+                        else -> fieldValue
+                    }
+            }
+            return ObjectValue(converted)
+        }
     }
 }
 
