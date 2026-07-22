@@ -13,9 +13,9 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurati
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema

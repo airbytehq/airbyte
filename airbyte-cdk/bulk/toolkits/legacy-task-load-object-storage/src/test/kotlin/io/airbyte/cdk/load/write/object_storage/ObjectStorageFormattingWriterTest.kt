@@ -175,7 +175,7 @@ class JsonFormattingWriterTest {
         val os = ByteArrayOutputStream()
         val writer =
             JsonFormattingWriter(
-                stream,
+                nestedStream,
                 os,
                 rootLevelFlattening = false,
                 stringifyObjects = true,

@@ -102,7 +102,7 @@ interface FlatteningSpecificationProvider {
 interface StringifySpecificationProvider {
     @get:JsonSchemaTitle("Stringify JSON")
     @get:JsonPropertyDescription(
-        "Whether root-level objects in the JSONL output (including _airbyte_data) should be converted to JSON strings. Useful for Hive JsonSerDe compatibility. Default preserves objects as objects.",
+        "Whether root-level objects in the JSONL output (including _airbyte_data, _airbyte_meta, and flattened object fields) should be converted to JSON strings. Useful for Hive JsonSerDe compatibility. Default preserves objects as objects.",
     )
     @get:JsonProperty("stringify", defaultValue = "Default")
     val stringify: Stringify?
