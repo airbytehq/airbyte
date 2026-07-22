@@ -14,7 +14,7 @@ data:
     - suite: acceptanceTests
   connectorType: source
   definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-clickhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   githubIssueLabel: source-clickhouse
@@ -26,6 +26,17 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      0.4.0:
+        message: >-
+          This release formally declares the temporal column typing introduced in version 0.3.1
+          as breaking. Streams containing Date, Date32, DateTime, or DateTime64 columns emit
+          Airbyte date or timestamp types instead of unformatted strings. Connections already
+          syncing successfully on version 0.3.1 can upgrade without refreshing the schema or
+          clearing data. Connections that fail with a string-to-timestamp schema evolution error
+          must refresh the source schema and clear data for affected streams.
+        upgradeDeadline: "2026-07-24"
   releaseStage: alpha
   supportLevel: community
   tags:
