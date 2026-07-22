@@ -84,8 +84,9 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. During incremental syncs, only data generated after this date is replicated. If left blank, the start date defaults to two years before the current date.
-7. Click **Set up source** and wait for the tests to complete.
+6. (Optional) Provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. During incremental syncs, only data generated after this date is replicated. If left blank, the start date defaults to two years before the current date.
+7. (Optional) Set the **Number of concurrent workers** to control how many parallel requests the connector makes during a sync. The default is 3. Higher values can speed up large syncs but may increase rate-limit pressure. See [Performance considerations](#performance-considerations) for details.
+8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -113,7 +114,15 @@ The Notion source connector supports the following streams:
 
 The Notion API enforces a rate limit of approximately three requests per second per integration. When the connector receives an HTTP 429 response, it respects the `Retry-After` header and retries the request automatically. Rate-limited requests do not count toward the maximum retry limit, so syncs continue indefinitely until the rate limit clears. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
 
+The connector runs multiple requests in parallel. You can control parallelism with the **Number of concurrent workers** setting (1–10, default 3). Increasing the worker count speeds up large syncs but makes it easier to hit the Notion rate limit, so adjust this based on whether your syncs are completing in an acceptable time.
+
 The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
+
+## Troubleshooting
+
+### Users stream fails with a permission error
+
+If the Users stream fails with the message "Notion integration lacks read user information for the Users stream," the Notion integration does not have the required **Read user information** capability. To fix this, open the [My integrations](https://www.notion.so/my-integrations) page, select your integration, navigate to **Capabilities**, and enable **Read user information**. Alternatively, disable the Users stream in your Airbyte connection if you do not need user data.
 
 ## IP allow list
 
@@ -135,9 +144,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.0.10 | 2026-06-02 | [78821](https://github.com/airbytehq/airbyte/pull/78821) | Update dependencies |
 | 4.0.9 | 2026-06-01 | [78048](https://github.com/airbytehq/airbyte/pull/78048) | Improve the permission error message for the Users stream when the Notion integration lacks user information capabilities. |
 | 4.0.8 | 2026-06-01 | [78543](https://github.com/airbytehq/airbyte/pull/78543) | Set final default concurrency to 3 with configurable worker count |
-| 4.0.8-rc.5 | 2026-05-27 | [78500](https://github.com/airbytehq/airbyte/pull/78500) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
+| 4.0.8-rc.5 | 2026-05-28 | [78467](https://github.com/airbytehq/airbyte/pull/78467) | Remove Notion API budget while keeping configurable worker count defaulted to 5 |
 | 4.0.8-rc.4 | 2026-05-26 | [78433](https://github.com/airbytehq/airbyte/pull/78433) | Reduce default concurrency to 4 while preserving configurable worker count and Notion API budget |
-| 4.0.8-rc.3 | 2026-05-21 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
+| 4.0.8-rc.3 | 2026-05-22 | [78343](https://github.com/airbytehq/airbyte/pull/78343) | Revert default concurrency to 5, add configurable worker count, and enforce Notion API budget |
 | 4.0.8-rc.2 | 2026-05-19 | [78274](https://github.com/airbytehq/airbyte/pull/78274) | Increase `default_concurrency` to 6 for concurrency tuning iteration 2 |
 | 4.0.8-rc.1 | 2026-05-18 | [78149](https://github.com/airbytehq/airbyte/pull/78149) | Start concurrency tuning rollout |
 | 4.0.7 | 2026-04-28 | [77340](https://github.com/airbytehq/airbyte/pull/77340) | Update dependencies |
