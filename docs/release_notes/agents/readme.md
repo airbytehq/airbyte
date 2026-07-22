@@ -18,6 +18,20 @@ Other
 
 - Context Store now keeps the newest source version of a record when incremental syncs contain conflicting versions, preventing stale records from replacing fresher data in search results.
 
+## July 15, 2026
+
+MCP
+
+- When you use the Airbyte Agent MCP, read-only SQL queries against your synced data no longer prompt for a write approval, so your agents can run those queries without an extra confirmation step.
+
+Connectors
+
+- The Sentry connector now lists your projects through Sentry's organization-scoped endpoint, replacing an endpoint Sentry has deprecated so that listing your projects keeps working reliably.
+
+Other
+
+- Fixed an issue that could prevent your connected data from staying current for agent search when records contained certain timestamp values. Updates now recover on their own so your search results stay fresh.
+
 ## July 14, 2026
 
 SDK
