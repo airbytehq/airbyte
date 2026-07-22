@@ -521,6 +521,183 @@ jobs:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
 
+      # ── Autopilot rollouts (enable if missing, then wait for CI) ────
+      # Every auto-merged connector PR should ship with autopilot progressive
+      # rollouts enabled. If any modified connector is missing it, enable it via
+      # the same `airbyte-ops` command as the /enable-autopilot-rollouts slash
+      # command, commit to the PR branch (which re-triggers required CI), and
+      # wait for those checks to pass on the new commit before merging.
+      - name: Resolve PR head for autopilot
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        id: autopilot-head
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          pr_json=$(gh api "repos/airbytehq/airbyte/pulls/$PR_NUMBER")
+          echo "repo=$(echo "$pr_json" | jq -r .head.repo.full_name)" >> "$GITHUB_OUTPUT"
+          echo "branch=$(echo "$pr_json" | jq -r .head.ref)" >> "$GITHUB_OUTPUT"
+
+      # PAT (not a GitHub App token) is required so that pushing the autopilot
+      # commit re-triggers the PR's required CI checks. Also works on forks where
+      # the app is installed.
+      - name: Checkout PR head for autopilot
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ steps.autopilot-head.outputs.repo }}
+          ref: ${{ steps.autopilot-head.outputs.branch }}
+          fetch-depth: 1
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+      - name: Install uv
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          ignore-empty-workdir: true
+
+      - name: Install airbyte-ops CLI
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        run: uv tool install 'airbyte-internal-ops>=0.77.0'
+
+      - name: Detect connectors without autopilot rollouts
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        id: autopilot-detect
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          CONNECTORS="$(
+            airbyte-ops local connector list \
+              --repo-path . \
+              --modified-only \
+              --pr "$PR_NUMBER" \
+              --gh-token "$GH_TOKEN" \
+              --autopilot-enabled=false \
+              --output-format lines
+          )"
+          if [ -z "$CONNECTORS" ]; then
+            echo "All modified connectors already have autopilot rollouts enabled."
+          else
+            echo "Connectors missing autopilot rollouts:"
+            echo "$CONNECTORS"
+            EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
+            echo "connectors<<$EOF" >> "$GITHUB_OUTPUT"
+            echo "$CONNECTORS" >> "$GITHUB_OUTPUT"
+            echo "$EOF" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Enable autopilot rollouts and push
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-detect.outputs.connectors != ''
+        id: autopilot-enable
+        env:
+          CONNECTORS: ${{ steps.autopilot-detect.outputs.connectors }}
+          CONTRIBUTOR_REPO: ${{ steps.autopilot-head.outputs.repo }}
+          HEAD_BRANCH: ${{ steps.autopilot-head.outputs.branch }}
+        run: |
+          set -euo pipefail
+          echo "$CONNECTORS" | while IFS= read -r connector; do
+            [ -z "$connector" ] && continue
+            echo "--- Enabling autopilot rollouts for $connector ---"
+            airbyte-ops local connector rollouts enable \
+              --name "$connector" \
+              --repo-path . \
+              --strategy fast
+          done
+
+          # Drop any files that are now gitignored (mirrors the slash command).
+          git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No metadata changes produced by autopilot enable; nothing to push."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+          git commit -m "chore: enable autopilot rollouts"
+          sha="$(git rev-parse HEAD)"
+          git remote add contributor "https://github.com/$CONTRIBUTOR_REPO.git"
+          git push contributor "HEAD:$HEAD_BRANCH"
+          echo "sha=$sha" | tee -a "$GITHUB_OUTPUT"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Note autopilot enablement on PR
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-enable.outputs.pushed == 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **Autopilot rollouts enabled** (`${{ steps.autopilot-enable.outputs.sha }}`).
+            > Waiting for required checks to re-run on the new commit before auto-merging.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Wait for required checks after autopilot commit
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' && steps.autopilot-enable.outputs.pushed == 'true'
+        uses: actions/github-script@v7
+        env:
+          REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
+          EXPECTED_SHA: ${{ steps.autopilot-enable.outputs.sha }}
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const prNum = Number(process.env.PR_NUMBER);
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+            const expectedSha = process.env.EXPECTED_SHA;
+            const maxMinutes = 60;
+            const intervalMs = 60000;
+            const deadline = Date.now() + maxMinutes * 60000;
+            const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+            while (true) {
+              const { data: pr } = await github.rest.pulls.get({
+                owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
+              });
+              const sha = pr.head.sha;
+              if (expectedSha && sha !== expectedSha) {
+                throw new Error(
+                  `PR head moved to ${sha} (expected ${expectedSha}); aborting auto-merge.`
+                );
+              }
+
+              const statuses = await github.paginate(
+                github.rest.repos.listCommitStatusesForRef,
+                { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+              );
+              const successStatuses = new Set(
+                statuses.filter(s => s.state === 'success').map(s => s.context)
+              );
+
+              const checkRuns = await github.paginate(
+                github.rest.checks.listForRef,
+                { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+                (response) => response.data
+              );
+              const successChecks = new Set(
+                checkRuns
+                  .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                  .map(cr => cr.name)
+              );
+
+              const allPassing = new Set([...successStatuses, ...successChecks]);
+              const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+
+              if (missing.length === 0) {
+                core.info('All required checks passing on autopilot commit.');
+                return;
+              }
+              if (Date.now() > deadline) {
+                throw new Error(
+                  `Timed out after ${maxMinutes}m waiting for required checks: ${missing.join(', ')}`
+                );
+              }
+              core.info(`Waiting on required checks: ${missing.join(', ')}`);
+              await sleep(intervalMs);
+            }
+
       - name: Approve PR with admin bot
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true'
         env:
