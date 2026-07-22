@@ -952,7 +952,7 @@ object MySqlSourceDatatypeTestOperations :
                 MySqlSourceDatatypeTestCase(
                     "JSON",
                     jsonValues,
-                    LeafAirbyteSchemaType.STRING, // TODO: fix this bug, should be JSONB
+                    LeafAirbyteSchemaType.JSONB,
                     isGlobal = false // different, more compact rendering with CDC, which is OK
                 ),
                 MySqlSourceDatatypeTestCase(
