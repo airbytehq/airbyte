@@ -121,7 +121,7 @@ class FakeSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
+    @JsonIgnore fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
