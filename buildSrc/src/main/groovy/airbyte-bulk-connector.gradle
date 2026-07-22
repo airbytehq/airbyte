@@ -322,12 +322,30 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             }
         }
 
+        project.tasks.register('getCdkCoreType') {
+            description = 'Gets the CDK core type (extract or load) used by the connector'
+            group = 'airbyte-bulk-connector'
+
+            doLast {
+                println extension.core
+            }
+        }
+
         project.tasks.register('upgradeCdk', BumpConnectorCdkVersion)
+
+        // Wire the extension's core type to the upgradeCdk task after the build script is evaluated,
+        // since the connector sets `core = "extract"` or `core = "load"` in its build.gradle.
+        project.afterEvaluate {
+            project.tasks.named('upgradeCdk').configure { task ->
+                task.core = extension.core
+            }
+        }
     }
 }
 
 class BumpConnectorCdkVersion extends DefaultTask {
     private String targetVersion = null
+    String core // 'extract' or 'load', set by the plugin from the extension
 
     BumpConnectorCdkVersion() {
         description = 'Bump the bulk CDK version number'
@@ -342,7 +360,7 @@ class BumpConnectorCdkVersion extends DefaultTask {
     @TaskAction
     void bumpVersion() {
         if (targetVersion == null) {
-            targetVersion = getLocalCdkVersion(project)
+            targetVersion = getLocalCdkVersion(project, core)
             println "No version specified, upgrading to local CDK version: $targetVersion"
         } else {
             println "Version specified, using the provided CDK versionn: $targetVersion"
@@ -351,8 +369,15 @@ class BumpConnectorCdkVersion extends DefaultTask {
         updateCdkVersion(project, targetVersion)
     }
 
-    private static String getLocalCdkVersion(Project project) throws IOException {
-        File versionPropsFile = new File(project.rootDir, 'airbyte-cdk/bulk/version.properties')
+    private static String getLocalCdkVersion(Project project, String core) throws IOException {
+        if (core == null) {
+            throw new IllegalStateException(
+                "Cannot determine CDK version: connector's 'core' type is not set. " +
+                "Ensure the connector's build.gradle sets airbyteBulkConnector { core = 'extract' } or { core = 'load' }."
+            )
+        }
+
+        File versionPropsFile = new File(project.rootDir, "airbyte-cdk/bulk/core/${core}/version.properties")
         if (!versionPropsFile.exists()) {
             throw new FileNotFoundException("CDK version file not found: ${versionPropsFile.absolutePath}")
         }
@@ -368,7 +393,7 @@ class BumpConnectorCdkVersion extends DefaultTask {
             throw new IllegalStateException("'version' property is empty in ${versionPropsFile.absolutePath}")
         }
 
-        project.logger.info("Found local CDK version from version.properties: ${localVersion}")
+        project.logger.info("Found local CDK ${core} version from version.properties: ${localVersion}")
         return localVersion
     }
 
