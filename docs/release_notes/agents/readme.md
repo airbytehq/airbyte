@@ -10,6 +10,38 @@ SDK
 
 - A new `agent_tool` decorator lets you wire connector tools into agent frameworks the SDK doesn't natively support. You write your own execute, inspect, and docs functions, and the decorator steers the agent to inspect the connector and read its docs before running an action. Tool failures now raise a catchable `AirbyteToolError` you can handle in your own tool-dispatch loop.
 
+## July 16, 2026
+
+Web app
+
+- Workspace options are now sorted alphabetically when you create an API key, making it easier to select the correct workspace.
+
+SDK
+
+- The Google Drive SDK now supports typed Context Store searches across file content. Downloads also apply the required media parameter automatically, so you no longer need to pass it yourself to retrieve file bytes.
+
+Connectors
+
+- You can now use semantic search across synced Google Drive files, including text extracted from PDFs, Word documents, spreadsheets, presentations, CSV files, and plain text files. Supported file downloads return readable text so your agent can use the contents directly.
+
+Other
+
+- Context Store now keeps the newest source version of a record when incremental syncs contain conflicting versions, preventing stale records from replacing fresher data in search results.
+
+## July 15, 2026
+
+MCP
+
+- When you use the Airbyte Agent MCP, read-only SQL queries against your synced data no longer prompt for a write approval, so your agents can run those queries without an extra confirmation step.
+
+Connectors
+
+- The Sentry connector now lists your projects through Sentry's organization-scoped endpoint, replacing an endpoint Sentry has deprecated so that listing your projects keeps working reliably.
+
+Other
+
+- Fixed an issue that could prevent your connected data from staying current for agent search when records contained certain timestamp values. Updates now recover on their own so your search results stay fresh.
+
 ## July 14, 2026
 
 SDK
