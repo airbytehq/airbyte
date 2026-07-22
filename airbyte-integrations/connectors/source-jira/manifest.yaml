@@ -14357,6 +14357,14 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator"
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.get('startAt') + response['maxResults'] }}"
+          stop_condition: "{{ response.get('isLast') or response.get('startAt') + response.get('maxResults')
+            >= response.get('total') }}"
+          page_size: 5000
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
