@@ -364,6 +364,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 compression_method=zip_member.compress_type,
                 flag_bits=zip_member.flag_bits,
                 crc=zip_member.CRC,
+                extra=zip_member.extra,
             )
             if remote_file.is_encrypted and not self.config.password:
                 raise CustomFileBasedException(
