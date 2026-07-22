@@ -19,6 +19,18 @@ data:
     - title: Changelog
       url: https://developer.zendesk.com/api-reference/changelog/changelog/
       type: api_release_history
+    - title: Zendesk Chat API
+      url: https://developer.zendesk.com/api-reference/live-chat/chat-api/introduction/
+      type: api_reference
+    - title: Zendesk Chat OAuth
+      url: https://developer.zendesk.com/api-reference/live-chat/chat-api/oauth/
+      type: authentication_guide
+    - title: Zendesk OAuth token expiration
+      url: https://support.zendesk.com/hc/en-us/articles/10212201463962-Announcing-the-required-expiration-of-global-OAuth-access-and-refresh-tokens
+      type: api_deprecations
+    - title: Zopim Chat REST API domain deprecation
+      url: https://support.zendesk.com/hc/en-us/articles/7827476398362-Deprecating-the-Zopim-Chat-REST-API-domain
+      type: api_deprecations
   githubIssueLabel: source-zendesk-chat
   icon: zendesk-chat.svg
   license: ELv2
