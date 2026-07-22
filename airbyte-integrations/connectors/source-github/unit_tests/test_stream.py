@@ -40,7 +40,6 @@ from source_github.streams import (
     PullRequests,
     PullRequestStats,
     Releases,
-    Repositories,
     RepositoryStats,
     Reviews,
     Stargazers,
@@ -540,72 +539,6 @@ def test_stream_users_read(requests_mock):
     assert requests_mock.call_count == 2
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/members?per_page=100"
     assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/members?per_page=100"
-
-
-@patch("time.sleep")
-def test_stream_repositories_404(time_mock, requests_mock):
-    organization_args = {"organizations": ["org_name"]}
-    stream = Repositories(**organization_args)
-
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/repos",
-        status_code=requests.codes.NOT_FOUND,
-        json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/repos#list-organization-repositories"},
-    )
-
-    assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-
-
-@patch("time.sleep")
-def test_stream_repositories_401(time_mock, caplog, requests_mock):
-    organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
-    stream = Repositories(**organization_args)
-
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/repos",
-        status_code=requests.codes.UNAUTHORIZED,
-        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
-    )
-
-    with pytest.raises(AirbyteTracedException):
-        assert list(read_full_refresh(stream)) == []
-
-    assert requests_mock.call_count == 6
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert any(
-        "GitHub authentication failed (HTTP 401) for stream" in msg and "Personal Access Token may need to be renewed" in msg
-        for msg in caplog.messages
-    )
-
-
-@responses.activate
-def test_stream_repositories_read(requests_mock):
-    organization_args = {"organizations": ["org1", "org2"]}
-    stream = Repositories(**organization_args)
-    updated_at = "2020-01-01T00:00:00Z"
-    requests_mock.get(
-        "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
-    )
-    requests_mock.get("https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
-    records = list(read_full_refresh(stream))
-    assert records == [
-        {"id": 1, "organization": "org1", "updated_at": updated_at},
-        {"id": 2, "organization": "org1", "updated_at": updated_at},
-        {"id": 3, "organization": "org2", "updated_at": updated_at},
-    ]
-    assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
-    assert [r.url for r in requests_mock._adapter.request_history][
-        1
-    ] == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
 def test_stream_projects_disabled(requests_mock):
@@ -1956,17 +1889,12 @@ def test_stream_contributor_activity_parse_empty_author(caplog, requests_mock):
 
 def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response, requests_mock):
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte",
         json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
         status_code=200,
     )
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches",
         json={},
         status_code=200,
     )
@@ -2113,17 +2041,12 @@ def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit
     `else: raise e` was paired with the outer `if` instead of the inner `if`, causing
     non-ACCEPTED errors to be silently swallowed."""
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte",
         json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
         status_code=200,
     )
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches",
         json={},
         status_code=200,
     )

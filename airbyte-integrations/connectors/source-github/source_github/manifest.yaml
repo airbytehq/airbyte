@@ -1,6 +1,1050 @@
 version: "7.12.0"
 type: DeclarativeSource
+
+definitions:
+  requester_base:
+    type: HttpRequester
+    url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
+    authenticator:
+      type: RateLimitedMultipleTokenAuthenticator
+      tokens: "{{ config.get('credentials', {}).get('personal_access_token', config.get('credentials', {}).get('access_token', config.get('access_token', ''))) }}"
+      token_delimiter: ","
+      auth_method: "token"
+      header: "Authorization"
+      max_wait_time: "PT{{ config.get('max_waiting_time', 120) }}M"
+      quota_status_source:
+        type: QuotaStatusSource
+        url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
+      quotas:
+        - type: TokenQuota
+          name: rest
+          remaining_path: ["resources", "core", "remaining"]
+          reset_path: ["resources", "core", "reset"]
+          limit_path: ["resources", "core", "limit"]
+        - type: TokenQuota
+          name: graphql
+          remaining_path: ["resources", "graphql", "remaining"]
+          reset_path: ["resources", "graphql", "reset"]
+          limit_path: ["resources", "graphql", "limit"]
+          matchers:
+            - type: HttpRequestRegexMatcher
+              url_path_pattern: "/graphql"
+    request_headers:
+      User-Agent: "PostmanRuntime/7.28.0"
+
+  page_link_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: "page"
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 100
+      start_from_page: 1
+
+  # Resolver streams: internal parent streams used only to drive the shared
+  # partition routers below. They are not exposed in the catalog.
+  #
+  # `repositories_resolver` expands wildcard patterns (e.g. `org/*`) by listing
+  # each wildcard org's repos and filtering them against the anchored pattern
+  # derived inline from config. `repository_stats` validates explicit `org/repo`
+  # entries (404s on bad names) and exposes the canonical `full_name` and
+  # `organization.login`.
+  repositories_resolver_stream:
+    type: DeclarativeStream
+    name: repositories_resolver
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "orgs/{{ stream_partition.organization }}/repos"
+        http_method: GET
+        use_cache: true
+        request_parameters:
+          per_page: "100"
+          sort: "updated"
+          direction: "desc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: >-
+            {{ record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        cursor_field: "organization"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          full_name:
+            type:
+              - "null"
+              - string
+          owner:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+
+  repository_stats_stream:
+    type: DeclarativeStream
+    name: repository_stats
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "repos/{{ stream_partition.repository }}"
+        http_method: GET
+        use_cache: true
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([^*]+)$') | select | unique | list }}"
+        cursor_field: "repository"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          full_name:
+            type:
+              - "null"
+              - string
+          organization:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+
+  # Shared partition routers. Repo-scoped streams reference
+  # `repository_partition_router`; org-scoped streams reference
+  # `organization_partition_router`.
+  #
+  # `repository_partition_router` yields the deduplicated union of
+  # wildcard-expanded repos and validated explicit repos.
+  #
+  # `organization_partition_router` yields the deduplicated union of wildcard
+  # orgs (derived inline from config) and the orgs owning explicit repos.
+  # User-owned repos have no `organization` object, so the substream child
+  # skips them (they contribute a repository but not an organization).
+  repository_partition_router:
+    type: UnionPartitionRouter
+    partition_field: repository
+    partition_routers:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repositories_resolver_stream"
+            parent_key: "full_name"
+            partition_field: "repository"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "full_name"
+            partition_field: "repository"
+
+  organization_partition_router:
+    type: UnionPartitionRouter
+    partition_field: organization
+    partition_routers:
+      - type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        cursor_field: "organization"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "organization/login"
+            partition_field: "organization"
+
+  repositories_stream:
+    type: DeclarativeStream
+    name: repositories
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "orgs/{{ stream_partition.organization }}/repos"
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+          sort: "updated"
+          direction: "desc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          # When config has no wildcard patterns, all org repos intentionally pass,
+          # preserving the legacy `Repositories(pattern=None)` behavior.
+          condition: >-
+            {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
+               or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        $ref: "#/definitions/organization_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["organization"]
+            value: "{{ stream_partition.organization }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the repository.
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: Node ID of the repository.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the repository.
+            type:
+              - "null"
+              - string
+          full_name:
+            description: Full name of the repository.
+            type:
+              - "null"
+              - string
+          owner:
+            description: Owner of the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          private:
+            description: Indicates if the repository is private.
+            type:
+              - "null"
+              - boolean
+          html_url:
+            description: URL of the repository's GitHub page.
+            type:
+              - "null"
+              - string
+          description:
+            description: Brief description of the repository.
+            type:
+              - "null"
+              - string
+          fork:
+            description: Indicates if the repository is a fork.
+            type:
+              - "null"
+              - boolean
+          url:
+            description: URL of the repository.
+            type:
+              - "null"
+              - string
+          archive_url:
+            description: URL to archive the repository.
+            type:
+              - "null"
+              - string
+          assignees_url:
+            description: URL to fetch assignees for issues in the repository.
+            type:
+              - "null"
+              - string
+          blobs_url:
+            description: URL to fetch blobs within the repository.
+            type:
+              - "null"
+              - string
+          branches_url:
+            description: URL to fetch branches within the repository.
+            type:
+              - "null"
+              - string
+          collaborators_url:
+            description: URL to fetch collaborators of the repository.
+            type:
+              - "null"
+              - string
+          comments_url:
+            description: URL to fetch comments within the repository.
+            type:
+              - "null"
+              - string
+          commits_url:
+            description: URL to fetch commits within the repository.
+            type:
+              - "null"
+              - string
+          compare_url:
+            description: URL to compare references within the repository.
+            type:
+              - "null"
+              - string
+          contents_url:
+            description: URL to fetch contents within the repository.
+            type:
+              - "null"
+              - string
+          contributors_url:
+            description: URL to fetch contributors to the repository.
+            type:
+              - "null"
+              - string
+          deployments_url:
+            description: URL to fetch deployments related to the repository.
+            type:
+              - "null"
+              - string
+          downloads_url:
+            description: URL to fetch downloads linked to the repository.
+            type:
+              - "null"
+              - string
+          events_url:
+            description: URL to fetch events related to the repository.
+            type:
+              - "null"
+              - string
+          forks_url:
+            description: URL to fetch forks of the repository.
+            type:
+              - "null"
+              - string
+          git_commits_url:
+            description: URL to fetch git commits within the repository.
+            type:
+              - "null"
+              - string
+          git_refs_url:
+            description: URL to fetch git references within the repository.
+            type:
+              - "null"
+              - string
+          git_tags_url:
+            description: URL to fetch git tags within the repository.
+            type:
+              - "null"
+              - string
+          git_url:
+            description: URL for Git protocol to interact with the repository.
+            type:
+              - "null"
+              - string
+          issue_comment_url:
+            description: URL to fetch issue comments within the repository.
+            type:
+              - "null"
+              - string
+          issue_events_url:
+            description: URL to fetch issue events within the repository.
+            type:
+              - "null"
+              - string
+          issues_url:
+            description: URL to fetch issues within the repository.
+            type:
+              - "null"
+              - string
+          keys_url:
+            description: URL to fetch keys associated with the repository.
+            type:
+              - "null"
+              - string
+          labels_url:
+            description: URL to fetch labels associated with the repository.
+            type:
+              - "null"
+              - string
+          languages_url:
+            description: URL to fetch languages used in the repository.
+            type:
+              - "null"
+              - string
+          merges_url:
+            description: URL to fetch merges related to the repository.
+            type:
+              - "null"
+              - string
+          milestones_url:
+            description: URL to fetch milestones within the repository.
+            type:
+              - "null"
+              - string
+          notifications_url:
+            description: URL to manage notifications for the repository.
+            type:
+              - "null"
+              - string
+          pulls_url:
+            description: URL to fetch pull requests within the repository.
+            type:
+              - "null"
+              - string
+          releases_url:
+            description: URL to fetch releases related to the repository.
+            type:
+              - "null"
+              - string
+          ssh_url:
+            description: SSH URL of the repository.
+            type:
+              - "null"
+              - string
+          stargazers_url:
+            description: URL to fetch users who starred the repository.
+            type:
+              - "null"
+              - string
+          statuses_url:
+            description: URL to fetch commit statuses within the repository.
+            type:
+              - "null"
+              - string
+          subscribers_url:
+            description: URL to fetch subscribers of the repository.
+            type:
+              - "null"
+              - string
+          subscription_url:
+            description: URL to manage subscriptions to notifications for the repository.
+            type:
+              - "null"
+              - string
+          tags_url:
+            description: URL to fetch tags within the repository.
+            type:
+              - "null"
+              - string
+          teams_url:
+            description: URL to manage repository teams.
+            type:
+              - "null"
+              - string
+          trees_url:
+            description: URL to fetch trees within the repository.
+            type:
+              - "null"
+              - string
+          clone_url:
+            description: URL to clone the repository.
+            type:
+              - "null"
+              - string
+          mirror_url:
+            description: URL of the mirror repository.
+            type:
+              - "null"
+              - string
+          hooks_url:
+            description: URL to manage webhooks for the repository.
+            type:
+              - "null"
+              - string
+          svn_url:
+            description: SVN URL of the repository.
+            type:
+              - "null"
+              - string
+          homepage:
+            description: URL of the repository's homepage.
+            type:
+              - "null"
+              - string
+          language:
+            description: Main programming language used in the repository.
+            type:
+              - "null"
+              - string
+          forks_count:
+            description: Count of forks for the repository.
+            type:
+              - "null"
+              - integer
+          stargazers_count:
+            description: Number of stars the repository has received.
+            type:
+              - "null"
+              - integer
+          watchers_count:
+            description: Count of watchers for the repository.
+            type:
+              - "null"
+              - integer
+          size:
+            description: Size of the repository in kilobytes.
+            type:
+              - "null"
+              - integer
+          default_branch:
+            description: Default branch of the repository.
+            type:
+              - "null"
+              - string
+          open_issues_count:
+            description: Count of open issues in the repository.
+            type:
+              - "null"
+              - integer
+          is_template:
+            description: Indicates if the repository is a template.
+            type:
+              - "null"
+              - boolean
+          topics:
+            description: Topics associated with the repository.
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual topic related to the repository.
+              type:
+                - "null"
+                - string
+          license:
+            description: License information of the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              key:
+                description: Key identifier of the license.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the license.
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL to access license details.
+                type:
+                  - "null"
+                  - string
+              spdx_id:
+                description: SPDX identifier of the license.
+                type:
+                  - "null"
+                  - string
+              node_id:
+                description: Node ID of the license.
+                type:
+                  - "null"
+                  - string
+              html_url:
+                description: URL to view license details on the web.
+                type:
+                  - "null"
+                  - string
+          has_issues:
+            description: Indicates if the repository has issues enabled.
+            type:
+              - "null"
+              - boolean
+          has_projects:
+            description: Indicates if the repository has projects enabled.
+            type:
+              - "null"
+              - boolean
+          has_wiki:
+            description: Indicates if the repository has a wiki enabled.
+            type:
+              - "null"
+              - boolean
+          has_pages:
+            description: Indicates if the repository has GitHub Pages enabled.
+            type:
+              - "null"
+              - boolean
+          has_downloads:
+            description: Indicates if the repository has downloads available.
+            type:
+              - "null"
+              - boolean
+          archived:
+            description: Indicates if the repository is archived.
+            type:
+              - "null"
+              - boolean
+          disabled:
+            description: Indicates if the repository is disabled.
+            type:
+              - "null"
+              - boolean
+          visibility:
+            description: Visibility status of the repository.
+            type:
+              - "null"
+              - string
+          pushed_at:
+            description: Date and time when the repository was last pushed to.
+            type: string
+            format: date-time
+          created_at:
+            description: Date and time when the repository was created.
+            type: string
+            format: date-time
+          updated_at:
+            description: Date and time when the repository was last updated.
+            type: string
+            format: date-time
+          permissions:
+            description: Permissions granted to different roles for the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              admin:
+                description: Admin permission level.
+                type:
+                  - "null"
+                  - boolean
+              push:
+                description: Push permission level.
+                type:
+                  - "null"
+                  - boolean
+              pull:
+                description: Pull permission level.
+                type:
+                  - "null"
+                  - boolean
+              maintain:
+                description: Maintain permission level.
+                type:
+                  - "null"
+                  - boolean
+              triage:
+                description: Triage permission level.
+                type:
+                  - "null"
+                  - boolean
+          allow_forking:
+            description: Indicates if forking is allowed for the repository.
+            type:
+              - "null"
+              - boolean
+          forks:
+            description: Forks information related to the repository.
+            type:
+              - "null"
+              - integer
+          has_discussions:
+            description: Indicates if the repository has discussions.
+            type:
+              - "null"
+              - boolean
+          open_issues:
+            description: Number of open issues in the repository.
+            type:
+              - "null"
+              - integer
+          organization:
+            description: Organization the repository belongs to.
+            type:
+              - "null"
+              - string
+          watchers:
+            description: Watchers of the repository.
+            type:
+              - "null"
+              - integer
+          web_commit_signoff_required:
+            description: Indicates if web commit sign-off is required for contributions.
+            type:
+              - "null"
+              - boolean
+          security_and_analysis:
+            description: Security and analysis settings of the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              secret_scanning:
+                description: Secret scanning status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+              secret_scanning_push_protection:
+                description: Secret scanning push protection status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+              secret_scanning_validity_checks:
+                description: Secret scanning validity checks status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+              dependabot_security_updates:
+                description: Dependabot security updates status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Per GitHub docs, secondary rate limits allow no more than 900 points per
+        # minute for REST API endpoints (GET/HEAD/OPTIONS requests cost 1 point).
+        # https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits
+        - limit: 900
+          interval: PT1M
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 25
+
+streams:
+  - $ref: "#/definitions/repositories_stream"
+
 check:
   type: CheckStream
   stream_names: []
-streams: []
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/github
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: GitHub Source Spec
+    type: object
+    required:
+      - credentials
+      - repositories
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authentication
+        description: Choose how to authenticate to GitHub
+        type: object
+        order: 0
+        group: auth
+        oneOf:
+          - type: object
+            title: OAuth
+            required:
+              - access_token
+            properties:
+              option_title:
+                type: string
+                const: OAuth Credentials
+                order: 0
+              access_token:
+                type: string
+                title: Access Token
+                description: OAuth access token
+                airbyte_secret: true
+              client_id:
+                type: string
+                title: Client Id
+                description: OAuth Client Id
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client secret
+                description: OAuth Client secret
+                airbyte_secret: true
+          - type: object
+            title: Personal Access Token
+            required:
+              - personal_access_token
+            properties:
+              option_title:
+                type: string
+                const: PAT Credentials
+                order: 0
+              personal_access_token:
+                type: string
+                title: Personal Access Tokens
+                description: Log into GitHub and then generate a <a href="https://github.com/settings/tokens">personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with ","
+                airbyte_secret: true
+      repository:
+        type: string
+        examples:
+          - airbytehq/airbyte airbytehq/another-repo
+          - airbytehq/*
+          - airbytehq/airbyte
+        title: GitHub Repositories
+        description: (DEPRECATED) Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.
+        airbyte_hidden: true
+        pattern: ^([\w.-]+/(\*|[\w.-]+(?<!\.git))\s+)*[\w.-]+/(\*|[\w.-]+(?<!\.git))$
+        pattern_descriptor: org/repo org/another-repo org/*
+      repositories:
+        type: array
+        items:
+          type: string
+          pattern: ^[\w.-]+/(([\w.-]*\*)|[\w.-]+(?<!\.git))$
+        minItems: 1
+        examples:
+          - airbytehq/airbyte
+          - airbytehq/another-repo
+          - airbytehq/*
+          - airbytehq/a*
+        title: GitHub Repositories
+        description: List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a*` for matching multiple repositories by pattern.
+        order: 1
+        pattern_descriptor: org/repo org/another-repo org/* org/a*
+      start_date:
+        type: string
+        title: Start date
+        description: The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. If the date is not set, all data will be replicated.  For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the <a href="https://docs.airbyte.com/integrations/sources/github">docs</a> for more info
+        examples:
+          - "2021-03-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
+        order: 2
+        format: date-time
+      api_url:
+        type: string
+        examples:
+          - https://github.com
+          - https://github.company.org
+        title: API URL
+        default: https://api.github.com/
+        description: Please enter your basic URL from self-hosted GitHub instance or leave it empty to use GitHub.
+        order: 3
+      branch:
+        type: string
+        title: Branch
+        examples:
+          - airbytehq/airbyte/master airbytehq/airbyte/my-branch
+        description: (DEPRECATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.
+        airbyte_hidden: true
+        pattern_descriptor: org/repo/branch1 org/repo/branch2
+      branches:
+        type: array
+        items:
+          type: string
+        title: Branches
+        examples:
+          - airbytehq/airbyte/master
+          - airbytehq/airbyte/my-branch
+        description: List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.
+        order: 4
+        pattern_descriptor: org/repo/branch1 org/repo/branch2
+      max_waiting_time:
+        type: integer
+        title: Max Waiting Time (in minutes)
+        examples:
+          - 10
+          - 60
+          - 120
+        default: 120
+        minimum: 1
+        maximum: 240
+        description: Max time (in minutes) the connector will wait when all API tokens are rate-limited before failing. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
+        order: 5
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs but increase the risk of hitting GitHub's secondary rate limits.
+        default: 4
+        minimum: 1
+        maximum: 25
+        order: 6
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - option_title
+    predicate_value: OAuth Credentials
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: repo
+          - scope: read:org
+          - scope: read:repo_hook
+          - scope: read:user
+          - scope: read:project
+          - scope: read:discussion
+          - scope: workflow
+        consent_url: https://github.com/login/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}
+        access_token_url: https://github.com/login/oauth/access_token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
+        extract_output:
+          - access_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
