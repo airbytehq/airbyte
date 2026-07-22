@@ -84,6 +84,27 @@ private val stream =
         namespaceMapper = NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
     )
 
+private val nestedStream =
+    DestinationStream(
+        unmappedNamespace = "test_ns",
+        unmappedName = "test_name",
+        Append,
+        ObjectType(
+            linkedMapOf(
+                "foo" to FieldType(StringType, nullable = true),
+                "nested" to
+                    FieldType(
+                        ObjectType(linkedMapOf("a" to FieldType(StringType, nullable = true))),
+                        nullable = true,
+                    ),
+            )
+        ),
+        generationId = 42,
+        minimumGenerationId = 0,
+        syncId = 123,
+        namespaceMapper = NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+    )
+
 private val record =
     DestinationRecordRaw(
         stream,
@@ -96,6 +117,24 @@ private val record =
                         .withNamespace("test_ns")
                         .withEmittedAt(1234)
                         .withData(Jsons.deserialize("""{"foo": "bar"}""")),
+                ),
+        ),
+        serializedSizeBytes = 42,
+        airbyteRawId = UUID.fromString("0197604b-ca2e-7e7c-9126-dacc18b68e8e"),
+    )
+
+private val recordWithNestedObject =
+    DestinationRecordRaw(
+        nestedStream,
+        DestinationRecordJsonSource(
+            AirbyteMessage()
+                .withType(AirbyteMessage.Type.RECORD)
+                .withRecord(
+                    AirbyteRecordMessage()
+                        .withStream("test_name")
+                        .withNamespace("test_ns")
+                        .withEmittedAt(1234)
+                        .withData(Jsons.deserialize("""{"foo": "bar", "nested": {"a": 1}}""")),
                 ),
         ),
         serializedSizeBytes = 42,
@@ -125,6 +164,46 @@ class JsonFormattingWriterTest {
         assertEquals(
             """
             {"_airbyte_raw_id":"0197604b-ca2e-7e7c-9126-dacc18b68e8e","_airbyte_extracted_at":1234,"_airbyte_meta":{"sync_id":123,"changes":[]},"_airbyte_generation_id":42,"foo":"bar"}
+            
+            """.trimIndent(),
+            os.toByteArray().decodeToString(),
+        )
+    }
+
+    @Test
+    fun testAcceptWithStringifyNoFlattening() {
+        val os = ByteArrayOutputStream()
+        val writer =
+            JsonFormattingWriter(
+                stream,
+                os,
+                rootLevelFlattening = false,
+                stringifyObjects = true,
+            )
+        writer.accept(recordWithNestedObject)
+        assertEquals(
+            """
+            {"_airbyte_raw_id":"0197604b-ca2e-7e7c-9126-dacc18b68e8e","_airbyte_extracted_at":1234,"_airbyte_meta":"{\"sync_id\":123,\"changes\":[]}","_airbyte_generation_id":42,"_airbyte_data":"{\"foo\":\"bar\",\"nested\":{\"a\":1}}"}
+            
+            """.trimIndent(),
+            os.toByteArray().decodeToString(),
+        )
+    }
+
+    @Test
+    fun testAcceptWithStringifyAndFlattening() {
+        val os = ByteArrayOutputStream()
+        val writer =
+            JsonFormattingWriter(
+                nestedStream,
+                os,
+                rootLevelFlattening = true,
+                stringifyObjects = true,
+            )
+        writer.accept(recordWithNestedObject)
+        assertEquals(
+            """
+            {"_airbyte_raw_id":"0197604b-ca2e-7e7c-9126-dacc18b68e8e","_airbyte_extracted_at":1234,"_airbyte_meta":"{\"sync_id\":123,\"changes\":[]}","_airbyte_generation_id":42,"foo":"bar","nested":"{\"a\":1}"}
             
             """.trimIndent(),
             os.toByteArray().decodeToString(),

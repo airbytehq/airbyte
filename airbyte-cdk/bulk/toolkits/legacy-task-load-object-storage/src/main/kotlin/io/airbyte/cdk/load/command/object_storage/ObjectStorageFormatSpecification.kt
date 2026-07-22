@@ -26,11 +26,15 @@ interface ObjectStorageFormatSpecificationProvider {
     fun toObjectStorageFormatConfiguration(): ObjectStorageFormatConfiguration {
         return when (format) {
             is JsonFormatSpecification ->
-                JsonFormatConfiguration(
-                    rootLevelFlattening =
-                        (format as JsonFormatSpecification).flattening ==
-                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
-                )
+                (format as JsonFormatSpecification).let {
+                    JsonFormatConfiguration(
+                        rootLevelFlattening =
+                            it.flattening ==
+                                FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING,
+                        stringifyObjects =
+                            it.stringify == StringifySpecificationProvider.Stringify.STRINGIFY,
+                    )
+                }
             is CSVFormatSpecification ->
                 CSVFormatConfiguration(
                     rootLevelFlattening =
@@ -76,8 +80,13 @@ class JsonFormatSpecification(
     @JsonProperty("format_type")
     override val formatType: Type = Type.JSONL,
     override val flattening: FlatteningSpecificationProvider.Flattening? =
-        FlatteningSpecificationProvider.Flattening.NO_FLATTENING
-) : ObjectStorageFormatSpecification(formatType), FlatteningSpecificationProvider
+        FlatteningSpecificationProvider.Flattening.NO_FLATTENING,
+    override val stringify: StringifySpecificationProvider.Stringify? =
+        StringifySpecificationProvider.Stringify.DEFAULT,
+) :
+    ObjectStorageFormatSpecification(formatType),
+    FlatteningSpecificationProvider,
+    StringifySpecificationProvider
 
 interface FlatteningSpecificationProvider {
     @get:JsonSchemaTitle("Flattening")
@@ -87,6 +96,20 @@ interface FlatteningSpecificationProvider {
     enum class Flattening(@get:JsonValue val flatteningName: String) {
         NO_FLATTENING("No flattening"),
         ROOT_LEVEL_FLATTENING("Root level flattening")
+    }
+}
+
+interface StringifySpecificationProvider {
+    @get:JsonSchemaTitle("Stringify JSON")
+    @get:JsonPropertyDescription(
+        "Whether root-level objects in the JSONL output (including _airbyte_data) should be converted to JSON strings. Useful for Hive JsonSerDe compatibility. Default preserves objects as objects.",
+    )
+    @get:JsonProperty("stringify", defaultValue = "Default")
+    val stringify: Stringify?
+
+    enum class Stringify(@get:JsonValue val stringifyName: String) {
+        DEFAULT("Default"),
+        STRINGIFY("Stringify")
     }
 }
 
@@ -102,7 +125,8 @@ sealed interface ObjectStorageFormatConfiguration {
 
 data class JsonFormatConfiguration(
     override val extension: String = "jsonl",
-    override val rootLevelFlattening: Boolean = false
+    override val rootLevelFlattening: Boolean = false,
+    val stringifyObjects: Boolean = false,
 ) : ObjectStorageFormatConfiguration {}
 
 data class CSVFormatConfiguration(

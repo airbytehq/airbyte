@@ -144,7 +144,15 @@
                     "default" : "No flattening",
                     "enum" : [ "No flattening", "Root level flattening" ],
                     "title" : "Flattening"
+                  },
+                  "stringify" : {
+                    "type" : "string",
+                    "description" : "Whether root-level objects in the JSONL output (including _airbyte_data) should be converted to JSON strings. Useful for Hive JsonSerDe compatibility. Default preserves objects as objects.",
+                    "default" : "Default",
+                    "enum" : [ "Default", "Stringify" ],
+                    "title" : "Stringify JSON"
                   }
+
                 },
                 "required" : [ "format_type" ]
               } ],
