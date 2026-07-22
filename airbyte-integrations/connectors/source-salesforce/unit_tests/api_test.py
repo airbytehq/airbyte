@@ -6,11 +6,13 @@ import csv
 import io
 import logging
 import re
+import urllib.parse
 from datetime import datetime, timedelta
 from typing import List
 from unittest.mock import Mock
 
 import freezegun
+import jwt
 import pytest
 import requests_mock
 from config_builder import ConfigBuilder
@@ -131,6 +133,146 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+
+
+def _generate_rsa_private_key_pem():
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    pem = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    return pem.decode(), key.public_key()
+
+
+@pytest.mark.parametrize(
+    "is_sandbox, host",
+    [(False, "login.salesforce.com"), (True, "test.salesforce.com")],
+    ids=["production", "sandbox"],
+)
+def test_jwt_login_builds_signed_assertion(requests_mock, is_sandbox, host):
+    private_key_pem, public_key = _generate_rsa_private_key_pem()
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id="consumer_key",
+        username="user@example.com",
+        private_key=private_key_pem,
+        is_sandbox=is_sandbox,
+    )
+    requests_mock.register_uri(
+        "POST",
+        f"https://{host}/services/oauth2/token",
+        json={"access_token": "the_token", "instance_url": "https://instance_url"},
+    )
+
+    sf.login()
+
+    assert sf.access_token == "the_token"
+    assert sf.instance_url == "https://instance_url"
+
+    body = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))
+    assert body["grant_type"] == "urn:ietf:params:oauth:grant-type:jwt-bearer"
+    assert "assertion" in body
+    assert "refresh_token" not in body
+
+    decoded = jwt.decode(body["assertion"], public_key, algorithms=["RS256"], audience=f"https://{host}")
+    assert decoded["iss"] == "consumer_key"
+    assert decoded["sub"] == "user@example.com"
+    assert decoded["aud"] == f"https://{host}"
+    assert "exp" in decoded
+
+
+def test_refresh_token_login_is_unchanged(requests_mock):
+    sf = Salesforce(
+        client_id="client_id",
+        client_secret="client_secret",
+        refresh_token="refresh_token",
+        is_sandbox=False,
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "the_token", "instance_url": "https://instance_url"},
+    )
+
+    sf.login()
+
+    body = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))
+    assert body["grant_type"] == "refresh_token"
+    assert body["client_id"] == "client_id"
+    assert body["client_secret"] == "client_secret"
+    assert body["refresh_token"] == "refresh_token"
+    assert "assertion" not in body
+
+
+@pytest.mark.parametrize(
+    "client_id, username, include_private_key, expected_field",
+    [
+        (None, "user@example.com", True, "client_id"),
+        ("consumer_key", None, True, "username"),
+        ("consumer_key", "user@example.com", False, "private_key"),
+    ],
+    ids=["missing_client_id", "missing_username", "missing_private_key"],
+)
+def test_jwt_login_requires_required_fields(client_id, username, include_private_key, expected_field):
+    private_key_pem = _generate_rsa_private_key_pem()[0] if include_private_key else None
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id=client_id,
+        username=username,
+        private_key=private_key_pem,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "JWT authentication requires" in err.value.message
+    assert expected_field in err.value.message
+
+
+def test_jwt_login_rejects_malformed_private_key():
+    malformed_pem = "not-a-valid-pem-key"
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id="consumer_key",
+        username="user@example.com",
+        private_key=malformed_pem,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "Invalid private key" in err.value.message
+
+
+@pytest.mark.parametrize(
+    "client_id, client_secret, refresh_token, expected_field",
+    [
+        (None, "client_secret", "refresh_token", "client_id"),
+        ("client_id", None, "refresh_token", "client_secret"),
+        ("client_id", "client_secret", None, "refresh_token"),
+    ],
+    ids=["missing_client_id", "missing_client_secret", "missing_refresh_token"],
+)
+def test_client_login_requires_required_fields(client_id, client_secret, refresh_token, expected_field):
+    sf = Salesforce(
+        auth_type="Client",
+        client_id=client_id,
+        client_secret=client_secret,
+        refresh_token=refresh_token,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "Client authentication requires" in err.value.message
+    assert expected_field in err.value.message
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):

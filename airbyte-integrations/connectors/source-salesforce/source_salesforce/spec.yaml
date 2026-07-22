@@ -5,9 +5,34 @@ connectionSpecification:
   type: object
   required:
     - client_id
-    - client_secret
-    - refresh_token
   additionalProperties: true
+  allOf:
+    - if:
+        anyOf:
+          - not:
+              required:
+                - auth_type
+          - properties:
+              auth_type:
+                const: Client
+            required:
+              - auth_type
+      then:
+        required:
+          - client_id
+          - client_secret
+          - refresh_token
+    - if:
+        properties:
+          auth_type:
+            const: JWT
+        required:
+          - auth_type
+      then:
+        required:
+          - client_id
+          - username
+          - private_key
   properties:
     is_sandbox:
       title: Sandbox
@@ -18,18 +43,30 @@ connectionSpecification:
       default: false
       order: 1
     auth_type:
+      title: Authentication Type
+      description: >-
+        How to log in. <b>Client (OAuth)</b>: default, uses a refresh token from the
+        "Authenticate" button. <b>JWT</b>: signs a <a
+        href="https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5">JWT
+        Bearer Flow</a> token with your app's private key, no refresh token needed.
       type: string
-      const: Client
+      enum:
+        - Client
+        - JWT
+      default: Client
+      order: 0
     client_id:
       title: Client ID
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+        (the connected app's Consumer Key). Required for both authentication types.
       type: string
       order: 2
     client_secret:
       title: Client Secret
       description: Enter your Salesforce developer application's <a
-        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>.
+        Required for <b>Client (OAuth)</b> authentication.
       type: string
       airbyte_secret: true
       order: 3
@@ -38,9 +75,27 @@ connectionSpecification:
       description: >-
         Enter your application's <a
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+        Required for <b>Client (OAuth)</b> authentication.
       type: string
       airbyte_secret: true
       order: 4
+    username:
+      title: Username
+      description: >-
+        The Salesforce username (the <code>sub</code> claim) the JWT assertion is issued for.
+        This user must be pre-authorized for the connected app. Required for <b>JWT</b> authentication.
+      type: string
+      order: 5
+    private_key:
+      title: Private Key
+      description: >-
+        The RSA private key (PEM format) whose matching certificate is uploaded to the connected
+        app's "Use digital signatures" setting. Used to sign the JWT assertion. Required for
+        <b>JWT</b> authentication.
+      type: string
+      airbyte_secret: true
+      multiline: true
+      order: 6
     start_date:
       title: Start Date
       description: >-
@@ -53,19 +108,19 @@ connectionSpecification:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
       format: date-time
-      order: 5
+      order: 7
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 6
+      order: 8
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 7
+      order: 9
       examples:
         - PT12H
         - P7D
@@ -83,7 +138,7 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 8
+      order: 10
       examples:
         - PT10M
         - PT30M
@@ -97,10 +152,10 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 10
+      order: 11
     streams_criteria:
       type: array
-      order: 9
+      order: 12
       items:
         type: object
         required:

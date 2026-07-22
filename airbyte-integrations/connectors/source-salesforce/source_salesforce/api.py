@@ -7,6 +7,7 @@ import logging
 import time
 from typing import Any, List, Mapping, Optional, Tuple
 
+import jwt  # type: ignore[import]
 import requests  # type: ignore[import]
 from requests import adapters as request_adapters
 from requests.exceptions import RequestException  # type: ignore[import]
@@ -299,12 +300,18 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
+        auth_type: str = None,
+        username: str = None,
+        private_key: str = None,
         **kwargs: Any,
     ) -> None:
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
         self.client_secret = client_secret
+        self.auth_type = auth_type
+        self.username = username
+        self.private_key = private_key
         self.access_token = None
         self.instance_url = ""
         self.session = requests.Session()
@@ -369,14 +376,56 @@ class Salesforce:
         _, resp = self._http_client.send_request(http_method, url, headers=headers, data=body, request_kwargs={})
         return resp
 
+    def _use_jwt_auth(self) -> bool:
+        return self.auth_type == "JWT"
+
+    def _build_jwt_assertion(self) -> str:
+        """Sign a short-lived RS256 JWT for the Salesforce OAuth 2.0 JWT Bearer flow.
+
+        https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm
+        """
+        audience = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com"
+        payload = {
+            "iss": self.client_id,  # connected app consumer key
+            "sub": self.username,  # Salesforce username the token is issued for
+            "aud": audience,
+            "exp": int(time.time()) + 180,  # Salesforce requires exp within 5 minutes
+        }
+        return jwt.encode(payload, self.private_key, algorithm="RS256")
+
     def login(self):
         login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
-        login_body = {
-            "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "refresh_token": self.refresh_token,
-        }
+        if self._use_jwt_auth():
+            missing_fields = [field for field in ("client_id", "username", "private_key") if not getattr(self, field)]
+            if missing_fields:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"JWT authentication requires the following fields: {', '.join(missing_fields)}.",
+                )
+            try:
+                assertion = self._build_jwt_assertion()
+            except (ValueError, jwt.exceptions.PyJWTError) as e:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"Invalid private key for JWT authentication: {e}.",
+                ) from e
+            login_body = {
+                "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                "assertion": assertion,
+            }
+        else:
+            missing_fields = [field for field in ("client_id", "client_secret", "refresh_token") if not getattr(self, field)]
+            if missing_fields:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"Client authentication requires the following fields: {', '.join(missing_fields)}.",
+                )
+            login_body = {
+                "grant_type": "refresh_token",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "refresh_token": self.refresh_token,
+            }
         resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
         auth = resp.json()
         self.access_token = auth["access_token"]
