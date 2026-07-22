@@ -312,12 +312,12 @@ jobs:
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          # Pin author/committer to the octavia-bot-hoard App identity (matching the
-          # "Configure git author" step). Otherwise peter-evans defaults the author to
-          # ${{ github.actor }}, which for scheduled runs is whoever last enabled the
-          # workflow — leaking a real user into the Co-authored-by trailer on merge.
-          author: "${{ steps.get-app-token.outputs.app-slug }}[bot] <${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com>"
-          committer: "${{ steps.get-app-token.outputs.app-slug }}[bot] <${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com>"
+          # Pin author/committer to the octavia-bot-hoard App identity. Otherwise
+          # peter-evans defaults the author to ${{ github.actor }}, which for scheduled
+          # runs is whoever last enabled the workflow — leaking a real user into the
+          # Co-authored-by trailer on merge.
+          author: "octavia-bot-hoard[bot] <230633153+octavia-bot-hoard[bot]@users.noreply.github.com>"
+          committer: "octavia-bot-hoard[bot] <230633153+octavia-bot-hoard[bot]@users.noreply.github.com>"
           commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies [skip ci]"
           branch: "up-to-date/${{ env.CONNECTOR_NAME }}"
           base: ${{ github.event.repository.default_branch }}
