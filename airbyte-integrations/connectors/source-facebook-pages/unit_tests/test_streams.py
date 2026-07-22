@@ -121,6 +121,15 @@ def test_without_catalog_at_init_requests_all_fields():
         ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
 
 
+REQUIRED_PERMISSIONS = (
+    "pages_read_engagement",
+    "pages_read_user_content",
+    "pages_show_list",
+    "read_insights",
+    "catalog_management",
+)
+
+
 def test_facebook_app_approval_error_is_config_error():
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
     response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
@@ -130,3 +139,16 @@ def test_facebook_app_approval_error_is_config_error():
     assert response_filter["error_message"].startswith(
         "The application used to create the Facebook access token has not been approved to use this API."
     )
+    for permission in REQUIRED_PERMISSIONS:
+        assert permission in response_filter["error_message"]
+
+
+def test_facebook_permission_error_is_config_error():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][1]
+
+    assert response_filter["error_message_contains"] == "Requires"
+    assert response_filter["failure_type"] == FailureType.config_error.value
+    assert "Meta reported: {{ response.error.message }}" in response_filter["error_message"]
+    for permission in REQUIRED_PERMISSIONS:
+        assert permission in response_filter["error_message"]
