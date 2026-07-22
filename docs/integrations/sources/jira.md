@@ -250,7 +250,7 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.1 | 2026-07-22 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Increase `issue_worklogs` page size to 5000 to reduce the number of paginated requests |
+| 6.0.1 | 2026-07-22 | [82702](https://github.com/airbytehq/airbyte/pull/82702) | Increase `issue_worklogs` page size to 5000 to reduce the number of paginated requests |
 | 6.0.0 | 2026-06-24 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
 | 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
 | 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
