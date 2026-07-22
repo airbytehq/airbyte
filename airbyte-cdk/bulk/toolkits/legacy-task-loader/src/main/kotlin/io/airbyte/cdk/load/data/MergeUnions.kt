@@ -24,6 +24,9 @@ class MergeUnions : AirbyteSchemaIdentityMapper {
                 // If this is a union of a union, recursively merge the other union's options in
                 mergeOptions(into, option.options)
             } else if (option is ObjectType) {
+                // A concrete ObjectType subsumes schemaless object variants
+                into.removeAll { it is ObjectTypeWithoutSchema || it is ObjectTypeWithEmptySchema }
+
                 val existingObjOption: ObjectType? = into.find { it is ObjectType } as ObjectType?
                 if (existingObjOption == null) {
                     // No other object in the set, so just add this one
@@ -49,6 +52,19 @@ class MergeUnions : AirbyteSchemaIdentityMapper {
                     // If the fields are identical, we can just keep the existing field
                 }
                 into.add(ObjectType(newProperties))
+            } else if (option is ObjectTypeWithoutSchema || option is ObjectTypeWithEmptySchema) {
+                // Schemaless object variants collapse to the same name as ObjectType.
+                // Keep at most one: prefer an existing concrete ObjectType or
+                // an already-present schemaless variant.
+                val hasObjectLike =
+                    into.any {
+                        it is ObjectType ||
+                            it is ObjectTypeWithoutSchema ||
+                            it is ObjectTypeWithEmptySchema
+                    }
+                if (!hasObjectLike) {
+                    into.add(option)
+                }
             } else {
                 into.add(option)
             }
