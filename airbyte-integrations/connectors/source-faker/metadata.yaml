@@ -3,6 +3,7 @@ data:
   ab_internal:
     ql: 300
     sl: 100
+    # test comment for hydra automerge dry-run
   allowedHosts:
     hosts: []
   connectorBuildOptions:
