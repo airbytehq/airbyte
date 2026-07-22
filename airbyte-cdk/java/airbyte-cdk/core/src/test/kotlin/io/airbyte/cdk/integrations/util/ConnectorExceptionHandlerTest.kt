@@ -109,6 +109,85 @@ internal class ConnectorExceptionHandlerTest {
         assertEquals(true, actualResult)
     }
 
+    @Test
+    fun `test getExternalMessage() with Connection refused`() {
+        val e = Exception("Connection refused")
+        val actualMessage = exceptionHandler.getExternalMessage(e)
+        assertEquals(
+            "Connection to the configured host refused. Verify the host and port in the connection settings.",
+            actualMessage,
+        )
+    }
+
+    @Test
+    fun `test checkErrorType() with Connection refused is CONFIG`() {
+        val e = Exception("Connection refused")
+        assertEquals(true, exceptionHandler.checkErrorType(e, FailureType.CONFIG))
+        assertEquals(false, exceptionHandler.checkErrorType(e, FailureType.TRANSIENT))
+    }
+
+    @Test
+    fun `test getRootException() with nested Connection refused`() {
+        val root = Exception("Connection refused")
+        val wrapped = RuntimeException("java.net.ConnectException: Connection refused", root)
+        val outer = RuntimeException("HikariPool-1 - Connection is not available", wrapped)
+        val result = exceptionHandler.getRootException(outer)
+        // getRootException walks outer→inner and returns the first recognizable match
+        assertEquals(wrapped, result)
+    }
+
+    @Test
+    fun `test getExternalMessage() with UnknownHostException`() {
+        val e = Exception("badhost.example.com: Name or service not known")
+        val actualMessage = exceptionHandler.getExternalMessage(e)
+        assertEquals(
+            "Configured host name could not be resolved. Verify the host value in the connection settings.",
+            actualMessage,
+        )
+    }
+
+    @Test
+    fun `test checkErrorType() with UnknownHostException is CONFIG`() {
+        val e = Exception("java.net.UnknownHostException: badhost.example.com")
+        assertEquals(true, exceptionHandler.checkErrorType(e, FailureType.CONFIG))
+    }
+
+    @Test
+    fun `test getExternalMessage() with HikariPool connection timeout`() {
+        val e =
+            Exception("HikariPool-1 - Connection is not available, request timed out after 10001ms")
+        val actualMessage = exceptionHandler.getExternalMessage(e)
+        assertEquals("Connection pool timed out.", actualMessage)
+    }
+
+    @Test
+    fun `test checkErrorType() with HikariPool timeout is TRANSIENT`() {
+        val e =
+            Exception("HikariPool-1 - Connection is not available, request timed out after 10001ms")
+        assertEquals(true, exceptionHandler.checkErrorType(e, FailureType.TRANSIENT))
+        assertEquals(false, exceptionHandler.checkErrorType(e, FailureType.CONFIG))
+    }
+
+    @Test
+    fun `test getExternalMessage() with SocketTimeoutException`() {
+        val e = Exception("Connect timed out")
+        val actualMessage = exceptionHandler.getExternalMessage(e)
+        assertEquals("Network connection timed out.", actualMessage)
+    }
+
+    @Test
+    fun `test getExternalMessage() with Read timed out`() {
+        val e = Exception("Read timed out")
+        val actualMessage = exceptionHandler.getExternalMessage(e)
+        assertEquals("Network connection timed out.", actualMessage)
+    }
+
+    @Test
+    fun `test checkErrorType() with SocketTimeout is TRANSIENT`() {
+        val e = Exception("Connect timed out")
+        assertEquals(true, exceptionHandler.checkErrorType(e, FailureType.TRANSIENT))
+    }
+
     companion object {
         const val CONFIG_EXCEPTION_MESSAGE: String = "test config error message"
         const val TRANSIENT_EXCEPTION_MESSAGE: String = "test transient error message"
