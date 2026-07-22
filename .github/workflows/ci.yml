@@ -1,0 +1,100 @@
+# This repo is a fork of airbytehq/airbyte used only to carry our own patches to the connectors
+# listed below (see `test-connectors.strategy.matrix.connector`). Unlike upstream Airbyte, we don't
+# publish images, run the full multi-connector test matrix, or manage community PRs here. All we
+# need is: our patched connectors still pass their tests, and a tag left behind on `master` that
+# other repos can pin to as a git submodule when building connector images.
+#
+# To bring another connector under this CI, add it to *both*:
+#   1. the `filters.connectors` path list in the `has-connector-changed` job, and
+#   2. the `strategy.matrix.connector` list in the `test-connectors` job.
+
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    name: Bump Version
+    uses: outrauk/shared-github-actions-workflows/.github/workflows/bump-version.yaml@main
+    secrets: inherit
+
+  has-connector-changed:
+    name: Has a maintained connector changed
+    runs-on: ubuntu-24.04
+    outputs:
+      files-changed: ${{ steps.filter.outputs.connectors }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - id: filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          filters: |
+            connectors:
+              - 'airbyte-integrations/connectors/source-s3/**'
+
+  test-connectors:
+    name: Test ${{ matrix.connector }}
+    needs: [has-connector-changed]
+    if: needs.has-connector-changed.outputs.files-changed == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        connector: [source-s3]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
+        with:
+          version: 1.8.5
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev
+
+      - name: Install Poe
+        run: uv tool install poethepoet
+
+      - name: Install connector dependencies
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Run unit tests
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+  tag-and-release:
+    name: Tag And Release
+    if: github.ref_name == 'master' && needs.has-connector-changed.outputs.files-changed == 'true'
+    needs:
+      - bump-version
+      - has-connector-changed
+      - test-connectors
+    uses: outrauk/shared-github-actions-workflows/.github/workflows/tag-and-release.yaml@main
+    secrets: inherit
+    with:
+      create-release: true
+      tag: ${{ needs.bump-version.outputs.app-version }}

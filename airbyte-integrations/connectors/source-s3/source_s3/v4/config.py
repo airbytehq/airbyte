@@ -82,6 +82,15 @@ class Config(AbstractFileBasedSpec):
         order=5,
     )
 
+    password: Optional[str] = Field(
+        title="Zip Password",
+        default=None,
+        description="Password to decrypt password-protected ZIP archives encountered during the sync. Only traditional "
+        "'ZipCrypto' passwords are currently supported; AES-encrypted zip files are not yet supported.",
+        airbyte_secret=True,
+        order=7,
+    )
+
     delivery_method: DeliverRecords | DeliverRawFiles = Field(
         title="Delivery Method",
         discriminator="delivery_type",

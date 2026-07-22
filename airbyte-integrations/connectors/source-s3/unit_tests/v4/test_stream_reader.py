@@ -5,6 +5,7 @@
 
 import io
 import logging
+import zipfile
 from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
@@ -16,9 +17,10 @@ from moto import mock_sts
 from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
+from source_s3.v4.zip_reader import ZipFileHandler
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -357,3 +359,51 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
     )
 
     assert expected_result == reader.is_modified_after_start_date(last_modified_date)
+
+
+def _make_zip_info(name: str, flag_bits: int = 0, crc: int = 0) -> zipfile.ZipInfo:
+    info = zipfile.ZipInfo(name, date_time=(2022, 1, 1, 0, 0, 0))
+    info.flag_bits = flag_bits
+    info.CRC = crc
+    info.compress_size = 10
+    info.file_size = 20
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.header_offset = 0
+    return info
+
+
+def test_handle_zip_file_raises_config_error_when_encrypted_and_no_password():
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+
+    encrypted_member = _make_zip_info("secret.csv", flag_bits=0x1, crc=123)
+    with patch.object(ZipFileHandler, "get_zip_files", return_value=([encrypted_member], 0)):
+        with pytest.raises(CustomFileBasedException) as exc:
+            list(reader._handle_zip_file({"Key": "archive.zip"}))
+
+    assert "password-protected" in str(exc.value)
+
+
+def test_handle_zip_file_succeeds_when_encrypted_and_password_configured():
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[], password="secret")
+
+    encrypted_member = _make_zip_info("secret.csv", flag_bits=0x1, crc=123)
+    with patch.object(ZipFileHandler, "get_zip_files", return_value=([encrypted_member], 0)):
+        files = list(reader._handle_zip_file({"Key": "archive.zip"}))
+
+    assert len(files) == 1
+    assert files[0].is_encrypted is True
+    assert files[0].uri == "archive.zip#secret.csv"
+
+
+def test_handle_zip_file_unencrypted_members_unaffected_without_password():
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+
+    plain_member = _make_zip_info("plain.csv")
+    with patch.object(ZipFileHandler, "get_zip_files", return_value=([plain_member], 0)):
+        files = list(reader._handle_zip_file({"Key": "archive.zip"}))
+
+    assert len(files) == 1
+    assert files[0].is_encrypted is False

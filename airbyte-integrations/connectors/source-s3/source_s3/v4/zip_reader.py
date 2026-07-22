@@ -15,6 +15,11 @@ from source_s3.v4.config import Config
 BUFFER_SIZE_DEFAULT = 1024 * 1024
 MAX_BUFFER_SIZE_DEFAULT: int = 16 * BUFFER_SIZE_DEFAULT
 
+# WinZip AES ("AE-x") entries store their real compression method inside a 0x9901 extra-field
+# record and mark the central directory's compress_type with this sentinel value instead.
+# Decrypting AES-encrypted entries isn't supported yet (see plan.md, Phase 2).
+WINZIP_AES_COMPRESSION_TYPE = 99
+
 
 class RemoteFileInsideArchive(RemoteFile):
     """
@@ -25,6 +30,16 @@ class RemoteFileInsideArchive(RemoteFile):
     compressed_size: int
     uncompressed_size: int
     compression_method: int
+    # Raw ZIP "general purpose bit flag" (APPNOTE.TXT section 4.4.4) and CRC-32 from the central
+    # directory. Both are 0 for the vast majority of (unencrypted) entries; they're only consulted
+    # when handling password-protected files.
+    flag_bits: int = 0
+    crc: int = 0
+
+    @property
+    def is_encrypted(self) -> bool:
+        """Bit 0 of the general purpose flag marks an entry as encrypted."""
+        return bool(self.flag_bits & 0x1)
 
 
 class ZipFileHandler:
@@ -149,27 +164,67 @@ class DecompressedStream(io.IOBase):
 
     LOCAL_FILE_HEADER_SIZE: int = 30
     NAME_LENGTH_OFFSET: int = 26
+    ZIP_CRYPTO_HEADER_SIZE: int = 12
 
-    def __init__(self, file_obj: IO[bytes], file_info: RemoteFileInsideArchive, buffer_size: int = BUFFER_SIZE_DEFAULT):
+    def __init__(
+        self,
+        file_obj: IO[bytes],
+        file_info: RemoteFileInsideArchive,
+        password: Optional[str] = None,
+        buffer_size: int = BUFFER_SIZE_DEFAULT,
+    ):
         """
         Initialize a DecompressedStream.
 
         :param file_obj: Underlying file-like object.
         :param file_info: Meta information about the file inside the archive.
+        :param password: Password to decrypt `file_info`, if it is password-protected.
         :param buffer_size: Size of the buffer for reading data.
         """
         self._file = file_obj
-        self.file_start = self._calculate_actual_start(file_info.start_offset)
-        self.compressed_size = file_info.compressed_size
         self.uncompressed_size = file_info.uncompressed_size
         self.compression_method = file_info.compression_method
         self._buffer = bytearray()
         self.buffer_size = buffer_size
+
+        content_start = self._calculate_actual_start(file_info.start_offset)
+        self._password_bytes: Optional[bytes] = None
+        self._encrypted_header: Optional[bytes] = None
+        self.file_start, self.compressed_size = self._init_decryption(file_info, password, content_start)
+
         self._reset_decompressor()
         self.position = 0  # Current position in uncompressed stream
         self._file.seek(self.file_start)
         # Mapping between uncompressed and compressed offsets for quick seeking
         self.offset_map = {0: self.file_start, self.uncompressed_size: self.file_start + self.compressed_size}
+
+    def _init_decryption(self, file_info: RemoteFileInsideArchive, password: Optional[str], content_start: int) -> Tuple[int, int]:
+        """
+        For password-protected entries, read and validate the 12-byte ZipCrypto encryption header
+        that precedes the actual compressed data, and set up the decrypter used by `_decompress_chunk`.
+
+        :return: The (file_start, compressed_size) of the actual compressed payload, i.e. `content_start`
+                 and `file_info.compressed_size` shifted past the encryption header when one is present.
+        """
+        if not file_info.is_encrypted:
+            return content_start, file_info.compressed_size
+
+        if file_info.compression_method == WINZIP_AES_COMPRESSION_TYPE:
+            raise ValueError(f"'{file_info.uri}' is AES-encrypted; only traditional ZipCrypto passwords are currently supported.")
+        if not password:
+            raise ValueError(f"'{file_info.uri}' is password-protected, but no zip password was configured for this source.")
+
+        self._password_bytes = password.encode("utf-8")
+        self._file.seek(content_start)
+        self._encrypted_header = self._file.read(self.ZIP_CRYPTO_HEADER_SIZE)
+
+        decrypter = zipfile._ZipDecrypter(self._password_bytes)
+        decrypted_header = decrypter(self._encrypted_header)
+        expected_check_byte = (file_info.crc >> 24) & 0xFF
+        if decrypted_header[-1] != expected_check_byte:
+            raise ValueError(f"Incorrect zip password for '{file_info.uri}'.")
+
+        return content_start + self.ZIP_CRYPTO_HEADER_SIZE, file_info.compressed_size - self.ZIP_CRYPTO_HEADER_SIZE
 
     def _calculate_actual_start(self, file_start: int) -> int:
         """
@@ -192,14 +247,25 @@ class DecompressedStream(io.IOBase):
 
     def _reset_decompressor(self):
         """
-        Reset the decompressor object.
+        Reset the decompressor and, for password-protected entries, the decrypter. Both are stateful
+        and must restart from scratch whenever the stream restarts reading from `self.file_start`.
         """
         self.decompressor = zipfile._get_decompressor(self.compression_method)
 
+        self._decrypter = None
+        if self._password_bytes is not None:
+            self._decrypter = zipfile._ZipDecrypter(self._password_bytes)
+            # The decrypter's internal key state must reflect having already processed the encryption
+            # header, exactly as it did the first time round in `_init_decryption`, even though we
+            # don't need its (already-validated) decrypted output again here.
+            self._decrypter(self._encrypted_header)
+
     def _decompress_chunk(self, chunk: bytes) -> bytes:
         """
-        Decompress a chunk of data based on the compression method.
+        Decrypt (if applicable) and decompress a chunk of data based on the compression method.
         """
+        if self._decrypter is not None:
+            chunk = self._decrypter(chunk)
         if self.compression_method == zipfile.ZIP_STORED:
             return chunk
         return self.decompressor.decompress(chunk)

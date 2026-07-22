@@ -192,7 +192,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             s3_uri = self._construct_s3_uri(file)
             if isinstance(file, RemoteFileInsideArchive):
                 s3_file_object = smart_open.open(s3_uri, transport_params=params, mode="rb")
-                decompressed_stream = DecompressedStream(s3_file_object, file)
+                decompressed_stream = DecompressedStream(s3_file_object, file, password=self.config.password)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
                 result = smart_open.open(s3_uri, transport_params=params, mode=mode.value, encoding=encoding)
@@ -362,7 +362,14 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 compressed_size=zip_member.compress_size,
                 uncompressed_size=zip_member.file_size,
                 compression_method=zip_member.compress_type,
+                flag_bits=zip_member.flag_bits,
+                crc=zip_member.CRC,
             )
+            if remote_file.is_encrypted and not self.config.password:
+                raise CustomFileBasedException(
+                    f"'{remote_file.uri}' is password-protected, but no zip password is configured for this source.",
+                    failure_type=FailureType.config_error,
+                )
             yield remote_file
 
     def _handle_regular_file(self, file):
