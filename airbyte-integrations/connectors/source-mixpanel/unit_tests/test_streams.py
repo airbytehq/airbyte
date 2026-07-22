@@ -631,6 +631,47 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
+def test_export_stream_serializes_nested_properties_as_json(requests_mock, config):
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri(
+        "GET",
+        get_url_to_mock(stream),
+        setup_response(
+            200,
+            {
+                "event": "Nested Properties",
+                "properties": {
+                    "time": 1623860880,
+                    "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
+                    "$nested": {"flag": True, "missing": None},
+                    "$list": ["alpha", {"beta": False}],
+                    "$browser": "Chrome",
+                    "scalar_bool": True,
+                    "scalar_null": None,
+                    "scalar_number": 42,
+                },
+            },
+        ),
+    )
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+
+    assert records == [
+        {
+            "event": "Nested Properties",
+            "time": "2021-06-16T16:28:00Z",
+            "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
+            "browser": "Chrome",
+            "nested": json.dumps({"flag": True, "missing": None}),
+            "list": json.dumps(["alpha", {"beta": False}]),
+            "scalar_bool": "True",
+            "scalar_null": "None",
+            "scalar_number": "42",
+        }
+    ]
+
+
 def test_export_stream_fail(requests_mock, export_response, config):
     stream = Export(authenticator=MagicMock(), **config)
     error_message = ""
