@@ -203,6 +203,25 @@ jobs:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
+      - name: Check for release-block marker
+        id: check-release-block
+        shell: bash
+        run: |
+          BLOCK_FILE="airbyte-integrations/connectors/${{ matrix.connector }}/release-block.yaml"
+          if [[ -f "$BLOCK_FILE" ]]; then
+            echo "::error::Release blocked for ${{ matrix.connector }}."
+            echo ""
+            echo "A release-block.yaml marker file exists at: $BLOCK_FILE"
+            echo "Publishing is blocked while this file is present."
+            echo ""
+            echo "--- release-block.yaml contents ---"
+            cat "$BLOCK_FILE"
+            echo "---"
+            echo ""
+            echo "To unblock, remove the release-block.yaml file and merge to master."
+            exit 1
+          fi
+
       - name: Create docker buildx builder
         id: create-buildx-builder
         shell: bash
