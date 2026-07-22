@@ -503,27 +503,50 @@ class ZipContentReader:
 
     def readline(self, limit: int = -1) -> Union[str, bytes]:
         """
-        Read a single line from the stream.
+        Read a single line (terminated by "\\n", "\\r\\n", or a lone "\\r") from the stream.
+
+        Scans the raw buffer in bulk with `bytes.find()` rather than pulling and decoding one byte
+        at a time - the previous approach cost a Python-level method call per byte of the entire
+        decompressed file, which dominates runtime on multi-GB CSVs (this is what made zipped
+        streams an order of magnitude slower than reading the same CSV unzipped).
         """
         if limit != -1:
             raise NotImplementedError("Limits other than -1 not implemented yet")
 
-        line = ""
         while True:
-            char = self.read(1)
-            if not char:
-                break
+            line_end = self._find_line_end()
+            if line_end is not None:
+                raw_line, self.buffer = bytes(self.buffer[:line_end]), self.buffer[line_end:]
+                return raw_line.decode(self.encoding) if self.encoding else raw_line
+            if not self._pull_more_into_buffer():
+                raw_line, self.buffer = bytes(self.buffer), bytearray()
+                return raw_line.decode(self.encoding) if self.encoding else raw_line
 
-            line += char
-            if char in ["\n", "\r"]:
-                # Handling different types of newlines
-                next_char = self.read(1)
-                if char == "\r" and next_char == "\n":
-                    line += next_char
-                else:
-                    self.buffer = next_char.encode(self.encoding) + self.buffer
-                break
-        return line
+    def _find_line_end(self) -> Optional[int]:
+        """
+        Return the index just past the first complete line terminator in `self.buffer`, or None if
+        no full terminator is present yet.
+
+        A "\\r" sitting at the very end of the buffer is ambiguous - it might be a lone line ending,
+        or the first half of a "\\r\\n" that was simply split across two underlying reads - so it's
+        treated as "not found yet" until either more data arrives to disambiguate it or the stream
+        reaches EOF (at which point `readline` finalizes on whatever's left, per the loop above).
+        """
+        newline_pos = self.buffer.find(b"\n")
+        cr_pos = self.buffer.find(b"\r")
+        if cr_pos != -1 and (newline_pos == -1 or cr_pos < newline_pos):
+            if cr_pos + 1 == len(self.buffer):
+                return None
+            return cr_pos + 2 if self.buffer[cr_pos + 1] == 0x0A else cr_pos + 1
+        return newline_pos + 1 if newline_pos != -1 else None
+
+    def _pull_more_into_buffer(self) -> bool:
+        """Read another chunk from the underlying stream into `self.buffer`. Returns False at EOF."""
+        chunk = self.raw.read(self.buffer_size)
+        if not chunk:
+            return False
+        self.buffer += chunk
+        return True
 
     def read(self, size: int = -1) -> Union[str, bytes]:
         """

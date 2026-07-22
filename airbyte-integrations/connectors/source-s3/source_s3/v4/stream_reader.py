@@ -36,7 +36,11 @@ AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
-    FILE_SIZE_LIMIT = 1_500_000_000
+    # Required free disk space, as a multiple of the file's own size, before downloading it in file-transfer mode.
+    # The margin exists because the downloaded file isn't the only thing consuming that disk: the destination
+    # reads it back out of the same local staging volume before the sync frees the space. It is not a stand-in
+    # for a fixed file-size cap; a file is only rejected if the pod's disk genuinely can't fit it.
+    DISK_SPACE_SAFETY_MARGIN = 1.2
 
     def __init__(self):
         super().__init__()
@@ -221,8 +225,8 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 )
                 previous_bytes_checkpoint = total_bytes_transferred
 
-                # Get available disk space
-                disk_usage = psutil.disk_usage("/")
+                # Get available disk space on the volume actually receiving the download, not the root filesystem.
+                disk_usage = psutil.disk_usage(dirname(local_file_path))
                 available_disk_space = disk_usage.free
 
                 # Get available memory
@@ -251,13 +255,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             Tuple[FileRecordData, AirbyteRecordMessageFileReference]: Contains file record data and file reference for Airbyte protocol.
 
         Raises:
-            FileSizeLimitError: If the file size exceeds the predefined limit (1 GB).
+            FileSizeLimitError: If there isn't enough free disk space to safely download the file.
         """
         file_size = self.file_size(file)
-        # I'm putting this check here so we can remove the safety wheels per connector when ready.
-        if file_size > self.FILE_SIZE_LIMIT:
-            message = "File size exceeds the 1 GB limit."
-            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+        self._ensure_enough_disk_space(file_size, local_directory)
 
         file_paths = self._get_file_transfer_paths(file.uri, local_directory)
         local_file_path = file_paths[self.LOCAL_FILE_PATH]
@@ -289,6 +290,21 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         )
 
         return file_record_data, file_reference
+
+    def _ensure_enough_disk_space(self, file_size: int, local_directory: str) -> None:
+        """
+        Raises FileSizeLimitError if there isn't enough free disk space in `local_directory` to safely download
+        `file_size` bytes into it, checked with DISK_SPACE_SAFETY_MARGIN of headroom. There is no fixed byte
+        ceiling: the file is rejected only if the pod's actual disk budget can't fit it.
+        """
+        available_bytes = psutil.disk_usage(local_directory).free
+        required_bytes = int(file_size * self.DISK_SPACE_SAFETY_MARGIN)
+        if available_bytes < required_bytes:
+            message = (
+                f"Not enough disk space to download this file: it is {file_size / (1024 * 1024 * 1024):.2f} GB, "
+                f"but only {available_bytes / (1024 * 1024 * 1024):.2f} GB is available."
+            )
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.transient_error)
 
     @override
     def file_size(self, file: RemoteFile) -> int:

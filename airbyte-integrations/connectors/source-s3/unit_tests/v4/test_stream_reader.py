@@ -20,7 +20,7 @@ from source_s3.v4.stream_reader import SourceS3StreamReader
 from source_s3.v4.zip_reader import ZipFileHandler
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -252,10 +252,25 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     assert smart_open_mock.call_args.kwargs["encoding"] == encoding
 
 
+def _make_file_transfer_config(**overrides: Any) -> Config:
+    defaults: Dict[str, Any] = dict(
+        bucket="test",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
+        streams=[],
+        endpoint=None,
+        delivery_method={"delivery_type": "use_file_transfer"},
+    )
+    defaults.update(overrides)
+    return Config(**defaults)
+
+
+@patch("source_s3.v4.stream_reader.psutil.disk_usage")
 @patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
 @patch("boto3.client")
-def test_upload(mock_boto_client, s3_reader_file_size_mock):
+def test_upload(mock_boto_client, s3_reader_file_size_mock, mock_disk_usage):
     s3_reader_file_size_mock.return_value = 100
+    mock_disk_usage.return_value = Mock(free=10 * 1024 * 1024 * 1024)  # 10 GB free, plenty for a 100-byte file
 
     mock_s3_client_instance = Mock()
     mock_boto_client.return_value = mock_s3_client_instance
@@ -263,14 +278,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
 
     reader = SourceS3StreamReader()
     bucket_name = "test"
-    reader.config = Config(
-        bucket=bucket_name,
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
-        streams=[],
-        endpoint=None,
-        delivery_method={"delivery_type": "use_file_transfer"},
-    )
+    reader.config = _make_file_transfer_config(bucket=bucket_name)
     file_folder = "directory"
     file_name = "file.txt"
     test_file_path = f"{file_folder}/{file_name}"
@@ -284,6 +292,44 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     assert file_reference.file_size_bytes == 100
     assert file_reference.source_file_relative_path == ANY
     assert file_reference.staging_file_url.endswith(test_file_path)
+
+
+@patch("source_s3.v4.stream_reader.psutil.disk_usage")
+@patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
+@patch("boto3.client")
+def test_upload_allows_file_larger_than_old_hardcoded_limit(mock_boto_client, s3_reader_file_size_mock, mock_disk_usage):
+    # 2 GB is bigger than the old hardcoded 1.5GB FILE_SIZE_LIMIT; this now succeeds because there's plenty of disk.
+    file_size = 2_000_000_000
+    s3_reader_file_size_mock.return_value = file_size
+    mock_disk_usage.return_value = Mock(free=file_size * 2)
+
+    mock_s3_client_instance = Mock()
+    mock_boto_client.return_value = mock_s3_client_instance
+    mock_s3_client_instance.download_file.return_value = None
+
+    reader = SourceS3StreamReader()
+    reader.config = _make_file_transfer_config()
+    file_record_data, file_reference = reader.upload(
+        RemoteFile(uri="big_file.csv", last_modified=datetime.now()), "some/local/dir", logger
+    )
+
+    assert file_record_data.bytes == file_size
+    assert file_reference.file_size_bytes == file_size
+
+
+@patch("source_s3.v4.stream_reader.psutil.disk_usage")
+@patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
+def test_upload_raises_when_not_enough_disk_space(s3_reader_file_size_mock, mock_disk_usage):
+    file_size = 2_000_000_000
+    s3_reader_file_size_mock.return_value = file_size
+    # Free space covers the file itself but not the 1.2x safety margin.
+    mock_disk_usage.return_value = Mock(free=int(file_size * 1.1))
+
+    reader = SourceS3StreamReader()
+    reader.config = _make_file_transfer_config()
+
+    with pytest.raises(FileSizeLimitError):
+        reader.upload(RemoteFile(uri="big_file.csv", last_modified=datetime.now()), "some/local/dir", logger)
 
 
 def test_get_s3_client_without_config_raises_exception():
