@@ -68,6 +68,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 - [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
 - [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
 - [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
+- [RUM Events](https://docs.datadoghq.com/api/latest/rum/#get-a-list-of-rum-events)
 
 ## IP allow list
 
@@ -80,6 +81,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 2.1.0   | 2026-05-08 | [77871](https://github.com/airbytehq/airbyte/pull/77871) | Source Datadog: add RUM events stream |
 | 2.0.24 | 2025-05-24 | [60420](https://github.com/airbytehq/airbyte/pull/60420) | Update dependencies |
 | 2.0.23 | 2025-05-10 | [59399](https://github.com/airbytehq/airbyte/pull/59399) | Update dependencies |
 | 2.0.22 | 2025-04-26 | [58888](https://github.com/airbytehq/airbyte/pull/58888) | Update dependencies |
