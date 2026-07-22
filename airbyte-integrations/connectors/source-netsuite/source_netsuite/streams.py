@@ -270,12 +270,13 @@ class IncrementalNetsuiteStream(NetsuiteStream):
 
         slices = []
         state = self.get_state_value(stream_state)
-        start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).date()
+        start = datetime.strptime(state, NETSUITE_OUTPUT_DATETIME_FORMAT).replace(hour=0, minute=0, second=0)
+        now = datetime.utcnow()
         # handle abnormal state values
-        if start > date.today():
+        if start > now:
             return slices
         else:
-            while start <= date.today():
+            while start <= now:
                 next_day = start + timedelta(days=self.window_in_days)
                 slice_start = start.strftime(self.default_datetime_format)
                 slice_end = next_day.strftime(self.default_datetime_format)
