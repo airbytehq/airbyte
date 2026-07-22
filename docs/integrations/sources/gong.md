@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.3.1 | 2026-07-22 | [80891](https://github.com/airbytehq/airbyte/pull/80891) | Handle HTTP 429 rate-limiting with Retry-After backoff |
 | 1.3.0 | 2026-07-22 | [82260](https://github.com/airbytehq/airbyte/pull/82260) | Batch `call transcripts` requests to fetch up to 100 call IDs per API call, reducing the request volume that drove rate-limit (429) errors and daily-quota exhaustion under one request per call |
 | 1.2.11 | 2026-07-21 | [82434](https://github.com/airbytehq/airbyte/pull/82434) | Update dependencies |
 | 1.2.10 | 2026-07-14 | [81846](https://github.com/airbytehq/airbyte/pull/81846) | Update dependencies |
