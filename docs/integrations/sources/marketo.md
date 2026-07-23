@@ -68,6 +68,12 @@ After you have your Endpoint URL, Client ID, and Client Secret, you can configur
 6. Click **Set up source**
 <!-- /env:oss -->
 
+### Advanced configuration
+
+The **Bulk Export Window in Days** setting controls how many days of data each Marketo Bulk Extract job requests for incremental streams. The default is 30 days. You can reduce this value to create smaller export jobs for large Marketo lead populations, especially after a backfill or enrichment process updates many leads at once.
+
+Use a value from 1 to 31 days. Smaller values create more Bulk Extract jobs and may consume Marketo bulk extract quota more gradually, but each job downloads and processes less data at a time.
+
 ## Supported sync modes
 
 The Marketo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -114,6 +120,8 @@ Marketo enforces the following API limits:
 
 The Leads and Activities streams use the [Marketo Bulk Extract API](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/bulk-extract/bulk-extract), which is subject to the bulk extract quota rather than the daily API call quota. If the bulk extract quota is exceeded, the connector stops replicating data until the quota resets.
 
+For large incremental Leads catch-up syncs, reduce **Bulk Export Window in Days** to split the `updatedAt` cursor range into smaller Bulk Extract jobs. This can help avoid very large completed export files after external processes update a large share of leads.
+
 All other streams use the standard REST API, which counts against the daily API call quota.
 
 If these limits are too restrictive, contact your Marketo account manager for a quota increase.
@@ -141,6 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 2.1.0 | 2026-07-17 | [78362](https://github.com/airbytehq/airbyte/pull/78362) | Expose Bulk Export Window in Days so large incremental Marketo syncs can use smaller Bulk Extract jobs. |
 | 2.0.1 | 2026-06-04 | [78428](https://github.com/airbytehq/airbyte/pull/78428) | Stream Marketo bulk export downloads to reduce memory usage for large CSV exports. |
 | 2.0.0 | 2026-05-07 | [76892](https://github.com/airbytehq/airbyte/pull/76892) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
