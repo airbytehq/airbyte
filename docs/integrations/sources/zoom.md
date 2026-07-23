@@ -80,6 +80,22 @@ To sync Zoom Phone data, the following requirements must be met:
 
 Without these prerequisites, the `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams will return empty results.
 
+Zoom only serves phone call history and phone recordings for the most recent six months. The connector automatically starts these streams at six months before the sync time. The `phone_recording_transcripts` stream only requests transcripts for phone recordings whose `transcript_download_url` field is populated, so recordings without transcripts do not generate extra API calls.
+
+### Required API scopes
+
+The Server-to-Server OAuth app must include the scopes required by the streams you select. If a scope is missing, the affected stream logs a message and syncs as empty rather than failing the sync. Commonly required scopes include:
+
+| Streams | Scopes |
+| :------ | :----- |
+| users | `user:read:list_users:admin` |
+| meetings, meeting_* | `meeting:read:meeting:admin`, `meeting:read:list_meetings:admin`, `meeting:read:list_registrants:admin`, `meeting:read:poll:admin`, `meeting:read:list_past_polls:admin` |
+| webinars, webinar_* | `webinar:read:webinar:admin`, `webinar:read:list_webinars:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:poll:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:list_past_qa:admin` |
+| report_meetings, report_meeting_participants | `report:read:meeting:admin`, `report:read:list_meeting_participants:admin` |
+| report_webinars, report_webinar_participants | `report:read:webinar:admin`, `report:read:list_webinar_participants:admin` |
+| recordings, recording_transcript_content | `cloud_recording:read:list_user_recordings:admin` |
+| phone_call_history, phone_recordings, phone_recording_transcripts | `phone:read:list_call_logs:admin`, `phone:read:list_call_recordings:admin`, `phone:read:call_recording:admin` |
+
 ### Setup guide
 
 Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
@@ -101,7 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.3.0 | 2026-07-20 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and raw recording/phone transcript streams; migrate to fully declarative (no custom Python components) |
+| 1.3.0 | 2026-07-20 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and raw recording/phone transcript streams; migrate to fully declarative (no custom Python components); skip phone transcript downloads for recordings without transcripts; clamp phone streams to Zoom's 6-month history window; ignore missing-scope (4711) and no-hosting-capability (3161) errors; add configurable concurrency |
 | 1.2.55 | 2026-07-14 | [82073](https://github.com/airbytehq/airbyte/pull/82073) | Update dependencies |
 | 1.2.54 | 2026-06-30 | [81304](https://github.com/airbytehq/airbyte/pull/81304) | Update dependencies |
 | 1.2.53 | 2026-06-23 | [80722](https://github.com/airbytehq/airbyte/pull/80722) | Update dependencies |
