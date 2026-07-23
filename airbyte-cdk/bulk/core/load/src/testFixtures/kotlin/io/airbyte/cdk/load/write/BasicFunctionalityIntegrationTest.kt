@@ -243,6 +243,20 @@ enum class UnknownTypesBehavior {
     FAIL,
 }
 
+enum class ColumnDropBehavior {
+    /**
+     * The destination drops columns that no longer exist in the new schema during schema evolution.
+     * This is the default behavior for most destinations.
+     */
+    DROP,
+
+    /**
+     * The destination retains columns that no longer exist in the new schema during schema
+     * evolution. The columns remain in the table but are no longer actively written to.
+     */
+    RETAIN,
+}
+
 data class DedupBehavior(
     val cdcDeletionMode: CdcDeletionMode = CdcDeletionMode.HARD_DELETE,
 ) {
@@ -339,6 +353,12 @@ abstract class BasicFunctionalityIntegrationTest(
     // When changing a column to a PK, some destination set the column to a default value.
     // This flag is addressing this behavior.
     val dedupChangeUsesDefault: Boolean = false,
+    /**
+     * Whether the destination drops columns that no longer exist in the new schema during schema
+     * evolution. When set to [ColumnDropBehavior.RETAIN], tests expect previously-dropped columns
+     * to still be present in the table after schema changes.
+     */
+    val columnDropBehavior: ColumnDropBehavior = ColumnDropBehavior.DROP,
     nullEqualsUnset: Boolean = false,
     configUpdater: ConfigurationUpdater = FakeConfigurationUpdater,
     // Which medium to use as your input source for the test
@@ -2812,8 +2832,9 @@ abstract class BasicFunctionalityIntegrationTest(
 
     /**
      * Intended to test for basic schema evolution. Runs two append syncs, where the second sync has
-     * a few changes
-     * * drop the `to_drop` column
+     * a few changes:
+     * * remove the `to_drop` column from the schema (dropped or retained based on
+     * [columnDropBehavior])
      * * add a `to_add` column
      * * change the `to_change` column from int to string
      */
@@ -2871,9 +2892,15 @@ abstract class BasicFunctionalityIntegrationTest(
                 OutputRecord(
                     extractedAt = 1234,
                     generationId = 0,
-                    // the first sync's record has to_change modified to a string,
-                    // and to_drop is gone completely
-                    data = mapOf("id" to 42, "to_change" to "42"),
+                    // the first sync's record has to_change modified to a string.
+                    // to_drop is gone if the destination drops columns, or retained
+                    // if the destination keeps columns during schema evolution.
+                    data =
+                        if (columnDropBehavior == ColumnDropBehavior.DROP) {
+                            mapOf("id" to 42, "to_change" to "42")
+                        } else {
+                            mapOf("id" to 42, "to_drop" to "val1", "to_change" to "42")
+                        },
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
@@ -3420,11 +3447,20 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 200,
                     generationId = 42,
                     data =
-                        mapOf(
-                            "id" to 1,
-                            "cursor2" to 1,
-                            "name" to "foo_cursor2",
-                        ),
+                        if (columnDropBehavior == ColumnDropBehavior.DROP) {
+                            mapOf(
+                                "id" to 1,
+                                "cursor2" to 1,
+                                "name" to "foo_cursor2",
+                            )
+                        } else {
+                            mapOf(
+                                "id" to 1,
+                                "cursor1" to 1,
+                                "cursor2" to 1,
+                                "name" to "foo_cursor2",
+                            )
+                        },
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 )
             ),

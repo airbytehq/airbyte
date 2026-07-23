@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## July 23, 2026
+
+Connections
+
+- When you set up a new connection, Airbyte now warns you that the initial sync replicates all data in every enabled stream, which can mean a large volume of historical data. Because Airbyte Cloud bills based on data replicated, enable only the streams and fields you need, and if your source supports a replication start date, set a recent one to limit how much history is synced.
+- You can now complete OAuth authorization for the Amazon Seller Partner source when your Seller or Vendor account is in the Ireland (IE) region. Previously, starting the authorization for an Ireland-based account produced an invalid consent link.
+
 ## July 17, 2026
 
 Connections
