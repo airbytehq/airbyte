@@ -108,7 +108,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
-| 1.2.12 | 2026-07-23 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Fix setup check failure by pointing the connection check at the supported `channel_basic_a3` report instead of the deprecated `channel_annotations_a1` report |
+| 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the supported `channel_basic_a3` report instead of the deprecated `channel_annotations_a1` report |
 | 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
 | 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |
 | 1.2.9 | 2026-06-23 | [80732](https://github.com/airbytehq/airbyte/pull/80732) | Update dependencies |
