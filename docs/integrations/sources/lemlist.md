@@ -44,6 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                  |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------- |
+| 0.3.28 | 2026-07-21 | [72764](https://github.com/airbytehq/airbyte/pull/72764) | Update dependencies |
 | 0.3.27 | 2026-03-14 | [74773](https://github.com/airbytehq/airbyte/pull/74773) | Add pagination to campaigns, activities, and unsubscribes streams |
 | 0.3.26 | 2026-01-20 | [72006](https://github.com/airbytehq/airbyte/pull/72006) | Update dependencies |
 | 0.3.25 | 2026-01-14 | [61084](https://github.com/airbytehq/airbyte/pull/61084) | Update dependencies |
