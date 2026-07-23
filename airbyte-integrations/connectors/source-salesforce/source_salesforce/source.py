@@ -314,6 +314,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
         cursor_field = CursorField(cursor_field_key)
         stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+        end_provider = stream.state_converter.get_end_provider()
+        if config.get("end_date"):
+            end_date = datetime.fromtimestamp(pendulum.parse(config["end_date"]).timestamp(), timezone.utc)
+            end_provider = lambda: end_date
         return ConcurrentCursor(
             stream.name,
             stream.namespace,
@@ -324,7 +328,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             cursor_field,
             self._get_slice_boundary_fields(stream, state_manager),
             datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
-            stream.state_converter.get_end_provider(),
+            end_provider,
             isodate.parse_duration(config["lookback_window"])
             if "lookback_window" in config
             else timedelta(seconds=DEFAULT_LOOKBACK_SECONDS),
