@@ -6,6 +6,7 @@ products: oss-enterprise, cloud
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
+import CaptureHarFile from '../_partials/_capture-har-file.md';
 
 Use Open ID Connect (OIDC) to log into Airbyte using an Identity Provider (IdP) like Okta or Entra ID/Active Directory.
 
@@ -43,3 +44,27 @@ import DocCardList from '@theme/DocCardList';
 :::note
 If you were already logged into your company’s IdP somewhere else, you might not see a login screen. In this case, Airbyte forwards you directly to Airbyte's logged-in area.
 :::
+
+## Troubleshooting
+
+If you contact [Airbyte Support](https://support.airbyte.com/) about an SSO login problem, including a HAR file and the details of the relevant network requests helps Airbyte diagnose your issue and turn around a resolution faster.
+
+### Capture a HAR file
+
+<CaptureHarFile />
+
+### Find the authentication requests
+
+SSO login sends your browser through a series of redirects between Airbyte and your identity provider. Capturing these requests shows where the login flow breaks down.
+
+1. Open developer tools and click the **Network** tab, following the steps above to capture requests.
+
+2. Select **Preserve log** (**Persist Logs** in Firefox). This is important for SSO, because the login flow redirects across multiple pages and domains, and requests are otherwise cleared on each redirect.
+
+3. Reproduce the problem by attempting to log in with SSO.
+
+4. Look for requests to your identity provider (for example, Okta or Entra ID) and to Airbyte's authentication endpoints, and for any request that returns a `4xx` or `5xx` status.
+
+5. Click a failing request and review the **Response** and **Preview** tabs for error messages, and the **Headers** tab for the request details.
+
+6. Include these requests, along with the HAR file, in your support submission.
