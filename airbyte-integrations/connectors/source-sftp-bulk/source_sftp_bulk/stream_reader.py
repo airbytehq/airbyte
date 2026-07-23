@@ -2,16 +2,20 @@
 
 
 import logging
+import os
 import stat
 from datetime import datetime
 from io import IOBase
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, Tuple
 
 import psutil
 from wcmatch.glob import GLOBSTAR, globmatch
 
-from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, FailureType
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
+from airbyte_cdk.sources.file_based.exceptions import FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from airbyte_cdk.sources.file_based.remote_file import UploadableRemoteFile
 from source_sftp_bulk.client import SFTPClient
 from source_sftp_bulk.spec import SourceSFTPBulkSpec
@@ -49,8 +53,8 @@ class SFTPBulkUploadableRemoteFile(UploadableRemoteFile):
                 )
                 previous_bytes_copied = bytes_copied
 
-                # Get available disk space
-                disk_usage = psutil.disk_usage("/")
+                # Get available disk space on the actual download target's mount, not "/"
+                disk_usage = psutil.disk_usage(os.path.dirname(local_file_path) or "/")
                 available_disk_space = disk_usage.free
 
                 # Get available memory
@@ -64,8 +68,8 @@ class SFTPBulkUploadableRemoteFile(UploadableRemoteFile):
         return progress_handler
 
     def download_to_local_directory(self, local_file_path: str) -> None:
-        # Get available disk space
-        disk_usage = psutil.disk_usage("/")
+        # Get available disk space on the actual download target's mount, not "/"
+        disk_usage = psutil.disk_usage(os.path.dirname(local_file_path) or "/")
         available_disk_space = disk_usage.free
 
         # Get available memory
@@ -87,6 +91,16 @@ class SFTPBulkUploadableRemoteFile(UploadableRemoteFile):
 
 
 class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
+    # Multiplier applied to a file's size to decide how much free disk space must be available
+    # before downloading it. >1.0 leaves headroom for the destination to read the same staged
+    # file back out of local disk before the sync frees the space.
+    DISK_SPACE_SAFETY_MARGIN = 1.2
+
+    # The CDK base class's own FILE_SIZE_LIMIT (1.5 GB) is disabled here. _ensure_enough_disk_space
+    # below is the real gate: a file is only rejected if the sync pod's disk genuinely can't fit it,
+    # not because it crossed a fixed byte count.
+    FILE_SIZE_LIMIT = float("inf")
+
     def __init__(self):
         super().__init__()
         self._sftp_client = None
@@ -287,3 +301,31 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: SFTPBulkUploadableRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         remote_file = self.sftp_client.sftp_connection.open(file.uri, mode=mode.value)
         return remote_file
+
+    def _ensure_enough_disk_space(self, file_size: int, local_directory: str) -> None:
+        """
+        Raises FileSizeLimitError if there isn't enough free disk space in `local_directory` to
+        safely download `file_size` bytes into it, checked with DISK_SPACE_SAFETY_MARGIN of
+        headroom. There is no fixed byte ceiling: a file is rejected only if the pod's actual
+        disk budget can't fit it.
+        """
+        available_bytes = psutil.disk_usage(local_directory).free
+        required_bytes = int(file_size * self.DISK_SPACE_SAFETY_MARGIN)
+        if available_bytes < required_bytes:
+            message = (
+                f"Not enough disk space to download this file: it is "
+                f"{file_size / (1024 ** 3):.2f} GB, but only {available_bytes / (1024 ** 3):.2f} GB is available."
+            )
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.transient_error)
+
+    def upload(
+        self, file: SFTPBulkUploadableRemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+        """
+        Same orchestration as AbstractFileBasedStreamReader.upload() (path setup, logging,
+        calling file.download_to_local_directory(), building the return tuple) but replaces
+        the base class's fixed FILE_SIZE_LIMIT check with a disk-space preflight check.
+        """
+        file_size = file.size
+        self._ensure_enough_disk_space(file_size, local_directory)
+        return super().upload(file, local_directory, logger)
