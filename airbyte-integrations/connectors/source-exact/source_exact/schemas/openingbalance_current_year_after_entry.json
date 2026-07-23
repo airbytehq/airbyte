@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "OpeningbalanceCurrentYearAfterEntry",
+  "additionalProperties": true,
+  "properties": {
+    "Division": {
+      "description": "Division code",
+      "type": ["null", "integer"]
+    },
+    "GLAccount": {
+      "description": "The balance sheet account",
+      "type": ["null", "string"]
+    },
+    "ReportingYear": {
+      "description": "The balance sheet account",
+      "type": ["null", "integer"]
+    },
+    "Amount": {
+      "description": "The opening balance amount of the G/L account",
+      "type": ["null", "string"]
+    },
+    "BalanceSide": {
+      "description": "Indicates whether the G/L account is a debit or credit account. D = Debit, C = Credit.",
+      "type": ["null", "string"]
+    },
+    "GLAccountCode": {
+      "description": "The code of the G/L account",
+      "type": ["null", "string"]
+    },
+    "GLAccountDescription": {
+      "description": "The description of the G/L account",
+      "type": ["null", "string"]
+    }
+  }
+}
