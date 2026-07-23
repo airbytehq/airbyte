@@ -1,5 +1,15 @@
 # LinkedIn Ads Migration Guide
 
+## Upgrading to 6.0.0
+
+LinkedIn Ads v6.0.0 batches analytics requests for up to 50 campaigns at a time for the following streams:
+
+- `ad_campaign_analytics`
+- `ad_creative_analytics`
+- `ad_impression_device_analytics`
+
+This batching reduces sync time by approximately 98% for these streams on large accounts. However, it changes their incremental state format. After upgrading, refresh all three affected streams before resuming your regular sync schedule. For refresh instructions, see [Refresh data](/platform/operator-guides/refreshes).
+
 ## Upgrading to 5.0.0
 
 With LinkedIn Ads v5.0.0, we modified primary keys for stream(s): `ad_campaign_analytics`, `Custom Ad Analytics Reports`, `account_users`.

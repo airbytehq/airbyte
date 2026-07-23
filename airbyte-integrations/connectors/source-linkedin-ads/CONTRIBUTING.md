@@ -31,17 +31,62 @@ uses `QueryProperties` with `PropertyChunking` configured at a limit of 18 field
 2 slots for the mandatory `dateRange` and `pivotValues` fields that are always included).
 
 Records from multiple chunks are stitched back together using `GroupByKeyMergeStrategy` keyed on
-`["end_date", "string_of_pivot_values"]`.
+`["end_date", "string_of_pivot_values"]`. Impression-device analytics also includes
+`sponsoredCampaign` in its merge key so records for different campaigns are not combined.
 
 **Why this matters:** With ~90 analytics fields defined, each analytics record requires approximately 5
-separate HTTP requests to assemble. Every analytics stream is also partitioned by parent entity (one
-campaign or creative per partition), so the total API call count is roughly
-`num_entities * num_date_slices * 5`. Adding new analytics fields increases the chunk count and
+separate HTTP requests to assemble. Campaign and impression-device analytics batch up to 50 campaign
+URNs per partition, while creative analytics batches up to 50 creative URNs. Member-demographic
+analytics remain on the `q=analytics` finder with one campaign per request because the `q=statistics`
+finder does not support `MEMBER_*` pivots. Adding new analytics fields increases the chunk count and
 silently multiplies API usage across every partition.
 
 ---
 
-## 3. DNS Resolution Errors Treated as Transient
+## 3. Analytics Request Batching (`group_size`)
+
+The analytics streams `ad_campaign_analytics`, `ad_creative_analytics`, and
+`ad_impression_device_analytics` batch multiple parent-entity URNs into a single `adAnalytics` request
+via the CDK `GroupingPartitionRouter` with `group_size: 50`. Campaign and impression-device
+analytics batch campaign URNs; creative analytics batches creative URNs. Compared with one request per
+parent entity, a full 50-entity batch reduces analytics request volume by 98%.
+
+Why 50 entities per request:
+
+- LinkedIn does not document a maximum number of campaign URNs per request. The binding constraint is URL
+  length: the query string is capped at 4 KB, and the raw URL is capped at 8 KB. Exceeding either limit
+  returns HTTP 414 `REQUEST_URI_TOO_LONG`.
+- Each URL-encoded campaign URN (`urn%3Ali%3AsponsoredCampaign%3A<id>`) is approximately 42 bytes: a 31-byte
+  fixed prefix, an approximately 9–10 digit ID, and a comma separator. Each request also carries one field
+  chunk, so the worst-case query length is approximately `643 + n × (32 + id_digits)` bytes.
+- At `group_size: 50`, the worst-case query string is approximately 3 KB, leaving approximately 900 bytes
+  of headroom under the 4 KB cap even with long campaign IDs. A group size of 60 is also safe, but 80
+  exceeds the cap with IDs of 12 or more digits and is unsafe as a default.
+
+The `adAnalytics` API does not support pagination and caps each response at 15,000 elements. Campaign
+and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` request.
+Impression-device analytics can return at most 7,750 rows for the five documented device categories
+over the same range.
+
+Batch membership can change when campaigns or creatives are added or removed, so the three batched
+streams use a global substream cursor. Existing per-partition state is migrated once to the earliest
+partition cursor, after which subsequent syncs emit global state and do not repeat the migration. The
+one-time migration can re-read already-synced dates, but it does not skip an entity that was behind the
+other partitions.
+
+The emitted primary key for `ad_impression_device_analytics` remains
+`["string_of_pivot_values", "end_date"]` for compatibility. Because `string_of_pivot_values` contains
+only the device type, this pre-existing key does not distinguish campaigns. Correcting it requires a
+major-version breaking change even though property-chunk merging already keeps campaigns separate.
+
+The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
+to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.
+However, `q=statistics` does not accept `MEMBER_*` pivots. The `q=analytics` finder is single-pivot, so
+member-demographic streams cannot batch campaigns and remain one request per campaign.
+
+---
+
+## 4. DNS Resolution Errors Treated as Transient
 
 The `LinkedInAdsErrorHandler` catches Python `InvalidURL` exceptions and classifies them as transient
 (retryable) errors rather than failing the sync. This is a workaround for intermittent DNS resolution
@@ -54,7 +99,7 @@ intermittently.
 
 ---
 
-## 4. Millisecond Timestamps and Multiple Datetime Formats
+## 5. Millisecond Timestamps and Multiple Datetime Formats
 
 LinkedIn's API returns timestamps in inconsistent formats across different endpoints. Entity streams
 (accounts, campaigns, creatives) return `lastModified` and `created` as millisecond Unix timestamps
@@ -71,7 +116,7 @@ or skipping records entirely.
 
 ---
 
-## 5. Reserved Keyword Renaming for Destination Compatibility
+## 6. Reserved Keyword Renaming for Destination Compatibility
 
 The `transform_data` function renames the `pivot` field to `_pivot` in every analytics record. This is
 because `PIVOT` is a reserved keyword in Amazon Redshift, and using it as a column name causes
@@ -84,7 +129,7 @@ conflicts with reserved keywords in common destinations (Redshift, BigQuery, Sno
 
 ---
 
-## 6. Unpublished Rate Limits with Per-Endpoint Daily Caps
+## 7. Unpublished Rate Limits with Per-Endpoint Daily Caps
 
 LinkedIn does not publish standard API rate limits. The connector's comments document that each endpoint
 has its own individually tracked rate limit that resets daily, with tiers that vary by account. The
@@ -98,6 +143,16 @@ from a higher default after customers experienced rate limiting issues.
 predict when a customer will hit limits. If customers report rate limiting, the `num_workers` config
 value is the primary lever to reduce pressure. The analytics property chunking (5 requests per record
 page) means the effective request rate is much higher than the visible concurrency level suggests.
+
+LinkedIn separately limits Ad Analytics requests to 45 million metric values across a rolling five-minute
+window. Metric values are calculated from the requested fields and returned records, so the call-count
+budget cannot predict this limit. `LinkedInAdsDataVolumeBackoffStrategy` detects the documented response
+message and waits 330 seconds before retrying. Analytics requests keep the existing five-retry limit but
+allow up to 30 minutes so each retry starts after the rolling window can clear.
+
+**Why this matters:** Do not replace the data-volume backoff with a faster generic 429 strategy. Count-based
+429 responses must continue using the exponential fallback, and unrecognized response bodies must not be
+treated as data-volume throttles.
 
 ## Incremental Stream Considerations
 

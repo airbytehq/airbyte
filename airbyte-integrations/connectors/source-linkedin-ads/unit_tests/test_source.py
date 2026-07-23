@@ -82,8 +82,10 @@ class TestAllStreams:
             elif stream_config.get("retriever", {}).get("partition_router", {}):
                 partition_router = stream_config["retriever"]["partition_router"]
 
-                if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
-                    update_with_cache_parent_configs(partition_router["parent_stream_configs"])
+                if isinstance(partition_router, dict):
+                    underlying_router = partition_router.get("underlying_partition_router", partition_router)
+                    if underlying_router.get("parent_stream_configs"):
+                        update_with_cache_parent_configs(underlying_router["parent_stream_configs"])
                 elif isinstance(partition_router, list):
                     for router in partition_router:
                         if router.get("parent_stream_configs"):
@@ -112,8 +114,7 @@ class TestAllStreams:
     def test_manifest_maps_429_to_rate_limited(self):
         """
         Verify the manifest configures HTTP 429 responses with RATE_LIMITED action
-        (not RETRY), so that rate-limited requests retry indefinitely with backoff
-        instead of failing after a limited number of retries.
+        (not RETRY) so rate-limited requests use the rate-limit backoff path.
 
         HTTP 500/503 should remain mapped to RETRY.
         """
@@ -133,10 +134,79 @@ class TestAllStreams:
         filter_429 = next(f for f in response_filters if 429 in f.get("http_codes", []))
         filter_5xx = next(f for f in response_filters if 500 in f.get("http_codes", []))
 
-        assert (
-            filter_429["action"] == "RATE_LIMITED"
-        ), f"HTTP 429 must use RATE_LIMITED action for indefinite retry, got {filter_429['action']}"
+        assert filter_429["action"] == "RATE_LIMITED", f"HTTP 429 must use RATE_LIMITED action, got {filter_429['action']}"
         assert filter_5xx["action"] == "RETRY", f"HTTP 500/503 should use RETRY action, got {filter_5xx['action']}"
+
+    def test_ad_analytics_error_handler_configuration(self):
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        manifest = yaml.safe_load(manifest_path.read_text())
+        analytics_error_handler = manifest["definitions"]["ad_analytics_error_handler"]
+
+        assert analytics_error_handler["max_retries"] == 5
+        assert analytics_error_handler["max_time"] == 1800
+        assert analytics_error_handler["backoff_strategies"] == [
+            {
+                "type": "CustomBackoffStrategy",
+                "class_name": "source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy",
+            },
+            {"type": "ExponentialBackoffStrategy", "factor": 5},
+        ]
+
+        analytics_requesters = [
+            stream["retriever"]["requester"]
+            for stream in manifest["definitions"]["streams"].values()
+            if stream.get("retriever", {}).get("requester", {}).get("path") == "adAnalytics"
+        ]
+        assert analytics_requesters
+        assert all(requester["error_handler"] == {"$ref": "#/definitions/ad_analytics_error_handler"} for requester in analytics_requesters)
+
+    def test_member_demographic_analytics_configuration(self):
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        streams = yaml.safe_load(manifest_path.read_text())["definitions"]["streams"]
+        member_streams = {
+            "ad_member_company_analytics": "MEMBER_COMPANY",
+            "ad_member_company_size_analytics": "MEMBER_COMPANY_SIZE",
+            "ad_member_country_analytics": "MEMBER_COUNTRY_V2",
+            "ad_member_industry_analytics": "MEMBER_INDUSTRY",
+            "ad_member_job_function_analytics": "MEMBER_JOB_FUNCTION",
+            "ad_member_job_title_analytics": "MEMBER_JOB_TITLE",
+            "ad_member_region_analytics": "MEMBER_REGION_V2",
+            "ad_member_seniority_analytics": "MEMBER_SENIORITY",
+        }
+
+        for stream_name, pivot in member_streams.items():
+            stream = streams[stream_name]
+            request_parameters = stream["retriever"]["requester"]["request_parameters"]
+            partition_router = stream["retriever"]["partition_router"]
+            sponsored_campaign = stream["transformations"][0]["fields"][0]
+
+            assert request_parameters["q"] == "analytics"
+            assert request_parameters["pivot"] == f"(value:{pivot})"
+            assert "pivots" not in request_parameters
+            assert request_parameters["campaigns"] == ("List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})")
+            assert partition_router["type"] == "SubstreamPartitionRouter"
+            assert partition_router["parent_stream_configs"][0]["stream"] == {"$ref": "#/definitions/streams/campaigns"}
+            assert sponsored_campaign["value"] == "{{ stream_partition.get('campaign_id') }}"
+
+    def test_batched_analytics_response_limit_configuration(self):
+        manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+        streams = yaml.safe_load(manifest_path.read_text())["definitions"]["streams"]
+        batched_stream_names = [
+            "ad_campaign_analytics",
+            "ad_creative_analytics",
+            "ad_impression_device_analytics",
+        ]
+
+        assert streams["ad_campaign_analytics"]["incremental_sync"]["step"] == "P30D"
+        assert streams["ad_creative_analytics"]["incremental_sync"]["step"] == "P30D"
+        assert streams["ad_impression_device_analytics"]["incremental_sync"]["step"] == "P30D"
+        assert all(streams[stream_name]["incremental_sync"]["global_substream_cursor"] is True for stream_name in batched_stream_names)
+        assert all(streams[stream_name]["retriever"]["paginator"]["type"] == "NoPagination" for stream_name in batched_stream_names)
+        assert all(
+            streams[stream_name]["retriever"]["partition_router"]["type"] == "GroupingPartitionRouter"
+            for stream_name in batched_stream_names
+        )
+        assert all(streams[stream_name]["retriever"]["partition_router"]["group_size"] == 50 for stream_name in batched_stream_names)
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
@@ -306,17 +376,17 @@ class TestLinkedinAdsStream:
                 data={
                     "clicks": 100.0,
                     "impressions": 19090.0,
-                    "pivotValues": ["urn:li:sponsoredCampaign:123"],
+                    "pivotValues": ["urn:li:sponsoredCampaign:1111"],
                     "costInUsd": 209.449,
                     "start_date": "2023-01-02",
                     "end_date": "2023-01-02",
-                    "string_of_pivot_values": "urn:li:sponsoredCampaign:123",
+                    "string_of_pivot_values": "urn:li:sponsoredCampaign:1111",
                     "sponsoredCampaign": "1111",
                     "pivot": "CAMPAIGN",
                 },
                 associated_slice=StreamSlice(
                     cursor_slice={"end_time": "2021-01-31", "start_time": "2021-01-01"},
-                    partition={"campaign_id": 1111, "parent_slice": {"account_id": 1, "parent_slice": {}}},
+                    partition={"campaign_id": "urn%3Ali%3AsponsoredCampaign%3A1111", "parent_slice": {"account_id": 1, "parent_slice": {}}},
                     extra_fields={"query_properties": ["dateRange", "pivotValues", "clicks", "impressions"]},
                 ),
             ),
@@ -325,17 +395,17 @@ class TestLinkedinAdsStream:
                 data={
                     "clicks": 408.0,
                     "impressions": 20210.0,
-                    "pivotValues": ["urn:li:sponsoredCampaign:123"],
+                    "pivotValues": ["urn:li:sponsoredCampaign:1111"],
                     "costInUsd": 509.98,
                     "start_date": "2023-01-03",
                     "end_date": "2023-01-03",
-                    "string_of_pivot_values": "urn:li:sponsoredCampaign:123",
+                    "string_of_pivot_values": "urn:li:sponsoredCampaign:1111",
                     "sponsoredCampaign": "1111",
                     "pivot": "CAMPAIGN",
                 },
                 associated_slice=StreamSlice(
                     cursor_slice={"end_time": "2021-01-31", "start_time": "2021-01-01"},
-                    partition={"campaign_id": 1111, "parent_slice": {"account_id": 1, "parent_slice": {}}},
+                    partition={"campaign_id": "urn%3Ali%3AsponsoredCampaign%3A1111", "parent_slice": {"account_id": 1, "parent_slice": {}}},
                     extra_fields={"query_properties": ["dateRange", "pivotValues", "clicks", "impressions"]},
                 ),
             ),
@@ -368,3 +438,130 @@ class TestLinkedinAdsStream:
 
         assert len(records) == 2
         assert records == expected_records
+
+    @pytest.mark.parametrize(
+        (
+            "stream_name",
+            "query",
+            "parent_path",
+            "parent_records",
+            "facet",
+            "partition_field",
+            "partition_values",
+            "encoded_urns",
+            "pivot_values",
+            "expected_data",
+        ),
+        [
+            pytest.param(
+                "ad_campaign_analytics",
+                "q=analytics&pivot=(value:CAMPAIGN)",
+                "adCampaigns",
+                [
+                    {"id": 1111, "lastModified": "2021-01-15"},
+                    {"id": 2222, "lastModified": "2021-01-16"},
+                ],
+                "campaigns",
+                "campaign_id",
+                [1111, 2222],
+                "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222",
+                ["urn:li:sponsoredCampaign:1111"],
+                {
+                    "sponsoredCampaign": "1111",
+                    "pivot": "CAMPAIGN",
+                    "string_of_pivot_values": "urn:li:sponsoredCampaign:1111",
+                },
+                id="campaign_analytics",
+            ),
+            pytest.param(
+                "ad_creative_analytics",
+                "q=analytics&pivot=(value:CREATIVE)",
+                "creatives",
+                [
+                    {"id": "urn:li:sponsoredCreative:1111", "lastModifiedAt": 1610668800000},
+                    {"id": "urn:li:sponsoredCreative:2222", "lastModifiedAt": 1610755200000},
+                ],
+                "creatives",
+                "creative_id",
+                ["urn:li:sponsoredCreative:1111", "urn:li:sponsoredCreative:2222"],
+                "urn%3Ali%3AsponsoredCreative%3A1111,urn%3Ali%3AsponsoredCreative%3A2222",
+                ["urn:li:sponsoredCreative:2222"],
+                {
+                    "sponsoredCreative": "2222",
+                    "pivot": "CREATIVE",
+                    "string_of_pivot_values": "urn:li:sponsoredCreative:2222",
+                },
+                id="creative_analytics",
+            ),
+            pytest.param(
+                "ad_impression_device_analytics",
+                "q=statistics&pivots=List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)",
+                "adCampaigns",
+                [
+                    {"id": 1111, "lastModified": "2021-01-15"},
+                    {"id": 2222, "lastModified": "2021-01-16"},
+                ],
+                "campaigns",
+                "campaign_id",
+                [1111, 2222],
+                "urn%3Ali%3AsponsoredCampaign%3A1111,urn%3Ali%3AsponsoredCampaign%3A2222",
+                ["urn:li:sponsoredCampaign:1111", "CONNECTED_TV"],
+                {
+                    "sponsoredCampaign": "1111",
+                    "pivot": "IMPRESSION_DEVICE_TYPE",
+                    "string_of_pivot_values": "CONNECTED_TV",
+                },
+                id="impression_device_statistics",
+            ),
+        ],
+    )
+    def test_analytics_streams_batch_campaign_partitions(
+        self,
+        requests_mock,
+        stream_name,
+        query,
+        parent_path,
+        parent_records,
+        facet,
+        partition_field,
+        partition_values,
+        encoded_urns,
+        pivot_values,
+        expected_data,
+    ):
+        config = {**TEST_CONFIG}
+        stream = find_stream(stream_name, config)
+
+        requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
+        requests_mock.get(
+            f"https://api.linkedin.com/rest/adAccounts/1/{parent_path}",
+            complete_qs=False,
+            json={"elements": parent_records},
+        )
+        requests_mock.get(
+            "https://api.linkedin.com/rest/adAnalytics?"
+            f"{query}&timeGranularity=(value:DAILY)&{facet}=List({encoded_urns})&"
+            "dateRange=(start:(year:2021,month:1,day:1),end:(year:2021,month:1,day:31))",
+            complete_qs=False,
+            json={
+                "elements": [
+                    {
+                        "clicks": 100,
+                        "impressions": 19090,
+                        "pivotValues": pivot_values,
+                        "dateRange": {
+                            "start": {"month": 1, "day": 2, "year": 2023},
+                            "end": {"month": 1, "day": 2, "year": 2023},
+                        },
+                    }
+                ]
+            },
+        )
+
+        partition = next(iter(stream.generate_partitions()))
+        records = list(partition.read())
+
+        assert partition.to_slice()[partition_field] == partition_values
+        assert len(records) == 1
+        for field, value in expected_data.items():
+            assert records[0].data[field] == value
