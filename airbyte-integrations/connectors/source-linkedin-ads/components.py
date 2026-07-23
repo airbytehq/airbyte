@@ -186,12 +186,6 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
                 failure_type=FailureType.transient_error,
                 error_message="LinkedIn Ads metric-value rate limit is exceeded.",
             )
-        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == 414:
-            return ErrorResolution(
-                response_action=ResponseAction.FAIL,
-                failure_type=FailureType.system_error,
-                error_message="LinkedIn Ads request URL exceeds the API length limit.",
-            )
         return super().interpret_response(response_or_exception)
 
 

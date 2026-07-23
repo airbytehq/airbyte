@@ -190,16 +190,6 @@ def test_linkedin_ads_error_handler_rate_limit_response(components_module, body,
     assert error_resolution.error_message == expected_message
 
 
-def test_linkedin_ads_error_handler_uri_too_long(components_module):
-    error_handler = components_module.LinkedInAdsErrorHandler(parameters={}, config={})
-
-    error_resolution = error_handler.interpret_response(_response(414, {}))
-
-    assert error_resolution.response_action == ResponseAction.FAIL
-    assert error_resolution.failure_type == FailureType.system_error
-    assert error_resolution.error_message == "LinkedIn Ads request URL exceeds the API length limit."
-
-
 @pytest.mark.parametrize(
     "response_or_exception,expected_backoff",
     [

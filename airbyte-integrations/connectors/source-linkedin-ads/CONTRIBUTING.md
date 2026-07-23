@@ -62,8 +62,6 @@ Why 50 entities per request:
 - At `group_size: 50`, the worst-case query string is approximately 3 KB, leaving approximately 900 bytes
   of headroom under the 4 KB cap even with long campaign IDs. A group size of 60 is also safe, but 80
   exceeds the cap with IDs of 12 or more digits and is unsafe as a default.
-- The connector fails fast on HTTP 414 with `LinkedIn Ads request URL exceeds the API length limit` rather
-  than silently truncating the request.
 
 The `adAnalytics` API does not support pagination and caps each response at 15,000 elements. Campaign
 and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` request.

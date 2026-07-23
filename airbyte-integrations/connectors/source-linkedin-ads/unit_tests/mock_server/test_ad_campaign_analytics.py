@@ -8,9 +8,9 @@ from unittest.mock import patch
 import freezegun
 import pytest
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import ExpectedOutcome, read
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
@@ -330,10 +330,10 @@ def _configure_rate_limit_test_parents(http_mocker: HttpMocker) -> None:
     )
 
 
-def _read_campaign_analytics(config: dict, expected_outcome: ExpectedOutcome = ExpectedOutcome.EXPECT_SUCCESS):
+def _read_campaign_analytics(config: dict):
     source = get_source(config=config)
     catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
-    return read(source, config=config, catalog=catalog, expected_outcome=expected_outcome)
+    return read(source, config=config, catalog=catalog)
 
 
 @freezegun.freeze_time("2024-06-15T00:00:00Z")
@@ -386,24 +386,3 @@ def test_non_data_volume_rate_limit_fallback(body: str) -> None:
         assert len(output.records) == 1
         assert [seconds for seconds in sleeps if seconds > 0] == [11.0]
         assert output.errors == []
-
-
-@freezegun.freeze_time("2024-06-15T00:00:00Z")
-def test_uri_too_long_failure() -> None:
-    config = ConfigBuilder().with_start_date("2024-06-01").build()
-    sleeps = []
-
-    with HttpMocker() as http_mocker, patch("time.sleep", side_effect=lambda seconds: sleeps.append(float(seconds))):
-        _configure_rate_limit_test_parents(http_mocker)
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
-            HttpResponse(status_code=414, body="{}"),
-        )
-
-        output = _read_campaign_analytics(config, expected_outcome=ExpectedOutcome.EXPECT_EXCEPTION)
-
-        errors = [message.trace.error for message in output.errors if message.trace.error.failure_type == FailureType.system_error]
-        assert output.records == []
-        assert len(errors) == 1
-        assert errors[0].message == "LinkedIn Ads request URL exceeds the API length limit."
-        assert [seconds for seconds in sleeps if seconds > 0] == []
