@@ -1,0 +1,13 @@
+{
+  "api_key": "dwy_test_REDACTED",
+  "base_url": "https://api.meetdewey.com/v1",
+  "stream_collections": {
+    "default__smoke_articles": "col_REDACTED"
+  },
+  "auto_create_collections": false,
+  "text_fields": ["title", "body"],
+  "title_field": "title",
+  "metadata_fields": ["author"],
+  "parallelize": false,
+  "flush_interval": 50
+}
