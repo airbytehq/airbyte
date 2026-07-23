@@ -14,11 +14,16 @@ import java.io.OutputStream
 class ProtoToJsonFormatter(
     stream: DestinationStream,
     private val outputStream: OutputStream,
-    rootLevelFlattening: Boolean
+    rootLevelFlattening: Boolean,
+    stringifyObjects: Boolean = false,
 ) : ObjectStorageFormattingWriter {
 
     private val fastWriter =
-        ProtoToJsonWriter(stream.airbyteValueProxyFieldAccessors, rootLevelFlattening)
+        ProtoToJsonWriter(
+            stream.airbyteValueProxyFieldAccessors,
+            rootLevelFlattening,
+            stringifyObjects,
+        )
     private val unknownColumnChanges = stream.unknownColumnChanges
 
     private val generator =

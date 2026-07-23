@@ -39,11 +39,15 @@ interface DeprecatedObjectStorageFormatSpecificationProvider {
     fun toObjectStorageFormatConfiguration(): ObjectStorageFormatConfiguration {
         return when (format) {
             is DeprecatedJsonFormatSpecification ->
-                JsonFormatConfiguration(
-                    rootLevelFlattening =
-                        (format as DeprecatedJsonFormatSpecification).flattening ==
-                            FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING
-                )
+                (format as DeprecatedJsonFormatSpecification).let {
+                    JsonFormatConfiguration(
+                        rootLevelFlattening =
+                            it.flattening ==
+                                FlatteningSpecificationProvider.Flattening.ROOT_LEVEL_FLATTENING,
+                        stringifyObjects =
+                            it.stringify == StringifySpecificationProvider.Stringify.STRINGIFY,
+                    )
+                }
             is DeprecatedCSVFormatSpecification ->
                 CSVFormatConfiguration(
                     rootLevelFlattening =
@@ -132,9 +136,12 @@ class DeprecatedJsonFormatSpecification(
 ) :
     DeprecatedObjectStorageFormatSpecification(formatType),
     FlatteningSpecificationProvider,
+    StringifySpecificationProvider,
     ObjectStorageCompressionSpecificationProvider {
     override val flattening: FlatteningSpecificationProvider.Flattening? =
         FlatteningSpecificationProvider.Flattening.NO_FLATTENING
+    override val stringify: StringifySpecificationProvider.Stringify? =
+        StringifySpecificationProvider.Stringify.DEFAULT
     override val compression: ObjectStorageCompressionSpecification? =
         GZIPCompressionSpecification()
 }
