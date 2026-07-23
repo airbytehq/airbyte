@@ -1386,7 +1386,7 @@ definitions:
     custom_analytics_report:
       type: DeclarativeStream
       name: custom_analytics_report
-      primary_key: &custom_report_primary_key
+      primary_key:
         - string_of_pivot_values
         - end_date
         - sponsoredCampaign
@@ -1405,8 +1405,8 @@ definitions:
             q: analytics
             pivot: "DYNAMIC_FIELD"
             timeGranularity: "DYNAMIC_FIELD"
-            campaigns: &custom_report_campaigns "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
-            dateRange: &custom_report_date_range "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers: &custom_report_request_headers
             Linkedin-Version: "202601"
@@ -1466,7 +1466,10 @@ definitions:
     custom_statistics_report:
       type: DeclarativeStream
       name: custom_statistics_report
-      primary_key: *custom_report_primary_key
+      primary_key:
+        - string_of_pivot_values
+        - end_date
+        - sponsoredCampaign
       retriever:
         type: SimpleRetriever
         $parameters:
@@ -1482,8 +1485,8 @@ definitions:
             q: statistics
             pivots: "DYNAMIC_FIELD"
             timeGranularity: "DYNAMIC_FIELD"
-            campaigns: *custom_report_campaigns
-            dateRange: *custom_report_date_range
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers: *custom_report_request_headers
           error_handlers: *custom_report_error_handlers
