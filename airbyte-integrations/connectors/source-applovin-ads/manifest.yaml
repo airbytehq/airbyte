@@ -1,0 +1,583 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  Airbyte source for AppLovin advertising reporting. Pulls the Reporting API
+  (advertiser report) and the Asset Reporting API (asset analytics report).
+  See https://support.applovin.com/en/growth/promoting-your-websites/api/reporting-api
+  and https://support.applovin.com/en/growth/promoting-your-websites/api/asset-reporting-api
+
+check:
+  type: CheckStream
+  stream_names:
+    - advertiser_report_daily
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 20
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://r.applovin.com
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: api_key
+        inject_into: request_parameter
+
+  # Shared error handler: retry transient 429/5xx with exponential backoff.
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: request_parameter
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 1000
+
+  # Reporting API returns a native `day` column. Progress one day per request
+  # (start==end), cursoring on `day`. lookback_window re-pulls N prior days.
+  advertiser_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: day
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('end_date') or today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: P1D
+    cursor_granularity: P1D
+    start_time_option:
+      type: RequestOption
+      field_name: start
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: end
+      inject_into: request_parameter
+
+  # Asset Analytics report is range-based (start/end) with no day dimension, so
+  # fragment into per-day calls (start==end): a single-day range aggregates to
+  # that day's value, giving true daily rows. `date` (= the day) is the cursor.
+  asset_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: date
+    datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('end_date') or today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: P1D
+    cursor_granularity: P1D
+    start_time_option:
+      type: RequestOption
+      field_name: start
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: end
+      inject_into: request_parameter
+
+  streams:
+    advertiser_report_daily:
+      type: DeclarativeStream
+      name: advertiser_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /report
+          http_method: GET
+          request_parameters:
+            report_type: advertiser
+            format: json
+            # Full advertiser column set (matches the inline schema). `hour` is
+            # omitted so rows stay daily, matching the `day` cursor.
+            columns: campaign,campaign_id_external,country,creative_set,creative_set_id,day,campaign_type,audience_strategy,custom_page_id,placement_type,platform,target_event,cost,campaign_bid_goal,optimization_day_target,average_cpc,clicks,ctr,impressions,sales,cost_per_target_event_0d,target_event_count_0d,nc_d0_checkouts,nc_d0_checkout_rev,nc_d0_cpp,nc_d0_roas,nc_percent_d0_checkouts,nc_percent_d0_checkout_rev,nc_d7_checkouts,nc_d7_checkout_rev,nc_d7_cpp,nc_d7_roas,nc_percent_d7_checkouts,nc_percent_d7_checkout_rev,new_visitor_rate,sales_0d,sales_1d,sales_2d,sales_3d,sales_7d,sales_14d,sales_28d,cpp_0d,cpp_1d,cpp_2d,cpp_3d,cpp_7d,cpp_14d,cpp_28d,roas_0d,roas_1d,roas_2d,roas_3d,roas_7d,roas_14d,roas_28d,chka_usd_0d,chka_usd_1d,chka_usd_2d,chka_usd_3d,chka_usd_7d,chka_usd_14d,chka_usd_28d
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          schema_normalization: Default
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          $ref: "#/definitions/base_paginator"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/advertiser_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/advertiser_report_daily"
+    asset_report_daily:
+      type: DeclarativeStream
+      name: asset_report_daily
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /assetAnalyticsReport
+          http_method: GET
+          request_parameters:
+            format: json
+            # Full asset analytics column set (matches the inline schema).
+            columns: asset_id,asset_name,asset_url,campaign,campaign_id,creative_set,creative_set_id,impressions,clicks,ctr,cost
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          schema_normalization: Default
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          $ref: "#/definitions/base_paginator"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/asset_incremental_sync"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_slice.start_time }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/asset_report_daily"
+
+streams:
+  - $ref: "#/definitions/streams/advertiser_report_daily"
+  - $ref: "#/definitions/streams/asset_report_daily"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: Report Key
+        description: >-
+          AppLovin Report Key. Find it in the AppLovin dashboard: click your
+          account in the top right and select Keys.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: UTC date to start replication from (YYYY-MM-DD).
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2024-01-01"
+        order: 1
+      end_date:
+        type: string
+        title: End Date
+        description: UTC date to replicate until, inclusive. Defaults to today.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2024-12-31"
+        order: 2
+      lookback_window:
+        type: integer
+        title: Lookback Window (days)
+        description: >-
+          Number of days before the last synced date to re-sync, to capture
+          late-attributed data. Reporting API allows up to 90 days, Asset
+          Analytics up to 45 days.
+        default: 0
+        minimum: 0
+        maximum: 45
+        order: 3
+      num_workers:
+        type: integer
+        title: Number of Workers
+        description: Concurrent workers for syncing. Valid values are 1 to 20.
+        default: 2
+        minimum: 1
+        maximum: 20
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    advertiser_report_daily: false
+    asset_report_daily: false
+  yamlComponents:
+    global:
+      - authenticator
+
+schemas:
+  # Columns are user-configurable, so schemas are permissive (additionalProperties).
+  # Fields are single-typed: the API returns metrics as strings, and
+  # schema_normalization on the record selectors casts them to the declared type,
+  # so destinations get plain scalars (no number/string union structs in parquet).
+  # advertiser_report_daily cursors on the API's native `day` column;
+  # asset_report_daily cursors on `date`, injected by the connector.
+  advertiser_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id_external:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      hour:
+        type:
+          - string
+          - "null"
+      campaign_type:
+        type:
+          - string
+          - "null"
+      audience_strategy:
+        type:
+          - string
+          - "null"
+      custom_page_id:
+        type:
+          - string
+          - "null"
+      placement_type:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      target_event:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      campaign_bid_goal:
+        type:
+          - number
+          - "null"
+      optimization_day_target:
+        type:
+          - integer
+          - "null"
+      average_cpc:
+        type:
+          - number
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      sales:
+        type:
+          - integer
+          - "null"
+      cost_per_target_event_0d:
+        type:
+          - number
+          - "null"
+      target_event_count_0d:
+        type:
+          - integer
+          - "null"
+      nc_d0_checkouts:
+        type:
+          - integer
+          - "null"
+      nc_d0_checkout_rev:
+        type:
+          - number
+          - "null"
+      nc_d0_cpp:
+        type:
+          - number
+          - "null"
+      nc_d0_roas:
+        type:
+          - number
+          - "null"
+      nc_percent_d0_checkouts:
+        type:
+          - number
+          - "null"
+      nc_percent_d0_checkout_rev:
+        type:
+          - number
+          - "null"
+      nc_d7_checkouts:
+        type:
+          - integer
+          - "null"
+      nc_d7_checkout_rev:
+        type:
+          - number
+          - "null"
+      nc_d7_cpp:
+        type:
+          - number
+          - "null"
+      nc_d7_roas:
+        type:
+          - number
+          - "null"
+      nc_percent_d7_checkouts:
+        type:
+          - number
+          - "null"
+      nc_percent_d7_checkout_rev:
+        type:
+          - number
+          - "null"
+      new_visitor_rate:
+        type:
+          - number
+          - "null"
+      sales_0d:
+        type:
+          - integer
+          - "null"
+      sales_1d:
+        type:
+          - integer
+          - "null"
+      sales_2d:
+        type:
+          - integer
+          - "null"
+      sales_3d:
+        type:
+          - integer
+          - "null"
+      sales_7d:
+        type:
+          - integer
+          - "null"
+      sales_14d:
+        type:
+          - integer
+          - "null"
+      sales_28d:
+        type:
+          - integer
+          - "null"
+      cpp_0d:
+        type:
+          - number
+          - "null"
+      cpp_1d:
+        type:
+          - number
+          - "null"
+      cpp_2d:
+        type:
+          - number
+          - "null"
+      cpp_3d:
+        type:
+          - number
+          - "null"
+      cpp_7d:
+        type:
+          - number
+          - "null"
+      cpp_14d:
+        type:
+          - number
+          - "null"
+      cpp_28d:
+        type:
+          - number
+          - "null"
+      roas_0d:
+        type:
+          - number
+          - "null"
+      roas_1d:
+        type:
+          - number
+          - "null"
+      roas_2d:
+        type:
+          - number
+          - "null"
+      roas_3d:
+        type:
+          - number
+          - "null"
+      roas_7d:
+        type:
+          - number
+          - "null"
+      roas_14d:
+        type:
+          - number
+          - "null"
+      roas_28d:
+        type:
+          - number
+          - "null"
+      chka_usd_0d:
+        type:
+          - number
+          - "null"
+      chka_usd_1d:
+        type:
+          - number
+          - "null"
+      chka_usd_2d:
+        type:
+          - number
+          - "null"
+      chka_usd_3d:
+        type:
+          - number
+          - "null"
+      chka_usd_7d:
+        type:
+          - number
+          - "null"
+      chka_usd_14d:
+        type:
+          - number
+          - "null"
+      chka_usd_28d:
+        type:
+          - number
+          - "null"
+  asset_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+        format: date
+      asset_id:
+        type:
+          - string
+          - "null"
+      asset_name:
+        type:
+          - string
+          - "null"
+      asset_url:
+        type:
+          - string
+          - "null"
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"

@@ -1,0 +1,26 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "default_cursor_field": ["day"],
+        "json_schema": {},
+        "name": "advertiser_report_daily",
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "default_cursor_field": ["date"],
+        "json_schema": {},
+        "name": "asset_report_daily",
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental"
+    }
+  ]
+}
