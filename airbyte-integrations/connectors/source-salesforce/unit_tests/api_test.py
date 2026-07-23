@@ -4,6 +4,7 @@
 
 import csv
 import io
+import json
 import logging
 import re
 from datetime import datetime, timedelta
@@ -16,7 +17,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import API_VERSION, Salesforce
+from source_salesforce.api import API_VERSION, Salesforce, SalesforceTokenProvider
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -131,6 +132,92 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+
+
+def _register_login(requests_mock, **extra):
+    response = {"access_token": "fake_access_token", "instance_url": "https://fake.salesforce.com"}
+    response.update(extra)
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=response)
+
+
+def _persisted_refresh_tokens(capsys):
+    """Return the refresh_token from every CONNECTOR_CONFIG control message the connector printed to
+    stdout. Persistence happens via direct stdout emission (see SourceSalesforce._persist_rotated_refresh_token),
+    which is what the platform reads, so that is what we assert against rather than the message repository."""
+    tokens = []
+    for line in capsys.readouterr().out.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        control = message.get("control") or {}
+        if message.get("type") == "CONTROL" and control.get("type") == "CONNECTOR_CONFIG":
+            tokens.append(control["connectorConfig"]["config"]["refresh_token"])
+    return tokens
+
+
+def test_rotated_refresh_token_is_persisted(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="new_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "new_refresh_token"
+    assert _persisted_refresh_tokens(capsys) == ["new_refresh_token"]
+
+
+def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock)
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "old_refresh_token"
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_unchanged_refresh_token_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("same_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="same_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_mid_sync_rotation_is_persisted(requests_mock, capsys):
+    """A second login() (the proactive/forced refresh the connector runs during a sync) rotates the
+    single-use token again, so that rotation must be persisted too. Persisting only the first login
+    would leave the stored config holding a token Salesforce already invalidated."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+
+    _register_login(requests_mock, refresh_token="rotated_once")
+    sf = source._get_sf_object(config)
+
+    _register_login(requests_mock, refresh_token="rotated_twice")
+    sf.login()
+
+    assert config["refresh_token"] == "rotated_twice"
+    assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
+
+
+def test_token_provider_force_refresh_persists_rotation(requests_mock, capsys):
+    """SalesforceTokenProvider.force_refresh (triggered on INVALID_SESSION_ID) must also persist the rotation."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+
+    _register_login(requests_mock, refresh_token="rotated_once")
+    sf = source._get_sf_object(config)
+
+    _register_login(requests_mock, refresh_token="rotated_twice")
+    SalesforceTokenProvider(sf).force_refresh()
+
+    assert config["refresh_token"] == "rotated_twice"
+    assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
