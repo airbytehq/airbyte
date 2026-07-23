@@ -5,7 +5,7 @@ sidebar_position: 4
 
 # Governance
 
-Governance is how you control what your agents, and the people who build them, can reach. As you connect more systems and add more people to an organization, you take on more risk: a broad credential, a shared workspace, or an over-permissioned teammate can expose data an agent shouldn't access. Governance is the umbrella term for the controls that mitigate that risk by narrowing access to only what each agent and person needs.
+Agent governance describes what an AI agent is allowed to do in your systems, on whose authority, and how you prove that. In Airbyte, governance is how you control what data your agents, and the people who build them, can reach, and how they're allowed to interact with it. As you connect more systems and add more people to an organization, you take on more risk: a broad credential, a shared workspace, or an over-permissioned teammate can expose data an agent shouldn't access. Governance is the umbrella term for the controls that mitigate that risk by narrowing access to only what each agent and person needs.
 
 Airbyte Agents gives you multiple layers of control, and most organizations combine them: workspaces to separate credentials, roles to separate people, and entity access to fine-tune what each member can reach through a connector.
 
