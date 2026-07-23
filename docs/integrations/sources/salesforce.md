@@ -14,7 +14,7 @@ You may also need the following. This article explains how to get them.
 
 - Optional, but recommended: A dedicated [Salesforce user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US)
 <!-- env:oss -->
-- For Airbyte Open Source: Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+- For Airbyte Open Source: Salesforce [OAuth](https://developer.salesforce.com/docs/platform/mobile-sdk/guide/oauth-scope-parameter-values.html) credentials
 <!-- /env:oss -->
 
 ## Setup guide
@@ -27,44 +27,44 @@ Follow the instructions below to create a Minimum Access standard profile and as
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). If you want to sync permissions data from Salesforce, you also need the [permissions necessary to sync security-related data](#permissions-to-sync-permissions).
+Using permission sets, grant this user read access to the data you want Airbyte to access. For more information, see [Salesforce's permission sets documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). If you want to sync permissions data from Salesforce, you also need the [permissions necessary to sync security-related data](#permissions-to-sync-permissions).
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
 ##### Step 1: Create a new user
 
 1. On the top right of the screen, click the gear icon and then click **Setup**.
-2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
-      1. Leave `role` unspecified
-      2. Select `Salesforce` for the User License
-      3. Select `Standard User` for Profile.
+2. In the left navigation bar, under **Administration**, click **Users** > **Users**. Create a new user, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
+      1. Leave **Role** unspecified.
+      2. Select **Salesforce** for **User License**.
+      3. Select **Standard User** for **Profile**.
       4. Decide whether to generate a new password and notify the user.
-      5. Select `save`
+      5. Click **Save**.
 
 ##### Step 2: Create a new permission set
 
-1. Using the left navigation bar, select **Users** > **Permission Sets**
-2. Click `New` to create a new Permission Set.
-3. Give your permission set a descriptive label name (e.g., "Airbyte Read Only Access"). The API name auto-populates based on the label you give the permission set.
-4. For licence, leave this set to `–None—` and click `save`.
-5. Now that you see the permission set is created, define the permissions via Object Settings.
-   1. Click "Object Settings."
-   2. Select the `Object Name` for each object you want the user to have read-only access to (for example, Accounts, Contacts, Opportunities).
-   3. Select “Edit” and check the "Read" permission and clear all other permissions (Create, Edit, Delete, etc.)
-   4. Click `Save`
-   5. Continue to add read permissions for any objects you want Airbyte to have access to.
-6. To grant access to uninstalled connected apps, you need to enable additional permission.
-   1. Click "System Permissions"
-   2. Select “Edit”
-   3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
-   4. Click `Save`
+1. Using the left navigation bar, select **Users** > **Permission Sets**.
+2. Click **New** to create a new permission set.
+3. Give your permission set a descriptive label name, for example "Airbyte Read Only Access". The API name auto-populates based on the label you give the permission set.
+4. For license, leave this set to `--None--` and click **Save**.
+5. Define the permissions using **Object Settings**.
+   1. Click **Object Settings**.
+   2. Select the object you want the user to have read-only access to, for example **Accounts**, **Contacts**, or **Opportunities**.
+   3. Click **Edit**, select the **Read** permission, and clear the **Create**, **Edit**, **Delete**, and other write permissions.
+   4. Click **Save**.
+   5. Continue to add read permissions for any objects you want Airbyte to access.
+6. Grant access to uninstalled connected apps.
+   1. Click **System Permissions**.
+   2. Click **Edit**.
+   3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, select **Use Any API Client**. If API Access Control isn't enabled, select **Approve Uninstalled Connected Apps**.
+   4. Click **Save**.
 
 ##### Step 3: Assign the permission set to the new user
 
-1. From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
-2. Click "Add Assignments."
+1. From the Permission Sets page, click **Manage Assignments** next to the read-only permission set you just created.
+2. Click **Add Assignments**.
 3. Find and select the user you created in Step 1.
-4. Click `Assign`
+4. Click **Assign**.
 
 Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
@@ -77,7 +77,7 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 #### Get Salesforce OAuth credentials (Airbyte Open Source only)
 
-If you are using Airbyte Open Source, obtain the following OAuth credentials to authenticate:
+If you are using Airbyte Open Source, obtain the following OAuth credentials to authenticate. The Salesforce app you use must allow the OAuth scopes Airbyte requests: `api`, `web`, `refresh_token`, and `lightning`. Salesforce documents `api`, `web`, and `refresh_token` as sufficient for most apps, and Airbyte also requests `lightning` to match the connector's OAuth configuration.
 
 - Client ID
 - Client Secret
@@ -85,7 +85,7 @@ If you are using Airbyte Open Source, obtain the following OAuth credentials to 
 
 To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b) with the following modifications:
 
-1. If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com` then use that instead of `awesomecompany.salesforce.com`.
+1. If your Salesforce URL is not in the `X.salesforce.com` format, use your Salesforce domain name. For example, if your Salesforce URL is `awesomecompany.force.com`, use that instead of `awesomecompany.salesforce.com`.
 2. When running a curl command, run it with the `-L` option to follow any redirects.
 3. If you created a read-only user, use the user credentials when logging in to generate OAuth tokens.
 
@@ -101,13 +101,12 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Salesforce from the Source type dropdown.
 4. Enter a name for the Salesforce connector.
-5. To authenticate:
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Please make sure you are logged into the right account.
+5. To authenticate, click **Authenticate your account** to authorize your Salesforce account. Airbyte authenticates the Salesforce account you are already logged in to. Make sure you are logged in to the correct account.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
-10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration, for example `PT10M`, `PT30M`, or `PT1H`, to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None`, or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
 11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
@@ -120,13 +119,12 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Salesforce** from the list of available sources.
 4. Enter a **Source name** of your choosing to help you identify this source.
-5. To authenticate:
-   **For Airbyte Open Source**: Enter your Client ID, Client Secret, and Refresh Token.
+5. To authenticate, enter your **Client ID**, **Client Secret**, and **Refresh Token**.
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
-7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
+7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
-10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None` or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration, for example `PT10M`, `PT30M`, or `PT1H`, to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. (Optional) Enable **Preserve "NA" and similar string values** if your data contains literal strings such as `NA`, `N/A`, `NULL`, `None`, or `NaN` that should be kept as-is instead of being synced as null. This applies only to streams synced via the Bulk API; REST-synced streams already keep these values. The default is off (these strings are treated as null). See [Preserving "NA" string values](#preserving-na-string-values) for details.
 11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
@@ -144,16 +142,16 @@ The Salesforce source connector supports the following [sync modes](https://docs
 
 ## Supported Streams
 
-The Salesforce connector supports reading both Standard Objects and Custom Objects from Salesforce. Each object is read as a separate stream. See a list of all Salesforce Standard Objects [here](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
+The Salesforce connector supports reading standard and custom objects from Salesforce. Each object is read as a separate stream. For a list of standard objects, see [Salesforce standard objects](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_list.htm).
 
 Airbyte allows exporting all available Salesforce objects dynamically based on:
 
-- If the authenticated Salesforce user has the Role and Permissions to read and fetch objects. This would be set as part of the Permission Set you assign to the Airbyte user. See [Create a dedicated Salesforce user](#dedicated-salesforce-user) for more information.
-- If the Salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
+- The authenticated Salesforce user has the role and permissions to read and fetch the object. Grant these permissions with the permission set assigned to the Airbyte user. For more information, see [Create a dedicated Salesforce user](#dedicated-salesforce-user).
+- The Salesforce object has the `queryable` property set to `true`. Airbyte can only fetch queryable objects. If a queryable object is not available in Airbyte, check whether the Salesforce user you authenticated with has API access to that object.
 
 ## Syncing Permissions Data from Salesforce
 
-The Salesforce connector can be used to sync security-related objects that can be synced to understand user permissions, roles, and access patterns within your Salesforce organization.
+The Salesforce connector can sync security-related objects to understand user permissions, roles, and access patterns within your Salesforce organization.
 
 Common use cases for syncing Salesforce permission data include:
 
@@ -186,8 +184,8 @@ Security-related object availability varies by Salesforce environment (productio
 
 To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
 
-   - "View All Users" - Required to access comprehensive User data.
-   - Standard read permissions for the specific objects you want to sync.
+- **View All Users**: Required to access comprehensive `User` data.
+- Standard read permissions for the specific objects you want to sync.
 
 For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
@@ -214,14 +212,14 @@ The Salesforce connector syncs formula field outputs from Salesforce. If the for
 
 ### Syncing Deletes
 
-The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`. To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
+The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For streams that support deleted-record retrieval, a deleted record is marked with `isDeleted=true`. For more information, see [Salesforce's documentation about deleted records](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
-### Usage of the BULK API vs REST API
+### Usage of the Bulk API vs REST API
 
-Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
+Salesforce allows extracting data using either the [Bulk API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To improve performance for large data volumes, Salesforce recommends using the Bulk API when extracting more than 2,000 records. For this reason, the Salesforce connector uses the Bulk API by default unless any of the following conditions are met:
 
-- The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
-- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
+- The Salesforce object has columns that the Bulk API doesn't support, such as columns with a `base64` or `complexvalue` type.
+- The Salesforce object isn't supported by the Bulk API. In this case, Airbyte syncs the object with the REST API, which can use more of your Salesforce API quota. This includes the following objects:
   - AcceptedEventRelation
   - Attachment
   - CaseStatus
@@ -243,10 +241,10 @@ Salesforce allows extracting data using either the [BULK API](https://developer.
   - TaskStatus
   - UndecidedEventRelation
 
-More information on the differences between various Salesforce APIs can be found [here](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
+For more information, see [Salesforce API documentation](https://help.salesforce.com/s/articleView?id=sf.integrate_what_is_api.htm&type=5).
 
-:::info Force Using Bulk API
-If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
+:::info Force using Bulk API
+If you set **Force to use BULK API** to `true`, the connector ignores fields unsupported by the Bulk API and syncs streams with the Bulk API.
 :::
 
 ### Session expiry on long-running Bulk API syncs
@@ -296,6 +294,20 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 | PT2H   | 2 hours    |
 | P1D    | 1 day      |
 
+### Missing Bulk API records after an interrupted sync
+
+When a Bulk API sync ends abnormally, such as when the pod is killed by an out-of-memory (OOM) event or a `SIGTERM`, an earlier connector version could leave the stream cursor advanced past records that were never written to the destination. On the next incremental sync, the connector resumes from the advanced cursor and skips those records permanently.
+
+Prior to version 2.7.26, the connector emitted state checkpoints on a channel separate from the records they cover, so a checkpoint could be persisted ahead of records still waiting to be written. Starting in version 2.7.26, the connector emits state in order with the records it has already produced, so an interrupted sync cannot persist a cursor that has moved past unwritten records.
+
+**Symptoms:**
+
+- Records are missing in the destination but present when queried directly in Salesforce
+- Missing records correlate with a prior sync that ended abnormally, for example an OOM kill or a canceled job, rather than a clean success
+- No errors appear in sync logs
+
+**Solution:** Upgrade to connector version 2.7.26 or later to prevent this from recurring. To recover records that were already skipped, run a refresh of the affected stream(s) to backfill them. This issue is distinct from the eventual-consistency delays described above; increasing the **Lookback Window** does not address it.
+
 ### Preserving "NA" string values {#preserving-na-string-values}
 
 When extracting data through the Bulk API, the connector downloads results as CSV. By default, literal strings such as `NA`, `N/A`, `NULL`, `None`, `NaN`, `null` and `#N/A` are interpreted as missing values and synced as `null`. This can cause data correctness issues when such a string is a legitimate value — for example, a picklist where `NA` means "North America".
@@ -316,12 +328,12 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
+| 2.8.0 | 2026-07-23 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
 | 2.7.26-rc.1 | 2026-07-14 | [81535](https://github.com/airbytehq/airbyte/pull/81535) | Use ordered `ConcurrentMessageRepository` so state checkpoints are emitted in-order with records, preventing data loss (cursor advancing past uncommitted records) when a sync is terminated ungracefully |
-| 2.7.25 | 2026-06-20 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
-| 2.7.24 | 2026-06-23 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
-| 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
+| 2.7.25 | 2026-07-13 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
+| 2.7.24 | 2026-07-09 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
+| 2.7.23 | 2026-05-21 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (`api`, `web`, `refresh_token`, `lightning`) to consent URL |
 | 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
 | 2.7.21-rc.1 | 2026-04-21 | [76389](https://github.com/airbytehq/airbyte/pull/76389) | Fix bulk job slicing by bypassing deprecated DeclarativeStream.stream_slices() after CDK 7.13+ upgrade |
