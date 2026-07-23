@@ -4,8 +4,6 @@
 
 The following connector allows airbyte users to fetch various meetings & webinar data points from the [Zoom](https://zoom.us) source. This connector is built entirely using the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview/).
 
-Please note that currently, it only supports Full Refresh syncs. That is, every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-
 ### Output schema
 
 Currently this source supports the following output streams/endpoints from Zoom:
@@ -29,6 +27,11 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Meeting Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportmeetingparticipants)
 - [Report Webinars](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinardetails)
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
+- [Recordings](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Cloud recordings including video, audio, and transcript files (supports incremental sync)
+  - [Recording Transcript Content](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Raw transcript content from VTT files, one row per line, for downstream parsing
+- [Phone Call History](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/accountCallHistory) - Zoom Phone call logs (supports incremental sync on `start_time`)
+- [Phone Recordings](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/getPhoneRecordings) - Zoom Phone call recordings (supports incremental sync on `date_time`)
+  - [Phone Recording Transcripts](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/phoneDownloadRecordingTranscript) - Raw Zoom Phone recording transcript content, one row per line, for downstream parsing
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -37,10 +40,33 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Feature                       | Supported?  |
 | :---------------------------- | :---------- |
 | Full Refresh Sync             | Yes         |
-| Incremental Sync              | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
+| Incremental Sync              | Yes         |
+| Replicate Incremental Deletes | No          |
 | SSL connection                | Yes         |
 | Namespaces                    | No          |
+
+:::note Incremental Sync
+Incremental sync is supported for the following streams:
+
+- `recordings` (cursor: `start_time`), `recording_transcript_content` (cursor: `recording_start`)
+- `phone_call_history` (cursor: `start_time`), `phone_recordings` (cursor: `date_time`), `phone_recording_transcripts` (cursor: `call_date_time`)
+- `meetings` (cursor: `created_at`)
+- `meeting_registrants`, `meeting_polls`, `meeting_poll_results`, `meeting_registration_questions`, `report_meetings`, and `report_meeting_participants` (cursor: `meeting_created_at`, the creation time of the parent meeting)
+
+The `users`, `webinars`, `webinar_*`, and `report_webinar*` streams only support full refresh because the Zoom API does not provide date filtering for those endpoints.
+
+Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
+:::
+
+:::caution Updates to already-synced records
+The meeting-based incremental streams use the meeting **creation time** as the cursor. After a meeting has been synced, later changes to it are not picked up by incremental syncs. This affects:
+
+- Edits to an existing meeting (topic, schedule, settings) in the `meetings` stream
+- New registrants, polls, or poll results added to a meeting that was created before the last sync
+- Meeting reports and participant reports for meetings that ended after the meeting was first synced
+
+The connector re-reads meetings created in the last 30 days on every incremental sync to catch most of these late-arriving changes. To capture updates on older meetings, run a full refresh (or clear and resync the affected streams) periodically. The `recordings` and phone streams key off event timestamps and do not have this limitation.
+:::
 
 ### Performance considerations
 
@@ -53,6 +79,41 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 ### Requirements
 
 - Zoom Server-to-Server Oauth App
+
+### Prerequisites for Recordings and Transcripts
+
+To sync cloud recordings and transcripts, the following requirements must be met:
+
+- **Zoom Plan**: Pro, Business, or Enterprise plan (not available on Basic/Free plans)
+- **Cloud Recording**: Meetings must be cloud-recorded (local recordings are not accessible via API)
+- **Audio Transcript**: The "Audio transcript" feature must be enabled in your Zoom account settings
+
+Without these prerequisites, the `recordings` and `recording_transcript_content` streams will return empty results.
+
+### Prerequisites for Phone Streams
+
+To sync Zoom Phone data, the following requirements must be met:
+
+- **Zoom Phone License**: A Zoom Phone license must be enabled on the account
+- **API Scopes**: The Server-to-Server OAuth app must have the `phone:read:admin` scope
+
+Without these prerequisites, the `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams will return empty results.
+
+Zoom only serves phone call history and phone recordings for the most recent six months. The connector automatically starts these streams at six months before the sync time. The `phone_recording_transcripts` stream only requests transcripts for phone recordings whose `transcript_download_url` field is populated, so recordings without transcripts do not generate extra API calls.
+
+### Required API scopes
+
+The Server-to-Server OAuth app must include the scopes required by the streams you select. If a scope is missing, the affected stream logs a message and syncs as empty rather than failing the sync. Commonly required scopes include:
+
+| Streams | Scopes |
+| :------ | :----- |
+| users | `user:read:list_users:admin` |
+| meetings, meeting_* | `meeting:read:meeting:admin`, `meeting:read:list_meetings:admin`, `meeting:read:list_registrants:admin`, `meeting:read:poll:admin`, `meeting:read:list_past_polls:admin` |
+| webinars, webinar_* | `webinar:read:webinar:admin`, `webinar:read:list_webinars:admin`, `webinar:read:list_panelists:admin`, `webinar:read:list_registrants:admin`, `webinar:read:list_absentees:admin`, `webinar:read:poll:admin`, `webinar:read:list_past_polls:admin`, `webinar:read:list_tracking_sources:admin`, `webinar:read:list_past_qa:admin` |
+| report_meetings, report_meeting_participants | `report:read:meeting:admin`, `report:read:list_meeting_participants:admin` |
+| report_webinars, report_webinar_participants | `report:read:webinar:admin`, `report:read:list_webinar_participants:admin` |
+| recordings, recording_transcript_content | `cloud_recording:read:list_user_recordings:admin` |
+| phone_call_history, phone_recordings, phone_recording_transcripts | `phone:read:list_call_logs:admin`, `phone:read:list_call_recordings:admin`, `phone:read:call_recording:admin` |
 
 ### Setup guide
 
@@ -75,6 +136,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.3.0 | 2026-07-20 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and raw recording/phone transcript streams; migrate to fully declarative (no custom Python components); skip phone transcript downloads for recordings without transcripts; clamp phone streams to Zoom's 6-month history window; ignore missing-scope (4711) and no-hosting-capability (3161) errors; add configurable concurrency; add incremental sync support to meetings, meeting_registrants, meeting_polls, meeting_poll_results, meeting_registration_questions, report_meetings, report_meeting_participants, recording_transcript_content, and phone_recording_transcripts |
 | 1.2.56 | 2026-07-21 | [82672](https://github.com/airbytehq/airbyte/pull/82672) | Update dependencies |
 | 1.2.55 | 2026-07-14 | [82073](https://github.com/airbytehq/airbyte/pull/82073) | Update dependencies |
 | 1.2.54 | 2026-06-30 | [81304](https://github.com/airbytehq/airbyte/pull/81304) | Update dependencies |
