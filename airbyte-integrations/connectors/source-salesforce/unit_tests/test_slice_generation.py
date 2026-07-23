@@ -44,6 +44,17 @@ class IncrementalSliceGenerationTest(TestCase):
             {"start_date": "2019-12-22T00:00:00.000+00:00", "end_date": "2020-01-01T00:00:00.000+00:00"},
         ]
 
+    def test_given_end_date_when_stream_slices_then_cap_slices_at_end_date(self) -> None:
+        config = ConfigBuilder().start_date(_NOW - timedelta(days=40)).end_date(_NOW - timedelta(days=5)).stream_slice_step("P30D").build()
+        stream = generate_stream(_STREAM_NAME, config, mock_stream_api(config))
+
+        slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
+
+        assert slices == [
+            {"start_date": "2019-11-22T00:00:00.000+00:00", "end_date": "2019-12-22T00:00:00.000+00:00"},
+            {"start_date": "2019-12-22T00:00:00.000+00:00", "end_date": "2019-12-27T00:00:00.000+00:00"},
+        ]
+
 
 @freezegun.freeze_time(time_to_freeze=_NOW)
 @pytest.mark.parametrize(

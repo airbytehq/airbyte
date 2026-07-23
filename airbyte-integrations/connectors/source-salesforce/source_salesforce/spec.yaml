@@ -54,18 +54,31 @@ connectionSpecification:
         - "2021-07-25T00:00:00Z"
       format: date-time
       order: 5
+    end_date:
+      title: End Date
+      description: >-
+        Enter the date (or date-time) in the YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ format. Airbyte will replicate the data updated before this date. If this field is blank, Airbyte will replicate data up to the current time.
+      type: string
+      pattern: >-
+        ^([0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?)$
+      pattern_descriptor: "YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ"
+      examples:
+        - "2021-07-26"
+        - "2021-07-26T00:00:00Z"
+      format: date-time
+      order: 6
     force_use_bulk_api:
       title: Force to use BULK API
       type: boolean
       description: Toggle to use Bulk API (this might cause empty fields for some streams)
       default: false
-      order: 6
+      order: 7
     stream_slice_step:
       title: Stream Slice Step for Incremental sync
       type: string
       description: The size of the time window (ISO8601 duration) to slice requests.
       default: P30D
-      order: 7
+      order: 8
       examples:
         - PT12H
         - P7D
@@ -83,7 +96,7 @@ connectionSpecification:
         Increase this value if you observe missing records in your destination.
         See <a href="https://docs.airbyte.com/integrations/sources/salesforce#limitations--troubleshooting">Limitations & Troubleshooting</a> for details.
       default: PT10M
-      order: 8
+      order: 9
       examples:
         - PT10M
         - PT30M
@@ -97,10 +110,10 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 10
+      order: 11
     streams_criteria:
       type: array
-      order: 9
+      order: 10
       items:
         type: object
         required:
