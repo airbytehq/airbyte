@@ -5,9 +5,11 @@ sidebar_position: 4
 
 # Governance
 
-Agent governance describes what an AI agent is allowed to do in your systems, on whose authority, and how you prove that. In Airbyte, governance is how you control what data your agents, and the people who build them, can reach, and how they're allowed to interact with it. As you connect more systems and add more people to an organization, you take on more risk: a broad credential, a shared workspace, or an over-permissioned teammate can expose data an agent shouldn't access. Governance is the umbrella term for the controls that mitigate that risk by narrowing access to only what each agent and person needs.
+Agent governance describes what an AI agent is allowed to do in your systems, on whose authority, and how you prove that. Governance is the umbrella term for the controls that mitigate that risk by narrowing access to only what each agent and person needs. Airbyte provides tools to control what data your agents, and the people who build them, can reach, and how they're allowed to interact with that data.
 
-Airbyte Agents gives you multiple layers of control, and most organizations combine them: workspaces to separate credentials, roles to separate people, and entity access to fine-tune what each member can reach through a connector.
+As you connect more systems and add more people to an organization, you take on more risk: a broad credential, a shared workspace, or an over-permissioned teammate can expose data an agent shouldn't access.
+
+Airbyte Agents gives you multiple layers of control. Most organizations combine them: workspaces to separate credentials, roles to separate people into administrators and members, and entity access to fine-tune what each member's agents can reach through a connector.
 
 ## Workspaces
 
@@ -15,7 +17,7 @@ A [workspace](./architecture/workspaces.md) is an isolation boundary within an o
 
 ## User roles and permissions
 
-Every member of an organization has a role, either **Admin** or **Member**, that determines what they can do. Admins manage workspaces, users, billing, and organization settings; members work within the workspaces they're assigned to. Assigning the right role, and adding members only to the workspaces they need, keeps administrative and data access scoped to the people who require it. See [Users](../admin/users.md) for roles and workspace membership. User management is available on the Team and Custom plans.
+Every member of an organization has a role, either **Admin** or **Member**, that determines what they can do. Admins manage workspaces, users, billing, and organization settings; members work within the workspaces they're assigned to. Assigning the right role, and adding members only to the workspaces they need, keeps administrative and data access scoped to the people who require it. See [Users](../admin/users.md) for roles and workspace membership.
 
 ## Entity access permissions
 
