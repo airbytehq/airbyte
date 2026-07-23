@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "The repository where the commit was made.",
+      "type": "string"
+    },
+    "branch": {
+      "description": "The branch name where the commit was made.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL for accessing the commit data.",
+      "type": ["null", "string"]
+    },
+    "sha": {
+      "description": "The SHA of the commit.",
+      "type": ["null", "string"]
+    },
+    "node_id": {
+      "description": "The unique identifier of the commit node.",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL for viewing the commit on GitHub.",
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "description": "URL for accessing comments on the commit.",
+      "type": ["null", "string"]
+    },
+    "commit": {
+      "description": "Information about the commit including author, committer, tree, and verification details.",
+      "type": ["null", "object"],
+      "properties": {
+        "author": {
+          "description": "Information about the author of the commit.",
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "description": "Name of the author of the commit.",
+              "type": ["null", "string"]
+            },
+            "email": {
+              "description": "Email of the author of the commit.",
+              "type": ["null", "string"]
+            },
+            "date": {
+              "description": "The date and time the commit was authored.",
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "committer": {
+          "description": "Information about the committer who applied the commit.",
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "description": "Name of the committer.",
+              "type": ["null", "string"]
+            },
+            "email": {
+              "description": "Email of the committer.",
+              "type": ["null", "string"]
+            },
+            "date": {
+              "description": "The date and time the commit was committed.",
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        },
+        "message": {
+          "description": "The commit message.",
+          "type": ["null", "string"]
+        },
+        "tree": {
+          "description": "Details about the tree object associated with the commit.",
+          "type": ["null", "object"],
+          "properties": {
+            "sha": {
+              "description": "SHA of the commit tree.",
+              "type": ["null", "string"]
+            },
+            "url": {
+              "description": "URL for accessing the commit tree.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "url": {
+          "description": "URL for accessing the commit details.",
+          "type": ["null", "string"]
+        },
+        "comment_count": {
+          "description": "Number of comments on the commit.",
+          "type": ["null", "integer"]
+        },
+        "verification": {
+          "description": "Verification status of the commit.",
+          "type": ["null", "object"],
+          "properties": {
+            "verified": {
+              "description": "Indicates if the commit signature is verified.",
+              "type": ["null", "boolean"]
+            },
+            "reason": {
+              "description": "Reason for the verification result.",
+              "type": ["null", "string"]
+            },
+            "signature": {
+              "description": "The signature used for verification.",
+              "type": ["null", "string"]
+            },
+            "payload": {
+              "description": "The payload used for verification.",
+              "type": ["null", "string"]
+            },
+            "verified_at": {
+              "description": "Timestamp when the commit was verified.",
+              "type": ["null", "string"],
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+    "author": {
+      "description": "The GitHub user who authored the commit.",
+      "$ref": "user.json"
+    },
+    "committer": {
+      "description": "The GitHub user who committed the commit.",
+      "$ref": "user.json"
+    },
+    "parents": {
+      "description": "List of parent commits.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "sha": {
+            "description": "SHA of the parent commit.",
+            "type": ["null", "string"]
+          },
+          "url": {
+            "description": "URL for accessing the parent commit.",
+            "type": ["null", "string"]
+          },
+          "html_url": {
+            "description": "URL for viewing the parent commit on GitHub.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "stats": {
+      "description": "Aggregate line change statistics for the commit.",
+      "type": ["null", "object"],
+      "properties": {
+        "additions": {
+          "description": "Total lines added across all files.",
+          "type": ["null", "integer"]
+        },
+        "deletions": {
+          "description": "Total lines deleted across all files.",
+          "type": ["null", "integer"]
+        },
+        "total": {
+          "description": "Total lines changed (additions + deletions).",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "files": {
+      "description": "List of files changed in the commit (capped at 300 by GitHub API).",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "sha": {
+            "description": "Blob SHA of the file.",
+            "type": ["null", "string"]
+          },
+          "filename": {
+            "description": "Path of the file.",
+            "type": ["null", "string"]
+          },
+          "status": {
+            "description": "Change type: added, removed, modified, renamed, copied, changed, or unchanged.",
+            "type": ["null", "string"]
+          },
+          "additions": {
+            "description": "Lines added to this file.",
+            "type": ["null", "integer"]
+          },
+          "deletions": {
+            "description": "Lines deleted from this file.",
+            "type": ["null", "integer"]
+          },
+          "changes": {
+            "description": "Total line alterations to this file.",
+            "type": ["null", "integer"]
+          },
+          "blob_url": {
+            "description": "URL to the blob content of this file at this commit.",
+            "type": ["null", "string"]
+          },
+          "raw_url": {
+            "description": "Direct URL to the raw file content.",
+            "type": ["null", "string"]
+          },
+          "contents_url": {
+            "description": "Contents API URL for this file.",
+            "type": ["null", "string"]
+          },
+          "patch": {
+            "description": "Unified diff patch for this file.",
+            "type": ["null", "string"]
+          },
+          "previous_filename": {
+            "description": "Original filename before a rename.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
