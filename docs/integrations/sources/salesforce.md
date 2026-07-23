@@ -255,6 +255,25 @@ Salesforce access tokens expire after a configurable session timeout, which defa
 
 If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is running version 2.7.20 or later.
 
+### Refresh Token Rotation (RTR)
+
+Salesforce's [Refresh Token Rotation](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_enable_refresh_token_rotation.htm&language=en_US&type=5) makes refresh tokens **single-use**: each `refresh_token` exchange returns a new refresh token and **immediately invalidates the previous one** — there is no grace period or overlap window. Starting in version 2.8.0, the connector captures the rotated token on every token exchange (initial login and the mid-sync refreshes described above) and persists it back to the connection configuration, so syncs continue to work with RTR enabled.
+
+**Enable the connector support before enabling RTR on the app.** Because invalidation is immediate, turning on **Enable Refresh Token Rotation** on a connected app whose connection is still running a pre-2.8.0 connector will break that connection on its next token exchange (it will authenticate with an already-invalidated token) and require re-authentication. The safe order is:
+
+1. Upgrade the Salesforce source to 2.8.0 or later (and, on Airbyte Cloud, wait for the rollout to reach your workspace).
+2. Only then enable **Enable Refresh Token Rotation** on the connected app / External Client App.
+
+Responsibility for the connected-app setting depends on how you authenticate:
+
+- **Airbyte Cloud (default OAuth):** the connected app is managed by Airbyte.
+- **Airbyte Open Source / bring-your-own OAuth app:** you own the connected app and are responsible for enabling RTR on it, after upgrading the connector.
+
+**Known limitations.** Because Salesforce provides no grace window, two edge cases cannot be fully eliminated and are inherent to RTR rather than to this connector:
+
+- The pre-save **Test connection** button rotates the token but cannot persist the new one (the connection does not exist yet), so the just-entered token is invalidated. Complete the connection setup promptly after testing, and re-authenticate if a subsequent sync reports an authentication error.
+- Running a manual **check** concurrently with a sync on the same source can race two rotations and invalidate one. Avoid triggering a connection test while a sync is in progress.
+
 ### Missing Records (Salesforce API Eventual Consistency)
 
 Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
@@ -297,6 +316,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
 | 2.7.26-rc.1 | 2026-07-14 | [81535](https://github.com/airbytehq/airbyte/pull/81535) | Use ordered `ConcurrentMessageRepository` so state checkpoints are emitted in-order with records, preventing data loss (cursor advancing past uncommitted records) when a sync is terminated ungracefully |
 | 2.7.25 | 2026-06-20 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |

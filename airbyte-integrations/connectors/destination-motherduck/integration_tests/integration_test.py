@@ -130,6 +130,7 @@ def table_schema() -> str:
                 },
             },
             "empty_object_key": {"type": ["object"]},
+            "array_of_objects_key": {"type": ["null", "array"], "items": {"type": "object"}},
         },
     }
     return schema
@@ -254,6 +255,7 @@ def airbyte_message1(test_table_name: str):
                 "keyUpperCase": str(fake.ssn()),
                 "object_key": {},
                 "empty_object_key": {},
+                "array_of_objects_key": [{}],
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -273,6 +275,7 @@ def airbyte_message2(test_table_name: str):
                 "keyUpperCase": str(fake.ssn()),
                 "object_key": {},
                 "empty_object_key": {"a": {}},
+                "array_of_objects_key": [{"a": 1}, {}],
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -292,6 +295,7 @@ def airbyte_message2_update(airbyte_message2: AirbyteMessage, test_table_name: s
                 "keyUpperCase": str(fake.ssn()),
                 "object_key": {},
                 "empty_object_key": {},
+                "array_of_objects_key": [],
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -410,7 +414,8 @@ def test_write(
     assert len(result) == 1
 
     sql_result = sql_processor._execute_sql(
-        "SELECT key1, keyuppercase, object_key, empty_object_key, _airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
+        "SELECT key1, keyuppercase, object_key, empty_object_key, array_of_objects_key, "
+        "_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
         f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
 
@@ -423,6 +428,8 @@ def test_write(
     assert sql_result[1][2] == {}
     assert sql_result[0][3] == {"a": {}}
     assert sql_result[1][3] == {}
+    assert sql_result[0][4] == [{"a": 1}, {}]
+    assert sql_result[1][4] == [{}]
 
 
 def test_write_dupe(
