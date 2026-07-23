@@ -103,7 +103,7 @@ SET GLOBAL thread_pool_idle_timeout = 120;
 
 During CDC syncs, you may see the sync fail while reading the binlog with an error such as:
 
-```
+```text
 Caused by: java.io.EOFException: Failed to read next byte from position <binlog_position>
 ```
 
