@@ -104,10 +104,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     def _persist_rotated_refresh_token(self, sf: Salesforce, config: MutableMapping[str, Any]):
         if sf.refresh_token and sf.refresh_token != config.get("refresh_token"):
             config["refresh_token"] = sf.refresh_token
-            # Emit directly to stdout instead of via the message repository: the
-            # concurrent queue is only drained during read, so a control message
-            # queued from check or discover would be silently dropped and the
-            # rotated token lost, permanently breaking the connection under RTR.
+            # Emit to stdout, not via the message repository: its queue is only
+            # drained during read, so a rotation from check/discover would be dropped.
             emit_configuration_as_airbyte_control_message(config)
 
     @staticmethod
