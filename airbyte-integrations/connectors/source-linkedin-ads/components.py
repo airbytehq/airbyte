@@ -13,8 +13,6 @@ from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -25,7 +23,6 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 
@@ -187,28 +184,6 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
                 error_message="LinkedIn Ads metric-value rate limit is exceeded.",
             )
         return super().interpret_response(response_or_exception)
-
-
-@dataclass
-class LinkedInAdsBatchedAnalyticsStateMigration(StateMigration):
-    """Convert per-partition analytics state to a global cursor once."""
-
-    config: Config
-    declarative_stream: DeclarativeStreamModel
-
-    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return bool(stream_state.get("states"))
-
-    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        migrated_state = dict(
-            min(
-                (state["cursor"] for state in stream_state["states"]),
-                key=lambda cursor: cursor["end_date"],
-            )
-        )
-        if stream_state.get("parent_state"):
-            migrated_state["parent_state"] = stream_state["parent_state"]
-        return migrated_state
 
 
 @dataclass

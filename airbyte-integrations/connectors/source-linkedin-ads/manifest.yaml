@@ -525,9 +525,6 @@ definitions:
           $ref: "#/schemas/lead_form_responses"
     ad_campaign_analytics:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration
       name: ad_campaign_analytics
       primary_key:
         - string_of_pivot_values
@@ -608,9 +605,6 @@ definitions:
           $ref: "#/schemas/ad_campaign_analytics"
     ad_creative_analytics:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration
       name: ad_creative_analytics
       primary_key:
         - string_of_pivot_values
@@ -690,9 +684,6 @@ definitions:
           $ref: "#/schemas/ad_creative_analytics"
     ad_impression_device_analytics:
       type: DeclarativeStream
-      state_migrations:
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration
       name: ad_impression_device_analytics
       primary_key:
         - string_of_pivot_values

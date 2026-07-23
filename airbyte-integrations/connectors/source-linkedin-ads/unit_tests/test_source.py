@@ -207,16 +207,6 @@ class TestAllStreams:
             for stream_name in batched_stream_names
         )
         assert all(streams[stream_name]["retriever"]["partition_router"]["group_size"] == 50 for stream_name in batched_stream_names)
-        assert all(
-            streams[stream_name]["state_migrations"]
-            == [
-                {
-                    "type": "CustomStateMigration",
-                    "class_name": "source_declarative_manifest.components.LinkedInAdsBatchedAnalyticsStateMigration",
-                }
-            ]
-            for stream_name in batched_stream_names
-        )
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
