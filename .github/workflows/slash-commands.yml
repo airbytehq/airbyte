@@ -64,6 +64,7 @@ jobs:
             ai-prove-fix
             ai-ready
             ai-release-watch
+            ai-resolve-conflicts
             ai-review
             approve-regression-tests
             build-connector-images
