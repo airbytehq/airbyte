@@ -108,13 +108,13 @@ You don't have to turn off a connector before deleting it, and there's no minimu
 
 ## Control who can access each entity {#entity-access}
 
-On the [Team and Custom plans](../../admin/billing.md#team), administrators can control which members of the organization can read from and write to each entity a connector exposes. This is useful when a workspace is shared but only some of its members should reach a sensitive entity, such as payroll records or customer contacts.
+Administrators can control which members of the organization can read from and write to each entity a connector exposes. This is useful when a workspace is shared but only some of its members should reach a sensitive entity, such as payroll records or customer contacts.
 
 Entity access permissions apply per entity, per member, and per action (read or write). They don't change what the underlying credential can reach on the third-party service; they control which members' agents are allowed to use each entity through this connector.
 
 ### Who can see and edit access
 
-The access controls appear only for administrators, meaning organization admins and members who manage the connector's workspace. Members who don't manage the workspace don't see the access columns and can't change access. The controls also require the entity access permissions entitlement, which is included on the Team and Custom plans.
+The access controls appear only for administrators: organization admins and members who manage the connector's workspace. Members who don't manage the workspace don't see the access columns and can't change access. Because access is granted per member, these controls matter most once your organization has more than one member, which requires a plan that supports [multiple users](../../admin/users.md). On plans limited to a single user, you're the only member in the list.
 
 ### Read the access summary
 
