@@ -11,10 +11,6 @@ import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 
 As of Airbyte v2.1.0, Helm chart V1 is no longer supported. Helm chart V2 is now the only supported chart. If you haven't already upgraded, you must migrate to Helm chart V2 to continue receiving updates. If you're a new Airbyte user, you can skip this guide and start directly with the current chart — see [Deploying Airbyte](../deploying-airbyte/deploying-airbyte.md).
 
-:::important Enterprise customers
-Follow the [Self-Managed Enterprise guide](../enterprise-setup/chart-v2-enterprise) instead.
-:::
-
 ## Why you must upgrade
 
 Helm chart V1 is no longer supported as of Airbyte v2.1.0. You must upgrade to Helm chart V2 to continue receiving Airbyte updates. In addition to being required, the new chart has the following benefits:
@@ -85,7 +81,7 @@ If you haven't configured an external database, you must backup Airbyte's intern
 
     Now print them to the terminal.
 
-    ```
+    ```bash
     kubectl get secret airbyte-airbyte-secrets -n airbyte -o jsonpath='{.data}'
     ```
 

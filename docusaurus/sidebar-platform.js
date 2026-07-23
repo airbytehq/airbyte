@@ -437,23 +437,7 @@ module.exports = {
         buildAConnector,     
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
-        {
-          type: "category",
-          label: "Self-Managed Enterprise",
-          link: {
-            type: "doc",
-            id: "enterprise-setup/README",
-          },
-          items: [
-            "enterprise-setup/implementation-guide",
-            "enterprise-setup/multi-region",
-            "enterprise-setup/audit-logging",
-            "enterprise-setup/scaling-airbyte",
-            "enterprise-setup/upgrade-service-account",
-            "enterprise-setup/upgrading-from-community",
-            "enterprise-setup/chart-v2-enterprise",
-          ],
-        },
+        "enterprise-setup/README",
         {
           type: "category",
           label: "Enterprise Flex",
@@ -493,20 +477,7 @@ module.exports = {
           type: "category",
           label: "Airbyte at Scale",
           items: [
-            {
-              type: "category",
-              label: "Collecting Metrics",
-              link: {
-                type: "doc",
-                id: "operator-guides/collecting-metrics",
-              },
-              items: [
-                {
-                  type: "doc",
-                  id: "operator-guides/open-telemetry",
-                },
-              ],
-            },
+            "operator-guides/collecting-metrics",
             "operator-guides/scaling-airbyte",
             "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
           ],
