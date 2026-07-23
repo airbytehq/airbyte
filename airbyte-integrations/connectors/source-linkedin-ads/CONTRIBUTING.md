@@ -68,8 +68,7 @@ Why 50 entities per request:
 The `adAnalytics` API does not support pagination and caps each response at 15,000 elements. Campaign
 and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` request.
 Impression-device analytics can return at most 7,750 rows for the five documented device categories
-over the same range. The record extractor fails if an analytics response reaches 15,000 elements
-rather than emitting a potentially truncated response.
+over the same range.
 
 Batch membership can change when campaigns or creatives are added or removed, so the three batched
 streams use a global substream cursor. Existing per-partition state is migrated once to the earliest

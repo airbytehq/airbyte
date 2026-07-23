@@ -14,7 +14,6 @@ from requests.models import PreparedRequest
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
@@ -33,7 +32,6 @@ def _response(status_code: int, body: Union[Mapping[str, str], bytes]) -> Respon
 @pytest.fixture
 def mock_response():
     response = MagicMock(spec=Response)
-    response.url = ""
     response.json.return_value = {
         "elements": [
             {"lastModified": "2024-09-01T00:00:00Z", "created": "2024-08-01T00:00:00Z", "data": "value1"},
@@ -111,17 +109,6 @@ def test_linkedin_ads_record_extractor_extract_records(components_module, mock_r
     for i, record in enumerate(records):
         assert record["lastModified"] == expected_records[i]["lastModified"]
         assert record["created"] == expected_records[i]["created"]
-
-
-def test_linkedin_ads_record_extractor_rejects_capped_analytics_response(components_module):
-    response = _response(200, {"elements": [{}] * 15_000})
-    response.url = "https://api.linkedin.com/rest/adAnalytics"
-
-    with pytest.raises(AirbyteTracedException) as exc_info:
-        list(components_module.LinkedInAdsRecordExtractor().extract_records(response))
-
-    assert exc_info.value.message == "LinkedIn Ads analytics response reaches the 15,000-record limit."
-    assert exc_info.value.failure_type == FailureType.system_error
 
 
 def test_date_str_from_date_range(components_module):

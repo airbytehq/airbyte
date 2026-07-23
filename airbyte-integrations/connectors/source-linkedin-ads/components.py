@@ -27,7 +27,6 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException,
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 # replace `pivot` with `_pivot`, to allow redshift normalization,
@@ -40,7 +39,6 @@ _DATA_VOLUME_RATE_LIMIT_MESSAGE_PARTS = (
     "data request limit has been exceeded",
     "45 million metric values",
 )
-_AD_ANALYTICS_RESPONSE_LIMIT = 15_000
 
 
 def _is_data_volume_rate_limit(response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
@@ -160,16 +158,7 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         """
         Extracts and transforms records from an HTTP response.
         """
-        response_body = response.json()
-        records = response_body.get("elements", [])
-        if "/adAnalytics" in (response.url or "") and len(records) >= _AD_ANALYTICS_RESPONSE_LIMIT:
-            raise AirbyteTracedException(
-                message="LinkedIn Ads analytics response reaches the 15,000-record limit.",
-                internal_message="The adAnalytics endpoint returned 15,000 elements without pagination, so records may be truncated.",
-                failure_type=FailureType.system_error,
-            )
-
-        for record in transform_data(records):
+        for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
 
 
