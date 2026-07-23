@@ -1,0 +1,98 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starrocks",
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "StarRocks Destination Config",
+    "type": "object",
+    "required": ["host", "username", "database"],
+    "properties": {
+      "host": {
+        "type": "string",
+        "title": "Host",
+        "description": "StarRocks FE hostname",
+        "order": 0
+      },
+      "port": {
+        "type": "integer",
+        "title": "Port",
+        "description": "MySQL protocol port",
+        "default": 9030,
+        "order": 1
+      },
+      "http_port": {
+        "type": "integer",
+        "title": "HTTP Port",
+        "description": "Stream Load API port",
+        "default": 8030,
+        "order": 2
+      },
+      "username": {
+        "type": "string",
+        "title": "Username",
+        "description": "Authentication username",
+        "order": 3
+      },
+      "password": {
+        "type": "string",
+        "title": "Password",
+        "description": "Authentication password",
+        "default": "",
+        "airbyte_secret": true,
+        "always_show": true,
+        "order": 4
+      },
+      "database": {
+        "type": "string",
+        "title": "Database",
+        "description": "Target database name",
+        "order": 5
+      },
+      "ssl": {
+        "type": "boolean",
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL. When enabled, the connection will use SSL/TLS encryption.",
+        "default": false,
+        "order": 6
+      },
+      "loading_mode": {
+        "type": "object",
+        "title": "Loading Mode",
+        "description": "Choose how to load data into StarRocks",
+        "order": 7,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Typed (Recommended)",
+            "description": "Creates typed columns based on the source schema. Data is immediately queryable with full SQL support and optimal performance.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "typed",
+                "default": "typed"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Raw JSON",
+            "description": "Stores all data as JSON in a single column. Requires manual transformation but provides maximum flexibility for schema changes.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "raw",
+                "default": "raw"
+              }
+            }
+          }
+        ],
+        "default": {
+          "mode": "typed"
+        }
+      }
+    }
+  }
+}
