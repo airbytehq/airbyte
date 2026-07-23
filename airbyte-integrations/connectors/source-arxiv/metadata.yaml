@@ -1,0 +1,53 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  allowedHosts:
+    hosts:
+      - export.arxiv.org
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9c28d17e-5fbd-4e75-9f40-3d5dc2b3f20a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-arxiv
+  documentationUrl: https://docs.airbyte.com/integrations/sources/arxiv
+  githubIssueLabel: source-arxiv
+  icon: icon.svg
+  license: ELv2
+  name: arXiv
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: "2026-05-26"
+  releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-arxiv
+  suggestedStreams:
+    streams:
+      - papers
+      - categories
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets: []
+  externalDocumentationUrls:
+    - title: arXiv API User Manual
+      url: https://arxiv.org/help/api/index
+      type: api_reference
+    - title: arXiv Category Taxonomy
+      url: https://arxiv.org/category_taxonomy
+      type: api_reference
+metadataSpecVersion: "1.0"
