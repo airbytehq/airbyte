@@ -106,6 +106,38 @@ The Connectors page also shows every connector that's already been added across 
 
 You don't have to turn off a connector before deleting it, and there's no minimum number of connectors per workspace. An empty workspace is a valid state. It just means no agent running in it can reach external data.
 
+## Control who can access each entity {#entity-access}
+
+Administrators can control which members of the organization can read from and write to each entity a connector exposes. This is useful when a workspace is shared but only some of its members should reach a sensitive entity, such as payroll records or customer contacts.
+
+Entity access permissions apply per entity, per member, and per action (read or write). They don't change what the underlying credential can reach on the third-party service; they control which members' agents are allowed to use each entity through this connector.
+
+### Who can see and edit access
+
+The access controls appear only for administrators: organization admins and members who manage the connector's workspace. Members who don't manage the workspace don't see the access columns and can't change access. Because access is granted per member, these controls matter most once your organization has more than one member, which requires a plan that supports [multiple users](../../admin/users.md). On plans limited to a single user, you're the only member in the list.
+
+### Read the access summary
+
+Open a connector's detail page (**Connectors** > **Details**) and find the Context Store entities table. When you have access to manage the connector, the table shows two extra columns, **Reads** and **Writes**. Each cell holds a pill that summarizes who can perform that action on that entity:
+
+- **Everyone**: Every active member can perform the action.
+- **A count, such as "2 of 5"**: Only some members can. The pill shows how many of the eligible members are allowed.
+- **No one**: No member can perform the action.
+
+The **Writes** column shows a summary only for entities the connector can write to. For read-only entities, the Writes cell stays empty.
+
+### Change who has access
+
+1. On the connector detail page, click the **Reads** or **Writes** pill for the entity you want to adjust. An **Access** slide-out opens for that entity.
+
+2. The slide-out lists every active member of the organization, grouped into **Reads** and, for writable entities, **Writes**. Each member row shows their name, email, and role (**Admin** or **Member**), with a toggle for each action.
+
+3. Every member starts with access to every entity. Switch a member's toggle **off** to revoke that action for that entity, or back **on** to restore it. Each change saves on its own as you make it, so you can close the slide-out at any time.
+
+4. Close the slide-out when you're done. The summary pill on the connector detail page updates to reflect the new access, for example changing from **Everyone** to a count such as **2 of 5**.
+
+Only active members appear in the slide-out. Members who were invited but haven't signed in yet don't have access to control until their status becomes **Active**. For more about roles and member status, see [Users](../../admin/users.md).
+
 ## Doing this without the web app
 
 Everything on this page has programmatic equivalents:
