@@ -468,7 +468,6 @@ definitions:
         type: RequestOption
         inject_into: body_json
         field_name: to
-      is_data_feed: true
     transformations:
     - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
