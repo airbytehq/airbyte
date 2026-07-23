@@ -167,6 +167,28 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   GO
   ```
 
+  :::note Google Cloud SQL for SQL Server
+
+  On [Google Cloud SQL for SQL Server](https://cloud.google.com/sql/docs/sqlserver), Google does
+  not grant customers the `sysadmin` server role, so you cannot run `sys.sp_cdc_enable_db` to enable
+  CDC at the database level. Instead, Cloud SQL provides a dedicated stored procedure that enables
+  CDC without `sysadmin`:
+
+  ```text
+  EXEC msdb.dbo.gcloudsql_cdc_enable_db 'DATABASE_NAME'
+  ```
+
+  Replace `DATABASE_NAME` with the name of your source database. To disable CDC at the database
+  level later, use the corresponding `EXEC msdb.dbo.gcloudsql_cdc_disable_db 'DATABASE_NAME'`
+  procedure.
+
+  Only the database-level enablement differs on Cloud SQL. Enabling CDC on individual tables still
+  uses the standard `sys.sp_cdc_enable_table` procedure (shown below), and the snapshot isolation
+  and user/permission steps that follow are unchanged. For the full Google-provided procedure, see
+  [Configure CDC for a Cloud SQL for SQL Server source](https://cloud.google.com/datastream/docs/configure-cloudsql-sqlserver).
+
+  :::
+
 - The administrator must then enable CDC for each table that you want to capture. Here's an example:
 
   ```text
