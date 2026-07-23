@@ -222,7 +222,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.11 | 2026-07-21 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Batch supported analytics streams in groups of 50, preserve member-demographic finder and state compatibility, prevent property-chunk collisions, and harden data-volume rate-limit handling. |
+| 6.0.0 | 2026-07-21 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Breaking change: batch analytics requests for `ad_campaign_analytics`, `ad_creative_analytics`, and `ad_impression_device_analytics` in groups of up to 50, reducing sync time by approximately 98% for large accounts. Refresh these streams after upgrading because their incremental state format changed. |
 | 5.6.10 | 2026-07-21 | [77286](https://github.com/airbytehq/airbyte/pull/77286) | Update dependencies |
 | 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
 | 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
