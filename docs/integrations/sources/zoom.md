@@ -46,7 +46,26 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Namespaces                    | No          |
 
 :::note Incremental Sync
-Incremental sync is supported for the `recordings`, `phone_call_history`, and `phone_recordings` streams. The `recording_transcript_content` and `phone_recording_transcripts` streams sync in full refresh mode. Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
+Incremental sync is supported for the following streams:
+
+- `recordings` (cursor: `start_time`), `recording_transcript_content` (cursor: `recording_start`)
+- `phone_call_history` (cursor: `start_time`), `phone_recordings` (cursor: `date_time`), `phone_recording_transcripts` (cursor: `call_date_time`)
+- `meetings` (cursor: `created_at`)
+- `meeting_registrants`, `meeting_polls`, `meeting_poll_results`, `meeting_registration_questions`, `report_meetings`, and `report_meeting_participants` (cursor: `meeting_created_at`, the creation time of the parent meeting)
+
+The `users`, `webinars`, `webinar_*`, and `report_webinar*` streams only support full refresh because the Zoom API does not provide date filtering for those endpoints.
+
+Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
+:::
+
+:::caution Updates to already-synced records
+The meeting-based incremental streams use the meeting **creation time** as the cursor. After a meeting has been synced, later changes to it are not picked up by incremental syncs. This affects:
+
+- Edits to an existing meeting (topic, schedule, settings) in the `meetings` stream
+- New registrants, polls, or poll results added to a meeting that was created before the last sync
+- Meeting reports and participant reports for meetings that ended after the meeting was first synced
+
+The connector re-reads meetings created in the last 30 days on every incremental sync to catch most of these late-arriving changes. To capture updates on older meetings, run a full refresh (or clear and resync the affected streams) periodically. The `recordings` and phone streams key off event timestamps and do not have this limitation.
 :::
 
 ### Performance considerations
@@ -117,7 +136,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.3.0 | 2026-07-20 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and raw recording/phone transcript streams; migrate to fully declarative (no custom Python components); skip phone transcript downloads for recordings without transcripts; clamp phone streams to Zoom's 6-month history window; ignore missing-scope (4711) and no-hosting-capability (3161) errors; add configurable concurrency |
+| 1.3.0 | 2026-07-20 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and raw recording/phone transcript streams; migrate to fully declarative (no custom Python components); skip phone transcript downloads for recordings without transcripts; clamp phone streams to Zoom's 6-month history window; ignore missing-scope (4711) and no-hosting-capability (3161) errors; add configurable concurrency; add incremental sync support to meetings, meeting_registrants, meeting_polls, meeting_poll_results, meeting_registration_questions, report_meetings, report_meeting_participants, recording_transcript_content, and phone_recording_transcripts |
 | 1.2.56 | 2026-07-21 | [82672](https://github.com/airbytehq/airbyte/pull/82672) | Update dependencies |
 | 1.2.55 | 2026-07-14 | [82073](https://github.com/airbytehq/airbyte/pull/82073) | Update dependencies |
 | 1.2.54 | 2026-06-30 | [81304](https://github.com/airbytehq/airbyte/pull/81304) | Update dependencies |
