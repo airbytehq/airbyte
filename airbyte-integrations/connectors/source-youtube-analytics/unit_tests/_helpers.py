@@ -46,9 +46,7 @@ def _register_custom_components() -> None:
         package.__path__ = []  # mark as a package
         sys.modules["source_declarative_manifest"] = package
 
-    spec = importlib.util.spec_from_file_location(
-        "source_declarative_manifest.components", str(_CONNECTOR_DIR / "components.py")
-    )
+    spec = importlib.util.spec_from_file_location("source_declarative_manifest.components", str(_CONNECTOR_DIR / "components.py"))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules["source_declarative_manifest.components"] = module

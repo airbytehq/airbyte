@@ -88,9 +88,7 @@ def test_check_does_not_use_deprecated_annotations_stream():
     with requests_mock.Mocker() as mocker:
         _register_common_mocks(mocker)
         source.check(logging.getLogger("test"), _CONFIG)
-        create_job_attempts = [
-            req for req in mocker.request_history if req.method == "POST" and req.url.rstrip("/") == _JOBS_URL
-        ]
+        create_job_attempts = [req for req in mocker.request_history if req.method == "POST" and req.url.rstrip("/") == _JOBS_URL]
 
     assert create_job_attempts == [], (
         "check attempted to create a reporting job, which happens only when no job exists for the "
