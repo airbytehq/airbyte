@@ -57,6 +57,20 @@
                 "description": "The Access Token for making authenticated requests.",
                 "airbyte_secret": true,
                 "order": 3
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "The Refresh Token for obtaining new access tokens when they expire.",
+                "airbyte_secret": true,
+                "order": 4
+              },
+              "token_expiry_date": {
+                "type": "string",
+                "title": "Token Expiry Date",
+                "description": "The date-time when the current access token expires.",
+                "format": "date-time",
+                "order": 5
               }
             }
           },
@@ -157,6 +171,14 @@
           "access_token": {
             "type": "string",
             "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          },
+          "token_expiry_date": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "token_expiry_date"]
           }
         }
       },
