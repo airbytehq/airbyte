@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": ["null", "string"]
+    },
+    "userEmployeeNr": {
+      "type": ["null", "string"]
+    },
+    "timesheetDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "day": {
+      "type": ["null", "string"]
+    },
+    "timesheetStarttime": {
+      "type": ["null", "string"]
+    },
+    "timesheetClockedIn": {
+      "type": ["null", "string"]
+    },
+    "timesheetEndtime": {
+      "type": ["null", "string"]
+    },
+    "timesheetClockedOut": {
+      "type": ["null", "string"]
+    },
+    "timesheetBreak": {
+      "type": ["null", "integer"]
+    },
+    "timesheetPaidBreak": {
+      "type": ["null", "integer"]
+    },
+    "timesheetClockedBreakMinutes": {
+      "type": ["null", "integer"]
+    },
+    "shiftLongName": {
+      "type": ["null", "string"]
+    },
+    "locationName": {
+      "type": ["null", "string"]
+    },
+    "departmentName": {
+      "type": ["null", "string"]
+    },
+    "teamName": {
+      "type": ["null", "string"]
+    },
+    "contractContractType": {
+      "type": ["null", "string"]
+    },
+    "contractDepartmentName": {
+      "type": ["null", "string"]
+    },
+    "timesheetTotal": {
+      "type": ["null", "number"]
+    },
+    "timesheetSurchargePay": {
+      "type": ["null", "number"]
+    },
+    "timesheetSurchargeTotal": {
+      "type": ["null", "number"]
+    },
+    "timesheetMeals": {
+      "type": ["null", "integer"]
+    },
+    "timesheetKilometers": {
+      "type": ["null", "integer"]
+    },
+    "timesheet100.00%": {
+      "type": ["null", "number"]
+    },
+    "timesheet150.00%": {
+      "type": ["null", "number"]
+    },
+    "timesheet200.00%": {
+      "type": ["null", "number"]
+    },
+    "timesheetOvertime": {
+      "type": ["null", "number"]
+    },
+    "timesheetRegularTime": {
+      "type": ["null", "number"]
+    },
+    "timesheetStatus": {
+      "type": ["null", "string"]
+    },
+    "timesheetSalary": {
+      "type": ["null", "number"]
+    },
+    "timesheetCoc": {
+      "type": ["null", "number"]
+    },
+    "userContractHours": {
+      "type": ["null", "number"]
+    },
+    "rosterStarttime": {
+      "type": ["null", "string"]
+    },
+    "rosterEndtime": {
+      "type": ["null", "string"]
+    },
+    "rosterBreak": {
+      "type": ["null", "integer"]
+    },
+    "rosterPaidBreak": {
+      "type": ["null", "integer"]
+    },
+    "rosterTotal": {
+      "type": ["null", "number"]
+    },
+    "rosterDifference": {
+      "type": ["null", "number"]
+    },
+    "timesheetClock": {
+      "type": ["null", "boolean"]
+    },
+    "timesheetClockBreakSummary": {
+      "type": ["null", "string"]
+    },
+    "timesheetCreated": {
+      "type": ["null", "string"]
+    },
+    "timesheetUpdated": {
+      "type": ["null", "string"]
+    },
+    "timesheetReviewed": {
+      "type": ["null", "string"]
+    },
+    "timesheetId": {
+      "type": ["null", "string"]
+    },
+    "timesheetRosterId": {
+      "type": ["null", "string"]
+    },
+    "timesheetShiftId": {
+      "type": ["null", "string"]
+    },
+    "timesheetTeamId": {
+      "type": ["null", "string"]
+    },
+    "departmentId": {
+      "type": ["null", "string"]
+    },
+    "contractDepartmentId": {
+      "type": ["null", "string"]
+    },
+    "locationId": {
+      "type": ["null", "string"]
+    },
+    "timesheetRateCardId": {
+      "type": ["null", "string"]
+    },
+    "contractContractTypeId": {
+      "type": ["null", "string"]
+    },
+    "contractWage": {
+      "type": ["null", "number"]
+    },
+    "timesheetCustomFields4490": {
+      "type": ["null", "string"]
+    }
+  }
+}
