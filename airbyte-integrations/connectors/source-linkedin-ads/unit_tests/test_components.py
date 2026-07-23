@@ -207,4 +207,3 @@ def test_linkedin_ads_data_volume_backoff_strategy(components_module, response_o
     strategy = components_module.LinkedInAdsDataVolumeBackoffStrategy()
 
     assert strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=1) == expected_backoff
-
