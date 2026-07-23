@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
-from airbyte_cdk.config_observation import create_connector_config_control_message
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -104,7 +104,11 @@ class SourceSalesforce(ConcurrentSourceAdapter):
     def _persist_rotated_refresh_token(self, sf: Salesforce, config: MutableMapping[str, Any]):
         if sf.refresh_token and sf.refresh_token != config.get("refresh_token"):
             config["refresh_token"] = sf.refresh_token
-            self.message_repository.emit_message(create_connector_config_control_message(config))
+            # Emit directly to stdout instead of via the message repository: the
+            # concurrent queue is only drained during read, so a control message
+            # queued from check or discover would be silently dropped and the
+            # rotated token lost, permanently breaking the connection under RTR.
+            emit_configuration_as_airbyte_control_message(config)
 
     @staticmethod
     def _validate_stream_slice_step(stream_slice_step: str):

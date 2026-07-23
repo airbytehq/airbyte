@@ -4,6 +4,7 @@
 
 import csv
 import io
+import json
 import logging
 import re
 from datetime import datetime, timedelta
@@ -139,45 +140,70 @@ def _register_login(requests_mock, **extra):
     requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=response)
 
 
-def _consume_control_messages(source):
-    return [message for message in source.message_repository.consume_queue() if message.type == Type.CONTROL]
+def _control_messages_from_stdout(capsys):
+    """Control messages must be printed directly to stdout: the concurrent message
+    repository is only drained during read, so anything queued from check/discover
+    would be dropped and the rotated token lost."""
+    messages = []
+    for line in capsys.readouterr().out.splitlines():
+        try:
+            parsed = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if parsed.get("type") == "CONTROL":
+            messages.append(parsed)
+    return messages
 
 
-def test_rotated_refresh_token_is_persisted(requests_mock):
+def test_rotated_refresh_token_is_persisted(requests_mock, capsys):
     config = ConfigBuilder().refresh_token("old_refresh_token").build()
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
-    list(source.message_repository.consume_queue())
     _register_login(requests_mock, refresh_token="new_refresh_token")
 
     source._get_sf_object(config)
 
     assert config["refresh_token"] == "new_refresh_token"
-    control_messages = _consume_control_messages(source)
+    control_messages = _control_messages_from_stdout(capsys)
     assert len(control_messages) == 1
-    assert control_messages[0].control.connectorConfig.config["refresh_token"] == "new_refresh_token"
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["refresh_token"] == "new_refresh_token"
 
 
-def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock):
+def test_rotation_during_check_emits_control_message_to_stdout(requests_mock, capsys):
+    """Rotation can happen in any command that logs in. During check (and discover)
+    nothing consumes the concurrent queue, so the message must reach stdout anyway."""
     config = ConfigBuilder().refresh_token("old_refresh_token").build()
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
-    list(source.message_repository.consume_queue())
+    _register_login(requests_mock, refresh_token="new_refresh_token")
+    requests_mock.register_uri(
+        "GET", f"https://fake.salesforce.com/services/data/{API_VERSION}/sobjects", json={"sobjects": []}
+    )
+
+    source.check_connection(logging.getLogger("airbyte"), config)
+
+    control_messages = _control_messages_from_stdout(capsys)
+    assert len(control_messages) == 1
+    assert control_messages[0]["control"]["connectorConfig"]["config"]["refresh_token"] == "new_refresh_token"
+
+
+def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     _register_login(requests_mock)
 
     source._get_sf_object(config)
 
     assert config["refresh_token"] == "old_refresh_token"
-    assert _consume_control_messages(source) == []
+    assert _control_messages_from_stdout(capsys) == []
 
 
-def test_unchanged_refresh_token_does_not_emit_control_message(requests_mock):
+def test_unchanged_refresh_token_does_not_emit_control_message(requests_mock, capsys):
     config = ConfigBuilder().refresh_token("same_refresh_token").build()
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
-    list(source.message_repository.consume_queue())
     _register_login(requests_mock, refresh_token="same_refresh_token")
 
     source._get_sf_object(config)
 
-    assert _consume_control_messages(source) == []
+    assert _control_messages_from_stdout(capsys) == []
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
