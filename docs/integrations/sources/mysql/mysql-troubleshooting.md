@@ -99,6 +99,29 @@ SET GLOBAL thread_pool_idle_timeout = 120;
 `slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
 :::
 
+### EOFException: Failed to read next byte from position
+
+During CDC syncs, you may see the sync fail while reading the binlog with an error such as:
+
+```
+Caused by: java.io.EOFException: Failed to read next byte from position <binlog_position>
+```
+
+This typically happens when your MySQL server closes the binlog reader connection because a network write or read takes longer than the server-side timeout allows. This is most common with large databases, where reading a single binlog event can take a while.
+
+If you see this error, check and increase **both** of the following _MySQL server_ timeout values (they default to relatively low values and are set in seconds):
+
+```sql
+SET GLOBAL net_write_timeout = 3600;
+SET GLOBAL net_read_timeout = 3600;
+```
+
+For large databases, start with `3600` (1 hour) and adjust up or down as needed based on whether the error persists. See the MySQL documentation for [`net_write_timeout`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_net_write_timeout) and [`net_read_timeout`](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_net_read_timeout).
+
+:::note
+This is related to the [`EventDataDeserializationException` errors](#eventdatadeserializationexception-errors-during-initial-snapshot) described above, which surface the same underlying `EOFException`/`SocketException` symptoms. If increasing `net_write_timeout`/`net_read_timeout` does not resolve the error, also try raising `replica_net_timeout`/`slave_net_timeout` and `thread_pool_idle_timeout`.
+:::
+
 ### (Advanced) Enable GTIDs
 
 Global transaction identifiers \(GTIDs\) uniquely identify transactions that occur on a server within a cluster. Though not required for a Airbyte MySQL connector, using GTIDs simplifies replication and enables you to more easily confirm if primary and replica servers are consistent. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-gtids.html#option_mysqld_gtid-mode)
