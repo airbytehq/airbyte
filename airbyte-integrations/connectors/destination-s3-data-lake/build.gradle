@@ -47,6 +47,7 @@ dependencies {
     implementation("software.amazon.awssdk:glue:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:kms:${project.ext.awsSdkVersion}")
     implementation("software.amazon.awssdk:apache-client:${project.ext.awsSdkVersion}")
+    compileOnly("software.amazon.awssdk:dynamodb:${project.ext.awsSdkVersion}")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("org.apache.hadoop:hadoop-common:3.4.1")
     implementation("org.projectnessie.nessie:nessie-client:0.99.0")
