@@ -169,10 +169,10 @@ class TestCustomAnalyticsReportStream(TestCase):
         When: Running a full refresh sync
         Then: Records should have 'sponsoredCampaign' and 'pivot' fields added
 
-        Note: The 'pivot' field value comes from the AddFields transformation in the manifest.
-        For custom_analytics_report (a DynamicDeclarativeStream), the ConfigComponentsResolver
-        should replace the template value with the configured pivot_by value, but currently
-        returns the template placeholder. The sponsoredCampaign transformation works correctly.
+        Note: 'sponsoredCampaign' is populated from the parent partition. The 'pivot' field is added
+        with the placeholder value 'DYNAMIC_FIELD' - the components mapping that would replace it targets a
+        field_path under retriever/record_selector, but transformations live at the stream level, so the
+        placeholder is not resolved. The actual pivoted dimension is captured in 'string_of_pivot_values'.
         """
         config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
@@ -200,11 +200,7 @@ class TestCustomAnalyticsReportStream(TestCase):
 
         assert "sponsoredCampaign" in record_data
         assert record_data["sponsoredCampaign"] == "1001"
-        assert "pivot" in record_data
-        # Note: The pivot value is currently the template placeholder rather than the resolved
-        # config value. This is a known limitation of ConfigComponentsResolver with transformations.
-        # The request_parameters pivot IS correctly resolved (verified by API calls working).
-        assert record_data["pivot"] in ("CAMPAIGN", "DYNAMIC_FIELD")
+        assert record_data["pivot"] == "DYNAMIC_FIELD"
 
     @HttpMocker()
     def test_incremental_sync_initial(self, http_mocker: HttpMocker):

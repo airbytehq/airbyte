@@ -168,6 +168,19 @@ class TestAllStreams:
 
         assert len(records) == 2
 
+    def test_custom_analytics_and_statistics_streams_are_distinct(self):
+        """The analytics and statistics dynamic generators read separate config arrays and each
+        produce their own custom_<name> stream."""
+        config = {
+            **TEST_CONFIG,
+            "ad_analytics_reports": [{"name": "AnalyticsByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}],
+            "ad_statistics_reports": [{"name": "StatsByMonth", "pivots": ["CAMPAIGN", "CREATIVE"], "time_granularity": "MONTHLY"}],
+        }
+        streams = get_source(config).streams(config=config)
+        custom_names = sorted(stream.name for stream in streams if stream.name.startswith("custom_"))
+
+        assert custom_names == ["custom_AnalyticsByMonth", "custom_StatsByMonth"]
+
     @pytest.mark.parametrize(
         "stream_name, expected",
         [
