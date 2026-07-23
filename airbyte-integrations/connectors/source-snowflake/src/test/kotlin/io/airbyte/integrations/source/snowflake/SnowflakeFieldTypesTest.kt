@@ -11,6 +11,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -20,7 +21,7 @@ class SnowflakeFieldTypesTest {
     // --- SnowflakeLocalDateTimeAccessor tests ---
 
     @Test
-    fun `SnowflakeLocalDateTimeAccessor truncates 9 decimal places to 6`() {
+    fun `SnowflakeLocalDateTimeAccessor rounds up 9 decimal places to 6`() {
         val dateTimeWith9Decimals = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 123456789)
         val timestamp = Timestamp.valueOf(dateTimeWith9Decimals)
 
@@ -30,7 +31,36 @@ class SnowflakeFieldTypesTest {
 
         val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
 
-        val expected = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 123456000)
+        val expected = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 123457000)
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `SnowflakeLocalDateTimeAccessor rounding up never produces a value less than the original`() {
+        val dateTimeWith9Decimals = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 123456789)
+        val timestamp = Timestamp.valueOf(dateTimeWith9Decimals)
+
+        val rs = mock(ResultSet::class.java)
+        `when`(rs.getTimestamp(1)).thenReturn(timestamp)
+        `when`(rs.wasNull()).thenReturn(false)
+
+        val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
+
+        assertTrue(result!! >= dateTimeWith9Decimals)
+    }
+
+    @Test
+    fun `SnowflakeLocalDateTimeAccessor rounding up carries into the next second`() {
+        val dateTimeNearSecondBoundary = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 999999999)
+        val timestamp = Timestamp.valueOf(dateTimeNearSecondBoundary)
+
+        val rs = mock(ResultSet::class.java)
+        `when`(rs.getTimestamp(1)).thenReturn(timestamp)
+        `when`(rs.wasNull()).thenReturn(false)
+
+        val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
+
+        val expected = LocalDateTime.of(2025, 11, 6, 22, 30, 47, 0)
         assertEquals(expected, result)
     }
 
@@ -76,7 +106,7 @@ class SnowflakeFieldTypesTest {
     // --- SnowflakeOffsetDateTimeFieldType tests ---
 
     @Test
-    fun `SnowflakeOffsetDateTimeFieldType truncates 9 decimal places to 6`() {
+    fun `SnowflakeOffsetDateTimeFieldType rounds up 9 decimal places to 6`() {
         val dateTimeWith9Decimals = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 123456789)
         val timestamp = Timestamp.valueOf(dateTimeWith9Decimals)
 
@@ -86,9 +116,9 @@ class SnowflakeFieldTypesTest {
 
         val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1)
 
-        val expected = OffsetDateTime.of(2025, 11, 6, 22, 30, 46, 123456000, ZoneOffset.UTC)
+        val expected = OffsetDateTime.of(2025, 11, 6, 22, 30, 46, 123457000, ZoneOffset.UTC)
         assertEquals(expected, result)
-        assertEquals(123456000, result?.nano)
+        assertEquals(123457000, result?.nano)
     }
 
     @Test
@@ -129,6 +159,6 @@ class SnowflakeFieldTypesTest {
         val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1)
 
         assertEquals(ZoneOffset.UTC, result?.offset)
-        assertEquals(500000000, result?.nano) // nanos truncated to microsecond precision
+        assertEquals(500001000, result?.nano) // rounded up to microsecond precision
     }
 }

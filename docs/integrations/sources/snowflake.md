@@ -242,6 +242,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.1 | 2026-07-21 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down |
 | 1.1.0 | 2026-05-28 | [78481](https://github.com/airbytehq/airbyte/pull/78481) | Support Snowflake Programmatic Access Token authentication. |
 | 1.0.11 | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787) | Make the hidden additional properties fields in spec optional. No functional change. |
 | 1.0.10 | 2026-03-13 | [74834](https://github.com/airbytehq/airbyte/pull/74834) | Truncate timestamp precision to 6 digits (microseconds) to prevent precision errors in destinations |
