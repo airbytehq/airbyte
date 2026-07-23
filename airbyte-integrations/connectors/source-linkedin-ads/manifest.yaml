@@ -1711,7 +1711,7 @@ dynamic_streams:
           value: "(value:{{components_values['time_granularity']}})"
         - type: ComponentMappingDefinition
           field_path:
-            ["retriever","record_selector","**","transformations","1","fields","0","value"]
+            ["transformations","1","fields","0","value"]
           value: "{{ ','.join(components_values['pivots']) }}"
 
 # LinkedIn Ads does not publish their standard API rate limits.

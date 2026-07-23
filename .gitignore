@@ -123,5 +123,3 @@ airbyte-integrations/connectors/**/airbyte-cdk-load/
 AGENT.md
 .claude/settings.local.json
 
-# VS Code workspace files (personal, machine-specific)
-*.code-workspace

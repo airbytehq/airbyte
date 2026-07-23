@@ -213,10 +213,10 @@ class TestCustomStatisticsReportStream(TestCase):
         When: Running a full refresh sync
         Then: Records have 'sponsoredCampaign' and 'pivot' fields added by the manifest transformations
 
-        Note: 'sponsoredCampaign' is populated from the parent partition. The 'pivot' field is added
-        with the placeholder value 'DYNAMIC_FIELD' - the components mapping that would replace it targets a
-        field_path under retriever/record_selector, but transformations live at the stream level, so the
-        placeholder is not resolved. The actual pivoted dimension is captured in 'string_of_pivot_values'.
+        Note: 'sponsoredCampaign' is populated from the parent partition. The 'pivot' field is seeded
+        with the placeholder 'DYNAMIC_FIELD' in the stream template; the DynamicDeclarativeStream components
+        mapping targets the stream-level field_path ["transformations", "1", "fields", "0", "value"] and
+        replaces it with the comma-joined configured pivots, so the resolved value is 'CAMPAIGN,CREATIVE'.
         """
         config = ConfigBuilder().with_start_date("2024-06-01").with_ad_statistics_reports(_get_custom_statistics_report_config()).build()
 
@@ -243,7 +243,7 @@ class TestCustomStatisticsReportStream(TestCase):
         record_data = output.records[0].record.data
 
         assert record_data["sponsoredCampaign"] == "1001"
-        assert record_data["pivot"] == "DYNAMIC_FIELD"
+        assert record_data["pivot"] == "CAMPAIGN,CREATIVE"  # comma-joined configured pivots, resolved by the components mapping
 
     @HttpMocker()
     def test_empty_parent_stream(self, http_mocker: HttpMocker):
@@ -270,3 +270,33 @@ class TestCustomStatisticsReportStream(TestCase):
 
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_incremental_sync_initial(self, http_mocker: HttpMocker):
+        """
+        Given: No prior state and ad_statistics_reports config
+        When: Running an incremental sync
+        Then: Records carry the derived end_date cursor and a state message is emitted
+        """
+        config = ConfigBuilder().with_start_date("2024-06-01").with_ad_statistics_reports(_get_custom_statistics_report_config()).build()
+
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_campaign_record(1001, 111111111, "Campaign 1")]),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
+            LinkedInAdsAnalyticsResponseBuilder().with_records([_create_statistics_record(1001, 2001)]).build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["end_date"] == "2024-06-01"   # derived from dateRange.end
+        assert len(output.state_messages) > 0
