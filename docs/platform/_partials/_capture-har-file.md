@@ -8,7 +8,7 @@ A HAR (HTTP Archive) file records the network activity between your browser and 
 
 1. Open the Airbyte page where you encountered the problem.
 
-2. Open developer tools. Press <kbd>F12</kbd>, or right-click anywhere on the page and click **Inspect**.
+2. Open developer tools. Right-click anywhere on the page and click **Inspect**, or press <kbd>F12</kbd> (Windows and Linux) or <kbd>Option</kbd>+<kbd>Cmd</kbd>+<kbd>I</kbd> (Mac).
 
 3. Click the **Network** tab.
 
@@ -27,7 +27,7 @@ A HAR (HTTP Archive) file records the network activity between your browser and 
 
 1. Open the Airbyte page where you encountered the problem.
 
-2. Open developer tools. Press <kbd>F12</kbd>, or open the application menu and click **More tools** > **Web Developer Tools**.
+2. Open developer tools. Open the application menu and click **More tools** > **Web Developer Tools**, or press <kbd>F12</kbd> (Windows and Linux) or <kbd>Option</kbd>+<kbd>Cmd</kbd>+<kbd>I</kbd> (Mac).
 
 3. Click the **Network** tab.
 
