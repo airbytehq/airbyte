@@ -9515,6 +9515,18 @@ schemas:
             type:
             - 'null'
             - string
+      procurableProductOutOfStockRate:
+        type:
+        - 'null'
+        - number
+      receiveFillRate:
+        type:
+        - 'null'
+        - number
+      uft:
+        type:
+        - 'null'
+        - number
   get_vendor_traffic_report:
     title: Vendor Traffic Report
     description: Vendor retail analytics reports - Traffic Report
