@@ -1,0 +1,7 @@
+<svg width="250" height="250" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="90" cy="72" r="33" fill="#B5CC18"/>
+  <circle cx="160" cy="72" r="33" fill="#4A87C5"/>
+  <circle cx="90" cy="142" r="33" fill="#3E4472"/>
+  <circle cx="160" cy="142" r="33" fill="#5CC8C8"/>
+  <text x="125" y="218" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="32" font-weight="300" fill="#2D3E50">qualtrics</text>
+</svg>
