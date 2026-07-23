@@ -51,6 +51,8 @@ Zendesk announced support for OAuth refresh token grant type on April 30, 2025. 
 
 <MigrationGuide />
 
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 ## Upgrading to 4.0.0
 
 The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream.
