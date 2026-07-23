@@ -298,5 +298,5 @@ class TestCustomStatisticsReportStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 1
-        assert output.records[0].record.data["end_date"] == "2024-06-01"   # derived from dateRange.end
+        assert output.records[0].record.data["end_date"] == "2024-06-01"  # derived from dateRange.end
         assert len(output.state_messages) > 0
