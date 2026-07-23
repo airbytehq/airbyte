@@ -235,7 +235,7 @@ Values that exceed these size limits are nulled out, and the `_airbyte_meta` col
 
 ### Schema evolution
 
-This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables, drops removed columns, and modifies column types as needed. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
+This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables and modifies column types as needed. When a column is removed from the source, the connector retains the existing column and its historical data in the destination; subsequent rows are written with `NULL` for that column. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
 
 ## Supported sync modes
 
