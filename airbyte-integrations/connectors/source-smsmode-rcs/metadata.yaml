@@ -1,0 +1,34 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-smsmode-rcs
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.1@sha256:f71ff70e2761f634c080233f6d718bb4bcf96fa310351d56e98ba58d43ab1c9f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4f9c377f-a5a5-4979-a8b0-66ef044b691d
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-smsmode-rcs
+  githubIssueLabel: source-smsmode-rcs
+  icon: icon.svg
+  license: ELv2
+  name: smsmode Rcs
+  releaseDate: 2026-06-15
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smsmode-rcs
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
