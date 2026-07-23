@@ -17,8 +17,8 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e63482c9-b017-425b-9d18-f08410d5db32
-  dockerImageTag: 1.0.0
-  canonicalImageTag: 1.0.0-canonical-1.0.0
+  dockerImageTag: 1.1.0
+  canonicalImageTag: 1.1.0-canonical-1.0.0
   dockerRepository: airbyte/source-skillsbase
   githubIssueLabel: source-skillsbase
   icon: icon.svg

@@ -129,6 +129,8 @@ streams:
             type: [string, "null"]
           first_name:
             type: [string, "null"]
+          hire_date:
+            type: [string, "null"]
           last_login:
             type: [string, "null"]
           location_id:

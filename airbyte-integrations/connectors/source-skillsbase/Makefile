@@ -23,7 +23,7 @@ CONFIG     := /work/secrets/config.json
 INVALID    := /work/integration_tests/invalid_config.json
 CATALOG    := /work/integration_tests/configured_catalog.json
 QA_CATALOG := /work/integration_tests/qualifications_catalog.json
-
+PEOPLE_CATALOG := /work/integration_tests/people_catalog.json
 PERSIST := scripts/persist_token.sh secrets/config.json
 
 .PHONY: help build spec check check-invalid discover read read-qualifications \
@@ -72,6 +72,9 @@ read:  ## Read all streams using configured_catalog.json. Persists the refreshed
 
 read-qualifications:  ## Read only qualifications_assignments (smallest stream, ~15 records on sandbox). Persists the refreshed token.
 	$(DOCKER_RUN) read --config $(CONFIG) --catalog $(QA_CATALOG) | $(PERSIST)
+
+read-people:  ## Read only people_assignments (smallest stream, ~15 records on sandbox). Persists the refreshed token.
+	$(DOCKER_RUN) read --config $(CONFIG) --catalog $(PEOPLE_CATALOG) | $(PERSIST)
 
 test-acceptance: build  ## Run Connector Acceptance Tests via the official Docker image (rebuilds image and pre-warms token first).
 	# Pre-warm the token cache so parallel CAT containers reuse it instead of
