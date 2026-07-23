@@ -1715,6 +1715,7 @@ spec:
         extract_output:
           - access_token
           - refresh_token
+          - expires_in
 
 schemas:
   article_attachments:
