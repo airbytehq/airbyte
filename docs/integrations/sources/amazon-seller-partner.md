@@ -392,6 +392,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.9.0 | 2026-07-23 | [82254](https://github.com/airbytehq/airbyte/pull/82254) | Add missing fields to GET_VENDOR_SALES_REPORT (customerReturns) and GET_VENDOR_INVENTORY_REPORT (startDate, endDate, unhealthyInventoryUnits, unhealthyInventoryCost, procurableProductOutOfStockRate, receiveFillRate, uft) |
 | 5.8.2 | 2026-07-21 | [82317](https://github.com/airbytehq/airbyte/pull/82317) | Update dependencies |
 | 5.8.1 | 2026-07-14 | [81724](https://github.com/airbytehq/airbyte/pull/81724) | Update dependencies |
 | 5.8.0 | 2026-06-25 | [80845](https://github.com/airbytehq/airbyte/pull/80845) | Add three missing vendor report streams: GET_VENDOR_TRAFFIC_REPORT, GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT, and GET_VENDOR_REAL_TIME_INVENTORY_REPORT |
