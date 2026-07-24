@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import fnmatch
 import logging
-from fnmatch import fnmatchcase
 from os import getenv
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
@@ -144,18 +144,19 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
-        config_repositories = set(config.get("repositories"))
-        excluded_repositories = {repository[1:] for repository in config_repositories if repository.startswith("!")}
-        config_repositories = {repository for repository in config_repositories if not repository.startswith("!")}
+        configured_repository_selectors = set(config.get("repositories"))
+        included_repository_selectors = {repository for repository in configured_repository_selectors if not repository.startswith("!")}
+        excluded_repository_selectors = {
+            repository.removeprefix("!") for repository in configured_repository_selectors if repository.startswith("!")
+        }
 
         repositories = set()
         organizations = set()
         unchecked_repos = set()
         unchecked_orgs = set()
-        pattern = None
 
-        for org_repos in config_repositories:
-            if any(fnmatchcase(org_repos, excluded_repository) for excluded_repository in excluded_repositories):
+        for org_repos in included_repository_selectors:
+            if any(fnmatch.fnmatchcase(org_repos, excluded_repository) for excluded_repository in excluded_repository_selectors):
                 continue
             _, _, repos = org_repos.partition("/")
             if "*" in repos:
@@ -163,16 +164,15 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             else:
                 unchecked_repos.add(org_repos)
 
+        included_repository_pattern = "|".join(fnmatch.translate(repository) for repository in unchecked_orgs)
+        excluded_repository_pattern = "|".join(fnmatch.translate(repository) for repository in excluded_repository_selectors)
+        pattern = included_repository_pattern or None
+        if excluded_repository_pattern:
+            pattern = f"(?!{excluded_repository_pattern})(?:{included_repository_pattern or '.*'})"
+
         if unchecked_orgs:
             org_names = [org.split("/")[0] for org in unchecked_orgs]
-            pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
-            stream = Repositories(
-                authenticator=authenticator,
-                organizations=org_names,
-                api_url=config.get("api_url"),
-                pattern=pattern,
-                excluded_repositories=excluded_repositories,
-            )
+            stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
             stream.exit_on_rate_limit = True if is_check_connection else False
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -333,7 +333,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         }
         start_date = config.get("start_date")
         organization_args_with_start_date = {**organization_args, "start_date": start_date}
-        excluded_repositories = {repository[1:] for repository in config["repositories"] if repository.startswith("!")}
 
         repository_args = {
             "authenticator": authenticator,
@@ -380,11 +379,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(
-                **organization_args_with_start_date,
-                pattern=pattern,
-                excluded_repositories=excluded_repositories,
-            ),
+            Repositories(**organization_args_with_start_date, pattern=pattern),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
