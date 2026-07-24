@@ -1201,6 +1201,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           request_parameters:
             "payout": "{{ stream_partition.payout_id }}"
+          # Do not inherit the shared base_requester error handler, which IGNOREs 400/403/404.
+          # Ignoring an error mid-pagination silently stops the page walk (the error body has no
+          # `has_more`, so the paginator stop condition is satisfied) and truncates a payout's
+          # balance transactions without failing the sync. For this deep-paginated child stream we
+          # surface such errors instead of silently dropping records.
+          error_handler:
+            type: DefaultErrorHandler
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:

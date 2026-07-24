@@ -25,6 +25,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
+from integration.response_builder import a_response_with_status
 
 
 _STREAM_NAME = "payout_balance_transactions"
@@ -157,6 +158,67 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
         output = read(source, config=config, catalog=_create_catalog())
 
         assert output.records[0].record.data["payout"]
+
+    @HttpMocker()
+    def test_given_multiple_pages_when_read_then_paginate_all_children(self, http_mocker: HttpMocker) -> None:
+        config = _config().with_start_date(_START_DATE).build()
+        http_mocker.get(
+            _payouts_request().with_created_gte(_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _payouts_response().with_record(_create_payout_record().with_id(_A_PAYOUT_ID)).build(),
+        )
+        http_mocker.get(
+            _balance_transactions_request().with_limit(100).with_payout(_A_PAYOUT_ID).build(),
+            _balance_transactions_response()
+            .with_pagination()
+            .with_record(_balance_transaction_record().with_id("last_record_id_from_first_page"))
+            .build(),
+        )
+        http_mocker.get(
+            _balance_transactions_request()
+            .with_limit(100)
+            .with_payout(_A_PAYOUT_ID)
+            .with_starting_after("last_record_id_from_first_page")
+            .build(),
+            _balance_transactions_response().with_record(_balance_transaction_record()).with_record(_balance_transaction_record()).build(),
+        )
+
+        source = get_source(config=config, state=_NO_STATE)
+        output = read(source, config=config, catalog=_create_catalog())
+
+        assert len(output.records) == 3
+
+    @HttpMocker()
+    def test_given_error_mid_pagination_when_read_then_do_not_silently_truncate(self, http_mocker: HttpMocker) -> None:
+        """A mid-pagination error on a payout's balance_transactions must not silently truncate the payout's data.
+
+        Regression test for airbytehq/oncall#13143: for a large payout, the connector was silently dropping the
+        remaining pages when a page request returned an ignored error, producing a `succeeded` sync with missing rows.
+        """
+        config = _config().with_start_date(_START_DATE).build()
+        http_mocker.get(
+            _payouts_request().with_created_gte(_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _payouts_response().with_record(_create_payout_record().with_id(_A_PAYOUT_ID)).build(),
+        )
+        http_mocker.get(
+            _balance_transactions_request().with_limit(100).with_payout(_A_PAYOUT_ID).build(),
+            _balance_transactions_response()
+            .with_pagination()
+            .with_record(_balance_transaction_record().with_id("last_record_id_from_first_page"))
+            .build(),
+        )
+        http_mocker.get(
+            _balance_transactions_request()
+            .with_limit(100)
+            .with_payout(_A_PAYOUT_ID)
+            .with_starting_after("last_record_id_from_first_page")
+            .build(),
+            a_response_with_status(400),
+        )
+
+        source = get_source(config=config, state=_NO_STATE)
+        output = read(source, config=config, catalog=_create_catalog(), expecting_exception=True)
+
+        assert len(output.errors) > 0
 
 
 @freezegun.freeze_time(_NOW.isoformat())
