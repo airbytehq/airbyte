@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
@@ -11,7 +12,7 @@ from unit_tests.conftest import get_source
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -219,6 +220,42 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
         output = read(source, config=config, catalog=_create_catalog(), expecting_exception=True)
 
         assert len(output.errors) > 0
+
+    @HttpMocker()
+    def test_given_manual_payout_when_read_then_ignore_error_and_sync_other_payouts(self, http_mocker: HttpMocker) -> None:
+        config = _config().with_start_date(_START_DATE).build()
+        http_mocker.get(
+            _payouts_request().with_created_gte(_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _payouts_response()
+            .with_record(_create_payout_record().with_id(_A_PAYOUT_ID))
+            .with_record(_create_payout_record().with_id(_ANOTHER_PAYOUT_ID))
+            .build(),
+        )
+        http_mocker.get(
+            _balance_transactions_request().with_limit(100).with_payout(_A_PAYOUT_ID).build(),
+            HttpResponse(
+                json.dumps(
+                    {
+                        "error": {
+                            "message": "Balance transaction history can only be filtered on automatic transfers, not manual.",
+                            "param": "payout",
+                            "type": "invalid_request_error",
+                        }
+                    }
+                ),
+                400,
+            ),
+        )
+        http_mocker.get(
+            _balance_transactions_request().with_limit(100).with_payout(_ANOTHER_PAYOUT_ID).build(),
+            _balance_transactions_response().with_record(_balance_transaction_record()).build(),
+        )
+
+        source = get_source(config=config, state=_NO_STATE)
+        output = read(source, config=config, catalog=_create_catalog())
+
+        assert len(output.errors) == 0
+        assert len(output.records) == 1
 
 
 @freezegun.freeze_time(_NOW.isoformat())

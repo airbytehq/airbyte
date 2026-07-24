@@ -1201,13 +1201,23 @@ definitions:
           $ref: "#/definitions/base_requester"
           request_parameters:
             "payout": "{{ stream_partition.payout_id }}"
-          # Do not inherit the shared base_requester error handler, which IGNOREs 400/403/404.
+          # Do not inherit the shared base_requester error handler, which IGNOREs all 400/403/404.
           # Ignoring an error mid-pagination silently stops the page walk (the error body has no
           # `has_more`, so the paginator stop condition is satisfied) and truncates a payout's
           # balance transactions without failing the sync. For this deep-paginated child stream we
-          # surface such errors instead of silently dropping records.
+          # surface such errors instead of silently dropping records. The only expected error is
+          # Stripe's 400 for manual payouts (`/v1/balance_transactions?payout=` supports automatic
+          # transfers only), which is still safely ignored to skip those partitions.
           error_handler:
             type: DefaultErrorHandler
+            response_filters:
+              # Filter conditions are OR-ed, so http_codes is intentionally omitted: matching on
+              # the error message alone keeps every other 400 fatal.
+              - type: HttpResponseFilter
+                action: IGNORE
+                error_message_contains: "Balance transaction history can only be filtered on automatic transfers"
+                error_message: >-
+                  {{ response['error']['message'] }}
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
