@@ -36,7 +36,8 @@ private const val AWS_REGION = "aws.region"
 /**
  * The catalog option key that Iceberg's NessieCatalog actually reads to determine the requested
  * branch/reference. It strips the "nessie." prefix from catalog options, so the configured branch
- * must be supplied under this un-prefixed key (not only under [NessieConfigConstants.CONF_NESSIE_REF]).
+ * must be supplied under this un-prefixed key (not only under
+ * [NessieConfigConstants.CONF_NESSIE_REF]).
  */
 private const val NESSIE_REF = "ref"
 
