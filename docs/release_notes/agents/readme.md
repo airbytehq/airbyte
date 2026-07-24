@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## July 24, 2026
+
+MCP
+
+- If you belong to more than one organization, the Airbyte Agent MCP can now list your organizations before you pick one to work in. Previously, multi-organization accounts hit an error when no organization was selected yet.
+
+Other
+
+- Semantic search now keeps up with edits to records you have already synced. Previously only newly added records were indexed for search, so later changes to an existing record were not reflected. Updated records are now re-indexed, so your agents search the current version of your data.
+- Fixed an issue where asking an agent about data from a connector that was still finishing its initial setup could fail the entire request. Those queries now return no results until your data is ready, so the rest of the agent's work continues uninterrupted.
+
 ## July 21, 2026
 
 Web app
