@@ -25,7 +25,10 @@ class PostgresMoneyFieldTypeTest {
             val fieldValueEncoder = FieldValueEncoder(value, jsonEncoder)
             val protobufValue =
                 protobufEncoder
-                    .encode(valueForProtobufEncoding(fieldValueEncoder), LeafAirbyteSchemaType.NUMBER)
+                    .encode(
+                        valueForProtobufEncoding(fieldValueEncoder),
+                        LeafAirbyteSchemaType.NUMBER
+                    )
                     .build()
 
             assertEquals(AirbyteValueProtobuf.ValueCase.BIG_DECIMAL, protobufValue.valueCase)
