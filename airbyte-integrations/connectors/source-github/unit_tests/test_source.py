@@ -10,6 +10,7 @@ import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
+from source_github.streams import Repositories
 
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -132,16 +133,51 @@ def test_get_org_repositories(requests_mock):
         json=[
             {"full_name": "docker/docker-py", "updated_at": "2020-01-01T00:00:00Z"},
             {"full_name": "docker/compose", "updated_at": "2020-01-01T00:00:00Z"},
+            {"full_name": "docker/hub", "updated_at": "2020-01-01T00:00:00Z"},
         ],
     )
 
-    config = {"repositories": ["airbytehq/integration-test", "docker/*"]}
+    config = {
+        "repositories": [
+            "airbytehq/integration-test",
+            "docker/*",
+            "!docker/compose",
+            "!docker/docker-*",
+        ]
+    }
     source = SourceGithub()
     config = source._ensure_default_values(config)
     organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
 
-    assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
+    assert set(repositories) == {"airbytehq/integration-test", "docker/hub"}
     assert set(organisations) == {"airbytehq", "docker"}
+
+
+@responses.activate
+def test_get_org_repositories_does_not_request_excluded_explicit_repository(requests_mock):
+    excluded_request = requests_mock.get(
+        "https://api.github.com/repos/airbytehq/integration-test",
+        json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/docker/hub",
+        json={"full_name": "docker/hub", "organization": {"login": "docker"}},
+    )
+
+    config = {
+        "repositories": [
+            "airbytehq/integration-test",
+            "docker/hub",
+            "!airbytehq/integration-*",
+        ]
+    }
+    source = SourceGithub()
+    config = source._ensure_default_values(config)
+    organisations, repositories, _ = source._get_org_repositories(config, authenticator=None)
+
+    assert set(repositories) == {"docker/hub"}
+    assert set(organisations) == {"docker"}
+    assert excluded_request.call_count == 0
 
 
 @responses.activate
@@ -182,6 +218,9 @@ def test_check_config_repository():
         "airbyte*/airbyte",
         "airbytehq/airbyte-test/master-branch",
         "https://github.com/airbytehq/airbyte",
+        "!!airbytehq/airbyte",
+        "airbytehq/!airbyte",
+        "!airbytehq/airbyte",
     ]
 
     config["repositories"] = []
@@ -194,6 +233,9 @@ def test_check_config_repository():
     for repos in repos_ok:
         config["repositories"] = [repos]
         assert command_check(source, config)
+
+    config["repositories"] = ["airbytehq/*", "!airbytehq/airbyte", "!airbytehq/a*"]
+    assert command_check(source, config)
 
     for repos in repos_fail:
         config["repositories"] = [repos]
@@ -234,6 +276,30 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
         else:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE
+
+
+def test_repositories_stream_excludes_configured_repositories(rate_limit_mock_response, requests_mock):
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte",
+        json={"full_name": "airbytehq/airbyte", "organization": {"login": "airbytehq"}, "default_branch": "master"},
+    )
+
+    config = {
+        "credentials": {"access_token": "access_token"},
+        "repositories": ["airbytehq/airbyte", "!airbytehq/airbyte-cloud"],
+    }
+
+    streams = SourceGithub().streams(config)
+    repositories_stream = next(stream for stream in streams if isinstance(stream, Repositories))
+    response = MagicMock()
+    response.json.return_value = [
+        {"full_name": "airbytehq/airbyte", "updated_at": "2020-01-01T00:00:00Z"},
+        {"full_name": "airbytehq/airbyte-cloud", "updated_at": "2020-01-01T00:00:00Z"},
+    ]
+
+    records = list(repositories_stream.parse_response(response, stream_slice={"organization": "airbytehq"}))
+
+    assert [record["full_name"] for record in records] == ["airbytehq/airbyte"]
 
 
 @pytest.mark.parametrize(

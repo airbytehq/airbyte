@@ -81,19 +81,25 @@
         "type": "array",
         "items": {
           "type": "string",
-          "pattern": "^[\\w.-]+/(([\\w.-]*\\*)|[\\w.-]+(?<!\\.git))$"
+          "pattern": "^!?[\\w.-]+/(([\\w.-]*\\*)|[\\w.-]+(?<!\\.git))$"
+        },
+        "contains": {
+          "type": "string",
+          "pattern": "^[^!]"
         },
         "minItems": 1,
         "examples": [
           "airbytehq/airbyte",
           "airbytehq/another-repo",
           "airbytehq/*",
-          "airbytehq/a*"
+          "airbytehq/a*",
+          "!airbytehq/airbyte-cloud",
+          "!airbytehq/archived-*"
         ],
         "title": "GitHub Repositories",
-        "description": "List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a* for matching multiple repositories by pattern.",
+        "description": "List of GitHub organizations/repositories. Use `airbytehq/airbyte` for a single repository, `airbytehq/*` for all repositories in an organization, or `airbytehq/a*` to match repositories by prefix. Prefix an entry with `!` to exclude matching repositories, for example `!airbytehq/airbyte-cloud` or `!airbytehq/archived-*`.",
         "order": 1,
-        "pattern_descriptor": "org/repo org/another-repo org/* org/a*"
+        "pattern_descriptor": "org/repo org/another-repo org/* org/a* !org/repo !org/a*"
       },
       "start_date": {
         "type": "string",

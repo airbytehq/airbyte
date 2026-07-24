@@ -8,6 +8,7 @@ import re
 import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
+from fnmatch import fnmatchcase
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
@@ -508,8 +509,9 @@ class Repositories(SemiIncrementalMixin, Organizations):
         "direction": "desc",
     }
 
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
+    def __init__(self, *args, pattern: Optional[str] = None, excluded_repositories: Optional[Iterable[str]] = None, **kwargs):
         self._pattern = re.compile(pattern) if pattern else pattern
+        self._excluded_repositories = set(excluded_repositories or [])
         super().__init__(*args, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -518,7 +520,9 @@ class Repositories(SemiIncrementalMixin, Organizations):
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
             record = self.transform(record=record, stream_slice=stream_slice)
-            if not self._pattern or self._pattern.match(record["full_name"]):
+            if (not self._pattern or self._pattern.match(record["full_name"])) and not any(
+                fnmatchcase(record["full_name"], excluded_repository) for excluded_repository in self._excluded_repositories
+            ):
                 yield record
 
 

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+from fnmatch import fnmatchcase
 from os import getenv
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
@@ -144,6 +145,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
         config_repositories = set(config.get("repositories"))
+        excluded_repositories = {repository[1:] for repository in config_repositories if repository.startswith("!")}
+        config_repositories = {repository for repository in config_repositories if not repository.startswith("!")}
 
         repositories = set()
         organizations = set()
@@ -152,6 +155,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         pattern = None
 
         for org_repos in config_repositories:
+            if any(fnmatchcase(org_repos, excluded_repository) for excluded_repository in excluded_repositories):
+                continue
             _, _, repos = org_repos.partition("/")
             if "*" in repos:
                 unchecked_orgs.add(org_repos)
@@ -161,7 +166,13 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         if unchecked_orgs:
             org_names = [org.split("/")[0] for org in unchecked_orgs]
             pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
-            stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
+            stream = Repositories(
+                authenticator=authenticator,
+                organizations=org_names,
+                api_url=config.get("api_url"),
+                pattern=pattern,
+                excluded_repositories=excluded_repositories,
+            )
             stream.exit_on_rate_limit = True if is_check_connection else False
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -322,6 +333,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         }
         start_date = config.get("start_date")
         organization_args_with_start_date = {**organization_args, "start_date": start_date}
+        excluded_repositories = {repository[1:] for repository in config["repositories"] if repository.startswith("!")}
 
         repository_args = {
             "authenticator": authenticator,
@@ -368,7 +380,11 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args_with_start_date, pattern=pattern),
+            Repositories(
+                **organization_args_with_start_date,
+                pattern=pattern,
+                excluded_repositories=excluded_repositories,
+            ),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
