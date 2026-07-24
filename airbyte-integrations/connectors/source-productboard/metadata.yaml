@@ -17,7 +17,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 43ae66ee-e3df-4fb7-bff5-9625d25cdc14
-  dockerImageTag: 0.0.63
+  dockerImageTag: 1.0.0
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Migrated to the Productboard V2 API. Removed streams that have no V2 equivalent (feedback-form-configurations, custom-fields, company-custom-fields, tags, feature-statuses, links, feature-release-assignments, custom-fields-values). Endpoints changed to /v2/*, and entity/note records now nest business fields under a `fields` object. Re-run discovery and refresh downstream tables after upgrading."
+        upgradeDeadline: "2026-08-24"
   dockerRepository: airbyte/source-productboard
   githubIssueLabel: source-productboard
   icon: icon.svg
@@ -35,7 +40,7 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Productboard API reference
-      url: https://developer.productboard.com/
+      url: https://developer.productboard.com/reference/introduction
       type: api_reference
     - title: Productboard authentication
       url: https://developer.productboard.com/#section/Authentication
