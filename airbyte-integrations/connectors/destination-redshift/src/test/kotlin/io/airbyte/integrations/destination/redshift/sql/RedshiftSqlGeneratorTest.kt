@@ -728,7 +728,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("TIMEFORMAT 'auto'"))
         assertTrue(sql.contains("ROUNDEC"))
         assertTrue(sql.contains("IGNOREHEADER 1"))
-        assertTrue(sql.contains("EMPTYASNULL"))
+        assertFalse(sql.contains("EMPTYASNULL"))
+        assertTrue(sql.contains("""NULL AS '\N'"""))
     }
 
     @Test

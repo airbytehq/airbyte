@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.redshift.write.load
 
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.redshift.client.RedshiftAirbyteClient
@@ -156,6 +157,33 @@ internal class RedshiftInsertBufferTest {
         val dataRow = lines[1]
         assertTrue(dataRow.contains("id-1"), "Data should contain raw_id value")
         assertTrue(dataRow.contains("Bob"), "Data should contain name value")
+    }
+
+    @Test
+    fun `uploaded data preserves empty strings and encodes nulls with NULL marker`() = runTest {
+        val testColumns = listOf("_airbyte_raw_id", "name", "note")
+        val testBuffer = RedshiftInsertBuffer(tableName, testColumns, redshiftClient, configuration)
+        val record =
+            mapOf(
+                "_airbyte_raw_id" to StringValue("id-1"),
+                "name" to StringValue(""),
+                "note" to NullValue,
+            )
+
+        testBuffer.accumulate(record)
+        testBuffer.flush()
+
+        val dataSlot = slot<ByteArray>()
+        coVerify { redshiftClient.uploadToS3(any(), any(), capture(dataSlot)) }
+
+        val csvContent =
+            java.util.zip
+                .GZIPInputStream(java.io.ByteArrayInputStream(dataSlot.captured))
+                .bufferedReader()
+                .readText()
+        val dataRow = csvContent.trim().split("\n")[1]
+
+        assertEquals("id-1,,\\N", dataRow)
     }
 
     @Test

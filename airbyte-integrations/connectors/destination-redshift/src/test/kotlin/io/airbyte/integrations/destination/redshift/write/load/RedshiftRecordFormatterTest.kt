@@ -41,7 +41,7 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format returns empty string for missing columns`() {
+    fun `format returns NULL marker for missing columns`() {
         val columns = listOf("id", "name", "missing_col")
         val formatter = RedshiftSchemaRecordFormatter(columns)
 
@@ -56,7 +56,7 @@ internal class RedshiftRecordFormatterTest {
         assertEquals(3, result.size)
         assertEquals(BigInteger.ONE, result[0])
         assertEquals("Bob", result[1])
-        assertEquals("", result[2])
+        assertEquals(RedshiftSchemaRecordFormatter.NULL_MARKER, result[2])
     }
 
     @Test
@@ -73,8 +73,25 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals(2, result.size)
-        assertEquals("", result[0]) // NullValue -> empty string via toCsvValue
+        assertEquals(RedshiftSchemaRecordFormatter.NULL_MARKER, result[0])
         assertEquals("present", result[1])
+    }
+
+    @Test
+    fun `format preserves empty strings separately from null values`() {
+        val columns = listOf("empty", "null")
+        val formatter = RedshiftSchemaRecordFormatter(columns)
+
+        val record =
+            mapOf(
+                "empty" to StringValue(""),
+                "null" to NullValue,
+            )
+
+        val result = formatter.format(record)
+
+        assertEquals("", result[0])
+        assertEquals(RedshiftSchemaRecordFormatter.NULL_MARKER, result[1])
     }
 
     @Test
@@ -116,13 +133,20 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format with empty record returns all empty strings`() {
+    fun `format with empty record returns all NULL markers`() {
         val columns = listOf("a", "b", "c")
         val formatter = RedshiftSchemaRecordFormatter(columns)
 
         val result = formatter.format(emptyMap())
 
-        assertEquals(listOf("", "", ""), result)
+        assertEquals(
+            listOf(
+                RedshiftSchemaRecordFormatter.NULL_MARKER,
+                RedshiftSchemaRecordFormatter.NULL_MARKER,
+                RedshiftSchemaRecordFormatter.NULL_MARKER,
+            ),
+            result,
+        )
     }
 
     @Test
