@@ -112,10 +112,14 @@ class DatabricksSqlGenerator(
             throw IllegalArgumentException("Cannot perform upsert without primary key")
         }
 
-        // Primary key matching
+        // Primary key matching. The comparison is null-safe: `NULL = NULL` evaluates to UNKNOWN in
+        // Spark SQL, which would make records with a NULL primary key value never match an
+        // existing row and therefore be inserted on every sync.
         val pkEquivalent =
             pks.joinToString(" AND ") { columnName ->
-                "final.${columnName.quote()} = staging.${columnName.quote()}"
+                val targetColumn = "final.${columnName.quote()}"
+                val sourceColumn = "staging.${columnName.quote()}"
+                "($targetColumn = $sourceColumn OR ($targetColumn IS NULL AND $sourceColumn IS NULL))"
             }
 
         // Cursor comparison to determine which record is newer
