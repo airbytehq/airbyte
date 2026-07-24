@@ -10,6 +10,7 @@ import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
+import java.math.RoundingMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -32,7 +33,10 @@ class PostgresMoneyFieldTypeTest {
                     .build()
 
             assertEquals(AirbyteValueProtobuf.ValueCase.BIG_DECIMAL, protobufValue.valueCase)
-            assertEquals(BigDecimal(value).toPlainString(), protobufValue.bigDecimal)
+            assertEquals(
+                BigDecimal(value).setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                protobufValue.bigDecimal
+            )
             assertEquals(TextNode(value), PostgresMoneyFieldType.jsonEncoder.encode(value))
         }
     }

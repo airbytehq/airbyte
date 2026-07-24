@@ -9,6 +9,7 @@ import io.airbyte.cdk.jdbc.JdbcAccessor
 import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
@@ -17,14 +18,14 @@ import java.sql.ResultSet
 object PostgresMoneyFieldType :
     SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.NUMBER, PgMoneyAccessor, PgMoneyCodec)
 
-// The JVM value is a String while the Airbyte schema type is NUMBER. The legacy JSON output keeps
-// money as a quoted string, but the protobuf encoder dispatches on the NUMBER schema type and only
-// accepts BigDecimal/Double/Float. Deliver a numeric value for protobuf encoding while preserving
-// the legacy JSON string formatting.
+// The JVM value is a String while the Airbyte schema type is NUMBER. The legacy JSON output is
+// money as a quoted string. Protobuf uses NUMBER, requiring BigDecimal/Double/Float.
 object PgMoneyCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
     override fun decode(encoded: JsonNode): String = encoded.asText()
-    override fun valueForProtobufEncoding(v: String): Any? = BigDecimal(v)
+    // money has a fixed scale of 2, so normalize the numeric value accordingly.
+    override fun valueForProtobufEncoding(v: String): Any? =
+        BigDecimal(v).setScale(2, RoundingMode.HALF_UP)
 }
 
 private object PgMoneyAccessor : JdbcAccessor<String> {
