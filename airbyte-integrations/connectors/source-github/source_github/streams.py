@@ -1088,8 +1088,6 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
 
     is_sorted = False
     cursor_field = "updated_at"
-    # The initial query requests page_size reviews for each of page_size pull requests.
-    large_stream = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

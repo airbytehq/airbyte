@@ -1523,7 +1523,7 @@ def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock, cap
         page_size_for_large_streams=10,
         repositories=["airbytehq/airbyte"],
     )
-    assert stream.page_size == 10
+    assert stream.page_size == 100
     response = {
         "data": {
             "repository": {
@@ -1547,11 +1547,11 @@ def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock, cap
     list(read_full_refresh(stream))
 
     queries = [request.json()["query"] for request in requests_mock.request_history]
-    assert queries[0].count("first: 10") == 2
-    assert queries[1].count("first: 5") == 2
-    assert stream.page_size == 5
+    assert queries[0].count("first: 100") == 2
+    assert queries[1].count("first: 50") == 2
+    assert stream.page_size == 50
     assert any(
-        "stream `reviews`, owner `airbytehq`, repository `airbyte`" in message and "page_size from 10 to 5" in message
+        "stream `reviews`, owner `airbytehq`, repository `airbyte`" in message and "page_size from 100 to 50" in message
         for message in caplog.messages
     )
 
