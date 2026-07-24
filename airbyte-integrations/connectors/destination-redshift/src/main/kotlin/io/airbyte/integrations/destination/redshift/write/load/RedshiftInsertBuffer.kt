@@ -60,7 +60,7 @@ class RedshiftInsertBuffer(
             .fieldSeparator(',')
             .quoteCharacter('"')
             .lineDelimiter(LineDelimiter.LF)
-            .quoteStrategy(QuoteStrategies.REQUIRED)
+            .quoteStrategy(QuoteStrategies.EMPTY)
 
     internal var recordCount = 0
     private var partNumber = 0
@@ -76,7 +76,7 @@ class RedshiftInsertBuffer(
             initializeBuffer()
         }
 
-        csvWriter!!.writeRecord(formatter.format(recordFields).map { it.toString() })
+        csvWriter!!.writeRecord(formatter.format(recordFields).map { it?.toString() })
         recordCount++
     }
 

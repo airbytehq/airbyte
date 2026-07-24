@@ -41,7 +41,7 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format returns NULL marker for missing columns`() {
+    fun `format returns null for missing columns`() {
         val columns = listOf("id", "name", "missing_col")
         val formatter = RedshiftSchemaRecordFormatter(columns)
 
@@ -56,11 +56,11 @@ internal class RedshiftRecordFormatterTest {
         assertEquals(3, result.size)
         assertEquals(BigInteger.ONE, result[0])
         assertEquals("Bob", result[1])
-        assertEquals(RedshiftSchemaRecordFormatter.NULL_MARKER, result[2])
+        assertEquals(null, result[2])
     }
 
     @Test
-    fun `format handles null values via toCsvValue`() {
+    fun `format handles null values`() {
         val columns = listOf("col_a", "col_b")
         val formatter = RedshiftSchemaRecordFormatter(columns)
 
@@ -73,7 +73,7 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals(2, result.size)
-        assertEquals(RedshiftSchemaRecordFormatter.NULL_MARKER, result[0])
+        assertEquals(null, result[0])
         assertEquals("present", result[1])
     }
 
@@ -91,7 +91,7 @@ internal class RedshiftRecordFormatterTest {
         val result = formatter.format(record)
 
         assertEquals("", result[0])
-        assertEquals(RedshiftSchemaRecordFormatter.NULL_MARKER, result[1])
+        assertEquals(null, result[1])
     }
 
     @Test
@@ -133,18 +133,14 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format with empty record returns all NULL markers`() {
+    fun `format with empty record returns all nulls`() {
         val columns = listOf("a", "b", "c")
         val formatter = RedshiftSchemaRecordFormatter(columns)
 
         val result = formatter.format(emptyMap())
 
         assertEquals(
-            listOf(
-                RedshiftSchemaRecordFormatter.NULL_MARKER,
-                RedshiftSchemaRecordFormatter.NULL_MARKER,
-                RedshiftSchemaRecordFormatter.NULL_MARKER,
-            ),
+            listOf(null, null, null),
             result,
         )
     }

@@ -14,28 +14,17 @@ class RedshiftSchemaRecordFormatter(
     /**
      * Converts a record into a list of CSV values in column order.
      *
-     * Genuine nulls (a [NullValue] or a column missing from the record) are emitted as the
-     * [NULL_MARKER] sentinel so that the Redshift `COPY` command's `NULL AS` clause loads them as
-     * SQL `NULL`. An empty string is emitted as an empty field so it is preserved as an empty
-     * string rather than being coerced to `NULL`. This distinction is what keeps empty strings from
-     * non-nullable source columns intact.
+     * Genuine nulls (a [NullValue] or a column missing from the record) are emitted as null fields,
+     * which the CSV writer leaves unquoted so Redshift's `EMPTYASNULL` option loads them as SQL
+     * `NULL`. Empty strings are emitted as empty values, which the writer quotes so Redshift
+     * preserves them as empty strings instead of converting them to `NULL`.
      */
-    fun format(record: Map<String, AirbyteValue>): List<Any> =
+    fun format(record: Map<String, AirbyteValue>): List<Any?> =
         columns.map { columnName ->
             when (val value = record[columnName]) {
                 null,
-                is NullValue -> NULL_MARKER
+                is NullValue -> null
                 else -> value.toCsvValue()
             }
         }
-
-    companion object {
-        /**
-         * CSV sentinel used to represent SQL `NULL`. Matches Redshift's default null string and the
-         * `NULL AS '\\N'` clause in the generated `COPY` command. An empty CSV field is
-         * deliberately *not* used, because Redshift cannot distinguish a genuine null from an empty
-         * string when both are encoded as empty fields.
-         */
-        const val NULL_MARKER = "\\N"
-    }
 }

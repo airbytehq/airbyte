@@ -160,7 +160,7 @@ internal class RedshiftInsertBufferTest {
     }
 
     @Test
-    fun `uploaded data preserves empty strings and encodes nulls with NULL marker`() = runTest {
+    fun `uploaded data preserves empty strings separately from nulls`() = runTest {
         val testColumns = listOf("_airbyte_raw_id", "name", "note")
         val testBuffer = RedshiftInsertBuffer(tableName, testColumns, redshiftClient, configuration)
         val record =
@@ -183,7 +183,7 @@ internal class RedshiftInsertBufferTest {
                 .readText()
         val dataRow = csvContent.trim().split("\n")[1]
 
-        assertEquals("id-1,,\\N", dataRow)
+        assertEquals("""id-1,"",""", dataRow)
     }
 
     @Test
