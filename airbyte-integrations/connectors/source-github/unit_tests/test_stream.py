@@ -1517,7 +1517,7 @@ def test_stream_reviews_incremental_read(requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock):
+def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock, caplog):
     stream = Reviews(
         start_date="2000-01-01T00:00:00Z",
         page_size_for_large_streams=10,
@@ -1550,6 +1550,10 @@ def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock):
     assert queries[0].count("first: 10") == 2
     assert queries[1].count("first: 5") == 2
     assert stream.page_size == 5
+    assert any(
+        "stream `reviews`, owner `airbytehq`, repository `airbyte`" in message and "page_size from 10 to 5" in message
+        for message in caplog.messages
+    )
 
 
 @patch("time.sleep")
@@ -2413,6 +2417,8 @@ def test_graphql_error_handler_502_504_message_includes_stream_name(status_code)
     stream.name = "releases"
     stream.large_stream = True
     stream.page_size = 10
+    stream._active_request_owner = "airbytehq"
+    stream._active_request_repository = "airbyte"
     handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
     resp = MagicMock(spec=requests.Response)
     resp.status_code = status_code
@@ -2424,6 +2430,8 @@ def test_graphql_error_handler_502_504_message_includes_stream_name(status_code)
     assert resolution.response_action == ResponseAction.RESET_PAGINATION
     assert resolution.failure_type == FailureType.transient_error
     assert "`releases`" in resolution.error_message
+    assert "owner `airbytehq`" in resolution.error_message
+    assert "repository `airbyte`" in resolution.error_message
     assert str(status_code) in resolution.error_message
     assert "Reducing GraphQL page size" in resolution.error_message
 

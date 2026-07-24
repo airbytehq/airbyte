@@ -840,6 +840,9 @@ class GitHubGraphQLStream(GithubStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
+        repository = (stream_slice or {}).get("repository")
+        if repository:
+            self._active_request_owner, self._active_request_repository = repository.split("/", 1)
         while True:
             try:
                 return super()._fetch_next_page(

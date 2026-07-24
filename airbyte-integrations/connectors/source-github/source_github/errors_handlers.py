@@ -200,13 +200,18 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 # Halve the page size on every 502/504 to reduce GraphQL query cost,
                 # but never let it drop below 1 — a page_size of 0 would request no
                 # records and cause infinite paging.
+                owner = getattr(self.stream, "_active_request_owner", "<unknown>")
+                repository = getattr(self.stream, "_active_request_repository", "<unknown>")
                 previous_page_size = self.stream.page_size
                 self.stream.page_size = max(1, int(self.stream.page_size / 2))
                 response_action = ResponseAction.RESET_PAGINATION if self.stream.page_size < previous_page_size else ResponseAction.RETRY
                 self._logger.info(
-                    "GitHub GraphQL endpoint returned HTTP %s for stream `%s`; reducing GraphQL page_size from %s to %s and retrying.",
+                    "GitHub GraphQL endpoint returned HTTP %s for stream `%s`, owner `%s`, repository `%s`; "
+                    "reducing GraphQL page_size from %s to %s and retrying.",
                     response_or_exception.status_code,
                     self.stream.name,
+                    owner,
+                    repository,
                     previous_page_size,
                     self.stream.page_size,
                 )
@@ -217,7 +222,8 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                     failure_type=FailureType.transient_error,
                     error_message=(
                         f"GitHub GraphQL endpoint returned HTTP {response_or_exception.status_code} "
-                        f"for stream `{self.stream.name}`. Reducing GraphQL page size and retrying."
+                        f"for stream `{self.stream.name}`, owner `{owner}`, repository `{repository}`. "
+                        "Reducing GraphQL page size and retrying."
                     ),
                 )
 
