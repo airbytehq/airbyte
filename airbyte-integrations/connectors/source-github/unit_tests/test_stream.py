@@ -2368,6 +2368,16 @@ def test_releases_marked_as_large_stream():
     assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
 
 
+def test_reviews_marked_as_large_stream():
+    assert Reviews.large_stream is True
+    stream = Reviews(
+        repositories=["org/repo"],
+        page_size_for_large_streams=constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
+
+
 @pytest.mark.parametrize("status_code", [requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT])
 def test_graphql_error_handler_502_504_message_includes_stream_name(status_code):
     """502/504 responses should produce an error message that names the stream and
