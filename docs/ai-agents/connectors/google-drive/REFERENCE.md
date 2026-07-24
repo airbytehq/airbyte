@@ -8,7 +8,7 @@ The Google-Drive connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download), [Context Store Search](#files-context-store-search) |
+| Files | [List](#files-list), [Get](#files-get), [Create](#files-create), [Update](#files-update), [Delete](#files-delete), [Download](#files-download), [Context Store Search](#files-context-store-search), [Semantic Search](#files-semantic-search) |
 | Files Upload | [Create](#files-upload-create) |
 | Files Export | [Download](#files-export-download) |
 | Drives | [List](#drives-list), [Get](#drives-get) |
@@ -769,6 +769,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].file_path` | `string` | Full path of the file within the synced Drive folder. |
 | `data[].mime_type` | `string` | MIME type of the file. |
 | `data[].content` | `string` | Extracted text content of the file. |
+
+</details>
+
+### Files Semantic Search
+
+Search the text content of your files by meaning rather than by exact keywords. Airbyte extracts each file's text, embeds a natural-language `prompt`, and returns the most similar passages of file content, ranked by relevance, each carrying its source-file attribution (such as name and path). Pass a `semantic` object to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-drive",
+  "entity": "files",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "content", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `files.context_store_search` helper only accepts `query`.
+
+```python
+await google_drive.execute(
+    "files",
+    "context_store_search",
+    {"semantic": {"field": "content", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "files",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "content", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `content` | 2048 | Extracted text content of the file. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source file |
+| `data[].entity.id` | `string` | Source file field |
+| `data[].entity.updated_at` | `string` | Source file field |
+| `data[].entity.file_name` | `string` | Source file field |
+| `data[].entity.file_path` | `string` | Source file field |
+| `data[].entity.mime_type` | `string` | Source file field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
