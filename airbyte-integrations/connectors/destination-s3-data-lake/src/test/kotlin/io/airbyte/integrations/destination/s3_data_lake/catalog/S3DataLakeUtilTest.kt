@@ -227,10 +227,11 @@ internal class S3DataLakeUtilTest {
                 s3BucketRegion = S3BucketRegion.`us-east-1`.region,
                 s3Endpoint = s3Endpoint,
             )
+        val mainBranchName = "staging"
         val icebergCatalogConfiguration =
             IcebergCatalogConfiguration(
                 warehouseLocation,
-                "main",
+                mainBranchName,
                 NessieCatalogConfiguration(nessieServerUri, nessieAccessToken, databaseName),
             )
         val configuration =
@@ -254,7 +255,10 @@ internal class S3DataLakeUtilTest {
             S3FileIO::class.java.name,
             catalogProperties[CatalogProperties.FILE_IO_IMPL]
         )
-        Assertions.assertEquals("main", catalogProperties["nessie.ref"])
+        // Iceberg's NessieCatalog reads the requested branch from the un-prefixed "ref" key; the
+        // configured branch must be supplied there (and is also kept under "nessie.ref").
+        Assertions.assertEquals(mainBranchName, catalogProperties["ref"])
+        Assertions.assertEquals(mainBranchName, catalogProperties["nessie.ref"])
         Assertions.assertEquals(awsAccessKey, catalogProperties["s3.access-key-id"])
         Assertions.assertEquals(awsSecretAccessKey, catalogProperties["s3.secret-access-key"])
         Assertions.assertEquals(s3Endpoint, catalogProperties["s3.endpoint"])
