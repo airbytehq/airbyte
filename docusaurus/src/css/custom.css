@@ -30,7 +30,7 @@
   --ifm-table-head-background: var(--color-blue-30);
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
-  
+
   /* OpenAPI method badge colors */
   --openapi-code-green: #49cc90;
   --openapi-code-red: #f93e3e;
@@ -112,6 +112,35 @@ html.plugin-id-default nav.theme-doc-breadcrumbs {
   visibility: hidden;
 }
 
+.boolean-table-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  font-size: 0.9em;
+  line-height: 1.2;
+}
+
+.boolean-table-indicator__icon {
+  font-size: 0.85em;
+}
+
+.boolean-table-indicator--supported {
+  color: var(--color-green-800);
+}
+
+.boolean-table-indicator--unsupported {
+  color: var(--ifm-color-emphasis-600);
+}
+
+html[data-theme="dark"] .boolean-table-indicator--supported {
+  color: var(--ifm-color-emphasis-400);
+}
+
+html[data-theme="dark"] .boolean-table-indicator--unsupported {
+  color: var(--ifm-color-emphasis-500);
+}
+
 .admonition-icon,
 .iconExternalLink_wgqa,
 .iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
@@ -141,8 +170,9 @@ nav ul.dropdown__menu {
 }
 
 /* Hide some less important navbar items at medium resolutions */
-@media (max-width:1250px) {
-  nav a.header-github-link, nav a.cloudStatusLink {
+@media (max-width: 1250px) {
+  nav a.header-github-link,
+  nav a.cloudStatusLink {
     display: none;
   }
 }
@@ -194,7 +224,7 @@ nav.navbar {
   display: none;
 }
 
-@media (min-width:996px) {
+@media (min-width: 996px) {
   .navbar__link {
     display: flex;
     align-items: center;
@@ -351,7 +381,8 @@ table td code {
   border-radius: 4px;
 }
 
-table th, table td {
+table th,
+table td {
   vertical-align: top;
 }
 
@@ -475,4 +506,3 @@ li.api-method.patch .menu__link::before {
   content: "patch";
   background-color: var(--openapi-code-orange);
 }
-

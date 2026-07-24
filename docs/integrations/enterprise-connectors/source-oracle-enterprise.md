@@ -2,6 +2,7 @@
 dockerRepository: airbyte/source-oracle-enterprise
 enterprise-connector: true
 ---
+
 # Source Oracle
 
 Airbyte's Oracle enterprise source connector offers the following features:
@@ -18,7 +19,7 @@ The required minimum platform version is v0.58.0 for this connector.
 ## Features
 
 | Feature                       | Supported | Notes              |
-| :---------------------------- |:----------| :----------------- |
+| :---------------------------- | :-------- | :----------------- |
 | Full Refresh Sync             | Yes       |                    |
 | Incremental Sync - Append     | Yes       |                    |
 | Replicate Incremental Deletes | Yes       |                    |
@@ -50,17 +51,20 @@ LogMiner is typically not enabled by default and requires some extra steps to en
 What form these steps take depends on whether the Oracle instance is managed via Amazon RDS or not.
 
 In the case of an Amazon RDS instance, the steps are as follows:
+
 1. Check that `SELECT LOG_MODE FROM V$DATABASE` returns `ARCHIVELOG`. If not, ensure that backups are enabled.
 2. Execute `exec rdsadmin.rdsadmin_util.set_configuration('archivelog retention hours',24)`, possibly replacing 24 with a more suitable value depending on the intended sync frequency. For instance, if the sync is intended to be run daily, then a retention period spanning multiple days is advisable.
 3. Execute `exec rdsadmin.rdsadmin_util.alter_supplemental_logging('ADD')` to enable supplemental logging on the database.
 
 In the case of any other Oracle instance, the steps are as follows:
+
 1. `CONNECT ... AS SYSDBA` using [SQL Plus](https://en.wikipedia.org/wiki/SQL_Plus) or equivalent.
 2. Provision the redo log files with something along the lines of `ALTER SYSTEM SET db_recovery_file_dest_size = 10G` and `ALTER SYSTEM SET db_recovery_file_dest = '/opt/oracle/oradata/recovery_area' SCOPE=SPFILE` but replacing the `10G` and directory path arguments with suitable values. Note that the directory in the path needs to exist.
 3. Shut down and restart the instance with `SHUTDOWN IMMEDIATE` and `STARTUP MOUNT`.
 4. `ALTER DATABASE ARCHIVELOG`, `ALTER DATABASE ADD SUPPLEMENTAL LOG DATA` and `ALTER DATABASE OPEN` to restart the database with supplemental logging enabled.
 
 At this point, RDS instance or not, all that remains to prepare the database for CDC incremental syncs is to enable supplemental logging on each of the relevant tables:
+
 ```sql
 ALTER TABLE ... ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS;
 ```
@@ -212,11 +216,13 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 The Enterprise Oracle source connector supports incremental syncs using CDC with some limitations.
 Some of these are readily apparent in the database and user setup steps described above:
+
 - CDC availability is subject to a log retention period,
 - CDC requires more user privileges,
 - CDC requires supplemental logging and other settings at the Oracle instance level.
 
 In addition to these, LogMiner, which our CDC relies on, has a few quirks:
+
 - tables with names longer than 30 characters are simply ignored,
 - columns with names longer than 30 characters are simply ignored.
 
@@ -239,54 +245,54 @@ Increase this value if your database has long periods of inactivity between chan
 Oracle data types are mapped to the following data types when synchronizing data.
 
 | Oracle Type                      | Airbyte Type            | Notes                       | CDC |
-| :------------------------------- |:------------------------|:----------------------------|-----|
+| :------------------------------- | :---------------------- | :-------------------------- | --- |
 | `BFILE`                          | string                  | base-64 encoded binary data |     |
-| `BINARY_FLOAT`                   | number                  |                             | ✓   |
-| `BINARY_DOUBLE`                  | number                  |                             | ✓   |
+| `BINARY_FLOAT`                   | number                  |                             | Yes |
+| `BINARY_DOUBLE`                  | number                  |                             | Yes |
 | `BLOB`                           | string                  | base-64 encoded binary data |     |
 | `BOOL`                           | boolean                 |                             |     |
 | `BOOLEAN`                        | boolean                 |                             |     |
-| `CHAR`                           | string                  |                             | ✓   |
-| `CHAR VARYING`                   | string                  |                             | ✓   |
-| `CHARACTER`                      | string                  |                             | ✓   |
-| `CHARACTER VARYING`              | string                  |                             | ✓   |
+| `CHAR`                           | string                  |                             | Yes |
+| `CHAR VARYING`                   | string                  |                             | Yes |
+| `CHARACTER`                      | string                  |                             | Yes |
+| `CHARACTER VARYING`              | string                  |                             | Yes |
 | `CLOB`                           | string                  |                             |     |
-| `DATE`                           | timestamp               | surprisingly, not a date    | ✓   |
-| `DEC`                            | number                  | integer when scale is 0     | ✓   |
-| `DECIMAL`                        | number                  | integer when scale is 0     | ✓   |
-| `FLOAT`                          | number                  |                             | ✓   |
-| `DOUBLE PRECISION`               | number                  |                             | ✓   |
-| `REAL`                           | number                  |                             | ✓   |
-| `INT`                            | number                  | integer                     | ✓   |
-| `INTEGER`                        | number                  | integer                     | ✓   |
-| `INTERVAL YEAR TO MONTH`         | string                  |                             | ✓   |
-| `INTERVAL DAY TO SECOND`         | string                  |                             | ✓   |
-| `INTERVALDS`                     | string                  |                             | ✓   |
-| `INTERVALYM`                     | string                  |                             | ✓   |
+| `DATE`                           | timestamp               | surprisingly, not a date    | Yes |
+| `DEC`                            | number                  | integer when scale is 0     | Yes |
+| `DECIMAL`                        | number                  | integer when scale is 0     | Yes |
+| `FLOAT`                          | number                  |                             | Yes |
+| `DOUBLE PRECISION`               | number                  |                             | Yes |
+| `REAL`                           | number                  |                             | Yes |
+| `INT`                            | number                  | integer                     | Yes |
+| `INTEGER`                        | number                  | integer                     | Yes |
+| `INTERVAL YEAR TO MONTH`         | string                  |                             | Yes |
+| `INTERVAL DAY TO SECOND`         | string                  |                             | Yes |
+| `INTERVALDS`                     | string                  |                             | Yes |
+| `INTERVALYM`                     | string                  |                             | Yes |
 | `JSON`                           | object                  |                             |     |
 | `LONG`                           | string                  | base-64 encoded binary data |     |
 | `LONG RAW`                       | string                  | base-64 encoded binary data |     |
-| `NATIONAL CHAR`                  | string                  |                             | ✓   |
-| `NATIONAL CHAR VARYING`          | string                  |                             | ✓   |
-| `NATIONAL CHARACTER`             | string                  |                             | ✓   |
-| `NATIONAL CHARACTER VARYING`     | string                  |                             | ✓   |
-| `NCHAR`                          | string                  |                             | ✓   |
-| `NCHAR VARYING`                  | string                  |                             | ✓   |
+| `NATIONAL CHAR`                  | string                  |                             | Yes |
+| `NATIONAL CHAR VARYING`          | string                  |                             | Yes |
+| `NATIONAL CHARACTER`             | string                  |                             | Yes |
+| `NATIONAL CHARACTER VARYING`     | string                  |                             | Yes |
+| `NCHAR`                          | string                  |                             | Yes |
+| `NCHAR VARYING`                  | string                  |                             | Yes |
 | `NCLOB`                          | string                  |                             |     |
-| `NUMBER`                         | number                  | integer when scale is 0     | ✓   |
-| `NUMERIC`                        | number                  | integer when scale is 0     | ✓   |
-| `NVARCHAR2`                      | string                  |                             | ✓   |
+| `NUMBER`                         | number                  | integer when scale is 0     | Yes |
+| `NUMERIC`                        | number                  | integer when scale is 0     | Yes |
+| `NVARCHAR2`                      | string                  |                             | Yes |
 | `RAW`                            | string                  | base-64 encoded binary data |     |
 | `ROWID`                          | string                  | base-64 encoded binary data |     |
-| `SMALLINT`                       | number                  | integer                     | ✓   |
-| `TIMESTAMP`                      | timestamp               |                             | ✓   |
-| `TIMESTAMP WITH LOCAL TIME ZONE` | timestamp               |                             | ✓   |
-| `TIMESTAMP WITH LOCAL TZ`        | timestamp               |                             | ✓   |
-| `TIMESTAMP WITH TIME ZONE`       | timestamp with timezone |                             | ✓   |
-| `TIMESTAMP WITH TZ`              | timestamp with timezone |                             | ✓   |
+| `SMALLINT`                       | number                  | integer                     | Yes |
+| `TIMESTAMP`                      | timestamp               |                             | Yes |
+| `TIMESTAMP WITH LOCAL TIME ZONE` | timestamp               |                             | Yes |
+| `TIMESTAMP WITH LOCAL TZ`        | timestamp               |                             | Yes |
+| `TIMESTAMP WITH TIME ZONE`       | timestamp with timezone |                             | Yes |
+| `TIMESTAMP WITH TZ`              | timestamp with timezone |                             | Yes |
 | `UROWID`                         | string                  | base-64 encoded binary data |     |
-| `VARCHAR`                        | string                  |                             | ✓   |
-| `VARCHAR2`                       | string                  |                             | ✓   |
+| `VARCHAR`                        | string                  |                             | Yes |
+| `VARCHAR2`                       | string                  |                             | Yes |
 
 Varray types are mapped to the corresponding Airbyte array type.
 This applies also to multiple levels of nesting, i.e. VARRAYs of VARRAYs, and so forth.
@@ -301,9 +307,9 @@ We are happy to take feedback on preferred mappings.
 
 The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
 
-| Version | Date       | Pull Request                                                   | Subject                                               |
-|:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------|
+| Version | Date       | Pull Request                                                    | Subject                                                               |
+| :------ | :--------- | :-------------------------------------------------------------- | :-------------------------------------------------------------------- |
 | 0.1.4   | 2026-06-16 | [443](https://github.com/airbytehq/airbyte-enterprise/pull/443) | Make CDC heartbeat timeout configurable via `initial_waiting_seconds` |
-| 0.1.3   | -          | -                                                              | Previous changes                                      |
+| 0.1.3   | -          | -                                                               | Previous changes                                                      |
 
 </details>

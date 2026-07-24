@@ -17,6 +17,7 @@ const getRemarkPlugins = () => ({
   specDecoration: require("./src/remark/specDecoration"),
   docMetaTags: require("./src/remark/docMetaTags"),
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
+  booleanTableIndicators: require("./src/remark/booleanTableIndicators"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
@@ -151,11 +152,11 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl:
-          "https://github.com/airbytehq/airbyte/blob/master/docs",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -192,8 +193,7 @@ const config: Config = {
           // standalone landing pages that should not appear in navigation.
           const hiddenDocIds = new Set(["README", "slack-app"]);
           const itemsWithoutReadme = processedItems.filter(
-            (item: any) =>
-              !(item.type === "doc" && hiddenDocIds.has(item.id)),
+            (item: any) => !(item.type === "doc" && hiddenDocIds.has(item.id)),
           );
 
           return [
@@ -210,6 +210,7 @@ const config: Config = {
           plugins.agentConnectorHeaderDecoration,
           plugins.planInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
           [plugins.npm2yarn, { sync: true }],
           plugins.codeBlockTabs,
         ],
@@ -227,6 +228,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -249,6 +251,7 @@ const config: Config = {
           plugins.productInformation,
           plugins.connectorTypeBanner,
           plugins.docMetaTags,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -264,6 +267,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -279,6 +283,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
