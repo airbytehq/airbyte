@@ -1517,6 +1517,42 @@ def test_stream_reviews_incremental_read(requests_mock):
 
 
 @patch("time.sleep")
+def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock):
+    stream = Reviews(
+        start_date="2000-01-01T00:00:00Z",
+        page_size_for_large_streams=10,
+        repositories=["airbytehq/airbyte"],
+    )
+    assert stream.page_size == 10
+    response = {
+        "data": {
+            "repository": {
+                "name": "airbyte",
+                "owner": {"login": "airbytehq"},
+                "pullRequests": {
+                    "nodes": [],
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                },
+            }
+        }
+    }
+    requests_mock.post(
+        "https://api.github.com/graphql",
+        [
+            {"status_code": requests.codes.GATEWAY_TIMEOUT, "json": {}},
+            {"status_code": requests.codes.OK, "json": response},
+        ],
+    )
+
+    list(read_full_refresh(stream))
+
+    queries = [request.json()["query"] for request in requests_mock.request_history]
+    assert queries[0].count("first: 10") == 2
+    assert queries[1].count("first: 5") == 2
+    assert stream.page_size == 5
+
+
+@patch("time.sleep")
 def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_response, requests_mock):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
@@ -2385,7 +2421,7 @@ def test_graphql_error_handler_502_504_message_includes_stream_name(status_code)
     resp.ok = False
     resp.json = MagicMock(return_value={})
     resolution = handler.interpret_response(resp)
-    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.response_action == ResponseAction.RESET_PAGINATION
     assert resolution.failure_type == FailureType.transient_error
     assert "`releases`" in resolution.error_message
     assert str(status_code) in resolution.error_message
@@ -2406,8 +2442,9 @@ def test_graphql_error_handler_504_floors_page_size_at_one():
     resp.text = ""
     resp.ok = False
     resp.json = MagicMock(return_value={})
-    handler.interpret_response(resp)
+    resolution = handler.interpret_response(resp)
     assert stream.page_size == 1
+    assert resolution.response_action == ResponseAction.RETRY
 
 
 @patch("time.sleep")

@@ -12,8 +12,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
-from . import constants
-
 
 logger = logging.getLogger("airbyte")
 
@@ -204,6 +202,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 # records and cause infinite paging.
                 previous_page_size = self.stream.page_size
                 self.stream.page_size = max(1, int(self.stream.page_size / 2))
+                response_action = ResponseAction.RESET_PAGINATION if self.stream.page_size < previous_page_size else ResponseAction.RETRY
                 self._logger.info(
                     "GitHub GraphQL endpoint returned HTTP %s for stream `%s`; reducing GraphQL page_size from %s to %s and retrying.",
                     response_or_exception.status_code,
@@ -212,17 +211,15 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                     self.stream.page_size,
                 )
                 return ErrorResolution(
-                    response_action=ResponseAction.RETRY,
+                    # RETRY reuses the prepared request, while RESET_PAGINATION lets
+                    # GitHubGraphQLStream rebuild its body with the reduced page size.
+                    response_action=response_action,
                     failure_type=FailureType.transient_error,
                     error_message=(
                         f"GitHub GraphQL endpoint returned HTTP {response_or_exception.status_code} "
                         f"for stream `{self.stream.name}`. Reducing GraphQL page size and retrying."
                     ),
                 )
-
-            self.stream.page_size = (
-                constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
-            )
 
             if self._safe_json_get_errors(response_or_exception):
                 return ErrorResolution(

@@ -8,7 +8,7 @@ import re
 import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib import parse
 
 import requests
@@ -23,6 +23,7 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.pagination_reset_exception import PaginationResetRequiredException
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
@@ -833,6 +834,23 @@ class ReviewComments(IncrementalMixin, GithubStream):
 class GitHubGraphQLStream(GithubStream, ABC):
     http_method = "POST"
 
+    def _fetch_next_page(
+        self,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+        while True:
+            try:
+                return super()._fetch_next_page(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
+            except PaginationResetRequiredException:
+                # Re-enter request construction so the GraphQL body uses the reduced page size.
+                continue
+
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -1067,6 +1085,8 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
 
     is_sorted = False
     cursor_field = "updated_at"
+    # The initial query requests page_size reviews for each of page_size pull requests.
+    large_stream = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
