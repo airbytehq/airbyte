@@ -1,51 +1,75 @@
 # Airbyte Protocol
 
-## Goals
+The Airbyte Protocol describes a series of standard components and all the interactions between them to declare an ELT pipeline. The protocol supports two data channel modes: the traditional `STDIO` mode using serialized JSON messages for inter-process communication, and the high-performance Socket mode using Protocol Buffers over Unix domain sockets for direct source-to-destination data transfer.
 
-The Airbyte Protocol describes a series of standard components and all the interactions between them in order to declare an ELT pipeline. All message passing across components is done via serialized JSON messages for inter-process communication.
+## About this page
 
-This document describes the protocol as it exists in its CURRENT form. Stay tuned for an RFC on how the protocol will evolve.
+This page describes the protocol as it exists in its current form.
 
-This document is intended to contain ALL the rules of the Airbyte Protocol in one place. Anything not contained in this document is NOT part of the Protocol. At the time of writing, there is one known exception, which is the [Supported Data Types](supported-data-types.md), which contains rules on data types that are part of the Protocol. That said, there are additional articles, e.g. [A Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) that repackage the information in this document for different audiences.
+This page contains all the rules of the Airbyte Protocol in one place. Anything not contained in this document isn't part of the Protocol. At the time of writing, there is one known exception, which is the [Supported Data Types](supported-data-types.md), which contains rules on data types that are part of the Protocol. That said, there are additional articles, e.g. [A Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) that repackage the information in this document for different audiences.
 
 ## Key Concepts
 
-There are 2 major components in the Airbyte Protocol: Source and Destination. These components are referred to as Actors. A source is an application that is described by a series of standard interfaces. This application extracts data from an underlying data store. A data store in this context refers to the tool where the data is actually stored. A data store includes: databases, APIs, anything that produces data, etc. For example, the Postgres Source is a Source that pulls from Postgres (which is a data store). A Destination is an application that is described by a series of standard interfaces that loads data into a data store.
+Airbyte Protocol has two major components: source and destination. These components are known as **actors**. A source is an application that is described by a series of standard interfaces. This application extracts data from an underlying data store. A data store in this context refers to the tool where the data is actually stored. A data store includes: databases, APIs, anything that produces data, etc. For example, the Postgres Source is a Source that pulls from Postgres, which is a data store. A Destination is an application described by a series of standard interfaces that loads data into a data store.
 
-The key primitives that the Protocol uses to describe data are Catalog, Configured Catalog, Stream, Configured Stream, and Field:
+The key primitives that the Protocol uses to describe data are: catalog, configured catalog, stream, configured Stream, and field.
 
-- Stream - A Stream describes the schema of a resource and various metadata about how a user can interact with that resource. A resource in this context might refer to a database table, a resource in a REST API, or a data stream.
-- Field - A Field refers to a "column" in a Stream. In a database this would be a column; in a JSON object it is a field.
-- Catalog - A Catalog is a list of Streams that describes the data in the data store that a Source represents.
+- Stream: a Stream describes the schema of a resource and various metadata about how a user can interact with that resource. A resource in this context might refer to a database table, a resource in a REST API, or a data stream.
+- Field: a Field refers to a "column" in a stream. In a database this would be a column; in a JSON object it's a field.
+- Catalog: a catalog is a list of Streams that describes the data in the data store that a Source represents.
 
-An Actor can advertise information about itself with an [Actor Specification](#actor-specification). One of the main pieces of information the specification shares is what information is needed to configure an Actor.
+An actor can advertise information about itself with an [Actor specification](#actor-specification). One of the main pieces of information the specification shares is what information you need to configure an actor.
 
-Each of these concepts is described in greater depth in their respective section.
+The sections below describe each of these concepts in greater depth.
 
 ## Changelog
 
-The Airbyte Protocol is versioned independently of the Airbyte Platform, and the version number is used to determine the compatibility between connectors and the Airbyte Platform.
+Airbyte versions its protocol and platform independently. The version number is used to determine the compatibility between connectors and the Airbyte platform.
 
-| Version  | Date of Change | Pull Request(s)                                                                                                           | Subject                                                                           |
-| :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------- |
-| `v0.5.2` | 2023-12-26     | [58](https://github.com/airbytehq/airbyte-protocol/pull/58)                                                               | Remove unused V1.                                                                 |
-| `v0.5.1` | 2023-04-12     | [53](https://github.com/airbytehq/airbyte-protocol/pull/53)                                                               | Modify various helper libraries.                                                  |
-| `v0.5.0` | 2023-11-13     | [49](https://github.com/airbytehq/airbyte-protocol/pull/49)                                                               | `AirbyteStateStatsMessage` added.                                                 |
-| `v0.4.2` | 2023-04-12     | [46](https://github.com/airbytehq/airbyte-protocol/pull/46)                                                               | `AirbyteAnalyticsTraceMessage` added.                                             |
-| `v0.4.1` | 2023-08-14     | [41](https://github.com/airbytehq/airbyte-protocol/pull/41) & [44](https://github.com/airbytehq/airbyte-protocol/pull/44) | Various bug fixes.                                                                |
-| `v0.3.6` | 2023-04-21     | [34](https://github.com/airbytehq/airbyte-protocol/pull/34)                                                               | Add explicit `AirbyteStreamStatus` statue values.                                 |
-| `v0.3.5` | 2023-04-13     | [30](https://github.com/airbytehq/airbyte-protocol/pull/30)                                                               | Fix indentation.                                                                  |
-| `v0.3.4` | 2023-04-13     | [28](https://github.com/airbytehq/airbyte-protocol/pull/28)                                                               | Fix Indentation.                                                                  |
-| `v0.3.3` | 2023-04-12     | [18](https://github.com/airbytehq/airbyte-protocol/pull/18)                                                               | `AirbyteStreamStatusMessage` added.                                               |
-| `v0.3.2` | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                                  | `AirbyteEstimateTraceMessage` added.                                              |
-| `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                                  | `AirbyteControlMessage.ConnectorConfig` added.                                    |
-| `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                                  | `AirbyteLogMessage.stack_trace` added.                                            |
-| `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586)       | `STREAM` and `GLOBAL` STATE messages.                                             |
-| `v0.1.1` | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                                  | Add a namespace in association with the stream name.                              |
-| `v0.1.0` | 2022-05-03     | [12458](https://github.com/airbytehq/airbyte/pull/12458) & [12581](https://github.com/airbytehq/airbyte/pull/12581)       | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions. |
-| `v0.0.2` | 2021-11-15     | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                                    | Support oAuth Connectors (internal).                                              |
-| `v0.0.1` | 2021-11-19     | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                                    | Remove sub-JSON Schemas.                                                          |
-| `v0.0.0` | 2020-11-18     | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                      | Initial version described via JSON Schema.                                        |
+| Version   | Date of Change | Pull Requests                                                                                                              | Subject                                                                           |
+| :-------- | :------------- | :---------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| `v0.19.0` | 2025-10-10     | [143](https://github.com/airbytehq/airbyte-protocol/pull/143)                                                                 | Add additional stats to `AirbyteStateStats`.                                      |
+| `v0.18.0` | 2025-06-25     | [139](https://github.com/airbytehq/airbyte-protocol/pull/139)                                                                 | Add rejected record stats support.                                                |
+| `v0.17.1` | 2025-06-17     | [137](https://github.com/airbytehq/airbyte-protocol/pull/137)                                                                 | Fix Python generation scripts.                                                    |
+| `v0.17.0` | 2025-05-28     | [133](https://github.com/airbytehq/airbyte-protocol/pull/133)                                                                 | Remove V1 models.                                                                 |
+| `v0.16.0` | 2025-05-26     | [130](https://github.com/airbytehq/airbyte-protocol/pull/130) & [134](https://github.com/airbytehq/airbyte-protocol/pull/134) | Add `destination_catalog` message; rename schema to json-schema.                  |
+| `v0.15.0` | 2025-04-07     | [119](https://github.com/airbytehq/airbyte-protocol/pull/119)                                                                 | Add support for file+metadata streams.                                            |
+| `v0.14.5` | 2025-04-04     | [125](https://github.com/airbytehq/airbyte-protocol/pull/125)                                                                 | Remove V1 models (fix).                                                           |
+| `v0.14.4` | 2025-04-03     | [120](https://github.com/airbytehq/airbyte-protocol/pull/120)                                                                 | Remove V1 models; move schema-defined objects into V0 package.                    |
+| `v0.14.3` | 2025-03-28     | [118](https://github.com/airbytehq/airbyte-protocol/pull/118) & [112](https://github.com/airbytehq/airbyte-protocol/pull/112) | Equalize V0 and V1; use .env file with Gradle.                                    |
+| `v0.14.2` | 2025-01-23     | [106](https://github.com/airbytehq/airbyte-protocol/pull/106)                                                                 | Make `extract_output` optional in `DeclarativeOAuthFlow`.                         |
+| `v0.14.1` | 2024-11-27     | [103](https://github.com/airbytehq/airbyte-protocol/pull/103)                                                                 | Add `access_token_params` to `DeclarativeOAuthFlow`.                              |
+| `v0.14.0` | 2024-11-06     | [96](https://github.com/airbytehq/airbyte-protocol/pull/96)                                                                   | Add connector `DeclarativeOAuthFlow` input to protocol.                           |
+| `v0.13.1` | 2024-10-15     | [97](https://github.com/airbytehq/airbyte-protocol/pull/97) & [99](https://github.com/airbytehq/airbyte-protocol/pull/99)     | Upgrade from Java 17 to 21 and Gradle 7.6 to 8.10.                                |
+| `v0.13.0` | 2024-08-23     | [91](https://github.com/airbytehq/airbyte-protocol/pull/91)                                                                   | Add version with dataclasses.                                                     |
+| `v0.12.2` | 2024-06-18     | [85](https://github.com/airbytehq/airbyte-protocol/pull/85)                                                                   | Fix publishing of `airbyte-protocol-models-pdv2`.                                 |
+| `v0.12.1` | 2024-06-18     | [83](https://github.com/airbytehq/airbyte-protocol/pull/83)                                                                   | Fix publish for Python classes calling wrong Docker script.                       |
+| `v0.12.0` | 2024-06-17     | [81](https://github.com/airbytehq/airbyte-protocol/pull/81)                                                                   | Publish new Pydantic v2 version of Python protocol.                               |
+| `v0.11.0` | 2024-05-16     | [74](https://github.com/airbytehq/airbyte-protocol/pull/74)                                                                   | Add reasons to `AirbyteStreamStatusTraceMessage`.                                 |
+| `v0.10.0` | 2024-05-14     | [73](https://github.com/airbytehq/airbyte-protocol/pull/73)                                                                   | Introduce `is_resumable`.                                                         |
+| `v0.9.0`  | 2024-04-02     | [67](https://github.com/airbytehq/airbyte-protocol/pull/67)                                                                   | Proposal for refreshes needed metadata.                                           |
+| `v0.8.0`  | 2024-03-19     | [69](https://github.com/airbytehq/airbyte-protocol/pull/69)                                                                   | Add `transient_error` as new failure type.                                        |
+| `v0.7.0`  | 2024-03-06     | [65](https://github.com/airbytehq/airbyte-protocol/pull/65)                                                                   | Add `DESTINATION_TYPECAST_ERROR` to reason enum value.                            |
+| `v0.6.0`  | 2024-01-24     | [56](https://github.com/airbytehq/airbyte-protocol/pull/56)                                                                   | `AirbyteRecordMessageMeta` for per-record lineage and changes.                    |
+| `v0.5.3`  | 2024-01-04     | [57](https://github.com/airbytehq/airbyte-protocol/pull/57)                                                                   | Add `py.typed` to Python distribution.                                            |
+| `v0.5.2`  | 2023-12-26     | [58](https://github.com/airbytehq/airbyte-protocol/pull/58)                                                                   | Remove unused V1.                                                                 |
+| `v0.5.1`  | 2023-12-08     | [53](https://github.com/airbytehq/airbyte-protocol/pull/53)                                                                   | Only add user-selected streams to the catalog diff.                               |
+| `v0.5.0`  | 2023-11-13     | [49](https://github.com/airbytehq/airbyte-protocol/pull/49)                                                                   | `AirbyteStateStats` added.                                                        |
+| `v0.4.2`  | 2023-10-16     | [46](https://github.com/airbytehq/airbyte-protocol/pull/46)                                                                   | Add more documentation to analytics message.                                      |
+| `v0.4.1`  | 2023-08-14     | [41](https://github.com/airbytehq/airbyte-protocol/pull/41) & [44](https://github.com/airbytehq/airbyte-protocol/pull/44)     | Various bug fixes.                                                                |
+| `v0.3.6`  | 2023-04-20     | [34](https://github.com/airbytehq/airbyte-protocol/pull/34)                                                                   | Remove success in favor of explicit status enum values.                           |
+| `v0.3.5`  | 2023-04-13     | [30](https://github.com/airbytehq/airbyte-protocol/pull/30)                                                                   | Fix indentation.                                                                  |
+| `v0.3.4`  | 2023-04-13     | [28](https://github.com/airbytehq/airbyte-protocol/pull/28)                                                                   | Fix indentation.                                                                  |
+| `v0.3.3`  | 2023-04-12     | [18](https://github.com/airbytehq/airbyte-protocol/pull/18)                                                                   | Add stream status trace message.                                                  |
+| `v0.3.2`  | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                                      | `AirbyteEstimateTraceMessage` added.                                              |
+| `v0.3.1`  | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                                      | `AirbyteControlMessage.ConnectorConfig` added.                                    |
+| `v0.3.0`  | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                                      | `AirbyteLogMessage.stack_trace` added.                                            |
+| `v0.2.0`  | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586)           | `STREAM` and `GLOBAL` STATE messages.                                             |
+| `v0.1.1`  | 2022-06-06     | [13356](https://github.com/airbytehq/airbyte/pull/13356)                                                                      | Add a namespace in association with the stream name.                              |
+| `v0.1.0`  | 2022-05-03     | [12458](https://github.com/airbytehq/airbyte/pull/12458) & [12581](https://github.com/airbytehq/airbyte/pull/12581)           | `AirbyteTraceMessage` added to allow connectors to better communicate exceptions. |
+| `v0.0.2`  | 2021-11-15     | [7798](https://github.com/airbytehq/airbyte/pull/7798)                                                                        | Support oAuth Connectors (internal).                                              |
+| `v0.0.1`  | 2021-11-19     | [1021](https://github.com/airbytehq/airbyte/pull/1021)                                                                        | Remove sub-JSON Schemas.                                                          |
+| `v0.0.0`  | 2020-11-18     | [998](https://github.com/airbytehq/airbyte/pull/998)                                                                          | Initial version described via JSON Schema.                                        |
 
 ## Actor Interface
 
@@ -71,18 +95,64 @@ Additionally, all methods described in the protocol can emit `AirbyteLogMessage`
 Each method in the protocol has 3 parts:
 
 1. **Input**: these are the arguments passed to the method.
-2. **Data Channel Egress (Output)**: all outputs from a method are via STDOUT. While some method signatures declare a single return value, in practice, any number of `AirbyteLogMessage`s and `AirbyteTraceMessage`s may be emitted. An actor is responsible for closing STDOUT to declare that it is done.
-3. **Data Channel Ingress**: after a method begins running, data can be passed to it via STDIN. For example, records are passed to a Destination on STDIN so that it can load them into a data warehouse.
 
-Sources are a special case and do not have a Data Channel Ingress.
+2. **Data channel egress**: all outputs from a method are via STDOUT in STDIO mode or Unix domain sockets in Socket mode. While some method signatures declare a single return value, in practice, any number of `AirbyteLogMessage`s and `AirbyteTraceMessage`s may be emitted. An actor is responsible for closing STDOUT to declare that it is done.
+
+3. **Data Channel Ingress**: after a method begins running, data can be passed to it via STDIN in STDIO mode or Unix domain sockets in Socket mode. For example, records are passed to a Destination so that it can load them into a data warehouse.
+
+Sources are a special case and don't have a data channel ingress.
 
 Additional Invariants
 
-- All arguments passed to an Actor and all messages emitted from an Actor are serialized JSON.
+- All arguments passed to an Actor and all messages emitted from an Actor are serialized JSON (in STDIO mode) or Protocol Buffers (in Socket mode).
 - All messages emitted from Actors must be wrapped in an `AirbyteMessage`([ref](#airbytemessage)) envelope.
 - Messages not wrapped in the `AirbyteMessage` must be dropped (e.g. not be passed from Source to Destination). However certain implementations of the Airbyte Protocol may choose to store and log unknown messages for debugging purposes.
 - Each message must be on its own line. Multiple messages _cannot_ be sent on the same line. The JSON objects cannot be serialized across multiple lines.
-- STDERR should only be used for log messages (for errors). All other Data Channel Data moves on STDIN and STDOUT.
+- STDERR should only be used for log messages (for errors). All other Data Channel Data moves on STDIN and STDOUT (in STDIO mode) or Unix domain sockets (in Socket mode).
+
+### Data channel modes
+
+The Airbyte Protocol supports two data channel modes that determine how data flows between connectors:
+
+#### Legacy mode (STDIO)
+
+In legacy mode, data flows through the platform orchestrator using standard input/output pipes with JSON serialization. This is the traditional architecture where all records pass through the orchestrator, which handles routing, state management, and logging.
+
+The data flow in legacy mode is: source -> orchestrator -> destination
+
+Environment configuration for legacy mode:
+
+- `DATA_CHANNEL_MEDIUM=STDIO` (default)
+- `DATA_CHANNEL_FORMAT=JSONL` (default)
+
+#### Socket mode
+
+Socket mode enables direct source-to-destination communication via Unix domain sockets, bypassing the orchestrator for record data. This architecture achieves 4-10x performance improvements by eliminating serialization overhead and enabling parallel data transfer.
+
+In Socket mode, the architecture splits into two channels:
+
+- **Data channel**: Records and state messages flow directly from source to destination over multiple Unix domain sockets using Protocol Buffers serialization
+- **Control channel**: Logs, state persistence, and metadata flow through a lightweight Bookkeeper component via STDOUT
+
+The data flow in Socket mode is:
+
+- Records: Source -> Unix Domain Sockets -> Destination
+- Control messages: Source -> Bookkeeper via STDOUT
+- State messages: Source -> Both Bookkeeper and Destination
+
+Environment configuration for Socket mode:
+
+- `DATA_CHANNEL_MEDIUM=SOCKET`
+- `DATA_CHANNEL_FORMAT=PROTOBUF`
+- `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths, for example `/var/run/sockets/airbyte_socket_0.sock,/var/run/sockets/airbyte_socket_1.sock`
+
+Socket configuration:
+
+- Socket count is determined by: `min(source_cpu_limit, destination_cpu_limit) * 2`
+- Socket paths follow the pattern: `/var/run/sockets/airbyte_socket_{n}.sock`
+- Sockets are created on memory-based volumes (tmpfs) for high performance
+
+The platform's ArchitectureDecider component determines whether a sync runs in Socket mode or legacy mode based on connector compatibility, feature flags, and configuration.
 
 ## Common Interface
 
@@ -552,11 +622,30 @@ These principles are intended to produce simple overall system behavior, and mov
 
    Order-ness is determined by the type of State message. Per-stream state messages require order per-stream. Global state messages require global ordering.
 
+### State coordination in socket mode
+
+In Socket mode, state coordination requires additional mechanisms to handle records arriving out of order over multiple parallel sockets. The following extensions to state messages enable reliable checkpointing:
+
+**Partition IDs**: each record and state message includes a `partition_id` that links records to their corresponding state checkpoint. This allows the destination to validate that all records for a partition have been received before committing the state.
+
+**State IDs**: state messages include an incrementing `id` field that ensures ordered state processing across multiple sockets. This is critical because states may arrive out of order when using parallel connections.
+
+**Record Count Validation**: the `sourceStats.recordCount` field in state messages enables the destination to verify that all records associated with a state have been received before committing. The destination tracks received records per partition and only commits state when the count matches.
+
+**Dual State Emission**: in Socket mode, sources emit state messages to both:
+
+- The Bookkeeper (via STDOUT) for logging and platform state persistence
+- The Destination (via socket) for checkpoint coordination
+
+This dual emission ensures that state is properly tracked by the platform while also enabling the destination to coordinate checkpoints with record receipt.
+
+**CDC State Handling**: For Change Data Capture (CDC) sources in Socket mode, state messages include both `partition_id` and `id` fields at the stream level (for per-stream state) or global level (for global state). This enables proper ordering and validation even when CDC records arrive through multiple parallel channels.
+
 ## Messages
 
 ### Common
 
-For forwards compatibility all messages should allow for unknown properties (in JSONSchema parlance that is `additionalProperties: true`).
+For forwards compatibility, all messages should allow for unknown properties. In JSON schema parlance, that's `additionalProperties: true`.
 
 Messages are structs emitted by actors.
 
