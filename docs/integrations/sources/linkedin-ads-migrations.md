@@ -8,13 +8,33 @@ LinkedIn Ads v6.0.0 batches analytics requests for up to 50 campaigns at a time 
 - `ad_creative_analytics`
 - `ad_impression_device_analytics`
 
-This batching reduces sync time by approximately 98% for these streams on large accounts. However, it changes their incremental state format. The primary key for `ad_impression_device_analytics` also changes so records from different campaigns with the same device type and date remain distinct.
+This batching reduces sync time by approximately 98% for these streams on large accounts. However, it changes their incremental state format.
+
+The `ad_impression_device_analytics` stream also has a primary-key change. The new `sponsoredCampaign` key component keeps records from different campaigns with the same device type and date distinct.
 
 | Stream | Old primary key | New primary key |
 |:---|:---|:---|
 | `ad_impression_device_analytics` | `[string_of_pivot_values, end_date]` | `[string_of_pivot_values, end_date, sponsoredCampaign]` |
 
-After upgrading, refresh all three affected streams before resuming your regular sync schedule. For refresh instructions, see [Refresh data](/platform/operator-guides/refreshes).
+### Migration steps
+
+After upgrading, refresh all three affected streams before resuming your regular sync schedule. Complete these steps for every LinkedIn Ads connection that syncs at least one affected stream:
+
+1. In the navigation bar, select **Connections**, then open the affected connection.
+2. Select the **Schema** tab.
+3. Select **Refresh source schema**, then select **OK** after Airbyte detects the changes.
+4. Confirm the affected streams you use are selected:
+   - `ad_campaign_analytics`
+   - `ad_creative_analytics`
+   - `ad_impression_device_analytics`
+5. Select **Save changes**.
+6. Select the **Status** tab.
+7. For each affected stream, select the three dots (**⋮**), then select **Refresh stream**.
+8. Select the available refresh option and confirm the refresh.
+
+For incremental append with deduplication, **Refresh stream and remove records** rebuilds the destination data using the updated primary key. For incremental append without deduplication, use **Refresh stream and retain records**; this may produce one-time duplicate rows. If retaining duplicates is not acceptable, clear the affected stream before starting the next sync.
+
+For more information about refresh options, see [Refresh data](/platform/operator-guides/refreshes).
 
 ## Upgrading to 5.0.0
 
