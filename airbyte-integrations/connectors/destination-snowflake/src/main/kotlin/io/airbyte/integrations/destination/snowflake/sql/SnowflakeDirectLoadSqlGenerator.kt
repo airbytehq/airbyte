@@ -360,13 +360,11 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+    fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
-            fullyQualifiedName(
-                targetTableName,
-            )
-        }
+            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            fullyQualifiedName(sourceTableName)
+        } COPY GRANTS
         """
             .trimIndent()
             .andLog()
@@ -395,7 +393,6 @@ class SnowflakeDirectLoadSqlGenerator(
     fun alterTable(
         tableName: TableName,
         addedColumns: Map<String, ColumnType>,
-        deletedColumns: Map<String, ColumnType>,
         modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
@@ -408,9 +405,6 @@ class SnowflakeDirectLoadSqlGenerator(
                 // So we add the column as nullable.
                 "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog(),
             )
-        }
-        deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
         modifiedColumns.forEach { (name, typeChange) ->
             if (typeChange.originalType.type != typeChange.newType.type) {
