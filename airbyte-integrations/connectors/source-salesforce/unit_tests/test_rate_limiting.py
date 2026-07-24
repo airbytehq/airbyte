@@ -8,7 +8,13 @@ import pytest
 import requests
 import requests_mock
 from requests.exceptions import ChunkedEncodingError
-from source_salesforce.api import _TOKEN_REFRESH_INTERVAL_SECONDS, API_VERSION, SalesforceTokenProvider
+from source_salesforce.api import (
+    _REFRESH_FAILURE_BACKOFF_SECONDS,
+    _TOKEN_REFRESH_INTERVAL_SECONDS,
+    API_VERSION,
+    Salesforce,
+    SalesforceTokenProvider,
+)
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
 
 from airbyte_cdk.models import FailureType
@@ -31,24 +37,15 @@ class SalesforceTokenProviderTest(TestCase):
         assert token == "initial_token"
         self._sf_api.login.assert_not_called()
 
-    def test_get_token_calls_login_when_interval_elapsed(self) -> None:
+    def test_get_token_delegates_staleness_refresh_to_api(self) -> None:
         self._sf_api.access_token = "refreshed_token"
-        with patch("source_salesforce.api.time.monotonic", side_effect=[0.0, _TOKEN_REFRESH_INTERVAL_SECONDS + 1, 0.0]):
-            provider = SalesforceTokenProvider(self._sf_api)
-            token = provider.get_token()
 
-        self._sf_api.login.assert_called_once()
+        token = self._token_provider.get_token()
+
+        # Timing and locking now live on the shared Salesforce object (so concurrent streams share a
+        # single refresh instead of one per provider); the provider simply delegates.
+        self._sf_api.refresh_access_token_if_stale.assert_called_once()
         assert token == "refreshed_token"
-
-    def test_get_token_returns_existing_token_when_login_fails(self) -> None:
-        self._sf_api.login.side_effect = Exception("network error")
-        self._sf_api.access_token = "stale_token"
-        with patch("source_salesforce.api.time.monotonic", side_effect=[0.0, _TOKEN_REFRESH_INTERVAL_SECONDS + 1]):
-            provider = SalesforceTokenProvider(self._sf_api)
-            token = provider.get_token()
-
-        self._sf_api.login.assert_called_once()
-        assert token == "stale_token"
 
     def test_force_refresh_calls_login_immediately(self) -> None:
         self._token_provider.force_refresh()
@@ -61,6 +58,75 @@ class SalesforceTokenProviderTest(TestCase):
         self._token_provider.force_refresh()  # should not raise
 
         self._sf_api.login.assert_called_once()
+
+
+class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
+    """Proactive-refresh timing lives on the shared Salesforce object so a single refresh is shared
+    across concurrent streams and every rotation is serialized by the login lock."""
+
+    def _make_sf(self) -> Salesforce:
+        sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+        sf._perform_login = MagicMock()
+        return sf
+
+    def test_does_not_refresh_before_first_login(self) -> None:
+        sf = self._make_sf()
+
+        sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_not_called()
+
+    def test_does_not_refresh_within_interval(self) -> None:
+        sf = self._make_sf()
+        sf._last_login_time = 0.0
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS - 1):
+            sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_not_called()
+
+    def test_refreshes_after_interval(self) -> None:
+        sf = self._make_sf()
+        sf._last_login_time = 0.0
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_called_once()
+
+    def test_swallows_login_failure(self) -> None:
+        sf = self._make_sf()
+        sf._perform_login.side_effect = Exception("network error")
+        sf._last_login_time = 0.0
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()  # should not raise
+
+        sf._perform_login.assert_called_once()
+
+    def test_failed_refresh_backs_off_then_retries(self) -> None:
+        """A failed proactive refresh must not turn every subsequent request into a fresh login.
+
+        _perform_login only stamps _last_login_time on success, so refresh_access_token_if_stale backs
+        the timer off by _REFRESH_FAILURE_BACKOFF_SECONDS on failure: further requests within that
+        window are no-ops (no login storm under the lock), and the next attempt fires once the window
+        elapses.
+        """
+        sf = self._make_sf()
+        sf._perform_login.side_effect = Exception("network error")
+        sf._last_login_time = 0.0
+
+        fail_time = float(_TOKEN_REFRESH_INTERVAL_SECONDS + 1)
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # Within the backoff window: no retry (this is the storm guard).
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS - 1):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # After the backoff window elapses: a new attempt fires.
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+        assert sf._perform_login.call_count == 2
 
 
 class SalesforceErrorHandlerTest(TestCase):
