@@ -21,7 +21,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Shiftbase
-  releaseDate: 2026-02-03
+  releaseDate: 2026-07-24
   supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/shiftbase
