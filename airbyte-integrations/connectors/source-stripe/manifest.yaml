@@ -1216,7 +1216,7 @@ definitions:
               - type: HttpResponseFilter
                 action: IGNORE
                 predicate: "{{ 'automatic transfers, not manual' in response.get('error', {}).get('message', '') }}"
-                error_message: "Skipping payout: balance transaction history can only be filtered on automatic (not manual) transfers."
+                error_message: "Balance transaction history can only be filtered on automatic (not manual) transfers. Skipping a manual payout. Stripe request log: {{ response.get('error', {}).get('request_log_url', 'n/a') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
