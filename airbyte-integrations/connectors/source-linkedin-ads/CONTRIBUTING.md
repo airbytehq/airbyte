@@ -69,15 +69,15 @@ Impression-device analytics can return at most 7,750 rows for the five documente
 over the same range.
 
 Batch membership can change when campaigns or creatives are added or removed, so the three batched
-streams use a global substream cursor. Existing per-partition state is migrated once to the earliest
-partition cursor, after which subsequent syncs emit global state and do not repeat the migration. The
-one-time migration can re-read already-synced dates, but it does not skip an entity that was behind the
-other partitions.
+streams use a global substream cursor. This changes their state format from per-partition to global
+state, so users must refresh all three streams when upgrading to the major version that introduces
+batching.
 
-The emitted primary key for `ad_impression_device_analytics` remains
-`["string_of_pivot_values", "end_date"]` for compatibility. Because `string_of_pivot_values` contains
-only the device type, this pre-existing key does not distinguish campaigns. Correcting it requires a
-major-version breaking change even though property-chunk merging already keeps campaigns separate.
+The primary key for `ad_impression_device_analytics` is
+`["string_of_pivot_values", "end_date", "sponsoredCampaign"]`. The campaign field is required because
+`string_of_pivot_values` contains only the device type after the `CAMPAIGN` pivot is moved to
+`sponsoredCampaign`; without it, different campaigns with the same device type and date collide in
+dedup destinations.
 
 The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
 to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.

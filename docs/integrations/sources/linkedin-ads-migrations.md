@@ -8,7 +8,13 @@ LinkedIn Ads v6.0.0 batches analytics requests for up to 50 campaigns at a time 
 - `ad_creative_analytics`
 - `ad_impression_device_analytics`
 
-This batching reduces sync time by approximately 98% for these streams on large accounts. However, it changes their incremental state format. After upgrading, refresh all three affected streams before resuming your regular sync schedule. For refresh instructions, see [Refresh data](/platform/operator-guides/refreshes).
+This batching reduces sync time by approximately 98% for these streams on large accounts. However, it changes their incremental state format. The primary key for `ad_impression_device_analytics` also changes so records from different campaigns with the same device type and date remain distinct.
+
+| Stream | Old primary key | New primary key |
+|:---|:---|:---|
+| `ad_impression_device_analytics` | `[string_of_pivot_values, end_date]` | `[string_of_pivot_values, end_date, sponsoredCampaign]` |
+
+After upgrading, refresh all three affected streams before resuming your regular sync schedule. For refresh instructions, see [Refresh data](/platform/operator-guides/refreshes).
 
 ## Upgrading to 5.0.0
 

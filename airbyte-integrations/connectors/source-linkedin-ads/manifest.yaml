@@ -688,6 +688,7 @@ definitions:
       primary_key:
         - string_of_pivot_values
         - end_date
+        - sponsoredCampaign
       retriever:
         type: SimpleRetriever
         $parameters:
@@ -716,6 +717,7 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
+            transform_campaign_statistics_pivots: true
           schema_normalization: Default
         paginator:
           type: NoPagination

@@ -207,6 +207,19 @@ class TestAllStreams:
             for stream_name in batched_stream_names
         )
         assert all(streams[stream_name]["retriever"]["partition_router"]["group_size"] == 50 for stream_name in batched_stream_names)
+        assert streams["ad_impression_device_analytics"]["primary_key"] == [
+            "string_of_pivot_values",
+            "end_date",
+            "sponsoredCampaign",
+        ]
+        assert streams["ad_impression_device_analytics"]["retriever"]["record_selector"]["extractor"][
+            "transform_campaign_statistics_pivots"
+        ]
+        assert all(
+            "transform_campaign_statistics_pivots" not in streams[stream_name]["retriever"]["record_selector"]["extractor"]
+            for stream_name in streams
+            if stream_name != "ad_impression_device_analytics"
+        )
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}

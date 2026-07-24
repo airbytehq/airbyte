@@ -104,7 +104,7 @@ data:
         upgradeDeadline: "2024-12-10"
         deadlineAction: "auto_upgrade"
       6.0.0:
-        message: Analytics requests are now batched for up to 50 campaigns per request, reducing sync time by approximately 98% for large accounts using the ad_campaign_analytics, ad_creative_analytics, and ad_impression_device_analytics streams. The incremental state format changed, so these streams must be refreshed after upgrading.
+        message: Analytics requests are now batched for up to 50 campaigns per request, reducing sync time by approximately 98% for large accounts using the ad_campaign_analytics, ad_creative_analytics, and ad_impression_device_analytics streams. The incremental state format changed for all three streams, and the ad_impression_device_analytics primary key now includes sponsoredCampaign to distinguish campaigns with the same device type and date. These streams must be refreshed after upgrading.
         upgradeDeadline: "2026-08-23"
         deadlineAction: "disable"
         scopedImpact:

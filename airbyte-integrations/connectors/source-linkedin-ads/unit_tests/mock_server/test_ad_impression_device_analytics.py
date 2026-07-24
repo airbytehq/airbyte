@@ -196,8 +196,17 @@ class TestAdImpressionDeviceAnalyticsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         records_by_campaign = {record.record.data["sponsoredCampaign"]: record.record.data for record in output.records}
+        primary_keys = {
+            (
+                record["string_of_pivot_values"],
+                record["end_date"],
+                record["sponsoredCampaign"],
+            )
+            for record in records_by_campaign.values()
+        }
 
         assert records_by_campaign.keys() == {"1001", "1002"}
+        assert len(primary_keys) == 2
         assert records_by_campaign["1001"]["impressions"] == 1001
         assert records_by_campaign["1002"]["impressions"] == 1002
         assert all(record["string_of_pivot_values"] == "CONNECTED_TV" for record in records_by_campaign.values())

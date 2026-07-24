@@ -142,6 +142,8 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
     date-time fields are formatted to RFC3339.
     """
 
+    transform_campaign_statistics_pivots: bool = False
+
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Converts 'lastModified' and 'created' fields in the record to RFC3339 format.
@@ -155,7 +157,10 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         """
         Extracts and transforms records from an HTTP response.
         """
-        for record in transform_data(response.json().get("elements")):
+        for record in transform_data(
+            response.json().get("elements"),
+            transform_campaign_statistics_pivots=self.transform_campaign_statistics_pivots,
+        ):
             yield self._date_time_to_rfc3339(record)
 
 
@@ -483,7 +488,7 @@ def transform_campaign_statistics_pivot_values(record: Dict) -> Mapping[str, Any
     return record
 
 
-def transform_data(records: List) -> Iterable[Mapping]:
+def transform_data(records: List, transform_campaign_statistics_pivots: bool = False) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
     to be properly normalised in the destination.
@@ -502,7 +507,8 @@ def transform_data(records: List) -> Iterable[Mapping]:
             record = transform_variables(record)
 
         if "pivotValues" in record:
-            record = transform_campaign_statistics_pivot_values(record)
+            if transform_campaign_statistics_pivots:
+                record = transform_campaign_statistics_pivot_values(record)
             record = transform_pivot_values(record)
 
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
