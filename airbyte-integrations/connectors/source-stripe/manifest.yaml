@@ -1212,12 +1212,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               # Filter conditions are OR-ed, so http_codes is intentionally omitted: matching on
-              # the error message alone keeps every other 400 fatal.
+              # the error message alone keeps every other error fatal.
               - type: HttpResponseFilter
                 action: IGNORE
-                error_message_contains: "Balance transaction history can only be filtered on automatic transfers"
-                error_message: >-
-                  {{ response['error']['message'] }}
+                predicate: "{{ 'automatic transfers, not manual' in response.get('error', {}).get('message', '') }}"
+                error_message: "Skipping payout: balance transaction history can only be filtered on automatic (not manual) transfers."
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
