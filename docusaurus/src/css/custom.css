@@ -30,7 +30,7 @@
   --ifm-table-head-background: var(--color-blue-30);
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
-
+  
   /* OpenAPI method badge colors */
   --openapi-code-green: #49cc90;
   --openapi-code-red: #f93e3e;
@@ -134,11 +134,11 @@ html.plugin-id-default nav.theme-doc-breadcrumbs {
 }
 
 html[data-theme="dark"] .boolean-table-indicator--supported {
-  color: var(--ifm-color-emphasis-400);
+  color: var(--color-green-600);
 }
 
 html[data-theme="dark"] .boolean-table-indicator--unsupported {
-  color: var(--ifm-color-emphasis-500);
+  color: var(--ifm-color-emphasis-400);
 }
 
 .admonition-icon,
@@ -170,9 +170,8 @@ nav ul.dropdown__menu {
 }
 
 /* Hide some less important navbar items at medium resolutions */
-@media (max-width: 1250px) {
-  nav a.header-github-link,
-  nav a.cloudStatusLink {
+@media (max-width:1250px) {
+  nav a.header-github-link, nav a.cloudStatusLink {
     display: none;
   }
 }
@@ -224,7 +223,7 @@ nav.navbar {
   display: none;
 }
 
-@media (min-width: 996px) {
+@media (min-width:996px) {
   .navbar__link {
     display: flex;
     align-items: center;
@@ -381,8 +380,7 @@ table td code {
   border-radius: 4px;
 }
 
-table th,
-table td {
+table th, table td {
   vertical-align: top;
 }
 
@@ -506,3 +504,4 @@ li.api-method.patch .menu__link::before {
   content: "patch";
   background-color: var(--openapi-code-orange);
 }
+

@@ -2,7 +2,6 @@
 dockerRepository: airbyte/source-oracle-enterprise
 enterprise-connector: true
 ---
-
 # Source Oracle
 
 Airbyte's Oracle enterprise source connector offers the following features:
@@ -19,7 +18,7 @@ The required minimum platform version is v0.58.0 for this connector.
 ## Features
 
 | Feature                       | Supported | Notes              |
-| :---------------------------- | :-------- | :----------------- |
+| :---------------------------- |:----------| :----------------- |
 | Full Refresh Sync             | Yes       |                    |
 | Incremental Sync - Append     | Yes       |                    |
 | Replicate Incremental Deletes | Yes       |                    |
@@ -51,20 +50,17 @@ LogMiner is typically not enabled by default and requires some extra steps to en
 What form these steps take depends on whether the Oracle instance is managed via Amazon RDS or not.
 
 In the case of an Amazon RDS instance, the steps are as follows:
-
 1. Check that `SELECT LOG_MODE FROM V$DATABASE` returns `ARCHIVELOG`. If not, ensure that backups are enabled.
 2. Execute `exec rdsadmin.rdsadmin_util.set_configuration('archivelog retention hours',24)`, possibly replacing 24 with a more suitable value depending on the intended sync frequency. For instance, if the sync is intended to be run daily, then a retention period spanning multiple days is advisable.
 3. Execute `exec rdsadmin.rdsadmin_util.alter_supplemental_logging('ADD')` to enable supplemental logging on the database.
 
 In the case of any other Oracle instance, the steps are as follows:
-
 1. `CONNECT ... AS SYSDBA` using [SQL Plus](https://en.wikipedia.org/wiki/SQL_Plus) or equivalent.
 2. Provision the redo log files with something along the lines of `ALTER SYSTEM SET db_recovery_file_dest_size = 10G` and `ALTER SYSTEM SET db_recovery_file_dest = '/opt/oracle/oradata/recovery_area' SCOPE=SPFILE` but replacing the `10G` and directory path arguments with suitable values. Note that the directory in the path needs to exist.
 3. Shut down and restart the instance with `SHUTDOWN IMMEDIATE` and `STARTUP MOUNT`.
 4. `ALTER DATABASE ARCHIVELOG`, `ALTER DATABASE ADD SUPPLEMENTAL LOG DATA` and `ALTER DATABASE OPEN` to restart the database with supplemental logging enabled.
 
 At this point, RDS instance or not, all that remains to prepare the database for CDC incremental syncs is to enable supplemental logging on each of the relevant tables:
-
 ```sql
 ALTER TABLE ... ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS;
 ```
@@ -216,13 +212,11 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 The Enterprise Oracle source connector supports incremental syncs using CDC with some limitations.
 Some of these are readily apparent in the database and user setup steps described above:
-
 - CDC availability is subject to a log retention period,
 - CDC requires more user privileges,
 - CDC requires supplemental logging and other settings at the Oracle instance level.
 
 In addition to these, LogMiner, which our CDC relies on, has a few quirks:
-
 - tables with names longer than 30 characters are simply ignored,
 - columns with names longer than 30 characters are simply ignored.
 
@@ -245,7 +239,7 @@ Increase this value if your database has long periods of inactivity between chan
 Oracle data types are mapped to the following data types when synchronizing data.
 
 | Oracle Type                      | Airbyte Type            | Notes                       | CDC |
-| :------------------------------- | :---------------------- | :-------------------------- | --- |
+| :------------------------------- |:------------------------|:----------------------------|-----|
 | `BFILE`                          | string                  | base-64 encoded binary data |     |
 | `BINARY_FLOAT`                   | number                  |                             | Yes |
 | `BINARY_DOUBLE`                  | number                  |                             | Yes |
@@ -260,7 +254,7 @@ Oracle data types are mapped to the following data types when synchronizing data
 | `DATE`                           | timestamp               | surprisingly, not a date    | Yes |
 | `DEC`                            | number                  | integer when scale is 0     | Yes |
 | `DECIMAL`                        | number                  | integer when scale is 0     | Yes |
-| `FLOAT`                          | number                  |                             | Yes |
+| `FLOAT`                           | number                  |                             | Yes |
 | `DOUBLE PRECISION`               | number                  |                             | Yes |
 | `REAL`                           | number                  |                             | Yes |
 | `INT`                            | number                  | integer                     | Yes |
@@ -307,9 +301,9 @@ We are happy to take feedback on preferred mappings.
 
 The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
 
-| Version | Date       | Pull Request                                                    | Subject                                                               |
-| :------ | :--------- | :-------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| Version | Date       | Pull Request                                                   | Subject                                               |
+|:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------|
 | 0.1.4   | 2026-06-16 | [443](https://github.com/airbytehq/airbyte-enterprise/pull/443) | Make CDC heartbeat timeout configurable via `initial_waiting_seconds` |
-| 0.1.3   | -          | -                                                               | Previous changes                                                      |
+| 0.1.3   | -          | -                                                              | Previous changes                                      |
 
 </details>

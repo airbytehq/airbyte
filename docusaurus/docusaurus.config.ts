@@ -152,7 +152,8 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        editUrl:
+          "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
@@ -193,7 +194,8 @@ const config: Config = {
           // standalone landing pages that should not appear in navigation.
           const hiddenDocIds = new Set(["README", "slack-app"]);
           const itemsWithoutReadme = processedItems.filter(
-            (item: any) => !(item.type === "doc" && hiddenDocIds.has(item.id)),
+            (item: any) =>
+              !(item.type === "doc" && hiddenDocIds.has(item.id)),
           );
 
           return [

@@ -36,11 +36,7 @@ function buildCompositeEntry(entry, connectorType) {
     dockerRepository,
     dockerImageTag: entry.dockerImageTag || "",
     supportLevel: entry.supportLevel || "community",
-    iconUrl:
-      entry.iconUrl ||
-      (dockerRepository
-        ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg`
-        : ""),
+    iconUrl: entry.iconUrl || (dockerRepository ? `https://connectors.airbyte.com/files/metadata/${dockerRepository}/latest/icon.svg` : ""),
     documentationUrl: entry.documentationUrl || "",
   };
 }
@@ -83,11 +79,7 @@ function connectorSort(a, b) {
   if (a.name > b.name) return 1;
 }
 
-function ConnectorTable({
-  connectors,
-  connectorSupportLevel,
-  enterpriseConnectors = [],
-}) {
+function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
   return (
     <table>
       <thead>
@@ -106,17 +98,12 @@ function ConnectorTable({
             if (connectorSupportLevel === "enterprise") {
               return true;
             }
-
+            
             const isEnterpriseConnector = enterpriseConnectors.some(
-              (ec) =>
-                ec &&
-                c &&
-                (ec.definitionId === c.definitionId || ec.name === c.name),
+              ec => ec && c && (ec.definitionId === c.definitionId || ec.name === c.name)
             );
-
-            return (
-              !isEnterpriseConnector && c.supportLevel === connectorSupportLevel
-            );
+            
+            return !isEnterpriseConnector && c.supportLevel === connectorSupportLevel;
           })
           .map((connector) => {
             const docsLink = connector.documentationUrl?.replace(
@@ -183,13 +170,13 @@ function ConnectorTable({
                 </td>
                 <td>
                   <BooleanTableIndicator
-                    label={connector.is_oss ? "Supported" : "Not supported"}
+                    label={connector.is_oss ? "Yes" : "No"}
                     status={connector.is_oss ? "supported" : "unsupported"}
                   />
                 </td>
                 <td>
                   <BooleanTableIndicator
-                    label={connector.is_cloud ? "Supported" : "Not supported"}
+                    label={connector.is_cloud ? "Yes" : "No"}
                     status={connector.is_cloud ? "supported" : "unsupported"}
                   />
                 </td>
@@ -197,8 +184,9 @@ function ConnectorTable({
                   <td>
                     <small>
                       <code>
-                        {connector.dockerRepository}:{connector.dockerImageTag}
-                      </code>
+                        {connector.dockerRepository}:
+                      {connector.dockerImageTag}
+                    </code>
                     </small>
                   </td>
                 )}
@@ -228,31 +216,25 @@ export default function ConnectorRegistry({ type }) {
           c.documentationUrl?.includes("/integrations/enterprise-connectors/"),
       );
 
-      const enterpriseFromPlugin =
-        pluginData.enterpriseConnectors.length > 0
-          ? pluginData.enterpriseConnectors
-              .filter((name) => name.includes(type))
-              .map((name) => {
-                const _name = name.replace(`${type}-`, "");
+      const enterpriseFromPlugin = pluginData.enterpriseConnectors.length > 0
+        ? pluginData.enterpriseConnectors
+            .filter((name) => name.includes(type))
+            .map((name) => {
+              const _name = name.replace(`${type}-`, "");
 
-                const info = registry.find(
-                  (c) =>
-                    c.name?.includes(_name) ||
-                    c.documentationUrl?.includes(_name),
-                );
-                return info;
-              })
-              .filter(Boolean)
-          : [];
+              const info = registry.find(
+                (c) =>
+                  c.name?.includes(_name) ||
+                  c.documentationUrl?.includes(_name),
+              );
+              return info;
+            })
+            .filter(Boolean)
+        : [];
 
-      const allEnterpriseConnectors = [
-        ...enterpriseFromRegistry,
-        ...enterpriseFromPlugin,
-      ];
+      const allEnterpriseConnectors = [...enterpriseFromRegistry, ...enterpriseFromPlugin];
       const uniqueEnterpriseConnectors = Array.from(
-        new Map(
-          allEnterpriseConnectors.map((c) => [c.definitionId, c]),
-        ).values(),
+        new Map(allEnterpriseConnectors.map(c => [c.definitionId, c])).values()
       );
 
       setEnterpriseConnectors(uniqueEnterpriseConnectors);
@@ -261,9 +243,7 @@ export default function ConnectorRegistry({ type }) {
 
   if (registry === null) return <div>{`Loading ${type}s...`}</div>;
   if (registry.length === 0)
-    return (
-      <div>{`Failed to load ${type}s. Check your network connection and try again.`}</div>
-    );
+    return <div>{`Failed to load ${type}s. Check your network connection and try again.`}</div>;
 
   const connectors = registry
     .filter((c) => c.connector_type === type)
