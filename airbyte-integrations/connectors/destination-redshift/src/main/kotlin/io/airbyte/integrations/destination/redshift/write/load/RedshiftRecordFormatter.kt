@@ -32,9 +32,9 @@ class RedshiftSchemaRecordFormatter(
     companion object {
         /**
          * CSV sentinel used to represent SQL `NULL`. Matches Redshift's default null string and the
-         * `NULL AS '\N'` clause in the generated `COPY` command. An empty CSV field is deliberately
-         * *not* used, because Redshift cannot distinguish a genuine null from an empty string when
-         * both are encoded as empty fields.
+         * `NULL AS '\\N'` clause in the generated `COPY` command. An empty CSV field is
+         * deliberately *not* used, because Redshift cannot distinguish a genuine null from an empty
+         * string when both are encoded as empty fields.
          */
         const val NULL_MARKER = "\\N"
     }

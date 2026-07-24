@@ -557,7 +557,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
-            |NULL AS '\N';
+            |NULL AS '\\N';
         """.trimMargin()
 
     // ================================================================
