@@ -153,6 +153,66 @@
         "title" : "Airbyte Internal Table Dataset Name",
         "group" : "advanced",
         "order" : 8
+      },
+      "stream_configurations" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "stream_name" : {
+              "type" : "string",
+              "description" : "The effective destination stream name after Airbyte's stream-name mapping.",
+              "title" : "Stream name"
+            },
+            "stream_namespace" : {
+              "type" : "string",
+              "description" : "Optional destination namespace used to disambiguate streams with the same name.",
+              "title" : "Stream namespace"
+            },
+            "destination_dataset" : {
+              "type" : "string",
+              "description" : "Optional BigQuery dataset override. The connector creates the dataset when permitted.",
+              "title" : "Destination dataset"
+            },
+            "destination_table" : {
+              "type" : "string",
+              "description" : "Optional final-table name override. The table suffix is appended after this value.",
+              "title" : "Destination table"
+            },
+            "table_suffix" : {
+              "type" : "string",
+              "description" : "Optional suffix appended to the destination table name.",
+              "title" : "Table suffix"
+            },
+            "partitioning_field" : {
+              "type" : "string",
+              "description" : "Optional top-level DATE, TIMESTAMP, or DATETIME field used for time-unit partitioning.",
+              "title" : "Partitioning field"
+            },
+            "partitioning_granularity" : {
+              "type" : "string",
+              "enum" : [ "HOUR", "DAY", "MONTH", "YEAR" ],
+              "description" : "Partition granularity. HOUR is supported for TIMESTAMP and DATETIME fields; DATE fields support DAY, MONTH, and YEAR.",
+              "title" : "Partitioning granularity"
+            },
+            "clustering_fields" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              },
+              "description" : "One to four top-level fields used for clustering, in clustering sort order.",
+              "title" : "Clustering fields",
+              "minItems" : 1,
+              "maxItems" : 4
+            }
+          },
+          "required" : [ "stream_name" ]
+        },
+        "description" : "Optional overrides for the destination dataset and table name, time-unit partitioning, and clustering of individual streams. A configuration with no namespace matches that stream name in any namespace.",
+        "title" : "Per-stream table configuration",
+        "group" : "advanced",
+        "order" : 9
       }
     },
     "required" : [ "project_id", "dataset_location", "dataset_id" ],
