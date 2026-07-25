@@ -27,22 +27,13 @@ class S3DataLakeAggregateFactory(
         val stream = catalog.getStream(key)
 
         val writer =
-            if (state.positionalDeleteIndex == null) {
-                icebergTableWriterFactory.create(
-                    table = state.table,
-                    generationId = icebergUtil.constructGenerationIdSuffix(stream),
-                    importType = stream.tableSchema.importType,
-                    schema = state.schema
-                )
-            } else {
-                icebergTableWriterFactory.create(
-                    table = state.table,
-                    generationId = icebergUtil.constructGenerationIdSuffix(stream),
-                    importType = stream.tableSchema.importType,
-                    schema = state.schema,
-                    positionalDeleteIndex = state.positionalDeleteIndex,
-                )
-            }
+            icebergTableWriterFactory.create(
+                table = state.table,
+                generationId = icebergUtil.constructGenerationIdSuffix(stream),
+                importType = stream.tableSchema.importType,
+                schema = state.schema,
+                positionalDeleteIndex = state.positionalDeleteIndex,
+            )
 
         return S3DataLakeAggregate(
             stream = stream,
