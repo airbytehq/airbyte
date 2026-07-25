@@ -190,6 +190,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     }
 
     private record BucketKey(PartitionSpec spec, StructLike partition) {
+
       @Override
       public boolean equals(Object other) {
         if (!(other instanceof BucketKey that) || !spec.equals(that.spec)) {
@@ -219,6 +220,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
         }
         return result;
       }
+
     }
 
     private final class PositionDeleteWriterState {

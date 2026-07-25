@@ -117,7 +117,8 @@ class PositionalDeleteIndexBuilder(
                                 if (value is CharSequence) value.toString() else value
                             )
                         }
-                        val deleted = position in filePositionDeletes || key.recordKey() in equalityDeletes
+                        val deleted =
+                            position in filePositionDeletes || key.recordKey() in equalityDeletes
                         if (deleted) {
                             position += 1
                             continue
