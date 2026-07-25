@@ -28,7 +28,7 @@ class PositionalDeleteEndToEndTest {
         val schema =
             Schema(
                 listOf(
-                    Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
                     Types.NestedField.required(2, "name", Types.StringType.get()),
                 ),
                 setOf(1),
@@ -56,7 +56,7 @@ class PositionalDeleteEndToEndTest {
                 Append,
                 schema,
             )
-        initialWriter.write(record(schema, 1, "one"))
+        initialWriter.write(record(schema, "1", "one"))
         val initialResult = initialWriter.complete()
         table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
         val secondInitialWriter =
@@ -66,7 +66,7 @@ class PositionalDeleteEndToEndTest {
                 Append,
                 schema,
             )
-        secondInitialWriter.write(record(schema, 2, "two"))
+        secondInitialWriter.write(record(schema, "2", "two"))
         val secondInitialResult = secondInitialWriter.complete()
         table.newAppend().apply { secondInitialResult.dataFiles().forEach(::appendFile) }.commit()
         table.manageSnapshots().createBranch("staging").commit()
@@ -77,8 +77,8 @@ class PositionalDeleteEndToEndTest {
                 importType,
                 schema,
             )
-        equalityWriter.write(RecordWrapper(record(schema, 1, "one-current"), Operation.UPDATE))
-        equalityWriter.write(RecordWrapper(record(schema, 2, "two-current"), Operation.UPDATE))
+        equalityWriter.write(RecordWrapper(record(schema, "1", "one-current"), Operation.UPDATE))
+        equalityWriter.write(RecordWrapper(record(schema, "2", "two-current"), Operation.UPDATE))
         commitRowDelta(table, "staging", equalityWriter.complete())
         val initialSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
@@ -98,9 +98,9 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 index,
             )
-        firstUpdateWriter.write(RecordWrapper(record(schema, 1, "one-updated"), Operation.UPDATE))
-        firstUpdateWriter.write(RecordWrapper(record(schema, 2, "ignored"), Operation.DELETE))
-        firstUpdateWriter.write(RecordWrapper(record(schema, 3, "three"), Operation.INSERT))
+        firstUpdateWriter.write(RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE))
+        firstUpdateWriter.write(RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE))
+        firstUpdateWriter.write(RecordWrapper(record(schema, "3", "three"), Operation.INSERT))
         commitRowDelta(table, "staging", firstUpdateWriter.complete())
         val firstPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
@@ -113,9 +113,9 @@ class PositionalDeleteEndToEndTest {
                 index,
             )
         secondUpdateWriter.write(
-            RecordWrapper(record(schema, 3, "three-updated"), Operation.UPDATE)
+            RecordWrapper(record(schema, "3", "three-updated"), Operation.UPDATE)
         )
-        secondUpdateWriter.write(RecordWrapper(record(schema, 1, "ignored"), Operation.DELETE))
+        secondUpdateWriter.write(RecordWrapper(record(schema, "1", "ignored"), Operation.DELETE))
         commitRowDelta(table, "staging", secondUpdateWriter.complete())
         val secondPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
@@ -139,7 +139,7 @@ class PositionalDeleteEndToEndTest {
             IcebergGenerics.read(table).useSnapshot(stagingSnapshotId).build().use { records ->
                 records.map { it.getField("id") to it.getField("name") }.toSet()
             }
-        assertThat(rows).containsExactlyInAnyOrder(3 to "three-updated")
+        assertThat(rows).containsExactlyInAnyOrder("3" to "three-updated")
     }
 
     private fun commitRowDelta(
@@ -162,7 +162,7 @@ class PositionalDeleteEndToEndTest {
             .commit()
     }
 
-    private fun record(schema: Schema, id: Int, name: String): GenericRecord =
+    private fun record(schema: Schema, id: String, name: String): GenericRecord =
         GenericRecord.create(schema).apply {
             setField("id", id)
             setField("name", name)
