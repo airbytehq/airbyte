@@ -459,9 +459,7 @@ internal class S3DataLakeStreamLoaderTest {
                 ),
             )
         val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(listOf("id")))
-        val snapshotRef: SnapshotRef = mockk {
-            every { snapshotId() } returns 42L
-        }
+        val snapshotRef: SnapshotRef = mockk { every { snapshotId() } returns 42L }
         val scan: TableScan = mockk {
             every { useRef("airbyte_staging_test") } returns this
             every { planFiles() } returns CloseableIterable.empty()
@@ -995,9 +993,8 @@ internal class S3DataLakeStreamLoaderTest {
             every { toIcebergSchema(any()) } returns icebergSchema
         }
         val configuration = makeIcebergConfiguration()
-        every {
-            configuration.mergeOnReadDeleteEncoding
-        } returns MergeOnReadDeleteEncoding.POSITIONAL
+        every { configuration.mergeOnReadDeleteEncoding } returns
+            MergeOnReadDeleteEncoding.POSITIONAL
         return S3DataLakeStreamLoader(
             configuration,
             stream,
