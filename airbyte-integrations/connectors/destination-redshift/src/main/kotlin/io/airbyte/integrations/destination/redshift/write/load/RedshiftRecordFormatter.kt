@@ -10,21 +10,21 @@ import io.airbyte.cdk.load.data.csv.toCsvValue
 
 class RedshiftSchemaRecordFormatter(
     private val columns: List<String>,
+    private val nullSentinel: String,
 ) {
     /**
      * Converts a record into a list of CSV values in column order.
      *
-     * Genuine nulls (a [NullValue] or a column missing from the record) are emitted as null fields,
-     * which the CSV writer leaves unquoted so Redshift's `EMPTYASNULL` option loads them as SQL
-     * `NULL`. Empty strings are emitted as empty values, which the writer quotes so Redshift
-     * preserves them as empty strings instead of converting them to `NULL`.
+     * Genuine nulls (a [NullValue] or a column missing from the record) are emitted as an
+     * improbable sentinel token that the `COPY` command's `NULL AS` option maps to SQL `NULL`.
+     * Empty strings are emitted as empty fields so Redshift preserves them as empty strings.
      */
-    fun format(record: Map<String, AirbyteValue>): List<Any?> =
+    fun format(record: Map<String, AirbyteValue>): List<String> =
         columns.map { columnName ->
             when (val value = record[columnName]) {
                 null,
-                is NullValue -> null
-                else -> value.toCsvValue()
+                is NullValue -> nullSentinel
+                else -> value.toCsvValue().toString()
             }
         }
 }

@@ -716,6 +716,7 @@ internal class RedshiftSqlGeneratorTest {
                 accessKeyId = "AKIATEST",
                 secretAccessKey = "secret123",
                 region = "us-east-1",
+                nullSentinel = "__NULL_TOKEN__",
             )
 
         assertTrue(sql.contains("""COPY "ns"."tbl""""))
@@ -728,7 +729,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("TIMEFORMAT 'auto'"))
         assertTrue(sql.contains("ROUNDEC"))
         assertTrue(sql.contains("IGNOREHEADER 1"))
-        assertTrue(sql.contains("EMPTYASNULL"))
+        assertTrue(sql.contains("NULL AS '__NULL_TOKEN__'"))
+        assertFalse(sql.contains("EMPTYASNULL"))
     }
 
     @Test

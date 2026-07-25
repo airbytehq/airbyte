@@ -160,6 +160,7 @@ class RedshiftChecker(
             accessKeyId = s3Config.accessKeyId,
             secretAccessKey = s3Config.secretAccessKey,
             region = s3Config.s3BucketRegion,
+            nullSentinel = "__AIRBYTE_NULL_" + UUID.randomUUID().toString().replace("-", "") + "__",
         )
 
         val count = client.countTable(tableName)

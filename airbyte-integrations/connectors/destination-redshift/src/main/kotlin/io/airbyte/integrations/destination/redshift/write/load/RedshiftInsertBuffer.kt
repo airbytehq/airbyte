@@ -45,7 +45,9 @@ class RedshiftInsertBuffer(
     private val configuration: RedshiftConfiguration,
 ) {
 
-    private val formatter = RedshiftSchemaRecordFormatter(columns)
+    internal val nullSentinel: String =
+        "__AIRBYTE_NULL_" + UUID.randomUUID().toString().replace("-", "") + "__"
+    private val formatter = RedshiftSchemaRecordFormatter(columns, nullSentinel)
     private val s3Config = configuration.uploadingMethod!!
     private val purgeStagingData: Boolean = s3Config.purgeStagingData ?: true
 
@@ -60,7 +62,7 @@ class RedshiftInsertBuffer(
             .fieldSeparator(',')
             .quoteCharacter('"')
             .lineDelimiter(LineDelimiter.LF)
-            .quoteStrategy(QuoteStrategies.EMPTY)
+            .quoteStrategy(QuoteStrategies.REQUIRED)
 
     internal var recordCount = 0
     private var partNumber = 0
@@ -76,7 +78,7 @@ class RedshiftInsertBuffer(
             initializeBuffer()
         }
 
-        csvWriter!!.writeRecord(formatter.format(recordFields).map { it?.toString() })
+        csvWriter!!.writeRecord(formatter.format(recordFields))
         recordCount++
     }
 
@@ -123,6 +125,7 @@ class RedshiftInsertBuffer(
                 accessKeyId = s3Config.accessKeyId,
                 secretAccessKey = s3Config.secretAccessKey,
                 region = s3Config.s3BucketRegion,
+                nullSentinel = nullSentinel,
             )
 
             logger.info { "Loaded data into ${tableName.namespace}.${tableName.name}" }
