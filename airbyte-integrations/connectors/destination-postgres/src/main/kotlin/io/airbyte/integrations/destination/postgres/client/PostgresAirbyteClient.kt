@@ -472,6 +472,24 @@ class PostgresAirbyteClient(
                 log.error { message }
                 throw ConfigErrorException(message, e)
             }
+            // PostgreSQL error code 23503 = FOREIGN_KEY_VIOLATION
+            if (e.sqlState == "23503") {
+                val message = "Foreign key constraint violated on destination table."
+                log.error { message }
+                throw ConfigErrorException(message, e)
+            }
+            // PostgreSQL error code 42501 = INSUFFICIENT_PRIVILEGE
+            if (e.sqlState == "42501") {
+                val message = "Insufficient database permissions to execute the operation."
+                log.error { message }
+                throw ConfigErrorException(message, e)
+            }
+            // PostgreSQL error code 42804 = DATATYPE_MISMATCH
+            if (e.sqlState == "42804") {
+                val message = "Column data type mismatch in destination table."
+                log.error { message }
+                throw ConfigErrorException(message, e)
+            }
             throw e
         }
     }

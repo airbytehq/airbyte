@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.client
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
@@ -29,6 +30,7 @@ import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -931,6 +933,102 @@ internal class PostgresAirbyteClientTest {
                     cursorColumnName = "new_cursor"
                 )
             }
+        }
+    }
+
+    @Test
+    fun testExecuteThrowsConfigErrorOnForeignKeyViolation() {
+        val namespace = "test_namespace"
+        val psqlException =
+            mockk<org.postgresql.util.PSQLException> {
+                every { sqlState } returns "23503"
+                every { message } returns "violates foreign key constraint"
+            }
+        val statement =
+            mockk<Statement> {
+                every { execute(any()) } throws psqlException
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.createNamespace(namespace) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val thrown =
+                assertThrows(ConfigErrorException::class.java) {
+                    runBlocking { client.createNamespace(namespace) }
+                }
+            assertEquals("Foreign key constraint violated on destination table.", thrown.message)
+        }
+    }
+
+    @Test
+    fun testExecuteThrowsConfigErrorOnInsufficientPrivilege() {
+        val namespace = "test_namespace"
+        val psqlException =
+            mockk<org.postgresql.util.PSQLException> {
+                every { sqlState } returns "42501"
+                every { message } returns "permission denied for table"
+            }
+        val statement =
+            mockk<Statement> {
+                every { execute(any()) } throws psqlException
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.createNamespace(namespace) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val thrown =
+                assertThrows(ConfigErrorException::class.java) {
+                    runBlocking { client.createNamespace(namespace) }
+                }
+            assertEquals(
+                "Insufficient database permissions to execute the operation.",
+                thrown.message
+            )
+        }
+    }
+
+    @Test
+    fun testExecuteThrowsConfigErrorOnDatatypeMismatch() {
+        val namespace = "test_namespace"
+        val psqlException =
+            mockk<org.postgresql.util.PSQLException> {
+                every { sqlState } returns "42804"
+                every { message } returns "column type mismatch"
+            }
+        val statement =
+            mockk<Statement> {
+                every { execute(any()) } throws psqlException
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.createNamespace(namespace) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val thrown =
+                assertThrows(ConfigErrorException::class.java) {
+                    runBlocking { client.createNamespace(namespace) }
+                }
+            assertEquals("Column data type mismatch in destination table.", thrown.message)
         }
     }
 }
