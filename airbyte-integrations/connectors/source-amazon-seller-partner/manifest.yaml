@@ -8746,7 +8746,11 @@ schemas:
                   type:
                   - 'null'
                   - number
-                defectsCount:
+                orderCount:
+                  type:
+                  - 'null'
+                  - number
+                lateShipmentCount:
                   type:
                   - 'null'
                   - number
@@ -8786,10 +8790,52 @@ schemas:
                   type:
                   - 'null'
                   - number
-                defectsCount:
+                orderCount:
                   type:
                   - 'null'
                   - number
+                invoiceDefect:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                  properties:
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    count:
+                      type:
+                      - 'null'
+                      - number
+                missingInvoice:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                  properties:
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    count:
+                      type:
+                      - 'null'
+                      - number
+                lateInvoice:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                  properties:
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    count:
+                      type:
+                      - 'null'
+                      - number
             orderDefectRate:
               type:
               - 'null'
@@ -8832,10 +8878,70 @@ schemas:
                       type:
                       - 'null'
                       - number
-                    defectsCount:
+                    fulfillmentType:
+                      type:
+                      - 'null'
+                      - string
+                    orderCount:
                       type:
                       - 'null'
                       - number
+                    orderWithDefects:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
+                    claims:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
+                    chargebacks:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
+                    negativeFeedback:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
                 mfn:
                   type:
                   - 'null'
@@ -8872,10 +8978,70 @@ schemas:
                       type:
                       - 'null'
                       - number
-                    defectsCount:
+                    fulfillmentType:
+                      type:
+                      - 'null'
+                      - string
+                    orderCount:
                       type:
                       - 'null'
                       - number
+                    orderWithDefects:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
+                    claims:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
+                    chargebacks:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
+                    negativeFeedback:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        status:
+                          type:
+                          - 'null'
+                          - string
+                        count:
+                          type:
+                          - 'null'
+                          - number
             onTimeDeliveryRate:
               type:
               - 'null'
@@ -8912,7 +9078,11 @@ schemas:
                   type:
                   - 'null'
                   - number
-                defectsCount:
+                shipmentCountWithValidTracking:
+                  type:
+                  - 'null'
+                  - number
+                onTimeDeliveryCount:
                   type:
                   - 'null'
                   - number
@@ -8952,7 +9122,11 @@ schemas:
                   type:
                   - 'null'
                   - number
-                defectsCount:
+                unitOnTimeDeliveryCount:
+                  type:
+                  - 'null'
+                  - number
+                totalUnitCount:
                   type:
                   - 'null'
                   - number
@@ -8992,7 +9166,11 @@ schemas:
                   type:
                   - 'null'
                   - number
-                defectsCount:
+                shipmentCount:
+                  type:
+                  - 'null'
+                  - number
+                validTrackingCount:
                   type:
                   - 'null'
                   - number
@@ -9032,7 +9210,11 @@ schemas:
                   type:
                   - 'null'
                   - number
-                defectsCount:
+                orderCount:
+                  type:
+                  - 'null'
+                  - number
+                cancellationCount:
                   type:
                   - 'null'
                   - number
@@ -9041,11 +9223,17 @@ schemas:
               - 'null'
               - object
               additionalProperties: true
-              patternProperties:
-                ".*":
-                  type: object
+              properties:
+                accountHealthRating:
+                  type:
+                  - 'null'
+                  - object
                   additionalProperties: true
                   properties:
+                    ahrStatus:
+                      type:
+                      - 'null'
+                      - string
                     reportingDateRange:
                       type:
                       - 'null'
@@ -9060,23 +9248,6 @@ schemas:
                           type:
                           - 'null'
                           - string
-                    status:
-                      type:
-                      - 'null'
-                      - string
-                    targetValue:
-                      type:
-                      - 'null'
-                      - number
-                    targetCondition:
-                      type:
-                      - 'null'
-                      - string
-                    defectsCount:
-                      type:
-                      - 'null'
-                      - number
-              properties:
                 listingPolicyViolations:
                   type:
                   - 'null'
@@ -9118,46 +9289,325 @@ schemas:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 productConditionCustomerComplaints:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 productSafetyCustomerComplaints:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 receivedIntellectualPropertyComplaints:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 restrictedProductPolicyViolations:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 suspectedIntellectualPropertyViolations:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 foodAndProductSafetyIssues:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 customerProductReviewsPolicyViolations:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
                 otherPolicyViolations:
                   type:
                   - 'null'
                   - object
                   additionalProperties: true
+                  properties:
+                    reportingDateRange:
+                      type:
+                      - 'null'
+                      - object
+                      additionalProperties: true
+                      properties:
+                        reportingDateFrom:
+                          type:
+                          - 'null'
+                          - string
+                        reportingDateTo:
+                          type:
+                          - 'null'
+                          - string
+                    status:
+                      type:
+                      - 'null'
+                      - string
+                    targetValue:
+                      type:
+                      - 'null'
+                      - number
+                    targetCondition:
+                      type:
+                      - 'null'
+                      - string
+                    defectsCount:
+                      type:
+                      - 'null'
+                      - number
   get_vendor_forecasting_fresh_report:
     title: Vendor Forecasting Fresh Report
     description: A report with forward looking mean, P70, P80, and P90 weekly customer

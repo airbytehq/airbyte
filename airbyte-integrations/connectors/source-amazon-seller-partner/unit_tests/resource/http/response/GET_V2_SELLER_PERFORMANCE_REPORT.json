@@ -24,19 +24,55 @@
         "targetValue": 0.04,
         "targetCondition": "LESS_THAN",
         "rate": 0.01,
-        "defectsCount": 1
+        "orderCount": 100,
+        "lateShipmentCount": 1
       },
       "orderDefectRate": {
         "afn": {
           "status": "NORMAL",
-          "rate": 0.0
+          "rate": 0.0,
+          "orderCount": 90,
+          "fulfillmentType": "AFN",
+          "claims": {
+            "status": "NORMAL",
+            "count": 0
+          },
+          "chargebacks": {
+            "status": "NORMAL",
+            "count": 0
+          },
+          "negativeFeedback": {
+            "status": "NORMAL",
+            "count": 0
+          }
         },
         "mfn": {
           "status": "NORMAL",
-          "rate": 0.01
+          "rate": 0.01,
+          "orderCount": 10,
+          "fulfillmentType": "MFN",
+          "claims": {
+            "status": "NORMAL",
+            "count": 0
+          },
+          "chargebacks": {
+            "status": "NORMAL",
+            "count": 0
+          },
+          "negativeFeedback": {
+            "status": "NORMAL",
+            "count": 0
+          }
         }
       },
       "warningStates": {
+        "accountHealthRating": {
+          "ahrStatus": "GREEN",
+          "reportingDateRange": {
+            "reportingDateFrom": "2026-07-01T00:00:00Z",
+            "reportingDateTo": "2026-07-24T23:59:59Z"
+          }
+        },
         "listingPolicyViolations": {
           "status": "NORMAL",
           "targetValue": 0,
