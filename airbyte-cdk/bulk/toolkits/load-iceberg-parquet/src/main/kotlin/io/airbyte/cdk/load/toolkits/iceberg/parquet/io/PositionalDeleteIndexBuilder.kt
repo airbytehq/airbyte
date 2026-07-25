@@ -73,7 +73,7 @@ class PositionalDeleteIndexBuilder(
             val positionDeletes =
                 planned.deletes
                     .filter { it.content() == FileContent.POSITION_DELETES }
-                    .flatMap { readPositionDeletes(table, it) }
+                    .flatMap { readPositionDeletes(table, it, path) }
                     .toSet()
             var position = 0L
             val inputFile = table.io().newInputFile(path)
@@ -93,7 +93,11 @@ class PositionalDeleteIndexBuilder(
                         }
                         val key = GenericRecord.create(deleteSchema)
                         deleteSchema.columns().forEach { field ->
-                            key.setField(field.name(), record.getField(field.name()))
+                            val value = record.getField(field.name())
+                            key.setField(
+                                field.name(),
+                                if (value is CharSequence) value.toString() else value
+                            )
                         }
                         val deleted =
                             position in positionDeletes ||
@@ -149,6 +153,7 @@ class PositionalDeleteIndexBuilder(
     private fun readPositionDeletes(
         table: Table,
         deleteFile: org.apache.iceberg.DeleteFile,
+        dataFilePath: String,
     ): List<Long> {
         val deleteSchema =
             Schema(
@@ -166,7 +171,7 @@ class PositionalDeleteIndexBuilder(
                 records
                     .filter {
                         it.getField(MetadataColumns.DELETE_FILE_PATH.name()).toString() ==
-                            deleteFile.referencedDataFile()
+                            dataFilePath
                     }
                     .map {
                         (it.getField(MetadataColumns.DELETE_FILE_POS.name()) as Number).toLong()
