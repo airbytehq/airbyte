@@ -59,15 +59,16 @@ class PositionalDeleteEndToEndTest {
             .newAppend()
             .apply { initialResult.dataFiles().forEach(::appendFile) }
             .commit()
+        table.manageSnapshots().createBranch("staging").commit()
 
         val index =
             PositionalDeleteIndexBuilder().build(
                 table = table,
-                ref = "main",
+                ref = "staging",
                 schema = schema,
                 identifierFieldIds = schema.identifierFieldIds(),
             )
-        val updateWriter =
+        val firstUpdateWriter =
             writerFactory.create(
                 table,
                 "ab-generation-id-1-e",
@@ -75,29 +76,58 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 index,
             )
-        updateWriter.write(RecordWrapper(record(schema, 1, "one-updated"), Operation.UPDATE))
-        updateWriter.write(RecordWrapper(record(schema, 2, "ignored"), Operation.DELETE))
-        val updateResult = updateWriter.complete()
-        table
-            .newRowDelta()
-            .apply {
-                updateResult.dataFiles().forEach(::addRows)
-                updateResult.deleteFiles().forEach(::addDeletes)
-            }
-            .commit()
+        firstUpdateWriter.write(RecordWrapper(record(schema, 1, "one-updated"), Operation.UPDATE))
+        firstUpdateWriter.write(RecordWrapper(record(schema, 2, "ignored"), Operation.DELETE))
+        firstUpdateWriter.write(RecordWrapper(record(schema, 3, "three"), Operation.INSERT))
+        commitRowDelta(table, "staging", firstUpdateWriter.complete())
 
+        val secondUpdateWriter =
+            writerFactory.create(
+                table,
+                "ab-generation-id-2-e",
+                importType,
+                schema,
+                index,
+            )
+        secondUpdateWriter.write(RecordWrapper(record(schema, 3, "three-updated"), Operation.UPDATE))
+        secondUpdateWriter.write(RecordWrapper(record(schema, 1, "ignored"), Operation.DELETE))
+        commitRowDelta(table, "staging", secondUpdateWriter.complete())
+
+        val stagingSnapshotId = table.refs()["staging"]!!.snapshotId()!!
         val deleteFiles =
-            table.currentSnapshot()!!.addedDeleteFiles(table.io()).toList()
+            table.snapshot(stagingSnapshotId)!!.addedDeleteFiles(table.io()).toList() +
+                table.snapshot(table.history().first().snapshotId())!!
+                    .addedDeleteFiles(table.io())
         assertThat(deleteFiles).isNotEmpty
         assertThat(deleteFiles.map { it.content() }.toSet())
             .containsOnly(FileContent.POSITION_DELETES)
         assertThat(deleteFiles).allMatch { it.content() != FileContent.EQUALITY_DELETES }
 
         val rows =
-            IcebergGenerics.read(table).build().use { records ->
+            IcebergGenerics.read(table).useSnapshot(stagingSnapshotId).build().use { records ->
                 records.map { it.getField("id") to it.getField("name") }.toSet()
             }
-        assertThat(rows).containsExactlyInAnyOrder(1 to "one-updated")
+        assertThat(rows).containsExactlyInAnyOrder(3 to "three-updated")
+    }
+
+    private fun commitRowDelta(
+        table: org.apache.iceberg.Table,
+        branch: String,
+        result: org.apache.iceberg.io.WriteResult,
+    ) {
+        val validationSnapshotId = table.refs()[branch]!!.snapshotId()!!
+        table
+            .newRowDelta()
+            .toBranch(branch)
+            .validateFromSnapshot(validationSnapshotId)
+            .validateDeletedFiles()
+            .validateNoConflictingDataFiles()
+            .validateNoConflictingDeleteFiles()
+            .apply {
+                result.dataFiles().forEach(::addRows)
+                result.deleteFiles().forEach(::addDeletes)
+            }
+            .commit()
     }
 
     private fun record(schema: Schema, id: Int, name: String): GenericRecord =

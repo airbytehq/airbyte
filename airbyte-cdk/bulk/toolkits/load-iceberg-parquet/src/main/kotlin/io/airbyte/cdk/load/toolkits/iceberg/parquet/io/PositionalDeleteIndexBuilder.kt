@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.iceberg.MetadataColumns
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord

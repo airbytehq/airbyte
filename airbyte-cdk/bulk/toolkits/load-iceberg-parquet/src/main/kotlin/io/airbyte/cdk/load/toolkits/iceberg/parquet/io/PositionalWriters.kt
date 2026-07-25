@@ -10,7 +10,6 @@ import org.apache.iceberg.FileFormat
 import org.apache.iceberg.PartitionKey
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
-import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.Record
@@ -80,7 +79,8 @@ class PartitionedPositionDeltaWriter(
 
     override fun route(row: Record): RowDataPositionDeltaWriter {
         partitionKey.partition(wrapper().wrap(row))
-        return writers.getOrPut(partitionKey.copy()) { RowDataPositionDeltaWriter(partitionKey.copy()) }
+        val key = partitionKey.copy()
+        return writers.getOrPut(key) { RowDataPositionDeltaWriter(key) }
     }
 
     override fun close() {
