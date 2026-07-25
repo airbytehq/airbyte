@@ -110,9 +110,9 @@ If you ran through the [Postgres to Postgres replication tutorial](https://airby
 
 On the connection page, trigger a manual sync with the "Sync now" button. Because we set the `suspend` option to `y` in our `JAVA_TOOL_OPTIONS` the
 container will pause all execution until the debugger is connected. This can be very useful for methods which run very quickly, such as the Check method.
-However, this could be very detrimental if it were pushed into a production environment. For now, it gives us time to set a new Remote JVM Debug Configuraiton.
+However, this could be very detrimental if it were pushed into a production environment. For now, it gives us time to set a new Remote JVM Debug Configuration.
 
-This container will have a different IP than the `server` Remote JVM Debug Run configuration we set up earlier. So lets set up a new one with the IP of
+This container will have a different IP than the `server` Remote JVM Debug Run configuration we set up earlier. So let's set up a new one with the IP of
 the `destination-postgres` container:
 
 ```bash
