@@ -39,6 +39,15 @@ import org.apache.sshd.common.util.net.SshdSocketAddress
 internal const val DATA_SOURCE_CONNECTION_TIMEOUT_MS = 30000L
 internal const val DATA_SOURCE_IDLE_TIMEOUT_MS = 600000L
 
+/**
+ * SQL run on every pooled connection to disable server-side statement timeouts for the
+ * destination's session. The destination issues long-running maintenance statements (deduplicating
+ * upserts, CDC deletes, index creation, table copies) that can exceed a server-enforced
+ * `statement_timeout` (e.g. the low defaults imposed by managed poolers such as Supabase), which
+ * surfaces as `canceling statement due to statement timeout`.
+ */
+internal const val DISABLE_STATEMENT_TIMEOUT_SQL = "SET SESSION statement_timeout = 0"
+
 @Factory
 class PostgresBeanFactory {
 
@@ -147,6 +156,16 @@ class PostgresBeanFactory {
                     JdbcUtils.parseJdbcParameters(params).forEach { (key, value) ->
                         addDataSourceProperty(key, value)
                     }
+                }
+
+                // Disable server-side statement timeouts for the destination's session so that
+                // long-running maintenance statements (dedup upserts, CDC deletes, index creation)
+                // are not canceled by low server/pooler defaults. Respect an explicit
+                // statement_timeout provided by the user via jdbcUrlParams.
+                val userSetStatementTimeout =
+                    postgresConfiguration.jdbcUrlParams?.contains("statement_timeout") == true
+                if (!userSetStatementTimeout) {
+                    connectionInitSql = DISABLE_STATEMENT_TIMEOUT_SQL
                 }
 
                 // Apply SSL connection parameters as data source properties
