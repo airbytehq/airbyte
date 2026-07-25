@@ -4,16 +4,28 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.catalog
 
+import com.google.auth.oauth2.AccessToken
+import com.google.auth.oauth2.OAuth2CredentialsWithRefresh
+import com.google.cloud.NoCredentials
+import com.google.cloud.storage.StorageOptions
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.BigLakeCatalogConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.integrations.destination.gcs_data_lake.spec.PolarisCatalogConfiguration
 import jakarta.inject.Singleton
+import java.util.Date
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import org.apache.iceberg.CatalogProperties
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.gcp.GCPProperties
+import org.apache.iceberg.gcp.gcs.GCSFileIO
+import org.apache.iceberg.io.DelegateFileIO
+import org.apache.iceberg.io.FileInfo
+import org.apache.iceberg.io.InputFile
+import org.apache.iceberg.io.OutputFile
 
 /**
  * Utility for configuring Apache Iceberg with various catalog types on GCS.
@@ -26,6 +38,11 @@ import org.apache.iceberg.gcp.GCPProperties
 class GcsDataLakeCatalogUtil(
     private val icebergUtil: IcebergUtil,
 ) {
+    companion object {
+        const val GCS_DATA_LAKE_FILE_IO_IMPL =
+            "io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeFileIO"
+    }
+
     fun <K, V : Any> mapOfNotNull(vararg pairs: Pair<K, V?>): Map<K, V> =
         pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
 
@@ -40,14 +57,14 @@ class GcsDataLakeCatalogUtil(
      * @return The Iceberg [Catalog] configuration properties.
      */
     fun toCatalogProperties(config: GcsDataLakeConfiguration): Map<String, String> {
-        // Get OAuth2 access token from Google credentials
         val credentials = config.googleCredentials
         credentials.refreshIfExpired()
         val accessToken = credentials.accessToken.tokenValue
+        config.configureFileIO()
 
         val catalogConfig = config.gcsCatalogConfiguration
 
-        val gcsProperties = buildGcsProperties(config, catalogConfig, accessToken)
+        val gcsProperties = buildGcsProperties(config, catalogConfig)
 
         return when (val catalogConfiguration = catalogConfig.catalogConfiguration) {
             is BigLakeCatalogConfiguration ->
@@ -61,17 +78,13 @@ class GcsDataLakeCatalogUtil(
         config: GcsDataLakeConfiguration,
         catalogConfig:
             io.airbyte.integrations.destination.gcs_data_lake.spec.GcsCatalogConfiguration,
-        accessToken: String
     ): Map<String, String> {
         return buildMap {
-            put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.gcp.gcs.GCSFileIO")
+            put(CatalogProperties.FILE_IO_IMPL, GCS_DATA_LAKE_FILE_IO_IMPL)
             put(CatalogProperties.WAREHOUSE_LOCATION, catalogConfig.warehouseLocation)
 
-            // GCP configuration
             put(GCPProperties.GCS_PROJECT_ID, config.projectId)
-            put(GCPProperties.GCS_OAUTH2_TOKEN, accessToken)
 
-            // Add optional GCS endpoint if provided (for emulator testing)
             config.gcsEndpoint?.let { endpoint ->
                 put(GCPProperties.GCS_SERVICE_HOST, endpoint)
                 put(GCPProperties.GCS_NO_AUTH, "true")
@@ -115,4 +128,103 @@ class GcsDataLakeCatalogUtil(
         return polarisProperties +
             gcsProperties.filterKeys { it != CatalogProperties.WAREHOUSE_LOCATION }
     }
+}
+
+class GcsDataLakeFileIO : DelegateFileIO {
+    private lateinit var delegate: GCSFileIO
+    private lateinit var properties: Map<String, String>
+
+    override fun initialize(properties: Map<String, String>) {
+        this.properties = properties.toMap()
+        delegate =
+            GCSFileIO(
+                {
+                    val config = GcsDataLakeFileIOConfig.get()
+                    StorageOptions.newBuilder()
+                        .apply {
+                            setProjectId(config.projectId)
+                            config.serviceHost?.let { setHost(it) }
+                            if (config.serviceHost.isNullOrEmpty()) {
+                                setCredentials(
+                                    OAuth2CredentialsWithRefresh.newBuilder()
+                                        .setAccessToken(config.accessToken())
+                                        .setRefreshHandler { config.accessToken() }
+                                        .build()
+                                )
+                            } else {
+                                setCredentials(NoCredentials.getInstance())
+                            }
+                        }
+                        .build()
+                        .service
+                },
+                GCPProperties(properties),
+            )
+    }
+
+    override fun newInputFile(path: String): InputFile = delegate.newInputFile(path)
+
+    override fun newInputFile(path: String, length: Long): InputFile =
+        delegate.newInputFile(path, length)
+
+    override fun newOutputFile(path: String): OutputFile = delegate.newOutputFile(path)
+
+    override fun deleteFile(path: String) {
+        delegate.deleteFile(path)
+    }
+
+    override fun listPrefix(prefix: String): Iterable<FileInfo> = delegate.listPrefix(prefix)
+
+    override fun deletePrefix(prefix: String) {
+        delegate.deletePrefix(prefix)
+    }
+
+    override fun deleteFiles(paths: Iterable<String>) {
+        delegate.deleteFiles(paths)
+    }
+
+    override fun properties(): Map<String, String> = properties
+
+    fun client(): com.google.cloud.storage.Storage = delegate.client()
+
+    override fun close() {
+        delegate.close()
+    }
+}
+
+internal data class GcsDataLakeFileIOConfig(
+    val projectId: String,
+    val serviceHost: String?,
+    val accessToken: () -> AccessToken,
+) {
+    companion object {
+        private val currentConfig = AtomicReference<GcsDataLakeFileIOConfig>()
+
+        fun set(config: GcsDataLakeFileIOConfig) {
+            currentConfig.set(config)
+        }
+
+        fun get(): GcsDataLakeFileIOConfig =
+            checkNotNull(currentConfig.get()) {
+                "GCS Data Lake FileIO credentials are not configured."
+            }
+    }
+}
+
+private fun GcsDataLakeConfiguration.configureFileIO() {
+    GcsDataLakeFileIOConfig.set(
+        GcsDataLakeFileIOConfig(
+            projectId = projectId,
+            serviceHost = gcsEndpoint,
+            accessToken = {
+                googleCredentials.refresh()
+                val token = googleCredentials.accessToken
+                AccessToken(
+                    token.tokenValue,
+                    token.expirationTime
+                        ?: Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1))
+                )
+            }
+        )
+    )
 }
