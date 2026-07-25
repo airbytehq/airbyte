@@ -97,17 +97,23 @@ class S3DataLakeStreamLoader(
             } else {
                 null
             }
+        val identifierFieldIds =
+            if (positionalDeletesEnabled) {
+                targetSchema.identifierFieldIds()
+            } else {
+                emptySet()
+            }
         val positionalDeleteIndex =
             if (positionalDeletesEnabled) {
                 val builder = PositionalDeleteIndexBuilder()
                 if (baseSnapshotId == null) {
-                    builder.empty(targetSchema, targetSchema.identifierFieldIds())
+                    builder.empty(targetSchema, identifierFieldIds)
                 } else {
                     builder.build(
                         table = table,
                         ref = stagingBranchName,
                         schema = targetSchema,
-                        identifierFieldIds = targetSchema.identifierFieldIds(),
+                        identifierFieldIds = identifierFieldIds,
                     )
                 }
             } else {
