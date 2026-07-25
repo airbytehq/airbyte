@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.FileContent
+import org.apache.iceberg.MetadataColumns
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord
@@ -51,6 +53,7 @@ class PositionalDeleteIndexBuilder(
                                 table.specs()[it.file().specId()]!!,
                                 it.partition(),
                             ),
+                            it.deletes(),
                         )
                     },
                 )
@@ -62,6 +65,16 @@ class PositionalDeleteIndexBuilder(
             "Positional delete index currently supports only Parquet data files"
         }
         for ((path, planned) in files) {
+            val equalityDeletes =
+                planned.deletes
+                    .filter { it.content() == FileContent.EQUALITY_DELETES }
+                    .flatMap { readEqualityDeletes(table, schema, it) }
+                    .toSet()
+            val positionDeletes =
+                planned.deletes
+                    .filter { it.content() == FileContent.POSITION_DELETES }
+                    .flatMap { readPositionDeletes(table, it) }
+                    .toSet()
             var position = 0L
             val inputFile = table.io().newInputFile(path)
             Parquet.read(inputFile)
@@ -81,6 +94,13 @@ class PositionalDeleteIndexBuilder(
                         val key = GenericRecord.create(deleteSchema)
                         deleteSchema.columns().forEach { field ->
                             key.setField(field.name(), record.getField(field.name()))
+                        }
+                        val deleted =
+                            position in positionDeletes ||
+                                equalityDeletes.any { deleteKey -> keysEqual(key, deleteKey) }
+                        if (deleted) {
+                            position += 1
+                            continue
                         }
                         val previous =
                             index.replace(
@@ -110,9 +130,68 @@ class PositionalDeleteIndexBuilder(
         return index
     }
 
+    private fun readEqualityDeletes(
+        table: Table,
+        schema: Schema,
+        deleteFile: org.apache.iceberg.DeleteFile,
+    ): List<GenericRecord> {
+        val deleteSchema = TypeUtil.select(schema, deleteFile.equalityFieldIds().toSet())
+        val inputFile = table.io().newInputFile(deleteFile.path().toString())
+        return Parquet.read(inputFile)
+            .project(deleteSchema)
+            .createReaderFunc { messageType ->
+                GenericParquetReaders.buildReader(deleteSchema, messageType)
+            }
+            .build<Record>()
+            .use { records -> records.map { record -> copyRecord(deleteSchema, record) }.toList() }
+    }
+
+    private fun readPositionDeletes(
+        table: Table,
+        deleteFile: org.apache.iceberg.DeleteFile,
+    ): List<Long> {
+        val deleteSchema =
+            Schema(
+                MetadataColumns.DELETE_FILE_PATH,
+                MetadataColumns.DELETE_FILE_POS,
+            )
+        val inputFile = table.io().newInputFile(deleteFile.path().toString())
+        return Parquet.read(inputFile)
+            .project(deleteSchema)
+            .createReaderFunc { messageType ->
+                GenericParquetReaders.buildReader(deleteSchema, messageType)
+            }
+            .build<Record>()
+            .use { records ->
+                records
+                    .filter {
+                        it.getField(MetadataColumns.DELETE_FILE_PATH.name()).toString() ==
+                            deleteFile.referencedDataFile()
+                    }
+                    .map {
+                        (it.getField(MetadataColumns.DELETE_FILE_POS.name()) as Number).toLong()
+                    }
+                    .toList()
+            }
+    }
+
+    private fun copyRecord(schema: Schema, record: Record): GenericRecord {
+        val copy = GenericRecord.create(schema)
+        schema.columns().forEach { field ->
+            val value = record.getField(field.name())
+            copy.setField(field.name(), if (value is CharSequence) value.toString() else value)
+        }
+        return copy
+    }
+
+    private fun keysEqual(left: GenericRecord, right: GenericRecord): Boolean {
+        return left == right
+    }
+
     private data class PlannedFile(
         val file: org.apache.iceberg.DataFile,
         val metadata: PositionalDeleteIndex.RowLocationMetadata,
+        val deletes: List<org.apache.iceberg.DeleteFile>,
     )
 
     companion object {
