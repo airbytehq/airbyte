@@ -64,16 +64,34 @@ class PositionalDeleteIndexBuilder(
         require(files.values.all { it.file.format() == org.apache.iceberg.FileFormat.PARQUET }) {
             "Positional delete index currently supports only Parquet data files"
         }
+        val parsedEqualityDeletes =
+            files.values
+                .flatMap { it.deletes }
+                .filter { it.content() == FileContent.EQUALITY_DELETES }
+                .distinctBy { it.location().toString() }
+                .associate { it.location().toString() to readEqualityDeletes(table, schema, it) }
+        val parsedPositionDeletes =
+            files.values
+                .flatMap { it.deletes }
+                .filter { it.content() == FileContent.POSITION_DELETES }
+                .distinctBy { it.location().toString() }
+                .associate { it.location().toString() to readPositionDeletes(table, it) }
         for ((path, planned) in files) {
             val equalityDeletes =
                 planned.deletes
                     .filter { it.content() == FileContent.EQUALITY_DELETES }
-                    .flatMap { readEqualityDeletes(table, schema, it) }
+                    .flatMap { parsedEqualityDeletes[it.location().toString()].orEmpty() }
+                    .map { it.recordKey() }
                     .toSet()
-            val positionDeletes =
+            val filePositionDeletes =
                 planned.deletes
                     .filter { it.content() == FileContent.POSITION_DELETES }
-                    .flatMap { readPositionDeletes(table, it, path) }
+                    .flatMap {
+                        parsedPositionDeletes[it.location().toString()]
+                            .orEmpty()
+                            .filter { (dataPath, _) -> dataPath == path }
+                            .map { (_, position) -> position }
+                    }
                     .toSet()
             var position = 0L
             val inputFile = table.io().newInputFile(path)
@@ -99,7 +117,7 @@ class PositionalDeleteIndexBuilder(
                                 if (value is CharSequence) value.toString() else value
                             )
                         }
-                        val deleted = position in positionDeletes || key in equalityDeletes
+                        val deleted = position in filePositionDeletes || key.recordKey() in equalityDeletes
                         if (deleted) {
                             position += 1
                             continue
@@ -137,6 +155,9 @@ class PositionalDeleteIndexBuilder(
         schema: Schema,
         deleteFile: org.apache.iceberg.DeleteFile,
     ): List<GenericRecord> {
+        require(deleteFile.format() == org.apache.iceberg.FileFormat.PARQUET) {
+            "Positional delete index currently supports only Parquet delete files"
+        }
         val deleteSchema = TypeUtil.select(schema, deleteFile.equalityFieldIds().toSet())
         val inputFile = table.io().newInputFile(deleteFile.location().toString())
         return Parquet.read(inputFile)
@@ -151,8 +172,10 @@ class PositionalDeleteIndexBuilder(
     private fun readPositionDeletes(
         table: Table,
         deleteFile: org.apache.iceberg.DeleteFile,
-        dataFilePath: String,
-    ): List<Long> {
+    ): List<Pair<String, Long>> {
+        require(deleteFile.format() == org.apache.iceberg.FileFormat.PARQUET) {
+            "Positional delete index currently supports only Parquet delete files"
+        }
         val deleteSchema =
             Schema(
                 MetadataColumns.DELETE_FILE_PATH,
@@ -167,12 +190,9 @@ class PositionalDeleteIndexBuilder(
             .build<Record>()
             .use { records ->
                 records
-                    .filter {
-                        it.getField(MetadataColumns.DELETE_FILE_PATH.name()).toString() ==
-                            dataFilePath
-                    }
                     .map {
-                        (it.getField(MetadataColumns.DELETE_FILE_POS.name()) as Number).toLong()
+                        it.getField(MetadataColumns.DELETE_FILE_PATH.name()).toString() to
+                            (it.getField(MetadataColumns.DELETE_FILE_POS.name()) as Number).toLong()
                     }
                     .toList()
             }
@@ -186,6 +206,9 @@ class PositionalDeleteIndexBuilder(
         }
         return copy
     }
+
+    private fun GenericRecord.recordKey(): List<Any?> =
+        (0 until size()).map { get(it, Object::class.java) }
 
     private data class PlannedFile(
         val file: org.apache.iceberg.DataFile,

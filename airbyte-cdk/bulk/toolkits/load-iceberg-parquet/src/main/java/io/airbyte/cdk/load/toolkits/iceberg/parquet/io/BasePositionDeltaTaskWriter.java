@@ -8,7 +8,10 @@ import io.airbyte.cdk.ConfigErrorException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -136,7 +139,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
   public class RowDataPositionDeltaWriter implements AutoCloseable {
 
     private final StructLike partition;
-    private final List<PositionDeleteWriterState> positionDeleteWriters = new ArrayList<>();
+    private final Map<BucketKey, PositionDeleteWriterState> positionDeleteWriters = new HashMap<>();
     private final RollingFileWriter dataWriter;
     private boolean closed;
 
@@ -165,20 +168,10 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     }
 
     private void writePositionDelete(PositionalDeleteIndex.RowLocation location) {
+      BucketKey key = new BucketKey(location.spec(), location.partition());
       PositionDeleteWriterState state =
-          positionDeleteWriters.stream()
-              .filter(
-                  candidate -> candidate.spec.equals(location.spec())
-                      && samePartition(candidate.partition, location.partition()))
-              .findFirst()
-              .orElseGet(
-                  () -> {
-                    PositionDeleteWriterState created =
-                        new PositionDeleteWriterState(
-                            location.spec(), location.partition());
-                    positionDeleteWriters.add(created);
-                    return created;
-                  });
+          positionDeleteWriters.computeIfAbsent(
+              key, ignored -> new PositionDeleteWriterState(location.spec(), location.partition()));
       state.locations.add(location);
     }
 
@@ -187,7 +180,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       if (!closed) {
         try {
           dataWriter.close();
-          for (PositionDeleteWriterState state : positionDeleteWriters) {
+          for (PositionDeleteWriterState state : positionDeleteWriters.values()) {
             state.writeSorted();
           }
         } finally {
@@ -196,21 +189,36 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       }
     }
 
-    private boolean samePartition(StructLike left, StructLike right) {
-      if (left == right) {
-        return true;
-      }
-      if (left == null || right == null) {
-        return false;
-      }
-      for (int i = 0; i < left.size(); i++) {
-        Object leftValue = left.get(i, Object.class);
-        Object rightValue = right.get(i, Object.class);
-        if (leftValue == null ? rightValue != null : !leftValue.equals(rightValue)) {
+    private record BucketKey(PartitionSpec spec, StructLike partition) {
+      @Override
+      public boolean equals(Object other) {
+        if (!(other instanceof BucketKey that) || !spec.equals(that.spec)) {
           return false;
         }
+        if (partition == that.partition) {
+          return true;
+        }
+        if (partition == null || that.partition == null || partition.size() != that.partition.size()) {
+          return false;
+        }
+        for (int i = 0; i < partition.size(); i++) {
+          if (!Objects.equals(partition.get(i, Object.class), that.partition.get(i, Object.class))) {
+            return false;
+          }
+        }
+        return true;
       }
-      return true;
+
+      @Override
+      public int hashCode() {
+        int result = spec.hashCode();
+        if (partition != null) {
+          for (int i = 0; i < partition.size(); i++) {
+            result = 31 * result + Objects.hashCode(partition.get(i, Object.class));
+          }
+        }
+        return result;
+      }
     }
 
     private final class PositionDeleteWriterState {

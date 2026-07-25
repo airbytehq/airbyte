@@ -20,9 +20,11 @@ import org.apache.iceberg.util.StructLikeUtil;
 public final class PositionalDeleteIndex {
 
   private final Map<StructLike, RowLocation> locations;
+  private final Types.StructType keyType;
   private long maxEntries;
 
   public PositionalDeleteIndex(Types.StructType keyType) {
+    this.keyType = keyType;
     this.locations = StructLikeMap.create(keyType);
   }
 
@@ -43,6 +45,10 @@ public final class PositionalDeleteIndex {
 
   public synchronized int size() {
     return locations.size();
+  }
+
+  public Types.StructType keyType() {
+    return keyType;
   }
 
   public synchronized long maxEntries() {
