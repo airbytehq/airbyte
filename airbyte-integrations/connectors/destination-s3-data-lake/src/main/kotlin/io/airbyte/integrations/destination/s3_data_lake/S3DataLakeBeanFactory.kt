@@ -15,6 +15,8 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfigura
 import io.airbyte.integrations.destination.s3_data_lake.spec.MergeOnReadDeleteEncoding
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 
 @Factory
@@ -55,13 +57,30 @@ class S3DataLakeBeanFactory {
     // from being loaded. So this is necessary for now.
     @Singleton fun tempTableNameGenerator() = DefaultTempTableNameGenerator()
 
-    /**
-     * Socket configuration for S3 Data Lake destination.
-     * - Positional Dedupe streams use one socket for data consistency.
-     * - Equality Dedupe and non-Dedupe streams use all available sockets.
-     */
+    /** Preserve the production one-socket invariant for all Dedupe streams. */
     @Singleton
+    @Requires(notEnv = [Environment.TEST])
     fun dataFlowSocketConfig(
+        catalog: DestinationCatalog,
+    ): DataFlowSocketConfig {
+        val hasDedupeStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
+        return if (hasDedupeStreams) {
+            log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 1
+            }
+        } else {
+            log.info { "No dedup streams detected, using all available sockets" }
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = Int.MAX_VALUE
+            }
+        }
+    }
+
+    /** Positional Dedupe also requires one socket in connector tests. */
+    @Singleton
+    @Requires(env = [Environment.TEST])
+    fun positionalTestDataFlowSocketConfig(
         catalog: DestinationCatalog,
         config: S3DataLakeConfiguration,
     ): DataFlowSocketConfig {
@@ -69,12 +88,11 @@ class S3DataLakeBeanFactory {
             config.mergeOnReadDeleteEncoding == MergeOnReadDeleteEncoding.POSITIONAL &&
                 catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasPositionalDedupStreams) {
-            log.info { "Positional dedup streams detected, limiting to 1 socket for data consistency" }
+            log.info { "Positional dedup streams detected, limiting to 1 test socket" }
             object : DataFlowSocketConfig {
                 override val numSockets: Int = 1
             }
         } else {
-            log.info { "No dedup streams detected, using all available sockets" }
             object : DataFlowSocketConfig {
                 override val numSockets: Int = Int.MAX_VALUE
             }

@@ -89,10 +89,8 @@ class S3DataLakeStreamLoader(
 
         val positionalDeletesEnabled =
             stream.tableSchema.importType is Dedupe &&
-                runCatching {
-                    icebergConfiguration.mergeOnReadDeleteEncoding ==
-                        MergeOnReadDeleteEncoding.POSITIONAL
-                }.getOrDefault(false)
+                icebergConfiguration.mergeOnReadDeleteEncoding ==
+                    MergeOnReadDeleteEncoding.POSITIONAL
         val baseSnapshotId =
             if (positionalDeletesEnabled) {
                 table.refs()[stagingBranchName]?.snapshotId()

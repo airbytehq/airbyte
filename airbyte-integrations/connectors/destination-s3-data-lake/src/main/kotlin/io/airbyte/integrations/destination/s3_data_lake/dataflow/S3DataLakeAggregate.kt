@@ -53,22 +53,28 @@ class S3DataLakeAggregate(
 
         if (writeResult.deleteFiles().isNotEmpty()) {
             // Use row delta for updates/deletes (dedup mode)
-            val delta = table.newRowDelta().toBranch(stagingBranchName)
-            baseSnapshotId?.let {
-                delta
-                    .validateFromSnapshot(it)
-                    .validateDeletedFiles()
-                    .validateNoConflictingDataFiles()
-                    .validateNoConflictingDeleteFiles()
+            synchronized(commitLock) {
+                val delta = table.newRowDelta().toBranch(stagingBranchName)
+                val validationSnapshotId =
+                    table.refs()[stagingBranchName]?.snapshotId() ?: baseSnapshotId
+                validationSnapshotId?.let {
+                    delta
+                        .validateFromSnapshot(it)
+                        .validateDeletedFiles()
+                        .validateNoConflictingDataFiles()
+                        .validateNoConflictingDeleteFiles()
+                }
+                writeResult.dataFiles().forEach { delta.addRows(it) }
+                writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                delta.commit()
             }
-            writeResult.dataFiles().forEach { delta.addRows(it) }
-            writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-            synchronized(commitLock) { delta.commit() }
         } else {
             // Use append for simple appends
-            val append = table.newAppend().toBranch(stagingBranchName)
-            writeResult.dataFiles().forEach { append.appendFile(it) }
-            synchronized(commitLock) { append.commit() }
+            synchronized(commitLock) {
+                val append = table.newAppend().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { append.appendFile(it) }
+                append.commit()
+            }
         }
 
         logger.info { "Flushed records to staging branch $stagingBranchName" }
