@@ -141,6 +141,20 @@ internal class IcebergTableWriterFactoryTest {
             )
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
+
+        val positionalWriter =
+            factory.create(
+                table = table,
+                generationId = "ab-generation-id-${Random.nextLong(100)}-e",
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(primaryKeyIds.map { it.toString() }),
+                        cursor = primaryKeyIds.map { it.toString() }
+                    ),
+                schema = tableSchema,
+                positionalDeleteIndex = PositionalDeleteIndex(tableSchema.asStruct()),
+            )
+        assertEquals(UnpartitionedPositionDeltaWriter::class.java, positionalWriter.javaClass)
     }
 
     @Test

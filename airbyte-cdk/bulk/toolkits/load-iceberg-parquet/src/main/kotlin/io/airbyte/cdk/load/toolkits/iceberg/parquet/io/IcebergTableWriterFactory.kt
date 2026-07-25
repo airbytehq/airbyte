@@ -55,7 +55,8 @@ class IcebergTableWriterFactory {
         table: Table,
         generationId: String,
         importType: ImportType,
-        schema: Schema
+        schema: Schema,
+        positionalDeleteIndex: PositionalDeleteIndex? = null,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
@@ -92,15 +93,28 @@ class IcebergTableWriterFactory {
                     format = format
                 )
             is Dedupe ->
-                newDeltaWriter(
-                    table = table,
-                    schema = schema,
-                    identifierFieldIds = identifierFieldIds,
-                    writerFactory = writerFactory,
-                    targetFileSize = targetFileSize,
-                    outputFileFactory = outputFileFactory,
-                    format = format
-                )
+                if (positionalDeleteIndex == null) {
+                    newDeltaWriter(
+                        table = table,
+                        schema = schema,
+                        identifierFieldIds = identifierFieldIds,
+                        writerFactory = writerFactory,
+                        targetFileSize = targetFileSize,
+                        outputFileFactory = outputFileFactory,
+                        format = format
+                    )
+                } else {
+                    newPositionDeltaWriter(
+                        table = table,
+                        schema = schema,
+                        identifierFieldIds = identifierFieldIds,
+                        writerFactory = writerFactory,
+                        targetFileSize = targetFileSize,
+                        outputFileFactory = outputFileFactory,
+                        format = format,
+                        positionalDeleteIndex = positionalDeleteIndex,
+                    )
+                }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
         }
     }
@@ -197,6 +211,45 @@ class IcebergTableWriterFactory {
                 targetFileSize = targetFileSize,
                 schema = schema,
                 identifierFieldIds = identifierFieldIds
+            )
+        }
+    }
+
+    private fun newPositionDeltaWriter(
+        table: Table,
+        schema: Schema,
+        format: FileFormat,
+        writerFactory: GenericFileWriterFactory,
+        outputFileFactory: OutputFileFactory,
+        targetFileSize: Long,
+        identifierFieldIds: Set<Int>,
+        positionalDeleteIndex: PositionalDeleteIndex,
+    ): BaseTaskWriter<Record> {
+        return if (table.spec().isUnpartitioned) {
+            UnpartitionedPositionDeltaWriter(
+                table,
+                spec = table.spec(),
+                format = format,
+                writerFactory = writerFactory,
+                outputFileFactory = outputFileFactory,
+                io = table.io(),
+                targetFileSize = targetFileSize,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds,
+                index = positionalDeleteIndex,
+            )
+        } else {
+            PartitionedPositionDeltaWriter(
+                table,
+                spec = table.spec(),
+                format = format,
+                writerFactory = writerFactory,
+                outputFileFactory = outputFileFactory,
+                io = table.io(),
+                targetFileSize = targetFileSize,
+                schema = schema,
+                identifierFieldIds = identifierFieldIds,
+                index = positionalDeleteIndex,
             )
         }
     }
