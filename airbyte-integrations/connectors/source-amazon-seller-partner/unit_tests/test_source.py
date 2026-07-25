@@ -163,7 +163,7 @@ def test_streams(connector_config_without_start_date):
 
 def test_streams_count_seller(connector_config_without_start_date, monkeypatch):
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
-    assert len(streams) == 46
+    assert len(streams) == 47
 
 
 def test_streams_count_vendor(monkeypatch):
@@ -176,7 +176,7 @@ def test_streams_count_vendor(monkeypatch):
         "account_type": "Vendor",
     }
     streams = get_source(config).streams(config)
-    assert len(streams) == 52
+    assert len(streams) == 53
 
 
 # TODO: Renable this test once this type of validation is supported

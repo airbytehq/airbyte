@@ -1,0 +1,49 @@
+{
+  "accountStatuses": [
+    {
+      "marketplaceId": "ATVPDKIKX0DER",
+      "status": "NORMAL"
+    }
+  ],
+  "performanceMetrics": [
+    {
+      "accountHealthRating": {
+        "ahrStatus": "GREEN",
+        "ahrScore": 1000,
+        "reportingDateRange": {
+          "reportingDateFrom": "2026-07-01T00:00:00Z",
+          "reportingDateTo": "2026-07-24T23:59:59Z"
+        }
+      },
+      "lateShipmentRate": {
+        "reportingDateRange": {
+          "reportingDateFrom": "2026-07-01T00:00:00Z",
+          "reportingDateTo": "2026-07-24T23:59:59Z"
+        },
+        "status": "NORMAL",
+        "targetValue": 0.04,
+        "targetCondition": "LESS_THAN",
+        "rate": 0.01,
+        "defectsCount": 1
+      },
+      "orderDefectRate": {
+        "afn": {
+          "status": "NORMAL",
+          "rate": 0.0
+        },
+        "mfn": {
+          "status": "NORMAL",
+          "rate": 0.01
+        }
+      },
+      "warningStates": {
+        "listingPolicyViolations": {
+          "status": "NORMAL",
+          "targetValue": 0,
+          "targetCondition": "LESS_THAN_OR_EQUAL",
+          "defectsCount": 0
+        }
+      }
+    }
+  ]
+}

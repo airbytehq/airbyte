@@ -98,7 +98,7 @@ The following streams have known failures when running against test/sandbox cred
 
 ## Incremental Stream Considerations
 
-The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
+The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 9 FR parent streams are brand analytics, seller performance, and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
@@ -154,8 +154,9 @@ The Amazon Seller Partner API uses an asynchronous report generation model. Most
 | vendor_orders | medium | top-level parent | changedBefore | changedBefore | incremental |  |
 | vendor_orders_status | medium | top-level parent | createdBefore | createdBefore | incremental |  |
 | get_v2_settlement_report_data_flat_file | medium | child | dataEndTime | dataEndTime | incremental |  |
+| get_v2_seller_performance_report | medium | top-level parent | none | none | deferred_no_api_support | Seller performance snapshot; no date filter support |
 | order_items | medium | child of orders | LastUpdateDate | LastUpdateDate | incremental |  |
 
 ### Future incremental stream candidates
 
-- **No API date filter (8 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report`, `get_vendor_inventory_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **No API date filter (9 streams):** `get_brand_analytics_alternate_purchase_report`, `get_brand_analytics_item_comparison_report`, `get_brand_analytics_market_basket_report`, `get_brand_analytics_repeat_purchase_report`, `get_brand_analytics_search_terms_report`, `get_v2_seller_performance_report`, `get_vendor_forecasting_fresh_report`, `get_vendor_forecasting_retail_report`, `get_vendor_inventory_report` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
