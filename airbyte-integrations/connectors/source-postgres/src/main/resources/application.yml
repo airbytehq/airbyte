@@ -63,11 +63,17 @@ airbyte:
             group: Postgres SQL Exception
             output: Encountered an error while reading the database, will retry.
 
-          - pattern: (?i).*an i/o error occured while sending to the backend.*
+          - pattern: (?i).*an i/o error occurred while sending to the backend.*
             input-example: "org.postgresql.util.PSQLException: An I/O error occurred while sending to the backend."
             error: transient
             group: Postgres SQL Exception
             output: Encountered an error while reading the database, will retry.
+
+          - pattern: (?i).*EOFException.*
+            input-example: "java.io.EOFException"
+            error: transient
+            group: Postgres Connection Error
+            output: Database connection was unexpectedly closed (EOF), will retry.
 
           - pattern: (?i).*due to conflict with recovery.*
             input-example: |
