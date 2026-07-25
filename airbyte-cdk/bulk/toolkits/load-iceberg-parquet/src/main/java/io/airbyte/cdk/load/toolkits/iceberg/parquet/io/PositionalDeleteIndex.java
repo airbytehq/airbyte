@@ -51,6 +51,13 @@ public final class PositionalDeleteIndex {
   public record RowLocation(
       CharSequence path, long position, PartitionSpec spec, StructLike partition) {
     public RowLocation {
+      path = path.toString();
+      partition = partition == null ? null : StructLikeUtil.copy(partition);
+    }
+  }
+
+  public record RowLocationMetadata(PartitionSpec spec, StructLike partition) {
+    public RowLocationMetadata {
       partition = partition == null ? null : StructLikeUtil.copy(partition);
     }
   }

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io;
 import io.airbyte.cdk.ConfigErrorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.apache.iceberg.DeleteFile;
@@ -143,7 +144,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     }
 
     public void write(Record row) throws IOException {
-      StructLike key = keyWrapper.wrap(row);
+      StructLike key = keyWrapper.wrap(constructIdentifierRecord(row));
       PositionalDeleteIndex.RowLocation location =
           new PositionalDeleteIndex.RowLocation(
               dataWriter.currentPath(), dataWriter.currentRows(), spec(), partition);
@@ -171,20 +172,13 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
               .findFirst()
               .orElseGet(
                   () -> {
-                    PositionDeleteWriter<Record> writer =
-                        writerFactory.newPositionDeleteWriter(
-                            fileFactory.newOutputFile(location.spec(), location.partition()),
-                            location.spec(),
-                            location.partition());
                     PositionDeleteWriterState created =
                         new PositionDeleteWriterState(
-                            location.spec(), location.partition(), writer);
+                            location.spec(), location.partition());
                     positionDeleteWriters.add(created);
                     return created;
                   });
-      PositionDelete<Record> positionDelete = PositionDelete.create();
-      positionDelete.set(location.path(), location.position());
-      state.writer.write(positionDelete);
+      state.locations.add(location);
     }
 
     @Override
@@ -193,8 +187,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
         try {
           dataWriter.close();
           for (PositionDeleteWriterState state : positionDeleteWriters) {
-            state.writer.close();
-            addCompletedPositionDeleteFile(state.deleteFile());
+            state.writeSorted();
           }
         } finally {
           closed = true;
@@ -222,21 +215,34 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     private final class PositionDeleteWriterState {
       private final PartitionSpec spec;
       private final StructLike partition;
-      private final PositionDeleteWriter<Record> writer;
+      private final List<PositionalDeleteIndex.RowLocation> locations = new ArrayList<>();
 
-      private PositionDeleteWriterState(
-          PartitionSpec spec, StructLike partition, PositionDeleteWriter<Record> writer) {
+      private PositionDeleteWriterState(PartitionSpec spec, StructLike partition) {
         this.spec = spec;
         this.partition = partition;
-        this.writer = writer;
       }
 
-      private DeleteFile deleteFile() {
-        DeleteWriteResult result = writer.result();
-        if (result.deleteFiles().isEmpty()) {
-          return null;
+      private void writeSorted() throws IOException {
+        if (locations.isEmpty()) {
+          return;
         }
-        return result.deleteFiles().get(0);
+        locations.sort(
+            Comparator.comparing((PositionalDeleteIndex.RowLocation location) -> location.path().toString())
+                .thenComparingLong(PositionalDeleteIndex.RowLocation::position));
+        PositionDeleteWriter<Record> writer =
+            writerFactory.newPositionDeleteWriter(
+                fileFactory.newOutputFile(spec, partition), spec, partition);
+        try {
+          for (PositionalDeleteIndex.RowLocation location : locations) {
+            PositionDelete<Record> positionDelete = PositionDelete.create();
+            positionDelete.set(location.path(), location.position());
+            writer.write(positionDelete);
+          }
+        } finally {
+          writer.close();
+        }
+        DeleteWriteResult result = writer.result();
+        result.deleteFiles().forEach(BasePositionDeltaTaskWriter.this::addCompletedPositionDeleteFile);
       }
     }
   }
