@@ -86,7 +86,8 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
         throw new ConfigErrorException(
             "Error in stream " + table.name() + ": " + NULL_PK_ERROR_MESSAGE, null);
       }
-      recordWithIds.setField(idField.name(), value);
+      recordWithIds.setField(
+          idField.name(), value instanceof CharSequence ? value.toString() : value);
     }
     return recordWithIds;
   }

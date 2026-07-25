@@ -99,9 +99,7 @@ class PositionalDeleteIndexBuilder(
                                 if (value is CharSequence) value.toString() else value
                             )
                         }
-                        val deleted =
-                            position in positionDeletes ||
-                                equalityDeletes.any { deleteKey -> keysEqual(key, deleteKey) }
+                        val deleted = position in positionDeletes || key in equalityDeletes
                         if (deleted) {
                             position += 1
                             continue
@@ -187,10 +185,6 @@ class PositionalDeleteIndexBuilder(
             copy.setField(field.name(), if (value is CharSequence) value.toString() else value)
         }
         return copy
-    }
-
-    private fun keysEqual(left: GenericRecord, right: GenericRecord): Boolean {
-        return left == right
     }
 
     private data class PlannedFile(
