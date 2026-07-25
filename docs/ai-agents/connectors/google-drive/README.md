@@ -46,7 +46,7 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Create](./REFERENCE.md#files-create), [Update](./REFERENCE.md#files-update), [Delete](./REFERENCE.md#files-delete), [Download](./REFERENCE.md#files-download) |
+| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Create](./REFERENCE.md#files-create), [Update](./REFERENCE.md#files-update), [Delete](./REFERENCE.md#files-delete), [Download](./REFERENCE.md#files-download), [Context Store Search](./REFERENCE.md#files-context-store-search) |
 | Files Upload | [Create](./REFERENCE.md#files-upload-create) |
 | Files Export | [Download](./REFERENCE.md#files-export-download) |
 | Drives | [List](./REFERENCE.md#drives-list), [Get](./REFERENCE.md#drives-get) |

@@ -95,6 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.0.19 | 2026-07-21 | [82651](https://github.com/airbytehq/airbyte/pull/82651) | Update dependencies |
 | 2.0.18 | 2026-07-14 | [82090](https://github.com/airbytehq/airbyte/pull/82090) | Update dependencies |
 | 2.0.17 | 2026-07-10 | [81516](https://github.com/airbytehq/airbyte/pull/81516) | Fix infinite pagination loop on `call_legs` and `calls` incremental streams |
 | 2.0.16 | 2026-06-30 | [81319](https://github.com/airbytehq/airbyte/pull/81319) | Update dependencies |
