@@ -74,9 +74,7 @@ class IcebergTableWriterFactory {
             require(
                 positionalDeleteIndex.keyType() ==
                     TypeUtil.select(schema, identifierFieldIds).asStruct()
-            ) {
-                "Positional delete index key type does not match the schema identifier fields"
-            }
+            ) { "Positional delete index key type does not match the schema identifier fields" }
         }
         val writerFactory =
             createWriterFactory(
