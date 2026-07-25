@@ -18,8 +18,12 @@ private val logger = KotlinLogging.logger {}
 class PositionalDeleteIndexBuilder(
     private val maxEntries: Int = DEFAULT_MAX_ENTRIES,
 ) {
-    fun empty(schema: Schema, identifierFieldIds: Set<Int>): PositionalDeleteIndex =
-        PositionalDeleteIndex(TypeUtil.select(schema, identifierFieldIds).asStruct())
+    fun empty(schema: Schema, identifierFieldIds: Set<Int>): PositionalDeleteIndex {
+        require(identifierFieldIds.isNotEmpty()) {
+            "Positional deletes require at least one identifier field"
+        }
+        return PositionalDeleteIndex(TypeUtil.select(schema, identifierFieldIds).asStruct())
+    }
 
     fun build(
         table: Table,
