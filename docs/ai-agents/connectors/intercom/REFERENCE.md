@@ -8,15 +8,15 @@ The Intercom connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Context Store Search](#contacts-context-store-search) |
-| Conversations | [List](#conversations-list), [Get](#conversations-get), [Context Store Search](#conversations-context-store-search) |
-| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Context Store Search](#companies-context-store-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [Context Store Search](#contacts-context-store-search) |
+| Conversations | [List](#conversations-list), [Create](#conversations-create), [Get](#conversations-get), [Update](#conversations-update), [Delete](#conversations-delete), [Context Store Search](#conversations-context-store-search) |
+| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Delete](#companies-delete), [Context Store Search](#companies-context-store-search) |
 | Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
 | Admins | [List](#admins-list), [Get](#admins-get) |
-| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get) |
+| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get), [Delete](#tags-delete) |
 | Notes | [Create](#notes-create) |
 | Segments | [List](#segments-list), [Get](#segments-get) |
-| Internal Articles | [Create](#internal-articles-create) |
+| Internal Articles | [Create](#internal-articles-create), [Update](#internal-articles-update), [Delete](#internal-articles-delete) |
 
 ## Contacts
 
@@ -519,6 +519,70 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Delete
+
+Permanently delete a contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "contacts",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.contacts.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The unique identifier of the contact to delete |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string` |  |
+| `id` | `string` |  |
+| `external_id` | `string \| null` |  |
+| `deleted` | `boolean` |  |
+
+
+</details>
+
 ### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
@@ -787,6 +851,100 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Conversations Create
+
+Create a new conversation initiated by a contact (user or lead)
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "create",
+  "params": {
+    "from": {
+      "type": "<str>",
+      "id": "<str>"
+    },
+    "body": "<str>",
+    "subject": "<str>",
+    "attachment_urls": [],
+    "created_at": 0
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.conversations.create(
+    from_={
+        "type": "<str>",
+        "id": "<str>"
+    },
+    body="<str>",
+    subject="<str>",
+    attachment_urls=[],
+    created_at=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "create",
+    "params": {
+        "from": {
+            "type": "<str>",
+            "id": "<str>"
+        },
+        "body": "<str>",
+        "subject": "<str>",
+        "attachment_urls": [],
+        "created_at": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `from` | `object` | Yes | The contact (user or lead) initiating the conversation |
+| `from.type` | `"lead" \| "user" \| "contact"` | Yes | The type of the contact (lead, user, or contact) |
+| `from.id` | `string` | Yes | The identifier for the contact as given by Intercom (a 24 character UUID) |
+| `body` | `string` | Yes | The content of the initial message in the conversation |
+| `subject` | `string` | No | The subject line of the conversation (optional) |
+| `attachment_urls` | `array<string>` | No | A list of URLs of attached files (max 10) |
+| `created_at` | `integer` | No | Optional timestamp for the conversation creation (Unix) |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `created_at` | `integer \| null` |  |
+| `subject` | `string \| null` |  |
+| `body` | `string \| null` |  |
+| `message_type` | `string \| null` |  |
+| `conversation_id` | `string \| null` |  |
+
+
+</details>
+
 ### Conversations Get
 
 Get a single conversation by ID
@@ -866,6 +1024,160 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `statistics` | `object \| any` |  |
 | `conversation_parts` | `object \| any` |  |
 | `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
+### Conversations Update
+
+Update conversation attributes such as custom_attributes or read status
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "update",
+  "params": {
+    "read": true,
+    "custom_attributes": {},
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.conversations.update(
+    read=True,
+    custom_attributes={},
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "update",
+    "params": {
+        "read": True,
+        "custom_attributes": {},
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `read` | `boolean` | No | Mark the conversation as read or unread |
+| `custom_attributes` | `object` | No | Custom attributes to set on the conversation |
+| `id` | `string` | Yes | Conversation ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `title` | `string \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `waiting_since` | `integer \| null` |  |
+| `snoozed_until` | `integer \| null` |  |
+| `open` | `boolean \| null` |  |
+| `state` | `string \| null` |  |
+| `read` | `boolean \| null` |  |
+| `priority` | `string \| null` |  |
+| `admin_assignee_id` | `integer \| null` |  |
+| `team_assignee_id` | `string \| null` |  |
+| `tags` | `object \| any` |  |
+| `conversation_rating` | `object \| any` |  |
+| `source` | `object \| any` |  |
+| `contacts` | `object \| any` |  |
+| `teammates` | `object \| any` |  |
+| `first_contact_reply` | `object \| any` |  |
+| `sla_applied` | `object \| any` |  |
+| `statistics` | `object \| any` |  |
+| `conversation_parts` | `object \| any` |  |
+| `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
+### Conversations Delete
+
+Permanently delete a conversation by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.conversations.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Conversation ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `string` |  |
+| `deleted` | `boolean` |  |
 
 
 </details>
@@ -1381,6 +1693,69 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `tags` | `object \| any` |  |
 | `segments` | `object \| any` |  |
 | `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
+### Companies Delete
+
+Permanently delete a company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "companies",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.companies.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The unique identifier of the company to delete |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `string` |  |
+| `deleted` | `boolean` |  |
 
 
 </details>
@@ -2012,6 +2387,55 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tags Delete
+
+Permanently delete a tag by ID. This removes the tag from all contacts, companies, and conversations.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "tags",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.tags.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The unique identifier of the tag to delete |
+
+
 ## Notes
 
 ### Notes Create
@@ -2294,6 +2718,153 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `integer \| null` |  |
 | `updated_at` | `integer \| null` |  |
 | `locale` | `string \| null` |  |
+
+
+</details>
+
+### Internal Articles Update
+
+Update an existing internal article by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "internal_articles",
+  "action": "update",
+  "params": {
+    "title": "<str>",
+    "body": "<str>",
+    "author_id": 0,
+    "owner_id": 0,
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.internal_articles.update(
+    title="<str>",
+    body="<str>",
+    author_id=0,
+    owner_id=0,
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "internal_articles",
+    "action": "update",
+    "params": {
+        "title": "<str>",
+        "body": "<str>",
+        "author_id": 0,
+        "owner_id": 0,
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `title` | `string` | No | The title of the article |
+| `body` | `string` | No | The content of the article in HTML |
+| `author_id` | `integer` | No | The ID of the author of the article |
+| `owner_id` | `integer` | No | The ID of the owner of the article |
+| `id` | `string` | Yes | Internal article ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer \| string` |  |
+| `title` | `string \| null` |  |
+| `body` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `author_id` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `locale` | `string \| null` |  |
+
+
+</details>
+
+### Internal Articles Delete
+
+Permanently delete an internal article by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "internal_articles",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await intercom.internal_articles.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "internal_articles",
+    "action": "delete",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Internal article ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `string` |  |
+| `deleted` | `boolean` |  |
 
 
 </details>

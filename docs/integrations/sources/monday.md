@@ -90,7 +90,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.12 | 2026-06-26 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Guard against null data in GraphQL error responses |
+| 2.5.15 | 2026-07-25 | [80931](https://github.com/airbytehq/airbyte/pull/80931) | Guard against null data in GraphQL error responses |
+| 2.5.14 | 2026-07-21 | [82493](https://github.com/airbytehq/airbyte/pull/82493) | Update dependencies |
+| 2.5.13 | 2026-07-14 | [81908](https://github.com/airbytehq/airbyte/pull/81908) | Update dependencies |
+| 2.5.12 | 2026-06-30 | [81167](https://github.com/airbytehq/airbyte/pull/81167) | Update dependencies |
 | 2.5.11 | 2026-06-23 | [80562](https://github.com/airbytehq/airbyte/pull/80562) | Update dependencies |
 | 2.5.10 | 2026-06-16 | [78817](https://github.com/airbytehq/airbyte/pull/78817) | Update dependencies |
 | 2.5.9 | 2026-06-09 | [79605](https://github.com/airbytehq/airbyte/pull/79605) | Clean up cancelled RC; revert source to previous stable |
