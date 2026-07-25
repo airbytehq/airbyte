@@ -140,7 +140,7 @@ class PositionalDeleteIndexBuilder(
         deleteFile: org.apache.iceberg.DeleteFile,
     ): List<GenericRecord> {
         val deleteSchema = TypeUtil.select(schema, deleteFile.equalityFieldIds().toSet())
-        val inputFile = table.io().newInputFile(deleteFile.path().toString())
+        val inputFile = table.io().newInputFile(deleteFile.location().toString())
         return Parquet.read(inputFile)
             .project(deleteSchema)
             .createReaderFunc { messageType ->
@@ -160,7 +160,7 @@ class PositionalDeleteIndexBuilder(
                 MetadataColumns.DELETE_FILE_PATH,
                 MetadataColumns.DELETE_FILE_POS,
             )
-        val inputFile = table.io().newInputFile(deleteFile.path().toString())
+        val inputFile = table.io().newInputFile(deleteFile.location().toString())
         return Parquet.read(inputFile)
             .project(deleteSchema)
             .createReaderFunc { messageType ->
