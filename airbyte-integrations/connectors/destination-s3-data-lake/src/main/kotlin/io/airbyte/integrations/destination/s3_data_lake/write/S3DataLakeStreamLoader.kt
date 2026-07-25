@@ -5,15 +5,18 @@
 package io.airbyte.integrations.destination.s3_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteIndexBuilder
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
 import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_CATALOG_NAME
+import io.airbyte.integrations.destination.s3_data_lake.spec.MergeOnReadDeleteEncoding
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -84,11 +87,42 @@ class S3DataLakeStreamLoader(
         }
         stagingBranchCreated = true
 
+        val positionalDeletesEnabled =
+            stream.tableSchema.importType is Dedupe &&
+                runCatching {
+                    icebergConfiguration.mergeOnReadDeleteEncoding ==
+                        MergeOnReadDeleteEncoding.POSITIONAL
+                }.getOrDefault(false)
+        val baseSnapshotId =
+            if (positionalDeletesEnabled) {
+                table.refs()[stagingBranchName]?.snapshotId()
+            } else {
+                null
+            }
+        val positionalDeleteIndex =
+            if (positionalDeletesEnabled) {
+                val builder = PositionalDeleteIndexBuilder()
+                if (baseSnapshotId == null) {
+                    builder.empty(targetSchema, targetSchema.identifierFieldIds())
+                } else {
+                    builder.build(
+                        table = table,
+                        ref = stagingBranchName,
+                        schema = targetSchema,
+                        identifierFieldIds = targetSchema.identifierFieldIds(),
+                    )
+                }
+            } else {
+                null
+            }
+
         val state =
             S3DataLakeStreamState(
                 table = table,
                 schema = targetSchema,
                 stagingBranchName = stagingBranchName,
+                positionalDeleteIndex = positionalDeleteIndex,
+                baseSnapshotId = baseSnapshotId,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }

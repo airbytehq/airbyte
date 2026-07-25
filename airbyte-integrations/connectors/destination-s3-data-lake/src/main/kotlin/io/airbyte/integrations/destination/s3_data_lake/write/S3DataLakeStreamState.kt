@@ -11,4 +11,6 @@ class S3DataLakeStreamState(
     val table: Table,
     val schema: Schema,
     val stagingBranchName: String,
+    val positionalDeleteIndex: io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteIndex? = null,
+    val baseSnapshotId: Long? = null,
 )

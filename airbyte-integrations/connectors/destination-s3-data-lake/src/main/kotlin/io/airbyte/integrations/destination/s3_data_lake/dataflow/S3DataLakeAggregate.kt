@@ -32,6 +32,7 @@ class S3DataLakeAggregate(
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
     private val icebergUtil: IcebergUtil,
+    private val baseSnapshotId: Long? = null,
 ) : Aggregate {
     override fun accept(record: RecordDTO) {
         val wrappedRecord =
@@ -53,6 +54,13 @@ class S3DataLakeAggregate(
         if (writeResult.deleteFiles().isNotEmpty()) {
             // Use row delta for updates/deletes (dedup mode)
             val delta = table.newRowDelta().toBranch(stagingBranchName)
+            baseSnapshotId?.let {
+                delta
+                    .validateFromSnapshot(it)
+                    .validateDeletedFiles()
+                    .validateNoConflictingDataFiles()
+                    .validateNoConflictingDeleteFiles()
+            }
             writeResult.dataFiles().forEach { delta.addRows(it) }
             writeResult.deleteFiles().forEach { delta.addDeletes(it) }
             synchronized(commitLock) { delta.commit() }
