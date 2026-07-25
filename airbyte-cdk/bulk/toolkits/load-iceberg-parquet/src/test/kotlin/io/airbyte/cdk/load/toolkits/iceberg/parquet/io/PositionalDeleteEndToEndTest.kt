@@ -11,8 +11,8 @@ import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.TableIdentifier
-import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.data.GenericRecord
+import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
@@ -36,7 +36,10 @@ class PositionalDeleteEndToEndTest {
         val table =
             catalog
                 .buildTable(tableId, schema)
-                .withProperty(TableProperties.DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase()
+                )
                 .create()
         val importType =
             io.airbyte.cdk.load.command.Dedupe(
@@ -55,19 +58,17 @@ class PositionalDeleteEndToEndTest {
         initialWriter.write(record(schema, 1, "one"))
         initialWriter.write(record(schema, 2, "two"))
         val initialResult = initialWriter.complete()
-        table
-            .newAppend()
-            .apply { initialResult.dataFiles().forEach(::appendFile) }
-            .commit()
+        table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
         table.manageSnapshots().createBranch("staging").commit()
 
         val index =
-            PositionalDeleteIndexBuilder().build(
-                table = table,
-                ref = "staging",
-                schema = schema,
-                identifierFieldIds = schema.identifierFieldIds(),
-            )
+            PositionalDeleteIndexBuilder()
+                .build(
+                    table = table,
+                    ref = "staging",
+                    schema = schema,
+                    identifierFieldIds = schema.identifierFieldIds(),
+                )
         val firstUpdateWriter =
             writerFactory.create(
                 table,
@@ -89,15 +90,16 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 index,
             )
-        secondUpdateWriter.write(RecordWrapper(record(schema, 3, "three-updated"), Operation.UPDATE))
+        secondUpdateWriter.write(
+            RecordWrapper(record(schema, 3, "three-updated"), Operation.UPDATE)
+        )
         secondUpdateWriter.write(RecordWrapper(record(schema, 1, "ignored"), Operation.DELETE))
         commitRowDelta(table, "staging", secondUpdateWriter.complete())
 
         val stagingSnapshotId = table.refs()["staging"]!!.snapshotId()!!
         val deleteFiles =
             table.snapshot(stagingSnapshotId)!!.addedDeleteFiles(table.io()).toList() +
-                table.snapshot(table.history().first().snapshotId())!!
-                    .addedDeleteFiles(table.io())
+                table.snapshot(table.history().first().snapshotId())!!.addedDeleteFiles(table.io())
         assertThat(deleteFiles).isNotEmpty
         assertThat(deleteFiles.map { it.content() }.toSet())
             .containsOnly(FileContent.POSITION_DELETES)

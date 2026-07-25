@@ -20,18 +20,20 @@ internal class PositionalDeleteIndexTest {
     @Test
     fun replacesAndRemovesLocationsUsingFullKeys() {
         val index = PositionalDeleteIndex(keySchema.asStruct())
-        val firstKey = keySchema.asStruct().let { schema ->
-            org.apache.iceberg.data.GenericRecord.create(schema).apply {
-                setField("id", 7)
-                setField("tenant", "one")
+        val firstKey =
+            keySchema.asStruct().let { schema ->
+                org.apache.iceberg.data.GenericRecord.create(schema).apply {
+                    setField("id", 7)
+                    setField("tenant", "one")
+                }
             }
-        }
-        val equivalentKey = keySchema.asStruct().let { schema ->
-            org.apache.iceberg.data.GenericRecord.create(schema).apply {
-                setField("id", 7)
-                setField("tenant", "one")
+        val equivalentKey =
+            keySchema.asStruct().let { schema ->
+                org.apache.iceberg.data.GenericRecord.create(schema).apply {
+                    setField("id", 7)
+                    setField("tenant", "one")
+                }
             }
-        }
         val location =
             PositionalDeleteIndex.RowLocation(
                 "s3://bucket/data.parquet",
