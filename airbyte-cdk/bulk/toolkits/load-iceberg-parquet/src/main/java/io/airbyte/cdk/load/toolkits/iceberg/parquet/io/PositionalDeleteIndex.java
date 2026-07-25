@@ -7,14 +7,15 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io;
 import java.util.Map;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.StructLikeMap;
 import org.apache.iceberg.util.StructLikeUtil;
-import org.apache.iceberg.types.Types;
 
 /**
  * Stream-scoped, thread-safe index of identifier values to physical Iceberg row locations.
  *
- * <p>The key is copied when it enters the index because Iceberg record wrappers may be reused.
+ * <p>
+ * The key is copied when it enters the index because Iceberg record wrappers may be reused.
  */
 public final class PositionalDeleteIndex {
 
@@ -49,16 +50,24 @@ public final class PositionalDeleteIndex {
   }
 
   public record RowLocation(
-      CharSequence path, long position, PartitionSpec spec, StructLike partition) {
+                            CharSequence path,
+                            long position,
+                            PartitionSpec spec,
+                            StructLike partition) {
+
     public RowLocation {
       path = path.toString();
       partition = partition == null ? null : StructLikeUtil.copy(partition);
     }
+
   }
 
   public record RowLocationMetadata(PartitionSpec spec, StructLike partition) {
+
     public RowLocationMetadata {
       partition = partition == null ? null : StructLikeUtil.copy(partition);
     }
+
   }
+
 }

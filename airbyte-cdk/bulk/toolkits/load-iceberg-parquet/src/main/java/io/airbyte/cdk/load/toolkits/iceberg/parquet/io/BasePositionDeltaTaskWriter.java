@@ -33,7 +33,8 @@ import org.apache.iceberg.types.Types;
 /**
  * Delta writer that emits only positional deletes.
  *
- * <p>The location index is shared by every aggregate for one stream. This mirrors the location
+ * <p>
+ * The location index is shared by every aggregate for one stream. This mirrors the location
  * tracking in Iceberg's BaseEqualityDeltaWriter while making it available across writer instances.
  */
 public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record> {
@@ -51,16 +52,16 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
   private final List<DeleteFile> completedPositionDeleteFiles = new ArrayList<>();
 
   protected BasePositionDeltaTaskWriter(
-      final Table table,
-      final PartitionSpec spec,
-      final FileFormat format,
-      final GenericFileWriterFactory writerFactory,
-      final OutputFileFactory fileFactory,
-      final FileIO io,
-      final long targetFileSize,
-      final Schema schema,
-      final Set<Integer> identifierFieldIds,
-      final PositionalDeleteIndex index) {
+                                        final Table table,
+                                        final PartitionSpec spec,
+                                        final FileFormat format,
+                                        final GenericFileWriterFactory writerFactory,
+                                        final OutputFileFactory fileFactory,
+                                        final FileIO io,
+                                        final long targetFileSize,
+                                        final Schema schema,
+                                        final Set<Integer> identifierFieldIds,
+                                        final PositionalDeleteIndex index) {
     super(spec, format, writerFactory, fileFactory, io, targetFileSize);
     this.table = table;
     this.deleteSchema = TypeUtil.select(schema, identifierFieldIds);
@@ -166,9 +167,8 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       PositionDeleteWriterState state =
           positionDeleteWriters.stream()
               .filter(
-                  candidate ->
-                      candidate.spec.equals(location.spec())
-                          && samePartition(candidate.partition, location.partition()))
+                  candidate -> candidate.spec.equals(location.spec())
+                      && samePartition(candidate.partition, location.partition()))
               .findFirst()
               .orElseGet(
                   () -> {
@@ -213,6 +213,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     }
 
     private final class PositionDeleteWriterState {
+
       private final PartitionSpec spec;
       private final StructLike partition;
       private final List<PositionalDeleteIndex.RowLocation> locations = new ArrayList<>();
@@ -244,10 +245,13 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
         DeleteWriteResult result = writer.result();
         result.deleteFiles().forEach(BasePositionDeltaTaskWriter.this::addCompletedPositionDeleteFile);
       }
+
     }
+
   }
 
   protected PositionalDeleteIndex index() {
     return index;
   }
+
 }
