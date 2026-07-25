@@ -57,9 +57,18 @@ class PositionalDeleteEndToEndTest {
                 schema,
             )
         initialWriter.write(record(schema, 1, "one"))
-        initialWriter.write(record(schema, 2, "two"))
         val initialResult = initialWriter.complete()
         table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
+        val secondInitialWriter =
+            writerFactory.create(
+                table,
+                "ab-generation-id-0-e",
+                Append,
+                schema,
+            )
+        secondInitialWriter.write(record(schema, 2, "two"))
+        val secondInitialResult = secondInitialWriter.complete()
+        table.newAppend().apply { secondInitialResult.dataFiles().forEach(::appendFile) }.commit()
         table.manageSnapshots().createBranch("staging").commit()
         val equalityWriter =
             writerFactory.create(
@@ -69,6 +78,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
             )
         equalityWriter.write(RecordWrapper(record(schema, 1, "one-current"), Operation.UPDATE))
+        equalityWriter.write(RecordWrapper(record(schema, 2, "two-current"), Operation.UPDATE))
         commitRowDelta(table, "staging", equalityWriter.complete())
         val initialSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
