@@ -4,9 +4,11 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
+import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
@@ -459,5 +461,26 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         coVerify(atLeast = 1) { mockDatabaseHandler.executeWithRetries(any()) }
         // Verify the recreateTable path was NOT taken
         coVerify(exactly = 0) { mockSqlOperations.createTable(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun testGetGenerationIdReturnZeroOnBigQueryException() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        Mockito.`when`(bigquery.query(Mockito.any(QueryJobConfiguration::class.java)))
+            .thenThrow(BigQueryException(400, "Unrecognized name: _airbyte_generation_id"))
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        val result = runBlocking {
+            operations.getGenerationId(TableName("test_namespace", "test_table"))
+        }
+        Assertions.assertEquals(0L, result)
     }
 }
