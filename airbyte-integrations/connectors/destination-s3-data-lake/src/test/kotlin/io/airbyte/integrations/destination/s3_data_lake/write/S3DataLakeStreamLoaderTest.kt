@@ -471,6 +471,7 @@ internal class S3DataLakeStreamLoaderTest {
                 IllegalArgumentException("already exists")
         }
         val table: Table = mockk {
+            every { name() } returns "test"
             every { schema() } returns icebergSchema
             every { sortOrder() } returns SortOrder.unsorted()
             every { manageSnapshots() } returns manageSnapshots
