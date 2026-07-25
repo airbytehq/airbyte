@@ -1,0 +1,29 @@
+airbyte:
+  connector:
+    exception-classifiers:
+      regex:
+        rules:
+          - pattern: "(?i).*(?:Rate exceeded|ThrottlingException|Throttling|Too Many Requests|TooManyRequestsException).*"
+            input-example: "software.amazon.awssdk.services.glue.model.GlueException: Rate exceeded (Service: Glue, Status Code: 400)"
+            error: transient
+            output: "AWS API rate limit exceeded."
+  destination:
+    core:
+      data-channel:
+        medium: ${DATA_CHANNEL_MEDIUM:STDIO}
+        format: ${DATA_CHANNEL_FORMAT:JSONL}
+        socket-paths: ${DATA_CHANNEL_SOCKET_PATHS:}
+        socket-buffer-size-bytes: 16384
+        socket-connection-timeout-ms: 900000
+        log-per-n-records: 100000
+      mappers:
+        namespace-mapping-config-path: ${NAMESPACE_MAPPING_CONFIG_PATH:/dest/namespace-mapping.json}
+      record-batch-size-override: ${AIRBYTE_DESTINATION_RECORD_BATCH_SIZE_OVERRIDE:null}
+      resources:
+        disk:
+          bytes: ${CONNECTOR_STORAGE_LIMIT_BYTES:5368709120}
+      flush:
+        rate-ms: 900000
+        window-ms: 900000
+      types:
+        unions: DEFAULT
