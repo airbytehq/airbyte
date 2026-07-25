@@ -71,7 +71,7 @@ class PositionalDeleteIndexBuilder(
                                 positions[MetadataColumns.ROW_POSITION.name()]!!,
                                 java.lang.Long::class.java,
                             )
-                        index.replace(
+                        val previous = index.replace(
                             key,
                             PositionalDeleteIndex.RowLocation(
                                 path,
@@ -80,6 +80,11 @@ class PositionalDeleteIndexBuilder(
                                 task.partition(),
                             ),
                         )
+                        check(previous == null) {
+                            "Positional delete index for ${table.name()} found multiple rows for " +
+                                "the same identifier. Positional deletes require unique keys in " +
+                                "the base snapshot."
+                        }
                         rows += 1
                     }
                 }
