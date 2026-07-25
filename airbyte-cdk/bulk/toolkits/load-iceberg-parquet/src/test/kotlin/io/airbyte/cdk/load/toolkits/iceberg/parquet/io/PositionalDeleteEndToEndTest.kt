@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test
 
 class PositionalDeleteEndToEndTest {
     @Test
+    @Suppress("DEPRECATION")
     fun `dedupe update and delete produces positional deletes and expected read`() {
         val warehouse = Files.createTempDirectory("positional-delete-e2e")
         val catalog = HadoopCatalog(Configuration(), warehouse.toString())
@@ -80,7 +81,7 @@ class PositionalDeleteEndToEndTest {
         equalityWriter.write(RecordWrapper(record(schema, "1", "one-current"), Operation.UPDATE))
         equalityWriter.write(RecordWrapper(record(schema, "2", "two-current"), Operation.UPDATE))
         commitRowDelta(table, "staging", equalityWriter.complete())
-        val initialSnapshotId = table.refs()["staging"]!!.snapshotId()!!
+        val initialSnapshotId = table.refs()["staging"]!!.snapshotId()
 
         val index =
             PositionalDeleteIndexBuilder()
@@ -102,7 +103,7 @@ class PositionalDeleteEndToEndTest {
         firstUpdateWriter.write(RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE))
         firstUpdateWriter.write(RecordWrapper(record(schema, "3", "three"), Operation.INSERT))
         commitRowDelta(table, "staging", firstUpdateWriter.complete())
-        val firstPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()!!
+        val firstPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()
 
         val secondUpdateWriter =
             writerFactory.create(
@@ -117,7 +118,7 @@ class PositionalDeleteEndToEndTest {
         )
         secondUpdateWriter.write(RecordWrapper(record(schema, "1", "ignored"), Operation.DELETE))
         commitRowDelta(table, "staging", secondUpdateWriter.complete())
-        val secondPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()!!
+        val secondPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()
 
         val stagingSnapshotId = secondPositionalSnapshotId
         val initialDeleteFiles =
@@ -147,7 +148,7 @@ class PositionalDeleteEndToEndTest {
         branch: String,
         result: org.apache.iceberg.io.WriteResult,
     ) {
-        val validationSnapshotId = table.refs()[branch]!!.snapshotId()!!
+        val validationSnapshotId = table.refs()[branch]!!.snapshotId()
         table
             .newRowDelta()
             .toBranch(branch)
