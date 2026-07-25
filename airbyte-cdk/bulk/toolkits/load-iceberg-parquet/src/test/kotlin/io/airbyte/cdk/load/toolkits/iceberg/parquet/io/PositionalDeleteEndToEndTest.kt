@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.airbyte.cdk.load.command.Append
 import java.nio.file.Files
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.FileContent
@@ -52,7 +53,7 @@ class PositionalDeleteEndToEndTest {
             writerFactory.create(
                 table,
                 "ab-generation-id-0-e",
-                importType,
+                Append,
                 schema,
             )
         initialWriter.write(record(schema, 1, "one"))
@@ -60,6 +61,16 @@ class PositionalDeleteEndToEndTest {
         val initialResult = initialWriter.complete()
         table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
         table.manageSnapshots().createBranch("staging").commit()
+        val equalityWriter =
+            writerFactory.create(
+                table,
+                "ab-generation-id-0-e",
+                importType,
+                schema,
+            )
+        equalityWriter.write(RecordWrapper(record(schema, 1, "one-current"), Operation.UPDATE))
+        commitRowDelta(table, "staging", equalityWriter.complete())
+        val initialSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
         val index =
             PositionalDeleteIndexBuilder()
@@ -81,6 +92,7 @@ class PositionalDeleteEndToEndTest {
         firstUpdateWriter.write(RecordWrapper(record(schema, 2, "ignored"), Operation.DELETE))
         firstUpdateWriter.write(RecordWrapper(record(schema, 3, "three"), Operation.INSERT))
         commitRowDelta(table, "staging", firstUpdateWriter.complete())
+        val firstPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
         val secondUpdateWriter =
             writerFactory.create(
@@ -95,15 +107,23 @@ class PositionalDeleteEndToEndTest {
         )
         secondUpdateWriter.write(RecordWrapper(record(schema, 1, "ignored"), Operation.DELETE))
         commitRowDelta(table, "staging", secondUpdateWriter.complete())
+        val secondPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()!!
 
-        val stagingSnapshotId = table.refs()["staging"]!!.snapshotId()!!
-        val deleteFiles =
-            table.snapshot(stagingSnapshotId)!!.addedDeleteFiles(table.io()).toList() +
-                table.snapshot(table.history().first().snapshotId())!!.addedDeleteFiles(table.io())
-        assertThat(deleteFiles).isNotEmpty
-        assertThat(deleteFiles.map { it.content() }.toSet())
-            .containsOnly(FileContent.POSITION_DELETES)
-        assertThat(deleteFiles).allMatch { it.content() != FileContent.EQUALITY_DELETES }
+        val stagingSnapshotId = secondPositionalSnapshotId
+        val initialDeleteFiles =
+            table.snapshot(initialSnapshotId)!!.addedDeleteFiles(table.io()).toList()
+        assertThat(initialDeleteFiles).isNotEmpty
+        val initialDeleteContents =
+            initialDeleteFiles.map { deleteFile -> deleteFile.content() }.toSet()
+        assertThat(initialDeleteContents).containsOnly(FileContent.EQUALITY_DELETES)
+        val positionalDeleteFiles =
+            listOf(firstPositionalSnapshotId, secondPositionalSnapshotId).flatMap { snapshotId ->
+                table.snapshot(snapshotId)!!.addedDeleteFiles(table.io()).toList()
+            }
+        assertThat(positionalDeleteFiles).isNotEmpty
+        val positionalDeleteContents =
+            positionalDeleteFiles.map { deleteFile -> deleteFile.content() }.toSet()
+        assertThat(positionalDeleteContents).containsOnly(FileContent.POSITION_DELETES)
 
         val rows =
             IcebergGenerics.read(table).useSnapshot(stagingSnapshotId).build().use { records ->

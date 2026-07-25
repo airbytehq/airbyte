@@ -67,6 +67,11 @@ class IcebergTableWriterFactory {
                     .uppercase()
             )
         val identifierFieldIds = schema.identifierFieldIds()
+        if (positionalDeleteIndex != null) {
+            require(identifierFieldIds.isNotEmpty()) {
+                "Positional deletes require at least one identifier field"
+            }
+        }
         val writerFactory =
             createWriterFactory(
                 table = table,
