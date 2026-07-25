@@ -11,8 +11,8 @@ import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
-import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.MergeOnReadDeleteEncoding
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires

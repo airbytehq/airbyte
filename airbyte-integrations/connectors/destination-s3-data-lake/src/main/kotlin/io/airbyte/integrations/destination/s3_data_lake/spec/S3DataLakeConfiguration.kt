@@ -79,8 +79,8 @@ class S3DataLakeConfigurationFactory :
             s3BucketConfiguration = pojo.toS3BucketConfiguration(),
             icebergCatalogConfiguration = pojo.toIcebergCatalogConfiguration(),
             flushBatchSizeMb = pojo.flushBatchSizeMb,
-            mergeOnReadDeleteEncoding =
-                pojo.mergeOnReadDeleteEncoding ?: MergeOnReadDeleteEncoding.EQUALITY,
+            mergeOnReadDeleteEncoding = pojo.mergeOnReadDeleteEncoding
+                    ?: MergeOnReadDeleteEncoding.EQUALITY,
         )
     }
 }
