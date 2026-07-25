@@ -359,6 +359,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |--------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.2  | 2026-06-15 | [79708](https://github.com/airbytehq/airbyte/pull/79708) | Classify 'the database system is shutting down' (SQLSTATE 57P03) as transient error to enable retries.                      |
 | 3.8.1  | 2026-06-03 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Fix NPE when connecting without password.                                                                                                                                  |
 | 3.8.0  | 2026-06-02 | [78305](https://github.com/airbytehq/airbyte/pull/78305) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
 | 3.7.2  | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
