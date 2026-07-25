@@ -8,13 +8,32 @@ import com.google.auth.oauth2.GoogleCredentials
 import com.google.auth.oauth2.ServiceAccountCredentials
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.DestinationStream
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 const val DEFAULT_CATALOG_NAME = "airbyte"
 const val DEFAULT_STAGING_BRANCH = "airbyte_staging"
 const val TEST_TABLE = "airbyte_test_table"
+
+fun generateStagingBranchName(stream: DestinationStream): String {
+    val branchKey =
+        listOf(
+                stream.mappedDescriptor.namespace.orEmpty(),
+                stream.mappedDescriptor.name,
+                stream.generationId.toString(),
+                stream.minimumGenerationId.toString(),
+            )
+            .joinToString(":")
+    val suffix =
+        UUID.nameUUIDFromBytes(branchKey.toByteArray(StandardCharsets.UTF_8))
+            .toString()
+            .replace("-", "_")
+    return "${DEFAULT_STAGING_BRANCH}_$suffix"
+}
 
 data class GcsDataLakeConfiguration(
     val gcsBucketName: String,
