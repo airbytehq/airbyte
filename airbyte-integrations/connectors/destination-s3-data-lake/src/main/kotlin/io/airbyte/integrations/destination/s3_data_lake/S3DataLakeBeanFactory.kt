@@ -70,7 +70,7 @@ class S3DataLakeBeanFactory {
                 override val numSockets: Int = 1
             }
         } else {
-            log.info { "No dedup streams detected, using all available sockets" }
+            log.info { "No socket restriction required, using all available sockets" }
             object : DataFlowSocketConfig {
                 override val numSockets: Int = Int.MAX_VALUE
             }
