@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.client
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
@@ -29,6 +30,8 @@ import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -931,6 +934,67 @@ internal class PostgresAirbyteClientTest {
                     cursorColumnName = "new_cursor"
                 )
             }
+        }
+    }
+
+    @Test
+    fun testExecuteThrowsConfigErrorOnReplicaIdentityError() {
+        val namespace = "test_namespace"
+        val psqlException =
+            org.postgresql.util.PSQLException(
+                "ERROR: cannot update table \"airbyte_rawairbyte_abc123\" because it does not have a replica identity and publishes updates",
+                null
+            )
+        val statement =
+            mockk<Statement> {
+                every { execute(any()) } throws psqlException
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.createNamespace(namespace) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val exception =
+                assertThrows(ConfigErrorException::class.java) {
+                    runBlocking { client.createNamespace(namespace) }
+                }
+            assertTrue(exception.message!!.contains("logical replication"))
+            assertTrue(exception.message!!.contains("REPLICA IDENTITY FULL"))
+        }
+    }
+
+    @Test
+    fun testExecuteThrowsConfigErrorOnDependentObjectsError() {
+        val namespace = "test_namespace"
+        val psqlException =
+            org.postgresql.util.PSQLException("cannot drop column because view depends on it", null)
+        val statement =
+            mockk<Statement> {
+                every { execute(any()) } throws psqlException
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.createNamespace(namespace) } returns MOCK_SQL_QUERY
+        every { postgresConfiguration.dropCascade } returns false
+
+        runBlocking {
+            val exception =
+                assertThrows(ConfigErrorException::class.java) {
+                    runBlocking { client.createNamespace(namespace) }
+                }
+            assertTrue(exception.message!!.contains("dependent objects"))
         }
     }
 }
