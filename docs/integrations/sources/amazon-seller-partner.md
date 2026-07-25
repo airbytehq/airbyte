@@ -393,7 +393,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.10.0 | 2026-07-25 | [82XXX](https://github.com/airbytehq/airbyte/pull/82XXX) | Add the GET_V2_SELLER_PERFORMANCE_REPORT Account Health / Seller Performance stream |
+| 5.10.0 | 2026-07-25 | [82752](https://github.com/airbytehq/airbyte/pull/82752) | Add the GET_V2_SELLER_PERFORMANCE_REPORT Account Health / Seller Performance stream |
 | 5.9.0 | 2026-07-24 | [82254](https://github.com/airbytehq/airbyte/pull/82254) | Add missing fields to GET_VENDOR_SALES_REPORT (customerReturns) and GET_VENDOR_INVENTORY_REPORT (startDate, endDate, unhealthyInventoryUnits, unhealthyInventoryCost, procurableProductOutOfStockRate, receiveFillRate, uft) |
 | 5.8.2 | 2026-07-21 | [82317](https://github.com/airbytehq/airbyte/pull/82317) | Update dependencies |
 | 5.8.1 | 2026-07-14 | [81724](https://github.com/airbytehq/airbyte/pull/81724) | Update dependencies |
