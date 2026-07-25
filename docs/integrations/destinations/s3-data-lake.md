@@ -256,6 +256,19 @@ To authenticate with Apache Polaris, follow these steps.
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
+### Merge-on-read delete encoding
+
+Append + Deduped streams use equality-delete files by default. To produce positional-delete files
+instead, set `merge_on_read_delete_encoding` to `POSITIONAL` in the destination configuration.
+This option is ignored for Append and Overwrite streams.
+
+Positional deletes are compatible with readers that do not support equality-delete files, such as
+Snowflake. Building the positional index requires scanning the current table snapshot and can be
+expensive for large tables. Positional mode also requires Dedupe records to be processed by a
+single pipeline; the connector enforces this by limiting the destination to one dataflow socket.
+If a key is not found in the snapshot index or among rows written during the current sync, no
+delete file entry is emitted.
+
 ## Output schema
 
 ### How Airbyte generates the Iceberg schema
@@ -395,6 +408,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0 | 2026-07-25 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add positional delete encoding for Dedupe streams |
 | 0.3.52 | 2026-06-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-10 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apacher Iceberg dependencies. |
 | 0.3.50 | 2026-06-03 | [79112](https://github.com/airbytehq/airbyte/pull/79112) | Use unique staging branches and clean them up after each sync. |

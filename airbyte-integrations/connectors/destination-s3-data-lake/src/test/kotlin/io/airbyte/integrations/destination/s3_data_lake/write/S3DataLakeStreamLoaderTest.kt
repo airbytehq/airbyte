@@ -35,6 +35,7 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRA
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.spec.MergeOnReadDeleteEncoding
 import io.airbyte.integrations.destination.s3_data_lake.spec.generateStagingBranchName
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -469,6 +470,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
@@ -545,6 +547,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -714,6 +717,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -858,6 +862,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.EQUALITY
         }
     }
 

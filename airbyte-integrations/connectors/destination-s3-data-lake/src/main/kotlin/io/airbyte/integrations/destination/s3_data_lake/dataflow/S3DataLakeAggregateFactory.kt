@@ -31,7 +31,8 @@ class S3DataLakeAggregateFactory(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
                 importType = stream.tableSchema.importType,
-                schema = state.schema
+                schema = state.schema,
+                positionalDeleteIndex = state.positionalDeleteIndex,
             )
 
         return S3DataLakeAggregate(
@@ -39,6 +40,7 @@ class S3DataLakeAggregateFactory(
             table = state.table,
             schema = state.schema,
             stagingBranchName = state.stagingBranchName,
+            baseSnapshotId = state.baseSnapshotId,
             writer = writer,
             icebergUtil = icebergUtil,
         )
