@@ -1049,7 +1049,9 @@ def test_upload_file(
             create_reader().upload(file, local_directory="tmp/airbyte-transfer", logger=MagicMock())
     else:
         file_record_data, file_reference = create_reader().upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
-        assert expected_paths["staging_file_url"] in file_reference.staging_file_url
+        # The CDK stages every file under a unique subdirectory of the staging directory
+        assert file_reference.staging_file_url.startswith(f"{TEST_LOCAL_DIRECTORY}/")
+        assert file_reference.staging_file_url.endswith(expected_paths["staging_file_url"].replace(f"{TEST_LOCAL_DIRECTORY}/", ""))
         assert expected_paths["file_relative_path"] == file_reference.source_file_relative_path
         assert file.mime_type == file_record_data.mime_type
 
