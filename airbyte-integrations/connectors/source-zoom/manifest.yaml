@@ -7664,12 +7664,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'users' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'users' stream are skipped.
         - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
@@ -7845,12 +7845,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'meetings' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meetings' stream are skipped.
         - type: DefaultErrorHandler
     paginator:
       type: NoPagination
@@ -7892,12 +7892,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'meetings' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meetings' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -7953,12 +7953,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'meetings' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meetings' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -8763,12 +8763,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_registrants' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_registrants' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - predicate: '{{ response.code == 300 }}'
@@ -8830,12 +8830,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'meeting_registrants' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_registrants' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -8891,12 +8891,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_registrants' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_registrants' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -9208,12 +9208,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_polls' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_polls' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -9263,12 +9263,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'meeting_polls' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_polls' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -9324,12 +9324,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_polls' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_polls' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -9654,12 +9654,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_poll_results' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_poll_results' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -9710,12 +9710,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'meeting_poll_results' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_poll_results' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -9771,12 +9771,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_poll_results' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_poll_results' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -10035,12 +10035,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_registration_questions' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_registration_questions' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -10089,12 +10089,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'meeting_registration_questions' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_registration_questions' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -10150,12 +10150,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'meeting_registration_questions' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'meeting_registration_questions' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -10415,12 +10415,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinars' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinars' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -10469,12 +10469,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinars' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinars' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -10537,12 +10537,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinars' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinars' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -11127,12 +11127,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_panelists' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_panelists' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -11182,12 +11182,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_panelists' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_panelists' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -11250,12 +11250,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_panelists' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_panelists' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -11496,12 +11496,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_registrants' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_registrants' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -11564,12 +11564,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_registrants' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_registrants' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -11632,12 +11632,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_registrants' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_registrants' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -11939,12 +11939,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_absentees' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_absentees' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -12007,12 +12007,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_absentees' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_absentees' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -12075,12 +12075,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_absentees' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_absentees' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -12383,12 +12383,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_polls' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_polls' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -12438,12 +12438,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_polls' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_polls' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -12506,12 +12506,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_polls' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_polls' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -12826,12 +12826,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_poll_results' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_poll_results' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -12880,12 +12880,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_poll_results' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_poll_results' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -12948,12 +12948,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_poll_results' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_poll_results' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -13191,12 +13191,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_registration_questions' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_registration_questions' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -13244,12 +13244,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_registration_questions' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_registration_questions' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -13312,12 +13312,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_registration_questions' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_registration_questions' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -13568,12 +13568,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_tracking_sources' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_tracking_sources' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -13622,12 +13622,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_tracking_sources' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_tracking_sources' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -13690,12 +13690,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_tracking_sources' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_tracking_sources' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -13921,12 +13921,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_qna_results' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_qna_results' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -13976,12 +13976,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'webinar_qna_results' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_qna_results' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -14044,12 +14044,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'webinar_qna_results' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'webinar_qna_results' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -14279,12 +14279,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'report_meetings' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_meetings' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -14334,12 +14334,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'report_meetings' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_meetings' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -14395,12 +14395,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'report_meetings' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_meetings' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -14697,12 +14697,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'report_meeting_participants' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_meeting_participants' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -14766,12 +14766,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'report_meeting_participants' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_meeting_participants' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -14827,12 +14827,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'report_meeting_participants' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_meeting_participants' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -15107,12 +15107,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'report_webinars' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_webinars' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -15160,12 +15160,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'report_webinars' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_webinars' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -15228,12 +15228,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'report_webinars' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_webinars' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -15520,12 +15520,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'report_webinar_participants' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_webinar_participants' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -15587,12 +15587,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'report_webinar_participants' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_webinar_participants' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
@@ -15655,12 +15655,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'report_webinar_participants' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'report_webinar_participants' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -15910,12 +15910,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'recordings' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'recordings' stream are skipped.
         - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
@@ -15971,12 +15971,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'recordings' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'recordings' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -16346,12 +16346,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'recording_transcript_content' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'recording_transcript_content' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -16400,12 +16400,12 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'recording_transcript_content' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'recording_transcript_content' stream are skipped.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
@@ -16467,12 +16467,12 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by the 'recording_transcript_content' stream. Records for this slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'recording_transcript_content' stream are skipped.
                         - type: DefaultErrorHandler
                     paginator:
                       type: DefaultPaginator
@@ -16679,19 +16679,19 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'phone_call_history' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'phone_call_history' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
             - 403
             predicate: '{{ response.get(''code'') == 2031 }}'
             action: IGNORE
-            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+            error_message: Zoom Phone is not enabled for this account. The 'phone_call_history' stream is skipped and other streams continue syncing.
         - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
@@ -16897,19 +16897,19 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'phone_recordings' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'phone_recordings' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
             - 403
             predicate: '{{ response.get(''code'') == 2031 }}'
             action: IGNORE
-            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+            error_message: Zoom Phone is not enabled for this account. The 'phone_recordings' stream is skipped and other streams continue syncing.
         - type: DefaultErrorHandler
     paginator:
       type: DefaultPaginator
@@ -17112,12 +17112,12 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 4711 }}'
             action: IGNORE
-            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+            error_message: The Zoom app is missing OAuth scopes required by the 'phone_recording_transcripts' stream. Records for this slice are skipped.
           - http_codes:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'phone_recording_transcripts' stream are skipped.
         - type: DefaultErrorHandler
           response_filters:
           - http_codes:
@@ -17132,7 +17132,7 @@ streams:
             - 403
             predicate: '{{ response.get(''code'') == 2031 }}'
             action: IGNORE
-            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+            error_message: Zoom Phone is not enabled for this account. The 'phone_recording_transcripts' stream is skipped and other streams continue syncing.
         - type: DefaultErrorHandler
     paginator:
       type: NoPagination
@@ -17176,19 +17176,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by the 'phone_recording_transcripts' stream. Records for this slice are skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user's slice of the 'phone_recording_transcripts' stream are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
                   - http_codes:
                     - 403
                     predicate: '{{ response.get(''code'') == 2031 }}'
                     action: IGNORE
-                    error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+                    error_message: Zoom Phone is not enabled for this account. The 'phone_recording_transcripts' stream is skipped and other streams continue syncing.
                 - type: DefaultErrorHandler
             paginator:
               type: DefaultPaginator
