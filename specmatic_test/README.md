@@ -173,14 +173,8 @@ self.set_specmatic_expectation(
 | File | Description |
 |---|---|
 | `specs/stripe-official.json` | Official Stripe OpenAPI spec used by the Specmatic mock server |
-| `specs/stripe-accounts-contract.json` | Minimal contract spec covering only the `GET /v1/accounts` endpoint |
-| `specs/stripe-accounts-contract_examples/` | Directory containing externalized mock test examples (`success.json`, `bad_limit.json`, `no_auth.json`) |
-| `specs/stripe-accounts-contract_dictionary.yaml` | Domain-specific dictionary specifying real-world mock data templates (e.g. `acct_` IDs, custom domains) for generative tests |
-| `specmatic.yaml` | Specmatic configuration referencing the spec file for MOCK mode |
-| `specmatic-accounts-test.yaml` | Specmatic configuration referencing the accounts spec file for TEST mode |
-| `accounts_stub_server.py` | HTTP stub server that acts as a target for Specmatic TEST mode contract verification |
-| `run_contract_test.ps1` | Orchestrates starting the accounts stub server, running Specmatic tests, and generating reports |
-| `docker-compose.yml` | Container orchestrator config to run the stub server, mock server, and test runner in a clean, unified sandbox |
+| `specmatic.yaml` | Specmatic configuration referencing `stripe-official.json` for MOCK mode |
+| `docker-compose.yml` | Container orchestrator config to run the Specmatic mock server in a clean, unified sandbox |
 
 | Test Infrastructure | Location |
 |---|---|
@@ -320,46 +314,4 @@ specmatic examples validate --lenient --spec-file specmatic_test/specs/stripe-of
 
 > [!NOTE]
 > The `--lenient` flag is required because the official Stripe specification contains duplicate query parameter entries which otherwise cause strict parser validation to fail.
-
----
-
-## How to Run Accounts Contract Tests (TEST Mode) Locally
-
-This runs Specmatic in **TEST mode** where Specmatic acts as a test client that auto-generates requests from the OpenAPI contract, fires them at a local target server (our Python stub server), and verifies the response schemas and examples.
-
-### 1. Start the accounts stub server:
-```bash
-python specmatic_test/accounts_stub_server.py --port 3000
-```
-
-### 2. Run the Specmatic contract tests:
-From the repository root:
-
-**Using Specmatic CLI (Direct):**
-```bash
-specmatic test --host=127.0.0.1 --port=3000 --config=specmatic-accounts-test.yaml
-```
-
-**Using Docker (Windows/PowerShell):**
-```powershell
-.\run_contract_test.ps1
-```
-
-**Using Docker (macOS / Linux):**
-```bash
-docker run --rm \
-  -v "$(pwd):/usr/src/app" \
-  -v "$HOME/.specmatic:/root/.specmatic" \
-  -w /usr/src/app \
-  specmatic/specmatic:2.50.1 test \
-  --host=host.docker.internal --port=3000 \
-  --config specmatic-accounts-test.yaml \
-  --timeout=30
-```
-
-**Using Docker Compose (Cross-Platform):**
-```bash
-# Automatically starts the accounts stub server, waits for its health check,
-# runs the Specmatic contract tests, and exits.
-docker compose -f specmatic_test/docker-compose.yml up specmatic-test --exit-code-from specmatic-test
-```
+

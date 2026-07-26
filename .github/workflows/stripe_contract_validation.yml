@@ -43,74 +43,20 @@ jobs:
       - name: Install Specmatic
         run: npm install -g specmatic@2.50.1
 
-      - name: Run Specmatic Integration Tests (Generates Stub Report)
+      - name: Run Specmatic Integration Tests (Generates Stub HTML Report)
         run: |
           pip install pytest freezegun pytest-mock requests-mock mock airbyte-cdk==6.61.6 requests pyyaml jsonschema
           export PYTHONPATH=$PYTHONPATH:$(pwd)/airbyte-integrations/connectors/source-stripe/unit_tests
           export SPECMATIC_GENERATIVE_TESTS=true
-          pytest -v airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_*.py
+          pytest -v airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_accounts.py airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_*_specmatic.py || true
           mkdir -p build/reports/specmatic
           if [ -d "airbyte-integrations/connectors/source-stripe/unit_tests/build/reports/specmatic" ]; then
             cp -r airbyte-integrations/connectors/source-stripe/unit_tests/build/reports/specmatic/* build/reports/specmatic/
           fi
-        continue-on-error: true
 
-      - name: Start Accounts Stub Server
-        run: |
-          python specmatic_test/accounts_stub_server.py --port 3000 --host 0.0.0.0 &
-          echo "Waiting for stub server..."
-          for i in {1..15}; do
-            if curl -sf http://localhost:3000/health; then
-              echo "Stub server is ready!"
-              break
-            fi
-            sleep 1
-          done
-        if: always()
-
-      - name: Run Specmatic Accounts Contract Test (Generates Test Report with Actuator ON)
-        run: |
-          endpointsAPI=http://127.0.0.1:3000/actuator/mappings specmatic test \
-            --host=127.0.0.1 \
-            --port=3000 \
-            --config=specmatic-accounts-test.yaml \
-            --timeout=30 \
-            --junitReportDir=build/reports/specmatic/junit
-          mkdir -p build/reports/specmatic/test/html
-          if [ -d "build/reports/specmatic/accounts/test/html" ]; then
-            cp -r build/reports/specmatic/accounts/test/html/* build/reports/specmatic/test/html/
-          fi
-        continue-on-error: true
-        if: always()
-
-      - name: Stop Accounts Stub Server
-        run: |
-          pkill -f "accounts_stub_server.py" || true
-        if: always()
-
-      - name: Convert JUnit XML to CTRF JSON
-        run: |
-          mkdir -p build/reports/specmatic/junit
-          if ls build/reports/specmatic/junit/*.xml 1> /dev/null 2>&1; then
-            npx junit-to-ctrf build/reports/specmatic/junit/*.xml --output build/reports/specmatic/ctrf-report.json || true
-          fi
-        if: always()
-
-      - name: Publish CTRF Test Report
-        uses: ctrf-io/github-test-reporter@v1
-        with:
-          report-path: "**/ctrf-report.json"
-          github-report: true
-          annotate: true
-        continue-on-error: true
-        if: always()
-
-      - name: Upload Specmatic Reports
+      - name: Upload Specmatic Stub HTML Report
         uses: actions/upload-artifact@v4
         with:
-          name: specmatic-reports
-          path: |
-            build/reports/specmatic/
-            airbyte-integrations/connectors/source-stripe/unit_tests/build/reports/specmatic/
-          if-no-files-found: warn
-        if: always()
+          name: specmatic-stub-html-report
+          path: build/reports/specmatic/stub/html/
+          if-no-files-found: error

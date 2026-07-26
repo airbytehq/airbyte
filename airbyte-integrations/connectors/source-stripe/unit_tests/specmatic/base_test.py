@@ -28,10 +28,10 @@ class SpecmaticIntegrationTestCase(unittest.TestCase):
     def setUpClass(cls):
         # Resolve repository paths relative to this file
         current_file = Path(__file__).resolve()
-        # Find repo root dynamically by scanning parent directories for specmatic.yaml
+        # Find repo root dynamically by scanning parent directories for specmatic_test/specs/stripe-official.json
         repo_root = None
         for parent in current_file.parents:
-            if (parent / "specmatic.yaml").exists():
+            if (parent / "specmatic_test" / "specs" / "stripe-official.json").exists():
                 repo_root = parent
                 break
         if not repo_root:

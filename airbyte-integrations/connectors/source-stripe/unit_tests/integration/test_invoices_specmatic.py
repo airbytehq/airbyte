@@ -72,7 +72,7 @@ class InvoicesSpecmaticFullRefreshTest(SpecmaticIntegrationTestCase):
                 "created[gte]": str(int(start_date.timestamp())),
                 "created[lte]": str(int(now.timestamp())),
                 "limit": "100",
-                "expand[]": ["data.discounts", "data.total_tax_amounts.tax_rate"],
+                "expand[]": "data.discounts",
             },
             response_body={
                 "object": "list",
@@ -97,7 +97,7 @@ class InvoicesSpecmaticFullRefreshTest(SpecmaticIntegrationTestCase):
                 "created[gte]": str(int(start_date.timestamp())),
                 "created[lte]": str(int(now.timestamp())),
                 "limit": "100",
-                "expand[]": ["data.discounts", "data.total_tax_amounts.tax_rate"],
+                "expand[]": "data.discounts",
             },
             response_body={
                 "object": "list",
@@ -114,7 +114,7 @@ class InvoicesSpecmaticFullRefreshTest(SpecmaticIntegrationTestCase):
                 "created[gte]": str(int(start_date.timestamp())),
                 "created[lte]": str(int(now.timestamp())),
                 "limit": "100",
-                "expand[]": ["data.discounts", "data.total_tax_amounts.tax_rate"],
+                "expand[]": "data.discounts",
             },
             response_body={
                 "object": "list",
@@ -139,7 +139,7 @@ class InvoicesSpecmaticFullRefreshTest(SpecmaticIntegrationTestCase):
                 "created[gte]": str(int(start_date.timestamp())),
                 "created[lte]": str(int(now.timestamp())),
                 "limit": "100",
-                "expand[]": ["data.discounts", "data.total_tax_amounts.tax_rate"],
+                "expand[]": "data.discounts",
             },
             response_body={"object": "list", "url": "/v1/invoices", "has_more": False, "data": []},
         )

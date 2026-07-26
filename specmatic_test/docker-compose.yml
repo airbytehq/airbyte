@@ -1,40 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Accounts Stub Server (the target system under contract test)
-  stub-server:
-    image: python:3.11-slim
-    container_name: accounts-stub-server
-    volumes:
-      - ..:/usr/src/app
-    working_dir: /usr/src/app
-    command: python specmatic_test/accounts_stub_server.py --port 3000 --host 0.0.0.0
-    ports:
-      - "3000:3000"
-    healthcheck:
-      # Port-independent Python healthcheck (avoiding dependencies on curl/wget in slim image)
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3000/health')"]
-      interval: 3s
-      timeout: 2s
-      retries: 5
-      start_period: 2s
-
-  # 2. Specmatic Contract Test Runner (executes tests against the stub-server)
-  specmatic-test:
-    image: specmatic/specmatic:2.50.1
-    container_name: specmatic-test-runner
-    depends_on:
-      stub-server:
-        condition: service_healthy
-    volumes:
-      - ..:/usr/src/app
-      - ~/.specmatic:/root/.specmatic
-    working_dir: /usr/src/app
-    environment:
-      - endpointsAPI=http://stub-server:3000/actuator/mappings
-    command: test --host=stub-server --port=3000 --config=specmatic-accounts-test.yaml --timeout=30 --junitReportDir=build/reports/specmatic/junit
-
-  # 3. Specmatic Mock Server (mocks Stripe APIs for integration tests)
+  # Specmatic Mock Server (mocks Stripe APIs for connector integration tests)
   specmatic-mock:
     image: specmatic/specmatic:2.50.1
     container_name: specmatic-mock-server
