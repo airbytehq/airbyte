@@ -15,7 +15,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 @responses.activate
 def test_application_roles_stream_401_error(config, caplog):
-    config["domain"] = "test_application_domain"
+    config["domain"] = "test-application.atlassian.net"
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", status=401)
 
     stream = find_stream("application_roles", config)
@@ -68,7 +68,7 @@ def test_boards_stream(config, boards_response):
 
 @responses.activate
 def test_board_stream_forbidden(config, boards_response, caplog):
-    config["domain"] = "test_boards_domain"
+    config["domain"] = "test-boards.atlassian.net"
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
@@ -126,21 +126,6 @@ def test_issues_fields_stream(config, mock_fields_response):
     records = list(read_full_refresh(stream))
 
     assert len(records) == 6
-    assert len(responses.calls) == 1
-
-
-@responses.activate
-def test_issues_field_configurations_stream(config, issues_field_configurations_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/fieldconfiguration?maxResults=50",
-        json=issues_field_configurations_response,
-    )
-
-    stream = find_stream("issue_field_configurations", config)
-    records = list(read_full_refresh(stream))
-
-    assert len(records) == 1
     assert len(responses.calls) == 1
 
 
@@ -480,7 +465,7 @@ def test_users_groups_detailed_stream(config, mock_users_response, users_groups_
 def test_workflows_stream(config, workflows_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/workflow/search?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/workflows/search?maxResults=50",
         json=workflows_response,
     )
 

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import dpath.util
 from pydantic.v1 import AnyUrl, Field, root_validator
@@ -10,6 +10,20 @@ from pydantic.v1.error_wrappers import ValidationError
 
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+
+
+class S3FileBasedStreamConfig(FileBasedStreamConfig):
+    """S3-specific stream config that adds a flag to skip the full parse check for Parquet files."""
+
+    skip_full_check_for_parquet: bool = Field(
+        title="Skip Full Check for Parquet",
+        description=(
+            "When enabled, the CHECK operation for Parquet streams will verify file accessibility "
+            "but skip the full record-parse step. This avoids out-of-memory errors on large Parquet files."
+        ),
+        default=False,
+    )
 
 
 class Config(AbstractFileBasedSpec):
@@ -23,6 +37,9 @@ class Config(AbstractFileBasedSpec):
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
 
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0)
+
+    # Use the extended stream config type but keep parent field metadata via schema patching.
+    streams: List[S3FileBasedStreamConfig]
 
     aws_access_key_id: Optional[str] = Field(
         title="AWS Access Key ID",
@@ -98,6 +115,15 @@ class Config(AbstractFileBasedSpec):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
+
+        # Keep parent streams metadata to avoid drift, then inject the S3-specific flag.
+        parent_schema = AbstractFileBasedSpec.schema()
+        schema["properties"]["streams"] = parent_schema["properties"]["streams"]
+
+        s3_stream_schema = S3FileBasedStreamConfig.schema(*args, **kwargs)
+        skip_prop = s3_stream_schema["properties"]["skip_full_check_for_parquet"]
+        stream_item_props = schema["properties"]["streams"]["items"]["properties"]
+        stream_item_props["skip_full_check_for_parquet"] = skip_prop
 
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
         processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")

@@ -53,6 +53,7 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.9.4 | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13 |
 | 0.9.3 | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8 |
 | 0.9.2 | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0 |
 | 0.9.1 | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle |

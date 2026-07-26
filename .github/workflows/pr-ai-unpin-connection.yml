@@ -1,0 +1,25 @@
+name: PR unpin connection on merge
+on: workflow_dispatch
+#  workflow_dispatch:
+#    inputs:
+#      dry-run:
+#        description: 'Dry run'
+#        required: false
+#        default: 'false'
+#        type: boolean
+
+#  pull_request:
+#    types: [closed]
+
+permissions:
+  issues: write
+  discussions: write
+
+jobs:
+  ai-unpin:
+    runs-on: ubuntu-latest
+    name: AI Unpin Connections
+    steps:
+      - name: No-op
+        if: github.event_name == 'workflow_dispatch'
+        run: true

@@ -1,0 +1,734 @@
+---
+id: airbyte_agent_sdk-connectors-gmail-connector
+title: airbyte_agent_sdk.connectors.gmail.connector
+---
+
+Module airbyte_agent_sdk.connectors.gmail.connector
+===================================================
+Gmail connector.
+
+Classes
+-------
+
+<a id="DraftsQuery"></a>
+
+`DraftsQuery(connector: GmailConnector)`
+:   Query class for Drafts entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: DraftsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[DraftsSearchData]`
+    :   Search drafts records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (DraftsSearchFilter):
+        - id: Unique identifier for the draft
+        - message: Draft message payload (headers, body, and metadata)
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            DraftsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, message: DraftsCreateParamsMessage, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Draft`
+    :   Creates a new draft with the specified message content
+        
+        Args:
+            message: The draft message content encoded in Gmail raw message format
+            **kwargs: Additional parameters
+        
+        Returns:
+            Draft
+
+    `delete(self, draft_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Immediately and permanently deletes the specified draft (does not move to trash)
+        
+        Args:
+            draft_id: The ID of the draft to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
+    `get(self, draft_id: str, format: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Draft`
+    :   Gets the specified draft including its message content
+        
+        Args:
+            draft_id: The ID of the draft to retrieve
+            format: The format to return the draft message in (full, metadata, minimal, raw)
+            **kwargs: Additional parameters
+        
+        Returns:
+            Draft
+
+    `list(self, max_results: int | None = None, page_token: str | None = None, q: str | None = None, include_spam_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.GmailExecuteResultWithMeta[list[DraftRef], DraftsListResultMeta]`
+    :   Lists the drafts in the user's mailbox
+        
+        Args:
+            max_results: Maximum number of drafts to return (1-500)
+            page_token: Page token to retrieve a specific page of results
+            q: Gmail search query to filter drafts
+            include_spam_trash: Include drafts from SPAM and TRASH in the results
+            **kwargs: Additional parameters
+        
+        Returns:
+            DraftsListResult
+
+    `update(self, message: DraftsUpdateParamsMessage, draft_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Draft`
+    :   Replaces a draft's content with the specified message content
+        
+        Args:
+            message: The draft message content encoded in Gmail raw message format
+            draft_id: The ID of the draft to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            Draft
+
+<a id="DraftsSendQuery"></a>
+
+`DraftsSendQuery(connector: GmailConnector)`
+:   Query class for DraftsSend entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Message`
+    :   Sends the specified existing draft to its recipients
+        
+        Args:
+            id: The ID of the draft to send
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+<a id="GmailConnector"></a>
+
+`GmailConnector(auth_config: GmailAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Gmail API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new gmail connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., GmailAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = GmailConnector(auth_config=GmailAuthConfig(access_token="...", refresh_token="...", client_id="...", client_secret="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = GmailConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = GmailConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
+        
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
+        
+        Usage:
+            connector = GmailConnector(...)
+        
+            @GmailConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
+        
+            @GmailConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @GmailConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
+        
+        Args:
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = GmailConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @GmailConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @GmailConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @GmailConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.gmail.models.GmailCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            GmailCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['get', 'list', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="LabelsQuery"></a>
+
+`LabelsQuery(connector: GmailConnector)`
+:   Query class for Labels entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: LabelsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[LabelsSearchData]`
+    :   Search labels records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (LabelsSearchFilter):
+        - id: Unique identifier for the label
+        - name: Display name of the label
+        - type_: Label type: `system` or `user`
+        - label_list_visibility: Visibility of the label in the label list
+        - message_list_visibility: Visibility of the label when viewing a message list
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            LabelsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, name: str, message_list_visibility: str | None = None, label_list_visibility: str | None = None, color: LabelsCreateParamsColor | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Label`
+    :   Creates a new label in the user's mailbox
+        
+        Args:
+            name: The display name of the label
+            message_list_visibility: The visibility of messages with this label in the message list (show or hide)
+            label_list_visibility: The visibility of the label in the label list
+            color: The color to assign to the label
+            **kwargs: Additional parameters
+        
+        Returns:
+            Label
+
+    `delete(self, label_id: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Deletes the specified label and removes it from any messages and threads
+        
+        Args:
+            label_id: The ID of the label to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
+    `get(self, label_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Label`
+    :   Gets a specific label by ID including message and thread counts
+        
+        Args:
+            label_id: The ID of the label to retrieve
+            **kwargs: Additional parameters
+        
+        Returns:
+            Label
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.GmailExecuteResult[list[Label]]`
+    :   Lists all labels in the user's mailbox including system and user-created labels
+        
+        Returns:
+            LabelsListResult
+
+    `update(self, label_id: str, id: str | None = None, name: str | None = None, message_list_visibility: str | None = None, label_list_visibility: str | None = None, color: LabelsUpdateParamsColor | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Label`
+    :   Updates the specified label
+        
+        Args:
+            id: The ID of the label (must match the path parameter)
+            name: The new display name of the label
+            message_list_visibility: The visibility of messages with this label in the message list
+            label_list_visibility: The visibility of the label in the label list
+            color: The color to assign to the label
+            label_id: The ID of the label to update
+            **kwargs: Additional parameters
+        
+        Returns:
+            Label
+
+<a id="MessagesQuery"></a>
+
+`MessagesQuery(connector: GmailConnector)`
+:   Query class for Messages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MessagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[MessagesSearchData]`
+    :   Search messages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MessagesSearchFilter):
+        - id: Unique identifier for the message
+        - thread_id: Identifier of the thread this message belongs to
+        - label_ids: Labels applied to the message
+        - snippet: Short snippet of the message text
+        - history_id: Mailbox history record identifier for the message
+        - internal_date: Internal message creation timestamp in epoch milliseconds
+        - size_estimate: Estimated size of the message in bytes
+        - payload: Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MessagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, raw: str, thread_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Message`
+    :   Sends a new email message. The message should be provided as a base64url-encoded
+        RFC 2822 formatted string in the 'raw' field. Build the complete MIME message
+        first, including headers such as To and Subject plus a blank line before the
+        body, then base64url-encode that message before calling this operation.
+        
+        
+                Args:
+                    raw: Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before sending.
+                    thread_id: The thread ID to reply to (for threading replies in a conversation)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Message
+
+    `get(self, message_id: str, format: str | None = None, metadata_headers: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Message`
+    :   Gets the full email message content including headers, body, and attachments metadata
+        
+        Args:
+            message_id: The ID of the message to retrieve
+            format: The format to return the message in (full, metadata, minimal, raw)
+            metadata_headers: When format is METADATA, only include headers specified (comma-separated)
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+    `list(self, max_results: int | None = None, page_token: str | None = None, q: str | None = None, label_ids: str | None = None, include_spam_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.GmailExecuteResultWithMeta[list[MessageRef], MessagesListResultMeta]`
+    :   Lists the messages in the user's mailbox. Returns message IDs and thread IDs.
+        
+        Args:
+            max_results: Maximum number of messages to return (1-500)
+            page_token: Page token to retrieve a specific page of results
+            q: Gmail search query (same format as Gmail search box, e.g. "from:user@example.com", "is:unread", "subject:hello")
+            label_ids: Only return messages with labels matching all of the specified label IDs (comma-separated)
+            include_spam_trash: Include messages from SPAM and TRASH in the results
+            **kwargs: Additional parameters
+        
+        Returns:
+            MessagesListResult
+
+    `update(self, message_id: str, add_label_ids: list[str] | None = None, remove_label_ids: list[str] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Message`
+    :   Modifies the labels on a message. Use this to archive (remove INBOX label),
+        mark as read (remove UNREAD label), mark as unread (add UNREAD label),
+        star (add STARRED label), or apply custom labels.
+        
+        
+                Args:
+                    add_label_ids: A list of label IDs to add to the message (e.g. STARRED, UNREAD, or custom label IDs)
+                    remove_label_ids: A list of label IDs to remove from the message (e.g. INBOX to archive, UNREAD to mark as read)
+                    message_id: The ID of the message to modify
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    Message
+
+<a id="MessagesTrashQuery"></a>
+
+`MessagesTrashQuery(connector: GmailConnector)`
+:   Query class for MessagesTrash entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, message_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Message`
+    :   Moves the specified message to the trash
+        
+        Args:
+            message_id: The ID of the message to trash
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+<a id="MessagesUntrashQuery"></a>
+
+`MessagesUntrashQuery(connector: GmailConnector)`
+:   Query class for MessagesUntrash entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, message_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Message`
+    :   Removes the specified message from the trash
+        
+        Args:
+            message_id: The ID of the message to untrash
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+<a id="ProfileQuery"></a>
+
+`ProfileQuery(connector: GmailConnector)`
+:   Query class for Profile entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ProfileSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[ProfileSearchData]`
+    :   Search profile records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ProfileSearchFilter):
+        - email_address: Email address of the authenticated Gmail account
+        - history_id: Mailbox history record identifier used for incremental sync
+        - messages_total: Total number of messages currently in the mailbox
+        - threads_total: Total number of threads currently in the mailbox
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ProfileSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Profile`
+    :   Gets the current user's Gmail profile including email address and mailbox statistics
+        
+        Returns:
+            Profile
+
+<a id="ThreadsQuery"></a>
+
+`ThreadsQuery(connector: GmailConnector)`
+:   Query class for Threads entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ThreadsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.gmail.models.AirbyteSearchResult[ThreadsSearchData]`
+    :   Search threads records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ThreadsSearchFilter):
+        - id: Unique identifier for the thread
+        - history_id: Mailbox history record identifier for the thread
+        - snippet: Short snippet of the thread's most recent message
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ThreadsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, thread_id: str, format: str | None = None, metadata_headers: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.Thread`
+    :   Gets the specified thread including all messages in the conversation
+        
+        Args:
+            thread_id: The ID of the thread to retrieve
+            format: The format to return the messages in (full, metadata, minimal)
+            metadata_headers: When format is METADATA, only include headers specified (comma-separated)
+            **kwargs: Additional parameters
+        
+        Returns:
+            Thread
+
+    `list(self, max_results: int | None = None, page_token: str | None = None, q: str | None = None, label_ids: str | None = None, include_spam_trash: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gmail.models.GmailExecuteResultWithMeta[list[ThreadRef], ThreadsListResultMeta]`
+    :   Lists the threads in the user's mailbox
+        
+        Args:
+            max_results: Maximum number of threads to return (1-500)
+            page_token: Page token to retrieve a specific page of results
+            q: Gmail search query to filter threads
+            label_ids: Only return threads with labels matching all of the specified label IDs (comma-separated)
+            include_spam_trash: Include threads from SPAM and TRASH in the results
+            **kwargs: Additional parameters
+        
+        Returns:
+            ThreadsListResult
