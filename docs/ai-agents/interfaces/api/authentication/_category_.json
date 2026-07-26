@@ -1,0 +1,9 @@
+{
+  "label": "Authentication",
+  "key": "api-authentication",
+  "position": 1,
+  "link": {
+    "type": "doc",
+    "id": "readme"
+  }
+}

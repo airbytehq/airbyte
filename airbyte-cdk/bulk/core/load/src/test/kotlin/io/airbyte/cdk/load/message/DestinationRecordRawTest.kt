@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 
 class DestinationRecordRawTest {
 
-    private val coercer = AirbyteValueCoercer(useFastTimestampParsing = true)
+    private val coercer = AirbyteValueCoercer()
 
     // Create a schema with various field types for testing
     private val recordSchema =

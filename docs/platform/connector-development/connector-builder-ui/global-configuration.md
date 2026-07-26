@@ -88,3 +88,7 @@ Specifies which HTTP response header contains the number of remaining requests a
 Configure which HTTP status codes indicate that a rate limit has been exceeded. The most common is `429 Too Many Requests`, but some APIs use other codes like `420` or `503`.
 
 When these status codes are encountered, the connector will automatically pause requests and retry according to the rate limiting policy.
+
+## Related
+
+- *YAML Components*: [Requester](/platform/connector-development/config-based/understanding-the-yaml-file/requester)

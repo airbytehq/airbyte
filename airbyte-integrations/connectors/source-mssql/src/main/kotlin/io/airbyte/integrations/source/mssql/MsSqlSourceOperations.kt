@@ -83,7 +83,11 @@ class MsSqlSourceOperations :
                         if (type.precision!! < 25) FloatFieldType else DoubleFieldType
                     JDBCType.DOUBLE -> DoubleFieldType
                     JDBCType.NUMERIC,
-                    JDBCType.DECIMAL -> BigDecimalFieldType
+                    JDBCType.DECIMAL ->
+                        // SQL Server NUMERIC/DECIMAL with scale 0 holds whole numbers; map to
+                        // Airbyte integer so downstream destinations preserve integral semantics
+                        // (e.g. Snowflake NUMBER vs FLOAT).
+                        if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
                     JDBCType.CHAR,
                     JDBCType.VARCHAR,
                     JDBCType.LONGVARCHAR,
@@ -275,7 +279,7 @@ class MsSqlSourceOperations :
 
     fun SelectQuerySpec.sql(): String {
         val components: List<String> =
-            listOf(sql(select, limit), from.sql(), where.sql(), orderBy.sql())
+            listOf(sql(select, limit), from.sql(select), where.sql(), orderBy.sql())
         val sql: String = components.filter { it.isNotBlank() }.joinToString(" ")
         return sql
     }
@@ -290,12 +294,34 @@ class MsSqlSourceOperations :
                 Limit(0) -> "TOP 0 "
                 is Limit -> "TOP ${limit.n} "
             }
-        return "SELECT $topClause" +
-            when (selectNode) {
-                is SelectColumns -> selectNode.columns.joinToString(", ") { it.sql() }
-                is SelectColumnMaxValue -> "MAX(${selectNode.column.sql()})"
-            }
+        return "SELECT $topClause" + selectNode.projection()
     }
+
+    /** Renders the projection list for the outer SELECT of a [SelectQuerySpec]. */
+    fun SelectNode.projection(): String =
+        when (this) {
+            is SelectColumns -> columns.joinToString(", ") { it.sql() }
+            is SelectColumnMaxValue -> "MAX(${column.sql()})"
+        }
+
+    /**
+     * Renders the projection list used by the inner subquery of [FromSample]. Emits raw quoted
+     * column identifiers (never per-column transformations such as `[col].ToString()` used for
+     * hierarchy columns) so that:
+     * 1. The derived `randomly_sampled` table exposes every column by its original name, which is
+     * ```
+     *    what the outer SELECT references when applying transformations.
+     * ```
+     * 2. HIDDEN period columns on system-versioned temporal tables (`PERIOD FOR SYSTEM_TIME`)
+     * ```
+     *    remain accessible to the outer query; `SELECT *` would silently drop them.
+     * ```
+     */
+    fun SelectNode.innerSampleProjection(): String =
+        when (this) {
+            is SelectColumns -> columns.joinToString(", ") { it.id.quoted() }
+            is SelectColumnMaxValue -> column.id.quoted()
+        }
 
     /**
      * Quotes an identifier for SQL Server using square brackets. If the identifier contains a
@@ -307,7 +333,7 @@ class MsSqlSourceOperations :
     fun DataField.sql(): String =
         if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
-    fun FromNode.sql(): String =
+    fun FromNode.sql(outerSelect: SelectNode): String =
         when (this) {
             NoFrom -> ""
             is From -> {
@@ -324,8 +350,9 @@ class MsSqlSourceOperations :
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
+                    val innerProjection = outerSelect.innerSampleProjection()
 
-                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
+                    "FROM (SELECT TOP $sampleSize $innerProjection FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
         }

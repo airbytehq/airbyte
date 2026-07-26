@@ -116,12 +116,12 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
                 icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
             }
         fields.add(
-            NestedField.of(
-                id,
-                isOptional,
-                name,
-                icebergType,
-            ),
+            NestedField.builder()
+                .withId(id)
+                .isOptional(isOptional)
+                .withName(name)
+                .ofType(icebergType)
+                .build(),
         )
         // Identifier fields must be primitive types, and cannot be float/double.
         if (

@@ -20,8 +20,6 @@ import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.jdbc.ArrayFieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
-import io.airbyte.cdk.jdbc.DoubleFieldType
-import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
@@ -43,6 +41,8 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresFloatFieldType
 import io.debezium.connector.postgresql.PostgresConnector
 import io.debezium.connector.postgresql.connection.Lsn
 import io.debezium.time.Conversions
@@ -340,8 +340,15 @@ class PostgresSourceDebeziumOperations(
         try {
             val mappedValue =
                 when (fieldType) {
-                    FloatFieldType -> Jsons.numberNode(input.floatValue())
-                    DoubleFieldType -> Jsons.numberNode(input.asDouble())
+                    // Narrow numeric nodes to the right precision so the codec's
+                    // IEEE-754 roundtrip check passes (Debezium emits float4 values as
+                    // DoubleNode in JSON). For non-numeric forms — e.g. TextNode("Infinity")
+                    // from non-finite values — pass through so the codec rejects them and
+                    // the framework records DESERIALIZATION_FAILURE_TOTAL.
+                    PostgresFloatFieldType ->
+                        if (input.isNumber) Jsons.numberNode(input.floatValue()) else input
+                    PostgresDoubleFieldType ->
+                        if (input.isNumber) Jsons.numberNode(input.asDouble()) else input
                     BigDecimalFieldType -> {
                         if (input.isNumber) input
                         else Jsons.numberNode(BigDecimal(input.textValue()).stripTrailingZeros())
