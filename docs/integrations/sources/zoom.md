@@ -105,7 +105,7 @@ The Server-to-Server OAuth app must include the scopes required by the streams y
 
 ### Setup guide
 
-Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
+Please read [How to generate your Server-to-Server OAuth app](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
 
 :::info
 
