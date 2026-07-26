@@ -288,6 +288,10 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 
 </FieldAnchor>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Performance considerations
 
 The Azure Blob Storage connector should not encounter any [Microsoft API limitations](https://learn.microsoft.com/en-us/azure/storage/blobs/scalability-targets#scale-targets-for-blob-storage) under normal usage.
@@ -300,10 +304,6 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 - Requires Airbyte version 1.2.0 or later (1.7.0+ for metadata support)
 - Only works with file-based destinations that support file transfer
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
 ## Changelog
 
 <details>
@@ -311,6 +311,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.26 | 2026-07-22 | [82241](https://github.com/airbytehq/airbyte/pull/82241) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
 | 0.8.25 | 2026-07-21 | [82311](https://github.com/airbytehq/airbyte/pull/82311) | Update dependencies |
 | 0.8.24 | 2026-07-14 | [81715](https://github.com/airbytehq/airbyte/pull/81715) | Update dependencies |
 | 0.8.23 | 2026-07-07 | [81437](https://github.com/airbytehq/airbyte/pull/81437) | Update dependencies |
