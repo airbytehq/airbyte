@@ -752,6 +752,8 @@ streams:
       cursor_granularity: PT0.000001S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%d"
   - type: DeclarativeStream
     name: companies
     retriever:
