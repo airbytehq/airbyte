@@ -48,7 +48,7 @@ jobs:
           pip install pytest freezegun pytest-mock requests-mock mock airbyte-cdk==6.61.6 requests pyyaml jsonschema
           export PYTHONPATH=$PYTHONPATH:$(pwd)/airbyte-integrations/connectors/source-stripe/unit_tests
           export SPECMATIC_GENERATIVE_TESTS=true
-          pytest -v airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_accounts.py airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_*_specmatic.py || true
+          pytest -v airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_*.py || true
           mkdir -p build/reports/specmatic
           if [ -d "airbyte-integrations/connectors/source-stripe/unit_tests/build/reports/specmatic" ]; then
             cp -r airbyte-integrations/connectors/source-stripe/unit_tests/build/reports/specmatic/* build/reports/specmatic/
