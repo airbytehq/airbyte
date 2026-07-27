@@ -15,14 +15,11 @@ definitions:
       refresh_request_body:
         account_id: '{{ config[''account_id''] }}'
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-      - type: DefaultErrorHandler
-        response_filters:
-        - predicate: '{{ response.get(''code'') == 124 }}'
-          action: REFRESH_TOKEN_THEN_RETRY
-          error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-      - type: DefaultErrorHandler
+      type: DefaultErrorHandler
+      response_filters:
+      - predicate: '{{ response.get(''code'') == 124 }}'
+        action: REFRESH_TOKEN_THEN_RETRY
+        error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
   zoom_paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -53,14 +50,11 @@ definitions:
         refresh_request_body:
           account_id: '{{ config[''account_id''] }}'
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-          - predicate: '{{ response.get(''code'') == 124 }}'
-            action: REFRESH_TOKEN_THEN_RETRY
-            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-        - type: DefaultErrorHandler
+        type: DefaultErrorHandler
+        response_filters:
+        - predicate: '{{ response.get(''code'') == 124 }}'
+          action: REFRESH_TOKEN_THEN_RETRY
+          error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
   users_stream:
     retriever:
       requester:
@@ -78,14 +72,11 @@ definitions:
           refresh_request_body:
             account_id: '{{ config[''account_id''] }}'
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-            - predicate: '{{ response.get(''code'') == 124 }}'
-              action: REFRESH_TOKEN_THEN_RETRY
-              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-          - type: DefaultErrorHandler
+          type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -243,14 +234,11 @@ definitions:
             account_id: '{{ config[''account_id''] }}'
         path: /users/{{ stream_partition.parent_id }}/meetings
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-            - predicate: '{{ response.get(''code'') == 124 }}'
-              action: REFRESH_TOKEN_THEN_RETRY
-              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-          - type: DefaultErrorHandler
+          type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -290,14 +278,11 @@ definitions:
                   refresh_request_body:
                     account_id: '{{ config[''account_id''] }}'
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -457,14 +442,11 @@ definitions:
             account_id: '{{ config[''account_id''] }}'
         path: /meetings/{{ stream_partition.parent_id }}
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-            - predicate: '{{ response.get(''code'') == 124 }}'
-              action: REFRESH_TOKEN_THEN_RETRY
-              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-          - type: DefaultErrorHandler
+          type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -492,14 +474,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -539,14 +518,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1334,6 +1310,10 @@ definitions:
             - predicate: '{{ response.code == 300 }}'
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -1374,14 +1354,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1421,14 +1398,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -1714,6 +1688,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -1742,14 +1720,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -1789,14 +1764,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2096,6 +2068,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -2124,14 +2100,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2171,14 +2144,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2412,6 +2382,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -2439,14 +2413,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2486,14 +2457,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -2728,6 +2696,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -2767,14 +2739,11 @@ definitions:
                   refresh_request_body:
                     account_id: '{{ config[''account_id''] }}'
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -2946,6 +2915,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -2984,6 +2957,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3023,14 +3000,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3600,6 +3574,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -3639,6 +3617,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -3678,14 +3660,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -3911,6 +3890,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -3962,6 +3945,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4001,14 +3988,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4295,6 +4279,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -4346,6 +4334,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4385,14 +4377,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -4679,6 +4668,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -4718,6 +4711,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -4757,14 +4754,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5063,6 +5057,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -5102,6 +5100,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5141,14 +5143,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5370,6 +5369,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -5408,6 +5411,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5447,14 +5454,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5689,6 +5693,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -5728,6 +5736,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -5767,14 +5779,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -5984,6 +5993,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -6023,6 +6036,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6062,14 +6079,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6284,6 +6298,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -6311,14 +6329,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6358,14 +6373,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6635,6 +6647,10 @@ definitions:
               - 404
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -6675,14 +6691,11 @@ definitions:
                     account_id: '{{ config[''account_id''] }}'
                 path: /users/{{ stream_partition.parent_id }}/meetings
                 error_handler:
-                  type: CompositeErrorHandler
-                  error_handlers:
-                  - type: DefaultErrorHandler
-                    response_filters:
-                    - predicate: '{{ response.get(''code'') == 124 }}'
-                      action: REFRESH_TOKEN_THEN_RETRY
-                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                  - type: DefaultErrorHandler
+                  type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -6722,14 +6735,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -6978,6 +6988,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: NoPagination
       record_selector:
@@ -7016,6 +7030,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -7055,14 +7073,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -7333,6 +7348,10 @@ definitions:
               - 400
               action: IGNORE
           - type: DefaultErrorHandler
+            response_filters:
+            - predicate: '{{ response.get(''code'') == 124 }}'
+              action: REFRESH_TOKEN_THEN_RETRY
+              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -7384,6 +7403,10 @@ definitions:
                       - 400
                       action: IGNORE
                   - type: DefaultErrorHandler
+                    response_filters:
+                    - predicate: '{{ response.get(''code'') == 124 }}'
+                      action: REFRESH_TOKEN_THEN_RETRY
+                      error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               paginator:
                 type: DefaultPaginator
                 pagination_strategy:
@@ -7423,14 +7446,11 @@ definitions:
                           refresh_request_body:
                             account_id: '{{ config[''account_id''] }}'
                         error_handler:
-                          type: CompositeErrorHandler
-                          error_handlers:
-                          - type: DefaultErrorHandler
-                            response_filters:
-                            - predicate: '{{ response.get(''code'') == 124 }}'
-                              action: REFRESH_TOKEN_THEN_RETRY
-                              error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
-                          - type: DefaultErrorHandler
+                          type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                       paginator:
                         type: DefaultPaginator
                         pagination_strategy:
@@ -7669,8 +7689,13 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -7850,8 +7875,13 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
     paginator:
       type: NoPagination
     record_selector:
@@ -7892,13 +7922,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -7953,13 +7989,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -8794,13 +8836,21 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - predicate: '{{ response.code == 300 }}'
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -8856,13 +8906,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -8917,13 +8973,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -9265,14 +9327,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -9315,13 +9385,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -9376,13 +9452,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -9737,15 +9819,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -9788,13 +9878,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -9849,13 +9945,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -10144,14 +10246,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -10193,13 +10303,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -10254,13 +10370,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -10550,15 +10672,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -10599,19 +10729,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -10667,13 +10806,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -11262,15 +11407,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -11312,19 +11465,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11380,13 +11542,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -11631,15 +11799,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -11694,19 +11870,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -11762,13 +11947,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -12074,15 +12265,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -12137,19 +12336,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12205,13 +12413,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -12518,15 +12732,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -12568,19 +12790,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -12636,13 +12867,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -12961,14 +13198,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -13010,19 +13255,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13078,13 +13332,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -13326,14 +13586,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -13374,19 +13642,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13442,13 +13719,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -13703,14 +13986,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -13752,19 +14043,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -13820,13 +14120,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -14056,15 +14362,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -14106,19 +14420,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -14174,13 +14497,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -14414,15 +14743,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -14464,13 +14801,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -14525,13 +14868,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -14858,15 +15207,23 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             - 404
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -14922,13 +15279,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -14983,13 +15346,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -15294,14 +15663,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: NoPagination
@@ -15342,19 +15719,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -15410,13 +15796,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -15707,14 +16099,22 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 400
             action: IGNORE
             type: HttpResponseFilter
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
       type: HttpRequester
     paginator:
       type: DefaultPaginator
@@ -15769,19 +16169,28 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 400
                     action: IGNORE
                     type: HttpResponseFilter
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
               type: HttpRequester
             paginator:
               type: DefaultPaginator
@@ -15837,13 +16246,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -16097,8 +16512,13 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -16153,13 +16573,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -16533,9 +16959,13 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 404
             action: IGNORE
@@ -16582,13 +17012,19 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -16614,7 +17050,8 @@ streams:
                 - '*'
               record_filter:
                 type: RecordFilter
-                condition: '{{ record.get(''file_type'') == ''TRANSCRIPT'' or record.get(''recording_type'') == ''audio_transcript'' }}'
+                condition: '{{ record.get(''file_type'') == ''TRANSCRIPT'' or record.get(''recording_type'') == ''audio_transcript''
+                  }}'
               type: RecordSelector
             partition_router:
               type: SubstreamPartitionRouter
@@ -16649,13 +17086,19 @@ streams:
                             - 400
                             predicate: '{{ response.get(''code'') == 4711 }}'
                             action: IGNORE
-                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                            error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this
+                              slice are skipped.
                           - http_codes:
                             - 400
                             predicate: '{{ response.get(''code'') == 3161 }}'
                             action: IGNORE
-                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records
+                              for this user are skipped.
                         - type: DefaultErrorHandler
+                          response_filters:
+                          - predicate: '{{ response.get(''code'') == 124 }}'
+                            action: REFRESH_TOKEN_THEN_RETRY
+                            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                     paginator:
                       type: DefaultPaginator
                       pagination_strategy:
@@ -16866,15 +17309,24 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 403
             predicate: '{{ response.get(''code'') == 2031 }}'
             action: IGNORE
-            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams
+              continue syncing.
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -17084,15 +17536,24 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 403
             predicate: '{{ response.get(''code'') == 2031 }}'
             action: IGNORE
-            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams
+              continue syncing.
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -17299,9 +17760,13 @@ streams:
             - 400
             predicate: '{{ response.get(''code'') == 3161 }}'
             action: IGNORE
-            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+            error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user
+              are skipped.
         - type: DefaultErrorHandler
           response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
           - http_codes:
             - 404
             action: IGNORE
@@ -17314,8 +17779,13 @@ streams:
             - 403
             predicate: '{{ response.get(''code'') == 2031 }}'
             action: IGNORE
-            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+            error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams
+              continue syncing.
         - type: DefaultErrorHandler
+          response_filters:
+          - predicate: '{{ response.get(''code'') == 124 }}'
+            action: REFRESH_TOKEN_THEN_RETRY
+            error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
     paginator:
       type: NoPagination
     decoder:
@@ -17358,20 +17828,30 @@ streams:
                     - 400
                     predicate: '{{ response.get(''code'') == 4711 }}'
                     action: IGNORE
-                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are skipped.
+                    error_message: The Zoom app is missing OAuth scopes required by this stream. Records for this slice are
+                      skipped.
                   - http_codes:
                     - 400
                     predicate: '{{ response.get(''code'') == 3161 }}'
                     action: IGNORE
-                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this user are skipped.
+                    error_message: The Zoom user is not allowed meeting hosting and scheduling capabilities. Records for this
+                      user are skipped.
                 - type: DefaultErrorHandler
                   response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
                   - http_codes:
                     - 403
                     predicate: '{{ response.get(''code'') == 2031 }}'
                     action: IGNORE
-                    error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other streams continue syncing.
+                    error_message: Zoom Phone is not enabled for this account. This Zoom Phone stream is skipped and other
+                      streams continue syncing.
                 - type: DefaultErrorHandler
+                  response_filters:
+                  - predicate: '{{ response.get(''code'') == 124 }}'
+                    action: REFRESH_TOKEN_THEN_RETRY
+                    error_message: Zoom access token expired mid-sync; refreshing the token and retrying.
             paginator:
               type: DefaultPaginator
               pagination_strategy:
@@ -17490,10 +17970,12 @@ streams:
       value_type: integer
     - path:
       - owner_id
-      value: '{{ stream_slice.extra_fields.get(''owner'').get(''id'') if stream_slice.extra_fields.get(''owner'') else none }}'
+      value: '{{ stream_slice.extra_fields.get(''owner'').get(''id'') if stream_slice.extra_fields.get(''owner'') else none
+        }}'
     - path:
       - owner_name
-      value: '{{ stream_slice.extra_fields.get(''owner'').get(''name'') if stream_slice.extra_fields.get(''owner'') else none }}'
+      value: '{{ stream_slice.extra_fields.get(''owner'').get(''name'') if stream_slice.extra_fields.get(''owner'') else none
+        }}'
     - path:
       - content
       value: '{{ record.record }}'
@@ -17608,15 +18090,18 @@ spec:
       account_id:
         type: string
         order: 0
-        description: The account ID for your Zoom account. You can find this in the Zoom Marketplace under the "Manage" tab for your app.
+        description: The account ID for your Zoom account. You can find this in the Zoom Marketplace under the "Manage" tab
+          for your app.
       client_id:
         type: string
         order: 1
-        description: The client ID for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for your app.
+        description: The client ID for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for
+          your app.
       client_secret:
         type: string
         order: 2
-        description: The client secret for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for your app.
+        description: The client secret for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab
+          for your app.
         airbyte_secret: true
       authorization_endpoint:
         type: string
@@ -17629,7 +18114,8 @@ spec:
         maximum: 25
         default: 3
         order: 4
-        description: The number of concurrent workers used to fetch data from the Zoom API. Higher values speed up syncs but increase the chance of hitting Zoom API rate limits.
+        description: The number of concurrent workers used to fetch data from the Zoom API. Higher values speed up syncs but
+          increase the chance of hitting Zoom API rate limits.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: '{{ config.get(''num_workers'', 3) }}'
