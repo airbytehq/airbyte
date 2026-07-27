@@ -1,0 +1,374 @@
+# Dry-run is the default. Scheduled runs only write when the org/repo variable
+# ENABLE_COMMUNITY_PR_BOARD_SYNC is exactly "true"; workflow_dispatch exposes a
+# dry_run input for explicit control. The Octavia Bot app must have org-level
+# Projects: write permission for live synchronization.
+
+name: Community API source PR board sync
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log-only mode: read and report changes without writing to the project"
+        required: false
+        default: true
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Reconcile community API source PRs
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve effective mode
+        id: mode
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          ENABLE_SYNC: ${{ vars.ENABLE_COMMUNITY_PR_BOARD_SYNC }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            dry_run="$INPUT_DRY_RUN"
+          else
+            [[ "$ENABLE_SYNC" == "true" ]] && dry_run=false || dry_run=true
+          fi
+          echo "dry_run=$dry_run" >> "$GITHUB_OUTPUT"
+          echo "::notice::Community API source PR board sync mode: $( [[ "$dry_run" == "true" ]] && echo DRY-RUN || echo LIVE WRITE )"
+
+      # ---------- Authentication ----------
+      - name: Authenticate as Octavia Bot
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Checkout master
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master # PR head code is never checked out or executed in a job holding the app token.
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Build certified API source set
+        id: certified-sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/certified-api-sources.json"
+          connectors=()
+          while IFS= read -r metadata; do
+            connector_dir="$(dirname "$metadata")"
+            connector="$(basename "$connector_dir")"
+            connector_type="$(yq -r '.data.connectorType // "unknown"' "$metadata")"
+            connector_subtype="$(yq -r '.data.connectorSubtype // "unknown"' "$metadata")"
+            support_level="$(yq -r '.data.supportLevel // "unknown"' "$metadata")"
+            if [[ "$connector_type" == "source" && "$connector_subtype" == "api" && "$support_level" == "certified" ]]; then
+              connectors+=("$connector")
+            fi
+          done < <(find airbyte-integrations/connectors -mindepth 2 -maxdepth 2 -name metadata.yaml -print | sort)
+          printf '%s\n' "${connectors[@]}" | jq -Rsc 'split("\n") | map(select(length > 0))' > "$output"
+          count="${#connectors[@]}"
+          echo "Certified API source connector count: $count"
+          jq -r '.[]' "$output"
+          if [[ "$count" -eq 0 ]]; then
+            echo "::error::No certified API source connectors were found; refusing a silent no-op."
+            exit 1
+          fi
+          echo "path=$output" >> "$GITHUB_OUTPUT"
+
+      - name: Reconcile project board
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          CERTIFIED_SOURCES_PATH: ${{ steps.certified-sources.outputs.path }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+
+            const dryRun = process.env.DRY_RUN === 'true';
+            const certifiedSources = new Set(
+              JSON.parse(fs.readFileSync(process.env.CERTIFIED_SOURCES_PATH, 'utf8')),
+            );
+            const counts = {
+              evaluated: 0,
+              qualified: 0,
+              added: 0,
+              statusSet: 0,
+              draft: 0,
+              notCommunity: 0,
+              noCertifiedApiSourceChange: 0,
+              statusAlreadySet: 0,
+            };
+            const failures = [];
+            const projectNumber = 137;
+            const repositoryVariables = { owner: 'airbytehq', name: 'airbyte' };
+
+            const projectQuery = `
+              query($login: String!, $number: Int!) {
+                organization(login: $login) {
+                  projectV2(number: $number) {
+                    id
+                    title
+                    field(name: "Status") {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        options { id name }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            let project;
+            try {
+              const result = await github.graphql(projectQuery, {
+                login: 'airbytehq',
+                number: projectNumber,
+              });
+              project = result.organization?.projectV2;
+            } catch (error) {
+              throw new Error(
+                `Could not resolve organization project ${projectNumber}. ` +
+                'The app token may lack org-level Projects read/write permission. ' +
+                `GraphQL error: ${error.message}`,
+              );
+            }
+            if (!project) {
+              throw new Error(
+                `Organization project ${projectNumber} was not found. ` +
+                'Check that it exists and that the app token has org-level Projects read/write permission.',
+              );
+            }
+            if (!project.field?.id || !Array.isArray(project.field.options)) {
+              throw new Error(
+                `Project "${project.title}" has no Status single-select field. ` +
+                'Check the project configuration and that the app token has org-level Projects read/write permission.',
+              );
+            }
+            const statusOption = project.field.options.find(
+              (option) => option.name === 'Community PR Review',
+            );
+            if (!statusOption) {
+              throw new Error(
+                `Project "${project.title}" has no Status option named exactly "Community PR Review". ` +
+                'Check the project configuration and that the app token has org-level Projects read/write permission.',
+              );
+            }
+            core.info(`Resolved project "${project.title}" with option "${statusOption.name}"`);
+
+            const pullRequestsQuery = `
+              query($owner: String!, $name: String!, $cursor: String) {
+                repository(owner: $owner, name: $name) {
+                  pullRequests(states: OPEN, first: 50, after: $cursor) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes {
+                      id number isDraft authorAssociation
+                      headRepositoryOwner { login }
+                      changedFiles
+                      files(first: 100) {
+                        pageInfo { hasNextPage endCursor }
+                        nodes { path }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const additionalFilesQuery = `
+              query($owner: String!, $name: String!, $number: Int!, $cursor: String) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $number) {
+                    files(first: 100, after: $cursor) {
+                      pageInfo { hasNextPage endCursor }
+                      nodes { path }
+                    }
+                  }
+                }
+              }
+            `;
+            const projectItemsQuery = `
+              query($id: ID!, $cursor: String) {
+                node(id: $id) {
+                  ... on PullRequest {
+                    projectItems(first: 50, after: $cursor) {
+                      pageInfo { hasNextPage endCursor }
+                      nodes {
+                        id
+                        project { number }
+                        fieldValueByName(name: "Status") {
+                          ... on ProjectV2ItemFieldSingleSelectValue { name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const mutation = async (query, variables) => github.graphql(query, variables);
+            const addItemMutation = `
+              mutation($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                  item { id }
+                }
+              }
+            `;
+            const updateStatusMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId
+                  itemId: $itemId
+                  fieldId: $fieldId
+                  value: { singleSelectOptionId: $optionId }
+                }) {
+                  projectV2Item { id }
+                }
+              }
+            `;
+
+            const matchesCertifiedSource = (path) => {
+              const match = path.match(/^airbyte-integrations\/connectors\/([^/]+)(?:\/|$)/);
+              return match && certifiedSources.has(match[1]);
+            };
+            const getAllFiles = async (pr) => {
+              const files = [...pr.files.nodes];
+              let cursor = pr.files.pageInfo.endCursor;
+              let hasNextPage = pr.changedFiles > 100 || pr.files.pageInfo.hasNextPage;
+              while (!files.some((file) => matchesCertifiedSource(file.path)) && hasNextPage) {
+                const result = await github.graphql(additionalFilesQuery, {
+                  ...repositoryVariables,
+                  number: pr.number,
+                  cursor,
+                });
+                const page = result.repository.pullRequest.files;
+                files.push(...page.nodes);
+                cursor = page.pageInfo.endCursor;
+                hasNextPage = page.pageInfo.hasNextPage;
+              }
+              return files;
+            };
+            const getProjectItem = async (pr) => {
+              const items = [];
+              let cursor = null;
+              let hasNextPage = true;
+              while (hasNextPage) {
+                const result = await github.graphql(projectItemsQuery, { id: pr.id, cursor });
+                const page = result.node.projectItems;
+                items.push(...page.nodes);
+                hasNextPage = page.pageInfo.hasNextPage;
+                cursor = page.pageInfo.endCursor;
+              }
+              return items.find((item) => item.project?.number === projectNumber);
+            };
+
+            let cursor = null;
+            let hasNextPage = true;
+            while (hasNextPage) {
+              const result = await github.graphql(pullRequestsQuery, {
+                ...repositoryVariables,
+                cursor,
+              });
+              const page = result.repository.pullRequests;
+              for (const pr of page.nodes) {
+                counts.evaluated += 1;
+                if (pr.isDraft) {
+                  counts.draft += 1;
+                  core.info(`PR ${pr.number}: skipped (draft)`);
+                  continue;
+                }
+                const isCommunity =
+                  pr.headRepositoryOwner?.login !== 'airbytehq' &&
+                  !['MEMBER', 'OWNER', 'COLLABORATOR'].includes(pr.authorAssociation);
+                if (!isCommunity) {
+                  counts.notCommunity += 1;
+                  core.info(`PR ${pr.number}: skipped (not-community)`);
+                  continue;
+                }
+                const files = await getAllFiles(pr);
+                if (!files.some((file) => matchesCertifiedSource(file.path))) {
+                  counts.noCertifiedApiSourceChange += 1;
+                  core.info(`PR ${pr.number}: skipped (no-certified-api-source-change)`);
+                  continue;
+                }
+                counts.qualified += 1;
+                try {
+                  const item = await getProjectItem(pr);
+                  if (!item) {
+                    counts.added += 1;
+                    counts.statusSet += 1;
+                    if (dryRun) {
+                      core.info(`PR ${pr.number}: would add to project and set Status="${statusOption.name}"`);
+                    } else {
+                      const added = await mutation(addItemMutation, {
+                        projectId: project.id,
+                        contentId: pr.id,
+                      });
+                      await mutation(updateStatusMutation, {
+                        projectId: project.id,
+                        itemId: added.addProjectV2ItemById.item.id,
+                        fieldId: project.field.id,
+                        optionId: statusOption.id,
+                      });
+                      core.info(`PR ${pr.number}: added to project and set Status="${statusOption.name}"`);
+                    }
+                  } else if (!item.fieldValueByName?.name) {
+                    counts.statusSet += 1;
+                    if (dryRun) {
+                      core.info(`PR ${pr.number}: would set empty Status to "${statusOption.name}"`);
+                    } else {
+                      await mutation(updateStatusMutation, {
+                        projectId: project.id,
+                        itemId: item.id,
+                        fieldId: project.field.id,
+                        optionId: statusOption.id,
+                      });
+                      core.info(`PR ${pr.number}: set empty Status to "${statusOption.name}"`);
+                    }
+                  } else {
+                    counts.statusAlreadySet += 1;
+                    core.info(`PR ${pr.number}: skipped (status-already-set: "${item.fieldValueByName.name}")`);
+                  }
+                } catch (error) {
+                  failures.push(`PR ${pr.number}: ${error.message}`);
+                  core.error(`PR ${pr.number}: reconciliation failed: ${error.message}`);
+                }
+              }
+              hasNextPage = page.pageInfo.hasNextPage;
+              cursor = page.pageInfo.endCursor;
+            }
+
+            const mode = dryRun ? 'DRY-RUN' : 'LIVE';
+            await core.summary
+              .addHeading('Community API source PR board sync')
+              .addTable([
+                [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
+                ['Mode', mode],
+                ['Project', project.title],
+                ['Status option', statusOption.name],
+                ['Evaluated', counts.evaluated],
+                ['Qualified', counts.qualified],
+                ['Added', counts.added],
+                ['Status-set', counts.statusSet],
+                ['Skipped: draft', counts.draft],
+                ['Skipped: not-community', counts.notCommunity],
+                ['Skipped: no-certified-api-source-change', counts.noCertifiedApiSourceChange],
+                ['Skipped: status-already-set', counts.statusAlreadySet],
+              ])
+              .addHeading('Mutation failures')
+              .addList(failures.length ? failures : ['None'])
+              .write();
+            if (failures.length) {
+              core.setFailed(`${failures.length} PR reconciliation(s) failed.`);
+            }
