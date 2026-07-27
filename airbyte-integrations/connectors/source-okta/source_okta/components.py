@@ -85,6 +85,9 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
         client_id = self.config["credentials"]["client_id"]
         key_id = self.config["credentials"]["key_id"]
         private_key = self.config["credentials"]["private_key"]
+        # The Airbyte UI may store escaped newlines (literal \n) instead of real newline characters.
+        # PyJWT requires real newlines to parse PEM keys correctly.
+        private_key = private_key.replace("\\n", "\n")
         scope = self.config["credentials"]["scope"]
         now = int(time.time())
 

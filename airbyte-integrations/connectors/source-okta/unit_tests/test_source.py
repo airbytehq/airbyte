@@ -2,7 +2,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator
+from unittest.mock import patch
+
+from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator, CustomOauth2PrivateKeyAuthenticator
 from source_okta.source import SourceOkta
 
 
@@ -82,3 +84,82 @@ class TestAuthentication:
             oauth_authentication_instance.refresh_access_token()
         except Exception as e:
             assert e.args[0] == error_while_refreshing_access_token
+
+
+class TestPrivateKeyAuthentication:
+    """Tests for CustomOauth2PrivateKeyAuthenticator handling of escaped newlines in PEM keys."""
+
+    def test_private_key_with_escaped_newlines(self, requests_mock):
+        """
+        The Airbyte UI stores multiline PEM keys with literal \\n instead of real newline characters.
+        The authenticator should normalize these before passing to PyJWT.
+        """
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.hazmat.primitives import serialization
+
+        # Generate a test RSA key
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        pem_bytes = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        pem_multiline = pem_bytes.decode("utf-8")
+        # Simulate what the Airbyte UI does: replace real newlines with literal \n
+        pem_escaped = pem_multiline.replace("\n", "\\n")
+
+        config = {
+            "domain": "test_domain",
+            "credentials": {
+                "auth_type": "oauth2.0_private_key",
+                "client_id": "test_client_id",
+                "key_id": "test_key_id",
+                "private_key": pem_escaped,
+                "scope": "okta.users.read",
+            },
+        }
+
+        # Mock the Okta token endpoint
+        requests_mock.post(
+            "https://test_domain.okta.com/oauth2/v1/token",
+            json={"access_token": "test_access_token", "token_type": "Bearer", "expires_in": 3600},
+        )
+
+        authenticator = CustomOauth2PrivateKeyAuthenticator(config=config)
+        token = authenticator.token
+
+        assert token == "Bearer test_access_token"
+
+    def test_private_key_with_real_newlines(self, requests_mock):
+        """PEM keys with real newlines should also work (no regression)."""
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.hazmat.primitives import serialization
+
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        pem_bytes = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        pem_multiline = pem_bytes.decode("utf-8")
+
+        config = {
+            "domain": "test_domain",
+            "credentials": {
+                "auth_type": "oauth2.0_private_key",
+                "client_id": "test_client_id",
+                "key_id": "test_key_id",
+                "private_key": pem_multiline,
+                "scope": "okta.users.read",
+            },
+        }
+
+        requests_mock.post(
+            "https://test_domain.okta.com/oauth2/v1/token",
+            json={"access_token": "test_access_token", "token_type": "Bearer", "expires_in": 3600},
+        )
+
+        authenticator = CustomOauth2PrivateKeyAuthenticator(config=config)
+        token = authenticator.token
+
+        assert token == "Bearer test_access_token"
