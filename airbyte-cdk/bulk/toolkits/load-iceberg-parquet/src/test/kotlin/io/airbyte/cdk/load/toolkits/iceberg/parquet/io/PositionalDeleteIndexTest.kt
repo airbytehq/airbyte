@@ -57,7 +57,7 @@ internal class PositionalDeleteIndexTest {
     fun rejectsEqualityDeletesWithDifferentIdentifierFields() {
         val deleteFile = mockk<DeleteFile>()
         every { deleteFile.location() } returns "s3://bucket/delete.parquet"
-        every { deleteFile.equalityFieldIds() } returns setOf(2)
+        every { deleteFile.equalityFieldIds() } returns listOf(2)
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
