@@ -24,6 +24,6 @@ MNTN is a platform that lets brands of any size create and launch TV commercials
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-06-30 | | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.1 | 2026-06-30 | [81334](https://github.com/airbytehq/airbyte/pull/81334) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>
