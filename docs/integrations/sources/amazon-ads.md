@@ -72,6 +72,10 @@ The Amazon Ads source connector supports only **seller** and **vendor** profile 
 Both **view** and **edit** access levels are supported. Accounts with view-only permissions (common for Vendor Central accounts) will retrieve profiles and sync data normally.
 :::
 
+:::important
+Amazon Ads refresh tokens expire **365 days** after the advertiser grants consent. When a refresh token expires, the connector surfaces a configuration error indicating the token is invalid. To resolve this, re-authenticate your Amazon Ads account to generate a new refresh token. For Airbyte Cloud users, click **Authenticate your Amazon Ads account** in the source settings. For Open Source users, follow the [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) to obtain a new refresh token.
+:::
+
 ## Supported sync modes
 
 The Amazon Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -185,6 +189,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.0.6 | 2026-06-04 | [78506](https://github.com/airbytehq/airbyte/pull/78506) | Handle expired refresh tokens as configuration errors |
 | 9.0.5 | 2026-07-21 | [82341](https://github.com/airbytehq/airbyte/pull/82341) | Update dependencies |
 | 9.0.4 | 2026-07-14 | [81732](https://github.com/airbytehq/airbyte/pull/81732) | Update dependencies |
 | 9.0.3 | 2026-07-01 | [81333](https://github.com/airbytehq/airbyte/pull/81333) | Use `min_datetime` to cap report start date to Amazon's 60-day data retention limit, fixing off-by-one that requested 61 days back |
