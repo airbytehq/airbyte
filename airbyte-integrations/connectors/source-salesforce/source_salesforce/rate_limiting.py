@@ -107,6 +107,14 @@ class SalesforceErrorHandler(ErrorHandler):
                 if error_code == "INVALID_SESSION_ID":
                     if self._token_provider is not None:
                         self._token_provider.force_refresh()
+                        if self._token_provider.credentials_permanently_failed:
+                            # The session is dead and the grant cannot mint a new one; retrying
+                            # floods the token endpoint from every stream.
+                            return ErrorResolution(
+                                ResponseAction.FAIL,
+                                FailureType.config_error,
+                                _AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                            )
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,

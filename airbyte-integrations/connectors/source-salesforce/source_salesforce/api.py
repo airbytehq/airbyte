@@ -273,17 +273,26 @@ class SalesforceTokenProvider(TokenProvider):
         self._sf_api.refresh_access_token_if_stale()
         return self._sf_api.access_token
 
-    def force_refresh(self) -> None:
-        """Force an immediate token refresh.
+    @property
+    def credentials_permanently_failed(self) -> bool:
+        return self._sf_api.login_permanently_failed
 
-        Called by SalesforceErrorHandler when an INVALID_SESSION_ID response is
-        detected, so that subsequent requests use a valid access token.
+    def force_refresh(self) -> bool:
+        """Force an immediate token refresh, returning True if a token was obtained.
+
+        Called by SalesforceErrorHandler on INVALID_SESSION_ID. No-op once the
+        credentials have permanently failed, so rejected grants are not retried
+        from every stream.
         """
+        if self._sf_api.login_permanently_failed:
+            return False
         try:
             logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
             self._sf_api.login()
+            return True
         except Exception:
             logger.error("Forced token refresh failed; subsequent requests will likely fail", exc_info=True)
+            return False
 
 
 class Salesforce:
@@ -328,7 +337,13 @@ class Salesforce:
         # rotated token, and the observer lets the source persist every rotation (not just the first).
         self._login_lock = threading.Lock()
         self._last_login_time: Optional[float] = None
+        self._login_permanently_failed = False
         self._refresh_token_observer: Optional[Callable[[str], None]] = None
+
+    @property
+    def login_permanently_failed(self) -> bool:
+        """True once login has failed with a credential error; it cannot recover within this process."""
+        return self._login_permanently_failed
 
     def set_refresh_token_observer(self, observer: Callable[[str], None]) -> None:
         """Register a callback invoked with the new refresh token whenever login() rotates it."""
@@ -387,7 +402,13 @@ class Salesforce:
 
     def login(self):
         with self._login_lock:
-            self._perform_login()
+            try:
+                self._perform_login()
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    # A rejected grant cannot recover within this process; stop redeeming.
+                    self._login_permanently_failed = True
+                raise
 
     def refresh_access_token_if_stale(self) -> None:
         """Proactively refresh the access token once it is older than the refresh interval.
@@ -395,6 +416,8 @@ class Salesforce:
         Called from every stream/thread that shares this instance; the lock plus the re-check
         inside it ensure at most one login happens per interval instead of one per caller.
         """
+        if self._login_permanently_failed:
+            return
         if self._last_login_time is None or time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
             return
         with self._login_lock:
@@ -403,6 +426,20 @@ class Salesforce:
             try:
                 logger.info("Refreshing Salesforce OAuth token (%.0fs since last login)", time.monotonic() - self._last_login_time)
                 self._perform_login()
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    self._login_permanently_failed = True
+                    logger.warning(
+                        "Proactive token refresh failed with a credential error; disabling further refresh attempts",
+                        exc_info=True,
+                    )
+                    return
+                self._last_login_time = time.monotonic() - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+                logger.warning(
+                    "Proactive token refresh failed; will use existing token and retry in ~%ds",
+                    _REFRESH_FAILURE_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
             except Exception:
                 # _perform_login stamps _last_login_time only on success, so on failure we back it off
                 # ourselves. Without this the staleness check would stay True and every following request

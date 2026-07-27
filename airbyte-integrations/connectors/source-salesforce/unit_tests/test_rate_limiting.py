@@ -19,6 +19,7 @@ from source_salesforce.rate_limiting import BulkNotSupportedException, Salesforc
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 _ANY = "any"
@@ -29,6 +30,7 @@ class SalesforceTokenProviderTest(TestCase):
     def setUp(self) -> None:
         self._sf_api = MagicMock()
         self._sf_api.access_token = "initial_token"
+        self._sf_api.login_permanently_failed = False
         self._token_provider = SalesforceTokenProvider(self._sf_api)
 
     def test_get_token_returns_token_without_login_when_within_refresh_interval(self) -> None:
@@ -55,9 +57,24 @@ class SalesforceTokenProviderTest(TestCase):
     def test_force_refresh_does_not_raise_when_login_fails(self) -> None:
         self._sf_api.login.side_effect = Exception("network error")
 
-        self._token_provider.force_refresh()  # should not raise
+        assert self._token_provider.force_refresh() is False
 
         self._sf_api.login.assert_called_once()
+
+    def test_force_refresh_returns_true_on_success(self) -> None:
+        assert self._token_provider.force_refresh() is True
+
+    def test_force_refresh_skips_login_after_permanent_failure(self) -> None:
+        self._sf_api.login_permanently_failed = True
+
+        assert self._token_provider.force_refresh() is False
+
+        self._sf_api.login.assert_not_called()
+
+    def test_credentials_permanently_failed_delegates_to_api(self) -> None:
+        assert self._token_provider.credentials_permanently_failed is False
+        self._sf_api.login_permanently_failed = True
+        assert self._token_provider.credentials_permanently_failed is True
 
 
 class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
@@ -128,10 +145,71 @@ class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
             sf.refresh_access_token_if_stale()
         assert sf._perform_login.call_count == 2
 
+    def test_credential_error_disables_proactive_refresh(self) -> None:
+        """A rejected grant cannot recover, so no further refresh attempts should be made."""
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.config_error)
+        sf._last_login_time = 0.0
+
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()  # swallowed, flags the failure
+        assert sf.login_permanently_failed is True
+        sf._perform_login.assert_called_once()
+
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS * 10):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+    def test_login_flags_permanent_failure_on_credential_error(self) -> None:
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.config_error)
+
+        with pytest.raises(AirbyteTracedException):
+            sf.login()
+
+        assert sf.login_permanently_failed is True
+
+    def test_login_does_not_flag_permanent_failure_on_transient_error(self) -> None:
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.transient_error)
+
+        with pytest.raises(AirbyteTracedException):
+            sf.login()
+
+        assert sf.login_permanently_failed is False
+
 
 class SalesforceErrorHandlerTest(TestCase):
     def setUp(self) -> None:
         self._error_handler = SalesforceErrorHandler()
+
+    def test_invalid_session_retries_when_token_refresh_succeeds(self) -> None:
+        token_provider = MagicMock()
+        token_provider.force_refresh.return_value = True
+        token_provider.credentials_permanently_failed = False
+        handler = SalesforceErrorHandler(token_provider=token_provider)
+        response = self._create_response(
+            "GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}]
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.RETRY
+        token_provider.force_refresh.assert_called_once()
+
+    def test_invalid_session_fails_as_config_error_when_credentials_permanently_failed(self) -> None:
+        token_provider = MagicMock()
+        token_provider.force_refresh.return_value = False
+        token_provider.credentials_permanently_failed = True
+        handler = SalesforceErrorHandler(token_provider=token_provider)
+        response = self._create_response(
+            "GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}]
+        )
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
 
     def test_given_invalid_entity_with_bulk_not_supported_message_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
         self,
@@ -198,6 +276,7 @@ class SalesforceErrorHandlerTest(TestCase):
 
     def test_given_401_invalid_session_id_with_token_provider_when_interpret_response_then_retry_and_refresh(self) -> None:
         token_provider = MagicMock()
+        token_provider.credentials_permanently_failed = False
         error_handler = SalesforceErrorHandler(token_provider=token_provider)
         response = self._create_response(
             "GET",
