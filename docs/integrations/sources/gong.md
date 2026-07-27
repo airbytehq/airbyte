@@ -83,7 +83,7 @@ Starting with version 1.3.1, the connector handles both sides of this:
 - It throttles its own requests to 3 per second across all streams, so syncs stay under the per-second limit before Gong has to reject anything.
 - When Gong does return a 429, the connector waits for the interval in the `Retry-After` header and then retries, instead of backing off on a fixed schedule.
 
-The connector doesn't pace itself against the 10,000-calls-per-day quota. That quota is shared with everything else that calls the Gong API for your company, so a sync can still exhaust it if you run frequent syncs over a large call history.
+The connector doesn't pace itself against the 10,000-calls-per-day quota, so a large backfill or a frequent sync schedule can still exhaust it.
 
 The call transcripts stream is a substream of the calls stream. Starting with version 1.3.0, it batches up to 100 call IDs into each `POST /v2/calls/transcript` request instead of sending one request per call. This sharply reduces the request volume during large backfills, making it much less likely you'll hit Gong's rate limit or daily quota, though very large tenants can still approach these limits. Subsequent incremental syncs only fetch transcripts for new calls.
 
