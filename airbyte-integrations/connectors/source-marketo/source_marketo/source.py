@@ -40,9 +40,8 @@ class MarketoStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
-        # this is done for test purposes, the field is not exposed to spec.json!
         self.end_date = config.get("end_date")
-        self.window_in_days = config.get("window_in_days", 30)
+        self.window_in_days = self._validate_window_in_days(config.get("window_in_days", 30))
         self._url_base = config["domain_url"].rstrip("/") + "/"
         self.stream_name = stream_name
         self.param = param
@@ -55,6 +54,16 @@ class MarketoStream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
+
+    @staticmethod
+    def _validate_window_in_days(window_in_days: int) -> int:
+        if not isinstance(window_in_days, int) or not 1 <= window_in_days <= 31:
+            raise AirbyteTracedException(
+                message='Field "window_in_days" must be an integer from 1 to 31.',
+                internal_message=f"Invalid window_in_days value: {window_in_days!r}.",
+                failure_type=FailureType.config_error,
+            )
+        return window_in_days
 
     def path(self, **kwargs) -> str:
         return f"rest/v1/{self.name}.json"
@@ -146,7 +155,7 @@ class IncrementalMarketoStream(MarketoStream):
         end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
         while start_date < end_date:
             # the amount of days for each data-chunk beginning from start_date
-            end_date_slice = start_date.add(days=self.window_in_days)
+            end_date_slice = min(start_date.add(days=self.window_in_days), end_date)
 
             date_slice = {
                 "startAt": to_datetime_str(start_date),

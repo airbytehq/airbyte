@@ -23,6 +23,35 @@ from .conftest import START_DATE, get_stream_by_name
 logger = logging.getLogger("airbyte")
 
 
+def test_spec_exposes_bounded_bulk_export_window():
+    spec = SourceMarketo().spec(logger).connectionSpecification
+
+    window_property = spec["properties"]["window_in_days"]
+
+    assert window_property["type"] == "integer"
+    assert window_property["default"] == 30
+    assert window_property["minimum"] == 1
+    assert window_property["maximum"] == 31
+
+
+@pytest.mark.parametrize(
+    "window_in_days",
+    [
+        pytest.param(0, id="below-minimum"),
+        pytest.param(32, id="above-maximum"),
+        pytest.param("7", id="not-integer"),
+    ],
+)
+def test_window_in_days_rejects_invalid_values(config, window_in_days):
+    config["window_in_days"] = window_in_days
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        Leads(config)
+
+    assert exc_info.value.message == 'Field "window_in_days" must be an integer from 1 to 31.'
+    assert "Invalid window_in_days value" in exc_info.value.internal_message
+
+
 def test_create_export_job(mocker, send_email_stream, caplog):
     mocker.patch("time.sleep")
     caplog.set_level(logging.WARNING)
@@ -415,6 +444,51 @@ def test_leads_bulk_export_filters_on_updated_at(config, requests_mock, mocker):
             "Leads bulk export must not filter on `createdAt`; Marketo honors only "
             "one filter per export and using `createdAt` silently drops lead updates."
         )
+
+
+@pytest.mark.parametrize(
+    "window_in_days, expected_ranges",
+    [
+        pytest.param(
+            30,
+            [("2026-05-19T22:16:10Z", "2026-06-18T22:16:10Z")],
+            id="default-single-marketo-window",
+        ),
+        pytest.param(
+            7,
+            [
+                ("2026-05-19T22:16:10Z", "2026-05-26T22:16:10Z"),
+                ("2026-05-26T22:16:10Z", "2026-06-02T22:16:10Z"),
+                ("2026-06-02T22:16:10Z", "2026-06-09T22:16:10Z"),
+                ("2026-06-09T22:16:10Z", "2026-06-16T22:16:10Z"),
+                ("2026-06-16T22:16:10Z", "2026-06-18T22:16:10Z"),
+            ],
+            id="smaller-windows-create-more-exports",
+        ),
+        pytest.param(
+            1,
+            [
+                ("2026-05-19T22:16:10Z", "2026-05-20T22:16:10Z"),
+                ("2026-05-20T22:16:10Z", "2026-05-21T22:16:10Z"),
+                ("2026-05-21T22:16:10Z", "2026-05-22T22:16:10Z"),
+            ],
+            id="one-day-window",
+        ),
+    ],
+)
+def test_leads_bulk_export_window_controls_date_slices(config, mocker, window_in_days, expected_ranges):
+    config["start_date"] = "2026-05-19T22:16:10Z"
+    config["end_date"] = "2026-05-22T22:16:10Z" if window_in_days == 1 else "2026-06-18T22:16:10Z"
+    config["window_in_days"] = window_in_days
+    mocker.patch.object(Leads, "stream_fields", new_callable=lambda: property(lambda self: []))
+    mocker.patch.object(Leads, "create_export", return_value={"exportId": "lead-export-id"})
+
+    slices = Leads(config).stream_slices(
+        sync_mode=SyncMode.incremental,
+        stream_state={"updatedAt": "2026-05-19T22:16:10Z"},
+    )
+
+    assert [(slice_["startAt"], slice_["endAt"]) for slice_ in slices] == expected_ranges
 
 
 def test_activities_bulk_export_preserves_created_at_filter(send_email_stream, requests_mock, mocker):
