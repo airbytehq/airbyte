@@ -99,14 +99,10 @@ class PositionalDeleteEndToEndTest {
                         identifierFieldIds = schema.identifierFieldIds(),
                     )
             }
-        assertThat(warningMessages)
-            .anyMatch {
-                it.contains(
-                    "Positional delete mode found 1 existing equality-delete file(s)"
-                )
-            }
-        assertThat(warningMessages)
-            .anyMatch { it.contains("delete-file-threshold=1") }
+        assertThat(warningMessages).anyMatch {
+            it.contains("Positional delete mode found 1 existing equality-delete file(s)")
+        }
+        assertThat(warningMessages).anyMatch { it.contains("delete-file-threshold=1") }
         val firstUpdateWriter =
             writerFactory.create(
                 table,
