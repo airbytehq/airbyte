@@ -8,7 +8,7 @@ Dust AI is an enterprise AI platform and &quot;operating system&quot; that allow
 | `end_date` | `string` | End Date. The end date for the extracted data in YYYY-MM-DD format |  |
 | `start_date` | `string` | Start Date. The start date for data extraction in YYYY-MM-DD format |  |
 | `bearer_token` | `string` | Bearer Token. Token needed for authentication to dust |  |
-| `workspace_id` | `string` | workspace ID. Unique string identifier for the workspace |  |
+| `workspace_id` | `string` | Workspace ID. Unique string identifier for the workspace |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

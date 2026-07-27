@@ -916,7 +916,7 @@ spec:
         type: string
         description: Unique string identifier for the workspace
         order: 2
-        title: workspace ID
+        title: Workspace ID
     additionalProperties: true
 
 metadata:
