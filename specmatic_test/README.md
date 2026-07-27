@@ -187,12 +187,17 @@ cd airbyte-integrations/connectors/source-stripe/unit_tests
 
 ### Run ONLY Specmatic integration tests (100% Mock Usage Coverage)
 
-**Windows (PowerShell) — Dynamic One-Liner (from repository root):**
+**Windows (PowerShell) — from repository root:**
 ```powershell
 $s = (Get-ChildItem airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_*_specmatic.py).FullName; .\airbyte-integrations\connectors\source-stripe\unit_tests\.venv\Scripts\pytest.exe airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_accounts.py $s
 ```
 
-**Windows (PowerShell) — Explicit File List:**
+**Windows (PowerShell) — from `unit_tests/` directory (`airbyte-integrations/connectors/source-stripe/unit_tests`):**
+```powershell
+$s = (Get-ChildItem integration/test_*_specmatic.py).FullName; .\.venv\Scripts\pytest.exe integration/test_accounts.py $s
+```
+
+**Windows (PowerShell) — Explicit File List (from repository root):**
 ```powershell
 .\airbyte-integrations\connectors\source-stripe\unit_tests\.venv\Scripts\pytest.exe `
   airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_accounts.py `
@@ -205,7 +210,7 @@ $s = (Get-ChildItem airbyte-integrations/connectors/source-stripe/unit_tests/int
   airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_refunds_specmatic.py
 ```
 
-**macOS / Linux — from repository root:**
+**macOS / Linux — from `unit_tests/` directory:**
 ```bash
 cd airbyte-integrations/connectors/source-stripe/unit_tests
 ./.venv/bin/python -m pytest -v integration/test_accounts.py integration/*_specmatic.py
