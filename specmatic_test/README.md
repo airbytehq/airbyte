@@ -118,7 +118,36 @@ This significantly reduces mock maintenance while automatically detecting contra
 
 ## Key Migration Patterns
 
-### 1. Standard stream expectation
+### 1. Zero-Hardcoding Specmatic Contract Test (Default)
+Tests dynamically configure the connector `url_base` to point to the local Specmatic mock server and validate record reads without hardcoding JSON response payloads:
+
+```python
+@freezegun.freeze_time(_NOW_IMPORT.isoformat())
+class ChargesSpecmaticFullRefreshTest(SpecmaticIntegrationTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Dynamically route connector HTTP requests to the Specmatic mock server
+        _CONFIG["url_base"] = cls.config["url_base"]
+
+    def test_specmatic_contract_read(self) -> None:
+        """Zero-Hardcoding contract test against Specmatic OpenAPI mock server."""
+        now, start_date = get_dates()
+        self.source = get_source(_CONFIG, _NO_STATE)
+        output = self._read(_config(now).with_start_date(start_date))
+        self.assert_contract_read_success(output)
+```
+
+### 2. Contract Success Assertion (`assert_contract_read_success`)
+Verifies that stream reads execute cleanly against the Specmatic mock server with zero contract schema or execution errors:
+
+```python
+self.assert_contract_read_success(actual_messages)
+```
+
+### 3. Optional / Legacy Dynamic Expectation Overrides (`set_specmatic_expectation`)
+When a test specifically requires explicit payload override or custom query parameters, use `set_specmatic_expectation`:
+
 ```python
 self.set_specmatic_expectation(
     path="/v1/application_fees",
@@ -131,39 +160,19 @@ self.set_specmatic_expectation(
         "object": "list",
         "url": "/v1/application_fees",
         "has_more": False,
-        "data": [{"id": "fee_1", "object": "application_fee", "created": ...}]
+        "data": [{"id": "fee_1", "object": "application_fee", "created": 1695830751}]
     }
 )
 ```
 
-### 2. Event types — single wildcard vs multi-value
-```python
-# Single wildcard (e.g. payment_method.*):
-query={"type": "payment_method.*", ...}
+### 4. Error / Retry Tests — Bypass Specmatic with `requests_mock`
+For retry or status code tests (e.g. HTTP 429 backoff), isolate using `requests_mock`:
 
-# Multiple types (e.g. reviews, transactions):
-query={"types[]": ["review.closed", "review.opened"], ...}
-```
-
-### 3. Error / retry tests — bypass Specmatic with requests_mock
 ```python
 with requests_mock.Mocker(real_http=True) as m:
     m.register_uri("GET", url, status_code=429)
     m.register_uri("GET", url, status_code=200, json={...})
     output = self._read(config)
-```
-
-### 4. Parent-child streams
-```python
-# Register parent first
-self.set_specmatic_expectation(path="/v1/payouts", query={...}, response_body={...})
-
-# Then child per parent ID
-self.set_specmatic_expectation(
-    path="/v1/balance_transactions",
-    query={"payout": "a_payout_id", "limit": "100"},
-    response_body={...}
-)
 ```
 
 ---
