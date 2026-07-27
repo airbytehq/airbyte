@@ -105,6 +105,12 @@ The `messages`, `recordings`, and `message_media` streams only sync data from th
 
 To retrieve records older than 400 days, use Twilio's [Bulk Export API](https://www.twilio.com/docs/usage/bulkexport) outside of this connector.
 
+### Conference participants cover only active conferences
+
+The `conference_participants` stream returns participants only for conferences that are still active (`init` or `in-progress`). Twilio's [Participants subresource](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) manages only active participants of in-progress conferences, so participants of a conference that has already completed aren't returned and can't be synced. To capture participant activity for the full lifetime of a conference, subscribe to Twilio [conference status callbacks](https://www.twilio.com/docs/voice/api/conference-resource) in your own application and store the events as participants join and leave.
+
+The `conferences` stream itself isn't affected by this limitation and syncs conferences in all statuses (`init`, `in-progress`, and `completed`).
+
 ## Performance considerations
 
 The Twilio connector gracefully handles rate limits using the `Retry-After` header with an exponential backoff fallback. For more information, see [Twilio's rate limit documentation](https://www.twilio.com/docs/usage/api#rate-limiting).
@@ -154,6 +160,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.0.9 | 2026-07-21 | [82618](https://github.com/airbytehq/airbyte/pull/82618) | Update dependencies |
+| 1.0.8 | 2026-07-14 | [82053](https://github.com/airbytehq/airbyte/pull/82053) | Update dependencies |
+| 1.0.7 | 2026-07-09 | [80330](https://github.com/airbytehq/airbyte/pull/80330) | Add `Status` filter to `conferences` and `conference_participants` streams to retrieve conferences in all statuses (`init`, `in-progress`, `completed`) after Twilio's July 2026 API default change |
 | 1.0.6 | 2026-06-30 | [81294](https://github.com/airbytehq/airbyte/pull/81294) | Update dependencies |
 | 1.0.5 | 2026-06-23 | [80703](https://github.com/airbytehq/airbyte/pull/80703) | Update dependencies |
 | 1.0.4 | 2026-06-22 | [80282](https://github.com/airbytehq/airbyte/pull/80282) | Fix `messages` and `recordings` incremental state getting stuck near the start date by aligning `cursor_granularity` with the second-precision `datetime_format`. |

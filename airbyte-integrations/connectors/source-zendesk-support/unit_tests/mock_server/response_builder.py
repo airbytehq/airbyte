@@ -1045,6 +1045,17 @@ class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
         return self
 
 
+class TicketEventsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_events_record(cls) -> "TicketEventsRecordBuilder":
+        record_template = cls.extract_record("ticket_events", __file__, NestedPath(["ticket_events", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
+
+    def with_id(self, id: int) -> "TicketEventsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
 class TicketSkipsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_skips_record(cls) -> "TicketSkipsRecordBuilder":
@@ -1203,6 +1214,16 @@ class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
         return cls(
             find_template("ticket_metric_events", __file__),
             FieldPath("ticket_metric_events"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
+class TicketEventsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketEventsResponseBuilder":
+        return cls(
+            find_template("ticket_events", __file__),
+            FieldPath("ticket_events"),
             EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
         )
 
