@@ -34,8 +34,10 @@ Functions
         func: The function to wrap (when used without arguments, e.g.
             `@translate_exceptions`).
         framework: One of `"pydantic_ai" | "langchain" | "openai_agents" |
-            "mcp"`. Defaults to None → auto-detect by attempting each
-            framework's canonical import in order. Explicit always wins.
+            "mcp" | "none"`. Defaults to None → auto-detect by attempting each
+            framework's canonical import in order, falling back to `"none"`
+            (failures raise `AirbyteToolError`) when nothing is installed.
+            Explicit always wins.
         max_output_chars: Maximum serialized output size (`json.dumps`,
             `default=str`). Excess raises the framework's signal asking the
             LLM to narrow the query. Set to `None` or `0` to disable.
