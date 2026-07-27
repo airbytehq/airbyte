@@ -58,6 +58,7 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "PriceRules": ("read_price_rules",),
     # SCOPE: read_discounts
     "DiscountCodes": ("read_discounts",),
+    "DiscountCodesSync": ("read_discounts",),
     # SCOPE: read_locations
     "Locations": ("read_locations",),
     "MetafieldLocations": ("read_locations",),

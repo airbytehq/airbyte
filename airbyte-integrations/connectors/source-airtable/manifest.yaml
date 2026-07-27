@@ -606,7 +606,7 @@ spec:
     properties:
       num_workers:
         type: integer
-        title: Number of Concurrent Workers
+        title: Number of Concurrent Threads
         description: Number of concurrent threads for syncing. Higher values can speed up syncs but may hit rate limits. Airtable limits to 5 requests per second per base.
         default: 5
         minimum: 2

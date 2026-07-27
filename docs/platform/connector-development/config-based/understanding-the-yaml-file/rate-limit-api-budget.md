@@ -1,4 +1,4 @@
-# Rate limiting (API Budget)
+# Rate Limiting (API Budget)
 
 In order to prevent sending too many requests to the API in a short period of time, you can configure an API Budget. This budget determines the maximum number of calls that can be made within a specified time interval (or intervals). This mechanism is particularly useful for respecting third-party API rate limits and avoiding potential throttling or denial of service.
 

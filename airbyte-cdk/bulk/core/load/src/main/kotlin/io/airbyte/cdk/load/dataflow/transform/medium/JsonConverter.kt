@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
@@ -15,10 +16,12 @@ class JsonConverter(
     private val coercer: ValueCoercer,
     private val validationResultHandler: ValidationResultHandler,
     private val converterConfig: MediumConverterConfig,
+    private val airbyteValueCoercer: AirbyteValueCoercer,
 ) : MediumConverter {
     override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
         val enriched =
             input.msg.asEnrichedDestinationRecordAirbyteValue(
+                coercer = airbyteValueCoercer,
                 extractedAtAsTimestampWithTimezone =
                     converterConfig.extractedAtAsTimestampWithTimezone,
             )

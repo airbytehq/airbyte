@@ -3,19 +3,26 @@ import csv
 import gzip
 import io
 import logging
+import tempfile
+import zipfile
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import requests
+
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
 logger = logging.getLogger(__name__)
@@ -468,6 +475,59 @@ class _PrefixedStream(io.RawIOBase):
 
 
 @dataclass
+class BingAdsReportZipCsvDecoder(Decoder):
+    """
+    Streaming decoder for Bing Ads report ZIP downloads.
+
+    The CDK's built-in ZipfileDecoder loads the entire HTTP response into memory
+    via `response.content`, creating multiple in-memory copies of the data.
+    With high concurrency, this causes OOM when processing large reports.
+
+    This decoder streams the response to a temporary SpooledTemporaryFile
+    (spilling to disk beyond 5 MB), then extracts and parses the CSV content
+    row-by-row, keeping memory usage bounded regardless of report size.
+    """
+
+    encoding: str = "utf-8-sig"
+    set_values_to_none: Optional[List[str]] = None
+
+    def is_stream_response(self) -> bool:
+        return True
+
+    def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        spool = tempfile.SpooledTemporaryFile(max_size=5 * 1024 * 1024)
+        raw = response.raw
+        try:
+            while True:
+                chunk = raw.read(64 * 1024)
+                if not chunk:
+                    break
+                spool.write(chunk)
+            spool.seek(0)
+
+            try:
+                with zipfile.ZipFile(spool) as zf:
+                    for name in zf.namelist():
+                        with zf.open(name) as member:
+                            text_stream = io.TextIOWrapper(member, encoding=self.encoding)
+                            reader = csv.DictReader(text_stream)
+                            none_values = set(self.set_values_to_none) if self.set_values_to_none else set()
+                            for row in reader:
+                                row.pop(None, None)  # Remove extra columns not in header
+                                if none_values:
+                                    for key, value in row.items():
+                                        if value in none_values:
+                                            row[key] = None
+                                yield row
+            except zipfile.BadZipFile as exc:
+                logger.error("Received an invalid zip file in response: %s", exc)
+                raise
+        finally:
+            spool.close()
+            raw.close()
+
+
+@dataclass
 class BingAdsGzipCsvDecoder(Decoder):
     """
     Custom decoder that detects GZip compression via magic bytes and parses CSV data
@@ -511,3 +571,115 @@ class BingAdsGzipCsvDecoder(Decoder):
         csv_reader = csv.DictReader(text_stream)
         for row in csv_reader:
             yield row
+
+
+BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+
+
+@dataclass
+class BingAdsReportDownloadRequester(HttpRequester):
+    """Custom download requester that re-polls Bing Ads for a fresh SAS URL before downloading.
+
+    When many streams are synced concurrently, the SAS download URL obtained at
+    poll-completion time may expire (10-minute TTL) before the download begins.
+    This requester makes a lightweight re-poll request to obtain a fresh URL
+    immediately before each download, preventing ``AuthenticationFailed`` errors
+    from Azure Blob Storage.
+    """
+
+    report_poll_authenticator: Optional[DeclarativeAuthenticator] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # When instantiated via create_custom_component, stream_response is not
+        # explicitly passed (unlike create_http_requester which computes it from
+        # the decoder).  Derive it here so streaming decoders that read
+        # response.raw (e.g. BingAdsReportZipCsvDecoder) work correctly.
+        if self.decoder and hasattr(self.decoder, "is_stream_response"):
+            self.stream_response = self.decoder.is_stream_response()
+        super().__post_init__(parameters)
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        if stream_slice:
+            fresh_url = self._get_fresh_download_url(stream_slice)
+            if fresh_url:
+                stream_slice = StreamSlice(
+                    partition=stream_slice.partition,
+                    cursor_slice=stream_slice.cursor_slice,
+                    extra_fields={
+                        **stream_slice.extra_fields,
+                        "download_target": fresh_url,
+                    },
+                )
+
+        return super().send_request(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
+        )
+
+    def _get_fresh_download_url(self, stream_slice: StreamSlice) -> Optional[str]:
+        """Re-poll Bing Ads Reporting API to obtain a fresh SAS download URL."""
+        creation_response = stream_slice.extra_fields.get("creation_response", {})
+        report_request_id = creation_response.get("ReportRequestId")
+        if not report_request_id:
+            logger.warning("No ReportRequestId in creation_response; using existing download URL")
+            return None
+
+        account_id = stream_slice.partition.get("account_id", "")
+        parent_customer_id = stream_slice.extra_fields.get("ParentCustomerId", "")
+        developer_token = self.config.get("developer_token", "")
+
+        headers: Dict[str, str] = {
+            "Content-Type": "application/json",
+            "DeveloperToken": str(developer_token),
+            "CustomerId": str(parent_customer_id),
+            "CustomerAccountId": str(account_id),
+        }
+
+        try:
+            if self.report_poll_authenticator:
+                auth_header = self.report_poll_authenticator.get_auth_header()
+                headers.update(auth_header)
+
+            http_client = HttpClient(
+                name="bing_ads_report_repoll",
+                logger=logger,
+            )
+            _, response = http_client.send_request(
+                http_method="POST",
+                url=BING_ADS_REPORTING_POLL_URL,
+                headers=headers,
+                json={"ReportRequestId": str(report_request_id)},
+                request_kwargs={"timeout": 30},
+            )
+            data = response.json()
+            fresh_url = data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
+            if fresh_url:
+                logger.info("Obtained fresh download URL via re-poll for report request %s", report_request_id)
+                return fresh_url
+            logger.warning("Re-poll did not return a ReportDownloadUrl for report request %s", report_request_id)
+            return None
+        except Exception:
+            logger.warning(
+                "Re-poll failed for report request %s; falling back to existing download URL",
+                report_request_id,
+                exc_info=True,
+            )
+            return None
