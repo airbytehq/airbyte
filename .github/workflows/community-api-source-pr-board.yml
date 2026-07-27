@@ -312,7 +312,7 @@ jobs:
                   ['Mode', mode],
                   ['Project', projectTitle],
                   ['Status option', statusOptionName],
-                  ['Max writes', dryRun ? `Ignored${writeCapDescription}` : (maxWrites || 'Unlimited')],
+                  ['Max writes', dryRun ? `Ignored${writeCapDescription}` : (maxWrites > 0 ? String(maxWrites) : 'Unlimited')],
                   ['Evaluated', String(counts.evaluated)],
                   ['Qualified', String(counts.qualified)],
                   [dryRun ? 'Would add' : 'Added', String(counts.added)],
