@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-pabbly-subscriptions-billing
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.6@sha256:9b7d308cba381c3fb2f107af5adc6360a49a19f451738f1beb99f3708a043cd2
   connectorSubtype: api
   connectorType: source
   definitionId: b461c060-9d6a-43c9-a73c-634eaf83c4bf
-  dockerImageTag: 0.0.54
+  dockerImageTag: 0.0.56
   dockerRepository: airbyte/source-pabbly-subscriptions-billing
   githubIssueLabel: source-pabbly-subscriptions-billing
   icon: icon.svg
