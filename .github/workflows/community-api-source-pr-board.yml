@@ -1,13 +1,14 @@
-# Dry-run is the default. Scheduled runs only write when the org/repo variable
-# ENABLE_COMMUNITY_PR_BOARD_SYNC is exactly "true"; workflow_dispatch exposes a
-# dry_run input for explicit control. The Octavia Bot app must have org-level
-# Projects: write permission for live synchronization.
+# Dry-run is the default. Only an explicit false value enables writes:
+# scheduled runs require ENABLE_COMMUNITY_PR_BOARD_SYNC to be exactly "true",
+# and workflow_dispatch requires dry_run=false. The max_writes input can cap
+# the first live run (0 means unlimited). The Octavia Bot app must have
+# org-level Projects: write permission for live synchronization.
 
 name: Community API source PR board sync
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -15,6 +16,11 @@ on:
         required: false
         default: true
         type: boolean
+      max_writes:
+        description: "Maximum number of PRs to write to in this run; 0 means unlimited"
+        required: false
+        default: "0"
+        type: string
 
 permissions: {}
 
@@ -37,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            dry_run="$INPUT_DRY_RUN"
+            [[ "$INPUT_DRY_RUN" == "false" ]] && dry_run=false || dry_run=true
           else
             [[ "$ENABLE_SYNC" == "true" ]] && dry_run=false || dry_run=true
           fi
@@ -68,19 +74,20 @@ jobs:
         run: |
           set -euo pipefail
           output="$RUNNER_TEMP/certified-api-sources.json"
-          connectors=()
-          while IFS= read -r metadata; do
-            connector_dir="$(dirname "$metadata")"
-            connector="$(basename "$connector_dir")"
-            connector_type="$(yq -r '.data.connectorType // "unknown"' "$metadata")"
-            connector_subtype="$(yq -r '.data.connectorSubtype // "unknown"' "$metadata")"
-            support_level="$(yq -r '.data.supportLevel // "unknown"' "$metadata")"
-            if [[ "$connector_type" == "source" && "$connector_subtype" == "api" && "$support_level" == "certified" ]]; then
-              connectors+=("$connector")
-            fi
-          done < <(find airbyte-integrations/connectors -mindepth 2 -maxdepth 2 -name metadata.yaml -print | sort)
-          printf '%s\n' "${connectors[@]}" | jq -Rsc 'split("\n") | map(select(length > 0))' > "$output"
-          count="${#connectors[@]}"
+          mapfile -d '' metadata_files < <(
+            find airbyte-integrations/connectors -mindepth 2 -maxdepth 2 -name metadata.yaml -print0 | sort -z
+          )
+          yq eval-all -o=json '
+            [
+              select(
+                (.data.connectorType // "unknown") == "source" and
+                (.data.connectorSubtype // "unknown") == "api" and
+                (.data.supportLevel // "unknown") == "certified"
+              ) |
+              filename | split("/") | .[-2]
+            ] | sort | unique
+          ' "${metadata_files[@]}" > "$output"
+          count="$(jq 'length' "$output")"
           echo "Certified API source connector count: $count"
           jq -r '.[]' "$output"
           if [[ "$count" -eq 0 ]]; then
@@ -94,12 +101,19 @@ jobs:
         env:
           CERTIFIED_SOURCES_PATH: ${{ steps.certified-sources.outputs.path }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+          MAX_WRITES: ${{ inputs.max_writes || '0' }}
         with:
           github-token: ${{ steps.app-token.outputs.token }}
+          retries: 3
           script: |
             const fs = require('fs');
 
-            const dryRun = process.env.DRY_RUN === 'true';
+            const dryRun = process.env.DRY_RUN !== 'false';
+            const configuredMaxWrites = Number.parseInt(process.env.MAX_WRITES || '0', 10);
+            const maxWrites =
+              Number.isFinite(configuredMaxWrites) && configuredMaxWrites > 0
+                ? configuredMaxWrites
+                : 0;
             const certifiedSources = new Set(
               JSON.parse(fs.readFileSync(process.env.CERTIFIED_SOURCES_PATH, 'utf8')),
             );
@@ -112,10 +126,12 @@ jobs:
               notCommunity: 0,
               noCertifiedApiSourceChange: 0,
               statusAlreadySet: 0,
+              writeCapReached: 0,
             };
             const failures = [];
             const projectNumber = 137;
             const repositoryVariables = { owner: 'airbytehq', name: 'airbyte' };
+            let writesPerformed = 0;
 
             const projectQuery = `
               query($login: String!, $number: Int!) {
@@ -173,7 +189,12 @@ jobs:
             const pullRequestsQuery = `
               query($owner: String!, $name: String!, $cursor: String) {
                 repository(owner: $owner, name: $name) {
-                  pullRequests(states: OPEN, first: 50, after: $cursor) {
+                  pullRequests(
+                    states: OPEN
+                    first: 50
+                    after: $cursor
+                    orderBy: { field: CREATED_AT, direction: ASC }
+                  ) {
                     pageInfo { hasNextPage endCursor }
                     nodes {
                       id number isDraft authorAssociation
@@ -239,23 +260,26 @@ jobs:
             `;
 
             const matchesCertifiedSource = (path) => {
+              if (!path) return false;
               const match = path.match(/^airbyte-integrations\/connectors\/([^/]+)(?:\/|$)/);
               return match && certifiedSources.has(match[1]);
             };
             const getAllFiles = async (pr) => {
-              const files = [...pr.files.nodes];
-              let cursor = pr.files.pageInfo.endCursor;
-              let hasNextPage = pr.changedFiles > 100 || pr.files.pageInfo.hasNextPage;
+              const files = [...(pr.files?.nodes ?? [])];
+              const initialPageInfo = pr.files?.pageInfo ?? {};
+              let cursor = initialPageInfo.endCursor ?? null;
+              let hasNextPage = pr.changedFiles > 100 || Boolean(initialPageInfo.hasNextPage);
               while (!files.some((file) => matchesCertifiedSource(file.path)) && hasNextPage) {
                 const result = await github.graphql(additionalFilesQuery, {
                   ...repositoryVariables,
                   number: pr.number,
                   cursor,
                 });
-                const page = result.repository.pullRequest.files;
-                files.push(...page.nodes);
-                cursor = page.pageInfo.endCursor;
-                hasNextPage = page.pageInfo.hasNextPage;
+                const page = result.repository.pullRequest?.files;
+                if (!page) break;
+                files.push(...(page.nodes ?? []));
+                cursor = page.pageInfo?.endCursor ?? null;
+                hasNextPage = Boolean(page.pageInfo?.hasNextPage);
               }
               return files;
             };
@@ -272,103 +296,133 @@ jobs:
               }
               return items.find((item) => item.project?.number === projectNumber);
             };
+            const writeCapReached = () => !dryRun && maxWrites > 0 && writesPerformed >= maxWrites;
+            const writeCapDescription = maxWrites > 0 ? ` (max_writes=${maxWrites})` : '';
+            if (dryRun && maxWrites > 0) {
+              core.info(`Dry-run: max_writes=${maxWrites} is configured but ignored.`);
+            }
+            let projectTitle = project.title;
+            let statusOptionName = statusOption.name;
+            const writeSummary = async () => {
+              const mode = dryRun ? 'DRY-RUN' : 'LIVE';
+              await core.summary
+                .addHeading('Community API source PR board sync')
+                .addTable([
+                  [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
+                  ['Mode', mode],
+                  ['Project', projectTitle],
+                  ['Status option', statusOptionName],
+                  ['Max writes', dryRun ? `Ignored${writeCapDescription}` : (maxWrites || 'Unlimited')],
+                  ['Evaluated', String(counts.evaluated)],
+                  ['Qualified', String(counts.qualified)],
+                  [dryRun ? 'Would add' : 'Added', String(counts.added)],
+                  [dryRun ? 'Would set Status' : 'Status-set', String(counts.statusSet)],
+                  ['Skipped: draft', String(counts.draft)],
+                  ['Skipped: not-community', String(counts.notCommunity)],
+                  ['Skipped: no-certified-api-source-change', String(counts.noCertifiedApiSourceChange)],
+                  ['Skipped: status-already-set', String(counts.statusAlreadySet)],
+                  ['Skipped: write cap reached', String(counts.writeCapReached)],
+                ])
+                .addHeading('Mutation failures')
+                .addList(failures.length ? failures : ['None'])
+                .write();
+            };
 
             let cursor = null;
             let hasNextPage = true;
-            while (hasNextPage) {
-              const result = await github.graphql(pullRequestsQuery, {
-                ...repositoryVariables,
-                cursor,
-              });
-              const page = result.repository.pullRequests;
-              for (const pr of page.nodes) {
-                counts.evaluated += 1;
-                if (pr.isDraft) {
-                  counts.draft += 1;
-                  core.info(`PR ${pr.number}: skipped (draft)`);
-                  continue;
-                }
-                const isCommunity =
-                  pr.headRepositoryOwner?.login !== 'airbytehq' &&
-                  !['MEMBER', 'OWNER', 'COLLABORATOR'].includes(pr.authorAssociation);
-                if (!isCommunity) {
-                  counts.notCommunity += 1;
-                  core.info(`PR ${pr.number}: skipped (not-community)`);
-                  continue;
-                }
-                const files = await getAllFiles(pr);
-                if (!files.some((file) => matchesCertifiedSource(file.path))) {
-                  counts.noCertifiedApiSourceChange += 1;
-                  core.info(`PR ${pr.number}: skipped (no-certified-api-source-change)`);
-                  continue;
-                }
-                counts.qualified += 1;
-                try {
-                  const item = await getProjectItem(pr);
-                  if (!item) {
-                    counts.added += 1;
-                    counts.statusSet += 1;
-                    if (dryRun) {
-                      core.info(`PR ${pr.number}: would add to project and set Status="${statusOption.name}"`);
-                    } else {
-                      const added = await github.graphql(addItemMutation, {
-                        projectId: project.id,
-                        contentId: pr.id,
-                      });
-                      await github.graphql(updateStatusMutation, {
-                        projectId: project.id,
-                        itemId: added.addProjectV2ItemById.item.id,
-                        fieldId: project.field.id,
-                        optionId: statusOption.id,
-                      });
-                      core.info(`PR ${pr.number}: added to project and set Status="${statusOption.name}"`);
-                    }
-                  } else if (!item.fieldValueByName?.name) {
-                    counts.statusSet += 1;
-                    if (dryRun) {
-                      core.info(`PR ${pr.number}: would set empty Status to "${statusOption.name}"`);
-                    } else {
-                      await github.graphql(updateStatusMutation, {
-                        projectId: project.id,
-                        itemId: item.id,
-                        fieldId: project.field.id,
-                        optionId: statusOption.id,
-                      });
-                      core.info(`PR ${pr.number}: set empty Status to "${statusOption.name}"`);
-                    }
-                  } else {
-                    counts.statusAlreadySet += 1;
-                    core.info(`PR ${pr.number}: skipped (status-already-set: "${item.fieldValueByName.name}")`);
+            try {
+              while (hasNextPage) {
+                const result = await github.graphql(pullRequestsQuery, {
+                  ...repositoryVariables,
+                  cursor,
+                });
+                const page = result.repository.pullRequests;
+                for (const pr of page.nodes) {
+                  counts.evaluated += 1;
+                  if (pr.isDraft) {
+                    counts.draft += 1;
+                    core.info(`PR ${pr.number}: skipped (draft)`);
+                    continue;
                   }
-                } catch (error) {
-                  failures.push(`PR ${pr.number}: ${error.message}`);
-                  core.error(`PR ${pr.number}: reconciliation failed: ${error.message}`);
+                  const isCommunity =
+                    pr.headRepositoryOwner?.login !== 'airbytehq' &&
+                    !['MEMBER', 'OWNER', 'COLLABORATOR'].includes(pr.authorAssociation);
+                  if (!isCommunity) {
+                    counts.notCommunity += 1;
+                    core.info(`PR ${pr.number}: skipped (not-community)`);
+                    continue;
+                  }
+                  try {
+                    const files = await getAllFiles(pr);
+                    if (!files.some((file) => matchesCertifiedSource(file.path))) {
+                      counts.noCertifiedApiSourceChange += 1;
+                      core.info(`PR ${pr.number}: skipped (no-certified-api-source-change)`);
+                      continue;
+                    }
+                    counts.qualified += 1;
+                    if (writeCapReached()) {
+                      counts.writeCapReached += 1;
+                      core.info(`PR ${pr.number}: skipped (write cap reached${writeCapDescription})`);
+                      continue;
+                    }
+                    const item = await getProjectItem(pr);
+                    if (!item) {
+                      if (dryRun) {
+                        counts.added += 1;
+                        counts.statusSet += 1;
+                        core.info(`PR ${pr.number}: would add to project and set Status="${statusOption.name}"`);
+                      } else {
+                        const added = await github.graphql(addItemMutation, {
+                          projectId: project.id,
+                          contentId: pr.id,
+                        });
+                        counts.added += 1;
+                        writesPerformed += 1;
+                        await github.graphql(updateStatusMutation, {
+                          projectId: project.id,
+                          itemId: added.addProjectV2ItemById.item.id,
+                          fieldId: project.field.id,
+                          optionId: statusOption.id,
+                        });
+                        counts.statusSet += 1;
+                        core.info(`PR ${pr.number}: added to project and set Status="${statusOption.name}"`);
+                      }
+                    } else if (!item.fieldValueByName?.name) {
+                      if (dryRun) {
+                        counts.statusSet += 1;
+                        core.info(`PR ${pr.number}: would set empty Status to "${statusOption.name}"`);
+                      } else {
+                        await github.graphql(updateStatusMutation, {
+                          projectId: project.id,
+                          itemId: item.id,
+                          fieldId: project.field.id,
+                          optionId: statusOption.id,
+                        });
+                        counts.statusSet += 1;
+                        writesPerformed += 1;
+                        core.info(`PR ${pr.number}: set empty Status to "${statusOption.name}"`);
+                      }
+                    } else {
+                      counts.statusAlreadySet += 1;
+                      core.info(`PR ${pr.number}: skipped (status-already-set: "${item.fieldValueByName.name}")`);
+                    }
+                  } catch (error) {
+                    failures.push(`PR ${pr.number}: ${error.message}`);
+                    core.error(`PR ${pr.number}: reconciliation failed: ${error.message}`);
+                  }
                 }
+                hasNextPage = page.pageInfo.hasNextPage;
+                cursor = page.pageInfo.endCursor;
               }
-              hasNextPage = page.pageInfo.hasNextPage;
-              cursor = page.pageInfo.endCursor;
+            } catch (error) {
+              failures.push(`Open PR page fetch: ${error.message}`);
+              core.error(`Open PR page fetch failed: ${error.message}`);
+              await writeSummary();
+              core.setFailed(`Open PR scan failed after collecting available results: ${error.message}`);
+              return;
             }
 
-            const mode = dryRun ? 'DRY-RUN' : 'LIVE';
-            await core.summary
-              .addHeading('Community API source PR board sync')
-              .addTable([
-                [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
-                ['Mode', mode],
-                ['Project', project.title],
-                ['Status option', statusOption.name],
-                ['Evaluated', String(counts.evaluated)],
-                ['Qualified', String(counts.qualified)],
-                [dryRun ? 'Would add' : 'Added', String(counts.added)],
-                [dryRun ? 'Would set Status' : 'Status-set', String(counts.statusSet)],
-                ['Skipped: draft', String(counts.draft)],
-                ['Skipped: not-community', String(counts.notCommunity)],
-                ['Skipped: no-certified-api-source-change', String(counts.noCertifiedApiSourceChange)],
-                ['Skipped: status-already-set', String(counts.statusAlreadySet)],
-              ])
-              .addHeading('Mutation failures')
-              .addList(failures.length ? failures : ['None'])
-              .write();
+            await writeSummary();
             if (failures.length) {
               core.setFailed(`${failures.length} PR reconciliation(s) failed.`);
             }
