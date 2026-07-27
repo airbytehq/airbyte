@@ -136,7 +136,7 @@ Classes
     `raw: str`
     :   The type of the None singleton.
 
-    `threadId: str`
+    `thread_id: str`
     :   The type of the None singleton.
 
 <a id="DraftsDeleteParams"></a>
@@ -515,7 +515,7 @@ Classes
     `raw: str`
     :   The type of the None singleton.
 
-    `threadId: str`
+    `thread_id: str`
     :   The type of the None singleton.
 
 <a id="LabelsAndCondition"></a>
@@ -636,10 +636,10 @@ Classes
 
     ### Class variables
 
-    `backgroundColor: str`
+    `background_color: str`
     :   The type of the None singleton.
 
-    `textColor: str`
+    `text_color: str`
     :   The type of the None singleton.
 
 <a id="LabelsDeleteParams"></a>
@@ -1032,10 +1032,10 @@ Classes
 
     ### Class variables
 
-    `backgroundColor: str`
+    `background_color: str`
     :   The type of the None singleton.
 
-    `textColor: str`
+    `text_color: str`
     :   The type of the None singleton.
 
 <a id="MessagesAndCondition"></a>
