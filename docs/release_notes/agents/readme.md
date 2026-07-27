@@ -1,5 +1,14 @@
 # Airbyte Agents release notes
 
+## July 27, 2026
+
+Web app
+
+- Pages across the app, including your dashboard, billing, credentials, profile, sessions, and users, have a refreshed look with clearer page headers and summary cards.
+- A connector's recent activity list now shows which page you're viewing, so it's easier to keep your place while you page through agent requests.
+- Entities that are still being prepared for semantic search now show an indexing indicator, so you can tell the difference between an entity that isn't ready yet and one that doesn't support semantic search.
+- People are now listed alphabetically when you review who can access an entity, so it's faster to find someone.
+
 ## July 21, 2026
 
 Web app
