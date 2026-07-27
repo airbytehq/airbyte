@@ -42,9 +42,6 @@ import org.apache.iceberg.types.Types;
  */
 public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record> {
 
-  public static final String NULL_PK_ERROR_MESSAGE =
-      "Detected null value in primary key. The Iceberg protocol disallows this. This is either a bug in the source, or you should use the append/overwrite sync mode.";
-
   private final Table table;
   private final Schema deleteSchema;
   private final InternalRecordWrapper wrapper;
@@ -87,7 +84,8 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       Object value = row.getField(idField.name());
       if (value == null) {
         throw new ConfigErrorException(
-            "Error in stream " + table.name() + ": " + NULL_PK_ERROR_MESSAGE, null);
+            "Error in stream " + table.name() + ": " + BaseDeltaTaskWriter.NULL_PK_ERROR_MESSAGE,
+            null);
       }
       recordWithIds.setField(
           idField.name(), value instanceof CharSequence ? value.toString() : value);
