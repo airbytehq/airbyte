@@ -45,7 +45,7 @@ This will enable our team to make sure your contribution does not overlap with e
 
 ### Open a pull request
 
-1. Make sure your connector passes `airbyte-ci connectors test` tests. [Here's a guide on how to run them](../connector-development/testing-connectors/README.md).
+1. Make sure your connector passes the test suite. [Here's a guide on how to run them](../connector-development/testing-connectors/README.md).
 2. Make sure you include the README, documentation, and an icon for your connector. Without them, one of the CI checks will fail.
 3. Follow the [pull request convention](/community/contributing-to-airbyte/resources/pull-requests-handbook#pull-request-title-convention)
 4. Wait for a review from a community maintainer or our team. We generally look for the following criteria:

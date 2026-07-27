@@ -1,0 +1,1254 @@
+---
+id: airbyte_agent_sdk-connectors-sendgrid-index
+title: airbyte_agent_sdk.connectors.sendgrid.index
+---
+
+Module airbyte_agent_sdk.connectors.sendgrid
+============================================
+Sendgrid connector for Airbyte SDK.
+
+Auto-generated from OpenAPI specification.
+
+Sub-modules
+-----------
+* airbyte_agent_sdk.connectors.sendgrid.connector
+* airbyte_agent_sdk.connectors.sendgrid.connector_model
+* airbyte_agent_sdk.connectors.sendgrid.models
+* airbyte_agent_sdk.connectors.sendgrid.types
+
+Classes
+-------
+
+<a id="AirbyteAuthConfig"></a>
+
+`AirbyteAuthConfig(**data: Any)`
+:   Authentication configuration for Airbyte hosted mode execution.
+    
+    Pass this to the connector's `auth_config` parameter to use hosted mode,
+    where API credentials are stored securely in Airbyte Cloud.
+    
+    For hosted mode execution, provide client credentials with either:
+    - `connector_id`: Direct connector/source ID (skips lookup)
+    - `workspace_name`: Workspace name for connector lookup
+    
+    Attributes:
+        workspace_name: Workspace name for hosted mode connector lookup
+        organization_id: Optional Airbyte organization ID for multi-org selection
+        airbyte_client_id: Airbyte OAuth client ID (required for hosted mode)
+        airbyte_client_secret: Airbyte OAuth client secret (required for hosted mode)
+        connector_id: Specific connector/source ID (skips lookup if provided)
+    
+    Examples:
+        # Hosted mode with connector_id (no lookup needed)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with workspace_name (lookup by workspace)
+        connector = GongConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `airbyte_client_id: str | None`
+    :   The type of the None singleton.
+
+    `airbyte_client_secret: str | None`
+    :   The type of the None singleton.
+
+    `connector_id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `organization_id: str | None`
+    :   The type of the None singleton.
+
+    `workspace_name: str | None`
+    :   The type of the None singleton.
+
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[BlocksSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[BouncesSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[CampaignsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[ContactsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[GlobalSuppressionsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[InvalidEmailsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[ListsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SegmentsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SinglesendStatsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SinglesendsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SuppressionGroupMembersSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[SuppressionGroupsSearchData]
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult[TemplatesSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="BlocksSearchResult"></a>
+
+`BlocksSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BouncesSearchResult"></a>
+
+`BouncesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CampaignsSearchResult"></a>
+
+`CampaignsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ContactsSearchResult"></a>
+
+`ContactsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="GlobalSuppressionsSearchResult"></a>
+
+`GlobalSuppressionsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="InvalidEmailsSearchResult"></a>
+
+`InvalidEmailsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ListsSearchResult"></a>
+
+`ListsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SegmentsSearchResult"></a>
+
+`SegmentsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SinglesendStatsSearchResult"></a>
+
+`SinglesendStatsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SinglesendsSearchResult"></a>
+
+`SinglesendsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SuppressionGroupMembersSearchResult"></a>
+
+`SuppressionGroupMembersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SuppressionGroupsSearchResult"></a>
+
+`SuppressionGroupsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TemplatesSearchResult"></a>
+
+`TemplatesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.sendgrid.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BlocksSearchData"></a>
+
+`BlocksSearchData(**data: Any)`
+:   Search result data for blocks entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created: int | None`
+    :   Unix timestamp when the block occurred
+
+    `email: str | None`
+    :   The blocked email address
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `reason: str | None`
+    :   The reason for the block
+
+    `status: str | None`
+    :   The status code for the block
+
+<a id="BouncesSearchData"></a>
+
+`BouncesSearchData(**data: Any)`
+:   Search result data for bounces entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created: int | None`
+    :   Unix timestamp when the bounce occurred
+
+    `email: str | None`
+    :   The email address that bounced
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `reason: str | None`
+    :   The reason for the bounce
+
+    `status: str | None`
+    :   The enhanced status code for the bounce
+
+<a id="CampaignsSearchData"></a>
+
+`CampaignsSearchData(**data: Any)`
+:   Search result data for campaigns entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channels: list[typing.Any] | None`
+    :   Channels for this campaign
+
+    `created_at: str | None`
+    :   When the campaign was created
+
+    `id: str | None`
+    :   Unique campaign identifier
+
+    `is_abtest: bool | None`
+    :   Whether this campaign is an A/B test
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Campaign name
+
+    `status: str | None`
+    :   Campaign status
+
+    `updated_at: str | None`
+    :   When the campaign was last updated
+
+<a id="ContactsSearchData"></a>
+
+`ContactsSearchData(**data: Any)`
+:   Search result data for contacts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `address_line_1: str | None`
+    :   Address line 1
+
+    `address_line_2: str | None`
+    :   Address line 2
+
+    `alternate_emails: list[typing.Any] | None`
+    :   Alternate email addresses
+
+    `city: str | None`
+    :   City
+
+    `contact_id: str | None`
+    :   Unique contact identifier used by Airbyte
+
+    `country: str | None`
+    :   Country
+
+    `created_at: str | None`
+    :   When the contact was created
+
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Custom field values
+
+    `email: str | None`
+    :   Contact email address
+
+    `facebook: str | None`
+    :   Facebook ID
+
+    `first_name: str | None`
+    :   Contact first name
+
+    `last_name: str | None`
+    :   Contact last name
+
+    `line: str | None`
+    :   LINE ID
+
+    `list_ids: list[typing.Any] | None`
+    :   IDs of lists the contact belongs to
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `phone_number: str | None`
+    :   Phone number
+
+    `postal_code: str | None`
+    :   Postal code
+
+    `state_province_region: str | None`
+    :   State, province, or region
+
+    `unique_name: str | None`
+    :   Unique name for the contact
+
+    `updated_at: str | None`
+    :   When the contact was last updated
+
+    `whatsapp: str | None`
+    :   WhatsApp number
+
+<a id="GlobalSuppressionsSearchData"></a>
+
+`GlobalSuppressionsSearchData(**data: Any)`
+:   Search result data for global_suppressions entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created: int | None`
+    :   Unix timestamp when the global suppression was created
+
+    `email: str | None`
+    :   The globally suppressed email address
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="InvalidEmailsSearchData"></a>
+
+`InvalidEmailsSearchData(**data: Any)`
+:   Search result data for invalid_emails entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created: int | None`
+    :   Unix timestamp when the invalid email was recorded
+
+    `email: str | None`
+    :   The invalid email address
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `reason: str | None`
+    :   The reason the email is invalid
+
+<a id="ListsSearchData"></a>
+
+`ListsSearchData(**data: Any)`
+:   Search result data for lists entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `contact_count: int | None`
+    :   Number of contacts in the list
+
+    `id: str | None`
+    :   Unique list identifier
+
+    `metadata: dict[str, typing.Any] | None`
+    :   Metadata about the list resource
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the list
+
+<a id="SegmentsSearchData"></a>
+
+`SegmentsSearchData(**data: Any)`
+:   Search result data for segments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `contacts_count: int | None`
+    :   Number of contacts in the segment
+
+    `created_at: str | None`
+    :   When the segment was created
+
+    `id: str | None`
+    :   Unique segment identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Segment name
+
+    `next_sample_update: str | None`
+    :   When the next sample update will occur
+
+    `parent_list_ids: list[typing.Any] | None`
+    :   IDs of parent lists
+
+    `query_version: str | None`
+    :   Query version used
+
+    `sample_updated_at: str | None`
+    :   When the sample was last updated
+
+    `status: dict[str, typing.Any] | None`
+    :   Segment status details
+
+    `updated_at: str | None`
+    :   When the segment was last updated
+
+<a id="SendgridAuthConfig"></a>
+
+`SendgridAuthConfig(**data: Any)`
+:   API Key Authentication
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `api_key: str`
+    :   Your SendGrid API key (generated at https://app.sendgrid.com/settings/api_keys)
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SendgridConnector"></a>
+
+`SendgridConnector(auth_config: SendgridAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Sendgrid API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new sendgrid connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., SendgridAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = SendgridConnector(auth_config=SendgridAuthConfig(api_key="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = SendgridConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = SendgridConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
+        
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
+        
+        Usage:
+            connector = SendgridConnector(...)
+        
+            @SendgridConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
+        
+            @SendgridConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @SendgridConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
+        
+        Args:
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = SendgridConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @SendgridConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @SendgridConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @SendgridConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.sendgrid.models.SendgridCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            SendgridCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="SendgridReplicationConfig"></a>
+
+`SendgridReplicationConfig(**data: Any)`
+:   Replication Configuration - Settings for data replication from SendGrid.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `start_date: str`
+    :   UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.
+
+<a id="SinglesendStatsSearchData"></a>
+
+`SinglesendStatsSearchData(**data: Any)`
+:   Search result data for singlesend_stats entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `ab_phase: str | None`
+    :   The A/B test phase
+
+    `ab_variation: str | None`
+    :   The A/B test variation
+
+    `aggregation: str | None`
+    :   The aggregation type
+
+    `id: str | None`
+    :   The single send ID
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `stats: dict[str, typing.Any] | None`
+    :   Email statistics for the single send
+
+<a id="SinglesendsSearchData"></a>
+
+`SinglesendsSearchData(**data: Any)`
+:   Search result data for singlesends entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `categories: list[typing.Any] | None`
+    :   Categories associated with this single send
+
+    `created_at: str | None`
+    :   When the single send was created
+
+    `id: str | None`
+    :   Unique single send identifier
+
+    `is_abtest: bool | None`
+    :   Whether this is an A/B test
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Single send name
+
+    `send_at: str | None`
+    :   Scheduled send time
+
+    `status: str | None`
+    :   Current status: draft, scheduled, or triggered
+
+    `updated_at: str | None`
+    :   When the single send was last updated
+
+<a id="SuppressionGroupMembersSearchData"></a>
+
+`SuppressionGroupMembersSearchData(**data: Any)`
+:   Search result data for suppression_group_members entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: int | None`
+    :   Unix timestamp when the suppression was created
+
+    `email: str | None`
+    :   The suppressed email address
+
+    `group_id: int | None`
+    :   ID of the suppression group
+
+    `group_name: str | None`
+    :   Name of the suppression group
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SuppressionGroupsSearchData"></a>
+
+`SuppressionGroupsSearchData(**data: Any)`
+:   Search result data for suppression_groups entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `description: str | None`
+    :   Description of the suppression group
+
+    `id: int | None`
+    :   Unique suppression group identifier
+
+    `is_default: bool | None`
+    :   Whether this is the default suppression group
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Suppression group name
+
+    `unsubscribes: int | None`
+    :   Number of unsubscribes in this group
+
+<a id="TemplatesSearchData"></a>
+
+`TemplatesSearchData(**data: Any)`
+:   Search result data for templates entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `generation: str | None`
+    :   Template generation (legacy or dynamic)
+
+    `id: str | None`
+    :   Unique template identifier
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Template name
+
+    `updated_at: str | None`
+    :   When the template was last updated
+
+    `versions: list[typing.Any] | None`
+    :   Template versions

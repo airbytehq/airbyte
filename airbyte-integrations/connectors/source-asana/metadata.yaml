@@ -16,6 +16,8 @@ data:
           - scopeType: stream
             impactedScopes:
               - events
+    rolloutConfiguration:
+      enableProgressiveRollout: false
   remoteRegistries:
     pypi:
       enabled: true
@@ -28,7 +30,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.5.1
+  dockerImageTag: 1.7.2
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg

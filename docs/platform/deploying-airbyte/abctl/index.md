@@ -17,7 +17,7 @@ Airbyte runs on Kubernetes. People run Airbyte in a diverse set of environments 
 
 ### When to use abctl
 
-You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. Normally, you don't use abctl to manage enterprise deployments, because they use dedicated Kubernetes infrastructure. However, it's possible to use abctl this way if you want to.
+You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluster, but is running Docker. abctl only manages its own kind cluster. It can't install Airbyte on an existing Kubernetes cluster. If you already have a Kubernetes cluster, use the [Helm chart deployment guide](../chart-v2-community.mdx) instead.
 
 ### What abctl does
 
@@ -165,6 +165,18 @@ abctl version
 </TabItem>
 </Tabs>
 
+### Customize the install location
+
+By default, the curl installer places the `abctl` binary in `/usr/local/bin`. To install the binary elsewhere, set the `DIR_INSTALL` environment variable before running the installer.
+
+```shell
+DIR_INSTALL=/apps/bin curl -LsfS https://get.airbyte.com | bash -
+```
+
+:::note
+`DIR_INSTALL` controls only where the **abctl binary** lives. Airbyte state data (kubeconfig, cluster data) is stored separately at `~/.airbyte/abctl/`. It's not affected by this setting and you can't relocate it.
+:::
+
 ## Install and manage local Airbyte instances
 
 This section shows you how to use abctl. It's not a step-by-step guide to deploy Airbyte. See Airbyte's [Quickstart](../../using-airbyte/getting-started/oss-quickstart.md) or [deployment guides](../deploying-airbyte.md) for a complete explanation.
@@ -184,6 +196,24 @@ abctl local install --secret YOUR_SECRET --values values.yaml
 ```
 
 For a list of all flags, see the [full reference](#reference).
+
+#### Pin a specific Helm chart version
+
+To install a specific version of the Airbyte Helm chart instead of the latest, use the `--chart-version` flag. This is useful when you need to reproduce a known-good deployment or stay on a tested version.
+
+```bash
+abctl local install --chart-version 0.422.2 --values values.yaml --secret secret.yaml --port 8000
+```
+
+The `--chart-version` value is the Helm chart version, not the Airbyte platform version. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte).
+
+#### Install from a local Helm chart
+
+To install from a local chart directory (for example, in air-gapped environments), use the `--chart` flag. `--chart` and `--chart-version` are mutually exclusive — you can't pass both.
+
+```bash
+abctl local install --chart ./path/to/local/airbyte-chart
+```
 
 :::note
 Depending on your internet speed, `abctl local install` may take up to 30 minutes.
@@ -352,8 +382,8 @@ abctl has three commands: `local`, `images`, and `version`. Most commands have s
 
     | Name                | Default | Description                                                                                                                                                                                                                                            | Example                    |
     | ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-    | --chart             | ""      | Path to chart.                                                                                                                                                                                                                                         | ./my-chart                 |
-    | --chart-version     | latest  | Which Airbyte helm-chart version to install.                                                                                                                                                                                                          | 0.422.2                    |
+    | --chart             | ""      | Path to a local Helm chart directory. Use this to install from a local chart (for example, in air-gapped environments or during development). Mutually exclusive with `--chart-version`.                                                                  | ./my-chart                 |
+    | --chart-version     | latest  | The version of the Airbyte Helm chart to install. This is the **Helm chart version**, not the Airbyte platform version. Omit this flag to install the latest version. Mutually exclusive with `--chart`. To find available versions, see the [Airbyte Helm chart on ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte). | 0.422.2                    |
     | --docker-email      | ""      | Docker email address to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_EMAIL`.                                                                                               | user@example.com          |
     | --docker-password   | ""      | Docker password to authenticate against `--docker-server`. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_PASSWORD`.                                                                                                 | mypassword                 |
     | --docker-server     | ""      | Docker server to authenticate against. Can also be specified by the environment-variable `ABCTL_LOCAL_INSTALL_DOCKER_SERVER`.                                                                                                                       | docker.io                 |

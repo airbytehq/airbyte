@@ -54,10 +54,11 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
         if (discoveredStream.primaryKeyColumnIDs.isEmpty()) {
             return false
         }
-        val allColumnsByID: Map<String, Field> = discoveredStream.columns.associateBy { it.id }
+        val allColumnsByID: Map<String, EmittedField> =
+            discoveredStream.columns.associateBy { it.id }
         return discoveredStream.primaryKeyColumnIDs.all { idComponents: List<String> ->
             val id: String = idComponents.joinToString(separator = ".")
-            val field: Field? = allColumnsByID[id]
+            val field: EmittedField? = allColumnsByID[id]
             field != null && isPossiblePrimaryKeyElement(field)
         }
     }
@@ -76,7 +77,7 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
      * objects. For instance if the [Field.type] does not map to a [LosslessFieldType] then the
      * field can't reliably round-trip checkpoint values during a resumable initial sync.
      */
-    fun isPossiblePrimaryKeyElement(field: Field): Boolean =
+    fun isPossiblePrimaryKeyElement(field: EmittedField): Boolean =
         when (field.type) {
             !is LosslessFieldType -> false
             CharacterStreamFieldType,
@@ -94,6 +95,6 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
      * to round-trip the column values, we need to be able to query the max value from the source at
      * the start of the sync.
      */
-    fun isPossibleCursor(field: Field): Boolean =
+    fun isPossibleCursor(field: EmittedField): Boolean =
         isPossiblePrimaryKeyElement(field) && field.type !is BooleanFieldType
 }

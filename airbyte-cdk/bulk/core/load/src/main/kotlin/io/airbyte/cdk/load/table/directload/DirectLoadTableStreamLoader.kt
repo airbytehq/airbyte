@@ -16,6 +16,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/*
+ * For non-truncate modes (Append, Dedup), real table creation uses replace=false
+ * to prevent accidental data loss. Using replace=true was unnecessarily risky and
+ * could drop existing tables in edge cases.
+ *
+ * Truncate paths (AppendTruncate, DedupTruncate) intentionally keep replace=true
+ * because those modes expect the table to be fully replaced.
+ */
+
 /**
  * Stream loader implementation for append mode.
  *
@@ -42,7 +51,7 @@ class DirectLoadTableAppendStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = true
+                replace = false
             )
         } else {
             schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -95,7 +104,7 @@ class DirectLoadTableDedupStreamLoader(
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream: ${stream.mappedDescriptor}"
             }
-            tableOperationsClient.createTable(
+            tableOperationsClient.createTempTable(
                 stream,
                 tempTableName,
                 columnNameMapping,
@@ -114,7 +123,7 @@ class DirectLoadTableDedupStreamLoader(
                 stream,
                 realTableName,
                 columnNameMapping,
-                replace = true,
+                replace = false,
             )
         }
         tableOperationsClient.upsertTable(
@@ -167,7 +176,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
                 val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                if (generationId == stream.minimumGenerationId) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -177,7 +186,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     logger.info {
                         "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
-                    tableOperationsClient.createTable(
+                    tableOperationsClient.createTempTable(
                         stream,
                         tempTableName,
                         columnNameMapping,
@@ -204,7 +213,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 isWritingToTemporaryTable = false
             } else if (
                 initialStatus.realTable.isEmpty ||
-                    tableOperationsClient.getGenerationId(realTableName) >=
+                    tableOperationsClient.getGenerationId(realTableName) ==
                         stream.minimumGenerationId
             ) {
                 schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -213,7 +222,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 logger.info {
                     "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
                 }
-                tableOperationsClient.createTable(
+                tableOperationsClient.createTempTable(
                     stream,
                     tempTableName,
                     columnNameMapping,
@@ -295,7 +304,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
                 val generationId = tableOperationsClient.getGenerationId(tempTableName)
-                if (generationId >= stream.minimumGenerationId) {
+                if (generationId == stream.minimumGenerationId) {
                     schemaEvolutionClient.ensureSchemaMatches(
                         stream,
                         tempTableName,
@@ -305,7 +314,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     logger.info {
                         "Recreating temp table ${tempTableName.toPrettyString()} (old generation ID: $generationId) for stream ${stream.mappedDescriptor.toPrettyString()}"
                     }
-                    tableOperationsClient.createTable(
+                    tableOperationsClient.createTempTable(
                         stream,
                         tempTableName,
                         columnNameMapping,
@@ -318,7 +327,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
             }
-            tableOperationsClient.createTable(
+            tableOperationsClient.createTempTable(
                 stream,
                 tempTableName,
                 columnNameMapping,
@@ -356,7 +365,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
             // Case 2: Real table exists but is empty or has correct generation ID
             initialStatus.realTable.isEmpty ||
-                tableOperationsClient.getGenerationId(realTableName) >=
+                tableOperationsClient.getGenerationId(realTableName) ==
                     stream.minimumGenerationId -> true
 
             // Case 3: Real table exists with data - needs more stringent approach
@@ -395,7 +404,12 @@ class DirectLoadTableDedupTruncateStreamLoader(
         val tempTempTable = tempTableNameGenerator.generate(tempTableName)
 
         // Create temporary table for intermediate operations
-        tableOperationsClient.createTable(stream, tempTempTable, columnNameMapping, replace = true)
+        tableOperationsClient.createTempTable(
+            stream,
+            tempTempTable,
+            columnNameMapping,
+            replace = true,
+        )
 
         // Upsert from temp to temp-temp table
         tableOperationsClient.upsertTable(

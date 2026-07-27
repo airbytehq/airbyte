@@ -1,4 +1,4 @@
-# Incremental Syncs
+# Incremental Sync
 
 An incremental sync is a sync which pulls only the data that has changed since the previous sync (as opposed to all the data available in the data source).
 
@@ -146,7 +146,7 @@ Summary
 
 Choose the option that best fits your data structure and sync requirements to optimize performance and data integrity.
 
-## More readings
+## Related
 
+- *No-Code Connector Builder*: [Incremental Sync](/platform/connector-development/connector-builder-ui/incremental-sync)
 - [Incremental reads](../../cdk-python/incremental-stream.md)
-- Many of the concepts discussed here are described in the [No-Code Connector Builder docs](../../connector-builder-ui/incremental-sync.md) as well, with more examples.
