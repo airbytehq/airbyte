@@ -21,6 +21,7 @@ The Slack connector supports the following entities and actions.
 | Scheduled Messages | [Create](#scheduled-messages-create) |
 | Channel Archives | [Create](#channel-archives-create) |
 | Channel Kicks | [Create](#channel-kicks-create) |
+| Channel Joins | [Create](#channel-joins-create) |
 | Pins | [Create](#pins-create) |
 | Bookmarks | [Create](#bookmarks-create) |
 
@@ -2300,6 +2301,99 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `ok` | `boolean` |  |
 | `errors` | `object \| null` |  |
+
+
+</details>
+
+## Channel Joins
+
+### Channel Joins Create
+
+Joins an existing public channel. The calling bot or user token will be added as a member of the channel.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_joins",
+  "action": "create",
+  "params": {
+    "channel": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await slack.channel_joins.create(
+    channel="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_joins",
+    "action": "create",
+    "params": {
+        "channel": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `channel` | `string` | Yes | ID of the channel to join |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `is_channel` | `boolean \| null` |  |
+| `is_group` | `boolean \| null` |  |
+| `is_im` | `boolean \| null` |  |
+| `is_mpim` | `boolean \| null` |  |
+| `is_private` | `boolean \| null` |  |
+| `created` | `integer \| null` |  |
+| `is_archived` | `boolean \| null` |  |
+| `is_general` | `boolean \| null` |  |
+| `unlinked` | `integer \| null` |  |
+| `name_normalized` | `string \| null` |  |
+| `is_shared` | `boolean \| null` |  |
+| `is_org_shared` | `boolean \| null` |  |
+| `is_pending_ext_shared` | `boolean \| null` |  |
+| `pending_shared` | `array \| null` |  |
+| `context_team_id` | `string \| null` |  |
+| `updated` | `integer \| null` |  |
+| `creator` | `string \| null` |  |
+| `is_ext_shared` | `boolean \| null` |  |
+| `shared_team_ids` | `array \| null` |  |
+| `pending_connected_team_ids` | `array \| null` |  |
+| `is_member` | `boolean \| null` |  |
+| `topic` | `object \| any` |  |
+| `purpose` | `object \| any` |  |
+| `previous_names` | `array \| null` |  |
+| `num_members` | `integer \| null` |  |
+| `parent_conversation` | `string \| null` |  |
+| `properties` | `object \| null` |  |
+| `is_thread_only` | `boolean \| null` |  |
+| `is_read_only` | `boolean \| null` |  |
 
 
 </details>

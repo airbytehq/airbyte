@@ -424,16 +424,6 @@ spec:
         default: 4
         examples: [2, 4, 10]
         description: The number of worker threads to use for the sync.
-      subscription_tier:
-        type: string
-        title: Subscription Tier
-        enum: [basic, pro, enterprise]
-        default: basic
-        description: >-
-          Your monday.com plan tier. Determines the applied rate-limit policy
-          at runtime. "basic" covers Free, Standard, and Basic plans.
-          Leave as "basic" if unsure — this is the safest default.
-        order: 99
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key: ["credentials", "auth_type"]
@@ -490,24 +480,11 @@ check:
   stream_names:
     - "users"
 
-# Monday.com rate limits per plan (https://developer.monday.com/api-reference/docs/rate-limits):
-#   Minute limit: Basic/Free/Standard = 1,000/min, Pro = 2,500/min, Enterprise = 5,000/min
-#   Concurrency limit: Basic/Free/Standard = 40, Pro = 100, Enterprise = 250
+# The smallest limit for 1 minute is 250 queries, so set the default number of workers to 4. https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit
-
-# Tier-aware HTTP API budget — enforces Monday.com per-minute rate limits.
-# https://developer.monday.com/api-reference/docs/rate-limits
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: "{{ {'basic': 1000, 'pro': 2500, 'enterprise': 5000}.get(config.get('subscription_tier', 'basic'), 1000) }}"
-          interval: PT1M
-      matchers: []
 
 schemas:
   activity_logs:

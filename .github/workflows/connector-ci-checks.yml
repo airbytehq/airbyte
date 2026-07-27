@@ -367,6 +367,11 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Build connector image
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: airbyte-cdk image build
+
       - name: Container Tests
         if: matrix.connector
         continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}

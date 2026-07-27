@@ -58,11 +58,7 @@ uv add airbyte-agent-sdk
 
 The [web app](../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai) is the fastest way to get started. Describe what you need in natural language, and an Airbyte-hosted agent picks the right connectors, makes the necessary tool calls, and replies with an answer grounded in your data.
 
-Two primary surfaces:
-
-- **[Chats](../interfaces/ui/chats)**: Interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
-
-- **[Automations](../interfaces/ui/automations)**: Agent tasks that run on a schedule, on a webhook, or on demand. Use Automations when you need the same work to happen repeatedly without a person in the loop.
+Use [**Chats**](../interfaces/ui/chats) to have interactive conversations with an agent. Ask a question, iterate on the answer, and explore your data in real time.
 
 **Get started:** Sign up at [app.airbyte.ai](https://app.airbyte.ai), add a connector on the Connectors page, and open New Chat.
 

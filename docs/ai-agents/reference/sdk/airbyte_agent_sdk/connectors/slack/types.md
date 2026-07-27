@@ -93,6 +93,20 @@ Classes
     `users: str`
     :   The type of the None singleton.
 
+<a id="ChannelJoinsCreateParams"></a>
+
+`ChannelJoinsCreateParams(*args, **kwargs)`
+:   Parameters for channel_joins.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
 <a id="ChannelKicksCreateParams"></a>
 
 `ChannelKicksCreateParams(*args, **kwargs)`

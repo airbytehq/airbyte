@@ -35,15 +35,14 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) to learn how to obtain the access token.
 
-**- OAuth setup:** If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
+**- OAuth setup:** If you are using OAuth to authenticate on Airbyte Open Source, please refer to [HubSpot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
 
 - Client ID
 - Client Secret
 - Refresh Token
 <!-- /env:oss -->
 
-More information on HubSpot authentication methods can be found
-[here](https://developers.hubspot.com/docs/api/intro-to-auth).
+For more details, refer to [HubSpot's authentication documentation](https://developers.hubspot.com/docs/api/intro-to-auth).
 
 ### Step 2: Configure the scopes for your streams (Private App only)
 
@@ -61,8 +60,9 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
 | `contact_lists`             | `crm.lists.read`                                                                                             |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
-| `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
+| `association_streams`       | Read scopes for the selected source and target objects                                                       |
 | Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
+| `custom_object_association_streams` | `crm.objects.custom.read` and the read scope for any selected standard object                         |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
@@ -78,7 +78,9 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
-| `property_history`          | `crm.objects.contacts.read`                                                                                  |
+| `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
+| `companies_property_history` | `crm.objects.companies.read`                                                                                |
+| `deals_property_history`    | `crm.objects.deals.read`                                                                                     |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
 | `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
@@ -109,12 +111,18 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 <FieldAnchor field="start_date">
 
-6. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date.
+6. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date HubSpot was created) will be used as a start date.
 
 </FieldAnchor>
 
-7. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
-8. Click **Set up source** and wait for the tests to complete.
+<!-- markdownlint-disable MD029 -->
+
+7. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
+8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
+9. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
+10. Click **Set up source** and wait for the tests to complete.
+
+<!-- markdownlint-enable MD029 -->
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -128,15 +136,72 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
    - (Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
    - (Not Recommended:) To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format:
-   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
-6. (Optional) Set the lookback window in minutes to re-fetch data for a specified number of minutes before the state from the previous sync. This helps to capture missing records.
-7. Click **Set up source** and wait for the tests to complete.
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (HubSpot creation date) will be used as start date. It's recommended to provide a start date relevant to your data to optimize synchronization.
+6. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
+7. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
+8. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
+9. Click **Set up source** and wait for the tests to complete.
 
 <FieldAnchor field="enable_experimental_streams">
 
 ### Experimental streams
 
-[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature. Note that these streams use a Hubspot API that is currently in beta, and they may be modified or unstable as the API continues to develop.
+No experimental streams are currently available. The **Enable experimental streams** toggle is visible in the connector configuration but does not gate any streams at this time.
+
+</FieldAnchor>
+
+<FieldAnchor field="association_streams">
+
+### Association streams
+
+Use **Association Between Objects Streams** to sync relationships between two standard HubSpot CRM objects. Add one item for each relationship you want to sync. Each item creates one stream that reads IDs from the source object, calls HubSpot's [associations batch read API](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations), and emits one record for each association.
+
+Configure these fields for each association stream:
+
+- **From Object**: The source object type, such as `tickets`, `deals`, or `contacts`.
+- **To Object**: The target object type, such as `companies` or `contacts`.
+- **Stream Name**: Optional. If you leave this empty, Airbyte names the stream `associations_<from_object>_<to_object>`.
+
+For example, set **From Object** to `tickets` and **To Object** to `companies` to create the `associations_tickets_companies` stream. After you add or edit association stream settings, refresh the source schema so the generated streams appear in the catalog.
+
+Association stream records include:
+
+- `from_id`: The ID of the source object record.
+- `to_id`: The ID of the target object record.
+- `association_type_id`: HubSpot's numeric association type identifier.
+- `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
+- `label`: The association label. This is `null` for unlabeled associations.
+
+Association streams sync incrementally. Only associations for records modified since the last sync are fetched.
+
+If you authenticate with a Private App, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` and `crm.objects.companies.read` scopes.
+
+</FieldAnchor>
+
+<FieldAnchor field="custom_object_association_streams">
+
+### Custom object association streams
+
+Use **Custom Object Association Streams** to sync relationships where at least one side is a custom HubSpot object. Add one item for each relationship you want to sync.
+
+Configure these fields for each custom object association stream:
+
+- **From Object**: The source object name or identifier.
+- **To Object**: The target object name or identifier.
+- **Stream Name**: Optional. If you leave this empty, Airbyte names the stream `associations_<from_object>_<to_object>`.
+
+After you add or edit custom object association stream settings, refresh the source schema so the generated streams appear in the catalog.
+
+For custom objects, use either:
+
+- The custom object's `fullyQualifiedName`, such as `p_my_custom_object`.
+- The custom object's `objectTypeId`, such as `2-12345`.
+
+You can use standard object names, such as `contacts`, `companies`, or `deals`, for the standard-object side of the relationship.
+
+Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. They also sync incrementally, the same way as standard association streams.
+
+If you authenticate with a Private App, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
 
 </FieldAnchor>
 
@@ -196,26 +261,20 @@ The HubSpot source connector supports the following streams:
 - [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
-- [ContactsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [CompaniesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [DealsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [TicketsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsCallsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsEmailsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsMeetingsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsNotesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsTasksWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
+- [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
+- [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Notes on the `property_history` streams
 
-`Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timestamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.
+The property history streams (`contacts_property_history`, `companies_property_history`, `deals_property_history`) use Client-Side Incremental sync with a cursor timestamp to determine which records have changed since the previous sync.
+
+HubSpot calculated properties — formula fields, rollup summaries, and analytics properties such as `hs_analytics_*` — always have a timestamp that mirrors the time of the latest sync, not the time of the last user-initiated change. This causes the sync cursor to advance past records that have not yet been synced, which can result in missing records.
+
+To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is a reasonable starting point. Because these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
 
 ### Notes on the `engagements` stream
 
@@ -250,15 +309,15 @@ The `list_memberships` stream reads memberships for every list returned by the `
 
 ### Notes on the `Custom CRM` Objects
 
-Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
+Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
 First you need to give the connector some additional permissions:
 
-- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
+- **If you are using OAuth on Airbyte Cloud** go to the HubSpot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
 
-- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+- **If you are using OAuth on OSS or Private App auth** go into the HubSpot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See [HubSpot's scopes documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 Then, go to the schema tab of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
@@ -266,7 +325,7 @@ Then, go to the schema tab of your connection and click **refresh source schema*
 
 <details>
 <summary>
-Expand to see details about Hubspot connector limitations and troubleshooting.
+Expand to see details about HubSpot connector limitations and troubleshooting.
 </summary>
 
 ### Rate limiting
@@ -288,7 +347,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - **Enabling streams:** Some streams, such as `workflows`, require specific scopes before they can be read. If the authenticated user does not have the necessary permissions, the connector logs a warning and skips the stream.
 
-- **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead.
+- **HubSpot object labels** In HubSpot, a label can be applied to a stream that differs from the original API name of the stream. HubSpot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the HubSpot object instead.
 
 - **Unnesting top level properties**: Since version 1.5.0, in order to offer users access to nested fields, we also denest the top-level fields into individual fields in the destination. This is most commonly observed in the `properties` field, which is now split into each attribute in the destination.
 
@@ -328,9 +387,9 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 - **403 Forbidden Error**
 
-  - Hubspot has **scopes** for each API call.
+  - HubSpot has **scopes** for each API call.
   - Each stream is tied to a scope and will need access to that scope to sync data.
-  - Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+  - Review [HubSpot's OAuth scope documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
   - Additional permissions:
 
     `feedback_submissions`: Service Hub Professional account
@@ -339,11 +398,25 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
     `workflows`: Sales, Service, and Marketing Hub Professional accounts
 
-- Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the HubSpot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-- **Missing records** in CRMSearch streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`): 
-  - If you notice missing records during incremental syncs, it may be due to irregularities in Hubspot's API behavior.
-  - To mitigate this, you can configure a lookback window in the source settings. This setting allows the connector to re-fetch data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
+- **Missing records** in CRM Search streams (`deals`, `companies`, `engagements_calls`, `engagements_emails`, `engagements_meetings`, `engagements_notes`, `engagements_tasks`, `contacts`, `deal_splits`, `leads`, `tickets`):
+  - If you notice missing records during incremental syncs, it may be due to irregularities in HubSpot's API behavior.
+  - To mitigate this, configure the **CRM Search Lookback Window** in the source settings. This re-fetches data for a specified number of minutes before the state from the previous sync, helping to capture missing records.
+
+- **Missing records** in property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`):
+  - HubSpot calculated properties (formula fields, rollup summaries, analytics properties) can emit timestamps ahead of user-initiated changes, causing the sync cursor to advance past records that have not yet been synced.
+  - To mitigate this, configure the **Property History Lookback Window** in the source settings. A value of `43200` (30 days) is recommended. Since these streams use Append + Deduped sync mode, duplicate records from the lookback period are handled automatically.
+
+- **Destination type conversion errors on dynamic `number` / `boolean` properties** (for example, `JSON → NUMERIC`, `JSON → BOOL`, or decimal-precision / scale errors on fields like `hs_hd_ticket_ids`, `zendesk_requester_id`, `hs_task_send_default_reminder`, or any `companies.properties.*` field):
+  - HubSpot sometimes declares a property as `number` or `boolean` but returns values that cannot be cast to that type — for example, semicolon-separated IDs (`"3092727991;3881228353;15895321999"`) in a `number` field, multi-value text in a `boolean` field, or numbers beyond the declared precision. When that happens the connector emits the raw string, but because the published schema still says `number` / `boolean`, strict destinations reject the record.
+  - To resolve this, enable **Treat dynamic number and boolean properties as strings** (`treat_numbers_and_booleans_as_strings`) in the source configuration. When this option is on, the connector declares every HubSpot dynamic property that would otherwise be `number` or `boolean` as `string`, so the affected values land in the destination as strings rather than failing type conversion.
+  - The toggle only affects HubSpot dynamic `properties.*` fields. Static schema fields and non-property fields are not changed.
+  - **After enabling the toggle you must refresh both the schema and the data**, otherwise the new string type will not reach the destination. In the Airbyte UI:
+    1. Open the affected connection.
+    2. Click **Refresh source schema** and save the updated catalog — the affected columns should now be `string`.
+    3. Trigger a **Refresh data** sync (or clear the affected streams and run a new sync) so the destination tables are rewritten with the new column type and previously-rejected records are re-emitted as strings.
+  - The same steps apply if you later disable the toggle — refresh the schema and the data so the destination column types match the new catalog.
 
 </details>
 
@@ -358,7 +431,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.5.5 | 2026-04-22 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
+| 6.7.0 | 2026-06-11 | [76396](https://github.com/airbytehq/airbyte/pull/76396) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
+| 6.6.1 | 2026-06-10 | [79636](https://github.com/airbytehq/airbyte/pull/79636) | Add configurable `property_history_lookback_window` (minutes) to property history streams (deals, contacts, companies) to prevent silent record loss caused by cursor drift from HubSpot calculated properties. Clarify existing `lookback_window` field as CRM Search-specific. |
+| 6.6.0 | 2026-06-08 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects, including optional OAuth scopes needed to support them |
+| 6.5.5 | 2026-04-28 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Add failure_type classification to `list_memberships` error handler response filters |
 | 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
 | 6.5.3 | 2026-04-21 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |

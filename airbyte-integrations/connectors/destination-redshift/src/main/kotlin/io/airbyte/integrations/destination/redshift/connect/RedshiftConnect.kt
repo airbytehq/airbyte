@@ -40,7 +40,8 @@ class RedshiftConnect(
     /** Creates a fully configured [HikariDataSource] for Redshift */
     fun createDataSource(): HikariDataSource {
         val endpoint = resolveEndpoint()
-        val jdbcUrl = buildJdbcUrl(endpoint)
+        val jdbcUrl = "jdbc:redshift://$endpoint/${configuration.database}"
+        val connectionProperties = buildConnectionProperties()
 
         log.info { "Creating Redshift DataSource for $endpoint/${configuration.database}" }
 
@@ -54,18 +55,48 @@ class RedshiftConnect(
                 password = configuration.password
                 schema = configuration.schema
 
-                addDataSourceProperty("ssl", "true")
-                addDataSourceProperty("sslfactory", SSL_FACTORY)
+                connectionProperties.forEach { (key, value) -> addDataSourceProperty(key, value) }
             }
 
         return HikariDataSource(hikariConfig)
     }
 
-    private fun buildJdbcUrl(endpoint: String): String =
-        "jdbc:redshift://$endpoint/${configuration.database}" +
-            (configuration.jdbcUrlParams?.takeIf { it.isNotBlank() }?.let { "?$it" } ?: "")
+    /** Merges default SSL connection properties with user-provided jdbc_url_params */
+    internal fun buildConnectionProperties(): Map<String, String> {
+        val userParams = parseJdbcUrlParams(configuration.jdbcUrlParams)
+
+        val properties =
+            mutableMapOf(
+                "ssl" to "true",
+                "sslfactory" to SSL_FACTORY,
+            )
+
+        // sslmode and sslfactory are mutually exclusive in the Redshift JDBC driver.
+        if (userParams.containsKey("sslmode")) {
+            properties.remove("sslfactory")
+        }
+
+        // User params override remaining defaults
+        properties.putAll(userParams)
+        return properties
+    }
 
     companion object {
         const val SSL_FACTORY = "com.amazon.redshift.ssl.NonValidatingFactory"
+
+        /**
+         * Parses a jdbc_url_params string (e.g. "key1=value1&key2=value2") into a Map. Returns an
+         * empty map for null or blank input.
+         */
+        internal fun parseJdbcUrlParams(params: String?): Map<String, String> {
+            if (params.isNullOrBlank()) return emptyMap()
+            return params
+                .split("&")
+                .filter { it.contains("=") }
+                .associate { param ->
+                    val (key, value) = param.split("=", limit = 2)
+                    key.trim() to value.trim()
+                }
+        }
     }
 }
