@@ -153,6 +153,7 @@ class PositionalDeleteEndToEndTest {
                 records.map { it.getField("id") to it.getField("name") }.toSet()
             }
         assertThat(rows).containsExactlyInAnyOrder("3" to "three-updated")
+        warehouse.toFile().deleteRecursively()
     }
 
     private fun commitRowDelta(
