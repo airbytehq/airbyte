@@ -52,7 +52,7 @@ The incremental streams use `Day` as the cursor and sync one day per request.
 ## Limitations and known issues
 
 - Every field, including metrics such as `Spend` and `Impressions`, arrives as a string. Cast these values downstream before you aggregate them.
-- The connector uses MNTN's synchronous reporting endpoint. MNTN recommends its asynchronous batch endpoint for high-cardinality requests and for windows longer than four months, so a `CampaignDetails` sync with an early start date can time out.
+- The connector uses MNTN's synchronous reporting endpoint. MNTN recommends its asynchronous batch endpoint for high-cardinality requests, for windows longer than four months, and for requests that time out. `CampaignDetails` requests your whole window in a single call.
 - MNTN doesn't publish rate limits for the reporting API.
 - MNTN's API doesn't paginate these responses, so each request returns the full result set for its date range.
 
