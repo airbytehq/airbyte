@@ -23,5 +23,6 @@ dependencies {
 
     testImplementation "io.mockk:mockk:1.13.12"
     testImplementation "org.assertj:assertj-core:3.26.3"
+    testImplementation 'org.apache.logging.log4j:log4j-core'
     testImplementation 'org.apache.hadoop:hadoop-mapreduce-client-core:3.4.1'
 }

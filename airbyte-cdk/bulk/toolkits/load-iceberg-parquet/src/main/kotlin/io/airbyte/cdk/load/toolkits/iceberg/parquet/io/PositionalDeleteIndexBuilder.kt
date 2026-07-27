@@ -70,6 +70,19 @@ class PositionalDeleteIndexBuilder(
                 .filter { it.content() == FileContent.EQUALITY_DELETES }
                 .distinctBy { it.location().toString() }
                 .associate { it.location().toString() to readEqualityDeletes(table, schema, it) }
+        if (parsedEqualityDeletes.isNotEmpty()) {
+            logger.warn {
+                "WARNING: Positional delete mode found ${parsedEqualityDeletes.size} existing " +
+                    "equality-delete file(s) in ${table.name()}. Positional mode will stop " +
+                    "producing equality deletes, but it will not remove these legacy files. " +
+                    "Syncs remain correct and complete, but the legacy files will remain until " +
+                    "the table is compacted with delete-file-threshold=1 (for example with " +
+                    "Athena/Glue OPTIMIZE or Spark rewrite_data_files) or the stream is refreshed " +
+                    "to rebuild the table. Configure compaction to rewrite files carrying any " +
+                    "delete files; readers that reject equality deletes may otherwise continue " +
+                    "to reject this table."
+            }
+        }
         val parsedPositionDeletes =
             files.values
                 .flatMap { it.deletes }
