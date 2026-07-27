@@ -17,9 +17,9 @@ If you are interested in an issue that isn't tagged, post a comment with your ap
 
 ### Contributions we accept
 
-- Fixes and enhancements to existing API source connectors
+- Fixes and enhancements to existing API connectors
 - New streams and features for existing connectors using the Connector Builder/YAML
-- New API source connectors built with the Connector Builder
+- New API connectors built with the Connector Builder
 - Migrations of an existing connector from Python to the Connector Builder/YAML
 
 Airbyte evaluates contributions outside this scope on a case-by-case basis. Reach out to the Airbyte team before starting to ensure the team can accept your idea.
@@ -33,7 +33,6 @@ Airbyte is revamping its core Java destinations codebase. We're not reviewing/ac
 ### Contributions we don't accept
 
 - Data replication platform contributions: in mid-2025, Airbyte stopped accepting community contributions to the data replication platform. Continue reporting issues through GitHub so we can investigate and prioritize fixes and improvements.
-- Contributions to destination connectors. We only accept contributions to source connectors.
 - Airbyte Agents contributions: for bugs or feature requests related to Airbyte Agents, if you're a paid customer, use the [Support Center](https://support.airbyte.com/hc/en-us/requests/new), and if you're a free user, use the [`#airbyte-agents`](https://airbytehq.slack.com/archives/C0B1CUSEQKT) channel in Slack.
 
 ### Standard contribution workflow
