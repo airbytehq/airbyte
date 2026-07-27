@@ -80,6 +80,9 @@ class MarketoStream(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
+    def request_kwargs(self, **kwargs) -> Mapping[str, Any]:
+        return {"stream": True, "timeout": (30, 300)}
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = response.json().get(self.data_field, [])
 
@@ -219,7 +222,7 @@ class MarketoExportBase(IncrementalMarketoStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        return {"stream": True}
+        return {"stream": True, "timeout": (30, 300)}
 
     def stream_slices(
         self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
