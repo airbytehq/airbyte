@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.MetadataColumns
 import org.apache.iceberg.Schema
@@ -16,6 +17,17 @@ import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.types.TypeUtil
 
 private val logger = KotlinLogging.logger {}
+
+internal fun validateEqualityDeleteFields(
+    deleteFile: DeleteFile,
+    identifierFieldIds: Set<Int>,
+) {
+    val equalityFieldIds = deleteFile.equalityFieldIds().toSet()
+    require(equalityFieldIds == identifierFieldIds) {
+        "Equality delete file ${deleteFile.location()} uses field IDs $equalityFieldIds, " +
+            "but the positional index uses identifier field IDs $identifierFieldIds"
+    }
+}
 
 class PositionalDeleteIndexBuilder(
     private val maxEntries: Int = DEFAULT_MAX_ENTRIES,
@@ -69,18 +81,20 @@ class PositionalDeleteIndexBuilder(
                 .flatMap { it.deletes }
                 .filter { it.content() == FileContent.EQUALITY_DELETES }
                 .distinctBy { it.location().toString() }
-                .associate { it.location().toString() to readEqualityDeletes(table, schema, it) }
+                .associate {
+                    validateEqualityDeleteFields(it, identifierFieldIds)
+                    it.location().toString() to readEqualityDeletes(table, schema, it)
+                }
         if (parsedEqualityDeletes.isNotEmpty()) {
             logger.warn {
                 "WARNING: Positional delete mode found ${parsedEqualityDeletes.size} existing " +
                     "equality-delete file(s) in ${table.name()}. Positional mode will stop " +
                     "producing equality deletes, but it will not remove these legacy files. " +
                     "Syncs remain correct and complete, but the legacy files will remain until " +
-                    "the table is compacted with delete-file-threshold=1 (for example with " +
+                    "a compaction run configured with delete-file-threshold=1 (for example with " +
                     "Athena/Glue OPTIMIZE or Spark rewrite_data_files) or the stream is refreshed " +
-                    "to rebuild the table. Configure compaction to rewrite files carrying any " +
-                    "delete files; readers that reject equality deletes may otherwise continue " +
-                    "to reject this table."
+                    "to rebuild the table. Readers that reject equality deletes may otherwise " +
+                    "continue to reject this table."
             }
         }
         val parsedPositionDeletes =

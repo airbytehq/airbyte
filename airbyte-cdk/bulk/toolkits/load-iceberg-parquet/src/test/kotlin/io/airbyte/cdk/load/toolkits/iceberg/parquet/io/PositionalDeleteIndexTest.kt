@@ -4,8 +4,12 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.mockk.every
+import io.mockk.mockk
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Test
@@ -47,5 +51,23 @@ internal class PositionalDeleteIndexTest {
         assertEquals(location, index.remove(equivalentKey))
         assertEquals(0, index.size())
         assertEquals(1L, index.maxEntries())
+    }
+
+    @Test
+    fun rejectsEqualityDeletesWithDifferentIdentifierFields() {
+        val deleteFile = mockk<DeleteFile>()
+        every { deleteFile.location() } returns "s3://bucket/delete.parquet"
+        every { deleteFile.equalityFieldIds() } returns setOf(2)
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                validateEqualityDeleteFields(deleteFile, setOf(1))
+            }
+
+        assertEquals(
+            "Equality delete file s3://bucket/delete.parquet uses field IDs [2], " +
+                "but the positional index uses identifier field IDs [1]",
+            exception.message,
+        )
     }
 }
