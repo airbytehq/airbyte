@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import fnmatch
 import logging
 from os import getenv
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
@@ -143,24 +144,34 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
-        config_repositories = set(config.get("repositories"))
+        configured_repository_selectors = set(config.get("repositories"))
+        included_repository_selectors = {repository for repository in configured_repository_selectors if not repository.startswith("!")}
+        excluded_repository_selectors = {
+            repository.removeprefix("!") for repository in configured_repository_selectors if repository.startswith("!")
+        }
 
         repositories = set()
         organizations = set()
         unchecked_repos = set()
         unchecked_orgs = set()
-        pattern = None
 
-        for org_repos in config_repositories:
+        for org_repos in included_repository_selectors:
+            if any(fnmatch.fnmatchcase(org_repos, excluded_repository) for excluded_repository in excluded_repository_selectors):
+                continue
             _, _, repos = org_repos.partition("/")
             if "*" in repos:
                 unchecked_orgs.add(org_repos)
             else:
                 unchecked_repos.add(org_repos)
 
+        included_repository_pattern = "|".join(fnmatch.translate(repository) for repository in unchecked_orgs)
+        excluded_repository_pattern = "|".join(fnmatch.translate(repository) for repository in excluded_repository_selectors)
+        pattern = included_repository_pattern or None
+        if excluded_repository_pattern:
+            pattern = f"(?!{excluded_repository_pattern})(?:{included_repository_pattern or '.*'})"
+
         if unchecked_orgs:
             org_names = [org.split("/")[0] for org in unchecked_orgs]
-            pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
             stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
             stream.exit_on_rate_limit = True if is_check_connection else False
             for record in read_full_refresh(stream):

@@ -59,7 +59,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
-6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`. Prefix a repository or pattern with `!` to exclude matching repositories after inclusions are expanded, e.g. `airbytehq/* !airbytehq/airbyte-cloud !airbytehq/archived-*`.
 
 :::caution
 Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
@@ -241,6 +241,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.38 | 2026-07-24 | [82726](https://github.com/airbytehq/airbyte/pull/82726) | Add `!` repository selectors for exact and wildcard exclusions |
 | 2.1.37 | 2026-07-21 | [81799](https://github.com/airbytehq/airbyte/pull/81799) | Update dependencies |
 | 2.1.36 | 2026-07-14 | [82093](https://github.com/airbytehq/airbyte/pull/82093) | Promoted release candidate to GA |
 | 2.1.36-rc.1 | 2026-07-08 | [80133](https://github.com/airbytehq/airbyte/pull/80133) | Switch base class from AbstractSource to YamlDeclarativeSource (Step 1 of declarative migration) |
