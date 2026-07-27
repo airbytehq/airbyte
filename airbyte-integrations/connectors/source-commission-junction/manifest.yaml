@@ -116,7 +116,6 @@ streams:
             - records
     primary_key:
       - commissionId
-      - originalActionId
     schema_loader:
       type: InlineSchemaLoader
       schema:

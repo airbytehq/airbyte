@@ -12,7 +12,7 @@ CJ Affiliate (formerly known as Commission Junction) is one of the world&#39;s l
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| AdvertiserCommissions | commissionId.originalActionId | DefaultPaginator | ✅ |  ✅  |
+| AdvertiserCommissions | commissionId | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
@@ -21,6 +21,6 @@ CJ Affiliate (formerly known as Commission Junction) is one of the world&#39;s l
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-06-30 | | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.1 | 2026-06-30 | [81336](https://github.com/airbytehq/airbyte/pull/81336) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>
