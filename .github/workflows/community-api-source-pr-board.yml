@@ -39,9 +39,15 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          MAX_WRITES_INPUT: ${{ inputs.max_writes }}
           ENABLE_SYNC: ${{ vars.ENABLE_COMMUNITY_PR_BOARD_SYNC }}
         run: |
           set -euo pipefail
+          max_writes="${MAX_WRITES_INPUT:-0}"
+          if [[ ! "$max_writes" =~ ^[0-9]+$ ]]; then
+            echo "::error::max_writes must be a non-negative integer; received '$max_writes'."
+            exit 1
+          fi
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             [[ "$INPUT_DRY_RUN" == "false" ]] && dry_run=false || dry_run=true
           else
@@ -109,11 +115,14 @@ jobs:
             const fs = require('fs');
 
             const dryRun = process.env.DRY_RUN !== 'false';
-            const configuredMaxWrites = Number.parseInt(process.env.MAX_WRITES || '0', 10);
-            const maxWrites =
-              Number.isFinite(configuredMaxWrites) && configuredMaxWrites > 0
-                ? configuredMaxWrites
-                : 0;
+            const maxWritesInput = process.env.MAX_WRITES || '0';
+            if (!/^[0-9]+$/.test(maxWritesInput)) {
+              throw new Error(`MAX_WRITES must be a non-negative integer; received "${maxWritesInput}".`);
+            }
+            const maxWrites = Number(maxWritesInput);
+            if (!Number.isSafeInteger(maxWrites)) {
+              throw new Error(`MAX_WRITES is too large to represent safely: "${maxWritesInput}".`);
+            }
             const certifiedSources = new Set(
               JSON.parse(fs.readFileSync(process.env.CERTIFIED_SOURCES_PATH, 'utf8')),
             );
