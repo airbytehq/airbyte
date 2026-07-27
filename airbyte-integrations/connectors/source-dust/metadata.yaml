@@ -2,6 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
+      - dust.tt
   registryOverrides:
     oss:
       enabled: true

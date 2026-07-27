@@ -893,20 +893,22 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - bearer_token
+      - workspace_id
+      - start_date
     properties:
       end_date:
         type: string
-        description: The end date for the extracted data in YYY-MM-DD format
+        description: The end date for the extracted data in YYYY-MM-DD format
         order: 1
         title: End Date
       start_date:
         type: string
-        description: The start date for data extraction in YYY-MM-DD fromat
+        description: The start date for data extraction in YYYY-MM-DD format
         order: 0
         title: Start Date
       bearer_token:
         type: string
-        description: token needed for authentication to dust
+        description: Token needed for authentication to dust
         order: 3
         title: Bearer Token
         airbyte_secret: true

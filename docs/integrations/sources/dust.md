@@ -5,9 +5,9 @@ Dust AI is an enterprise AI platform and &quot;operating system&quot; that allow
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `end_date` | `string` | End Date. The end date for the extracted data in YYY-MM-DD format |  |
-| `start_date` | `string` | Start Date. The start date for data extraction in YYY-MM-DD fromat |  |
-| `bearer_token` | `string` | Bearer Token. token needed for authentication to dust |  |
+| `end_date` | `string` | End Date. The end date for the extracted data in YYYY-MM-DD format |  |
+| `start_date` | `string` | Start Date. The start date for data extraction in YYYY-MM-DD format |  |
+| `bearer_token` | `string` | Bearer Token. Token needed for authentication to dust |  |
 | `workspace_id` | `string` | workspace ID. Unique string identifier for the workspace |  |
 
 ## Streams
@@ -29,6 +29,6 @@ Dust AI is an enterprise AI platform and &quot;operating system&quot; that allow
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-07-02 | | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.1 | 2026-07-02 | [81402](https://github.com/airbytehq/airbyte/pull/81402) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>
