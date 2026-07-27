@@ -269,6 +269,16 @@ single pipeline; the connector enforces this by limiting the destination to one 
 If a key is not found in the snapshot index or among rows written during the current sync, no
 delete file entry is emitted.
 
+Enabling positional deletes on an existing table is safe: syncs remain correct and complete while
+the table transitions to positional deletes. Existing equality-delete files are not removed,
+however. Configure compaction to rewrite files carrying any delete files by setting
+`delete-file-threshold=1`; otherwise a compaction run may leave a small partition untouched
+(Iceberg's default `min-input-files` is 5, and its default `delete-file-threshold` does not force
+a rewrite). For example, use this setting with Athena/Glue `OPTIMIZE` or Spark
+`rewrite_data_files`. The legacy equality deletes clear on the next compaction that rewrites those
+files, or when the stream is refreshed to rebuild the table. Until then, readers that do not
+support equality-delete files may still reject the table.
+
 ## Output schema
 
 ### How Airbyte generates the Iceberg schema
