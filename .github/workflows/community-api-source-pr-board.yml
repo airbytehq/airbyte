@@ -26,6 +26,7 @@ jobs:
   reconcile:
     name: Reconcile community API source PRs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Resolve effective mode
         id: mode
@@ -217,7 +218,6 @@ jobs:
                 }
               }
             `;
-            const mutation = async (query, variables) => github.graphql(query, variables);
             const addItemMutation = `
               mutation($projectId: ID!, $contentId: ID!) {
                 addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
@@ -311,11 +311,11 @@ jobs:
                     if (dryRun) {
                       core.info(`PR ${pr.number}: would add to project and set Status="${statusOption.name}"`);
                     } else {
-                      const added = await mutation(addItemMutation, {
+                      const added = await github.graphql(addItemMutation, {
                         projectId: project.id,
                         contentId: pr.id,
                       });
-                      await mutation(updateStatusMutation, {
+                      await github.graphql(updateStatusMutation, {
                         projectId: project.id,
                         itemId: added.addProjectV2ItemById.item.id,
                         fieldId: project.field.id,
@@ -328,7 +328,7 @@ jobs:
                     if (dryRun) {
                       core.info(`PR ${pr.number}: would set empty Status to "${statusOption.name}"`);
                     } else {
-                      await mutation(updateStatusMutation, {
+                      await github.graphql(updateStatusMutation, {
                         projectId: project.id,
                         itemId: item.id,
                         fieldId: project.field.id,
@@ -357,14 +357,14 @@ jobs:
                 ['Mode', mode],
                 ['Project', project.title],
                 ['Status option', statusOption.name],
-                ['Evaluated', counts.evaluated],
-                ['Qualified', counts.qualified],
-                ['Added', counts.added],
-                ['Status-set', counts.statusSet],
-                ['Skipped: draft', counts.draft],
-                ['Skipped: not-community', counts.notCommunity],
-                ['Skipped: no-certified-api-source-change', counts.noCertifiedApiSourceChange],
-                ['Skipped: status-already-set', counts.statusAlreadySet],
+                ['Evaluated', String(counts.evaluated)],
+                ['Qualified', String(counts.qualified)],
+                [dryRun ? 'Would add' : 'Added', String(counts.added)],
+                [dryRun ? 'Would set Status' : 'Status-set', String(counts.statusSet)],
+                ['Skipped: draft', String(counts.draft)],
+                ['Skipped: not-community', String(counts.notCommunity)],
+                ['Skipped: no-certified-api-source-change', String(counts.noCertifiedApiSourceChange)],
+                ['Skipped: status-already-set', String(counts.statusAlreadySet)],
               ])
               .addHeading('Mutation failures')
               .addList(failures.length ? failures : ['None'])
