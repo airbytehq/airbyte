@@ -94,8 +94,8 @@ class TestPrivateKeyAuthentication:
         The Airbyte UI stores multiline PEM keys with literal \\n instead of real newline characters.
         The authenticator should normalize these before passing to PyJWT.
         """
-        from cryptography.hazmat.primitives.asymmetric import rsa
         from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
 
         # Generate a test RSA key
         key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -132,8 +132,8 @@ class TestPrivateKeyAuthentication:
 
     def test_private_key_with_real_newlines(self, requests_mock):
         """PEM keys with real newlines should also work (no regression)."""
-        from cryptography.hazmat.primitives.asymmetric import rsa
         from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
 
         key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         pem_bytes = key.private_bytes(
