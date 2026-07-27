@@ -1,0 +1,912 @@
+---
+id: airbyte_agent_sdk-connectors-intercom-connector
+title: airbyte_agent_sdk.connectors.intercom.connector
+---
+
+Module airbyte_agent_sdk.connectors.intercom.connector
+======================================================
+Intercom connector.
+
+Classes
+-------
+
+<a id="AdminsQuery"></a>
+
+`AdminsQuery(connector: IntercomConnector)`
+:   Query class for Admins entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Admin`
+    :   Get a single admin by ID
+        
+        Args:
+            id: Admin ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Admin
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResult[list[Admin]]`
+    :   Returns a list of all admins in the workspace
+        
+        Returns:
+            AdminsListResult
+
+<a id="CompaniesQuery"></a>
+
+`CompaniesQuery(connector: IntercomConnector)`
+:   Query class for Companies entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: CompaniesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[CompaniesSearchData]`
+    :   Search companies records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CompaniesSearchFilter):
+        - app_id: The ID of the application associated with the company
+        - company_id: The unique identifier of the company
+        - created_at: The date and time when the company was created
+        - custom_attributes: Custom attributes specific to the company
+        - id: The ID of the company
+        - industry: The industry in which the company operates
+        - monthly_spend: The monthly spend of the company
+        - name: The name of the company
+        - plan: Details of the company's subscription plan
+        - remote_created_at: The remote date and time when the company was created
+        - segments: Segments associated with the company
+        - session_count: The number of sessions related to the company
+        - size: The size of the company
+        - tags: Tags associated with the company
+        - type_: The type of the company
+        - updated_at: The date and time when the company was last updated
+        - user_count: The number of users associated with the company
+        - website: The website of the company
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CompaniesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, company_id: str, name: str | None = None, plan: str | None = None, monthly_spend: float | None = None, size: int | None = None, website: str | None = None, industry: str | None = None, custom_attributes: dict[str, Any] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Company`
+    :   Create a new company or update an existing one by company_id
+        
+        Args:
+            company_id: A unique identifier for the company from your system
+            name: The name of the company
+            plan: The name of the plan the company is on
+            monthly_spend: The monthly spend of the company
+            size: The number of employees in the company
+            website: The URL of the company website
+            industry: The industry the company operates in
+            custom_attributes: Custom attributes for the company
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.CompanyDeletedResponse`
+    :   Permanently delete a company by ID
+        
+        Args:
+            id: The unique identifier of the company to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            CompanyDeletedResponse
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Company`
+    :   Get a single company by ID
+        
+        Args:
+            id: Company ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
+
+    `list(self, per_page: int | None = None, starting_after: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResultWithMeta[list[Company], CompaniesListResultMeta]`
+    :   Returns a paginated list of companies
+        
+        Args:
+            per_page: Number of companies to return per page
+            starting_after: Cursor for pagination
+            **kwargs: Additional parameters
+        
+        Returns:
+            CompaniesListResult
+
+    `update(self, name: str | None = None, plan: str | None = None, monthly_spend: float | None = None, size: int | None = None, website: str | None = None, industry: str | None = None, custom_attributes: dict[str, Any] | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Company`
+    :   Update an existing company by ID
+        
+        Args:
+            name: The name of the company
+            plan: The name of the plan the company is on
+            monthly_spend: The monthly spend of the company
+            size: The number of employees in the company
+            website: The URL of the company website
+            industry: The industry the company operates in
+            custom_attributes: Custom attributes for the company
+            id: Company ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Company
+
+<a id="ContactsQuery"></a>
+
+`ContactsQuery(connector: IntercomConnector)`
+:   Query class for Contacts entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ContactsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[ContactsSearchData]`
+    :   Search contacts records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ContactsSearchFilter):
+        - android_app_name: The name of the Android app associated with the contact.
+        - android_app_version: The version of the Android app associated with the contact.
+        - android_device: The device used by the contact for Android.
+        - android_last_seen_at: The date and time when the contact was last seen on Android.
+        - android_os_version: The operating system version of the Android device.
+        - android_sdk_version: The SDK version of the Android device.
+        - avatar: URL pointing to the contact's avatar image.
+        - browser: The browser used by the contact.
+        - browser_language: The language preference set in the contact's browser.
+        - browser_version: The version of the browser used by the contact.
+        - companies: Companies associated with the contact.
+        - created_at: The date and time when the contact was created.
+        - custom_attributes: Custom attributes defined for the contact.
+        - email: The email address of the contact.
+        - external_id: External identifier for the contact.
+        - has_hard_bounced: Flag indicating if the contact has hard bounced.
+        - id: The unique identifier of the contact.
+        - ios_app_name: The name of the iOS app associated with the contact.
+        - ios_app_version: The version of the iOS app associated with the contact.
+        - ios_device: The device used by the contact for iOS.
+        - ios_last_seen_at: The date and time when the contact was last seen on iOS.
+        - ios_os_version: The operating system version of the iOS device.
+        - ios_sdk_version: The SDK version of the iOS device.
+        - language_override: Language override set for the contact.
+        - last_contacted_at: The date and time when the contact was last contacted.
+        - last_email_clicked_at: The date and time when the contact last clicked an email.
+        - last_email_opened_at: The date and time when the contact last opened an email.
+        - last_replied_at: The date and time when the contact last replied.
+        - last_seen_at: The date and time when the contact was last seen overall.
+        - location: Location details of the contact.
+        - marked_email_as_spam: Flag indicating if the contact's email was marked as spam.
+        - name: The name of the contact.
+        - notes: Notes associated with the contact.
+        - opted_in_subscription_types: Subscription types the contact opted into.
+        - opted_out_subscription_types: Subscription types the contact opted out from.
+        - os: Operating system of the contact's device.
+        - owner_id: The unique identifier of the contact's owner.
+        - phone: The phone number of the contact.
+        - referrer: Referrer information related to the contact.
+        - role: Role or position of the contact.
+        - signed_up_at: The date and time when the contact signed up.
+        - sms_consent: Consent status for SMS communication.
+        - social_profiles: Social profiles associated with the contact.
+        - tags: Tags associated with the contact.
+        - type_: Type of contact.
+        - unsubscribed_from_emails: Flag indicating if the contact unsubscribed from emails.
+        - unsubscribed_from_sms: Flag indicating if the contact unsubscribed from SMS.
+        - updated_at: The date and time when the contact was last updated.
+        - utm_campaign: Campaign data from UTM parameters.
+        - utm_content: Content data from UTM parameters.
+        - utm_medium: Medium data from UTM parameters.
+        - utm_source: Source data from UTM parameters.
+        - utm_term: Term data from UTM parameters.
+        - workspace_id: The unique identifier of the workspace associated with the contact.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ContactsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, role: str, external_id: str | None = None, email: str | None = None, phone: str | None = None, name: str | None = None, avatar: str | None = None, signed_up_at: int | None = None, last_seen_at: int | None = None, owner_id: int | None = None, unsubscribed_from_emails: bool | None = None, custom_attributes: dict[str, Any] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Contact`
+    :   Create a new contact (user or lead)
+        
+        Args:
+            role: The role of the contact (user or lead)
+            external_id: A unique identifier for the contact from your system
+            email: The contact's email address
+            phone: The contact's phone number
+            name: The contact's full name
+            avatar: An image URL for the contact's avatar
+            signed_up_at: Sign up timestamp (Unix)
+            last_seen_at: Last seen timestamp (Unix)
+            owner_id: The ID of the admin assigned as owner
+            unsubscribed_from_emails: Whether the contact is unsubscribed from emails
+            custom_attributes: Custom attributes for the contact
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.ContactDeletedResponse`
+    :   Permanently delete a contact by ID
+        
+        Args:
+            id: The unique identifier of the contact to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            ContactDeletedResponse
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Contact`
+    :   Get a single contact by ID
+        
+        Args:
+            id: Contact ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
+
+    `list(self, per_page: int | None = None, starting_after: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResultWithMeta[list[Contact], ContactsListResultMeta]`
+    :   Returns a paginated list of contacts in the workspace
+        
+        Args:
+            per_page: Number of contacts to return per page
+            starting_after: Cursor for pagination - get contacts after this ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            ContactsListResult
+
+    `update(self, role: str | None = None, external_id: str | None = None, email: str | None = None, phone: str | None = None, name: str | None = None, avatar: str | None = None, signed_up_at: int | None = None, last_seen_at: int | None = None, owner_id: int | None = None, unsubscribed_from_emails: bool | None = None, custom_attributes: dict[str, Any] | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Contact`
+    :   Update an existing contact by ID
+        
+        Args:
+            role: The role of the contact (user or lead)
+            external_id: A unique identifier for the contact from your system
+            email: The contact's email address
+            phone: The contact's phone number
+            name: The contact's full name
+            avatar: An image URL for the contact's avatar
+            signed_up_at: Sign up timestamp (Unix)
+            last_seen_at: Last seen timestamp (Unix)
+            owner_id: The ID of the admin assigned as owner
+            unsubscribed_from_emails: Whether the contact is unsubscribed from emails
+            custom_attributes: Custom attributes for the contact
+            id: Contact ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Contact
+
+<a id="ConversationsQuery"></a>
+
+`ConversationsQuery(connector: IntercomConnector)`
+:   Query class for Conversations entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ConversationsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[ConversationsSearchData]`
+    :   Search conversations records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ConversationsSearchFilter):
+        - admin_assignee_id: The ID of the administrator assigned to the conversation
+        - ai_agent: Data related to AI Agent involvement in the conversation
+        - ai_agent_participated: Indicates whether AI Agent participated in the conversation
+        - assignee: The assigned user responsible for the conversation.
+        - contacts: List of contacts involved in the conversation.
+        - conversation_message: The main message content of the conversation.
+        - conversation_rating: Ratings given to the conversation by the customer and teammate.
+        - created_at: The timestamp when the conversation was created
+        - custom_attributes: Custom attributes associated with the conversation
+        - customer_first_reply: Timestamp indicating when the customer first replied.
+        - customers: List of customers involved in the conversation
+        - first_contact_reply: Timestamp indicating when the first contact replied.
+        - id: The unique ID of the conversation
+        - linked_objects: Linked objects associated with the conversation
+        - open: Indicates if the conversation is open or closed
+        - priority: The priority level of the conversation
+        - read: Indicates if the conversation has been read
+        - redacted: Indicates if the conversation is redacted
+        - sent_at: The timestamp when the conversation was sent
+        - sla_applied: Service Level Agreement details applied to the conversation.
+        - snoozed_until: Timestamp until the conversation is snoozed
+        - source: Source details of the conversation.
+        - state: The state of the conversation (e.g., new, in progress)
+        - statistics: Statistics related to the conversation.
+        - tags: Tags applied to the conversation.
+        - team_assignee_id: The ID of the team assigned to the conversation
+        - teammates: List of teammates involved in the conversation.
+        - title: The title of the conversation
+        - topics: Topics associated with the conversation.
+        - type_: The type of the conversation
+        - updated_at: The timestamp when the conversation was last updated
+        - user: The user related to the conversation.
+        - waiting_since: Timestamp since waiting for a response
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ConversationsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, from_: ConversationsCreateParamsFrom, body: str, subject: str | None = None, attachment_urls: list[str] | None = None, created_at: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Message`
+    :   Create a new conversation initiated by a contact (user or lead)
+        
+        Args:
+            from_: The contact (user or lead) initiating the conversation
+            body: The content of the initial message in the conversation
+            subject: The subject line of the conversation (optional)
+            attachment_urls: A list of URLs of attached files (max 10)
+            created_at: Optional timestamp for the conversation creation (Unix)
+            **kwargs: Additional parameters
+        
+        Returns:
+            Message
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.ConversationDeletedResponse`
+    :   Permanently delete a conversation by ID
+        
+        Args:
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            ConversationDeletedResponse
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Conversation`
+    :   Get a single conversation by ID
+        
+        Args:
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Conversation
+
+    `list(self, per_page: int | None = None, starting_after: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResultWithMeta[list[Conversation], ConversationsListResultMeta]`
+    :   Returns a paginated list of conversations
+        
+        Args:
+            per_page: Number of conversations to return per page
+            starting_after: Cursor for pagination
+            **kwargs: Additional parameters
+        
+        Returns:
+            ConversationsListResult
+
+    `update(self, read: bool | None = None, custom_attributes: dict[str, Any] | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Conversation`
+    :   Update conversation attributes such as custom_attributes or read status
+        
+        Args:
+            read: Mark the conversation as read or unread
+            custom_attributes: Custom attributes to set on the conversation
+            id: Conversation ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Conversation
+
+<a id="IntercomConnector"></a>
+
+`IntercomConnector(auth_config: IntercomAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Intercom API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new intercom connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., IntercomAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = IntercomConnector(auth_config=IntercomAuthConfig(access_token="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = IntercomConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = IntercomConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
+        
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
+        
+        Usage:
+            connector = IntercomConnector(...)
+        
+            @IntercomConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
+        
+            @IntercomConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @IntercomConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
+        
+        Args:
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = IntercomConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @IntercomConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @IntercomConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @IntercomConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            IntercomCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="InternalArticlesQuery"></a>
+
+`InternalArticlesQuery(connector: IntercomConnector)`
+:   Query class for InternalArticles entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, title: str, owner_id: int, author_id: int, body: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticle`
+    :   Create a new internal article in the workspace
+        
+        Args:
+            title: The title of the article
+            body: The content of the article in HTML
+            owner_id: The ID of the owner of the article
+            author_id: The ID of the author of the article
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticle
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticleDeletedResponse`
+    :   Permanently delete an internal article by ID
+        
+        Args:
+            id: Internal article ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticleDeletedResponse
+
+    `update(self, title: str | None = None, body: str | None = None, author_id: int | None = None, owner_id: int | None = None, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.InternalArticle`
+    :   Update an existing internal article by ID
+        
+        Args:
+            title: The title of the article
+            body: The content of the article in HTML
+            author_id: The ID of the author of the article
+            owner_id: The ID of the owner of the article
+            id: Internal article ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            InternalArticle
+
+<a id="NotesQuery"></a>
+
+`NotesQuery(connector: IntercomConnector)`
+:   Query class for Notes entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, body: str, contact_id: str, admin_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Note`
+    :   Create a note on an existing contact
+        
+        Args:
+            body: The body of the note in HTML format
+            admin_id: The ID of the admin creating the note
+            contact_id: Contact ID to add note to
+            **kwargs: Additional parameters
+        
+        Returns:
+            Note
+
+<a id="SegmentsQuery"></a>
+
+`SegmentsQuery(connector: IntercomConnector)`
+:   Query class for Segments entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Segment`
+    :   Get a single segment by ID
+        
+        Args:
+            id: Segment ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Segment
+
+    `list(self, include_count: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResult[list[Segment]]`
+    :   Returns a list of all segments in the workspace
+        
+        Args:
+            include_count: Include count of contacts in each segment
+            **kwargs: Additional parameters
+        
+        Returns:
+            SegmentsListResult
+
+<a id="TagsQuery"></a>
+
+`TagsQuery(connector: IntercomConnector)`
+:   Query class for Tags entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, name: str, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Tag`
+    :   Create a new tag or update an existing one
+        
+        Args:
+            name: The name of the tag
+            **kwargs: Additional parameters
+        
+        Returns:
+            Tag
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.TagDeletedResponse`
+    :   Permanently delete a tag by ID. This removes the tag from all contacts, companies, and conversations.
+        
+        Args:
+            id: The unique identifier of the tag to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            TagDeletedResponse
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Tag`
+    :   Get a single tag by ID
+        
+        Args:
+            id: Tag ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Tag
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResult[list[Tag]]`
+    :   Returns a list of all tags in the workspace
+        
+        Returns:
+            TagsListResult
+
+<a id="TeamsQuery"></a>
+
+`TeamsQuery(connector: IntercomConnector)`
+:   Query class for Teams entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: TeamsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[TeamsSearchData]`
+    :   Search teams records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (TeamsSearchFilter):
+        - admin_ids: Array of user IDs representing the admins of the team.
+        - id: Unique identifier for the team.
+        - name: Name of the team.
+        - type_: Type of team (e.g., 'internal', 'external').
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            TeamsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.Team`
+    :   Get a single team by ID
+        
+        Args:
+            id: Team ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Team
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.intercom.models.IntercomExecuteResult[list[Team]]`
+    :   Returns a list of all teams in the workspace
+        
+        Returns:
+            TeamsListResult

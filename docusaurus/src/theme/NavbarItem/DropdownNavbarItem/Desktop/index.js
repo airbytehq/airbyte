@@ -3,8 +3,7 @@
  *
  * Adds route-based "active" styling to the dropdown parent label so that
  * "Data Replication" is underlined whenever the user is viewing any of its
- * child doc instances (Platform, Connectors, Release Notes, Developers,
- * Community).
+ * child doc instances (Platform, Connectors, Developers).
  *
  * The only behavioural change vs. the upstream component is the
  * `containsActivePage` check and the conditional `navbar__link--active` class.
@@ -23,9 +22,7 @@ import NavbarItem from "@theme/NavbarItem";
 const DATA_REPLICATION_PREFIXES = [
   "/platform",
   "/integrations",
-  "/release_notes",
   "/developers",
-  "/community",
 ];
 
 /**

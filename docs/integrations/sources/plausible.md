@@ -41,6 +41,10 @@ Thus, this source connector retrieves [all possible metrics](https://plausible.i
 
 The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per hour per API key, with higher capacities potentially available [upon request](https://plausible.io/contact).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -48,6 +52,7 @@ The [stated rate limit](https://plausible.io/docs/stats-api) is 600 requests per
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.2.15 | 2026-06-02 | [78893](https://github.com/airbytehq/airbyte/pull/78893) | Update dependencies |
 | 0.2.14 | 2025-05-24 | [60528](https://github.com/airbytehq/airbyte/pull/60528) | Update dependencies |
 | 0.2.13 | 2025-05-10 | [60098](https://github.com/airbytehq/airbyte/pull/60098) | Update dependencies |
 | 0.2.12 | 2025-05-03 | [59483](https://github.com/airbytehq/airbyte/pull/59483) | Update dependencies |

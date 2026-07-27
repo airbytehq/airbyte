@@ -339,7 +339,13 @@ class AdAccount(FBMarketingStream):
         fields = self.fields(account_id=account_id)
         try:
             return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
-        except FacebookRequestError as e:
+        except (FacebookRequestError, AirbyteTracedException) as e:
+            # The backoff give_up handler may convert FacebookRequestError to AirbyteTracedException
+            # before this except block can catch it. Extract the wrapped FacebookRequestError if present.
+            if isinstance(e, AirbyteTracedException):
+                if not isinstance(e._exception, FacebookRequestError):
+                    raise
+                e = e._exception
             # This is a workaround for cases when account seem to have all the required permissions
             # but despite that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
@@ -376,8 +382,8 @@ class AdsInsightsRegion(AdsInsights):
     breakdowns = ["region"]
 
 
-class AdsInsightsDma(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsComscoreMarket(AdsInsights):
+    breakdowns = ["comscore_market"]
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
@@ -443,8 +449,8 @@ class AdsInsightsDemographicsCountry(AdsInsights):
     action_breakdowns = ["action_type"]
 
 
-class AdsInsightsDemographicsDMARegion(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsDemographicsComscoreMarketRegion(AdsInsights):
+    breakdowns = ["comscore_market"]
     action_breakdowns = ["action_type"]
 
 

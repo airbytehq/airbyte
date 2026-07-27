@@ -434,13 +434,13 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
+            # Intercom Search API timestamps are date-indexed. Keep incremental_sync second-precise for state/client-side filtering,
+            # but use Jinja here to floor the API start to UTC midnight and set the API end to midnight after the end day plus one day.
             query: >-
               {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
-              {"field" : "updated_at", "operator" : ">", "value" : {{
-              stream_interval['start_time'] }} }, {"field" : "updated_at",
-              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{ (((stream_interval['end_time'] | int) // 86400) * 86400) + 172800 }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
@@ -513,13 +513,13 @@ definitions:
             Intercom-Version: "2.11"
           request_body_json:
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
+            # Intercom Search API timestamps are date-indexed. Keep incremental_sync second-precise for state/client-side filtering,
+            # but use Jinja here to floor the API start to UTC midnight and set the API end to midnight after the end day plus one day.
             query: >-
               {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
-              {"field" : "updated_at", "operator" : ">", "value" : {{
-              stream_interval['start_time'] }} }, {"field" : "updated_at",
-              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{ (((stream_interval['end_time'] | int) // 86400) * 86400) + 172800 }} } ]}
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -731,13 +731,13 @@ definitions:
             Intercom-Version: "2.11"
             Accept: application/json
           request_body_json:
+            # Intercom Search API timestamps are date-indexed. Keep incremental_sync second-precise for state/client-side filtering,
+            # but use Jinja here to floor the API start to UTC midnight and set the API end to midnight after the end day plus one day.
             query: >-
               {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
-              {"field" : "updated_at", "operator" : ">", "value" : {{
-              stream_interval['start_time'] }} }, {"field" : "updated_at",
-              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              {"field" : "updated_at", "operator" : ">", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{ ((stream_interval['start_time'] | int) // 86400) * 86400 }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{ (((stream_interval['end_time'] | int) // 86400) * 86400) + 172800 }} } ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler

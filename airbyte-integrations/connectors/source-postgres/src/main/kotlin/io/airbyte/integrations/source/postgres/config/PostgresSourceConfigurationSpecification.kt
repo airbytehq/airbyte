@@ -126,10 +126,10 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Schemas")
     @JsonSchemaArrayWithUniqueItems("schemas")
     @JsonPropertyDescription(
-        "The list of schemas to sync from. Defaults to public. Case sensitive."
+        "The list of schemas to sync from. Case sensitive. Empty means all schemas."
     )
     @JsonSchemaInject(json = """{"order":9,"uniqueItems":true,"group":"db"}""")
-    var schemas: List<String>? = listOf("public")
+    var schemas: List<String>? = listOf()
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Parameters (Advanced)")
@@ -233,14 +233,14 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
-    @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
+    @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
     @JsonAnySetter
     fun setAdditionalProperty(
         name: String,
         value: Any,
     ) {
-        additionalPropertiesMap[name] = value
+        additionalPropertiesMap?.set(name, value)
     }
 }
 
