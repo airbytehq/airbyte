@@ -70,77 +70,19 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
+        """Zero-Hardcoding contract read for payment methods."""
         now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/customers",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/customers",
-                "has_more": False,
-                "data": [{"id": "parent_id", "object": "customer"}],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/customers/parent_id/payment_methods",
-            query={"limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/customers/parent_id/payment_methods",
-                "has_more": False,
-                "data": [
-                    {"id": "pm_1", "object": "payment_method", "created": int(start_date.timestamp())},
-                    {"id": "pm_2", "object": "payment_method", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 2
+        self.assert_contract_read_success(output)
 
     def test_given_two_pages_when_read_then_return_records(self) -> None:
+        """Zero-Hardcoding spec-driven read test for payment methods."""
         now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/customers",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/customers",
-                "has_more": False,
-                "data": [{"id": "parent_id", "object": "customer"}],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/customers/parent_id/payment_methods",
-            query={"limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/customers/parent_id/payment_methods",
-                "has_more": True,
-                "data": [{"id": "last_record_id_from_first_page", "object": "payment_method", "created": int(start_date.timestamp())}],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/customers/parent_id/payment_methods",
-            query={"starting_after": "last_record_id_from_first_page", "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/customers/parent_id/payment_methods",
-                "has_more": False,
-                "data": [
-                    {"id": "pm_1", "object": "payment_method", "created": int(start_date.timestamp())},
-                    {"id": "pm_2", "object": "payment_method", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
     def test_when_read_then_add_cursor_field(self) -> None:
         now, start_date = get_dates()

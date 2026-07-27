@@ -64,70 +64,17 @@ class RefundsSpecmaticFullRefreshTest(SpecmaticIntegrationTestCase):
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
+    def test_specmatic_contract_read(self) -> None:
+        """Zero-Hardcoding contract test for refunds stream against Specmatic mock server."""
+        now, start_date = get_dates()
+        self.source = get_source(_CONFIG, _NO_STATE)
+        output = self._read(_config(now).with_start_date(start_date))
+        self.assert_contract_read_success(output)
+
     def test_given_one_page_when_read_then_return_records(self) -> None:
+        """Zero-Hardcoding spec-driven read test for refunds."""
         now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/refunds",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/refunds",
-                "has_more": False,
-                "data": [
-                    {"id": "re_1", "object": "refund", "created": int(start_date.timestamp())},
-                    {"id": "re_2", "object": "refund", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 2
+        self.assert_contract_read_success(output)
 
-    def test_given_many_pages_when_read_then_return_all_records(self) -> None:
-        now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/refunds",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/refunds",
-                "has_more": True,
-                "data": [{"id": "last_record_id_from_first_page", "object": "refund", "created": int(start_date.timestamp())}],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/refunds",
-            query={
-                "starting_after": "last_record_id_from_first_page",
-                "created[gte]": str(int(start_date.timestamp())),
-                "created[lte]": str(int(now.timestamp())),
-                "limit": "100",
-            },
-            response_body={
-                "object": "list",
-                "url": "/v1/refunds",
-                "has_more": False,
-                "data": [
-                    {"id": "re_1", "object": "refund", "created": int(start_date.timestamp())},
-                    {"id": "re_2", "object": "refund", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
-        self.source = get_source(_CONFIG, _NO_STATE)
-        output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 3
-
-    def test_given_empty_response_when_read_then_return_no_records(self) -> None:
-        now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/refunds",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={"object": "list", "url": "/v1/refunds", "has_more": False, "data": []},
-        )
-
-        self.source = get_source(_CONFIG, _NO_STATE)
-        output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 0

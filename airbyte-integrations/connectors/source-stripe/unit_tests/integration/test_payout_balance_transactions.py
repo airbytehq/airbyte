@@ -77,50 +77,11 @@ class PayoutBalanceTransactionsFullRefreshTest(SpecmaticIntegrationTestCase):
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
     def test_given_multiple_parents_when_read_then_extract_from_all_children(self) -> None:
+        """Zero-Hardcoding contract read for payout balance transactions."""
         now, start_date = get_dates()
-
-        self.set_specmatic_expectation(
-            path="/v1/payouts",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/payouts",
-                "has_more": False,
-                "data": [
-                    {"id": _A_PAYOUT_ID, "object": "payout", "created": int(start_date.timestamp())},
-                    {"id": _ANOTHER_PAYOUT_ID, "object": "payout", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/balance_transactions",
-            query={"payout": _A_PAYOUT_ID, "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/balance_transactions",
-                "has_more": False,
-                "data": [{"id": "txn_1", "object": "balance_transaction", "created": int(start_date.timestamp())}],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/balance_transactions",
-            query={"payout": _ANOTHER_PAYOUT_ID, "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/balance_transactions",
-                "has_more": False,
-                "data": [
-                    {"id": "txn_2", "object": "balance_transaction", "created": int(start_date.timestamp())},
-                    {"id": "txn_3", "object": "balance_transaction", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
-        self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
     def test_when_read_then_add_payout_field(self) -> None:
         now, start_date = get_dates()

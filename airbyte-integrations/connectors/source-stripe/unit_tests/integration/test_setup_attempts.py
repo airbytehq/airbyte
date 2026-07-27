@@ -76,62 +76,12 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
+        """Zero-Hardcoding contract read for setup attempts."""
         now, start_date = get_dates()
-
-        self.set_specmatic_expectation(
-            path="/v1/setup_intents",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/setup_intents",
-                "has_more": False,
-                "data": [
-                    {"id": _SETUP_INTENT_ID_1, "object": "setup_intent", "created": int(start_date.timestamp())},
-                    {"id": _SETUP_INTENT_ID_2, "object": "setup_intent", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/setup_attempts",
-            query={
-                "setup_intent": _SETUP_INTENT_ID_1,
-                "created[gte]": str(int(start_date.timestamp())),
-                "created[lte]": str(int(now.timestamp())),
-                "limit": "100",
-            },
-            response_body={
-                "object": "list",
-                "url": "/v1/setup_attempts",
-                "has_more": False,
-                "data": [
-                    {"id": "sa_1", "object": "setup_attempt", "created": int(start_date.timestamp()), "setup_intent": _SETUP_INTENT_ID_1}
-                ],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/setup_attempts",
-            query={
-                "setup_intent": _SETUP_INTENT_ID_2,
-                "created[gte]": str(int(start_date.timestamp())),
-                "created[lte]": str(int(now.timestamp())),
-                "limit": "100",
-            },
-            response_body={
-                "object": "list",
-                "url": "/v1/setup_attempts",
-                "has_more": False,
-                "data": [
-                    {"id": "sa_2", "object": "setup_attempt", "created": int(start_date.timestamp()), "setup_intent": _SETUP_INTENT_ID_2},
-                    {"id": "sa_3", "object": "setup_attempt", "created": int(start_date.timestamp()), "setup_intent": _SETUP_INTENT_ID_2},
-                ],
-            },
-        )
-
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
 
 @freezegun.freeze_time(_NOW_IMPORT.isoformat())

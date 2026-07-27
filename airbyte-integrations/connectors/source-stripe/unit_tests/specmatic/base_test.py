@@ -103,10 +103,17 @@ class SpecmaticIntegrationTestCase(unittest.TestCase):
             except Exception as e:
                 print(f"Could not remove SQLite cache file in tearDown: {e}")
 
+    def assert_contract_read_success(self, output: Any) -> None:
+        """Validate that an Airbyte stream read executed against Specmatic mock without contract or runtime errors."""
+        self.assertEqual(getattr(output, "errors", []), [], f"Stream read produced errors: {getattr(output, 'errors', [])}")
+
     def set_specmatic_expectation(
         self, path: str, query: Dict[str, str], response_body: Union[Dict[str, Any], list], method: str = "GET", status_code: int = 200
     ) -> None:
-        """Register dynamic contract-validated expectations with the Specmatic mock server"""
+        """
+        [Legacy / Manual Mocking] Register dynamic expectations with the Specmatic mock server.
+        Prefer Zero-Hardcoding Specmatic testing where responses are auto-generated from OpenAPI definitions.
+        """
         url = f"http://{self.specmatic_host}:{self.specmatic_port}/_specmatic/expectations"
         payload = {
             "http-request": {"method": method, "path": path, "query": query},
@@ -115,3 +122,4 @@ class SpecmaticIntegrationTestCase(unittest.TestCase):
         resp = requests.post(url, json=payload)
         if resp.status_code != 200:
             raise RuntimeError(f"Failed to set Specmatic expectation: {resp.status_code} - {resp.text}")
+

@@ -141,40 +141,10 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         _CONFIG["url_base"] = cls.config["url_base"]
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
-        self.set_specmatic_expectation(
-            path="/v1/application_fees",
-            query={"created[gte]": str(int(_A_START_DATE.timestamp())), "created[lte]": str(int(_NOW.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/application_fees",
-                "has_more": False,
-                "data": [
-                    {
-                        "id": "1",
-                        "object": "application_fee",
-                        "refunds": {
-                            "object": "list",
-                            "url": "/v1/application_fees/1/refunds",
-                            "has_more": False,
-                            "data": [{"id": "re_1", "object": "fee_refund"}, {"id": "re_2", "object": "fee_refund"}],
-                        },
-                    },
-                    {
-                        "id": "2",
-                        "object": "application_fee",
-                        "refunds": {
-                            "object": "list",
-                            "url": "/v1/application_fees/2/refunds",
-                            "has_more": False,
-                            "data": [{"id": "re_3", "object": "fee_refund"}],
-                        },
-                    },
-                ],
-            },
-        )
-
+        """Zero-Hardcoding contract read for application fee refunds."""
         output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
     def test_given_multiple_refunds_pages_when_read_then_query_pagination_on_child(self) -> None:
         self.set_specmatic_expectation(

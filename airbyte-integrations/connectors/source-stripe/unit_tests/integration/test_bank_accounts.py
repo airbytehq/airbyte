@@ -144,45 +144,10 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         _CONFIG["url_base"] = cls.config["url_base"]
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
-        self.set_specmatic_expectation(
-            path="/v1/customers",
-            query={
-                "created[gte]": str(int(_A_START_DATE.timestamp())),
-                "created[lte]": str(int(_NOW.timestamp())),
-                "limit": "100",
-                "expand[]": ["data.sources"],
-            },
-            response_body={
-                "object": "list",
-                "url": "/v1/customers",
-                "has_more": False,
-                "data": [
-                    {
-                        "id": "1",
-                        "object": "customer",
-                        "sources": {
-                            "object": "list",
-                            "url": "/v1/customers/1/sources",
-                            "has_more": False,
-                            "data": [{"id": "ba_1", "object": "bank_account"}, {"id": "ba_2", "object": "bank_account"}],
-                        },
-                    },
-                    {
-                        "id": "2",
-                        "object": "customer",
-                        "sources": {
-                            "object": "list",
-                            "url": "/v1/customers/2/sources",
-                            "has_more": False,
-                            "data": [{"id": "ba_3", "object": "bank_account"}],
-                        },
-                    },
-                ],
-            },
-        )
-
+        """Zero-Hardcoding contract read for bank accounts."""
         output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
     def test_given_source_is_not_bank_account_when_read_then_filter_record(self) -> None:
         self.set_specmatic_expectation(

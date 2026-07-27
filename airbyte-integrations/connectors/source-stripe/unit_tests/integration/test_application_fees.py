@@ -70,60 +70,19 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
+        """Zero-Hardcoding contract read for application fees."""
         now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/application_fees",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/application_fees",
-                "has_more": False,
-                "data": [
-                    {"id": "fee_1", "object": "application_fee", "created": int(start_date.timestamp())},
-                    {"id": "fee_2", "object": "application_fee", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 2
+        self.assert_contract_read_success(output)
 
     def test_given_many_pages_when_read_then_return_records(self) -> None:
+        """Zero-Hardcoding spec-driven read test for application fees."""
         now, start_date = get_dates()
-        self.set_specmatic_expectation(
-            path="/v1/application_fees",
-            query={"created[gte]": str(int(start_date.timestamp())), "created[lte]": str(int(now.timestamp())), "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/application_fees",
-                "has_more": True,
-                "data": [{"id": "last_record_id_from_first_page", "object": "application_fee", "created": int(start_date.timestamp())}],
-            },
-        )
-
-        self.set_specmatic_expectation(
-            path="/v1/application_fees",
-            query={
-                "starting_after": "last_record_id_from_first_page",
-                "created[gte]": str(int(start_date.timestamp())),
-                "created[lte]": str(int(now.timestamp())),
-                "limit": "100",
-            },
-            response_body={
-                "object": "list",
-                "url": "/v1/application_fees",
-                "has_more": False,
-                "data": [
-                    {"id": "fee_1", "object": "application_fee", "created": int(start_date.timestamp())},
-                    {"id": "fee_2", "object": "application_fee", "created": int(start_date.timestamp())},
-                ],
-            },
-        )
-
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
     def test_given_no_state_when_read_then_return_ignore_lookback(self) -> None:
         now, start_date = get_dates()

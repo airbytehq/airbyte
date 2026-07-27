@@ -42472,6 +42472,89 @@
           }
         }
       }
+    },
+    "/v1/balance_transactions": {
+      "get": {
+        "summary": "List balance transactions",
+        "parameters": [
+          { "name": "payout", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "starting_after", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "created[gte]", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "created[lte]", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": { "type": "string", "enum": ["list"] },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "object": { "type": "string" },
+                          "created": { "type": "integer" },
+                          "amount": { "type": "integer" },
+                          "currency": { "type": "string" }
+                        }
+                      }
+                    },
+                    "has_more": { "type": "boolean" },
+                    "url": { "type": "string" }
+                  },
+                  "required": ["object", "data", "has_more", "url"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/setup_intents": {
+      "get": {
+        "summary": "List setup intents",
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "starting_after", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "created[gte]", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "created[lte]", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": { "type": "string", "enum": ["list"] },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "object": { "type": "string" },
+                          "created": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "has_more": { "type": "boolean" },
+                    "url": { "type": "string" }
+                  },
+                  "required": ["object", "data", "has_more", "url"]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [

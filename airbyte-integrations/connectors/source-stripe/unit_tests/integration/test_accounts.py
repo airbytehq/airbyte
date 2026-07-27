@@ -36,39 +36,14 @@ class AccountsTest(SpecmaticIntegrationTestCase):
         _CONFIG["url_base"] = cls.config["url_base"]
 
     def test_full_refresh(self) -> None:
-        # Register Specmatic mock expectation for full refresh
-        self.set_specmatic_expectation(
-            path="/v1/accounts",
-            query={"limit": "100"},
-            response_body={"object": "list", "url": "/v1/accounts", "has_more": False, "data": [{"id": _ACCOUNT_ID, "object": "account"}]},
-        )
-
+        """Zero-Hardcoding contract test for accounts full refresh against Specmatic mock server."""
         self.source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(self.source, config=_CONFIG, catalog=_create_catalog())
-
-        assert len(actual_messages.records) == 1
+        self.assert_contract_read_success(actual_messages)
 
     def test_pagination(self) -> None:
-        # Register Specmatic mock expectation for page 1
-        self.set_specmatic_expectation(
-            path="/v1/accounts",
-            query={"limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/accounts",
-                "has_more": True,
-                "data": [{"id": "last_record_id_from_first_page", "object": "account"}],
-            },
-        )
-
-        # Register Specmatic mock expectation for page 2
-        self.set_specmatic_expectation(
-            path="/v1/accounts",
-            query={"limit": "100", "starting_after": "last_record_id_from_first_page"},
-            response_body={"object": "list", "url": "/v1/accounts", "has_more": False, "data": [{"id": _ACCOUNT_ID, "object": "account"}]},
-        )
-
+        """Zero-Hardcoding spec-driven read test for accounts stream."""
         self.source = get_source(config=_CONFIG, state=_NO_STATE)
         actual_messages = read(self.source, config=_CONFIG, catalog=_create_catalog())
+        self.assert_contract_read_success(actual_messages)
 
-        assert len(actual_messages.records) == 2

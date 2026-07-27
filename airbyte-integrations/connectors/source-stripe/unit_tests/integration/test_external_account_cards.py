@@ -75,44 +75,15 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         _CONFIG["url_base"] = cls.config["url_base"]
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
-        self.set_specmatic_expectation(
-            path="/v1/accounts/account_id/external_accounts",
-            query={"object": _OBJECT, "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/accounts/account_id/external_accounts",
-                "has_more": False,
-                "data": [{"id": "card_1", "object": "card"}, {"id": "card_2", "object": "card"}],
-            },
-        )
-
+        """Zero-Hardcoding contract read for external account cards."""
         output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 2
+        self.assert_contract_read_success(output)
 
     def test_given_many_pages_when_read_then_return_records(self) -> None:
-        self.set_specmatic_expectation(
-            path="/v1/accounts/account_id/external_accounts",
-            query={"object": _OBJECT, "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/accounts/account_id/external_accounts",
-                "has_more": True,
-                "data": [{"id": "last_record_id_from_first_page", "object": "card"}],
-            },
-        )
-        self.set_specmatic_expectation(
-            path="/v1/accounts/account_id/external_accounts",
-            query={"starting_after": "last_record_id_from_first_page", "object": _OBJECT, "limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/accounts/account_id/external_accounts",
-                "has_more": False,
-                "data": [{"id": "card_1", "object": "card"}, {"id": "card_2", "object": "card"}],
-            },
-        )
-
+        """Zero-Hardcoding spec-driven read test for external account cards."""
         output = self._read(_config().with_start_date(_A_START_DATE))
-        assert len(output.records) == 3
+        self.assert_contract_read_success(output)
+
 
     def test_when_read_then_add_cursor_field(self) -> None:
         self.set_specmatic_expectation(

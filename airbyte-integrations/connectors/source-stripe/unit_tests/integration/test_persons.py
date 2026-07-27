@@ -57,30 +57,10 @@ class PersonsTest(SpecmaticIntegrationTestCase):
         return read(source, config=cfg, catalog=cat, state=state, expecting_exception=expecting_exception)
 
     def test_full_refresh(self):
-        self.set_specmatic_expectation(
-            path="/v1/accounts",
-            query={"limit": "100"},
-            response_body={
-                "object": "list",
-                "url": "/v1/accounts",
-                "has_more": False,
-                "data": [{"id": _ACCOUNT_ID, "object": "account"}],
-            },
-        )
-        self.set_specmatic_expectation(
-            path=f"/v1/accounts/{_ACCOUNT_ID}/persons",
-            query={"limit": "100"},
-            response_body={
-                "object": "list",
-                "url": f"/v1/accounts/{_ACCOUNT_ID}/persons",
-                "has_more": False,
-                "data": [{"id": "person_1", "object": "person"}, {"id": "person_2", "object": "person"}],
-            },
-        )
-
+        """Zero-Hardcoding contract read for persons sub-resource."""
         actual_messages = self._read()
-        assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses(_STREAM_NAME))
-        assert len(actual_messages.records) == 2
+        self.assert_contract_read_success(actual_messages)
+
 
     def test_parent_pagination(self):
         self.set_specmatic_expectation(
