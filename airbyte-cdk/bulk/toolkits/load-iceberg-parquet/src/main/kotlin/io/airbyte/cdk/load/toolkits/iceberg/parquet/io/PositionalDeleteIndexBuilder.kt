@@ -87,7 +87,7 @@ class PositionalDeleteIndexBuilder(
                 }
         if (parsedEqualityDeletes.isNotEmpty()) {
             logger.warn {
-                "WARNING: Positional delete mode found ${parsedEqualityDeletes.size} existing " +
+                "Positional delete mode found ${parsedEqualityDeletes.size} existing " +
                     "equality-delete file(s) in ${table.name()}. Positional mode will stop " +
                     "producing equality deletes, but it will not remove these legacy files. " +
                     "Syncs remain correct and complete, but the legacy files will remain until " +
