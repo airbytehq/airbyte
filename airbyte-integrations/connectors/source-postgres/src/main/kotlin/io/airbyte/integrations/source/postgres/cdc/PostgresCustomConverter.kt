@@ -457,7 +457,18 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 return DateTimeConverter.convertToDate(x)
             }
             "TIME" -> return resolveTime(field, x)
-            "INTERVAL" -> return convertInterval((x as PGInterval?)!!)
+            "INTERVAL" -> {
+                return when (x) {
+                    is PGInterval -> convertInterval(x)
+                    is Number -> convertInterval(x.toPgInterval())
+                    else -> {
+                        log.warn {
+                            "Unexpected interval value type: ${x::class.java.name}. Falling back to string conversion."
+                        }
+                        x.toString()
+                    }
+                }
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unknown field type  " + field.typeName().uppercase(),
@@ -487,6 +498,26 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
         formatTimeValues(resultInterval, pgInterval)
         return resultInterval.toString()
+    }
+
+    private fun Number.toPgInterval(): PGInterval {
+        val micros = toLong()
+        val negative = micros < 0
+        val totalSeconds = abs(micros / 1_000_000)
+        val days = totalSeconds / 86_400
+        val hours = (totalSeconds % 86_400) / 3_600
+        val minutes = (totalSeconds % 3_600) / 60
+        val seconds = totalSeconds % 60
+        val sign = if (negative) -1 else 1
+
+        return PGInterval(
+            0,
+            0,
+            (days * sign).toInt(),
+            (hours * sign).toInt(),
+            (minutes * sign).toInt(),
+            (seconds * sign).toDouble(),
+        )
     }
 
     private fun registerMoney(
