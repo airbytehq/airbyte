@@ -145,36 +145,6 @@ Verifies that stream reads execute cleanly against the Specmatic mock server wit
 self.assert_contract_read_success(actual_messages)
 ```
 
-### 3. Optional / Legacy Dynamic Expectation Overrides (`set_specmatic_expectation`)
-When a test specifically requires explicit payload override or custom query parameters, use `set_specmatic_expectation`:
-
-```python
-self.set_specmatic_expectation(
-    path="/v1/application_fees",
-    query={
-        "created[gte]": str(int(start_date.timestamp())),
-        "created[lte]": str(int(now.timestamp())),
-        "limit": "100"
-    },
-    response_body={
-        "object": "list",
-        "url": "/v1/application_fees",
-        "has_more": False,
-        "data": [{"id": "fee_1", "object": "application_fee", "created": 1695830751}]
-    }
-)
-```
-
-### 4. Error / Retry Tests — Bypass Specmatic with `requests_mock`
-For retry or status code tests (e.g. HTTP 429 backoff), isolate using `requests_mock`:
-
-```python
-with requests_mock.Mocker(real_http=True) as m:
-    m.register_uri("GET", url, status_code=429)
-    m.register_uri("GET", url, status_code=200, json={...})
-    output = self._read(config)
-```
-
 ---
 
 ## Setup & Files
