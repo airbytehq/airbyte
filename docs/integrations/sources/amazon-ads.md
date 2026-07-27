@@ -185,7 +185,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.1.0 | 2026-07-27 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `advertisedSku` column to `sponsored_products_productads_report_stream` and `sponsored_products_productads_report_stream_daily` streams (null for vendor accounts) |
+| 9.1.0 | 2026-07-27 | [82762](https://github.com/airbytehq/airbyte/pull/82762) | Add `advertisedSku` column to `sponsored_products_productads_report_stream` and `sponsored_products_productads_report_stream_daily` streams (null for vendor accounts) |
 | 9.0.5 | 2026-07-21 | [82341](https://github.com/airbytehq/airbyte/pull/82341) | Update dependencies |
 | 9.0.4 | 2026-07-14 | [81732](https://github.com/airbytehq/airbyte/pull/81732) | Update dependencies |
 | 9.0.3 | 2026-07-01 | [81333](https://github.com/airbytehq/airbyte/pull/81333) | Use `min_datetime` to cap report start date to Amazon's 60-day data retention limit, fixing off-by-one that requested 61 days back |
