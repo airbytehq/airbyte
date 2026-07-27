@@ -29,6 +29,6 @@ Designed for organizations on the Claude Platform, this API provides programmati
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-07-02 | | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.1 | 2026-07-02 | [81401](https://github.com/airbytehq/airbyte/pull/81401) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>
