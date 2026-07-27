@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## July 27, 2026
+
+Platform
+
+- The invitation code that lets someone join your organization or workspace is now sent only to the person you invited. It's no longer visible to anyone viewing your list of pending invitations, so an invitation can only be accepted by its intended recipient. Inviting, viewing, and canceling pending invitations in Settings works exactly as before.
+
 ## July 23, 2026
 
 Connections
