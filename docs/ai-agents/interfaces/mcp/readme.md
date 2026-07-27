@@ -342,6 +342,16 @@ How many Zendesk tickets are in "open" status?
 
 The agent uses field selection to return only the data you need, which reduces token usage and improves response quality.
 
+### How the agent introspects a connector
+
+Under the hood, the agent uses a small set of skill-docs tools to learn a connector before it acts, so it doesn't need every entity and action loaded into its context up front:
+
+- `inspect_connector` reports a connector's metadata, its `docs_skill_id`, and Context Store readiness.
+- `read_skill_docs` returns a connector's usage docs — an outline of entities and actions, or a specific section when the agent passes one.
+- `list_skills` and `search_skills` browse and search the skills available to your agent.
+
+The agent inspects the connector, reads the relevant skill docs, then executes — the same inspect → read docs → execute flow the [SDK](../sdk/execute) and [API](../api/execute) expose. Most clients call these tools automatically, so you just prompt in natural language.
+
 ## How authentication works
 
 The Agent MCP uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agents, and a second layer to authenticate with each third-party service you connect.

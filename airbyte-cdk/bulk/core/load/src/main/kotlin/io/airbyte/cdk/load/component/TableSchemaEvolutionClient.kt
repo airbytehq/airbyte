@@ -172,7 +172,7 @@ data class ColumnChangeset(
     val columnsToChange: Map<String, ColumnTypeChange>,
     val columnsToRetain: Map<String, ColumnType>,
 ) {
-    fun isNoop() = columnsToAdd.isEmpty() && columnsToDrop.isEmpty() && columnsToChange.isEmpty()
+    fun isNoop() = columnsToAdd.isEmpty() && columnsToChange.isEmpty()
 }
 
 data class ColumnTypeChange(
