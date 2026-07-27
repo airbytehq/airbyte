@@ -1,6 +1,5 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timezone
 from unittest import TestCase
 from urllib.parse import parse_qs, urlparse
 
@@ -20,10 +19,7 @@ from .response_builder import (
 )
 
 
-_NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "custom_statistics_report"
-_PARENT_STREAM_NAME = "campaigns"
-_GRANDPARENT_STREAM_NAME = "accounts"
 
 
 def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
