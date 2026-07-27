@@ -188,9 +188,7 @@ class SalesforceErrorHandlerTest(TestCase):
         token_provider.force_refresh.return_value = True
         token_provider.credentials_permanently_failed = False
         handler = SalesforceErrorHandler(token_provider=token_provider)
-        response = self._create_response(
-            "GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}]
-        )
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
 
         resolution = handler.interpret_response(response)
 
@@ -202,9 +200,7 @@ class SalesforceErrorHandlerTest(TestCase):
         token_provider.force_refresh.return_value = False
         token_provider.credentials_permanently_failed = True
         handler = SalesforceErrorHandler(token_provider=token_provider)
-        response = self._create_response(
-            "GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}]
-        )
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
 
         resolution = handler.interpret_response(response)
 
