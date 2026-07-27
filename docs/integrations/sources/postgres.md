@@ -359,7 +359,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |--------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.2  | 2026-07-27 | [82773](https://github.com/airbytehq/airbyte/pull/82773)                         | Fix ClassCastException when an interval column has a default value during CDC.                                                                                              |
+| 3.8.3  | 2026-07-27 | [82773](https://github.com/airbytehq/airbyte/pull/82773)                         | Fix ClassCastException when an interval column has a default value during CDC.                                                                                              |
+| 3.8.2  | 2026-07-24 | [82728](https://github.com/airbytehq/airbyte/pull/82728) | Fix sync failures on `money` columns over the socket/protobuf output path.                                                                                                  |
 | 3.8.1  | 2026-06-04 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Allow connecting without a password for passwordless auth methods.                                                                                                                                  |
 | 3.8.0  | 2026-06-02 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
 | 3.7.2  | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
@@ -665,6 +666,5 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.6  | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)   | Support incremental sync                                                                                                                                                   |
 | 0.1.5  | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)   | Change JDBC sources to discover more than standard schemas                                                                                                                 |
 | 0.1.4  | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                                                                                    |
->>>>>>> 3b4adc8b6d3 (version, changelog)
 
 </details>
