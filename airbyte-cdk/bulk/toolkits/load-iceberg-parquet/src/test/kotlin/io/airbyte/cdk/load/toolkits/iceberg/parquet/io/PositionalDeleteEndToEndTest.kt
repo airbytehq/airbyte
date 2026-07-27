@@ -199,6 +199,7 @@ class PositionalDeleteEndToEndTest {
         }
     }
 
+    @Suppress("DEPRECATION")
     private class CapturingAppender :
         AbstractAppender(
             "positional-delete-test",
