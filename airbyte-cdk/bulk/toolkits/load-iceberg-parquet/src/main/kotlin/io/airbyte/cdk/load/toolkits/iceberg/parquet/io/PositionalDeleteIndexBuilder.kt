@@ -116,12 +116,6 @@ class PositionalDeleteIndexBuilder(
                 .build<Record>()
                 .use { records ->
                     for (record in records) {
-                        if (index.size() >= maxEntries) {
-                            throw IllegalStateException(
-                                "Positional delete index for ${table.name()} exceeded its maximum " +
-                                    "$maxEntries entries. Increase the configured limit or use equality deletes."
-                            )
-                        }
                         val key = GenericRecord.create(deleteSchema)
                         deleteSchema.columns().forEach { field ->
                             val value = record.getField(field.name())
@@ -135,6 +129,12 @@ class PositionalDeleteIndexBuilder(
                         if (deleted) {
                             position += 1
                             continue
+                        }
+                        if (index.size() >= maxEntries) {
+                            throw IllegalStateException(
+                                "Positional delete index for ${table.name()} exceeded its maximum " +
+                                    "$maxEntries entries. Increase the configured limit or use equality deletes."
+                            )
                         }
                         val previous =
                             index.replace(
