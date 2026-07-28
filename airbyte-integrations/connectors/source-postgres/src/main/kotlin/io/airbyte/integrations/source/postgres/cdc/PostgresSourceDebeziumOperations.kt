@@ -142,8 +142,6 @@ class PostgresSourceDebeziumOperations(
     override fun startup(offset: DebeziumOffset) {
         // Need to validate replication slot even on cold start.
         // Debezium will retry in a loop if its invalid.
-        // TODO: Honor configured InvalidCdcCursorPositionBehavior
-        //  https://github.com/airbytehq/airbyte-internal-issues/issues/15680
         validate(offset)
         advanceReplicationSlot(offset)
     }

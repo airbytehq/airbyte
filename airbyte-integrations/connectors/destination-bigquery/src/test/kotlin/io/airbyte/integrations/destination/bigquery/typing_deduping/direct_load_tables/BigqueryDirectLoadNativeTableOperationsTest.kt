@@ -3,9 +3,12 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
+import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TimePartitioning
@@ -23,12 +26,14 @@ import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -283,5 +288,26 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .build()
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
+    }
+
+    @Test
+    fun testGetGenerationIdReturnZeroOnBigQueryException() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        Mockito.`when`(bigquery.query(Mockito.any(QueryJobConfiguration::class.java)))
+            .thenThrow(BigQueryException(400, "Unrecognized name: _airbyte_generation_id"))
+
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+
+        val result = runBlocking {
+            operations.getGenerationId(TableName("test_namespace", "test_table"))
+        }
+        Assertions.assertEquals(0L, result)
     }
 }
