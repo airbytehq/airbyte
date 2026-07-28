@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c8630570-086d-4a40-99ae-ea5b18673071
-  dockerImageTag: 2.0.20
+  dockerImageTag: 2.0.21
   dockerRepository: airbyte/source-zendesk-talk
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   externalDocumentationUrls:
@@ -32,6 +32,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 2.0.19 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available

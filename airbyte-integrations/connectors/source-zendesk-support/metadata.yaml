@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.4.4
+  dockerImageTag: 5.4.5
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -26,6 +26,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 5.4.3 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available
