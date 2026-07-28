@@ -6,11 +6,15 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 import pytest
+import requests_mock
 import yaml
 
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 _CONFIG = {
@@ -342,3 +346,118 @@ def test_complete_oauth_output_specification_contains_refresh_and_access_token()
     output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
     assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
     assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
+
+
+def test_dynamic_stream_paginates_run_report_results():
+    """Verify that dynamic runReport streams paginate with GA4 body parameters."""
+    config = {
+        "credentials": {"auth_type": "Client", "client_id": "cid", "client_secret": "secret", "refresh_token": "refresh"},
+        "property_ids": ["12345"],
+        "custom_reports_array": [{"name": "large_report", "dimensions": ["date"], "metrics": ["sessions"]}],
+        "date_ranges_start_date": "2025-01-01",
+        "date_ranges_end_date": "2025-01-02",
+        "window_in_days": 1,
+    }
+    source = YamlDeclarativeSource(str(Path(__file__).parent.parent / "manifest.yaml"), config=config)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="large_report",
+                    json_schema={
+                        "type": "object",
+                        "properties": {"date": {"type": "string"}, "sessions": {"type": "integer"}},
+                    },
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+    report_url = "https://analyticsdata.googleapis.com/v1beta/properties/12345:runReport"
+    request_bodies = []
+
+    def report_callback(request, context):
+        request_body = request.json()
+        request_bodies.append(request_body)
+        offset = request_body.get("offset", 0)
+        rows = [
+            {"dimensionValues": [{"value": str(offset + index)}], "metricValues": [{"value": str(offset + index)}]}
+            for index in range(25000 if offset == 0 else 1)
+        ]
+        return {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "sessions"}],
+            "rows": rows,
+        }
+
+    with requests_mock.Mocker() as http_mock:
+        http_mock.post("https://www.googleapis.com/oauth2/v4/token", json={"access_token": "token", "expires_in": 3600})
+        http_mock.get(
+            "https://analyticsdata.googleapis.com/v1beta/properties/12345/metadata",
+            json={"metrics": [{"apiName": "sessions", "type": "TYPE_INTEGER"}]},
+        )
+        http_mock.post(report_url, json=report_callback)
+        output = read(source, config, catalog)
+
+    output.raise_if_errors()
+    assert len(output.records) == 25001
+    assert len(request_bodies) == 2
+    assert request_bodies[0]["limit"] == 25000
+    assert "offset" not in request_bodies[0]
+    assert request_bodies[1]["limit"] == 25000
+    assert request_bodies[1]["offset"] == 25000
+
+
+def test_dynamic_pivot_streams_disable_pagination():
+    """Verify that dynamic pivot streams preserve GA4's no-pagination behavior."""
+    config = {
+        "credentials": {"auth_type": "Client", "client_id": "cid", "client_secret": "secret", "refresh_token": "refresh"},
+        "property_ids": ["12345"],
+        "custom_reports_array": [
+            {
+                "name": "pivot_report",
+                "dimensions": ["country"],
+                "metrics": ["sessions"],
+                "pivots": [{"fieldNames": ["date"], "limit": 1, "offset": 0}],
+            }
+        ],
+    }
+    source = YamlDeclarativeSource(str(Path(__file__).parent.parent / "manifest.yaml"), config=config)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="pivot_report",
+                    json_schema={"type": "object", "properties": {"country": {"type": "string"}, "sessions": {"type": "integer"}}},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+    report_url = "https://analyticsdata.googleapis.com/v1beta/properties/12345:runPivotReport"
+    request_bodies = []
+
+    def report_callback(request, context):
+        request_bodies.append(request.json())
+        return {
+            "dimensionHeaders": [{"name": "country"}],
+            "metricHeaders": [{"name": "sessions"}],
+            "rows": [{"dimensionValues": [{"value": "US"}], "metricValues": [{"value": "1"}]}],
+        }
+
+    with requests_mock.Mocker() as http_mock:
+        http_mock.post("https://www.googleapis.com/oauth2/v4/token", json={"access_token": "token", "expires_in": 3600})
+        http_mock.get(
+            "https://analyticsdata.googleapis.com/v1beta/properties/12345/metadata",
+            json={"metrics": [{"apiName": "sessions", "type": "TYPE_INTEGER"}]},
+        )
+        http_mock.post(report_url, json=report_callback)
+        output = read(source, config, catalog)
+
+    output.raise_if_errors()
+    assert len(request_bodies) == 1
+    assert "offset" not in request_bodies[0]
