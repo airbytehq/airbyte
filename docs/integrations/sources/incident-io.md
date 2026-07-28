@@ -69,7 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.2.0 | 2026-07-28 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add incremental sync support for the `incidents`, `alerts`, and `escalations` streams, and add an optional `start_date` config field |
+| 0.2.0 | 2026-07-28 | [83215](https://github.com/airbytehq/airbyte/pull/83215) | Add incremental sync support for the `incidents`, `alerts`, and `escalations` streams, and add an optional `start_date` config field |
 | 0.1.34 | 2026-07-28 | [82950](https://github.com/airbytehq/airbyte/pull/82950) | Update dependencies |
 | 0.1.33 | 2026-07-21 | [82451](https://github.com/airbytehq/airbyte/pull/82451) | Update dependencies |
 | 0.1.32 | 2026-07-14 | [81861](https://github.com/airbytehq/airbyte/pull/81861) | Update dependencies |
