@@ -5,7 +5,7 @@ The Plausible source connector syncs daily website metrics from [Plausible Analy
 ## Prerequisites
 
 - A Plausible account with at least one site. On Plausible Cloud, the Stats API is a [Business plan feature](https://plausible.io/docs/stats-api).
-- A Stats API key. To create one, sign in to Plausible, click your username in the top-right menu, go to **Settings** > **API Keys**, click **New API Key**, and choose the **Stats API** key type. Plausible shows the key only once, so copy it before you leave the page.
+- A Stats API key. To create one, sign in to Plausible, click your account name in the top-right menu, go to **Settings** > **API Keys**, click **New API Key**, and choose the **Stats API** key type. Plausible shows the key only once, so copy it before you leave the page.
 
 ## Set up the Plausible source connector
 
@@ -39,13 +39,13 @@ The connector syncs one stream, `stats`, from the [timeseries endpoint](https://
 | `date`           | The day the stats cover, in the site's time zone. |
 | `visitors`       | Unique visitors.                                  |
 | `visits`         | Visits or sessions.                               |
-| `pageviews`      | Page view events.                                 |
+| `pageviews`      | Pageview events.                                  |
 | `bounce_rate`    | Bounce rate percentage.                           |
 | `visit_duration` | Visit duration, in seconds.                       |
 
 The connector drops days with no recorded visits, so you may see gaps in the date sequence for low-traffic sites.
 
-Plausible is a privacy-first analytics service, and its Stats API is less granular than analytics APIs such as Google Analytics. You can't read individual page view events or events, and dimensions such as referrer, entry page, and exit page are only available through the API's `breakdown` endpoint, which this connector doesn't sync. Other v1 metrics, including `views_per_visit`, `events`, and `time_on_page`, aren't synced either.
+Plausible is a privacy-first analytics service, and its Stats API is less granular than analytics APIs such as Google Analytics. You can't read individual pageviews or custom events, and dimensions such as referrer, entry page, and exit page are only available through the API's `breakdown` endpoint, which this connector doesn't sync. Other v1 metrics, including `views_per_visit`, `events`, and `time_on_page`, aren't synced either.
 
 ## Performance considerations
 
