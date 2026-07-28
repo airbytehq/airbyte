@@ -6,7 +6,7 @@ data:
     hosts:
       - "*.chargebee.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7.post2.dev30345587161@sha256:05c6a7e69420a4f71f172c056955a73e1c0425f3af45fc900728f26c6fbaa428
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7.post4.dev30357014888@sha256:ee7f99ddd45a7be1c364e2a298fade8361a865eb498c86ab6a172511becf5338
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
