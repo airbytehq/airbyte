@@ -380,8 +380,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * Plain `=` is not usable here: for a nullable PK column, `NULL = NULL` evaluates to UNKNOWN,
      * so rows keyed by a NULL PK value never match an existing target row. That makes the UPDATE a
      * no-op and the `INSERT ... WHERE NOT EXISTS` insert a fresh copy on every sync. Redshift does
-     * not support `IS [NOT] DISTINCT FROM`, so we expand to the portable
-     * `(a = b OR (a IS NULL AND b IS NULL))` form used by the other destinations.
+     * not support `IS [NOT] DISTINCT FROM`, so we expand to the portable `(a = b OR (a IS NULL AND
+     * b IS NULL))` form used by the other destinations.
      */
     private fun buildPrimaryKeyMatch(
         primaryKeyTargetColumns: List<String>,
