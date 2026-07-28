@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.10.41
+  dockerImageTag: 0.10.42
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   externalDocumentationUrls:
@@ -32,6 +32,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 0.10.40 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available

@@ -7,6 +7,7 @@ data:
       enabled: true
     cloud:
       enabled: true
+      dockerImageTag: 1.1.37 # last version built on SDM 7.23.6
   releases:
     breakingChanges:
       1.0.0:
@@ -28,7 +29,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  dockerImageTag: 1.1.38
+  dockerImageTag: 1.1.39
   dockerRepository: airbyte/source-outreach
   githubIssueLabel: source-outreach
   icon: outreach.svg

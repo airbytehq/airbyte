@@ -11,10 +11,11 @@ data:
       enabled: true
     cloud:
       enabled: true
+      dockerImageTag: 0.4.52 # last version built on SDM 7.23.6
   connectorSubtype: api
   connectorType: source
   definitionId: eb655362-28a8-4311-8806-4fcc612734a7
-  dockerImageTag: 0.4.53
+  dockerImageTag: 0.4.54
   dockerRepository: airbyte/source-qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg

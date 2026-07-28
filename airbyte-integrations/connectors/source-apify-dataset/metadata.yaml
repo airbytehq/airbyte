@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
-  dockerImageTag: 2.2.53
+  dockerImageTag: 2.2.54
   dockerRepository: airbyte/source-apify-dataset
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   githubIssueLabel: source-apify-dataset
@@ -17,6 +17,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 2.2.52 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseDate: 2023-08-25
