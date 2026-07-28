@@ -407,23 +407,16 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
         val addedColumns = mapOf("COL1" to ColumnType("TEXT", true))
-        val deletedColumns = mapOf("COL2" to ColumnType("TEXT", true))
         val modifiedColumns =
             mapOf("COL3" to ColumnTypeChange(ColumnType("NUMBER", true), ColumnType("TEXT", true)))
         val sql =
-            snowflakeDirectLoadSqlGenerator.alterTable(
-                tableName,
-                addedColumns,
-                deletedColumns,
-                modifiedColumns
-            )
+            snowflakeDirectLoadSqlGenerator.alterTable(tableName, addedColumns, modifiedColumns)
         val expectedTableName =
             "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
 
         assertEquals(
             setOf(
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL1" TEXT;""",
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL2";""",
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
                 """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
                 """
