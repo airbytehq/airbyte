@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 3.2.15
+  dockerImageTag: 3.2.16
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   externalDocumentationUrls:
@@ -35,6 +35,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 3.2.14 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available

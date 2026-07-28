@@ -252,6 +252,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.7 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.1.5 — 2.1.6 is built on SDM 7.23.7, which breaks bundled custom components |
 | 2.1.6 | 2026-07-28 | [82942](https://github.com/airbytehq/airbyte/pull/82942) | Update dependencies |
 | 2.1.5 | 2026-07-21 | [82440](https://github.com/airbytehq/airbyte/pull/82440) | Update dependencies |
 | 2.1.4 | 2026-07-14 | [81851](https://github.com/airbytehq/airbyte/pull/81851) | Update dependencies |

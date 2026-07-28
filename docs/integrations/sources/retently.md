@@ -53,6 +53,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.54 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.3.52 — 0.3.53 is built on SDM 7.23.7, which breaks bundled custom components |
 | 0.3.53 | 2026-07-28 | [83078](https://github.com/airbytehq/airbyte/pull/83078) | Update dependencies |
 | 0.3.52 | 2026-07-21 | [82597](https://github.com/airbytehq/airbyte/pull/82597) | Update dependencies |
 | 0.3.51 | 2026-07-14 | [81998](https://github.com/airbytehq/airbyte/pull/81998) | Update dependencies |

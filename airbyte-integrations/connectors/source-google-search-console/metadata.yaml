@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
-  dockerImageTag: 2.1.6
+  dockerImageTag: 2.1.7
   dockerRepository: airbyte/source-google-search-console
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   externalDocumentationUrls:
@@ -32,6 +32,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 2.1.5 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releases:
