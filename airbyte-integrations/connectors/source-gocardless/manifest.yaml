@@ -474,6 +474,125 @@ definitions:
               type:
                 - "null"
                 - string
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: >-
+            {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+            'live' else 'https://api-sandbox.gocardless.com' }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
+          path: /subscriptions
+          http_method: GET
+          request_parameters:
+            created_at[gte]: "{{ config['start_date'] }}"
+          request_headers:
+            GoCardless-Version: "{{ config['gocardless_version'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - subscriptions
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: after
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ response['meta']['cursors']['after'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            amount:
+              type:
+                - "null"
+                - integer
+            app_fee:
+              type:
+                - "null"
+                - integer
+            count:
+              type:
+                - "null"
+                - integer
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            currency:
+              type:
+                - "null"
+                - string
+            day_of_month:
+              type:
+                - "null"
+                - integer
+            end_date:
+              type:
+                - "null"
+                - string
+              format: date
+            interval:
+              type:
+                - "null"
+                - integer
+            interval_unit:
+              type:
+                - "null"
+                - string
+            links:
+              type:
+                - "null"
+                - object
+              properties:
+                mandate:
+                  type:
+                    - "null"
+                    - string
+            metadata:
+              type:
+                - "null"
+                - object
+            month:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            start_date:
+              type:
+                - "null"
+                - string
+              format: date
+            status:
+              type:
+                - "null"
+                - string
   base_requester:
     type: HttpRequester
     url_base: >-
@@ -947,6 +1066,124 @@ streams:
             type:
               - "null"
               - string
+  - type: DeclarativeStream
+    name: subscriptions
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: >-
+          {{ 'https://api.gocardless.com' if config['gocardless_environment'] ==
+          'live' else 'https://api-sandbox.gocardless.com' }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /subscriptions
+        http_method: GET
+        request_parameters:
+          created_at[gte]: "{{ config['start_date'] }}"
+        request_headers:
+          GoCardless-Version: "{{ config['gocardless_version'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - subscriptions
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 500
+          cursor_value: "{{ response['meta']['cursors']['after'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          amount:
+            type:
+              - "null"
+              - integer
+          app_fee:
+            type:
+              - "null"
+              - integer
+          count:
+            type:
+              - "null"
+              - integer
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          currency:
+            type:
+              - "null"
+              - string
+          day_of_month:
+            type:
+              - "null"
+              - integer
+          end_date:
+            type:
+              - "null"
+              - string
+            format: date
+          interval:
+            type:
+              - "null"
+              - integer
+          interval_unit:
+            type:
+              - "null"
+              - string
+          links:
+            type:
+              - "null"
+              - object
+            properties:
+              mandate:
+                type:
+                  - "null"
+                  - string
+          metadata:
+            type:
+              - "null"
+              - object
+          month:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          start_date:
+            type:
+              - "null"
+              - string
+            format: date
+          status:
+            type:
+              - "null"
+              - string
 spec:
   type: Spec
   connection_specification:
@@ -1000,6 +1237,7 @@ metadata:
     refunds: false
     mandates: false
     payouts: false
+    subscriptions: false
 schemas:
   payments:
     type: object
@@ -1294,6 +1532,82 @@ schemas:
           - "null"
           - string
       tax_currency:
+        type:
+          - "null"
+          - string
+  subscriptions:
+    type: object
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      amount:
+        type:
+          - "null"
+          - integer
+      app_fee:
+        type:
+          - "null"
+          - integer
+      count:
+        type:
+          - "null"
+          - integer
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      currency:
+        type:
+          - "null"
+          - string
+      day_of_month:
+        type:
+          - "null"
+          - integer
+      end_date:
+        type:
+          - "null"
+          - string
+        format: date
+      interval:
+        type:
+          - "null"
+          - integer
+      interval_unit:
+        type:
+          - "null"
+          - string
+      links:
+        type:
+          - "null"
+          - object
+        properties:
+          mandate:
+            type:
+              - "null"
+              - string
+      metadata:
+        type:
+          - "null"
+          - object
+      month:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      start_date:
+        type:
+          - "null"
+          - string
+        format: date
+      status:
         type:
           - "null"
           - string

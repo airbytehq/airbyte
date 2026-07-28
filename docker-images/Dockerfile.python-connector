@@ -19,6 +19,14 @@ WORKDIR /airbyte/integration_code
 
 COPY . ./
 
+# Replace potentially symlinked `README.md` before `poetry install`
+RUN if [ -L README.md ] && [ ! -e README.md ]; then \
+        rm README.md; \
+    fi; \
+    if [ ! -e README.md ]; then \
+        printf '# %s\n\nThis package contains the Airbyte %s connector.\n' "${CONNECTOR_NAME}" "${CONNECTOR_NAME}" > README.md; \
+    fi
+
 # Conditionally copy and execute the extra build script if provided
 RUN if [ -n "${EXTRA_PREREQS_SCRIPT}" ]; then \
         cp ${EXTRA_PREREQS_SCRIPT} ./extra_prereqs_script && \

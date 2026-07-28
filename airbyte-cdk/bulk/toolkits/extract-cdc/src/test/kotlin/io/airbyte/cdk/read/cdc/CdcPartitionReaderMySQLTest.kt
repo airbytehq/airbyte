@@ -24,8 +24,8 @@ class CdcPartitionReaderMySQLTest :
         namespace = "test",
     ) {
 
-    data class Position(val file: String, val pos: Long) : Comparable<Position> {
-        override fun compareTo(other: Position): Int =
+    data class Position(val file: String, val pos: Long) : PartiallyOrdered<Position> {
+        override fun compareTo(other: Position): Int? =
             file.compareTo(other.file).takeUnless { it == 0 } ?: pos.compareTo(other.pos)
     }
 

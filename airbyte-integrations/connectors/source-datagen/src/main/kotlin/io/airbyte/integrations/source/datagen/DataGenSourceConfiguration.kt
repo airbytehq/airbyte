@@ -14,6 +14,7 @@ import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.integrations.source.datagen.flavor.Flavor
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.airbyte.integrations.source.datagen.flavor.types.TypesFlavor
+import io.airbyte.integrations.source.datagen.flavor.wide.WideFlavor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -85,6 +86,7 @@ constructor(
             when (flavorSpec) {
                 Incremental -> IncrementFlavor
                 Types -> TypesFlavor
+                is Wide -> WideFlavor(flavorSpec.columnCount)
             }
 
         return DataGenSourceConfiguration(

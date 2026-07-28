@@ -41,6 +41,10 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 1. 1000 API calls per month.
 2. You won't be able to specify the `base` parameter, meaning that you will be dealing only with default base value which is USD.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

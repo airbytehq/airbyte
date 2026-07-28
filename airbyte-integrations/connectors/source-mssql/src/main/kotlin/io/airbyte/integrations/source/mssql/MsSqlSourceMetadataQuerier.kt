@@ -5,7 +5,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
@@ -126,11 +126,11 @@ class MsSqlSourceMetadataQuerier(
         }
     }
 
-    override fun fields(streamID: StreamIdentifier): List<Field> {
+    override fun fields(streamID: StreamIdentifier): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         if (table !in memoizedColumnMetadata) return listOf()
         return memoizedColumnMetadata[table]!!.map {
-            Field(it.label, base.fieldTypeMapper.toFieldType(it))
+            EmittedField(it.label, base.fieldTypeMapper.toFieldType(it))
         }
     }
 

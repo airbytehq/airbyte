@@ -44,5 +44,25 @@ class ConfigBuilder:
         self._config["replication_end_date"] = end_date.strftime(TIME_FORMAT)
         return self
 
+    def with_asin_granularity(self, granularity: str) -> ConfigBuilder:
+        self._config["sales_and_traffic_report_asin_granularity"] = granularity
+        return self
+
+    def with_max_done_report_age_hours(self, hours: int) -> ConfigBuilder:
+        self._config["max_done_report_age_hours"] = hours
+        return self
+
+    def with_failed_retry_wait_time_in_seconds(self, seconds: int) -> ConfigBuilder:
+        self._config["failed_retry_wait_time_in_seconds"] = seconds
+        return self
+
+    def with_account_type(self, account_type: str) -> ConfigBuilder:
+        self._config["account_type"] = account_type
+        return self
+
+    def with_report_stream_lookback_window_in_hours(self, hours: int) -> ConfigBuilder:
+        self._config["report_stream_lookback_window_in_hours"] = hours
+        return self
+
     def build(self) -> Dict[str, str]:
         return self._config

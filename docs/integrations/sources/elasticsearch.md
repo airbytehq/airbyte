@@ -80,6 +80,10 @@ all values in the array must be of the same data type. Hence, every field can be
 | `shape`                   | `["string", "array", "number", "integer"]` |       |
 | `point`                   | `["string", "array", "number", "integer"]` |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
