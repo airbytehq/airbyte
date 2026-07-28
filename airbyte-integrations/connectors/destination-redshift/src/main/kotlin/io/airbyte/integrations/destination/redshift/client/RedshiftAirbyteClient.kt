@@ -239,9 +239,17 @@ class RedshiftAirbyteClient(
         accessKeyId: String,
         secretAccessKey: String,
         region: String,
+        nullSentinel: String,
     ) {
         execute(
-            sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
+            sqlGenerator.copyFromS3(
+                tableName,
+                s3Path,
+                accessKeyId,
+                secretAccessKey,
+                region,
+                nullSentinel,
+            ),
             logStatement = false,
         )
     }

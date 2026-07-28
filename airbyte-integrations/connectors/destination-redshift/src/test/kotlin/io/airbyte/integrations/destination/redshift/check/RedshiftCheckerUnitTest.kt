@@ -59,7 +59,7 @@ class RedshiftCheckerUnitTest {
         coVerify { client.createTable(any(), any(), any(), any()) }
 
         // Verify COPY + count
-        coVerify { client.copyFromS3(any(), any(), any(), any(), any()) }
+        coVerify { client.copyFromS3(any(), any(), any(), any(), any(), any()) }
         coVerify { client.countTable(any()) }
 
         // Verify ALTER TABLE

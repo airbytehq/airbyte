@@ -699,14 +699,35 @@ internal class RedshiftAirbyteClientTest {
     @Test
     fun `copyFromS3 delegates to sqlGenerator and suppresses logging`() = runTest {
         every {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+            sqlGenerator.copyFromS3(
+                testTable,
+                "s3://bucket/key",
+                "AKIA",
+                "secret",
+                "us-east-1",
+                "__NULL_TOKEN__",
+            )
         } returns "COPY SQL"
         every { mockStatement.execute("COPY SQL") } returns false
 
-        client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+        client.copyFromS3(
+            testTable,
+            "s3://bucket/key",
+            "AKIA",
+            "secret",
+            "us-east-1",
+            "__NULL_TOKEN__",
+        )
 
         verify {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+            sqlGenerator.copyFromS3(
+                testTable,
+                "s3://bucket/key",
+                "AKIA",
+                "secret",
+                "us-east-1",
+                "__NULL_TOKEN__",
+            )
         }
         verify { mockStatement.execute("COPY SQL") }
     }

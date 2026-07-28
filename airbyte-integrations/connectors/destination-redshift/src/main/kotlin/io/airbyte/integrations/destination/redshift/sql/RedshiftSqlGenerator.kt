@@ -546,6 +546,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         accessKeyId: String,
         secretAccessKey: String,
         region: String,
+        nullSentinel: String,
     ): String =
         """
             |COPY ${getFullyQualifiedName(tableName)}
@@ -557,7 +558,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
-            |EMPTYASNULL;
+            |NULL AS '$nullSentinel';
         """.trimMargin()
 
     // ================================================================
