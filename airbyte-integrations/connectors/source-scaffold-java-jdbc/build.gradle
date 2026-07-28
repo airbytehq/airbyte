@@ -1,0 +1,22 @@
+plugins {
+    id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.scaffold-java-jdbc.ScaffoldJavaJdbcSource'
+}
+
+dependencies {
+
+    //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
+
+    testFixturesApi 'org.testcontainers:jdbc:1.19.4'
+}
