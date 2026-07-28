@@ -38,6 +38,7 @@ data:
           [migration guide](https://docs.airbyte.com/integrations/sources/goldcast-migrations) for
           more information.
         upgradeDeadline: "2026-10-31"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["event_members"]
