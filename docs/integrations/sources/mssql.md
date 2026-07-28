@@ -52,6 +52,32 @@ to your MSSQL instance is via the check connection tool in the UI.
 This step is optional but highly recommended to allow for better permission control and auditing.
 Alternatively, you can use Airbyte with an existing user in your database.
 
+- Create a login and a database user for Airbyte, then add the user to the
+  [db_datareader](https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver16)
+  role. Membership in `db_datareader` grants `SELECT` on all current and future tables in the
+  database:
+
+  ```text
+  USE {database name};
+  CREATE LOGIN {user name}
+    WITH PASSWORD = '{password}';
+  CREATE USER {user name} FOR LOGIN {user name};
+  EXEC sp_addrolemember 'db_datareader', '{user name}';
+  ```
+
+- If you prefer to scope access to specific schemas rather than the whole database, skip the
+  `db_datareader` role and instead grant `SELECT` on each schema you want to replicate from. Re-run
+  this command for each schema:
+
+  ```text
+  USE {database name};
+  GRANT SELECT ON SCHEMA :: {schema name} TO {user name};
+  ```
+
+Use the username and password you created here when configuring the MSSQL source in Airbyte. If you
+plan to use CDC, this user also needs the additional CDC-related permissions described in
+[Setting up CDC for MSSQL](#3-create-a-user-and-grant-appropriate-permissions).
+
 #### 3. Your database user should now be ready for use with Airbyte!
 
 #### Airbyte Cloud
