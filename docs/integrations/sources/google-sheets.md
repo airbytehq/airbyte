@@ -120,8 +120,11 @@ Share the spreadsheet with the service account's email address. If the spreadshe
 </FieldAnchor>
 <FieldAnchor field="names_conversion">
 8. (Optional) Enable **Convert Column Names to SQL-Compliant Format** to convert column names to a standardized, SQL-friendly format. For example, `Café Earnings 2022` becomes `cafe_earnings_2022`. Enable this if your destination is SQL-based, such as Postgres or MySQL. This is off by default.
-9. Click **Set up source** and wait for the tests to complete.
 </FieldAnchor>
+<FieldAnchor field="num_workers">
+9. (Optional) For **Number of Concurrent Threads**, set how many sheets the connector reads in parallel. The default is `2`, and you can set any value from `1` to `10`. Raising it speeds up spreadsheets with many sheets, but shares the same Google Sheets API quota across more requests, so it also makes rate limiting more likely.
+</FieldAnchor>
+10. Click **Set up source** and wait for the tests to complete.
 <HideInUI>
 
 ## Configuration Options
@@ -276,25 +279,7 @@ Airbyte only supports replicating [Grid](https://developers.google.com/sheets/ap
 
 This connector uses the Google Sheets API v4. It calls the `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}` endpoint to discover spreadsheet metadata and header rows, then calls `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}/values:batchGet` to read row values.
 
-For programmatic configuration, use these parameter names:
-
-| Field | Required | Description |
-| ----- | :------: | ----------- |
-| `spreadsheet_id` | Yes | Full Google Sheets URL or spreadsheet ID. |
-| `credentials.auth_type` | Yes | Authentication method. Valid values are `Client` for OAuth and `Service` for service account authentication. |
-| `credentials.client_id` | Required for OAuth | Google OAuth client ID. |
-| `credentials.client_secret` | Required for OAuth | Google OAuth client secret. |
-| `credentials.refresh_token` | Required for OAuth | Google OAuth refresh token. |
-| `credentials.service_account_info` | Required for service account authentication | JSON key for the service account. Share the spreadsheet with the service account email unless the spreadsheet is public. |
-| `batch_size` | No | Maximum number of data rows to request per API call. Defaults to `1000000`. Lower this value if large sheets time out. |
-| `names_conversion` | No | Converts column names to SQL-compliant format. Defaults to `false`. |
-| `remove_leading_trailing_underscores` | No | Removes leading and trailing underscores from converted column names. Requires `names_conversion`. Defaults to `false`. |
-| `combine_number_word_pairs` | No | Combines adjacent number and word tokens in converted column names. Requires `names_conversion`. Defaults to `false`. |
-| `remove_special_characters` | No | Removes special characters from converted column names. Requires `names_conversion`. Defaults to `false`. |
-| `combine_letter_number_pairs` | No | Combines adjacent letter and number tokens in converted column names. Requires `names_conversion`. Defaults to `false`. |
-| `allow_leading_numbers` | No | Allows converted column names to start with numbers. Requires `names_conversion`. Defaults to `false`. |
-| `read_empty_header_columns` | No | Reads columns after empty header cells and assigns generated names such as `column_C`. Defaults to `false`. |
-| `stream_name_overrides` | No | Array of objects with `source_stream_name` and `custom_stream_name` used to rename sheet streams in Airbyte. |
+The `spreadsheet_id` field accepts either a full spreadsheet URL or the bare spreadsheet ID.
 
 ## Limitations and troubleshooting
 
@@ -312,7 +297,7 @@ The [Google API rate limits](https://developers.google.com/sheets/api/limits) ar
 - 300 read requests per minute per project
 - 60 requests per minute per user per project
 
-Airbyte batches requests to the API to pull data efficiently and respect these rate limits. We recommend not using the same user or service account for more than three instances of the Google Sheets source connector to ensure high transfer speeds.
+Each sync throttles itself to 300 requests per minute and retries `429` responses with exponential backoff. Google applies its quota per project, though, and every connection that authenticates through the same project or service account draws from that one quota. If you run several Google Sheets connections against one project, they can still hit the limit, so lower **Number of Concurrent Threads** on the busiest connections or authenticate them through separate projects.
 
 Google Sheets API requests time out after 180 seconds. If you sync a wide or large sheet and see timeout errors, lower **Row Batch Size** so each API call reads fewer rows.
 
