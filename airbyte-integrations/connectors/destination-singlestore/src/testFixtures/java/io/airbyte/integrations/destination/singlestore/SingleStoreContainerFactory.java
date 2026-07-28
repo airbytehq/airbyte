@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.ExecConfig;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
@@ -33,8 +32,7 @@ public class SingleStoreContainerFactory extends ContainerFactory<AirbyteSingleS
     container.start();
     try {
       for (String command : commands) {
-        var output = container.execInContainer(
-            ExecConfig.builder().user("root").command(new String[] {"/bin/bash", "-c", command}).build());
+        var output = container.execInContainerWithUser("root", "/bin/bash", "-c", command);
         LOGGER.info("Execute command: {}", output);
       }
     } catch (IOException e) {
