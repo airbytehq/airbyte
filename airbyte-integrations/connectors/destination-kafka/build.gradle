@@ -31,4 +31,5 @@ dependencies {
     implementation 'org.apache.kafka:connect-json:2.8.0'
 
     integrationTestJavaImplementation 'org.testcontainers:kafka:1.19.0'
+    // probe marker
 }
