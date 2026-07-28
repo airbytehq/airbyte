@@ -23,6 +23,8 @@ from .utils import get_docker_ip, load_config
 logger = logging.getLogger("airbyte")
 
 PRIVATE_KEY = str()
+ENCRYPTED_PRIVATE_KEY = (Path(__file__).parents[1] / "unit_tests/fixtures/encrypted_ed25519").read_text()
+ENCRYPTED_PRIVATE_KEY_PASSPHRASE = "test-passphrase"
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 
@@ -80,6 +82,8 @@ def connector_setup_fixture(docker_client) -> None:
     private_key, public_key = generate_ssh_keys()
     global PRIVATE_KEY
     PRIVATE_KEY = private_key
+    encrypted_key = paramiko.Ed25519Key.from_private_key(StringIO(ENCRYPTED_PRIVATE_KEY), password=ENCRYPTED_PRIVATE_KEY_PASSPHRASE)
+    public_key = "\n".join((public_key, f"ssh-ed25519 {encrypted_key.get_base64()}"))
     pub_key_path = ssh_path + "/id_rsa.pub"
     with open(pub_key_path, "w") as f:
         f.write(public_key)
@@ -157,6 +161,19 @@ def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
 @pytest.fixture(name="config_private_key_csv", scope="session")
 def config_fixture_private_key_csv(config_private_key) -> Mapping[str, Any]:
     yield config_private_key
+
+
+@pytest.fixture(name="config_encrypted_private_key", scope="session")
+def config_fixture_encrypted_private_key(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_private_key.json") | {
+        "credentials": {
+            "auth_type": "private_key",
+            "private_key": ENCRYPTED_PRIVATE_KEY,
+            "passphrase": ENCRYPTED_PRIVATE_KEY_PASSPHRASE,
+        }
+    }
+    config["host"] = get_docker_ip()
+    yield config
 
 
 @pytest.fixture(name="config_password_all_csv", scope="session")
