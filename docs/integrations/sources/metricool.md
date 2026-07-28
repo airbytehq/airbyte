@@ -41,6 +41,8 @@ Supported Data Streams:
 | instagram_stories_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
 | instagram_posts_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
 | instagram_reels_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
+| facebook_account_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
+| instagram_account_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
 | tiktok_posts | blogId.videoId | No pagination | ✅ |  ❌  |
 | tiktok_video_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
 | tiktok_account_timelines | datetime.blogId.metric | No pagination | ✅ |  ✅  |
@@ -59,6 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2026-07-28 | [68590](https://github.com/airbytehq/airbyte/pull/68590) | Add Facebook and Instagram account timeline streams by [@Anatole-DV](https://github.com/Anatole-DV) |
 | 0.0.30 | 2026-07-28 | [82987](https://github.com/airbytehq/airbyte/pull/82987) | Update dependencies |
 | 0.0.29 | 2026-07-21 | [82487](https://github.com/airbytehq/airbyte/pull/82487) | Update dependencies |
 | 0.0.28 | 2026-07-14 | [81904](https://github.com/airbytehq/airbyte/pull/81904) | Update dependencies |
