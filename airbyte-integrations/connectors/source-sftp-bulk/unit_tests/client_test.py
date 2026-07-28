@@ -166,6 +166,27 @@ def test_parse_private_key_encrypted_key_without_passphrase_has_actionable_error
     assert exc_info.value.failure_type.value == "config_error"
 
 
+def test_parse_private_key_encrypted_key_with_one_non_password_error_has_actionable_error():
+    with (
+        patch.object(paramiko.RSAKey, "from_private_key", side_effect=paramiko.SSHException("wrong type")),
+        pytest.raises(AirbyteTracedException) as exc_info,
+    ):
+        _parse_private_key(read_fixture("encrypted_ed25519"))
+
+    assert "encrypted" in exc_info.value.message
+    assert "passphrase" in exc_info.value.message
+    assert "format is not recognized" not in exc_info.value.message
+
+
+def test_parse_private_key_encrypted_key_with_empty_passphrase_requires_passphrase():
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _parse_private_key(read_fixture("encrypted_ed25519"), "")
+
+    assert "encrypted" in exc_info.value.message
+    assert "passphrase" in exc_info.value.message
+    assert "could not be decrypted" not in exc_info.value.message
+
+
 def test_parse_private_key_encrypted_key_with_wrong_passphrase_has_actionable_error():
     with pytest.raises(AirbyteTracedException) as exc_info:
         _parse_private_key(read_fixture("encrypted_ed25519"), "wrong-passphrase")

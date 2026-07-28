@@ -25,17 +25,17 @@ _KEY_CLASSES = [
 
 def _parse_private_key(private_key: str, passphrase: Optional[str] = None) -> paramiko.PKey:
     """Try each paramiko key class to auto-detect the private key type."""
-    password_required = 0
+    password_required = False
     for key_class in _KEY_CLASSES:
         try:
             return key_class.from_private_key(io.StringIO(private_key), password=passphrase)
         except PasswordRequiredException:
-            password_required += 1
+            password_required = True
         except (paramiko.SSHException, ValueError, struct.error):
             continue
-    if password_required == len(_KEY_CLASSES) and passphrase is None:
+    if password_required and not passphrase:
         message = "Private key is encrypted and requires a passphrase. Provide the Private key passphrase."
-    elif passphrase is not None:
+    elif passphrase:
         message = (
             "Private key could not be decrypted. The passphrase may be incorrect, or the key format may be unsupported. "
             "Supported types: RSA, Ed25519, ECDSA, DSS."
