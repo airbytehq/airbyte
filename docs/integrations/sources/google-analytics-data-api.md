@@ -284,6 +284,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.45 | 2026-07-26 | [76413](https://github.com/airbytehq/airbyte/pull/76413) | Surface expired/revoked OAuth refresh tokens as a `config_error` with a re-authentication message instead of a generic "Something went wrong" error |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
 | 2.9.42 | 2026-06-30 | [81086](https://github.com/airbytehq/airbyte/pull/81086) | Update dependencies |

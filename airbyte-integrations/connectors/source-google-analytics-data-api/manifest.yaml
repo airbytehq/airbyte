@@ -155,6 +155,12 @@ definitions:
     client_id: '{{ config["credentials"]["client_id"] }}'
     client_secret: '{{ config["credentials"]["client_secret"] }}'
     refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+    refresh_token_error_status_codes: [400, 401]
+    refresh_token_error_key: "error"
+    refresh_token_error_values:
+      - "invalid_grant"
+      - "invalid_client"
+      - "unauthorized_client"
   jwt_profile_assertion_oauth_authenticator:
     type: OAuthAuthenticator
     token_refresh_endpoint: https://oauth2.googleapis.com/token
