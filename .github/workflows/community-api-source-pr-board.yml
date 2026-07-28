@@ -1,8 +1,8 @@
-# Dry-run is the default. Only an explicit false value enables writes:
-# scheduled runs require ENABLE_COMMUNITY_PR_BOARD_SYNC to be exactly "true",
-# and workflow_dispatch requires dry_run=false. The max_writes input can cap
-# the first live run (0 means unlimited). The Octavia Bot app must have
-# org-level Projects: write permission for live synchronization.
+# Live synchronization is the default; scheduled runs always write. A
+# workflow_dispatch run can opt into log-only mode with dry_run=true, and the
+# max_writes input can cap a live run (0 means unlimited). Disable the workflow
+# from the Actions UI to stop synchronization entirely. The Octavia Bot app must
+# have org-level Projects: write permission for live synchronization.
 
 name: Community API source PR board sync
 
@@ -14,7 +14,7 @@ on:
       dry_run:
         description: "Log-only mode: read and report changes without writing to the project"
         required: false
-        default: true
+        default: false
         type: boolean
       max_writes:
         description: "Maximum number of PRs to write to in this run; 0 means unlimited"
@@ -40,7 +40,6 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
           MAX_WRITES_INPUT: ${{ inputs.max_writes }}
-          ENABLE_SYNC: ${{ vars.ENABLE_COMMUNITY_PR_BOARD_SYNC }}
         run: |
           set -euo pipefail
           max_writes="${MAX_WRITES_INPUT:-0}"
@@ -48,10 +47,10 @@ jobs:
             echo "::error::max_writes must be a non-negative integer; received '$max_writes'."
             exit 1
           fi
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            [[ "$INPUT_DRY_RUN" == "false" ]] && dry_run=false || dry_run=true
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$INPUT_DRY_RUN" == "true" ]]; then
+            dry_run=true
           else
-            [[ "$ENABLE_SYNC" == "true" ]] && dry_run=false || dry_run=true
+            dry_run=false
           fi
           echo "dry_run=$dry_run" >> "$GITHUB_OUTPUT"
           echo "::notice::Community API source PR board sync mode: $( [[ "$dry_run" == "true" ]] && echo DRY-RUN || echo LIVE WRITE )"
