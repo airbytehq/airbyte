@@ -190,7 +190,7 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
 :::note
-If `max_slot_wal_keep_size` is exceeded, PostgreSQL can invalidate the replication slot. The slot then has `wal_status = lost` and a null `restart_lsn`, so the connector fails the sync and cannot recover automatically. Drop and recreate the replication slot, then reset the connection for a full re-sync.
+Keep the slot healthy after you create it. If PostgreSQL invalidates the slot, or if the slot advances past the position the connector last synced from, the sync fails and you have to repair it yourself. The connector never falls back to a silent full re-sync. See [Replication slot validation failures](/integrations/sources/postgres/postgres-troubleshooting#replication-slot-validation-failures).
 :::
 
 ## Postgres Replication Methods
@@ -242,10 +242,9 @@ CDC has additional advanced settings:
 
 | Setting | Default | What it does |
 | ------- | ------- | ------------ |
-| **Initial Load Timeout in Hours** | 8 | How long the initial snapshot can run before the connector switches to reading CDC events. Accepts 4 to 24. |
+| **Initial Load Timeout in Hours** | 8 | How long the initial snapshot is allowed to run. When the timeout elapses, the snapshot stops with a timeout error and the next sync attempt picks up from the last checkpoint. Accepts 4 to 24. |
 | **LSN commit behavior** | After loading Data in the destination | When Airbyte flushes the LSN of processed WAL records. If you select **While reading Data**, a failure while loading data into the destination causes the next sync to be a full sync. |
-| **Debezium Engine Shutdown Timeout in Seconds** | 60 | How long the connector waits for the Debezium engine to shut down. Accepts 1 to 3600. |
-| **Initial Waiting Time in Seconds** | 1200 | How long the connector waits at launch to determine whether there is new data. See [Setting up initial CDC waiting time](/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time). |
+| **Initial Waiting Time in Seconds** | 1200 | How long the connector waits for the first change event before it gives up. See [Setting up initial CDC waiting time](/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time). |
 | **Debezium heartbeat query** | Empty | A query the connector runs on the source when it emits a heartbeat. See [Resolving sync failures due to WAL disk consumption](/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query). |
 
 ## Connecting with SSL or SSH Tunneling
