@@ -63,20 +63,20 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-| Stream                                                                                                                            | Full Refresh | Incremental | Cursor field   | Read once per     |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :----------- | :---------- | :------------- | :---------------- |
-| [`automations`](https://mailchimp.com/developer/marketing/api/automation/list-automations/)                                        | ✓            | ✓           | `create_time`  | account           |
-| [`campaigns`](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)                                          | ✓            | ✓           | `create_time`  | account           |
-| [`email_activity`](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)                      | ✓            | ✓           | `timestamp`    | campaign          |
-| [`interest_categories`](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/)               | ✓            |             |                | audience          |
-| [`interests`](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)                                 | ✓            |             |                | interest category |
-| [`list_members`](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                                    | ✓            | ✓           | `last_changed` | audience          |
-| [`lists`](https://mailchimp.com/developer/marketing/api/lists/get-list-info/)                                                     | ✓            | ✓           | `date_created` | account           |
-| [`reports`](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                                          | ✓            | ✓           | `send_time`    | account           |
-| [`segment_members`](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)                   | ✓            | ✓           | `last_changed` | segment           |
-| [`segments`](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                                           | ✓            | ✓           | `updated_at`   | audience          |
-| [`tags`](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)                       | ✓            |             |                | audience          |
-| [`unsubscribes`](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)                           | ✓            | ✓           | `timestamp`    | campaign          |
+| Stream | Full Refresh | Incremental | Cursor field | Read once per |
+| :--- | :--- | :--- | :--- | :--- |
+| [`automations`](https://mailchimp.com/developer/marketing/api/automation/list-automations/) | ✓ | ✓ | `create_time` | account |
+| [`campaigns`](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/) | ✓ | ✓ | `create_time` | account |
+| [`email_activity`](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/) | ✓ | ✓ | `timestamp` | campaign |
+| [`interest_categories`](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓ | | | audience |
+| [`interests`](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/) | ✓ | | | interest category |
+| [`list_members`](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/) | ✓ | ✓ | `last_changed` | audience |
+| [`lists`](https://mailchimp.com/developer/marketing/api/lists/get-list-info/) | ✓ | ✓ | `date_created` | account |
+| [`reports`](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/) | ✓ | ✓ | `send_time` | account |
+| [`segment_members`](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/) | ✓ | ✓ | `last_changed` | segment |
+| [`segments`](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/) | ✓ | ✓ | `updated_at` | audience |
+| [`tags`](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/) | ✓ | | | audience |
+| [`unsubscribes`](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/) | ✓ | ✓ | `timestamp` | campaign |
 
 Mailchimp calls audiences "lists" in its API, so the `lists` stream contains your audiences.
 
@@ -86,12 +86,12 @@ Streams read once per campaign, audience, segment, or interest category make one
 
 Most streams use `id` as their primary key. These streams use composite keys instead:
 
-| Stream            | Primary key                            |
-| :---------------- | :------------------------------------- |
-| `email_activity`  | `timestamp`, `email_id`, `action`      |
-| `list_members`    | `id`, `list_id`                        |
-| `segment_members` | `id`, `segment_id`                     |
-| `unsubscribes`    | `campaign_id`, `email_id`, `timestamp` |
+| Stream | Primary key |
+| :--- | :--- |
+| `email_activity` | `timestamp`, `email_id`, `action` |
+| `list_members` | `id`, `list_id` |
+| `segment_members` | `id`, `segment_id` |
+| `unsubscribes` | `campaign_id`, `email_id`, `timestamp` |
 
 ### Incremental syncs
 
