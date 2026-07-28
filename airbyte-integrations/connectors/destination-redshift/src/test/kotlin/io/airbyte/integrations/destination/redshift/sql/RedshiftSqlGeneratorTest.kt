@@ -405,7 +405,7 @@ internal class RedshiftSqlGeneratorTest {
             )
         )
         // Should NOT have the 4-way cursor comparison
-        assertFalse(sql.contains("IS NULL AND deduped_source."))
+        assertFalse(sql.contains(""""updated_at" IS NULL"""))
     }
 
     @Test
@@ -438,6 +438,95 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains(""""_ab_cdc_deleted_at" IS NULL"""))
+    }
+
+    // ================================================================
+    // Upsert: NULL-safe primary key matching
+    // ================================================================
+
+    /**
+     * A composite primary key with a nullable column must not be matched with plain `=`: `NULL =
+     * NULL` is UNKNOWN, so the UPDATE would match nothing and the INSERT would append a duplicate
+     * row on every sync.
+     */
+    private fun assertNullSafePkMatch(sql: String, pk: String) {
+        assertTrue(
+            sql.contains(
+                """("ns"."final".$pk = deduped_source.$pk OR ("ns"."final".$pk IS NULL AND deduped_source.$pk IS NULL))"""
+            ),
+            "Expected NULL-safe matching for PK $pk in:\n$sql",
+        )
+    }
+
+    @Test
+    fun `updateExistingRows matches nullable primary key columns NULL-safely`() {
+        val sql =
+            sqlGenerator.updateExistingRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = TableName(namespace = "ns", name = "final"),
+                allTargetColumns = listOf(""""accountid"""", """"adgroupid"""", """"name""""),
+                primaryKeyTargetColumns = listOf(""""accountid"""", """"adgroupid""""),
+                cursorTargetColumn = """"updated_at"""",
+                cdcHardDeleteEnabled = false,
+            )
+
+        assertNullSafePkMatch(sql, """"accountid"""")
+        assertNullSafePkMatch(sql, """"adgroupid"""")
+    }
+
+    @Test
+    fun `insertNewRows matches nullable primary key columns NULL-safely`() {
+        val sql =
+            sqlGenerator.insertNewRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = TableName(namespace = "ns", name = "final"),
+                allTargetColumns = listOf(""""accountid"""", """"adgroupid"""", """"name""""),
+                primaryKeyTargetColumns = listOf(""""accountid"""", """"adgroupid""""),
+                cdcHardDeleteEnabled = false,
+            )
+
+        assertNullSafePkMatch(sql, """"accountid"""")
+        assertNullSafePkMatch(sql, """"adgroupid"""")
+    }
+
+    @Test
+    fun `upsertTable CDC delete matches nullable primary key columns NULL-safely`() {
+        val finalSchema =
+            mapOf(
+                "accountid" to ColumnType("bigint", false),
+                "adgroupid" to ColumnType("bigint", true),
+                "name" to ColumnType("varchar(65535)", true),
+                "updated_at" to ColumnType("timestamptz", true),
+                CDC_DELETED_AT_COLUMN to ColumnType("timestamptz", true),
+            )
+        val stream =
+            mockStream(
+                finalSchema = finalSchema,
+                inputSchema =
+                    mapOf(CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, true)),
+                primaryKey = listOf(listOf("accountid"), listOf("adgroupid")),
+                cursor = listOf("updated_at"),
+            )
+
+        val sql =
+            sqlGenerator.upsertTable(
+                stream,
+                TableName(namespace = "ns", name = "staging"),
+                TableName(namespace = "ns", name = "final"),
+            )
+
+        val dedup = """"_airbyte_dedup_ns_staging""""
+        val deleteStatement = sql.substringAfter("DELETE FROM").substringBefore(";")
+        listOf(""""accountid"""", """"adgroupid"""").forEach { pk ->
+            assertTrue(
+                deleteStatement.contains(
+                    """("ns"."final".$pk = $dedup.$pk OR ("ns"."final".$pk IS NULL AND $dedup.$pk IS NULL))"""
+                ),
+                "Expected NULL-safe matching for PK $pk in:\n$deleteStatement",
+            )
+        }
+        // No bare equality on a PK column anywhere in the upsert
+        assertFalse(sql.contains(""""ns"."final"."adgroupid" = $dedup."adgroupid" AND"""))
     }
 
     // ================================================================

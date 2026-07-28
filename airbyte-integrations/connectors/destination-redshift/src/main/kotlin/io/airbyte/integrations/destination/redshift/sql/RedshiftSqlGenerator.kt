@@ -232,9 +232,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Step 2: CDC hard-delete (if enabled)
         if (cdcHardDeleteEnabled) {
             val primaryKeysMatchingCondition =
-                primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupRef.$pk"
-                }
+                buildPrimaryKeyMatch(primaryKeyTargetColumns, targetTableName, dedupRef)
             val cursorComparison =
                 buildCursorComparison(cursorTargetColumn, targetTableName, dedupRef)
             statements.add(
@@ -308,9 +306,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysMatches =
-            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
-            }
+            buildPrimaryKeyMatch(primaryKeyTargetColumns, targetTableName, dedupTableAlias)
 
         val cursorComparison =
             buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
@@ -352,9 +348,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysConditions =
-            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
-            }
+            buildPrimaryKeyMatch(primaryKeyTargetColumns, targetTableName, dedupTableAlias)
 
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
@@ -377,6 +371,27 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |    WHERE $primaryKeysConditions
             |  )$skipCdcDeletedClause
         """.trimMargin()
+    }
+
+    /**
+     * Builds a NULL-safe primary key matching condition between the target table and the deduped
+     * source table.
+     *
+     * Plain `=` is not usable here: for a nullable PK column, `NULL = NULL` evaluates to UNKNOWN,
+     * so rows keyed by a NULL PK value never match an existing target row. That makes the UPDATE a
+     * no-op and the `INSERT ... WHERE NOT EXISTS` insert a fresh copy on every sync. Redshift does
+     * not support `IS [NOT] DISTINCT FROM`, so we expand to the portable
+     * `(a = b OR (a IS NULL AND b IS NULL))` form used by the other destinations.
+     */
+    private fun buildPrimaryKeyMatch(
+        primaryKeyTargetColumns: List<String>,
+        targetTableName: TableName,
+        dedupTableAlias: String,
+    ): String {
+        val target = getFullyQualifiedName(targetTableName)
+        return primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+            "($target.$pk = $dedupTableAlias.$pk OR ($target.$pk IS NULL AND $dedupTableAlias.$pk IS NULL))"
+        }
     }
 
     /**
