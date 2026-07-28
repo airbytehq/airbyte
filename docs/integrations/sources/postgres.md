@@ -188,6 +188,10 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 
 In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
+:::note
+If `max_slot_wal_keep_size` is exceeded, PostgreSQL can invalidate the replication slot. The slot then has `wal_status = lost` and a null `restart_lsn`, so the connector fails the sync and cannot recover automatically. Drop and recreate the replication slot, then reset the connection for a full re-sync.
+:::
+
 ## Postgres Replication Methods
 
 The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.

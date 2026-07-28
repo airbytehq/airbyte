@@ -91,8 +91,7 @@ class ReplicationSlotManager(
             throw ConfigErrorException(
                 "Replication slot '$slot' is not valid: " +
                     "wal_status = '${slotInfo.walStatus}', " +
-                    "invalidation_reason = '${slotInfo.invalidationReason}'. " +
-                    "Drop and recreate the replication slot, then reset the connection for a full re-sync."
+                    "invalidation_reason = '${slotInfo.invalidationReason}'."
             )
         }
         if (slotInfo.confirmedFlushLsn != null) {
