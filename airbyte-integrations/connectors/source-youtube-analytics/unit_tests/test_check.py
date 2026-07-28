@@ -10,16 +10,8 @@ YouTube Reporting API to have (or be able to create) a reporting job for that st
 The report type `channel_annotations_a1` was retired by the YouTube Reporting API, so a job
 can no longer be found or created for it. When `check` targeted `channel_annotations_a1`, no
 partitions could be generated and setup failed with "no stream slices were found" (oncall
-#13144).
-
-Two changes in v1.2.12 addressed this. First, `check` was pointed at `channel_basic_a3`, which
-stopped the setup failure. Second, the annotations stream was moved to the current
-`channel_annotations_a2` report, along with `channel_end_screens_a2` and
-`channel_sharing_service_a2`, so the manifest no longer requests any retired report type.
-
-These tests remain as regression guards: `check` must target a currently-supported report type
-and succeed, and it must never fall back to creating a reporting job -- the failure mode that
-surfaces when no job exists for the target report type.
+#13144). These tests assert that `check` targets a currently-supported report type and
+succeeds, and that it does not depend on the deprecated `channel_annotations_a1` job.
 """
 
 import logging
@@ -41,12 +33,10 @@ _JOBS_URL = "https://youtubereporting.googleapis.com/v1/jobs"
 _REPORTS_URL = "https://youtubereporting.googleapis.com/v1/jobs/job-basic/reports"
 _DOWNLOAD_URL = "https://youtubereporting.example/download/rep1"
 
-# The report type the check stream is expected to use. The mocked jobs list below contains a
-# job for only this report type, so `check` targeting anything else shows up as a
-# job-creation POST.
+# Report type the check stream is expected to use after the fix. `channel_annotations_a1`
+# is deprecated and no reporting job exists for it, so it is intentionally absent from the
+# mocked jobs list below.
 _SUPPORTED_REPORT_TYPE = "channel_basic_a3"
-# A report type retired by the Reporting API, used only to mock the 400 the API returns for
-# job creation. No stream in the manifest requests it any more.
 _DEPRECATED_REPORT_TYPE = "channel_annotations_a1"
 
 
@@ -88,12 +78,11 @@ def test_check_succeeds_with_supported_report_type():
 
 
 def test_check_does_not_use_deprecated_annotations_stream():
-    """`check` must not depend on a reporting job that does not already exist.
+    """`check` must not depend on the retired `channel_annotations_a1` job.
 
-    The mocked jobs list holds a job only for `_SUPPORTED_REPORT_TYPE`. If the check stream
-    targeted a report type without a job -- as it did when it used the retired
-    `channel_annotations_a1` -- the connector would try to create one, and the mocked API would
-    reject that with a 400, failing the check.
+    If the check stream were `channel_annotations_a1`, the connector would attempt to create a
+    job for it (the deprecated report type is absent from the jobs list) and the mocked API
+    would reject that with a 400, causing the check to fail.
     """
     source = get_source(config=_CONFIG)
     with requests_mock.Mocker() as mocker:
