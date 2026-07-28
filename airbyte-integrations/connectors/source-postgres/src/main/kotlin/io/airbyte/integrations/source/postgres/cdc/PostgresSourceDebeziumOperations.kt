@@ -356,13 +356,12 @@ class PostgresSourceDebeziumOperations(
                         else Jsons.numberNode(BigDecimal(input.textValue()))
                     }
                     // Debezium may emit non-textual nodes for columns that map to StringFieldType.
-                    // For structured nodes (ObjectNode/ArrayNode), serialize to JSON string to
-                    // preserve data; asText() on these types returns "" and loses content.
+                    // asText() only yields a valid representation for value nodes; anything else
+                    // has to be serialized, otherwise its content is silently lost.
                     StringFieldType ->
                         if (input.isTextual) input
-                        else if (input.isContainerNode)
-                            Jsons.textNode(Jsons.writeValueAsString(input))
-                        else Jsons.textNode(input.asText())
+                        else if (input.isValueNode) Jsons.textNode(input.asText())
+                        else Jsons.textNode(Jsons.writeValueAsString(input))
                     else -> input
                 }
             return Result.success(mappedValue)
