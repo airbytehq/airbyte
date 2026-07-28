@@ -521,7 +521,49 @@ class Client:
         # Load workbook with data-only to avoid loading formulas
         work_book = load_workbook(filename=file, data_only=True, read_only=True)
 
-        for sheetname in work_book.sheetnames:
+        sheet_name_option = kwargs.get("sheet_name")
+        if sheet_name_option is None:
+            sheet_name_option = kwargs.get("sheet_names")
+
+        if sheet_name_option is None:
+            target_sheets = work_book.sheetnames
+        else:
+            if isinstance(sheet_name_option, (list, tuple, set)):
+                requested_sheets = list(sheet_name_option)
+            else:
+                requested_sheets = [sheet_name_option]
+
+            normalized_sheets = []
+            for requested_sheet in requested_sheets:
+                if isinstance(requested_sheet, int):
+                    try:
+                        normalized_sheets.append(work_book.sheetnames[requested_sheet])
+                    except IndexError as err:
+                        raise AirbyteTracedException(
+                            message="Sheet index is out of range for the provided Excel file.",
+                            internal_message=f"Sheet index {requested_sheet} does not exist.",
+                            failure_type=FailureType.config_error,
+                        ) from err
+                elif isinstance(requested_sheet, str):
+                    normalized_sheets.append(requested_sheet)
+                else:
+                    raise AirbyteTracedException(
+                        message="Invalid sheet_name reader option provided.",
+                        internal_message="sheet_name must be a string, integer index, or a list of those values.",
+                        failure_type=FailureType.config_error,
+                    )
+
+            missing_sheets = [sheet for sheet in normalized_sheets if sheet not in work_book.sheetnames]
+            if missing_sheets:
+                raise AirbyteTracedException(
+                    message="One or more sheet names were not found in the Excel file.",
+                    internal_message=f"Missing sheets: {missing_sheets}",
+                    failure_type=FailureType.config_error,
+                )
+
+            target_sheets = normalized_sheets
+
+        for sheetname in target_sheets:
             work_sheet = work_book[sheetname]
             data = list(work_sheet.iter_rows(values_only=True))
 
