@@ -4,8 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-import pytest
-
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
