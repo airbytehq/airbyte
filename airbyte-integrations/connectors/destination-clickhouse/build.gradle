@@ -5,6 +5,8 @@ plugins {
     id 'airbyte-connector-docker-convention'
 }
 
+// Baseline probe: no dependency change.
+
 airbyteBulkConnector {
     core = 'load'
 }

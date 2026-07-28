@@ -4,6 +4,8 @@ plugins {
     id 'airbyte-connector-docker-convention'
 }
 
+// Baseline probe: no dependency change.
+
 airbyteJavaConnector {
     cdkVersionRequired = '0.20.4'
     features = ['db-sources']
