@@ -6,7 +6,7 @@ data:
     hosts:
       - api.notion.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7@sha256:c8318a72046a68ab48bd5bd57adb459d5a69dead827356f19c2ef78fbecfe0c9
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7.post4.dev30357014888@sha256:ee7f99ddd45a7be1c364e2a298fade8361a865eb498c86ab6a172511becf5338
   connectorSubtype: api
   connectorType: source
   definitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
