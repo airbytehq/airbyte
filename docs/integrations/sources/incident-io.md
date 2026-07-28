@@ -15,35 +15,38 @@ For more information about the API, see the [Incident.io API reference](https://
 2. On the Set up the source page, select **Incident.io** from the Source type dropdown.
 3. Enter a name for the source.
 4. For **API Key**, enter the API key you created in your Incident.io dashboard.
-5. Click **Set up source**.
+5. Optionally, for **Start Date**, enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Incremental streams only replicate data at or after this date. If you leave it empty, the connector replicates from 2020-01-01T00:00:00Z.
+6. Click **Set up source**.
 
 ## Supported sync modes
 
 The Incident.io source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
+- Incremental (`incidents`, `alerts`, and `escalations` only)
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.incident.io/settings/api-keys | |
+| `start_date` | `string` | Start Date. Earliest UTC date and time to replicate for incremental streams. | `2020-01-01T00:00:00Z` |
 
 ## Streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | actions | id | No pagination | ✅ | ❌ |
-| alerts | id | DefaultPaginator | ✅ | ❌ |
+| alerts | id | DefaultPaginator | ✅ | ✅ |
 | catalog_types | id | No pagination | ✅ | ❌ |
 | custom_fields | id | No pagination | ✅ | ❌ |
-| escalations | id | DefaultPaginator | ✅ | ❌ |
+| escalations | id | DefaultPaginator | ✅ | ✅ |
 | follow-ups | id | No pagination | ✅ | ❌ |
 | incident_roles | id | No pagination | ✅ | ❌ |
 | incident_statuses | id | No pagination | ✅ | ❌ |
 | incident_timestamps | id | No pagination | ✅ | ❌ |
 | incident_updates | id | DefaultPaginator | ✅ | ❌ |
-| incidents | id | DefaultPaginator | ✅ | ❌ |
+| incidents | id | DefaultPaginator | ✅ | ✅ |
 | schedules | id | DefaultPaginator | ✅ | ❌ |
 | severities | id | No pagination | ✅ | ❌ |
 | users | id | DefaultPaginator | ✅ | ❌ |
@@ -52,6 +55,8 @@ The Incident.io source connector supports the following [sync modes](https://doc
 ## Limitations and troubleshooting
 
 The Incident.io API has a default rate limit of 1,200 requests per minute per API key. If the connector encounters rate limiting, it retries with exponential backoff.
+
+Only the `incidents`, `alerts`, and `escalations` endpoints support server-side timestamp filtering, so they are the only incremental streams. `incidents` and `escalations` use `updated_at` as the cursor; `alerts` uses `created_at`, because the Incident.io alerts endpoint does not document an `updated_at` filter. The API accepts date-granular filter values, so each incremental sync re-reads records from the start of the day the previous sync ended on.
 
 ## IP allow list
 
@@ -64,6 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-07-28 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add incremental sync support for the `incidents`, `alerts`, and `escalations` streams, and add an optional `start_date` config field |
 | 0.1.34 | 2026-07-28 | [82950](https://github.com/airbytehq/airbyte/pull/82950) | Update dependencies |
 | 0.1.33 | 2026-07-21 | [82451](https://github.com/airbytehq/airbyte/pull/82451) | Update dependencies |
 | 0.1.32 | 2026-07-14 | [81861](https://github.com/airbytehq/airbyte/pull/81861) | Update dependencies |
