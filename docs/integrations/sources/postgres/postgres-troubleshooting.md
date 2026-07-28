@@ -109,17 +109,21 @@ Possible solutions include:
 
 Before it reads changes, the connector checks that your replication slot still holds the WAL position it synced from last time. If that check fails, the sync fails with a configuration error and stops. The connector doesn't silently fall back to a full re-sync, so no data is lost or duplicated without you knowing, but you do have to repair the slot and refresh the affected streams.
 
-There are two failure messages.
+The connector reports two failure messages.
 
 **The slot is no longer valid:**
 
-> Replication slot 'airbyte_slot' is not valid: wal_status = 'lost', invalidation_reason = '...'.
+```text
+Replication slot 'airbyte_slot' is not valid: wal_status = 'lost', invalidation_reason = '...'.
+```
 
 PostgreSQL invalidated the slot and discarded the WAL it was holding, most often because the slot fell further behind than [`max_slot_wal_keep_size`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-SLOT-WAL-KEEP-SIZE) allows. The slot's `restart_lsn` is now null. `invalidation_reason` is only reported on PostgreSQL 17 and later.
 
 **The slot moved past the connector's saved position:**
 
-> Replication slot 'airbyte_slot' has advanced beyond the source's state LSN. Confirmed flush LSN: 0/1A2B3C4D, source LSN: 0/1A2B0000.
+```text
+Replication slot 'airbyte_slot' has advanced beyond the source's state LSN. Confirmed flush LSN: 0/1A2B3C4D, source LSN: 0/1A2B0000.
+```
 
 Something else consumed the slot, or the slot was dropped and recreated, so the changes the connector still needs are gone. Sharing one slot between two sources or two Airbyte instances causes this. Each Postgres source needs its own slot.
 
