@@ -88,12 +88,12 @@ Creating a service account and downloading its JSON key doesn't give it permissi
 | :------ | :-------- | :------------ |
 | **Property IDs** (required) | — | The numeric IDs of the GA4 properties to sync. |
 | **Start Date** | 730 days before the sync | The earliest date to replicate, in `YYYY-MM-DD` format. Doesn't apply to cohort reports. |
-| **End Date** | Today | The latest date to replicate, in `YYYY-MM-DD` format. If you leave it empty or set a future date, the connector syncs through today. Doesn't apply to cohort reports. |
+| **End Date** | Today | The latest date to replicate, in `YYYY-MM-DD` format. If you leave it empty, the connector syncs through today. Doesn't apply to cohort reports. |
 | **Custom Reports** | — | Extra reports to sync, each with its own dimensions, metrics, and optional filters. See [Custom reports](#custom-reports). |
 | **Data Request Interval (Days)** | 1 | The size in days of each date range the connector requests, from 1 to 364. Larger values sync faster but increase the chance of sampling. Doesn't apply to cohort reports. See [Data sampling and data request intervals](#data-sampling-and-data-request-intervals). |
 | **Lookback window (Days)** | 2 | How many days before the last synced date each incremental sync re-reads, from 2 to 60. Attribution and Google's processing latency both change recent data after the fact, so a lookback window keeps recent rows accurate. |
 | **Keep Empty Rows** | Off | When on, the connector keeps rows whose metrics are all `0`. When off, Google omits them. |
-| **Convert `conversions:*` Metrics to Float** | Off | When on, the connector emits `conversions:*` metrics as floats instead of integers, which prevents rounding when the API returns fractional values. |
+| **Convert `conversions:*` Metrics to Float** | Off | This option is currently not used by the connector. |
 | **Subscription Plan/Tier** | Standard Property | The quota tier of your properties. Select **Analytics 360 Property** only if every property ID in the config belongs to an Analytics 360 subscription. See [Performance considerations](#performance-considerations). |
 
 ## Supported sync modes
@@ -282,7 +282,7 @@ Dimensions such as `month` and `yearMonth` group data within each requested date
 
 The Data API enforces [quotas](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas) per property. Core quotas are much larger for Analytics 360 properties than for standard ones, including concurrent requests and hourly and daily token budgets. The connector uses the **Subscription Plan/Tier** option to pick which request rate it applies locally, so setting it to **Analytics 360 Property** when your properties are standard makes the connector send requests faster than the API allows, which produces quota errors.
 
-Requests that hit a quota or another retryable error are retried up to 10 times, 30 seconds apart. Permission errors and invalid requests aren't retried: the connector fails the sync immediately with the message the API returned, because retrying can't fix them.
+Requests that hit a quota or another retryable error are retried up to 10 times, 30 seconds apart. HTTP 400 responses and responses whose API status is `PERMISSION_DENIED` fail immediately as `config_error`; other HTTP 403 responses are retried.
 
 Report requests page through results 100,000 rows at a time. Pivot reports aren't paginated, so the row limits in the pivot definition determine how much data a pivot report returns.
 
