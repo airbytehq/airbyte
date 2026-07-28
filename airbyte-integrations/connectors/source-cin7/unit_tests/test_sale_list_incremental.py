@@ -1,7 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime
 from pathlib import Path
 
 import yaml
+
 from airbyte_cdk.legacy.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 
 
