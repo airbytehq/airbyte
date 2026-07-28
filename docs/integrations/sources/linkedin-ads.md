@@ -223,6 +223,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 6.0.0 | 2026-07-21 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Batch analytics requests for `ad_campaign_analytics`, `ad_creative_analytics`, and `ad_impression_device_analytics` in groups of up to 50, reducing sync time by approximately 98% for large accounts. Breaking change for `ad_impression_device_analytics` only: its primary key now includes `sponsoredCampaign`, preventing records from different campaigns from being collapsed in deduplication mode. Refresh the source schema after upgrading; deduplication users should refresh this stream to rebuild destination data. |
+| 5.6.13 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 5.6.12 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 5.6.10 — 5.6.11 is built on SDM 7.23.7, which breaks bundled custom components |
 | 5.6.11 | 2026-07-28 | [83018](https://github.com/airbytehq/airbyte/pull/83018) | Update dependencies |
 | 5.6.10 | 2026-07-21 | [77286](https://github.com/airbytehq/airbyte/pull/77286) | Update dependencies |
@@ -232,7 +233,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
 | 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
-| 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for rate-limit-specific backoff |
+| 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
 | 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
 | 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
 | 5.6.2 | 2026-01-20 | [72028](https://github.com/airbytehq/airbyte/pull/72028) | Update dependencies |
