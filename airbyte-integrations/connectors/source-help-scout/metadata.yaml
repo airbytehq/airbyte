@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 96377d38-0bc6-47c0-9c84-c0fcc0f8ce40
-  dockerImageTag: 0.0.47
+  dockerImageTag: 0.0.48
   dockerRepository: airbyte/source-help-scout
   githubIssueLabel: source-help-scout
   icon: icon.svg
