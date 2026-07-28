@@ -599,6 +599,9 @@ definitions:
                 - pivot
               value: "CAMPAIGN"
               value_type: string
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.LinkedInAdsPerPartitionToGlobalStateMigration
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -678,6 +681,9 @@ definitions:
                 - pivot
               value: "CREATIVE"
               value_type: string
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.LinkedInAdsPerPartitionToGlobalStateMigration
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -759,6 +765,9 @@ definitions:
                 - pivot
               value: "IMPRESSION_DEVICE_TYPE"
               value_type: string
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.LinkedInAdsPerPartitionToGlobalStateMigration
       schema_loader:
         type: InlineSchemaLoader
         schema:

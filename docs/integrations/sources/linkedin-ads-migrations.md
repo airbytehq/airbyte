@@ -9,6 +9,7 @@ LinkedIn Ads v6.0.0 batches analytics requests for up to 50 campaigns at a time 
 - `ad_impression_device_analytics`
 
 This non-breaking performance improvement reduces sync time by approximately 98% for these streams on large accounts.
+The connector automatically converts legacy per-campaign and per-creative state to the earliest saved cursor before the first batched sync. This may re-read some records, but it prevents lagging campaigns or creatives from being skipped and requires no migration action.
 
 The breaking change in this release is limited to `ad_impression_device_analytics`. Its primary key now includes `sponsoredCampaign`, which keeps records from different campaigns with the same device type and date distinct. This fixes incomplete data in deduplication mode, where those records could previously be collapsed into one row.
 

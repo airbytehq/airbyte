@@ -104,8 +104,8 @@ data:
         upgradeDeadline: "2024-12-10"
         deadlineAction: "auto_upgrade"
       6.0.0:
-        message: The ad_impression_device_analytics primary key now includes sponsoredCampaign. This prevents records from different campaigns with the same device type and date from sharing a primary key, fixing incomplete data in deduplication mode. Refresh the source schema after upgrading. If this stream uses deduplication, refresh it to rebuild the affected destination data.
-        upgradeDeadline: "2026-08-23"
+        message: The ad_impression_device_analytics primary key now includes sponsoredCampaign. This prevents records from different campaigns with the same device type and date from sharing a primary key, fixing incomplete data in deduplication mode. Refresh the source schema after upgrading. If this stream uses deduplication, refresh it to rebuild the affected destination data. See the [LinkedIn Ads migration guide](https://docs.airbyte.com/integrations/sources/linkedin-ads-migrations#upgrading-to-600) for instructions.
+        upgradeDeadline: "2026-08-28"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream

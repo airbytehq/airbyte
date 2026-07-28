@@ -68,6 +68,11 @@ and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` 
 Impression-device analytics can return at most 7,750 rows for the five documented device categories
 over the same range.
 
+Grouping changes partition membership, so the three batched streams use a global substream cursor.
+`LinkedInAdsPerPartitionToGlobalStateMigration` converts legacy per-entity state to the earliest
+`end_date` before the first batched sync. This can re-read records from entities that were already
+ahead, but it prevents grouped partitions from skipping data for entities that were behind.
+
 The primary key for `ad_impression_device_analytics` is
 `["string_of_pivot_values", "end_date", "sponsoredCampaign"]`. The campaign field is required because
 `string_of_pivot_values` contains only the device type after the `CAMPAIGN` pivot is moved to
