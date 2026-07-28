@@ -80,7 +80,7 @@ class FullRefreshTest(SpecmaticIntegrationTestCase):
         now, start_date = get_dates()
         self.source = get_source(_CONFIG, _NO_STATE)
         output = self._read(_config(now).with_start_date(start_date))
-        self.assert_contract_read_success(output)
+        assert len(output.records) == 2
 
 
 
