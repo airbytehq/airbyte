@@ -2,17 +2,6 @@
 
 The ClickHouse destination connector syncs data from Airbyte sources to [ClickHouse](https://clickhouse.com/), a high-performance columnar database designed for online analytical processing (OLAP). This connector writes data directly to ClickHouse tables with proper typing, enabling fast analytical queries on your replicated data.
 
-This is a complete rewrite of the ClickHouse destination connector built on Airbyte's Bulk CDK framework, replacing the legacy v1 connector.
-
-## How version 2 improves on version 1
-
-Version 2.0.0 represents a complete architectural redesign of the ClickHouse destination connector with significant improvements:
-
-- **All sync modes supported**: Full Refresh (Overwrite and Append) and Incremental (Append and Append + Deduped) sync modes are now fully supported.
-- **[Direct Load](/platform/using-airbyte/core-concepts/direct-load-tables) with typed columns**: Airbyte writes data directly to typed columns matching your source schema, rather than storing everything as JSON in raw tables. This improves query performance and reduces storage requirements.
-- **Improved performance**: The new architecture uses ClickHouse's native binary protocol and batch inserts for faster data loading.
-- **Active maintenance**: Built on Airbyte's modern CDK framework with ongoing development and support from the Airbyte team.
-
 ## Supported sync modes
 
 | Sync mode | Supported? |
@@ -23,28 +12,27 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
+Deduplication uses ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) for details.
 
 ## Deduplication
 
-For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+For best deduplication behavior in deduped sync modes, use a cursor column that maps to one of these ClickHouse version-column types:
 
-- Integer types (`Int64`, etc.)
-- Date
-- Timestamp (`DateTime64`)
+- `Int64`
+- `Date32`
+- `DateTime64(3)`
 
-If you use a different cursor column type, like `string`, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect the natural ordering of your source data, and you'll see a warning in the sync logs.
+If the cursor maps to another type, such as `String`, the connector falls back to `_airbyte_extracted_at` for deduplication ordering. This fallback may not match the natural ordering of your source data, and you'll see a warning in the sync logs. The connector also falls back to `_airbyte_extracted_at` for CDC cursors, because CDC cursors can be `NULL` during the initial CDC snapshot.
 
 :::warning
 
-Airbyte's ClickHouse connector leverages the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
-To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
+The ClickHouse connector uses the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine for deduplication. ClickHouse deduplicates rows during background merges, so duplicate rows can still appear before a merge completes. To guarantee deduplicated results at query time, add the `FINAL` operator to your query. For example:
 
 ```sql
 SELECT * FROM your_table FINAL
 ```
 
-Without this, you may see duplicated or deleted results when querying your data.
+Without `FINAL`, queries may return duplicate rows until ClickHouse merges the affected parts.
 
 :::
 
@@ -57,7 +45,7 @@ To use the ClickHouse destination connector, you need:
 - A ClickHouse instance (ClickHouse Cloud or self-hosted)
 - ClickHouse server version 21.8.10.19 or later
 - Network access from Airbyte to your ClickHouse instance
-- A ClickHouse user with appropriate permissions (see below)
+- A ClickHouse user with permissions to create databases; create, alter, drop, truncate, and exchange tables; and insert and select data
 
 ## Setup guide
 
@@ -72,7 +60,7 @@ Ensure your ClickHouse database is accessible from Airbyte.
 | Self-managed       | Cloud                 | Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings.                                                                                                                   |
 | Self-managed       | Self-managed          | Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them. |
 
-If you can't expose ClickHouse publicly, use SSH Tunneling via a bastion host that can reach ClickHouse.
+If you can't expose ClickHouse publicly, use SSH tunneling through a bastion host that can reach ClickHouse.
 
 ### 2. Create a dedicated user with permissions
 
@@ -80,13 +68,7 @@ If you can't expose ClickHouse publicly, use SSH Tunneling via a bastion host th
 It's best to create a dedicated ClickHouse user for Airbyte rather than using an existing user. This improves security and makes it easier to audit Airbyte's database operations.
 :::
 
-Create a ClickHouse user for Airbyte with the following permissions:
-
-- Create and manage databases
-- Create, alter, drop, and truncate tables
-- Insert and select data
-
-To create a user with the required permissions, run the following SQL commands in your ClickHouse instance:
+Create a ClickHouse user for Airbyte with permissions to create databases; create, alter, drop, truncate, and exchange tables; and insert and select data. To create a user with the required permissions, run the following SQL commands in your ClickHouse instance:
 
 ```sql
 -- Create the user (replace 'your_password' with a secure password)
@@ -95,31 +77,19 @@ CREATE USER airbyte_user IDENTIFIED BY 'your_password';
 -- If async_insert is enabled in ClickHouse, disable it for the Airbyte user to ensure connection checks and data syncs work correctly. This fixes the "Error: Failed to insert expected rows into check table. Actual written: 0" error.
 ALTER USER airbyte_user SETTINGS async_insert = 0;
 
--- Grant permissions on the default database
-GRANT CREATE ON * TO airbyte_user;
-GRANT CREATE ON {database}.* TO airbyte_user;
-GRANT ALTER ON {database}.* TO airbyte_user;
-GRANT TRUNCATE ON {database}.* TO airbyte_user;
-GRANT INSERT ON {database}.* TO airbyte_user;
-GRANT SELECT ON {database}.* TO airbyte_user;
-GRANT CREATE DATABASE ON {database}.* TO airbyte_user;
-GRANT CREATE TABLE ON {database}.* TO airbyte_user;
-GRANT DROP TABLE ON {database}.* TO airbyte_user;
+-- Grant permissions on the configured database
+GRANT CREATE DATABASE ON *.* TO airbyte_user;
+GRANT CREATE TABLE, ALTER TABLE, DROP TABLE, TRUNCATE, INSERT, SELECT ON {database}.* TO airbyte_user;
 ```
 
 Replace `{database}` with the database name you configure in the connector settings. It's typically `default`.
 
-If you configure custom namespaces in your Airbyte connections, grant permissions for each namespace:
+The connector also creates temporary tables and uses ClickHouse `EXCHANGE TABLES` while running overwrite, refresh, and deduplication operations. Make sure the Airbyte user can perform these table-management operations in the target database.
+
+If you configure custom namespaces in your Airbyte connections, each namespace maps to a ClickHouse database. Grant permissions for each namespace:
 
 ```sql
-GRANT CREATE ON {namespace}.* TO airbyte_user;
-GRANT ALTER ON {namespace}.* TO airbyte_user;
-GRANT TRUNCATE ON {namespace}.* TO airbyte_user;
-GRANT INSERT ON {namespace}.* TO airbyte_user;
-GRANT SELECT ON {namespace}.* TO airbyte_user;
-GRANT CREATE DATABASE ON {namespace}.* TO airbyte_user;
-GRANT CREATE TABLE ON {namespace}.* TO airbyte_user;
-GRANT DROP TABLE ON {namespace}.* TO airbyte_user;
+GRANT CREATE TABLE, ALTER TABLE, DROP TABLE, TRUNCATE, INSERT, SELECT ON {namespace}.* TO airbyte_user;
 ```
 
 Replace `{namespace}` with each custom namespace you plan to use.
@@ -136,8 +106,8 @@ Replace `{namespace}` with each custom namespace you plan to use.
     - **Database**: Target database name (default: `default`)
     - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
     - **Password**: The password for the ClickHouse user
-    - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
-    - **Record Window Size** (advanced): The maximum number of records to write in a single batch. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
+    - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields. This setting is disabled by default. Enable it only if your ClickHouse version supports the `JSON` type and you want object fields written as structured JSON instead of strings.
+    - **Record Window Size** (advanced): The maximum number of records to write in a single batch. The default is `100000`. Tuning this parameter can impact performance. Each batch is also capped at an estimated 50 MB regardless of this setting. Most users don't need to change this value.
 
 ### 4. SSH tunnel (optional)
 
@@ -153,22 +123,41 @@ Airbyte writes each stream to its own table in ClickHouse. It creates tables in 
 
 The connector converts Airbyte data types to ClickHouse types as follows:
 
-- **Decimal** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
-- **Timestamp** types → `DateTime64(3)` (millisecond precision)
-- **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise → `String`
-- **Integer** types → `Int64`
 - **Boolean** types → `Bool`
+- **Date** types → `Date32`
+- **Decimal and number** types → `Decimal(38, 9)` (38 digit precision with 9 decimal places)
+- **Integer** types → `Int64`
+- **Object** types → `JSON` if you enable JSON in the connector configuration, otherwise `String`
 - **String** types → `String`
+- **Timestamp** types → `DateTime64(3)` (millisecond precision)
+- **Time** types → `String`
 - **Union** types → `String`
 - **Array** types → `String`
+- **Unknown** types → `String`
 
 :::note
-The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
+The connector converts arrays, unions, time values, and unknown types to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database. If a stream has no namespace, the connector writes it to the database configured in the destination settings. Grant the Airbyte user permissions for each namespace database before syncing streams that use custom namespaces.
+
+## Reference
+
+For programmatic configuration, use these parameter names.
+
+| Field | Required | Description |
+| ----- | :------: | ----------- |
+| `host` | Yes | ClickHouse server hostname. Don't include `http://` or `https://`. |
+| `port` | Yes | HTTP interface port. Defaults to `8443` for HTTPS. Use `8123` for HTTP. |
+| `protocol` | Self-managed only | Connection protocol. Valid values are `http` and `https`. Airbyte Cloud always uses HTTPS. |
+| `database` | No | Target database for streams without a namespace. Defaults to `default`. |
+| `username` | Yes | ClickHouse username. Defaults to `default`. |
+| `password` | Yes | ClickHouse password. |
+| `enable_json` | No | Set to `true` to write object fields to ClickHouse `JSON` columns. Defaults to `false`. |
+| `record_window_size` | No | Maximum number of records to write in one batch. Defaults to `100000`; batches are also capped at an estimated 50 MB. |
+| `tunnel_method` | No | SSH tunnel configuration. Supported in self-managed Airbyte and currently in Beta. |
 
 ## Changelog
 
@@ -179,8 +168,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.25     | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
-| 2.1.24     | 2026-05-20 | [77673](https://github.com/airbytehq/airbyte/pull/77673)   | Upgrade CDK to 1.0.13. Migrate component tests to Testcontainers. |
+| 2.1.25     | 2026-07-15 | [82103](https://github.com/airbytehq/airbyte/pull/82103)   | Use `CREATE TABLE IF NOT EXISTS` for non-replace table creation to prevent accidental data loss |
+| 2.1.24     | 2026-05-21 | [78229](https://github.com/airbytehq/airbyte/pull/78229)   | No user-facing changes (upgrade CDK to 1.0.13; migrate component tests to Testcontainers). |
 | 2.1.23     | 2026-02-04 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
 | 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
 | 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
