@@ -229,7 +229,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.0 | 2026-07-27 | [78505](https://github.com/airbytehq/airbyte/pull/78505) | Add custom_statistics_report stream and ad_statistics_reports config for LinkedIn Statistics Finder reports (up to three pivots). |
+| 5.7.0 | 2026-07-28 | [78505](https://github.com/airbytehq/airbyte/pull/78505) | Add custom_statistics_report stream and ad_statistics_reports config for LinkedIn Statistics Finder reports (up to three pivots). |
+| 5.6.12 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 5.6.10 — 5.6.11 is built on SDM 7.23.7, which breaks bundled custom components |
+| 5.6.11 | 2026-07-28 | [83018](https://github.com/airbytehq/airbyte/pull/83018) | Update dependencies |
 | 5.6.10 | 2026-07-21 | [77286](https://github.com/airbytehq/airbyte/pull/77286) | Update dependencies |
 | 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
 | 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
