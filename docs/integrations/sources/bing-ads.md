@@ -321,6 +321,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.5 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 3.0.3 — 3.0.4 is built on SDM 7.23.7, which breaks bundled custom components |
+| 3.0.4 | 2026-07-28 | [82806](https://github.com/airbytehq/airbyte/pull/82806) | Update dependencies |
 | 3.0.3 | 2026-07-21 | [82339](https://github.com/airbytehq/airbyte/pull/82339) | Update dependencies |
 | 3.0.2 | 2026-07-14 | [77143](https://github.com/airbytehq/airbyte/pull/77143) | Update dependencies |
 | 3.0.1 | 2026-07-08 | [79625](https://github.com/airbytehq/airbyte/pull/79625) | Add refresh_token_updater to persist rotated Microsoft OAuth refresh tokens; remove non-standard OAuth refresh params |
