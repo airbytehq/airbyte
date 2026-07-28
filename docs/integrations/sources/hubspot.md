@@ -78,6 +78,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
+| `projects`                  | `crm.objects.projects.read`                                                                                  |
 | `contacts_property_history` | `crm.objects.contacts.read`                                                                                  |
 | `companies_property_history` | `crm.objects.companies.read`                                                                                |
 | `deals_property_history`    | `crm.objects.deals.read`                                                                                     |
@@ -253,6 +254,7 @@ The HubSpot source connector supports the following streams:
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
 - [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
+- [Projects](https://developers.hubspot.com/docs/api-reference/latest/crm/objects/projects/guide) \(Client-Side Incremental\)
 - [Properties](https://developers.hubspot.com/docs/api/crm/properties) \(Full Refresh\)
 - [Contacts Property History](https://developers.hubspot.com/docs/api/crm/contacts) \(Client-Side Incremental\)
 - [Companies Property History](https://developers.hubspot.com/docs/api/crm/companies) \(Client-Side Incremental\)
@@ -431,6 +433,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.8.0 | 2026-07-09 | [81532](https://github.com/airbytehq/airbyte/pull/81532) | Add `projects` stream to sync HubSpot CRM Projects objects (skipped gracefully when the account lacks the `crm.objects.projects.read` scope) |
 | 6.7.0 | 2026-06-11 | [76396](https://github.com/airbytehq/airbyte/pull/76396) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
 | 6.6.1 | 2026-06-10 | [79636](https://github.com/airbytehq/airbyte/pull/79636) | Add configurable `property_history_lookback_window` (minutes) to property history streams (deals, contacts, companies) to prevent silent record loss caused by cursor drift from HubSpot calculated properties. Clarify existing `lookback_window` field as CRM Search-specific. |
 | 6.6.0 | 2026-06-08 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects, including optional OAuth scopes needed to support them |
