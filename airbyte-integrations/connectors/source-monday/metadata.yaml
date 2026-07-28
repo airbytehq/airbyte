@@ -6,11 +6,11 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.6@sha256:9b7d308cba381c3fb2f107af5adc6360a49a19f451738f1beb99f3708a043cd2
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7@sha256:c8318a72046a68ab48bd5bd57adb459d5a69dead827356f19c2ef78fbecfe0c9
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.5.14
+  dockerImageTag: 2.5.16
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
@@ -44,6 +44,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 2.5.14 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available
