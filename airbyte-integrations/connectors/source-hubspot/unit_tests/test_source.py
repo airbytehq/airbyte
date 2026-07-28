@@ -50,7 +50,7 @@ def test_check_connection_ok(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     requests_mock.register_uri("GET", "/crm/v3/properties/contact", [{"json": {"results": properties}, "status_code": 200}])
-    requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", {})
+    requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", json={"results": []}, status_code=200)
     connection_status = get_source(config).check(logger, config=config)
 
     assert connection_status.status == ConnectionStatus.SUCCEEDED
@@ -133,7 +133,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     ]
     responses = [
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
-        {"json": [], "status_code": 200},
+        {"json": {"results": []}, "status_code": 200},
     ]
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
@@ -162,7 +162,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     ]
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
-        {"json": [], "status_code": 200},
+        {"json": {"results": []}, "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])

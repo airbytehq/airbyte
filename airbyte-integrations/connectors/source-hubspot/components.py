@@ -809,18 +809,25 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
         # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
         # start a new search query with the latest id that has been collected.
-        if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size >= self.RECORDS_LIMIT:
+        current_after = int(last_page_token_value.get("after", 0)) if last_page_token_value else 0
+
+        if last_page_token_value and current_after + last_page_size >= self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
 
-        # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):
+        after = response.json().get("paging", {}).get("next", {}).get("after")
+        if after is None:
             return None
+
+        after = int(after)
 
         last_id_of_previous_chunk = last_page_token_value.get("id")
         if last_id_of_previous_chunk:
-            return {"after": last_page_token_value["after"] + last_page_size, self.primary_key: last_id_of_previous_chunk}
-        else:
-            return {"after": last_page_token_value["after"] + last_page_size}
+            return {
+                "after": after,
+                self.primary_key: last_id_of_previous_chunk,
+            }
+
+        return {"after": after}
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size
