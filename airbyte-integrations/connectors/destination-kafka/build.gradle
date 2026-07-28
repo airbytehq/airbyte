@@ -26,6 +26,7 @@ application {
 }
 
 dependencies {
+    // Baseline probe: no dependency change.
 
     implementation 'org.apache.kafka:kafka-clients:2.8.0'
     implementation 'org.apache.kafka:connect-json:2.8.0'
