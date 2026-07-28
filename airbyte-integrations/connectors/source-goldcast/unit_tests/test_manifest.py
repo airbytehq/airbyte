@@ -46,8 +46,7 @@ def test_props_is_schemaless(fixture_name: str, request) -> None:
     props = schema["properties"]["props"]
 
     assert props == {"type": "object"}, (
-        "`props` must stay a schemaless object so workspace-defined registration fields survive; "
-        f"got {props!r}"
+        f"`props` must stay a schemaless object so workspace-defined registration fields survive; got {props!r}"
     )
 
 
