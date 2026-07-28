@@ -40,8 +40,7 @@ def test_marketing_emails_declares_testing_is_ab_variation(marketing_emails_test
 
 def test_owners_declares_team_primary(owners_team: dict) -> None:
     assert "primary" in owners_team, (
-        "`owners.teams[].primary` is returned by the Owners API; without the declaration a V2 "
-        "destination drops it silently"
+        "`owners.teams[].primary` is returned by the Owners API; without the declaration a V2 destination drops it silently"
     )
     assert owners_team["primary"]["type"] == ["null", "boolean"]
 
