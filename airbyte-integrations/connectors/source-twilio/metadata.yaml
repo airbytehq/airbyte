@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 1.0.10
+  dockerImageTag: 1.0.11
   dockerRepository: airbyte/source-twilio
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
@@ -29,6 +29,7 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 1.0.9 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available
