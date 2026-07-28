@@ -68,16 +68,11 @@ and creative analytics can return at most 1,550 daily rows per 50-entity `P30D` 
 Impression-device analytics can return at most 7,750 rows for the five documented device categories
 over the same range.
 
-Batch membership can change when campaigns or creatives are added or removed, so the three batched
-streams use a global substream cursor. This changes their state format from per-partition to global
-state, so users must refresh all three streams when upgrading to the major version that introduces
-batching.
-
 The primary key for `ad_impression_device_analytics` is
 `["string_of_pivot_values", "end_date", "sponsoredCampaign"]`. The campaign field is required because
 `string_of_pivot_values` contains only the device type after the `CAMPAIGN` pivot is moved to
-`sponsoredCampaign`; without it, different campaigns with the same device type and date collide in
-dedup destinations.
+`sponsoredCampaign`; without it, deduplication can collapse records from different campaigns that
+share the same device type and date.
 
 The eight `ad_member_*` demographic streams are not batched. Batching requires a second `CAMPAIGN` pivot
 to attribute each row back to its campaign, which only the multi-pivot `q=statistics` finder supports.
