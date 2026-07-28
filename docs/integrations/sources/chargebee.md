@@ -111,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.42 | 2026-07-28 | [1083](https://github.com/airbytehq/airbyte-python-cdk/pull/1083) | Build on a CDK prerelease that restores bundled custom components (do not merge) |
 | 0.10.41 | 2026-07-28 | [82863](https://github.com/airbytehq/airbyte/pull/82863) | Update dependencies |
 | 0.10.40 | 2026-07-21 | [81761](https://github.com/airbytehq/airbyte/pull/81761) | Update dependencies |
 | 0.10.39 | 2026-06-30 | [81013](https://github.com/airbytehq/airbyte/pull/81013) | Update dependencies |
