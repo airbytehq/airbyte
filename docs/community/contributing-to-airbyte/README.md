@@ -19,7 +19,7 @@ If you are interested in an issue, you can submit a PR and link to that issue. I
 - How your PR solves the problem
 - Your design decisions
 
-Without this information, we have a harder time understanding the PR's benefits and are more likely to close the ticket without merging.
+Without this information, we have a harder time understanding the PR's benefits and are more likely to close it without merging.
 
 ### Contributions we accept
 
