@@ -208,7 +208,9 @@ Redshift enforces size limits on certain data types. When a value exceeds a limi
 the change in the `_airbyte_meta` column.
 
 - **VARCHAR**: Maximum 65,535 bytes.
-- **SUPER**: Maximum 16 MB per record. See the AWS documentation
+- **SUPER**: Maximum 16 MB per record. Individual string scalars nested within a SUPER value are limited to
+  65,535 bytes. If any nested string exceeds this limit, Airbyte nulls the entire SUPER value and records the
+  change in `_airbyte_meta`. See the AWS documentation
   on [SUPER type](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html)
   and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 - **BIGINT**: Stores values in the range -2^63 to 2^63-1. If an integer value falls outside this range, Airbyte nulls
@@ -275,11 +277,11 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.3 | 2026-07-09 | [81552](https://github.com/airbytehq/airbyte/pull/81552) | fix: narrow SQLException handling to only treat table-not-found as missing |
-| 4.0.2 | 2026-06-05 | [79161](https://github.com/airbytehq/airbyte/pull/79161) | fix: validate nested string sizes within SUPER columns to prevent COPY error 1224 |
+| 4.0.3 | 2026-07-14 | [81552](https://github.com/airbytehq/airbyte/pull/81552) | fix: narrow SQLException handling to only treat table-not-found as missing |
+| 4.0.2 | 2026-06-08 | [79161](https://github.com/airbytehq/airbyte/pull/79161) | fix: validate nested string sizes within SUPER columns to prevent COPY error 1224 |
 | 4.0.1 | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135) | fix: resolve sslmode/sslfactory conflict in jdbc_url_params |
 | 4.0.0 | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095) | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1 |
-| 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
+| 3.5.4 | 2026-03-26 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
 | 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
 | 3.5.1 | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
@@ -344,7 +346,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.6.8   | 2023-10-10 | [\#31218](https://github.com/airbytehq/airbyte/pull/31218) | Clarify configuration groups                                                                                                                                                                                     |
 | 0.6.7   | 2023-10-06 | [\#31153](https://github.com/airbytehq/airbyte/pull/31153) | Increase jvm GC retries                                                                                                                                                                                          |
 | 0.6.6   | 2023-10-06 | [\#31129](https://github.com/airbytehq/airbyte/pull/31129) | Reduce async buffer size                                                                                                                                                                                         |
-| 0.6.5   | 2023-08-18 | [\#28619](https://github.com/airbytehq/airbyte/pull/29640) | Fix duplicate staging object names in concurrent environment (e.g. async)                                                                                                                                        |
+| 0.6.5   | 2023-08-18 | [\#29640](https://github.com/airbytehq/airbyte/pull/29640) | Fix duplicate staging object names in concurrent environment (e.g. async)                                                                                                                                        |
 | 0.6.4   | 2023-08-10 | [\#28619](https://github.com/airbytehq/airbyte/pull/28619) | Use async method for staging                                                                                                                                                                                     |
 | 0.6.3   | 2023-08-07 | [\#29188](https://github.com/airbytehq/airbyte/pull/29188) | Internal code refactoring                                                                                                                                                                                        |
 | 0.6.2   | 2023-07-24 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618) | Add hooks in preparation for destinations v2 implementation                                                                                                                                                      |
@@ -371,7 +373,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |
 | 0.3.48  | 2022-09-01 |                                                            | Added JDBC URL params                                                                                                                                                                                            |
 | 0.3.47  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                                                                                            |
-| 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/13916) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
+| 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/14190) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
 | 0.3.45  | 2022-06-25 | [\#13916](https://github.com/airbytehq/airbyte/pull/13916) | Use the configured bucket path for S3 staging operations.                                                                                                                                                        |
 | 0.3.44  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging                                                                                                                                      |
 | 0.3.43  | 2022-06-24 | [\#13690](https://github.com/airbytehq/airbyte/pull/13690) | Improved discovery for NOT SUPER column                                                                                                                                                                          |

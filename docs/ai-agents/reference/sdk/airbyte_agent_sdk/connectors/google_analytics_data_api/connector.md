@@ -50,12 +50,12 @@ Classes
     :   Returns daily active user counts (1-day active users) by date.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -112,12 +112,12 @@ Classes
     :   Returns device-related metrics broken down by device category, operating system, browser, and date, including users, sessions, and page views.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -164,12 +164,12 @@ Classes
     :   Returns 28-day active user counts by date.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -518,12 +518,12 @@ Classes
     :   Returns geographic metrics broken down by region, country, city, and date, including users, sessions, bounce rate, and page views.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -573,12 +573,12 @@ Classes
     :   Returns page-level metrics including page views and bounce rate, broken down by host name, page path, and date.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -634,12 +634,12 @@ Classes
     :   Returns traffic source metrics broken down by session source, session medium, and date, including users, sessions, bounce rate, and page views.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -693,12 +693,12 @@ Classes
     :   Returns website overview metrics including total users, new users, sessions, bounce rate, page views, and average session duration by date.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
@@ -745,12 +745,12 @@ Classes
     :   Returns weekly active user counts (7-day active users) by date.
         
         Args:
-            date_ranges: Parameter dateRanges
-            dimensions: Parameter dimensions
-            metrics: Parameter metrics
-            keep_empty_rows: Parameter keepEmptyRows
-            return_property_quota: Parameter returnPropertyQuota
-            limit: Parameter limit
+            date_ranges: Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days.
+            dimensions: GA4 dimensions to group results by. Defaults match the equivalent Data Replication report.
+            metrics: GA4 metrics to aggregate. Defaults match the equivalent Data Replication report.
+            keep_empty_rows: If false, rows whose metrics are all zero are omitted from the response.
+            return_property_quota: Whether to include the Analytics property's current quota state in the response.
+            limit: Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows).
             property_id: GA4 property ID
             **kwargs: Additional parameters
         
