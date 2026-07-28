@@ -51,7 +51,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 ##### CDC positions: `Comparable` → `PartiallyOrdered`
 
-Implement `PartiallyOrdered<T>` on the connector's CDC position type instead of `Comparable<T>`. Its `compareTo` method returns `null` for offsets that cannot be ordered.
+Implement `PartiallyOrdered<T>` on the connector's CDC position type instead of `Comparable<T>`.
 
 ##### Source fields: `Field` → `EmittedField`
 
