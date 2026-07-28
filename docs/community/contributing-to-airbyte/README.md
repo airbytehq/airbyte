@@ -13,7 +13,7 @@ If you're interacting in Slack, codebases, mailing lists, events, or any other A
 ## Code Contributions
 
 Most of the issues that are open for contributions are tagged with [`good first issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
-If you are interested in an issue, you can submit a PR and link to that issue. If you submit a PR isn't linked to an issue, you must explain the following in your PR Description:
+If you are interested in an issue, you can submit a PR and link to that issue. If you submit a PR that isn't linked to an issue, you must explain the following in your PR Description:
 
 - The problem you've identified
 - How your PR solves the problem
