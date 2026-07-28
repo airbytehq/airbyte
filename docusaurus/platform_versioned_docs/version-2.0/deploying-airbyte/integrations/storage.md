@@ -106,7 +106,7 @@ global:
 ```yaml title="values.yaml"
 global:
   storage:
-    type: "S3"
+    type: "s3"
     secretName: airbyte-config-secrets # Name of your Kubernetes secret.
     bucket: # S3 bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
@@ -115,6 +115,8 @@ global:
     s3:
       region: "" # e.g. us-east-1
       authenticationType: credentials # Use "credentials" or "instanceProfile"
+      accessKeyIdSecretKey: s3-access-key-id
+      secretAccessKeySecretKey: s3-secret-access-key
       accessKeyId: "" # If using credentials
       secretAccessKey: "" # If using credentials
 ```
@@ -152,7 +154,7 @@ global:
 ```yaml title="values.yaml"
 global:
   storage:
-    type: "GCS"
+    type: "gcs"
     secretName: airbyte-config-secrets
     bucket: # GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
@@ -160,7 +162,7 @@ global:
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+      credentialsJsonSecretKey: gcp.json
 ```
 
 </TabItem>
@@ -194,7 +196,7 @@ global:
 ```yaml title="values.yaml"
 global:
   storage:
-    type: "Azure"
+    type: "azure"
     secretName: airbyte-config-secrets # Name of your Kubernetes secret.
     bucket: # Name Containers that you've created. We recommend storing the following all in one Container.
       log: airbyte-container
