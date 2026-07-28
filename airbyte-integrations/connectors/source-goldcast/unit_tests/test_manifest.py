@@ -45,9 +45,9 @@ def test_props_is_schemaless(fixture_name: str, request) -> None:
     schema = request.getfixturevalue(fixture_name)
     props = schema["properties"]["props"]
 
-    assert props == {"type": "object"}, (
-        f"`props` must stay a schemaless object so workspace-defined registration fields survive; got {props!r}"
-    )
+    assert props == {
+        "type": "object"
+    }, f"`props` must stay a schemaless object so workspace-defined registration fields survive; got {props!r}"
 
 
 def test_both_event_members_schema_copies_agree(definitions_schema: dict, stream_schema: dict) -> None:
