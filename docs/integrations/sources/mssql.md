@@ -59,11 +59,18 @@ Alternatively, you can use Airbyte with an existing user in your database.
 
   ```text
   USE {database name};
-  CREATE LOGIN {user name}
-    WITH PASSWORD = '{password}';
+  GO
+  CREATE LOGIN {user name} WITH PASSWORD = '{password}';
+  GO
   CREATE USER {user name} FOR LOGIN {user name};
-  EXEC sp_addrolemember 'db_datareader', '{user name}';
+  GO
+  ALTER ROLE db_datareader ADD MEMBER {user name};
+  GO
   ```
+
+  `ALTER ROLE ... ADD MEMBER` is supported on SQL Server 2012 and later, Azure SQL, and Cloud SQL
+  for SQL Server. On versions older than SQL Server 2012, use the deprecated
+  `EXEC sp_addrolemember 'db_datareader', '{user name}';` instead.
 
 - If you prefer to scope access to specific schemas rather than the whole database, skip the
   `db_datareader` role and instead grant `SELECT` on each schema you want to replicate from. Re-run
@@ -272,17 +279,24 @@ For further detail, see the
 
   ```text
   USE {database name};
-  CREATE LOGIN {user name}
-    WITH PASSWORD = '{password}';
+  GO
+  CREATE LOGIN {user name} WITH PASSWORD = '{password}';
+  GO
   CREATE USER {user name} FOR LOGIN {user name};
-  EXEC sp_addrolemember 'db_datareader', '{user name}';
+  GO
+  ALTER ROLE db_datareader ADD MEMBER {user name};
+  GO
   ```
 
   - Add the user to the role specified earlier when enabling cdc on the table\(s\):
 
     ```text
-    EXEC sp_addrolemember '{role name}', '{user name}';
+    ALTER ROLE {role name} ADD MEMBER {user name};
+    GO
     ```
+
+  - `ALTER ROLE ... ADD MEMBER` requires SQL Server 2012 or later. On older versions, use the
+    deprecated `EXEC sp_addrolemember '{role name}', '{user name}';` instead.
 
   - This should be enough access, but if you run into problems, try also directly granting the user
     `SELECT` access on the cdc schema:
