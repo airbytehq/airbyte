@@ -544,22 +544,6 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
         return transform_function
 
 
-class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
-    def __init__(self, *args, **kwargs):
-        config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
-        super().__init__(config)
-        self.registerCustomTransform(self.get_transform_function())
-
-    @staticmethod
-    def get_transform_function():
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-            if original_value == "" and field_schema.get("format") == "date-time":
-                return None
-            return original_value
-
-        return transform_function
-
-
 class RateLimitConfigErrorHttpClient(HttpClient):
     """Custom HttpClient that surfaces rate limit exhaustion as a config error with troubleshooting guidance."""
 

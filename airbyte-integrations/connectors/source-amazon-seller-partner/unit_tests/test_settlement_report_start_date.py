@@ -127,9 +127,9 @@ def test_settlement_helper_stream_start_datetime(config_override, expected_start
     source = get_source(config=config, state=None)
     streams = source.streams(source._config)
 
-    # GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE is the exposed stream backed by the helper
-    stream = next((s for s in streams if s.name == "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"), None)
-    assert stream is not None, "Stream 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE' not found"
+    # GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 is the exposed stream backed by the helper
+    stream = next((s for s in streams if s.name == "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"), None)
+    assert stream is not None, "Stream 'GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2' not found"
 
     # Generate partitions to trigger the parent stream's slice calculation
     list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
