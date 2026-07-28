@@ -103,7 +103,7 @@ definitions:
         - annotation_type
         - annotation_id
       $parameters:
-        report_type_id: channel_annotations_a1
+        report_type_id: channel_annotations_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -211,7 +211,7 @@ definitions:
         - end_screen_element_type
         - end_screen_element_id
       $parameters:
-        report_type_id: channel_end_screens_a1
+        report_type_id: channel_end_screens_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -263,7 +263,7 @@ definitions:
         - country_code
         - sharing_service
       $parameters:
-        report_type_id: channel_sharing_service_a1
+        report_type_id: channel_sharing_service_a2
       schema_loader:
         type: InlineSchemaLoader
         schema:
