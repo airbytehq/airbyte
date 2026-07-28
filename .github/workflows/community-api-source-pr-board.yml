@@ -48,6 +48,15 @@ jobs:
             echo "::error::max_writes must be a non-negative integer; received '$max_writes'."
             exit 1
           fi
+          normalized_max_writes="${max_writes#"${max_writes%%[!0]*}"}"
+          normalized_max_writes="${normalized_max_writes:-0}"
+          max_safe_integer=9007199254740991
+          if [[ ${#normalized_max_writes} -gt ${#max_safe_integer} ]] ||
+            { [[ ${#normalized_max_writes} -eq ${#max_safe_integer} ]] &&
+              [[ "$normalized_max_writes" > "$max_safe_integer" ]]; }; then
+            echo "::error::max_writes must not exceed JavaScript's safe integer maximum (9007199254740991); received '$max_writes'."
+            exit 1
+          fi
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             [[ "$INPUT_DRY_RUN" == "false" ]] && dry_run=false || dry_run=true
           else
@@ -71,6 +80,7 @@ jobs:
         with:
           ref: master # PR head code is never checked out or executed in a job holding the app token.
           token: ${{ steps.app-token.outputs.token }} # permissions: {} leaves GITHUB_TOKEN without contents: read.
+          persist-credentials: false
 
       - name: Install yq
         run: sudo snap install yq
