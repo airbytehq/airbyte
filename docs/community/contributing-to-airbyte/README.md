@@ -15,11 +15,11 @@ If you're interacting in Slack, codebases, mailing lists, events, or any other A
 Most of the issues that are open for contributions are tagged with [`good first issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
 If you are interested in an issue, you can submit a PR and link to that issue. If you submit a PR isn't linked to an issue, you must explain the following in your PR Description:
 
-* The problem you've identified
-* How your PR solves the problem
-* Your design decisions
+- The problem you've identified
+- How your PR solves the problem
+- Your design decisions
 
-Without this information, we have a harder time understanding the PR's benefits and are more likely to close the ticket without merging. 
+Without this information, we have a harder time understanding the PR's benefits and are more likely to close the ticket without merging.
 
 ### Contributions we accept
 
