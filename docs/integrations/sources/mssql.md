@@ -59,13 +59,9 @@ Alternatively, you can use Airbyte with an existing user in your database.
 
   ```text
   USE {database name};
-  GO
   CREATE LOGIN {user name} WITH PASSWORD = '{password}';
-  GO
   CREATE USER {user name} FOR LOGIN {user name};
-  GO
   ALTER ROLE db_datareader ADD MEMBER {user name};
-  GO
   ```
 
   `ALTER ROLE ... ADD MEMBER` is supported on SQL Server 2012 and later, Azure SQL, and Cloud SQL
@@ -279,20 +275,15 @@ For further detail, see the
 
   ```text
   USE {database name};
-  GO
   CREATE LOGIN {user name} WITH PASSWORD = '{password}';
-  GO
   CREATE USER {user name} FOR LOGIN {user name};
-  GO
   ALTER ROLE db_datareader ADD MEMBER {user name};
-  GO
   ```
 
   - Add the user to the role specified earlier when enabling cdc on the table\(s\):
 
     ```text
     ALTER ROLE {role name} ADD MEMBER {user name};
-    GO
     ```
 
   - `ALTER ROLE ... ADD MEMBER` requires SQL Server 2012 or later. On older versions, use the
