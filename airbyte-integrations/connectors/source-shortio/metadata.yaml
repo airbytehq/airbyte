@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - https://api.short.io
-      - https://api-v2.short.cm
+      - https://statistics.short.io
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.23.6@sha256:9b7d308cba381c3fb2f107af5adc6360a49a19f451738f1beb99f3708a043cd2
   remoteRegistries:
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
-  dockerImageTag: 0.3.58
+  dockerImageTag: 0.3.59
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg
