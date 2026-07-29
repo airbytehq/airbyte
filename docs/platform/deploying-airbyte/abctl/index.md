@@ -31,7 +31,7 @@ Before you use abctl, install Docker Desktop on your machine:
 
 - [Mac](https://docs.docker.com/desktop/install/mac-install/).
 - [Windows](https://docs.docker.com/desktop/install/windows-install/).
-- [Linux](https://docs.docker.com/desktop/install/linux-install/). If you're installing on a Linux headless virtual machine, you may have an easier time using [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See [the EC2 guide](../abctl-ec2) for an example.
+- [Linux](https://docs.docker.com/desktop/install/linux-install/). If you're installing on a Linux headless virtual machine, you may have an easier time using [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop. See [the EC2 guide](../abctl-ec2.md) for an example.
 
 ## Install abctl
 
