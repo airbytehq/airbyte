@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
@@ -30,12 +31,15 @@ class StateStoreTest {
 
     @MockK private lateinit var stateStatsEnricher: StateStatsEnricher
 
+    @MockK private lateinit var catalog: DestinationCatalog
+
     private lateinit var stateStore: StateStore
 
     @BeforeEach
     fun setUp() {
-        stateStore = StateStore(keyClient, histogramStore, stateStatsEnricher)
-        every { histogramStore.remove(any()) } returns 1
+        stateStore = StateStore(keyClient, histogramStore, stateStatsEnricher, catalog)
+        every { catalog.streams } returns emptyList()
+        every { histogramStore.remove(any(), any()) } returns 1
         every { stateStatsEnricher.enrich(any(), any()) } answers { firstArg() }
     }
 
@@ -49,14 +53,14 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(stateKey, 100L) } returns mockk()
+        every { histogramStore.acceptExpectedCounts(any(), stateKey, 100L) } returns mockk()
 
         // When
         stateStore.accept(checkpointMessage)
 
         // Then
         verify { keyClient.getStateKey(checkpointMessage) }
-        verify { histogramStore.acceptExpectedCounts(stateKey, 100L) }
+        verify { histogramStore.acceptExpectedCounts(any(), stateKey, 100L) }
     }
 
     @Test
@@ -78,7 +82,7 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
 
         stateStore.accept(checkpointMessage)
 
@@ -99,8 +103,8 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-        every { histogramStore.isComplete(stateKey) } returns false
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
+        every { histogramStore.isComplete(any(), stateKey) } returns false
 
         stateStore.accept(checkpointMessage)
 
@@ -109,7 +113,7 @@ class StateStoreTest {
 
         // Then
         assertNull(result)
-        verify { histogramStore.isComplete(stateKey) }
+        verify { histogramStore.isComplete(any(), stateKey) }
     }
 
     @Test
@@ -122,8 +126,8 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-        every { histogramStore.isComplete(stateKey) } returns true
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
+        every { histogramStore.isComplete(any(), stateKey) } returns true
 
         stateStore.accept(checkpointMessage)
 
@@ -132,13 +136,13 @@ class StateStoreTest {
 
         // Then
         assertEquals(checkpointMessage, result)
-        verify { histogramStore.isComplete(stateKey) }
+        verify { histogramStore.isComplete(any(), stateKey) }
 
         // Verify state was removed
         val secondResult = stateStore.getNextComplete()
         assertNull(secondResult)
         // Verify histogram stats were removed
-        verify { histogramStore.remove(stateKey) }
+        verify { histogramStore.remove(any(), stateKey) }
     }
 
     @Test
@@ -161,8 +165,8 @@ class StateStoreTest {
         every { keyClient.getStateKey(checkpointMessage1) } returns stateKey1
         every { keyClient.getStateKey(checkpointMessage2) } returns stateKey2
         every { keyClient.getStateKey(checkpointMessage3) } returns stateKey3
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-        every { histogramStore.isComplete(any()) } returns true
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
+        every { histogramStore.isComplete(any(), any()) } returns true
 
         // Add in reverse order
         stateStore.accept(checkpointMessage3)
@@ -190,9 +194,9 @@ class StateStoreTest {
         val recordCount = 150L
 
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(stateKey, recordCount) } returns mockk()
-        every { histogramStore.isComplete(stateKey) } returns true
-        every { histogramStore.remove(stateKey) } returns recordCount
+        every { histogramStore.acceptExpectedCounts(any(), stateKey, recordCount) } returns mockk()
+        every { histogramStore.isComplete(any(), stateKey) } returns true
+        every { histogramStore.remove(any(), stateKey) } returns recordCount
 
         stateStore.accept(checkpointMessage)
 
@@ -221,9 +225,9 @@ class StateStoreTest {
 
         every { keyClient.getStateKey(checkpointMessage1) } returns stateKey1
         every { keyClient.getStateKey(checkpointMessage2) } returns stateKey2
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-        every { histogramStore.isComplete(stateKey1) } returns false // incomplete
-        every { histogramStore.isComplete(stateKey2) } returns true
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
+        every { histogramStore.isComplete(any(), stateKey1) } returns false // incomplete
+        every { histogramStore.isComplete(any(), stateKey2) } returns true
 
         stateStore.accept(checkpointMessage1)
         stateStore.accept(checkpointMessage2)
@@ -232,7 +236,7 @@ class StateStoreTest {
         val result1 = stateStore.getNextComplete() // should be null because state 1 is incomplete
 
         // Make state 1 complete now
-        every { histogramStore.isComplete(stateKey1) } returns true
+        every { histogramStore.isComplete(any(), stateKey1) } returns true
         val result2 = stateStore.getNextComplete() // should return state 1
 
         // Then
@@ -259,7 +263,7 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
 
         // When
         stateStore.accept(checkpointMessage)
@@ -279,8 +283,8 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-        every { histogramStore.isComplete(stateKey) } returns true
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
+        every { histogramStore.isComplete(any(), stateKey) } returns true
 
         // Add a state
         stateStore.accept(checkpointMessage)
@@ -309,8 +313,8 @@ class StateStoreTest {
 
         every { keyClient.getStateKey(checkpointMessage1) } returns stateKey1
         every { keyClient.getStateKey(checkpointMessage2) } returns stateKey2
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-        every { histogramStore.isComplete(stateKey1) } returns true
+        every { histogramStore.acceptExpectedCounts(any(), any(), any()) } returns mockk()
+        every { histogramStore.isComplete(any(), stateKey1) } returns true
 
         // Add multiple states
         stateStore.accept(checkpointMessage1)
@@ -324,5 +328,46 @@ class StateStoreTest {
 
         // Should still have states
         assertTrue(stateStore.hasStates())
+    }
+
+    @Test
+    fun `identical stream state keys should both complete independently`() {
+        val first =
+            StreamCheckpoint(
+                unmappedNamespace = "ns",
+                unmappedName = "stream-1",
+                blob = "{}",
+                sourceRecordCount = 1L,
+            )
+        val second =
+            StreamCheckpoint(
+                unmappedNamespace = "ns",
+                unmappedName = "stream-2",
+                blob = "{}",
+                sourceRecordCount = 1L,
+            )
+        val stateKey = StateKey(1L, listOf(PartitionKey("abcd")))
+        val realHistogramStore = StateHistogramStore()
+        val realStateStore = StateStore(keyClient, realHistogramStore, stateStatsEnricher, catalog)
+        val firstDescriptor = first.checkpoint.unmappedDescriptor
+        val secondDescriptor = second.checkpoint.unmappedDescriptor
+
+        every { keyClient.getStateKey(first) } returns stateKey
+        every { keyClient.getStateKey(second) } returns stateKey
+
+        realStateStore.accept(first)
+        realStateStore.accept(second)
+        realHistogramStore.acceptFlushedCounts(
+            firstDescriptor,
+            PartitionHistogram().apply { increment(PartitionKey("abcd"), 1.0) },
+        )
+        realHistogramStore.acceptFlushedCounts(
+            secondDescriptor,
+            PartitionHistogram().apply { increment(PartitionKey("abcd"), 1.0) },
+        )
+
+        assertNotNull(realStateStore.getNextComplete())
+        assertNotNull(realStateStore.getNextComplete())
+        assertFalse(realStateStore.hasStates())
     }
 }

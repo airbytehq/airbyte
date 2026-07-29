@@ -43,7 +43,7 @@ class StateStageTest {
         val result = stateStage.apply(input)
 
         // Assert
-        verify(exactly = 1) { stateStore.acceptFlushedCounts(countsHistogram) }
+        verify(exactly = 1) { stateStore.acceptFlushedCounts(desc, countsHistogram) }
         verify(exactly = 1) { statsStore.acceptStats(desc, countsHistogram, bytesHistogram) }
         assertSame(input, result, "The output should be the same as the input object")
     }

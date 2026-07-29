@@ -35,7 +35,7 @@ class PipelineCompletionHandler(
             .map {
                 async(dispatcher) {
                     it.value.flush()
-                    stateHistogramStore.acceptFlushedCounts(it.partitionCountsHistogram)
+                    stateHistogramStore.acceptFlushedCounts(it.key, it.partitionCountsHistogram)
                     statsStore.acceptStats(
                         it.key,
                         it.partitionCountsHistogram,
