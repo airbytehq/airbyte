@@ -242,7 +242,9 @@ class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
         record_template = cls.extract_record("tickets", __file__, NestedPath(["tickets", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+        # The tickets stream reads the Incremental Ticket Export endpoint and cursors on
+        # `generated_timestamp`, so `with_cursor` must write that field (not `updated_at`).
+        return cls(record_template, FieldPath("id"), FieldPath("generated_timestamp"))
 
     def with_id(self, id: int) -> "TicketsRecordBuilder":
         self._record["id"] = id

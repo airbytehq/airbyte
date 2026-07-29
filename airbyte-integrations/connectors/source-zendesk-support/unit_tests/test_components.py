@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -104,8 +105,16 @@ def test_attribute_definitions_extractor(response_data, expected_records, compon
     assert records == expected_records, f"Expected records to be {expected_records}, but got {records}"
 
 
-# 2026-03-01T00:00:00Z
-_BACKFILL_FLOOR = 1772323200
+def test_backfill_floor_precedes_the_5_2_0_regression(components_module):
+    """The floor is a bare epoch int, so pin it to the date it is supposed to mean.
+
+    v5.2.0 -- the release that switched `tickets` to the `updated_at` cursor -- merged on 2026-03-12, so the
+    floor has to sit before that for the one-time backfill to cover the whole regression window.
+    """
+    floor = components_module.TicketsStateMigration.BACKFILL_FLOOR
+
+    assert datetime.fromtimestamp(floor, timezone.utc) == datetime(2026, 3, 1, tzinfo=timezone.utc)
+    assert floor < datetime(2026, 3, 12, tzinfo=timezone.utc).timestamp()
 
 
 @pytest.mark.parametrize(
@@ -125,11 +134,13 @@ def test_tickets_state_migration_should_migrate(stream_state, expected, componen
     "stream_state, expected",
     [
         # Above the floor -> clamped down to the floor.
-        ({"updated_at": "1780000000"}, {"generated_timestamp": _BACKFILL_FLOOR}),
+        ({"updated_at": "1780000000"}, "floor"),
         # Below the floor -> left unchanged.
         ({"updated_at": "1000000000"}, {"generated_timestamp": 1000000000}),
     ],
 )
 def test_tickets_state_migration_migrate(stream_state, expected, components_module):
     migration = components_module.TicketsStateMigration()
+    if expected == "floor":
+        expected = {"generated_timestamp": migration.BACKFILL_FLOOR}
     assert migration.migrate(stream_state) == expected
