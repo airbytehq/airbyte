@@ -25,6 +25,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - regression_test_field
+              value: "regression-test-marker"
       schema_loader:
         type: InlineSchemaLoader
         schema:

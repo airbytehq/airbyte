@@ -60,6 +60,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.65 | 2026-07-29 | [83133](https://github.com/airbytehq/airbyte/pull/83133) | (Test, do not merge) Add test AddFields transformation to validate regression test record comparison |
 | 0.3.64 | 2026-07-28 | [83032](https://github.com/airbytehq/airbyte/pull/83032) | Update dependencies |
 | 0.3.63 | 2026-07-21 | [82557](https://github.com/airbytehq/airbyte/pull/82557) | Update dependencies |
 | 0.3.62 | 2026-07-14 | [81961](https://github.com/airbytehq/airbyte/pull/81961) | Update dependencies |
