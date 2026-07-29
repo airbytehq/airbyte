@@ -1,7 +1,10 @@
 name: "Hydra: Auto-merge (AI-gated)"
 # Triggered via the /ai-ready slash command or called from other workflows.
-# Kicks off a Devin AI session with structured output to evaluate whether
-# the PR is safe to auto-merge, then evaluates the result deterministically:
+# Kicks off a Devin AI session using the `pr_scope_analysis` playbook
+# (airbytehq/ai-skills) to evaluate whether the PR is safe to auto-merge. The
+# playbook carries the analysis prompt and the structured output schema; this
+# workflow first rejects PRs without the Support Bot assignment or with
+# destination changes. Eligible PRs are analyzed and evaluated deterministically:
 #   pass = ALL(preconditions) AND ANY(allowed_scopes)
 #
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
@@ -86,27 +89,89 @@ jobs:
             > **Auto-merge evaluation in progress...**
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      - name: Validate connector-only file paths
+      - name: Classify auto-merge eligibility
         if: steps.pre-check.outputs.state == 'OPEN'
         id: validate-paths
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-        run: |
-          set -e
-          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
-          valid=true
-          while IFS= read -r file; do
-            case "$file" in
-              airbyte-integrations/connectors/*) ;;
-              docs/integrations/sources/*) ;;
-              docs/integrations/destinations/*) ;;
-              docs/ai-agents/connectors/*) ;;
-              docs/developers/pyairbyte/*) ;;
-              docusaurus/src/data/*) ;;
-              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
-            esac
-          done < /tmp/changed-files.txt
-          echo "valid=$valid" | tee -a "$GITHUB_OUTPUT"
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const allowedPaths = [
+              /^airbyte-integrations\/connectors\//,
+              /^docs\/integrations\/sources\//,
+              /^docs\/integrations\/destinations\//,
+              /^docs\/ai-agents\/connectors\//,
+              /^docs\/developers\/pyairbyte\//,
+              /^docs\/release_notes\//,
+              /^docusaurus\/src\/data\//,
+            ];
+            const pullNumber = Number(process.env.PR_NUMBER);
+            const { data: pull } = await github.rest.pulls.get({
+              owner: 'airbytehq',
+              repo: 'airbyte',
+              pull_number: pullNumber,
+            });
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: 'airbytehq',
+                repo: 'airbyte',
+                pull_number: pullNumber,
+                per_page: 100,
+              },
+            );
+            const invalidPath = files
+              .map((file) => file.filename)
+              .find(
+                (path) =>
+                  !allowedPaths.some((pattern) => pattern.test(path)),
+              );
+            const changedPaths = files.flatMap((file) =>
+              [file.filename, file.previous_filename].filter(Boolean),
+            );
+            const destinationChanges = changedPaths.some(
+              (path) =>
+                /^airbyte-integrations\/connectors\/destination-[^/]+\//.test(
+                  path,
+                ) ||
+                /^docs\/integrations\/destinations\//.test(path),
+            );
+            const supportBotAssigned = pull.assignees.some(
+              (assignee) => assignee.login === 'airbyte-support-bot',
+            );
+            const noDestinationChanges = !destinationChanges;
+            const valid = !invalidPath;
+            const autoMergeEligible =
+              supportBotAssigned && noDestinationChanges;
+
+            if (invalidPath) {
+              core.warning(`Non-connector file: ${invalidPath}`);
+            }
+            core.setOutput('valid', String(valid));
+            core.setOutput(
+              'auto_merge_eligible',
+              String(autoMergeEligible),
+            );
+            core.setOutput(
+              'support_bot_assigned',
+              String(supportBotAssigned),
+            );
+            core.setOutput(
+              'support_bot_reasoning',
+              supportBotAssigned
+                ? 'Airbyte Support Bot assignment confirms automated merge eligibility.'
+                : 'Airbyte Support Bot is not assigned; human approval and merge are required.',
+            );
+            core.setOutput(
+              'no_destination_changes',
+              String(noDestinationChanges),
+            );
+            core.setOutput(
+              'destination_reasoning',
+              destinationChanges
+                ? 'Destination-related changes require human approval and merge.'
+                : 'No destination-related changes detected.',
+            );
 
       - name: Early exit -- path validation failed
         if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'false'
@@ -123,8 +188,35 @@ jobs:
             >
             > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
+      - name: Early exit -- auto-merge eligibility failed
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'false'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          comment-id: ${{ steps.status-comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            ## Auto-merge evaluation: **FAIL**
+
+            ### Eligibility (all must pass)
+
+            | Pass | Check | Reasoning |
+            |------|-------|-----------|
+            | ${{ steps.validate-paths.outputs.support_bot_assigned == 'true' && ':white_check_mark:' || ':x:' }} | Airbyte Support Bot Assigned | ${{ steps.validate-paths.outputs.support_bot_reasoning }} |
+            | ${{ steps.validate-paths.outputs.no_destination_changes == 'true' && ':white_check_mark:' || ':x:' }} | No Destination Changes | ${{ steps.validate-paths.outputs.destination_reasoning }} |
+
+            > Scope analysis was skipped because deterministic auto-merge eligibility did not pass.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
       - name: Fetch required checks for master branch
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
         id: required-checks
         uses: actions/github-script@v7
         with:
@@ -146,7 +238,10 @@ jobs:
             core.setOutput('checks', JSON.stringify(checks));
 
       - name: Verify required status checks pass
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
         id: verify-checks
         uses: actions/github-script@v7
         env:
@@ -195,7 +290,11 @@ jobs:
             }
 
       - name: Early exit -- required checks not passing
-        if: steps.pre-check.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true' && steps.verify-checks.outputs.ready == 'false'
+        if: >
+          steps.pre-check.outputs.state == 'OPEN'
+          && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
+          && steps.verify-checks.outputs.ready == 'false'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           token: ${{ steps.get-hoard-token.outputs.token }}
@@ -213,6 +312,7 @@ jobs:
         if: >
           steps.pre-check.outputs.state == 'OPEN'
           && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -220,6 +320,7 @@ jobs:
         if: >
           steps.pre-check.outputs.state == 'OPEN'
           && steps.validate-paths.outputs.valid == 'true'
+          && steps.validate-paths.outputs.auto_merge_eligible == 'true'
           && steps.verify-checks.outputs.ready == 'true'
         id: devin
         uses: aaronsteers/devin-action@main
@@ -230,97 +331,16 @@ jobs:
           max-acu-limit: "2"
           wait-for-stopped-status: "true"
           wait-minutes-max: "10"
-          structured-output-required: "true"
+          # The analysis prompt and structured output schema live in the
+          # `pr_scope_analysis` playbook in airbytehq/ai-skills. Launching a
+          # session with the macro attaches the schema automatically.
+          playbook-macro: "!pr_scope_analysis"
           tags: |
             auto-merge-eval
             hyd-ready
           prompt-text: |
             Analyze this pull request and classify it by filling out the structured output schema:
             https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}
-
-            Review the PR diff, changed files, and PR comments. Each field in the schema has a description explaining exactly what to check and when to set pass to true or false.
-
-            Important:
-            - For change_scope, each scope is mutually exclusive. A scope should only be true if the ENTIRE PR consists of that type of change and nothing else.
-            - Be precise and conservative: when in doubt, set pass to false.
-            - Do NOT create any files, branches, or PRs. Do NOT write any code. Only analyze.
-          structured-output-schema: |
-            type: object
-            properties:
-              preconditions:
-                type: object
-                description: "Safety and readiness checks for the PR."
-                properties:
-                  no_breaking_changes:
-                    type: object
-                    description: "Set pass to true ONLY if the PR does not introduce any breaking changes. A breaking change includes: major version bumps, removed or renamed public APIs, changed function signatures, removed configuration options, backward-incompatible schema changes, or anything that would require downstream consumers to modify their code or configuration."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  ai_review_passed:
-                    type: object
-                    description: "Set pass to true ONLY if the PR has a comment from devin-ai-integration[bot] containing the HTML marker '<!-- pr_ai_review_result: APPROVE' (exactly that string). Look through all PR comments to find this marker. If no such comment exists, or if the marker says FAIL, UNKNOWN, or SKIP, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                required: [no_breaking_changes, ai_review_passed]
-              change_scope:
-                type: object
-                description: "Classification of the type of change in this PR. Each scope is mutually exclusive -- set pass to true ONLY if the PR consists ENTIRELY of that type of change and nothing else."
-                properties:
-                  docs_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if every file changed in the PR is a documentation file (markdown, rst, mdx, or files under docs/ directories). If even one non-documentation file is changed, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  comment_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if the entire diff consists exclusively of code comment additions, removals, or modifications (e.g. Python # comments, Java/Kotlin // or /* */ comments, YAML # comments). No functional code, imports, or logic may be added, removed, or changed. If any non-comment line is modified, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  dependency_version_bump:
-                    type: object
-                    description: "Set pass to true if the PR is a dependency version bump with no functional code changes. Allowed files: dependency manifests (pyproject.toml, setup.py, build.gradle, package.json), lockfiles (poetry.lock, package-lock.json, yarn.lock), connector version metadata (metadata.yaml version/dockerImageTag fields), and changelog entries (docs/integrations/**/*.md). Set pass to false ONLY if the PR also modifies source code, test files, or other functional files beyond the categories listed above."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  metadata_only_change:
-                    type: object
-                    description: "Set pass to true ONLY if every file changed in the PR is a connector metadata file such as metadata.yaml, icon.svg, or similar non-code connector configuration files. If any source code, test, or documentation file is changed, set pass to false."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                  net_new_stream_addition:
-                    type: object
-                    description: "Set pass to true ONLY if the PR exclusively adds net-new streams to an existing connector without modifying any existing streams or core connector logic. Allowed changes: new stream class definitions, new stream registrations, new tests for the new streams, new or updated documentation/changelogs for the new streams, version bumps in metadata.yaml, new or updated schema files for the new streams, and trivial updates to existing tests that are a direct mechanical consequence of adding the new stream (e.g. incrementing an expected stream count assertion). Set pass to false if any existing stream definition, existing schema, or core connector logic (e.g. auth, base classes, shared utilities) is modified, or if existing tests are changed in ways beyond trivial count updates."
-                    properties:
-                      pass:
-                        type: boolean
-                      reasoning:
-                        type: string
-                    required: [pass, reasoning]
-                required: [docs_only_change, comment_only_change, dependency_version_bump, metadata_only_change, net_new_stream_addition]
-            required: [preconditions, change_scope]
 
       - name: Check for structured output
         if: steps.devin.outputs.session-id
@@ -391,6 +411,10 @@ jobs:
         env:
           STRUCTURED_OUTPUT: ${{ steps.devin.outputs.structured-output }}
           EVAL_RESULT: ${{ steps.evaluate.outputs.result }}
+          SUPPORT_BOT_ASSIGNED: ${{ steps.validate-paths.outputs.support_bot_assigned }}
+          SUPPORT_BOT_REASONING: ${{ steps.validate-paths.outputs.support_bot_reasoning }}
+          NO_DESTINATION_CHANGES: ${{ steps.validate-paths.outputs.no_destination_changes }}
+          DESTINATION_REASONING: ${{ steps.validate-paths.outputs.destination_reasoning }}
           SESSION_URL: ${{ steps.devin.outputs.session-url }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
@@ -420,6 +444,8 @@ jobs:
               reasoning=$(echo "$STRUCTURED_OUTPUT" | jq -r ".preconditions.${key}.reasoning")
               echo "| $(icon "$pass") | $(pretty_label "$key") | ${reasoning} |"
             done
+            echo "| $(icon "$SUPPORT_BOT_ASSIGNED") | Airbyte Support Bot Assigned | ${SUPPORT_BOT_REASONING} |"
+            echo "| $(icon "$NO_DESTINATION_CHANGES") | No Destination Changes | ${DESTINATION_REASONING} |"
             echo ""
             echo "### Change scope (at least one must pass)"
             echo ""
@@ -520,6 +546,12 @@ jobs:
           done
           echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
           exit 1
+
+      - name: Label auto-merged PR
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh issue edit "$PR_NUMBER" --repo airbytehq/airbyte --add-label hyd-automerged
 
       - name: Post automerge notification to Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'

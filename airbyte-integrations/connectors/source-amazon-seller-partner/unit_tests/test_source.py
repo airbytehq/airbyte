@@ -176,7 +176,7 @@ def test_streams_count_vendor(monkeypatch):
         "account_type": "Vendor",
     }
     streams = get_source(config).streams(config)
-    assert len(streams) == 49
+    assert len(streams) == 52
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -218,6 +218,9 @@ VENDOR_ONLY_STREAM_NAMES = [
     "GET_VENDOR_FORECASTING_RETAIL_REPORT",
     "GET_VENDOR_SALES_REPORT",
     "GET_VENDOR_INVENTORY_REPORT",
+    "GET_VENDOR_TRAFFIC_REPORT",
+    "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+    "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
 ]
 
 SELLER_ONLY_STREAM_NAMES = [
