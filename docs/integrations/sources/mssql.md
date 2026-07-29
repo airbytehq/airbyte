@@ -64,9 +64,8 @@ Alternatively, you can use Airbyte with an existing user in your database.
   ALTER ROLE db_datareader ADD MEMBER {user name};
   ```
 
-  `ALTER ROLE ... ADD MEMBER` is supported on SQL Server 2012 and later, Azure SQL, and Cloud SQL
-  for SQL Server. On versions older than SQL Server 2012, use the deprecated
-  `EXEC sp_addrolemember 'db_datareader', '{user name}';` instead.
+  `ALTER ROLE ... ADD MEMBER` replaces the deprecated `sp_addrolemember` stored procedure, which
+  [Microsoft recommends avoiding in new work](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-addrolemember-transact-sql).
 
 - If you prefer to scope access to specific schemas rather than the whole database, skip the
   `db_datareader` role and instead grant `SELECT` on each schema you want to replicate from. Re-run
@@ -196,28 +195,6 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
   GO
   ```
 
-  :::note Google Cloud SQL for SQL Server
-
-  On [Google Cloud SQL for SQL Server](https://cloud.google.com/sql/docs/sqlserver), Google does
-  not grant customers the `sysadmin` server role, so you cannot run `sys.sp_cdc_enable_db` to enable
-  CDC at the database level. Instead, Cloud SQL provides a dedicated stored procedure that enables
-  CDC without `sysadmin`:
-
-  ```text
-  EXEC msdb.dbo.gcloudsql_cdc_enable_db 'DATABASE_NAME'
-  ```
-
-  Replace `DATABASE_NAME` with the name of your source database. To disable CDC at the database
-  level later, use the corresponding `EXEC msdb.dbo.gcloudsql_cdc_disable_db 'DATABASE_NAME'`
-  procedure.
-
-  Only the database-level enablement differs on Cloud SQL. Enabling CDC on individual tables still
-  uses the standard `sys.sp_cdc_enable_table` procedure (shown below), and the snapshot isolation
-  and user/permission steps that follow are unchanged. For the full Google-provided procedure, see
-  [Configure CDC for a Cloud SQL for SQL Server source](https://cloud.google.com/datastream/docs/configure-cloudsql-sqlserver).
-
-  :::
-
 - The administrator must then enable CDC for each table that you want to capture. Here's an example:
 
   ```text
@@ -255,6 +232,27 @@ MS SQL Server provides some built-in stored procedures to enable CDC.
 For further detail, see the
 [Microsoft docs on enabling and disabling CDC](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/enable-and-disable-change-data-capture-sql-server?view=sql-server-ver15).
 
+:::note Google Cloud SQL for SQL Server
+
+On [Google Cloud SQL for SQL Server](https://cloud.google.com/sql/docs/sqlserver), Google does not
+grant customers the `sysadmin` server role, so you cannot run `sys.sp_cdc_enable_db` to enable CDC
+at the database level. Instead of the database-level command shown above, use Cloud SQL's dedicated
+stored procedure, which enables CDC without `sysadmin`:
+
+```text
+EXEC msdb.dbo.gcloudsql_cdc_enable_db 'YOUR_DATABASE_NAME'
+```
+
+To disable CDC at the database level later, use the corresponding
+`EXEC msdb.dbo.gcloudsql_cdc_disable_db 'YOUR_DATABASE_NAME'` procedure.
+
+Only the database-level enablement differs on Cloud SQL. Enabling CDC on individual tables still
+uses the standard `sys.sp_cdc_enable_table` procedure, and the snapshot isolation and
+user/permission steps below are unchanged. For the full Google-provided procedure, see
+[Configure CDC for a Cloud SQL for SQL Server source](https://cloud.google.com/datastream/docs/configure-cloudsql-sqlserver).
+
+:::
+
 ##### 2. Enable snapshot isolation
 
 - When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of
@@ -286,8 +284,8 @@ For further detail, see the
     ALTER ROLE {role name} ADD MEMBER {user name};
     ```
 
-  - `ALTER ROLE ... ADD MEMBER` requires SQL Server 2012 or later. On older versions, use the
-    deprecated `EXEC sp_addrolemember '{role name}', '{user name}';` instead.
+  - `ALTER ROLE ... ADD MEMBER` replaces the deprecated `sp_addrolemember` stored procedure, which
+    [Microsoft recommends avoiding in new work](https://learn.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-addrolemember-transact-sql).
 
   - This should be enough access, but if you run into problems, try also directly granting the user
     `SELECT` access on the cdc schema:
@@ -313,13 +311,13 @@ For further detail, see the
 - In SQL Server, by default, only three days of data are retained in the change tables. Unless you
   are running very frequent syncs, we suggest increasing this retention so that in case of a failure
   in sync or if the sync is paused, there is still some bandwidth to start from the last point in
-  incremental sync.
+  incremental sync. Airbyte recommends retaining at least 7 days of CDC data.
 - These settings can be changed using the stored procedure
   [sys.sp_cdc_change_job](https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sys-sp-cdc-change-job-transact-sql?view=sql-server-ver15)
   as below:
 
   ```text
-  -- we recommend 14400 minutes (10 days) as retention period
+  -- Airbyte recommends at least 10080 minutes (7 days) as the retention period
   EXEC sp_cdc_change_job @job_type='cleanup', @retention = {minutes}
   ```
 
