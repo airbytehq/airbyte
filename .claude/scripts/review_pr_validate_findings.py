@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Validate PR review findings against actual diff hunks.
 
 Usage: review_pr_validate_findings.py <diff-file> <findings-json>
@@ -55,15 +57,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-_DIFF_HEADER_RE = re.compile(
-    r"^diff --git "
-    r'(?:"a/(?P<old_q>[^"]+)"|a/(?P<old>\S+)) '
-    r'(?:"b/(?P<new_q>[^"]+)"|b/(?P<new>\S+))\s*$'
-)
+_DIFF_HEADER_RE = re.compile(r"^diff --git " r'(?:"a/(?P<old_q>[^"]+)"|a/(?P<old>\S+)) ' r'(?:"b/(?P<new_q>[^"]+)"|b/(?P<new>\S+))\s*$')
 _HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old>\d+)(?:,\d+)? \+(?P<new>\d+)(?:,\d+)? @@")
-_FILE_MARKER_RE = re.compile(
-    r'^(?:---|\+\+\+) (?:"[ab]/(?P<path_q>[^"]+)"|[ab]/(?P<path>\S+))\s*$'
-)
+_FILE_MARKER_RE = re.compile(r'^(?:---|\+\+\+) (?:"[ab]/(?P<path_q>[^"]+)"|[ab]/(?P<path>\S+))\s*$')
 _WHITESPACE_RE = re.compile(r"\s+")
 
 _MIN_ANCHOR_QUOTE_LEN = 5
@@ -147,20 +143,14 @@ def _parse_diff(diff_text: str) -> dict[str, DiffFile]:
         if raw.startswith("+"):
             content = _normalize(raw[1:])
             if content:
-                current.changed_lines.append(
-                    ChangedLine(content=content, line_number=new_line_no, side="added")
-                )
+                current.changed_lines.append(ChangedLine(content=content, line_number=new_line_no, side="added"))
             new_line_no += 1
             continue
 
         if raw.startswith("-"):
             content = _normalize(raw[1:])
             if content:
-                current.changed_lines.append(
-                    ChangedLine(
-                        content=content, line_number=old_line_no, side="removed"
-                    )
-                )
+                current.changed_lines.append(ChangedLine(content=content, line_number=old_line_no, side="removed"))
             old_line_no += 1
             continue
 
@@ -258,18 +248,14 @@ def _match_causal(finding: dict, diff_file: DiffFile) -> bool:
     return False
 
 
-def _bucketize(
-    findings: list[dict], files: dict[str, DiffFile]
-) -> dict[str, list[dict]]:
+def _bucketize(findings: list[dict], files: dict[str, DiffFile]) -> dict[str, list[dict]]:
     anchored: list[dict] = []
     causal: list[dict] = []
     needs_review: list[dict] = []
 
     for finding in findings:
         if not isinstance(finding, dict):
-            needs_review.append(
-                {"raw": finding, "reason": "finding is not a JSON object"}
-            )
+            needs_review.append({"raw": finding, "reason": "finding is not a JSON object"})
             continue
 
         path = _finding_path(finding)
@@ -299,15 +285,11 @@ def _load_findings(path: Path) -> list[dict]:
     try:
         raw = path.read_text()
     except OSError as exc:
-        raise SystemExit(
-            f"[review_pr_validate] cannot read findings file: {exc}"
-        ) from exc
+        raise SystemExit(f"[review_pr_validate] cannot read findings file: {exc}") from exc
     try:
         data = json.loads(raw) if raw.strip() else []
     except json.JSONDecodeError as exc:
-        raise SystemExit(
-            f"[review_pr_validate] malformed findings JSON: {exc}"
-        ) from exc
+        raise SystemExit(f"[review_pr_validate] malformed findings JSON: {exc}") from exc
     if not isinstance(data, list):
         raise SystemExit("[review_pr_validate] findings JSON must be an array")
     return data
@@ -321,15 +303,9 @@ def _load_diff(path: Path) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    parser.add_argument(
-        "diff_file", help="Path to unified diff (e.g., output of `gh pr diff <PR>`)"
-    )
-    parser.add_argument(
-        "findings_file", help="Path to JSON array of findings from review agents"
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("diff_file", help="Path to unified diff (e.g., output of `gh pr diff <PR>`)")
+    parser.add_argument("findings_file", help="Path to JSON array of findings from review agents")
     args = parser.parse_args()
 
     try:

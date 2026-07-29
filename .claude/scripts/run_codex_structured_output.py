@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Run Codex in structured-output mode and validate the extracted payload."""
 
 from __future__ import annotations
@@ -16,9 +18,7 @@ class StructuredOutputError(RuntimeError):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Invoke Codex with a JSON schema and extract the final structured output."
-    )
+    parser = argparse.ArgumentParser(description="Invoke Codex with a JSON schema and extract the final structured output.")
     parser.add_argument(
         "--schema-path",
         type=Path,
@@ -161,9 +161,7 @@ def main() -> int:
             sandbox=args.sandbox,
         )
     except subprocess.TimeoutExpired as exc:
-        raise StructuredOutputError(
-            f"Codex timed out after {args.timeout_seconds}s"
-        ) from exc
+        raise StructuredOutputError(f"Codex timed out after {args.timeout_seconds}s") from exc
 
     if args.raw_output_path is not None:
         write_text(args.raw_output_path, completed.stdout)

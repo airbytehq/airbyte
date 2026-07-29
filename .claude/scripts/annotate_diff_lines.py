@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Emit a unified diff's changed lines with their resolved file line numbers.
 
 Usage: annotate_diff_lines.py <diff-file> [--out <path>]
@@ -31,11 +33,8 @@ import re
 import sys
 from pathlib import Path
 
-_DIFF_HEADER_RE = re.compile(
-    r"^diff --git "
-    r'(?:"a/(?P<old_q>[^"]+)"|a/(?P<old>\S+)) '
-    r'(?:"b/(?P<new_q>[^"]+)"|b/(?P<new>\S+))\s*$'
-)
+
+_DIFF_HEADER_RE = re.compile(r"^diff --git " r'(?:"a/(?P<old_q>[^"]+)"|a/(?P<old>\S+)) ' r'(?:"b/(?P<new_q>[^"]+)"|b/(?P<new>\S+))\s*$')
 _HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old>\d+)(?:,\d+)? \+(?P<new>\d+)(?:,\d+)? @@")
 
 
@@ -105,9 +104,7 @@ def annotate(diff_text: str) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("diff_file", help="Path to a unified diff")
     parser.add_argument("--out", type=Path, help="Write here instead of stdout")
     args = parser.parse_args()
