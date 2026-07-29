@@ -12,7 +12,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
-from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
@@ -216,60 +215,6 @@ class TestAdCampaignAnalyticsStream(TestCase):
 
         assert len(output.records) == 1
         assert len(output.state_messages) > 0
-
-    @HttpMocker()
-    def test_incremental_sync_migrates_legacy_partition_state(self, http_mocker: HttpMocker):
-        config = ConfigBuilder().with_start_date("2024-06-01").build()
-        campaign_ids = [1001, 1002]
-        analytics_record = _create_analytics_record(1002, "2024-06-05", 1000, 50)
-        analytics_record["dateRange"] = {
-            "start": {"year": 2024, "month": 6, "day": 5},
-            "end": {"year": 2024, "month": 6, "day": 5},
-        }
-
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(500).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
-        )
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.campaigns_endpoint(111111111).with_any_query_params().build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_campaign_record(campaign_id, 111111111, f"Campaign {campaign_id}") for campaign_id in campaign_ids]
-            ),
-        )
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.ad_analytics_endpoint().with_any_query_params().build(),
-            LinkedInAdsAnalyticsResponseBuilder().with_records([analytics_record]).build(),
-        )
-        legacy_state = (
-            StateBuilder()
-            .with_stream_state(
-                _STREAM_NAME,
-                {
-                    "use_global_cursor": False,
-                    "states": [
-                        {"partition": {"campaign_id": "1001"}, "cursor": {"end_date": "2024-06-10"}},
-                        {"partition": {"campaign_id": "1002"}, "cursor": {"end_date": "2024-06-01"}},
-                    ],
-                    "state": {"end_date": "2024-06-10"},
-                    "lookback_window": 0,
-                },
-            )
-            .build()
-        )
-
-        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-        source = get_source(config=config, catalog=catalog, state=legacy_state)
-        output = read(source, config=config, catalog=catalog, state=legacy_state)
-
-        analytics_requests = [request.url for request in http_mocker._mocker.request_history if "/adAnalytics" in request.url]
-        assert analytics_requests
-        assert all("dateRange=(start:(year:2024,month:6,day:1)" in request_url for request_url in analytics_requests)
-        assert [record.record.data["end_date"] for record in output.records] == ["2024-06-05"]
-        final_state = output.state_messages[-1].state.stream.stream_state.__dict__
-        assert final_state["use_global_cursor"] is True
-        assert "states" not in final_state
-        assert final_state["state"] == {"end_date": "2024-06-05"}
 
     @HttpMocker()
     def test_empty_parent_stream(self, http_mocker: HttpMocker):

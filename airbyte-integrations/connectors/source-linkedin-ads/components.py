@@ -13,9 +13,6 @@ from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -26,7 +23,6 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
-from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 
@@ -53,33 +49,6 @@ def _is_data_volume_rate_limit(response_or_exception: Optional[Union[requests.Re
         return False
 
     return isinstance(message, str) and all(part in message.casefold() for part in _DATA_VOLUME_RATE_LIMIT_MESSAGE_PARTS)
-
-
-class LinkedInAdsPerPartitionToGlobalStateMigration(StateMigration):
-    declarative_stream: DeclarativeStreamModel
-    config: Config
-
-    def __init__(self, declarative_stream: DeclarativeStreamModel, config: Config):
-        cursor = declarative_stream.incremental_sync
-        self._cursor_field = InterpolatedString.create(
-            cursor.cursor_field,
-            parameters=declarative_stream.parameters or {},
-        ).eval(config)
-
-    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return "states" in stream_state
-
-    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        if not self.should_migrate(stream_state):
-            return stream_state
-
-        cursor_values = [
-            state["cursor"][self._cursor_field] for state in stream_state.get("states", []) if self._cursor_field in state.get("cursor", {})
-        ]
-        if not cursor_values:
-            return stream_state.get("state", {})
-
-        return {self._cursor_field: min(cursor_values)}
 
 
 class SafeHttpClient(HttpClient):
