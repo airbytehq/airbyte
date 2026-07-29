@@ -122,3 +122,6 @@ airbyte-integrations/connectors/**/airbyte-cdk-load/
 # AI
 AGENT.md
 .claude/settings.local.json
+# Local agent working notes and generated review artifacts (PR review reports,
+# audit appendices, HTML output). Not source; keep them out of commits.
+thoughts/
