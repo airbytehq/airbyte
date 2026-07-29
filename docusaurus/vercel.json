@@ -1,5 +1,6 @@
 {
   "trailingSlash": false,
+  "cleanUrls": true,
   "redirects": [
     {
       "source": "/ai-agents/interfaces/ui/automations",
