@@ -303,6 +303,7 @@ definitions:
     jwt_payload:
       aud: "{{ json_loads(config['credentials']['service_account_info'])['token_uri'] }}"
       iss: "{{ json_loads(config['credentials']['service_account_info'])['client_email'] }}"
+      sub: "{{ config['credentials']['subject'] }}"
     additional_jwt_payload:
       scope: "https://www.googleapis.com/auth/gmail.readonly"
   oauth_authenticator:
@@ -429,6 +430,7 @@ spec:
             required:
               - auth_type
               - service_account_info
+              - subject
             properties:
               auth_type:
                 type: string
@@ -440,6 +442,12 @@ spec:
                 airbyte_secret: true
                 examples:
                   - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+              subject:
+                type: string
+                title: Delegated Account Email
+                description: 'Email of the mailbox to access. The service account impersonates this user through domain-wide delegation. Read more <a href="https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority">here</a>.'
+                examples:
+                  - user@yourdomain.com
       include_spam_and_trash:
         type: boolean
         description: >-

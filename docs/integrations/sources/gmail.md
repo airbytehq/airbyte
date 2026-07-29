@@ -60,7 +60,7 @@ Only a Google Workspace super administrator can configure domain-wide delegation
 2. Select **Gmail** from the source type dropdown.
 3. Choose your authentication method:
    - **Authenticate via Google (OAuth)** — Click **Authenticate your account** and complete the Google sign-in flow. **Airbyte Cloud** users authenticate against Airbyte's pre-registered OAuth app. **Airbyte Open Source** users provide their own **Client ID**, **Client Secret**, and **Refresh Token**.
-   - **Service Account Key Authentication** — Paste the contents of your service account JSON key file into the **Service Account Information** field.
+   - **Service Account Key Authentication** — Paste the contents of your service account JSON key file into the **Service Account Information** field and enter the mailbox to impersonate in **Delegated Account Email**.
 4. (Optional) Set **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. Only messages, drafts, and threads received on or after this date are replicated. If you leave it blank, the connector replicates the full mailbox history.
 5. (Optional) Toggle **Include Spam & Trash** to include drafts and messages from the Spam and Trash folders. Defaults to off.
 6. (Optional) Adjust **Number of concurrent workers** (between `2` and `10`, default `5`) to control how many requests the connector issues in parallel. Lower this value if you see frequent rate-limit errors.
@@ -139,6 +139,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2026-07-29 | [83233](https://github.com/airbytehq/airbyte/pull/83233) | Add required delegated subject email to service account auth |
 | 0.1.9 | 2026-07-28 | [82922](https://github.com/airbytehq/airbyte/pull/82922) | Update dependencies |
 | 0.1.8 | 2026-07-21 | [82425](https://github.com/airbytehq/airbyte/pull/82425) | Update dependencies |
 | 0.1.7 | 2026-07-14 | [81816](https://github.com/airbytehq/airbyte/pull/81816) | Update dependencies |
