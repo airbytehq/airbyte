@@ -1,6 +1,6 @@
 ---
 id: airbyte-shared-catalog_providers
-title: airbyte.shared.catalog_providers
+title: shared.catalog_providers
 ---
 
 Module airbyte.shared.catalog_providers

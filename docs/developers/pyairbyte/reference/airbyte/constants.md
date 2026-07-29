@@ -1,6 +1,6 @@
 ---
 id: airbyte-constants
-title: airbyte.constants
+title: constants
 ---
 
 Module airbyte.constants

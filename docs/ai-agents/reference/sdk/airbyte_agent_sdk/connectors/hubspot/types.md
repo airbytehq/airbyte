@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-hubspot-types
-title: airbyte_agent_sdk.connectors.hubspot.types
+title: hubspot.types
 ---
 
 Module airbyte_agent_sdk.connectors.hubspot.types

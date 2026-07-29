@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_drive-models
-title: airbyte_agent_sdk.connectors.google_drive.models
+title: google_drive.models
 ---
 
 Module airbyte_agent_sdk.connectors.google_drive.models

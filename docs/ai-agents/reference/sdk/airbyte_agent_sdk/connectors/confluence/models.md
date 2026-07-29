@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-confluence-models
-title: airbyte_agent_sdk.connectors.confluence.models
+title: confluence.models
 ---
 
 Module airbyte_agent_sdk.connectors.confluence.models

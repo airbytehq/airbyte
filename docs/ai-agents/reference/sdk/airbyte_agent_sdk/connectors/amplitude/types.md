@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-amplitude-types
-title: airbyte_agent_sdk.connectors.amplitude.types
+title: amplitude.types
 ---
 
 Module airbyte_agent_sdk.connectors.amplitude.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-base
-title: airbyte.caches.base
+title: caches.base
 ---
 
 Module airbyte.caches.base

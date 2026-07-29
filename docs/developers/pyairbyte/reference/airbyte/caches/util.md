@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-util
-title: airbyte.caches.util
+title: caches.util
 ---
 
 Module airbyte.caches.util

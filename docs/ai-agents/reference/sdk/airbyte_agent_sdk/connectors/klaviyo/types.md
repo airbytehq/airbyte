@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-klaviyo-types
-title: airbyte_agent_sdk.connectors.klaviyo.types
+title: klaviyo.types
 ---
 
 Module airbyte_agent_sdk.connectors.klaviyo.types

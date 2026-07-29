@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-index
-title: airbyte.mcp.index
+title: mcp.index
 ---
 
 # Module airbyte.mcp

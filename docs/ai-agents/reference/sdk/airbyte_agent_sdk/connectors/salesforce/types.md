@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-salesforce-types
-title: airbyte_agent_sdk.connectors.salesforce.types
+title: salesforce.types
 ---
 
 Module airbyte_agent_sdk.connectors.salesforce.types

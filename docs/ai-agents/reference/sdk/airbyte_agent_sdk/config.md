@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-config
-title: airbyte_agent_sdk.config
+title: config
 ---
 
 Module airbyte_agent_sdk.config

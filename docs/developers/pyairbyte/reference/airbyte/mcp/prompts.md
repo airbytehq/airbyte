@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-prompts
-title: airbyte.mcp.prompts
+title: mcp.prompts
 ---
 
 # Module airbyte.mcp.prompts

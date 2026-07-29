@@ -1,6 +1,6 @@
 ---
 id: airbyte-datasets-index
-title: airbyte.datasets.index
+title: datasets.index
 ---
 
 Module airbyte.datasets
@@ -176,8 +176,8 @@ Classes
         
         Filters are lazily applied to the dataset, so they can be chained together. For example:
         
-                dataset.with_filter("id > 5").with_filter("id < 10")
+                dataset.with_filter("id > 5").with_filter("id &lt; 10")
         
         is equivalent to:
         
-                dataset.with_filter("id > 5", "id < 10")
+                dataset.with_filter("id > 5", "id &lt; 10")

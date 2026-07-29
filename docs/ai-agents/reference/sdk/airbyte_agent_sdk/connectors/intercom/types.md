@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-intercom-types
-title: airbyte_agent_sdk.connectors.intercom.types
+title: intercom.types
 ---
 
 Module airbyte_agent_sdk.connectors.intercom.types

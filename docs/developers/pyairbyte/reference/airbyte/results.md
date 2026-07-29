@@ -1,6 +1,6 @@
 ---
 id: airbyte-results
-title: airbyte.results
+title: results
 ---
 
 Module airbyte.results

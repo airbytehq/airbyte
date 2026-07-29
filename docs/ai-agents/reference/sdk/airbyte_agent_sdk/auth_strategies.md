@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-auth_strategies
-title: airbyte_agent_sdk.auth_strategies
+title: auth_strategies
 ---
 
 Module airbyte_agent_sdk.auth_strategies
@@ -52,13 +52,14 @@ Functions
         The unwrapped string value, or empty string if None
     
     Examples:
-        >>> extract_secret_value(SecretStr("my_secret"))
-        'my_secret'
-        >>> extract_secret_value("plain_value")
-        'plain_value'
-        >>> extract_secret_value(None)
-        ''
-
+```python
+>>> extract_secret_value(SecretStr("my_secret"))
+'my_secret'
+>>> extract_secret_value("plain_value")
+'plain_value'
+>>> extract_secret_value(None)
+''
+```
 Classes
 -------
 
@@ -424,31 +425,32 @@ Classes
             Example: \{"Amazon-Advertising-API-ClientId": "\{\{ client_id \}\}"\}
     
     Examples:
-        GitHub (simple):
-            \{"header": "Authorization", "prefix": "Bearer"\}
-    
-        Zendesk (with subdomain):
-            \{
-                "refresh_url": "https://\{\{subdomain\}\}.zendesk.com/oauth/tokens",
-                "subdomain": "mycompany",
-                "auth_style": "body"
-            \}
-    
-        Custom API (JSON body, basic auth):
-            \{
-                "refresh_url": "https://api.example.com/token",
-                "auth_style": "basic",
-                "body_format": "json"
-            \}
-    
-        Amazon Ads (OAuth + additional client ID header):
-            \{
-                "refresh_url": "https://api.amazon.com/auth/o2/token",
-                "additional_headers": \{
-                    "Amazon-Advertising-API-ClientId": "\{\{ client_id \}\}"
-                \}
-            \}
+```python
+GitHub (simple):
+    \{"header": "Authorization", "prefix": "Bearer"\}
 
+Zendesk (with subdomain):
+    \{
+        "refresh_url": "https://\{\{subdomain\}\}.zendesk.com/oauth/tokens",
+        "subdomain": "mycompany",
+        "auth_style": "body"
+    \}
+
+Custom API (JSON body, basic auth):
+    \{
+        "refresh_url": "https://api.example.com/token",
+        "auth_style": "basic",
+        "body_format": "json"
+    \}
+
+Amazon Ads (OAuth + additional client ID header):
+    \{
+        "refresh_url": "https://api.amazon.com/auth/o2/token",
+        "additional_headers": \{
+            "Amazon-Advertising-API-ClientId": "\{\{ client_id \}\}"
+        \}
+    \}
+```
     ### Ancestors (in MRO)
 
     * builtins.dict
@@ -496,12 +498,13 @@ Classes
             Can be either a SecretStr (recommended) or plain string.
     
     Examples:
-        Basic usage with string:
-            \{"access_token": "gho_abc123xyz..."\}
-    
-        Secure usage with SecretStr:
-            \{"access_token": SecretStr("gho_abc123xyz...")\}
+```python
+Basic usage with string:
+    \{"access_token": "gho_abc123xyz..."\}
 
+Secure usage with SecretStr:
+    \{"access_token": SecretStr("gho_abc123xyz...")\}
+```
     ### Ancestors (in MRO)
 
     * builtins.dict
@@ -661,27 +664,28 @@ Classes
             account key format).
     
     Examples:
-        Full refresh capability:
-            \{
-                "access_token": "eyJhbGc...",
-                "refresh_token": "def502...",
-                "client_id": "my_client_id",
-                "client_secret": SecretStr("my_secret"),
-                "token_type": "Bearer"
-            \}
-    
-        Public client (no secret):
-            \{
-                "access_token": "eyJhbGc...",
-                "refresh_token": "def502...",
-                "client_id": "mobile_app_id"
-            \}
-    
-        No refresh (access_token only):
-            \{
-                "access_token": "long_lived_token"
-            \}
+```python
+Full refresh capability:
+    \{
+        "access_token": "eyJhbGc...",
+        "refresh_token": "def502...",
+        "client_id": "my_client_id",
+        "client_secret": SecretStr("my_secret"),
+        "token_type": "Bearer"
+    \}
 
+Public client (no secret):
+    \{
+        "access_token": "eyJhbGc...",
+        "refresh_token": "def502...",
+        "client_id": "mobile_app_id"
+    \}
+
+No refresh (access_token only):
+    \{
+        "access_token": "long_lived_token"
+    \}
+```
     ### Ancestors (in MRO)
 
     * builtins.dict

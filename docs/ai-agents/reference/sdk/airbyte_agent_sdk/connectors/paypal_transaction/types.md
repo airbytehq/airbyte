@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-paypal_transaction-types
-title: airbyte_agent_sdk.connectors.paypal_transaction.types
+title: paypal_transaction.types
 ---
 
 Module airbyte_agent_sdk.connectors.paypal_transaction.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte-sources-util
-title: airbyte.sources.util
+title: sources.util
 ---
 
 Module airbyte.sources.util

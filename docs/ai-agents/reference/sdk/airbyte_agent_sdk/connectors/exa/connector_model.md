@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-exa-connector_model
-title: airbyte_agent_sdk.connectors.exa.connector_model
+title: exa.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.exa.connector_model

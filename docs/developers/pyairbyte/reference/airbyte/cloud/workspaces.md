@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-workspaces
-title: airbyte.cloud.workspaces
+title: cloud.workspaces
 ---
 
 Module airbyte.cloud.workspaces

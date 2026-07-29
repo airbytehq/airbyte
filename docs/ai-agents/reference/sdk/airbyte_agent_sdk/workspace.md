@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-workspace
-title: airbyte_agent_sdk.workspace
+title: workspace
 ---
 
 Module airbyte_agent_sdk.workspace
@@ -85,12 +85,13 @@ Classes
         The caller is responsible for closing the executor when done.
         
         Example:
-            stripe = await ws.get_connector(name="stripe")
-            try:
-                result = await stripe.execute(...)
-            finally:
-                await stripe.close()
-
+```python
+stripe = await ws.get_connector(name="stripe")
+try:
+    result = await stripe.execute(...)
+finally:
+    await stripe.close()
+```
     `get_workflow(self, workflow_id: str) ‑> airbyte_agent_sdk.executor.models.WorkflowInfo`
     :   Get a single workflow by ID.
 

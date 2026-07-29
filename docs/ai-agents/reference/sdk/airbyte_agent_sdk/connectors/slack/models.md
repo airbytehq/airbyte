@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-slack-models
-title: airbyte_agent_sdk.connectors.slack.models
+title: slack.models
 ---
 
 Module airbyte_agent_sdk.connectors.slack.models

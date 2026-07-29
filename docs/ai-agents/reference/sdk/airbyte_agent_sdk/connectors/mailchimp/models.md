@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-mailchimp-models
-title: airbyte_agent_sdk.connectors.mailchimp.models
+title: mailchimp.models
 ---
 
 Module airbyte_agent_sdk.connectors.mailchimp.models

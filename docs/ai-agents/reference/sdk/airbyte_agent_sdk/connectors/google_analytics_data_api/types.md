@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_analytics_data_api-types
-title: airbyte_agent_sdk.connectors.google_analytics_data_api.types
+title: google_analytics_data_api.types
 ---
 
 Module airbyte_agent_sdk.connectors.google_analytics_data_api.types

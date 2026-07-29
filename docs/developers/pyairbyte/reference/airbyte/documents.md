@@ -1,6 +1,6 @@
 ---
 id: airbyte-documents
-title: airbyte.documents
+title: documents
 ---
 
 Module airbyte.documents

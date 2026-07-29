@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-jira-types
-title: airbyte_agent_sdk.connectors.jira.types
+title: jira.types
 ---
 
 Module airbyte_agent_sdk.connectors.jira.types

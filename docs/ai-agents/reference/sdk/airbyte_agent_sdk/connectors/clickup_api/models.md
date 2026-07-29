@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-clickup_api-models
-title: airbyte_agent_sdk.connectors.clickup_api.models
+title: clickup_api.models
 ---
 
 Module airbyte_agent_sdk.connectors.clickup_api.models

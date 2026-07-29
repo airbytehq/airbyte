@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-http_client
-title: airbyte_agent_sdk.http_client
+title: http_client
 ---
 
 Module airbyte_agent_sdk.http_client

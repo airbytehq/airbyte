@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-zendesk_chat-types
-title: airbyte_agent_sdk.connectors.zendesk_chat.types
+title: zendesk_chat.types
 ---
 
 Module airbyte_agent_sdk.connectors.zendesk_chat.types

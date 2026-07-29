@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-snowflake
-title: airbyte.caches.snowflake
+title: caches.snowflake
 ---
 
 Module airbyte.caches.snowflake

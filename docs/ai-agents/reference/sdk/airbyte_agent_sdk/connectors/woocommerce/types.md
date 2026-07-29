@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-woocommerce-types
-title: airbyte_agent_sdk.connectors.woocommerce.types
+title: woocommerce.types
 ---
 
 Module airbyte_agent_sdk.connectors.woocommerce.types

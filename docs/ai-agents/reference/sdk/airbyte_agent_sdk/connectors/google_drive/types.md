@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_drive-types
-title: airbyte_agent_sdk.connectors.google_drive.types
+title: google_drive.types
 ---
 
 Module airbyte_agent_sdk.connectors.google_drive.types

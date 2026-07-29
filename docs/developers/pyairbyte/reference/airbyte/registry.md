@@ -1,6 +1,6 @@
 ---
 id: airbyte-registry
-title: airbyte.registry
+title: registry
 ---
 
 Module airbyte.registry
@@ -62,10 +62,11 @@ Functions
         AirbyteConnectorNotRegisteredError: If the connector is not found in the registry.
     
     Example:
-        >>> versions = get_connector_version_history("source-faker", num_versions_to_validate=3)
-        >>> for v in versions[:5]:
-        ...     print(f"\{v.version\}: \{v.release_date\}")
-
+```python
+>>> versions = get_connector_version_history("source-faker", num_versions_to_validate=3)
+>>> for v in versions[:5]:
+...     print(f"\{v.version\}: \{v.release_date\}")
+```
 Classes
 -------
 

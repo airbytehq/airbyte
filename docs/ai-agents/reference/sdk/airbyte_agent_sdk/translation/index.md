@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-translation-index
-title: airbyte_agent_sdk.translation.index
+title: translation.index
 ---
 
 Module airbyte_agent_sdk.translation

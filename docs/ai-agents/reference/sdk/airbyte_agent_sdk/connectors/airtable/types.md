@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-airtable-types
-title: airbyte_agent_sdk.connectors.airtable.types
+title: airtable.types
 ---
 
 Module airbyte_agent_sdk.connectors.airtable.types

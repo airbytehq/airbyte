@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-types
-title: airbyte_agent_sdk.types
+title: types
 ---
 
 Module airbyte_agent_sdk.types
@@ -74,25 +74,26 @@ Classes
         connector_id: Specific connector/source ID (skips lookup if provided)
     
     Examples:
-        # Hosted mode with connector_id (no lookup needed)
-        connector = GongConnector(
-            auth_config=AirbyteAuthConfig(
-                airbyte_client_id="client_abc123",
-                airbyte_client_secret="secret_xyz789",
-                connector_id="existing-source-uuid"
-            )
-        )
-    
-        # Hosted mode with workspace_name (lookup by workspace)
-        connector = GongConnector(
-            auth_config=AirbyteAuthConfig(
-                workspace_name="user-123",
-                organization_id="00000000-0000-0000-0000-000000000123",
-                airbyte_client_id="client_abc123",
-                airbyte_client_secret="secret_xyz789"
-            )
-        )
-    
+```python
+# Hosted mode with connector_id (no lookup needed)
+connector = GongConnector(
+    auth_config=AirbyteAuthConfig(
+        airbyte_client_id="client_abc123",
+        airbyte_client_secret="secret_xyz789",
+        connector_id="existing-source-uuid"
+    )
+)
+
+# Hosted mode with workspace_name (lookup by workspace)
+connector = GongConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="user-123",
+        organization_id="00000000-0000-0000-0000-000000000123",
+        airbyte_client_id="client_abc123",
+        airbyte_client_secret="secret_xyz789"
+    )
+)
+```
     Create a new model by parsing and validating input data from keyword arguments.
     
     Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
@@ -199,10 +200,11 @@ Classes
     configuration, and user-facing credential specification.
     
     Example:
-        For a connector supporting both OAuth2 and API Key auth:
-        - AuthOption(scheme_name="oauth", type=OAUTH2, ...)
-        - AuthOption(scheme_name="apikey", type=BEARER, ...)
-    
+```python
+For a connector supporting both OAuth2 and API Key auth:
+- AuthOption(scheme_name="oauth", type=OAUTH2, ...)
+- AuthOption(scheme_name="apikey", type=BEARER, ...)
+```
     Create a new model by parsing and validating input data from keyword arguments.
     
     Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be

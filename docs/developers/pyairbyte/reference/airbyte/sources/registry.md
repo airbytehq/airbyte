@@ -1,6 +1,6 @@
 ---
 id: airbyte-sources-registry
-title: airbyte.sources.registry
+title: sources.registry
 ---
 
 Module airbyte.sources.registry

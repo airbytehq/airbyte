@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-salesforce-models
-title: airbyte_agent_sdk.connectors.salesforce.models
+title: salesforce.models
 ---
 
 Module airbyte_agent_sdk.connectors.salesforce.models

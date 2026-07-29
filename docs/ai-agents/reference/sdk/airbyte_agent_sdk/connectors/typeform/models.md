@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-typeform-models
-title: airbyte_agent_sdk.connectors.typeform.models
+title: typeform.models
 ---
 
 Module airbyte_agent_sdk.connectors.typeform.models

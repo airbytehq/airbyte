@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-pinterest-connector_model
-title: airbyte_agent_sdk.connectors.pinterest.connector_model
+title: pinterest.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.pinterest.connector_model

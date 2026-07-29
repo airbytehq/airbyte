@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-zoho_crm-types
-title: airbyte_agent_sdk.connectors.zoho_crm.types
+title: zoho_crm.types
 ---
 
 Module airbyte_agent_sdk.connectors.zoho_crm.types

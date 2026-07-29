@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-incident_io-types
-title: airbyte_agent_sdk.connectors.incident_io.types
+title: incident_io.types
 ---
 
 Module airbyte_agent_sdk.connectors.incident_io.types

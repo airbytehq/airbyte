@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-stripe-types
-title: airbyte_agent_sdk.connectors.stripe.types
+title: stripe.types
 ---
 
 Module airbyte_agent_sdk.connectors.stripe.types

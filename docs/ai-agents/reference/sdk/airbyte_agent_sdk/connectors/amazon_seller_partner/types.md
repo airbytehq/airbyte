@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-amazon_seller_partner-types
-title: airbyte_agent_sdk.connectors.amazon_seller_partner.types
+title: amazon_seller_partner.types
 ---
 
 Module airbyte_agent_sdk.connectors.amazon_seller_partner.types

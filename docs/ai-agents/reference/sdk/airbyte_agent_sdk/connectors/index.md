@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-index
-title: airbyte_agent_sdk.connectors.index
+title: connectors
 ---
 
 Module airbyte_agent_sdk.connectors

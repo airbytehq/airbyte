@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-chargebee-models
-title: airbyte_agent_sdk.connectors.chargebee.models
+title: chargebee.models
 ---
 
 Module airbyte_agent_sdk.connectors.chargebee.models

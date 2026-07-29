@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_ads-connector
-title: airbyte_agent_sdk.connectors.google_ads.connector
+title: google_ads.connector
 ---
 
 Module airbyte_agent_sdk.connectors.google_ads.connector
@@ -502,27 +502,28 @@ Classes
             Called with new_tokens dict when tokens are refreshed. Can be sync or async.
             Example: lambda tokens: save_to_database(tokens)
     Examples:
-        # Local mode (direct API calls)
-        connector = GoogleAdsConnector(auth_config=GoogleAdsAuthConfig(client_id="...", client_secret="...", refresh_token="...", developer_token="..."))
-        # Hosted mode with explicit connector_id (no lookup needed)
-        connector = GoogleAdsConnector(
-            auth_config=AirbyteAuthConfig(
-                airbyte_client_id="client_abc123",
-                airbyte_client_secret="secret_xyz789",
-                connector_id="existing-source-uuid"
-            )
-        )
-    
-        # Hosted mode with lookup by workspace_name
-        connector = GoogleAdsConnector(
-            auth_config=AirbyteAuthConfig(
-                workspace_name="user-123",
-                organization_id="00000000-0000-0000-0000-000000000123",
-                airbyte_client_id="client_abc123",
-                airbyte_client_secret="secret_xyz789"
-            )
-        )
+```python
+# Local mode (direct API calls)
+connector = GoogleAdsConnector(auth_config=GoogleAdsAuthConfig(client_id="...", client_secret="...", refresh_token="...", developer_token="..."))
+# Hosted mode with explicit connector_id (no lookup needed)
+connector = GoogleAdsConnector(
+    auth_config=AirbyteAuthConfig(
+        airbyte_client_id="client_abc123",
+        airbyte_client_secret="secret_xyz789",
+        connector_id="existing-source-uuid"
+    )
+)
 
+# Hosted mode with lookup by workspace_name
+connector = GoogleAdsConnector(
+    auth_config=AirbyteAuthConfig(
+        workspace_name="user-123",
+        organization_id="00000000-0000-0000-0000-000000000123",
+        airbyte_client_id="client_abc123",
+        airbyte_client_secret="secret_xyz789"
+    )
+)
+```
     ### Class variables
 
     `connector_name`
@@ -557,20 +558,21 @@ Classes
         - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            connector = GoogleAdsConnector(...)
-        
-            @GoogleAdsConnector.agent_tool()
-            async def execute(entity: str, action: str, params: dict | None = None):
-                return await connector.execute(entity=entity, action=action, params=params or \{\})
-        
-            @GoogleAdsConnector.agent_tool()
-            async def inspect_connector():
-                return await connector.inspect_connector()
-        
-            @GoogleAdsConnector.agent_tool()
-            async def read_skill_docs(section: str | None = None):
-                return await connector.read_skill_docs(section)
-        
+```python
+connector = GoogleAdsConnector(...)
+
+@GoogleAdsConnector.agent_tool()
+async def execute(entity: str, action: str, params: dict | None = None):
+    return await connector.execute(entity=entity, action=action, params=params or \{\})
+
+@GoogleAdsConnector.agent_tool()
+async def inspect_connector():
+    return await connector.inspect_connector()
+
+@GoogleAdsConnector.agent_tool()
+async def read_skill_docs(section: str | None = None):
+    return await connector.read_skill_docs(section)
+```
         Args:
             role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
                 None (default) infers the role from the decorated function's
@@ -689,12 +691,13 @@ Classes
             GoogleAdsCheckResult with status ("healthy" or "unhealthy") and optional error message
         
         Example:
-            result = await connector.check()
-            if result.status == "healthy":
-                print("Connection verified!")
-            else:
-                print(f"Check failed: \{result.error\}")
-
+```python
+result = await connector.check()
+if result.status == "healthy":
+    print("Connection verified!")
+else:
+    print(f"Check failed: \{result.error\}")
+```
     `close(self)`
     :   Close the connector and release resources.
 
@@ -708,10 +711,11 @@ Classes
             JSON schema dict describing the entity structure, or None if not found.
         
         Example:
-            schema = connector.entity_schema("contacts")
-            if schema:
-                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
-
+```python
+schema = connector.entity_schema("contacts")
+if schema:
+    print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+```
     `execute(self, entity: str, action: "Literal['list', 'update', 'create', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
@@ -732,12 +736,13 @@ Classes
             Typed response based on the operation
         
         Example:
-            customer = await connector.execute(
-                entity="customers",
-                action="get",
-                params=\{"id": "cus_123"\}
-            )
-
+```python
+customer = await connector.execute(
+    entity="customers",
+    action="get",
+    params=\{"id": "cus_123"\}
+)
+```
     `inspect_connector(self) ‑> dict[str, typing.Any]`
     :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
         
@@ -746,9 +751,10 @@ Classes
         warning instead of a hosted inspection.
         
         Example:
-            info = await connector.inspect_connector()
-            print(info["docs_skill_id"])
-
+```python
+info = await connector.inspect_connector()
+print(info["docs_skill_id"])
+```
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
         
@@ -759,10 +765,11 @@ Classes
         - parameters: Dict mapping action -> list of parameter dicts
         
         Example:
-            entities = connector.list_entities()
-            for entity in entities:
-                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
-
+```python
+entities = connector.list_entities()
+for entity in entities:
+    print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+```
     `read_skill_docs(self, section: str | None = None) ‑> str`
     :   Read this connector's usage docs, rendered to text.
         
@@ -772,9 +779,10 @@ Classes
         ignored.
         
         Example:
-            outline = await connector.read_skill_docs()
-            details = await connector.read_skill_docs(section="entity:contacts")
-
+```python
+outline = await connector.read_skill_docs()
+details = await connector.read_skill_docs(section="entity:contacts")
+```
 <a id="LabelsQuery"></a>
 
 `LabelsQuery(connector: GoogleAdsConnector)`

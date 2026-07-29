@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-granola-types
-title: airbyte_agent_sdk.connectors.granola.types
+title: granola.types
 ---
 
 Module airbyte_agent_sdk.connectors.granola.types

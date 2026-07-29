@@ -1,6 +1,6 @@
 ---
 id: airbyte-progress
-title: airbyte.progress
+title: progress
 ---
 
 Module airbyte.progress

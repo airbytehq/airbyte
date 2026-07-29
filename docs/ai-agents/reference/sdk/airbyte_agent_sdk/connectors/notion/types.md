@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-notion-types
-title: airbyte_agent_sdk.connectors.notion.types
+title: notion.types
 ---
 
 Module airbyte_agent_sdk.connectors.notion.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-postgres
-title: airbyte.caches.postgres
+title: caches.postgres
 ---
 
 Module airbyte.caches.postgres

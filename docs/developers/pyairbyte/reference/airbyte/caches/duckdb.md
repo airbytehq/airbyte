@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-duckdb
-title: airbyte.caches.duckdb
+title: caches.duckdb
 ---
 
 Module airbyte.caches.duckdb

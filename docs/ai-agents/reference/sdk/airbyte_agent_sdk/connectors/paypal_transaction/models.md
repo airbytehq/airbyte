@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-paypal_transaction-models
-title: airbyte_agent_sdk.connectors.paypal_transaction.models
+title: paypal_transaction.models
 ---
 
 Module airbyte_agent_sdk.connectors.paypal_transaction.models

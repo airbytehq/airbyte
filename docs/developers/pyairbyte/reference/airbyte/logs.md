@@ -1,6 +1,6 @@
 ---
 id: airbyte-logs
-title: airbyte.logs
+title: logs
 ---
 
 Module airbyte.logs

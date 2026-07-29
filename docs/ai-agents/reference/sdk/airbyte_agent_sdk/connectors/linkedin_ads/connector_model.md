@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-linkedin_ads-connector_model
-title: airbyte_agent_sdk.connectors.linkedin_ads.connector_model
+title: linkedin_ads.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.linkedin_ads.connector_model

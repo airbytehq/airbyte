@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-sendgrid-models
-title: airbyte_agent_sdk.connectors.sendgrid.models
+title: sendgrid.models
 ---
 
 Module airbyte_agent_sdk.connectors.sendgrid.models

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-amplitude-models
-title: airbyte_agent_sdk.connectors.amplitude.models
+title: amplitude.models
 ---
 
 Module airbyte_agent_sdk.connectors.amplitude.models

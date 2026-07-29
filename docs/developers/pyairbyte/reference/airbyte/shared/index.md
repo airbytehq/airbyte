@@ -1,6 +1,6 @@
 ---
 id: airbyte-shared-index
-title: airbyte.shared.index
+title: shared.index
 ---
 
 Module airbyte.shared

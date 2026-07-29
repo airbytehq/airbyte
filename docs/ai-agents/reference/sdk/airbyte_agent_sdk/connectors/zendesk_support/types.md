@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-zendesk_support-types
-title: airbyte_agent_sdk.connectors.zendesk_support.types
+title: zendesk_support.types
 ---
 
 Module airbyte_agent_sdk.connectors.zendesk_support.types

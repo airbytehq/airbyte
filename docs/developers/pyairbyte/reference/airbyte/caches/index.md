@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-index
-title: airbyte.caches.index
+title: caches.index
 ---
 
 Module airbyte.caches

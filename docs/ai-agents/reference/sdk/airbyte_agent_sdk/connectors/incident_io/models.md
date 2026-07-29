@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-incident_io-models
-title: airbyte_agent_sdk.connectors.incident_io.models
+title: incident_io.models
 ---
 
 Module airbyte_agent_sdk.connectors.incident_io.models

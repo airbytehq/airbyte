@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-klaviyo-models
-title: airbyte_agent_sdk.connectors.klaviyo.models
+title: klaviyo.models
 ---
 
 Module airbyte_agent_sdk.connectors.klaviyo.models

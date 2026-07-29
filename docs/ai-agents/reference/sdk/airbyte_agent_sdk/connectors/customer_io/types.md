@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-customer_io-types
-title: airbyte_agent_sdk.connectors.customer_io.types
+title: customer_io.types
 ---
 
 Module airbyte_agent_sdk.connectors.customer_io.types

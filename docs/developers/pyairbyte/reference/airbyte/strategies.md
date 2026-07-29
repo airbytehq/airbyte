@@ -1,6 +1,6 @@
 ---
 id: airbyte-strategies
-title: airbyte.strategies
+title: strategies
 ---
 
 Module airbyte.strategies

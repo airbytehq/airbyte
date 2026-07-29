@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-woocommerce-models
-title: airbyte_agent_sdk.connectors.woocommerce.models
+title: woocommerce.models
 ---
 
 Module airbyte_agent_sdk.connectors.woocommerce.models

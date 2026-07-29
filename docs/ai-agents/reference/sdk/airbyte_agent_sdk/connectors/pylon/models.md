@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-pylon-models
-title: airbyte_agent_sdk.connectors.pylon.models
+title: pylon.models
 ---
 
 Module airbyte_agent_sdk.connectors.pylon.models

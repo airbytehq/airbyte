@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-facebook_marketing-types
-title: airbyte_agent_sdk.connectors.facebook_marketing.types
+title: facebook_marketing.types
 ---
 
 Module airbyte_agent_sdk.connectors.facebook_marketing.types

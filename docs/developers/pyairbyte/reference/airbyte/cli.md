@@ -1,6 +1,6 @@
 ---
 id: airbyte-cli
-title: airbyte.cli
+title: cli
 ---
 
 Module airbyte.cli

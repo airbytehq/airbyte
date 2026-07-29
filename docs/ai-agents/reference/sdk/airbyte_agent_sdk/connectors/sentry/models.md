@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-sentry-models
-title: airbyte_agent_sdk.connectors.sentry.models
+title: sentry.models
 ---
 
 Module airbyte_agent_sdk.connectors.sentry.models

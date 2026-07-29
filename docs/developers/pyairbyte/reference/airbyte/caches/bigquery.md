@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-bigquery
-title: airbyte.caches.bigquery
+title: caches.bigquery
 ---
 
 Module airbyte.caches.bigquery

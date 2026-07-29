@@ -1,6 +1,6 @@
 ---
 id: airbyte-exceptions
-title: airbyte.exceptions
+title: exceptions
 ---
 
 Module airbyte.exceptions

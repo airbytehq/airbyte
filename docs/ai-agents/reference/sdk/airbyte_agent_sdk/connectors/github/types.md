@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-github-types
-title: airbyte_agent_sdk.connectors.github.types
+title: github.types
 ---
 
 Module airbyte_agent_sdk.connectors.github.types

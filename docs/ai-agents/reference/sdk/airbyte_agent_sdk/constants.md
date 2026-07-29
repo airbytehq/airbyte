@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-constants
-title: airbyte_agent_sdk.constants
+title: constants
 ---
 
 Module airbyte_agent_sdk.constants
