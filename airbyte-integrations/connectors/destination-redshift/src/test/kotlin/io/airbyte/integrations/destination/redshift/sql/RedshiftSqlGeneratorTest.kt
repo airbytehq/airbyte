@@ -366,8 +366,10 @@ internal class RedshiftSqlGeneratorTest {
         // Non-PK columns should be in SET
         assertTrue(setSection.contains(""""name" = deduped_source."name""""))
         assertTrue(setSection.contains(""""updated_at" = deduped_source."updated_at""""))
-        // PK should be in WHERE with NULL-safe matching
-        assertTrue(
+        // PK should be in WHERE with plain equijoin (Redshift requires this for UPDATE...FROM)
+        assertTrue(sql.contains(""""ns"."final"."id" = deduped_source."id""""))
+        // Should NOT contain NULL-safe OR pattern for PK (breaks Redshift equijoin requirement)
+        assertFalse(
             sql.contains(
                 """("ns"."final"."id" = deduped_source."id" OR ("ns"."final"."id" IS NULL AND deduped_source."id" IS NULL))"""
             )
@@ -443,7 +445,7 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `updateExistingRows uses NULL-safe PK matching with composite keys`() {
+    fun `updateExistingRows uses equijoin PK matching with composite keys`() {
         val target = TableName(namespace = "ns", name = "final")
         val sql =
             sqlGenerator.updateExistingRows(
@@ -456,13 +458,16 @@ internal class RedshiftSqlGeneratorTest {
                 cdcHardDeleteEnabled = false,
             )
 
-        // Each PK column should have NULL-safe matching
-        assertTrue(
+        // Each PK column should use plain equijoin (Redshift requires this for UPDATE...FROM)
+        assertTrue(sql.contains(""""ns"."final"."id" = deduped_source."id""""))
+        assertTrue(sql.contains(""""ns"."final"."org_id" = deduped_source."org_id""""))
+        // Should NOT contain NULL-safe OR pattern for PKs
+        assertFalse(
             sql.contains(
                 """("ns"."final"."id" = deduped_source."id" OR ("ns"."final"."id" IS NULL AND deduped_source."id" IS NULL))"""
             )
         )
-        assertTrue(
+        assertFalse(
             sql.contains(
                 """("ns"."final"."org_id" = deduped_source."org_id" OR ("ns"."final"."org_id" IS NULL AND deduped_source."org_id" IS NULL))"""
             )

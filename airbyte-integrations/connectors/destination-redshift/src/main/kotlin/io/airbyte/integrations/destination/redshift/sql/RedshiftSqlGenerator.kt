@@ -309,12 +309,12 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cursorTargetColumn: String?,
         cdcHardDeleteEnabled: Boolean,
     ): String {
+        // Redshift requires UPDATE...FROM to use a pure equijoin predicate (simple =)
+        val target = getFullyQualifiedName(targetTableName)
         val primaryKeysMatches =
-            buildNullSafePkMatch(
-                primaryKeyTargetColumns,
-                getFullyQualifiedName(targetTableName),
-                dedupTableAlias,
-            )
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "$target.$pk = $dedupTableAlias.$pk"
+            }
 
         val cursorComparison =
             buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
