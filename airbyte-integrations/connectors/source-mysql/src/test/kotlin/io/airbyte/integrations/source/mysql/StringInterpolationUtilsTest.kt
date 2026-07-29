@@ -22,8 +22,11 @@ class StringInterpolationUtilsTest {
         for (boundary in result) {
             boundary.codePoints().forEach { cp ->
                 assertTrue(cp <= ceiling) {
-                    "boundary contains U+%04X above observed ceiling U+%04X: %s"
-                        .format(cp, ceiling, boundary)
+                    "boundary contains U+%04X above observed ceiling U+%04X: %s".format(
+                        cp,
+                        ceiling,
+                        boundary
+                    )
                 }
                 assertTrue(cp !in 0xD800..0xDFFF) {
                     "boundary contains surrogate U+%04X: %s".format(cp, boundary)
@@ -142,7 +145,6 @@ class StringInterpolationUtilsTest {
         // unpaired surrogates.
         assertWithinObservedCharset("0c👂🐆么🍡", "𠇿亾c📘🏃g🍏w🖢🍫c3丑8", 28)
     }
-
 
     @Test
     fun `guidInterpolatedStrings should generate correct number of steps`() {
