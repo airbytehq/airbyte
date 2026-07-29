@@ -61,7 +61,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.31 | 2026-07-28 | [68590](https://github.com/airbytehq/airbyte/pull/68590) | Add Facebook and Instagram account timeline streams by [@Anatole-DV](https://github.com/Anatole-DV) |
+| 0.0.31 | 2026-07-28 | [83214](https://github.com/airbytehq/airbyte/pull/83214) | Add Facebook and Instagram account timeline streams, originally contributed by [@Anatole-DV](https://github.com/Anatole-DV) in [68590](https://github.com/airbytehq/airbyte/pull/68590) |
 | 0.0.30 | 2026-07-28 | [82987](https://github.com/airbytehq/airbyte/pull/82987) | Update dependencies |
 | 0.0.29 | 2026-07-21 | [82487](https://github.com/airbytehq/airbyte/pull/82487) | Update dependencies |
 | 0.0.28 | 2026-07-14 | [81904](https://github.com/airbytehq/airbyte/pull/81904) | Update dependencies |
