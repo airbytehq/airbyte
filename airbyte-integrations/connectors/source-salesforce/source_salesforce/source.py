@@ -3,19 +3,23 @@
 #
 
 import logging
+import sys
 from datetime import datetime, timedelta, timezone
 from queue import Queue
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import isodate
+import orjson
 import pendulum
 from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
+from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -94,11 +98,34 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         self.state = state
         self._job_tracker = JobTracker(limit=100)
 
-    @staticmethod
-    def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
+    def _get_sf_object(self, config: MutableMapping[str, Any]) -> Salesforce:
         sf = Salesforce(**config)
+        # Persist on every rotation, not just this first login: under Refresh Token Rotation the
+        # connector also re-logs-in mid-sync (proactive refresh and on INVALID_SESSION_ID), and each
+        # of those rotates the single-use refresh token too. Registering before login() covers the
+        # initial rotation as well.
+        sf.set_refresh_token_observer(lambda new_refresh_token: self._persist_rotated_refresh_token(new_refresh_token, config))
         sf.login()
         return sf
+
+    def _persist_rotated_refresh_token(self, new_refresh_token: str, config: MutableMapping[str, Any]) -> None:
+        if not new_refresh_token or new_refresh_token == config.get("refresh_token"):
+            return
+        config["refresh_token"] = new_refresh_token
+        message = create_connector_config_control_message(config)
+        # Emit the CONNECTOR_CONFIG control message straight to stdout so the platform persists the
+        # rotated token immediately (under RTR the previous token is already invalid, and check/discover
+        # don't run the concurrent read loop that would drain the message repository).
+        #
+        # This is written as a SINGLE stdout write with the newline embedded — not print() and not the
+        # message repository. Rotation can fire on a worker thread mid-sync (proactive refresh / retry
+        # after INVALID_SESSION_ID), so a two-write print() (payload, then "\n") could interleave with the
+        # main thread's record/state line and corrupt it. A lone write() is atomic under the GIL, matching
+        # how the CDK entrypoint emits every other message. Ordering relative to records/state does not
+        # matter for a config control message.
+        serialized = orjson.dumps(AirbyteMessageSerializer.dump(message)).decode()
+        sys.stdout.write(serialized + "\n")
+        sys.stdout.flush()
 
     @staticmethod
     def _validate_stream_slice_step(stream_slice_step: str):

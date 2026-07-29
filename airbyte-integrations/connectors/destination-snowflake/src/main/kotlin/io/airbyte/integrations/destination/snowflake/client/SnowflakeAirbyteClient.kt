@@ -223,18 +223,15 @@ class SnowflakeAirbyteClient(
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
-                columnChangeset.columnsToDrop.isNotEmpty() ||
                 columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
-            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
             log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
             sqlGenerator
                 .alterTable(
                     tableName,
                     columnChangeset.columnsToAdd,
-                    columnChangeset.columnsToDrop,
                     columnChangeset.columnsToChange,
                 )
                 .forEach { execute(it) }
