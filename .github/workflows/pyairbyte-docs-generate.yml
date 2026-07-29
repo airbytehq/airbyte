@@ -179,7 +179,8 @@ jobs:
               return re.sub(pattern, replace_angles, text)
 
           EXAMPLE_LABEL = re.compile(
-              r'^(?:examples?|usage)(?:\s+usage)?\s*:$', re.IGNORECASE,
+              r'^(?:(?:examples?|usage)(?:\s+usage)?|.*\b(?:for example|equivalent to))\s*:$',
+              re.IGNORECASE,
           )
 
           def indentation(line):
@@ -210,6 +211,10 @@ jobs:
                   '' if not line.strip() else line[common_indent:]
                   for line in block
               ]
+              body = [
+                  line.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                  for line in body
+              ]
               while body and not body[-1]:
                   body.pop()
               return ['```python', *body, '```'], index
@@ -222,7 +227,6 @@ jobs:
               in_frontmatter = False
               frontmatter_count = 0
               pending_example_label_indent = None
-              touched = False
               index = 0
 
               while index < len(lines):
@@ -271,7 +275,6 @@ jobs:
                           )
                           if block:
                               result.extend(block)
-                              touched = True
                               index = end
                               pending_example_label_indent = None
                               continue
@@ -281,7 +284,6 @@ jobs:
                       block, end = consume_indented_block(lines, index, 4)
                       if block:
                           result.extend(block)
-                          touched = True
                           index = end
                           continue
 
@@ -301,7 +303,7 @@ jobs:
                   result.append(''.join(escaped_parts))
                   index += 1
 
-              return '\n'.join(result), touched
+              return '\n'.join(result)
 
           # Process all markdown files
           base_dir = 'docs/developers/pyairbyte/reference'
@@ -312,7 +314,7 @@ jobs:
                       filepath = os.path.join(root, filename)
                       with open(filepath, 'r', encoding='utf-8') as f:
                           content = f.read()
-                      sanitized_content, touched = sanitize_for_mdx(content)
+                      sanitized_content = sanitize_for_mdx(content)
                       if sanitized_content != content:
                           with open(filepath, 'w', encoding='utf-8') as f:
                               f.write(sanitized_content)
