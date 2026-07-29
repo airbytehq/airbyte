@@ -43,13 +43,7 @@ class StateHistogramStore {
     // mirrors isComplete. Purely for debugging purposes.
     fun whyIsStateIncomplete(scope: StateScope, key: StateKey): String {
         val expectedCount = expected[scope]?.get(key)
-        val partitionFlushCounts =
-            key.partitionKeys.map { partitionKey ->
-                when (scope) {
-                    StateScope.Global -> flushed.values.sumOf { it.get(partitionKey) ?: 0.0 }
-                    is StateScope.Stream -> flushed[scope.descriptor]?.get(partitionKey) ?: 0.0
-                }
-            }
+        val partitionFlushCounts = partitionFlushCounts(scope, key)
         val flushedCount = partitionFlushCounts.sum()
         return "scope $scope: expectedCount $expectedCount does not equal flushedCount $flushedCount (by partition: $partitionFlushCounts)"
     }
@@ -69,7 +63,10 @@ class StateHistogramStore {
     }
 
     private fun flushedCount(scope: StateScope, key: StateKey): Double =
-        key.partitionKeys.sumOf { partitionKey ->
+        partitionFlushCounts(scope, key).sum()
+
+    private fun partitionFlushCounts(scope: StateScope, key: StateKey): List<Double> =
+        key.partitionKeys.map { partitionKey ->
             when (scope) {
                 StateScope.Global -> flushed.values.sumOf { it.get(partitionKey) ?: 0.0 }
                 is StateScope.Stream -> flushed[scope.descriptor]?.get(partitionKey) ?: 0.0

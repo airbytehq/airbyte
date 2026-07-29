@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
@@ -367,6 +369,41 @@ class StateStoreTest {
         )
 
         assertNotNull(realStateStore.getNextComplete())
+        assertNotNull(realStateStore.getNextComplete())
+        assertFalse(realStateStore.hasStates())
+    }
+
+    @Test
+    fun `stream state should translate unmapped descriptor to mapped descriptor`() {
+        val unmappedStreamDescriptor = DestinationStream.Descriptor("source", "orders")
+        val mappedStreamDescriptor = DestinationStream.Descriptor("destination", "orders")
+        val stream =
+            mockk<DestinationStream> {
+                every { unmappedDescriptor } returns unmappedStreamDescriptor
+                every { mappedDescriptor } returns mappedStreamDescriptor
+                every { tableSchema } returns mockk { every { importType } returns Append }
+            }
+        every { catalog.streams } returns listOf(stream)
+
+        val checkpoint =
+            StreamCheckpoint(
+                unmappedNamespace = unmappedStreamDescriptor.namespace,
+                unmappedName = unmappedStreamDescriptor.name,
+                blob = "{}",
+                sourceRecordCount = 1L,
+            )
+        val stateKey = StateKey(1L, listOf(PartitionKey("abcd")))
+        val realHistogramStore = StateHistogramStore()
+        val realStateStore = StateStore(keyClient, realHistogramStore, stateStatsEnricher, catalog)
+
+        every { keyClient.getStateKey(checkpoint) } returns stateKey
+
+        realStateStore.accept(checkpoint)
+        realHistogramStore.acceptFlushedCounts(
+            mappedStreamDescriptor,
+            PartitionHistogram().apply { increment(PartitionKey("abcd"), 1.0) },
+        )
+
         assertNotNull(realStateStore.getNextComplete())
         assertFalse(realStateStore.hasStates())
     }
