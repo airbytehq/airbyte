@@ -97,7 +97,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.26 | 2026-07-29 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Fix connector broken by Goldcast's API changes (Cvent migration): auth header renamed to `X-Cvent-Authorization`, list endpoints now paginated with `limit`/`offset`, `webinars` stream scoped to webinar-type events only, and stream schemas updated to match current API responses |
+| 0.2.26 | 2026-07-29 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Fix connector broken by Goldcast's API changes: list endpoints now paginated with `limit`/`offset`, `webinars` stream scoped to webinar-type events only, and stream schemas updated to match current API responses |
 | 0.2.25 | 2026-06-02 | [78729](https://github.com/airbytehq/airbyte/pull/78729) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59909](https://github.com/airbytehq/airbyte/pull/59909) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59258](https://github.com/airbytehq/airbyte/pull/59258) | Update dependencies |

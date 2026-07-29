@@ -38,7 +38,7 @@ streams:
         url: https://customapi.goldcast.io/core/organization/
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -367,7 +367,7 @@ streams:
         url: https://customapi.goldcast.io/event/
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -2304,7 +2304,7 @@ streams:
         url: https://customapi.goldcast.io/event/agenda-item/
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -2397,7 +2397,7 @@ streams:
         url: https://customapi.goldcast.io/event/discussion-groups/
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -2505,7 +2505,7 @@ streams:
         url: https://customapi.goldcast.io/event/tracks/
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -2577,7 +2577,7 @@ streams:
           stream_partition.event }}
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -2622,7 +2622,7 @@ streams:
                     url: https://customapi.goldcast.io/event/?event_type=Webinar
                     authenticator:
                       type: ApiKeyAuthenticator
-                      header: X-Cvent-Authorization
+                      header: Authorization
                       api_token: "Token {{ config['access_key'] }}"
                   record_selector:
                     type: RecordSelector
@@ -4966,7 +4966,7 @@ streams:
           stream_partition.event }}
         authenticator:
           type: ApiKeyAuthenticator
-          header: X-Cvent-Authorization
+          header: Authorization
           api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
@@ -5003,7 +5003,7 @@ streams:
                     url: https://customapi.goldcast.io/event/
                     authenticator:
                       type: ApiKeyAuthenticator
-                      header: X-Cvent-Authorization
+                      header: Authorization
                       api_token: "Token {{ config['access_key'] }}"
                   record_selector:
                     type: RecordSelector
