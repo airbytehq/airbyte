@@ -31,7 +31,7 @@ definitions:
           $ref: "#/schemas/pokemon"
   base_requester:
     type: HttpRequester
-    url_base: https://pokeapi.co/api/v2/pokemon
+    url_base: https://pokeapi-does-not-exist.invalid/api/v2/pokemon
 
 streams:
   - $ref: "#/definitions/streams/pokemon"
