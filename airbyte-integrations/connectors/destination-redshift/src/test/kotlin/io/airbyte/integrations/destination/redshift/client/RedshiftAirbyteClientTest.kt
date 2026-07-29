@@ -558,12 +558,14 @@ internal class RedshiftAirbyteClientTest {
                 columnsToRetain = emptyMap(),
             )
 
+        mockMetaColumnType("super")
         every {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = emptyMap(),
                 columnsToRemove = emptyMap(),
                 columnsToModify = typeChanges,
+                isMetaColumnSuper = true,
             )
         } returns "ALTER TABLE TYPE CHANGE SQL"
         every { mockStatement.execute("ALTER TABLE TYPE CHANGE SQL") } returns true
@@ -576,8 +578,63 @@ internal class RedshiftAirbyteClientTest {
                 columnsToAdd = emptyMap(),
                 columnsToRemove = emptyMap(),
                 columnsToModify = typeChanges,
+                isMetaColumnSuper = true,
             )
         }
+    }
+
+    @Test
+    fun `applyChangeset passes false when meta column is not SUPER`() = runTest {
+        val stream = mockStream()
+        val columnNameMapping = ColumnNameMapping(emptyMap())
+        val typeChanges =
+            mapOf(
+                "col" to
+                    ColumnTypeChange(
+                        originalType = ColumnType("super", true),
+                        newType = ColumnType("varchar(65535)", true),
+                    ),
+            )
+        val changeset =
+            ColumnChangeset(
+                columnsToAdd = emptyMap(),
+                columnsToDrop = emptyMap(),
+                columnsToChange = typeChanges,
+                columnsToRetain = emptyMap(),
+            )
+
+        mockMetaColumnType("character varying")
+        every {
+            sqlGenerator.matchSchemas(
+                tableName = testTable,
+                columnsToAdd = emptyMap(),
+                columnsToRemove = emptyMap(),
+                columnsToModify = typeChanges,
+                isMetaColumnSuper = false,
+            )
+        } returns "ALTER TABLE TYPE CHANGE SQL"
+        every { mockStatement.execute("ALTER TABLE TYPE CHANGE SQL") } returns true
+
+        client.applyChangeset(stream, columnNameMapping, testTable, emptyMap(), changeset)
+
+        verify {
+            sqlGenerator.matchSchemas(
+                tableName = testTable,
+                columnsToAdd = emptyMap(),
+                columnsToRemove = emptyMap(),
+                columnsToModify = typeChanges,
+                isMetaColumnSuper = false,
+            )
+        }
+    }
+
+    private fun mockMetaColumnType(type: String) {
+        every { sqlGenerator.getTableSchema(testTable) } returns "GET SCHEMA SQL"
+        every { mockStatement.executeQuery("GET SCHEMA SQL") } returns mockResultSet
+        every { mockResultSet.next() } returnsMany listOf(true, false)
+        every { mockResultSet.getString("column_name") } returns "_airbyte_meta"
+        every { mockResultSet.getString("data_type") } returns type
+        every { mockResultSet.getString("is_nullable") } returns "NO"
     }
 
     // ================================================================

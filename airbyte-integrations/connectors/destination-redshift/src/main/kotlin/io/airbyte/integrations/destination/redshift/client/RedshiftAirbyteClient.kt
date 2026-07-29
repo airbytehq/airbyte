@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift.sql.RedshiftSqlGenerator
@@ -144,7 +145,7 @@ class RedshiftAirbyteClient(
         }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        val columnsInDb = getColumnsFromDbForDiscovery(tableName)
+        val columnsInDb = getColumnsFromDb(tableName)
 
         // Table does not exist -- return empty schema so the CDK creates it.
         if (columnsInDb.isEmpty()) {
@@ -210,12 +211,30 @@ class RedshiftAirbyteClient(
         log.info { "  Dropped columns: ${columnChangeset.columnsToDrop}" }
         log.info { "  Modified columns: ${columnChangeset.columnsToChange}" }
 
+        val isMetaColumnSuper =
+            if (columnChangeset.columnsToChange.isEmpty()) {
+                true
+            } else {
+                val actualMetaType = getColumnsFromDb(tableName)[COLUMN_NAME_AB_META]?.type
+                val expectedMetaType = RedshiftSqlGenerator.META_COLUMNS[COLUMN_NAME_AB_META]?.type
+                val isSuper = actualMetaType == expectedMetaType
+                if (!isSuper) {
+                    log.warn {
+                        "Table $tableName has _airbyte_meta type $actualMetaType; " +
+                            "run ALTER TABLE ${sqlGenerator.getFullyQualifiedName(tableName)} " +
+                            "ALTER COLUMN \"_airbyte_meta\" TYPE super; to restore change tracking."
+                    }
+                }
+                isSuper
+            }
+
         execute(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = columnChangeset.columnsToAdd,
                 columnsToRemove = columnChangeset.columnsToDrop,
-                columnsToModify = columnChangeset.columnsToChange
+                columnsToModify = columnChangeset.columnsToChange,
+                isMetaColumnSuper = isMetaColumnSuper,
             )
         )
     }
@@ -294,9 +313,9 @@ class RedshiftAirbyteClient(
 
     /**
      * Queries `information_schema.columns` for all columns in a table, including Airbyte meta
-     * columns. Used by [discoverSchema] for schema evolution.
+     * columns. Used by [discoverSchema] and [applyChangeset].
      */
-    private fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
+    private fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
             val columns: MutableMap<String, ColumnType> = mutableMapOf()
             while (rs.next()) {
