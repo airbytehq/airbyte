@@ -1,3 +1,8 @@
+---
+title: Python Connector Base Image Migration
+sidebar_label: "Migration Guide: How to make a python connector use our base image"
+---
+
 # Migration Guide: How to make a python connector use our base image
 
 We currently enforce our certified python connectors to use our [base image](https://hub.docker.com/r/airbyte/python-connector-base).

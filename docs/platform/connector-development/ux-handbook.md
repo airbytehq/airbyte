@@ -53,7 +53,7 @@ The same is true with Airbyte: if it worked less than 99% of the time, many user
 
 Our users have the following hierarchy of needs:&#x20;
 
-![](/.gitbook/assets/ux_hierarchy_pyramid2.png)
+![Pyramid showing the hierarchy of user needs for Airbyte reliability and security](/.gitbook/assets/ux_hierarchy_pyramid2.png)
 
 **Security**
 
@@ -152,7 +152,7 @@ For example, the following spec:
 
 produces the following input field in the UI:&#x20;
 
-![](/.gitbook/assets/ux_username_bad.png)
+![Airbyte connector configuration UI with an unclear username field label](/.gitbook/assets/ux_username_bad.png)
 
 Whereas the following specification:
 
@@ -171,7 +171,7 @@ Whereas the following specification:
 
 produces the following UI:
 
-![](/.gitbook/assets/ux_username_good.png)
+![Airbyte connector configuration UI with a clearly labeled Username field](/.gitbook/assets/ux_username_good.png)
 
 The title should use Pascal Case “with spaces” e.g: “Attribution Lookback Window”, “Host URL”, etc...
 

@@ -48,4 +48,4 @@ Follow these steps to upgrade a connector version.
 
 To upgrade your connector version, go to the Settings in the left hand side of the UI and navigate to either Sources or Destinations. Find your connector in the list, and input the latest connector version.
 
-![](/.gitbook/assets/upgrade-connector-version.png)
+![Airbyte connector settings showing where to enter the latest Docker image tag](/.gitbook/assets/upgrade-connector-version.png)

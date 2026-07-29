@@ -1,3 +1,8 @@
+---
+title: Partner Connector Requirements
+sidebar_label: "Requirements for Airbyte Partner Connectors: Bulk and Publish Destinations"
+---
+
 # Requirements for Airbyte Partner Connectors: Bulk and Publish Destinations
 
 ## Welcome
