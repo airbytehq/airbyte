@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [SFTP Bulk](https://docs.airbyte.com/integrations/sources/sftp-bulk) source connector.
+This page contains the setup guide and reference information for the [SFTP Bulk](https://docs.airbyte.com/integrations/sources/sftp-bulk#file-specific-configuration) source connector.
 
 </HideInUI>
 
@@ -152,7 +152,7 @@ If your files are in a subfolder, include the folder in your glob pattern, like 
 
 ## Supported sync modes
 
-The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes):
+The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                        | Support | Notes |
 |:-------------------------------|:-------:|:------|
