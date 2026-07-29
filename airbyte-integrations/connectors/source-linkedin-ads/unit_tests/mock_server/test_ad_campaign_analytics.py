@@ -258,10 +258,13 @@ class TestAdCampaignAnalyticsStream(TestCase):
             .build()
         )
 
-        source = get_source(config=config)
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        source = get_source(config=config, catalog=catalog, state=legacy_state)
         output = read(source, config=config, catalog=catalog, state=legacy_state)
 
+        analytics_requests = [request.url for request in http_mocker._mocker.request_history if "/adAnalytics" in request.url]
+        assert analytics_requests
+        assert all("dateRange=(start:(year:2024,month:6,day:1)" in request_url for request_url in analytics_requests)
         assert [record.record.data["end_date"] for record in output.records] == ["2024-06-05"]
         final_state = output.state_messages[-1].state.stream.stream_state.__dict__
         assert final_state["use_global_cursor"] is True
