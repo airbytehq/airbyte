@@ -21,11 +21,6 @@ _NO_STATE = {}
 _CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID, "url_base": "http://127.0.0.1:9000/v1/"}
 
 
-def get_dates():
-    now = datetime.now(timezone.utc)
-    start_date = now - timedelta(days=60)
-    return now, start_date
-
 
 def _config(now) -> ConfigBuilder:
     return (
@@ -64,16 +59,16 @@ class EarlyFraudWarningsSpecmaticTest(SpecmaticIntegrationTestCase):
 
     def test_specmatic_contract_read(self) -> None:
         """Zero-Hardcoding contract test for early_fraud_warnings stream against Specmatic mock server."""
-        now, start_date = get_dates()
+        now = datetime.now(timezone.utc)
         self.source = get_source(_CONFIG, _NO_STATE)
-        output = self._read(_config(now).with_start_date(start_date))
+        output = self._read(_config(now))
         self.assert_contract_read_success(output)
         assert len(output.records) > 0
 
     def test_given_one_page_when_read_then_return_records(self) -> None:
         """Zero-Hardcoding spec-driven read test for early_fraud_warnings."""
-        now, start_date = get_dates()
+        now = datetime.now(timezone.utc)
         self.source = get_source(_CONFIG, _NO_STATE)
-        output = self._read(_config(now).with_start_date(start_date))
+        output = self._read(_config(now))
         self.assert_contract_read_success(output)
         assert len(output.records) > 0
