@@ -1725,7 +1725,7 @@ dynamic_streams:
       components_mapping:
         - type: ComponentMappingDefinition
           field_path: ["name"]
-          value: "custom_{{components_values['name']}}"
+          value: "custom_statistics_{{components_values['name']}}"
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "request_parameters", "pivots"]
           value: "List({{ ','.join(components_values['pivots']) }})"
