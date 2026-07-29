@@ -318,7 +318,7 @@ user/permission steps below are unchanged. For the full Google-provided procedur
 
   ```text
   -- Airbyte recommends at least 10080 minutes (7 days) as the retention period
-  EXEC sp_cdc_change_job @job_type='cleanup', @retention = {minutes}
+  EXEC sp_cdc_change_job @job_type='cleanup', @retention = 10080
   ```
 
 - After making this change, a restart of the cleanup job is required:
@@ -336,17 +336,17 @@ user/permission steps below are unchanged. For the full Google-provided procedur
 EXEC sp_changedistributiondb
   @database = 'distribution',
   @property = 'max_distretention',
-  @value = 14400 -- 14400 minutes (10 days)
+  @value = 10080 -- 10080 minutes (7 days)
 
 EXEC sp_changedistributiondb
   @database = 'distribution',
   @property = 'history_retention',
-  @value = 14400 -- 14400 minutes (10 days)
+  @value = 10080 -- 10080 minutes (7 days)
 
 USE [msdb]
 GO
 EXEC msdb.dbo.sp_update_jobstep @job_name=N'Distribution clean up: distribution', @step_id=1 ,
-		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 14400'
+		@command=N'EXEC dbo.sp_MSdistribution_cleanup @min_distretention = 0, @max_distretention = 10800'
 GO
 
 ```
