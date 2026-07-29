@@ -17,18 +17,23 @@ This also affected full/historical reads. The Export Search Results endpoint is 
 ### What changed
 
 - The `tickets` stream again uses `generated_timestamp` and re-includes deleted tickets (as it did before 5.2.0). It reads the live ticket record, so statuses are accurate (no search-index staleness).
-- A one-time state migration runs automatically on upgrade. It converts existing `updated_at`-based state back to `generated_timestamp` and clamps the cursor to **2026-03-01T00:00:00Z**, so the first sync after upgrading re-reads every ticket updated since the regression shipped and backfills previously-missed and previously-stale records. No manual stream reset is required.
+- A one-time state migration runs automatically on upgrade. It converts existing `updated_at`-based state back to `generated_timestamp` and clamps the cursor to **2026-03-01T00:00:00Z** (just before 5.2.0 shipped), so the first sync after upgrading re-reads every ticket changed during the regression window and rewrites their current values. No manual stream reset is required.
 - `ticket_metrics` and `side_conversations` depend on the `tickets` stream and are re-synced accordingly.
 - The fast Export Search Results behavior is preserved as a new **opt-in `tickets_search` stream**. It has a configurable `Tickets Search Lookback Window (days)` setting. ⚠️ `tickets_search` can miss automation/macro/system-driven updates in incremental mode (same limitation as 5.2.0–5.4.x `tickets`); use the default `tickets` stream when completeness matters. Because Export Search excludes deleted tickets, pair `tickets_search` with the `deleted_tickets` stream.
 
 ### Who is affected
 
-All users of the `tickets`, `ticket_metrics`, and `side_conversations` streams. The one-time backfill on the first sync after upgrade will be larger than a normal incremental run (it re-reads changes since 2026-03-01).
+All users of the `tickets`, `ticket_metrics`, and `side_conversations` streams.
+
+The state migration also rewrites the `tickets` parent state carried inside `ticket_metrics` and `side_conversations`, so all three streams backfill on the first sync after upgrading. That sync is substantially heavier than a normal incremental run: `tickets` re-reads from the Incremental Ticket Export endpoint, which Zendesk rate limits to 10 requests per minute regardless of plan tier, and `ticket_metrics` and `side_conversations` each make one additional API request per re-read ticket. Expect it to run considerably longer than usual; later syncs return to normal volume. Progress is checkpointed, so an interrupted first sync continues from the last committed cursor rather than restarting the backfill.
+
+If you created or reset this connection while running 5.2.0–5.4.x, its history was read through the Export Search Results endpoint and may still carry stale field values for tickets whose last event-generating change predates 2026-03-01 — the automatic backfill does not reach those. Clear the cursor for `tickets`, `ticket_metrics`, and `side_conversations` to re-read them from the live records. Connections that were upgraded in place need no action beyond the automatic migration.
 
 ### Migration steps
 
-1. Upgrade the connector. The first sync automatically backfills missed records via the state migration — no reset required.
-2. If you specifically want the faster (but potentially lossy) sync behavior, enable the new `tickets_search` stream and keep `deleted_tickets` enabled alongside it.
+1. Upgrade the connector. The first sync automatically backfills records changed since 2026-03-01 via the state migration — no reset required. Allow extra time for it (see [Who is affected](#who-is-affected)).
+2. If this connection was created or reset while running 5.2.0–5.4.x, also clear the cursor for `tickets`, `ticket_metrics`, and `side_conversations` once, so their pre-2026-03-01 history is re-read from the live records.
+3. If you specifically want the faster (but potentially lossy) sync behavior, enable the new `tickets_search` stream and keep `deleted_tickets` enabled alongside it.
 
 ## Upgrading to 5.2.0
 
