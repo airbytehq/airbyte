@@ -74,7 +74,7 @@ object RedshiftDataCleaner : DestinationCleaner {
                     """
                     SELECT schema_name
                     FROM information_schema.schemata
-                    WHERE schema_name LIKE 'test%'
+                    WHERE schema_name LIKE '%test%'
                     """.trimIndent(),
                 )
             while (schemas.next()) {
