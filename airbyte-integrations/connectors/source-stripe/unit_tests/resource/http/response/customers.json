@@ -1,0 +1,23 @@
+{
+  "object": "list",
+  "url": "/v1/customers",
+  "has_more": false,
+  "data": [
+    {
+      "id": "cus_NffrFeUfNV2Hib",
+      "object": "customer",
+      "address": null,
+      "balance": 0,
+      "created": 1680893993,
+      "currency": null,
+      "default_source": null,
+      "delinquent": false,
+      "description": null,
+      "email": "jennyrosen@example.com",
+      "invoice_prefix": "0759376C",
+      "livemode": false,
+      "metadata": {},
+      "name": "Jenny Rosen"
+    }
+  ]
+}

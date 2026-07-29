@@ -18,3 +18,7 @@ mock = "^5.1.0"
 filterwarnings = [
     "ignore:This class is experimental*"
 ]
+markers = [
+    "default: mark test as standard HttpMocker integration test",
+    "specmatic: mark test as Specmatic contract integration test",
+]

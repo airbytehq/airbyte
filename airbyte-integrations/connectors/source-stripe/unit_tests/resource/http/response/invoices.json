@@ -1,0 +1,26 @@
+{
+  "object": "list",
+  "url": "/v1/invoices",
+  "has_more": false,
+  "data": [
+    {
+      "id": "in_1Msy8y2eZvKYlo2C7o4NfI2a",
+      "object": "invoice",
+      "account_country": "US",
+      "account_name": "Stripe Test",
+      "amount_due": 1000,
+      "amount_paid": 1000,
+      "amount_remaining": 0,
+      "attempt_count": 1,
+      "attempted": true,
+      "auto_advance": false,
+      "created": 1680893993,
+      "currency": "usd",
+      "customer": "cus_NffrFeUfNV2Hib",
+      "livemode": false,
+      "metadata": {},
+      "paid": true,
+      "status": "paid"
+    }
+  ]
+}

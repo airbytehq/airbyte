@@ -104,13 +104,13 @@ This significantly reduces mock maintenance while automatically detecting contra
 | | `test_setup_attempts.py` | ✅ Migrated |
 | | `test_transactions.py` | ✅ Migrated |
 | **POC** | `test_accounts.py` | ✅ Migrated (original POC) |
-| **Batch 3** — 100% Specmatic Mock Usage Coverage | `test_charges_specmatic.py` | ✅ Added |
-| | `test_customers_specmatic.py` | ✅ Added |
-| | `test_invoices_specmatic.py` | ✅ Added |
-| | `test_payment_intents_specmatic.py` | ✅ Added |
-| | `test_prices_specmatic.py` | ✅ Added |
-| | `test_products_specmatic.py` | ✅ Added |
-| | `test_refunds_specmatic.py` | ✅ Added |
+| **Batch 3** — 100% Specmatic Mock Usage Coverage | `test_charges.py` | ✅ Migrated |
+| | `test_customers.py` | ✅ Migrated |
+| | `test_invoices.py` | ✅ Migrated |
+| | `test_payment_intents.py` | ✅ Migrated |
+| | `test_prices.py` | ✅ Migrated |
+| | `test_products.py` | ✅ Migrated |
+| | `test_refunds.py` | ✅ Migrated |
 
 ** All migrated tests pass. Batch 3 achieves 100% Specmatic Mock Usage Report coverage for all 8 endpoints in `stripe-official.json`.**
 
@@ -171,85 +171,64 @@ self.assert_contract_read_success(actual_messages)
 npm install -g specmatic@2.50.1
 ```
 
-### Run a single migrated test file
+### 1. Run Specmatic Integration Tests (23 Streams, 115 Tests: 200/400/401/500 scenarios)
 
 **Windows (PowerShell) — from `unit_tests/` directory:**
 ```powershell
 cd airbyte-integrations/connectors/source-stripe/unit_tests
-.\.venv\Scripts\python.exe -m pytest -v integration/test_events.py
+.\.venv\Scripts\python.exe -m pytest integration/specmatic
+```
+*Or using Pytest Markers:*
+```powershell
+.\.venv\Scripts\python.exe -m pytest -m specmatic
 ```
 
 **macOS / Linux — from `unit_tests/` directory:**
 ```bash
 cd airbyte-integrations/connectors/source-stripe/unit_tests
-./.venv/bin/python -m pytest -v integration/test_events.py
+./.venv/bin/python -m pytest integration/specmatic
+```
+*Or using Pytest Markers:*
+```bash
+./.venv/bin/python -m pytest -m specmatic
 ```
 
-### Run ONLY Specmatic integration tests (100% Mock Usage Coverage)
+---
 
-**Windows (PowerShell) — from repository root:**
+### 2. Run Default (Static Mock) Integration Tests
+
+**Windows (PowerShell) — from `unit_tests/` directory:**
 ```powershell
-$s = (Get-ChildItem airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_*_specmatic.py).FullName; .\airbyte-integrations\connectors\source-stripe\unit_tests\.venv\Scripts\pytest.exe airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_accounts.py $s
+cd airbyte-integrations/connectors/source-stripe/unit_tests
+.\.venv\Scripts\python.exe -m pytest integration/default
 ```
-
-**Windows (PowerShell) — from `unit_tests/` directory (`airbyte-integrations/connectors/source-stripe/unit_tests`):**
+*Or using Pytest Markers:*
 ```powershell
-$s = (Get-ChildItem integration/test_*_specmatic.py).FullName; .\.venv\Scripts\pytest.exe integration/test_accounts.py $s
-```
-
-**Windows (PowerShell) — Explicit File List (from repository root):**
-```powershell
-.\airbyte-integrations\connectors\source-stripe\unit_tests\.venv\Scripts\pytest.exe `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_accounts.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_charges_specmatic.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_customers_specmatic.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_invoices_specmatic.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_payment_intents_specmatic.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_prices_specmatic.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_products_specmatic.py `
-  airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_refunds_specmatic.py
+.\.venv\Scripts\python.exe -m pytest -m default
 ```
 
 **macOS / Linux — from `unit_tests/` directory:**
 ```bash
 cd airbyte-integrations/connectors/source-stripe/unit_tests
-./.venv/bin/python -m pytest -v integration/test_accounts.py integration/*_specmatic.py
+./.venv/bin/python -m pytest integration/default
+```
+*Or using Pytest Markers:*
+```bash
+./.venv/bin/python -m pytest -m default
 ```
 
-### Run all migrated Batch 1 + Batch 2 tests
+---
+
+### 3. Run a Single Specmatic Test File
 
 **Windows (PowerShell):**
 ```powershell
-cd airbyte-integrations/connectors/source-stripe/unit_tests
-.\.venv\Scripts\python.exe -m pytest -v `
-  integration/test_accounts.py `
-  integration/test_application_fees.py `
-  integration/test_authorizations.py `
-  integration/test_cards.py `
-  integration/test_early_fraud_warnings.py `
-  integration/test_events.py `
-  integration/test_payment_methods.py `
-  integration/test_payout_balance_transactions.py `
-  integration/test_reviews.py `
-  integration/test_setup_attempts.py `
-  integration/test_transactions.py
+.\.venv\Scripts\python.exe -m pytest -v integration/specmatic/test_accounts.py
 ```
 
 **macOS / Linux:**
 ```bash
-cd airbyte-integrations/connectors/source-stripe/unit_tests
-./.venv/bin/python -m pytest -v \
-  integration/test_accounts.py \
-  integration/test_application_fees.py \
-  integration/test_authorizations.py \
-  integration/test_cards.py \
-  integration/test_early_fraud_warnings.py \
-  integration/test_events.py \
-  integration/test_payment_methods.py \
-  integration/test_payout_balance_transactions.py \
-  integration/test_reviews.py \
-  integration/test_setup_attempts.py \
-  integration/test_transactions.py
+./.venv/bin/python -m pytest -v integration/specmatic/test_accounts.py
 ```
 
 ---
@@ -298,4 +277,4 @@ specmatic examples validate --lenient --spec-file specmatic_test/specs/stripe-of
 
 > [!NOTE]
 > The `--lenient` flag is required because the official Stripe specification contains duplicate query parameter entries which otherwise cause strict parser validation to fail.
-
+

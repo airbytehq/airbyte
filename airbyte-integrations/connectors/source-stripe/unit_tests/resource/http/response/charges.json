@@ -1,0 +1,25 @@
+{
+  "object": "list",
+  "url": "/v1/charges",
+  "has_more": false,
+  "data": [
+    {
+      "id": "ch_1NirD82eZvKYlo2CIvbtLWuY",
+      "object": "charge",
+      "amount": 2000,
+      "amount_captured": 2000,
+      "amount_refunded": 0,
+      "captured": true,
+      "created": 1692942318,
+      "currency": "usd",
+      "customer": null,
+      "description": "My First Test Charge",
+      "disputed": false,
+      "livemode": false,
+      "metadata": {},
+      "paid": true,
+      "payment_intent": null,
+      "status": "succeeded"
+    }
+  ]
+}

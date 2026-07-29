@@ -1,0 +1,18 @@
+{
+  "object": "list",
+  "url": "/v1/products",
+  "has_more": false,
+  "data": [
+    {
+      "id": "prod_NWpA9259967268",
+      "object": "product",
+      "active": true,
+      "created": 1680893993,
+      "description": "Comfortable cotton t-shirt",
+      "livemode": false,
+      "metadata": {},
+      "name": "T-Shirt",
+      "updated": 1680893993
+    }
+  ]
+}

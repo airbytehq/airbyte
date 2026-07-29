@@ -88,6 +88,30 @@ class StripeRequestBuilder:
         return cls("reviews", account_id, client_secret)
 
     @classmethod
+    def charges_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("charges", account_id, client_secret)
+
+    @classmethod
+    def invoices_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("invoices", account_id, client_secret)
+
+    @classmethod
+    def payment_intents_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("payment_intents", account_id, client_secret)
+
+    @classmethod
+    def prices_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("prices", account_id, client_secret)
+
+    @classmethod
+    def products_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("products", account_id, client_secret)
+
+    @classmethod
+    def refunds_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls("refunds", account_id, client_secret)
+
+    @classmethod
     def _for_endpoint(cls, endpoint: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls(endpoint, account_id, client_secret)
 

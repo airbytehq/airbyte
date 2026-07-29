@@ -1,0 +1,20 @@
+{
+  "object": "list",
+  "url": "/v1/prices",
+  "has_more": false,
+  "data": [
+    {
+      "id": "price_1Msy8y2eZvKYlo2C7o4NfI2a",
+      "object": "price",
+      "active": true,
+      "billing_scheme": "per_unit",
+      "created": 1680893993,
+      "currency": "usd",
+      "livemode": false,
+      "metadata": {},
+      "product": "prod_NWpA9259967268",
+      "type": "one_time",
+      "unit_amount": 1000
+    }
+  ]
+}

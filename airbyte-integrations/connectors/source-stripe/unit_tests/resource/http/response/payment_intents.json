@@ -1,0 +1,21 @@
+{
+  "object": "list",
+  "url": "/v1/payment_intents",
+  "has_more": false,
+  "data": [
+    {
+      "id": "pi_1GszsK2eZvKYlo2CfhZyoZLp",
+      "object": "payment_intent",
+      "amount": 2000,
+      "amount_capturable": 0,
+      "amount_received": 2000,
+      "capture_method": "automatic",
+      "created": 1680893993,
+      "currency": "usd",
+      "customer": null,
+      "livemode": false,
+      "metadata": {},
+      "status": "succeeded"
+    }
+  ]
+}
