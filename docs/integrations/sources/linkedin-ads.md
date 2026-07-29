@@ -122,7 +122,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
 10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication.
+   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_`.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
    4. Select a **Time Granularity** to group the data in your report by time. The options are:
       - `ALL`: Data is not grouped by time, providing a cumulative view.
@@ -131,11 +131,11 @@ If either of your tokens expire, you can generate new ones by returning to Linke
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
 11. (Optional) For **Custom Ad Statistics Reports**, you may optionally provide one or more reports that use LinkedIn's **Statistics Finder**, which groups results by up to three pivot categories at once. To add a statistics report:
    1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication.
+   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by "custom_statistics_".
    3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
    4. Select a **Time Granularity** (same options as above).
 
-   **Note:** Report names must be unique across both **Custom Ad Analytics Reports** and **Custom Ad Statistics Reports**. Each report becomes a stream named `custom_<Report Name>`, so a duplicate name in the two lists would collide.
+   **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
 12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 

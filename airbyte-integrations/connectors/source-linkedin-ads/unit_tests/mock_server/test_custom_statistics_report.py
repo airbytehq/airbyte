@@ -95,12 +95,12 @@ def _get_custom_statistics_report_config() -> list:
     ad_statistics_reports config. Without this config, the stream produces zero slices and makes
     no HTTP requests.
 
-    The stream name is generated as "custom_{{name}}" from the config entry's name field, so
-    "name": "statistics_report" produces stream "custom_statistics_report".
+    The stream name is generated as "custom_statistics_{{name}}" from the config entry's name field, so
+    "name": "report" produces stream "custom_statistics_report".
     """
     return [
         {
-            "name": "statistics_report",
+            "name": "report",
             "pivots": ["CAMPAIGN", "CREATIVE"],
             "time_granularity": "DAILY",
         }
