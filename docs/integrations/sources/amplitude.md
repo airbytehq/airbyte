@@ -52,7 +52,7 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 
 The connector automatically handles Amplitude's [API rate limits](https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits). The Dashboard REST API enforces cost-based rate limits with a budget of 108,000 cost per hour and 1,000 cost per 5-minute burst window, plus a maximum of 5 concurrent requests. The connector tracks per-request costs and throttles automatically to stay within these limits.
 
-The Export API (used by the Events stream) doesn't have documented rate limits, but large exports can time out. If you experience timeouts, reduce the **Request Time Range** in the connector configuration.
+The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, reduce the **Request Time Range** in the connector configuration so each request covers a shorter interval. For very large data volumes, Amplitude recommends its [Amazon S3 destination](https://amplitude.com/docs/data/destination-catalog/amazon-s3) instead of the Export API.
 
 If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
@@ -179,7 +179,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.2 | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active_users, and average_session_lengths streams |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for kubernetes support |
 | 0.1.0 | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude |
-| 0.1.0      | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude                                                                                                                                                  |
 
 </details>
 

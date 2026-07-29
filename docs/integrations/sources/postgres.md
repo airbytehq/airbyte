@@ -188,6 +188,10 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 
 In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
+:::note
+If `max_slot_wal_keep_size` is exceeded, PostgreSQL can invalidate the replication slot. The slot then has `wal_status = lost` and a null `restart_lsn`, so the connector fails the sync and cannot recover automatically. Drop and recreate the replication slot, then reset the connection for a full re-sync.
+:::
+
 ## Postgres Replication Methods
 
 The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
@@ -359,6 +363,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |--------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.3  | 2026-07-27 | [82782](https://github.com/airbytehq/airbyte/pull/82782) | Remove the non-functional `invalid_cdc_cursor_position_behavior` option; invalidated replication slots always fail the sync.                                              |
 | 3.8.2  | 2026-07-24 | [82728](https://github.com/airbytehq/airbyte/pull/82728) | Fix sync failures on `money` columns over the socket/protobuf output path.                                                                                                  |
 | 3.8.1  | 2026-06-04 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Allow connecting without a password for passwordless auth methods.                                                                                                                                  |
 | 3.8.0  | 2026-06-02 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
