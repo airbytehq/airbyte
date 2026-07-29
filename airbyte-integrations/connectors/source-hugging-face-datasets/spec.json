@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/hugging-face-buckets",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/hugging-face-datasets",
   "supported_destination_sync_modes": ["append", "overwrite"],
   "supportsIncremental": false,
   "connectionSpecification": [
@@ -34,7 +34,8 @@
           "order": 3,
           "title": "HF Token (Optional)",
           "type": "string",
-          "description": "Hugging Face token for private datasets. If not provided, public datasets will be used."
+          "description": "Hugging Face token for private datasets. If not provided, public datasets will be used.",
+          "airbyte_secret": true
         },
         "streaming": {
           "order": 4,
