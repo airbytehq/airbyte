@@ -79,7 +79,7 @@ object RedshiftDataCleaner : DestinationCleaner {
                 )
             while (schemas.next()) {
                 val schemaName = schemas.getString("schema_name")
-                if (IntegrationTest.isNamespaceOld(schemaName)) {
+                if (IntegrationTest.isNamespaceOld(schemaName, retentionDays = 1)) {
                     schemasToDrop.add(schemaName)
                 }
             }
