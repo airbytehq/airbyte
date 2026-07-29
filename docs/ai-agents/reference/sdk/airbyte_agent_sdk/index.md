@@ -5,7 +5,7 @@ title: airbyte_agent_sdk
 
 Module airbyte_agent_sdk
 ========================
-# Airbyte Agent SDK
+### Airbyte Agent SDK
 
 A type-safe Python SDK for executing Airbyte connectors from an application
 or agent. Point it at an Airbyte Cloud workspace and it exposes every

@@ -172,11 +172,9 @@ Classes
             cron_expression: A cron expression defining when syncs should run.
         
         Examples:
-```python
 - "0 0 * * *" - Daily at midnight UTC
 - "0 */6 * * *" - Every 6 hours
 - "0 0 * * 0" - Weekly on Sunday at midnight UTC
-```
     `set_selected_streams(self, stream_names: list[str]) ‑> airbyte.cloud.connections.CloudConnection`
     :   Set the selected streams for the connection.
         

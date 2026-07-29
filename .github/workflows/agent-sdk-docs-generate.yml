@@ -320,6 +320,11 @@ jobs:
                   return None, start
 
               common_indent = min(nonblank_indents)
+              first_content = next(
+                  line.strip() for line in block if line.strip()
+              )
+              if re.match(r'(?:[-*+]|\d+\.)\s+', first_content):
+                  return None, start
               body = [
                   '' if not line.strip() else line[common_indent:]
                   for line in block
@@ -340,6 +345,7 @@ jobs:
               in_frontmatter = False
               frontmatter_count = 0
               pending_example_label_indent = None
+              body_h1_seen = False
               index = 0
 
               while index < len(lines):
@@ -371,6 +377,22 @@ jobs:
 
                   if in_code_block:
                       result.append(line)
+                      index += 1
+                      continue
+
+                  if (
+                      result
+                      and result[-1].strip()
+                      and re.fullmatch(r'=+', stripped)
+                  ):
+                      body_h1_seen = True
+
+                  if line.startswith('# '):
+                      if body_h1_seen:
+                          result.append(f'### {line[2:]}')
+                      else:
+                          body_h1_seen = True
+                          result.append(line)
                       index += 1
                       continue
 
