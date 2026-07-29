@@ -340,6 +340,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/current/da
 | `circle`                              | string         |                                                                                                                                                      |
 | `date`                                | string         | Parsed as ISO8601 date time at midnight. `infinity` and `-infinity` are converted to `null`. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590) |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
+| `geography` (PostGIS)                 | string         | Hex-encoded EWKB. See [PostGIS columns](#postgis-columns).                                                                                           |
+| `geometry` (PostGIS)                  | string         | Hex-encoded EWKB. See [PostGIS columns](#postgis-columns).                                                                                           |
 | `hstore`                              | string         |                                                                                                                                                      |
 | `inet`                                | string         |                                                                                                                                                      |
 | `integer`, `int`, `int4`              | integer        |                                                                                                                                                      |
@@ -375,6 +377,15 @@ According to Postgres [documentation](https://www.postgresql.org/docs/current/da
 | `array`                               | array          | Element types follow the mappings in this table, except where noted. E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                               |
 | composite type                        | string         |                                                                                                                                                      |
 | user-defined type                     | string         |                                                                                                                                                      |
+
+### PostGIS columns
+
+The connector reads `geometry` and `geography` columns as strings holding hex-encoded EWKB, which is what PostgreSQL returns for these types in text form (for example, `0101000020E6100000...`). Airbyte doesn't convert them to WKT or GeoJSON, so decode them in your destination with a function like `ST_GeomFromWKB`, `TRY_TO_GEOMETRY`, or `TO_GEOGRAPHY`.
+
+Two version-specific caveats apply:
+
+- Versions 3.8.0 through 3.8.3 wrote null for every PostGIS column read through CDC. Initial snapshots were unaffected. Upgrade to 3.8.4, then refresh the affected streams to backfill the rows that synced as null.
+- Version 3.7.2 and earlier emitted `{"wkb": "<base64>", "srid": <n>}` on the CDC path, while the snapshot emitted hex-encoded EWKB. From 3.8.4 on, both paths emit hex-encoded EWKB, so downstream code that parsed that JSON shape (for example, `PARSE_JSON(col):srid`) needs to switch to a WKB parser.
 
 </HideInUI>
 
