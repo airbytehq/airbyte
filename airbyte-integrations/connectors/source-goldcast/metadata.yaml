@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
-  dockerImageTag: 0.2.25
+  dockerImageTag: 0.2.26
   dockerRepository: airbyte/source-goldcast
   githubIssueLabel: source-goldcast
   icon: goldcast.svg
@@ -34,6 +34,6 @@ data:
     - language:manifest-only
   externalDocumentationUrls:
     - title: Goldcast API documentation
-      url: https://www.goldcast.io/api-docs
+      url: https://apidocs.goldcast.io/
       type: api_reference
 metadataSpecVersion: "1.0"
