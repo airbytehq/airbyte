@@ -31,11 +31,11 @@ Gather the following information from your Databricks workspace.
 1. Open your Databricks workspace.
 2. Navigate to your SQL warehouse:
 
-    ![Databricks workspace page with the SQL warehouse selected](/.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
+   ![Databricks workspace page with the SQL warehouse selected](/.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
 
 3. Open the **Connection Details** tab:
 
-    ![Databricks SQL warehouse Connection Details tab showing the server hostname, HTTP path, and port](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+   ![Databricks SQL warehouse Connection Details tab showing the server hostname, HTTP path, and port](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
 4. Note the **Server Hostname**, **HTTP Path**, and **Port** values. The default port is `443`.
 

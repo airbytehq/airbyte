@@ -114,11 +114,7 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
                   <div className={styles.connectorName}>
                     {connector.iconUrl && (
                       <div className={styles.connectorIconBackground}>
-                        <img
-                          src={connector.iconUrl}
-                          style={iconStyle}
-                          alt={`${connector.name} connector icon`}
-                        />
+                        <img src={connector.iconUrl} style={iconStyle} alt="" />
                       </div>
                     )}
 
