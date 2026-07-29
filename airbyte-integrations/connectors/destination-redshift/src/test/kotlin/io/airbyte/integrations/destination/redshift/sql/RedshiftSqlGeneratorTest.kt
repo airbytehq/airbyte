@@ -366,8 +366,12 @@ internal class RedshiftSqlGeneratorTest {
         // Non-PK columns should be in SET
         assertTrue(setSection.contains(""""name" = deduped_source."name""""))
         assertTrue(setSection.contains(""""updated_at" = deduped_source."updated_at""""))
-        // PK should be in WHERE
-        assertTrue(sql.contains(""""ns"."final"."id" = deduped_source."id""""))
+        // PK should be in WHERE with NULL-safe matching
+        assertTrue(
+            sql.contains(
+                """("ns"."final"."id" = deduped_source."id" OR ("ns"."final"."id" IS NULL AND deduped_source."id" IS NULL))"""
+            )
+        )
     }
 
     @Test
@@ -404,8 +408,6 @@ internal class RedshiftSqlGeneratorTest {
                 """"ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at""""
             )
         )
-        // Should NOT have the 4-way cursor comparison
-        assertFalse(sql.contains("IS NULL AND deduped_source."))
     }
 
     @Test
@@ -438,6 +440,53 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains(""""_ab_cdc_deleted_at" IS NULL"""))
+    }
+
+    @Test
+    fun `updateExistingRows uses NULL-safe PK matching with composite keys`() {
+        val target = TableName(namespace = "ns", name = "final")
+        val sql =
+            sqlGenerator.updateExistingRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = target,
+                allTargetColumns =
+                    listOf(""""id"""", """"org_id"""", """"name"""", """"updated_at""""),
+                primaryKeyTargetColumns = listOf(""""id"""", """"org_id""""),
+                cursorTargetColumn = """"updated_at"""",
+                cdcHardDeleteEnabled = false,
+            )
+
+        // Each PK column should have NULL-safe matching
+        assertTrue(
+            sql.contains(
+                """("ns"."final"."id" = deduped_source."id" OR ("ns"."final"."id" IS NULL AND deduped_source."id" IS NULL))"""
+            )
+        )
+        assertTrue(
+            sql.contains(
+                """("ns"."final"."org_id" = deduped_source."org_id" OR ("ns"."final"."org_id" IS NULL AND deduped_source."org_id" IS NULL))"""
+            )
+        )
+    }
+
+    @Test
+    fun `insertNewRows uses NULL-safe PK matching`() {
+        val target = TableName(namespace = "ns", name = "final")
+        val sql =
+            sqlGenerator.insertNewRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = target,
+                allTargetColumns = listOf(""""id"""", """"name""""),
+                primaryKeyTargetColumns = listOf(""""id""""),
+                cdcHardDeleteEnabled = false,
+            )
+
+        // NOT EXISTS subquery should use NULL-safe PK matching
+        assertTrue(
+            sql.contains(
+                """("ns"."final"."id" = deduped_source."id" OR ("ns"."final"."id" IS NULL AND deduped_source."id" IS NULL))"""
+            )
+        )
     }
 
     // ================================================================
