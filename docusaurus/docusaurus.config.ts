@@ -63,7 +63,10 @@ const config: Config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
-  trailingSlash: false,
+  // Leave unset. `false` makes the build emit `platform.html` instead of
+  // `platform/index.html`, and Vercel serves those only under `cleanUrls`,
+  // so every doc URL 404s. `vercel.json`'s `trailingSlash` is unrelated: it
+  // only strips a trailing slash from the request.
   onBrokenLinks: "throw",
 
   favicon: "img/favicon.png",
