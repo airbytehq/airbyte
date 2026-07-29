@@ -72,9 +72,11 @@ object RedshiftDataCleaner : DestinationCleaner {
             val schemas =
                 statement.executeQuery(
                     """
-                    SELECT schema_name
-                    FROM information_schema.schemata
-                    WHERE schema_name LIKE '%test%'
+                    SELECT nspname AS schema_name
+                    FROM pg_namespace
+                    WHERE nspname NOT LIKE 'pg_%'
+                      AND nspname != 'information_schema'
+                      AND nspname LIKE '%test%'
                     """.trimIndent(),
                 )
             while (schemas.next()) {
