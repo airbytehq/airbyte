@@ -9,6 +9,7 @@ from unit_tests.specmatic import SpecmaticIntegrationTestCase
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.state_builder import StateBuilder
 from integration.config import ConfigBuilder
 
 
@@ -16,7 +17,7 @@ _STREAM_NAME = "customers"
 _NOW_IMPORT = datetime.now(timezone.utc)
 _ACCOUNT_ID = "account_id"
 _CLIENT_SECRET = "client_secret"
-_NO_STATE = {}
+_NO_STATE = StateBuilder().build()
 
 _CONFIG = {"client_secret": _CLIENT_SECRET, "account_id": _ACCOUNT_ID, "url_base": "http://127.0.0.1:9000/v1/"}
 

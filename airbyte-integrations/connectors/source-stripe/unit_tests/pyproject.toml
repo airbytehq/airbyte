@@ -22,3 +22,10 @@ markers = [
     "default: mark test as standard HttpMocker integration test",
     "specmatic: mark test as Specmatic contract integration test",
 ]
+
+[tool.pyright]
+extraPaths = [
+    ".",
+    ".."
+]
+
