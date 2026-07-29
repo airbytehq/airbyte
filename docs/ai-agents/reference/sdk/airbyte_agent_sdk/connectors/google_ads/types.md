@@ -1840,7 +1840,7 @@ Classes
 
     ### Class variables
 
-    `adGroup: str`
+    `ad_group: str`
     :   The type of the None singleton.
 
     `label: str`
@@ -2885,7 +2885,7 @@ Classes
 
     ### Class variables
 
-    `updateMask: str`
+    `update_mask: str`
     :   The type of the None singleton.
 
     ### Methods
@@ -2907,13 +2907,13 @@ Classes
 
     ### Class variables
 
-    `cpcBidMicros: str`
+    `cpc_bid_micros: str`
     :   The type of the None singleton.
 
     `name: str`
     :   The type of the None singleton.
 
-    `resourceName: str`
+    `resource_name: str`
     :   The type of the None singleton.
 
     `status: str`
@@ -4233,7 +4233,7 @@ Classes
 
     ### Class variables
 
-    `updateMask: str`
+    `update_mask: str`
     :   The type of the None singleton.
 
     ### Methods
@@ -4258,7 +4258,7 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
-    `resourceName: str`
+    `resource_name: str`
     :   The type of the None singleton.
 
     `status: str`
@@ -4312,7 +4312,7 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
-    `textLabel: airbyte_agent_sdk.connectors.google_ads.types.LabelsCreateParamsOperationsItemCreateTextlabel`
+    `text_label: airbyte_agent_sdk.connectors.google_ads.types.LabelsCreateParamsOperationsItemCreateTextlabel`
     :   The type of the None singleton.
 
 <a id="LabelsCreateParamsOperationsItemCreateTextlabel"></a>
@@ -4326,7 +4326,7 @@ Classes
 
     ### Class variables
 
-    `backgroundColor: str`
+    `background_color: str`
     :   The type of the None singleton.
 
     `description: str`

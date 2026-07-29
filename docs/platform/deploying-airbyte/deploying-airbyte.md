@@ -5,7 +5,7 @@ products: oss-community
 # Deploying Airbyte
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
-To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart) guide.
+To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) guide.
 If setting up an Airbyte server does not fit your use case needs (for example, you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](/developers/pyairbyte) documentation useful.
 
 ## Understanding the Airbyte Deployment
@@ -17,7 +17,7 @@ We highly recommend deploying Airbyte using Helm and the documented Helm chart v
 
 Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
 
-The [Infrastructure](infrastructure/aws) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
+The [Infrastructure](./infrastructure/aws.md) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
 ## Installation Guide
 
@@ -84,10 +84,10 @@ Before you can configure this stuff in a cloud provider, you need to set up your
 
 After your policies are set up, here's a list of customizations.
 
-- [State and Logging Storage](./integrations/storage)
-- [Secret Management](./integrations/secrets)
-- [External Database](./integrations/database)
-- [Ingress](./integrations/ingress)
+- [State and Logging Storage](./integrations/storage.md)
+- [Secret Management](./integrations/secrets.md)
+- [External Database](./integrations/database.md)
+- [Ingress](./integrations/ingress.md)
 
 ### 5. Installing Airbyte
 
@@ -135,7 +135,7 @@ Then you can run:
       --version 2.0.18                 # Helm chart version to use
     ```
 
-After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
+After the installation has completed, you can configure your [Ingress](./integrations/ingress.md) by following the directions for your specific Ingress provider.
 
 ### 6. Set up port forward for UI access
 
