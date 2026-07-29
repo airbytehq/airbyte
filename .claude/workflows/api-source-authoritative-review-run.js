@@ -1,12 +1,12 @@
 export const meta = {
   name: 'api-source-authoritative-review-run',
   description:
-    '9-phase authoritative PR review for API-source connectors (manifest-only, low-code + components, hybrid, custom Python, file-based API). Prep resolves the PR head, classifies the connector from PR-head metadata, and stands up a worktree at the connector\'s ACTUAL pinned airbyte-cdk version (plus origin/main as a secondary upgrade reference). A mechanical-checks phase runs whatever deterministic validation the repo offers and records passed/failed/not-run. Grounding deep-dives the pinned CDK, fetches third-party API docs, and reads sibling connectors — all as challengeable evidence, not unquestionable ground truth. A dedicated breaking-change phase returns a three-state determination (BREAKING / NON_BREAKING / NEEDS_HUMAN_REVIEW) against the aggregated criteria and the full Airbyte versioning gate. Per-dimension Claude reviewers run alongside per-dimension Codex reviewers; findings are mechanically diff-anchored against a line-annotated diff, merged, validated (which is also where the prescriptive fix is authored), reconciled, and emitted as an author-facing doc + audit appendix + JSON + self-contained HTML. Every stage enforces invariants: a failed required stage aborts, partial coverage is reported as DEGRADED or INCOMPLETE, and the provenance line is built from what actually ran.',
+    '9-phase authoritative PR review for API-source connectors (manifest-only, low-code + components, hybrid, custom Python, file-based API). Prep resolves the PR head, classifies the connector from PR-head metadata, and stands up a worktree at the connector\'s ACTUAL pinned airbyte-cdk version (plus origin/main as a secondary upgrade reference). A checks phase reads the authoritative GitHub CI result for the PR - build, lint, format, tests, changelog - pulls the real error text for any failure, and records pending and skipped distinctly from passed rather than reimplementing CI locally. Grounding deep-dives the pinned CDK, fetches third-party API docs, and reads sibling connectors — all as challengeable evidence, not unquestionable ground truth. A dedicated breaking-change phase returns a three-state determination (BREAKING / NON_BREAKING / NEEDS_HUMAN_REVIEW) against the aggregated criteria and the full Airbyte versioning gate. Per-dimension Claude reviewers run alongside per-dimension Codex reviewers; findings are mechanically diff-anchored against a line-annotated diff, merged, validated (which is also where the prescriptive fix is authored), reconciled, and emitted as an author-facing doc + audit appendix + JSON + self-contained HTML. Every stage enforces invariants: a failed required stage aborts, partial coverage is reported as DEGRADED or INCOMPLETE, and the provenance line is built from what actually ran.',
   whenToUse:
     'Invoke with args {pr: "<GitHub PR URL or number>"}. Optional args: repo, repoRoot, cdkRepo, outDir, outMd, outJson, outAppendix, outHtml, maxIndividualValidations. Produces pr-<N>-api-source-authoritative-findings.{md,json,html} plus -appendix.md under thoughts/reviews/. Expensive: typically 30-60 agents, 2-6M tokens, 1-5 hours.',
   phases: [
     { title: 'Prep', detail: 'resolve PR head; classify connector from PR-head metadata; stand up pinned-CDK + main worktrees; annotate the diff; collect versioning signals' },
-    { title: 'Checks', detail: 'run whatever deterministic validation the repo offers (manifest load, unit tests, metadata) and record passed / failed / not-run' },
+    { title: 'Checks', detail: 'read the authoritative GitHub CI result (build, lint, format, tests, changelog), pull the real error for any failure, and record pending/skipped distinctly from passed' },
     { title: 'Grounding', detail: 'parallel: pinned-CDK deep-dive (vs main), third-party API docs, sibling-connector precedent — all as challengeable evidence' },
     { title: 'Breaking-Change', detail: 'three-state determination against the aggregated criteria plus the full Airbyte versioning gate' },
     { title: 'Panels', detail: 'per-dimension Claude reviewers alongside per-dimension Codex reviewers, then mechanically diff-anchored' },
@@ -165,10 +165,43 @@ const PREP_SCHEMA = {
   ],
 }
 
+// GitHub CI is the authoritative mechanical result for a PR: it gates the merge,
+// it runs with secrets and tooling this machine does not have, and it has already
+// been paid for. This phase READS it rather than reimplementing a weaker local
+// imitation. A local run happens only as a labelled fallback when connector CI
+// genuinely did not execute (fork PRs awaiting maintainer approval, for example).
 const CHECKS_SCHEMA = {
   type: 'object',
   properties: {
-    checks: {
+    ci_available: { type: 'boolean' },
+    connector_ci_ran: { type: 'boolean' },
+    tally: {
+      type: 'object',
+      properties: {
+        passed: { type: 'number' },
+        failed: { type: 'number' },
+        pending: { type: 'number' },
+        skipped: { type: 'number' },
+      },
+      required: ['passed', 'failed', 'pending', 'skipped'],
+    },
+    failing_checks: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          link: { type: 'string' },
+          error_excerpt: { type: 'string' },
+          relates_to_diff: { type: 'boolean' },
+          relevance: { type: 'string' },
+        },
+        required: ['name', 'error_excerpt', 'relates_to_diff'],
+      },
+    },
+    pending_checks: { type: 'array', items: { type: 'string' } },
+    notable_skipped: { type: 'array', items: { type: 'string' } },
+    local_fallback: {
       type: 'array',
       items: {
         type: 'object',
@@ -177,15 +210,15 @@ const CHECKS_SCHEMA = {
           status: { type: 'string', enum: ['passed', 'failed', 'not_run'] },
           command: { type: 'string' },
           detail: { type: 'string' },
-          why_not_run: { type: 'string' },
         },
         required: ['name', 'status', 'detail'],
       },
     },
     any_failed: { type: 'boolean' },
+    coverage_caveat: { type: 'string' },
     summary_markdown: { type: 'string' },
   },
-  required: ['checks', 'any_failed', 'summary_markdown'],
+  required: ['ci_available', 'connector_ci_ran', 'tally', 'any_failed', 'summary_markdown'],
 }
 
 const CDK_BRIEF_SCHEMA = {
@@ -587,7 +620,7 @@ function briefBlock(row, briefs, checks) {
     parts.push('--- THIRD-PARTY API EVIDENCE BRIEF ---\n' + (briefs.api ? briefs.api.brief_markdown : '(UNAVAILABLE - API docs were not fetched. Do not assert API-contract violations you cannot evidence.)'))
   }
   parts.push('--- SIBLING-CONNECTOR PRECEDENT (non-binding) ---\n' + (briefs.sibling ? briefs.sibling.brief_markdown : '(unavailable)'))
-  if (checks) parts.push('--- DETERMINISTIC CHECK RESULTS (passed / failed / not run) ---\n' + checks.summary_markdown)
+  if (checks) parts.push('--- GITHUB CI RESULTS (authoritative mechanical result; pending/skipped is NOT passed) ---\n' + checks.summary_markdown)
   return parts.join('\n\n')
 }
 
@@ -732,7 +765,7 @@ const coverage = {
   degradations: [],
   panels: { claude: { ok: 0, failed: 0, detail: [] }, codex: { ok: 0, failed: 0, detail: [] } },
   briefs: { cdk: false, api: false, sibling: false },
-  checks: { ran: false, any_failed: null },
+  checks: { ran: false, ci_available: null, connector_ci_ran: null, tally: null, any_failed: null, failing: [], pending: [], local_fallback: [] },
   validation: { findings: 0, claude_verdicts: 0, codex_verdicts: 0, individual: 0, batched: 0 },
   budget_note: null,
 }
@@ -821,43 +854,75 @@ if (!prep.cdk_pinned_worktree) degrade('degraded', 'no worktree at the connector
 if (prep.annotated_diff_path === prep.diff_path) degrade('degraded', 'the line-annotated diff was unavailable; reviewers had to compute line numbers by hand, which loses findings to anchoring')
 
 // ---------------------------------------------------------------------------
-// Phase 2: Mechanical checks (deterministic ground truth, cheap)
+// Phase 2: CI checks (read the authoritative mechanical result)
 // ---------------------------------------------------------------------------
 phase('Checks')
-log('Checks: running whatever deterministic validation this repo offers')
+log('Checks: reading GitHub CI results for the PR')
 const checks = await agent(
   [
-    'You are the deterministic-checks agent for ' + prep.repo + ' PR #' + prep.pr_number + ' (connector ' + prep.connector + ', type ' + prep.connector_type + '). An authoritative review must not assert from reading alone when a tool can answer definitively. Run what is cheap and available, and be scrupulous about the difference between "passed", "failed", and "not run".',
+    'You are the CI-results agent for ' + prep.repo + ' PR #' + prep.pr_number + ' (connector ' + prep.connector + ', type ' + prep.connector_type + '). An authoritative review must not assert from reading alone when a tool has already answered definitively.',
     '',
-    'Work in a scratch checkout of the PR head so you test the PR, not the working tree:',
+    'GitHub CI is that tool, and it is AUTHORITATIVE: it gates the merge, it runs with secrets and tooling this machine does not have (real image builds, connector acceptance tests, ruff/prettier/license hooks, CodeQL, docs linting), and it has already run. Your job is to READ and INTERPRET it - not to reimplement a weaker local imitation of it. Do not run connector builds, acceptance tests, linters or formatters yourself when CI has already reported on them.',
+    '',
+    'STEP 1 - Get the check results:',
+    '  gh pr checks ' + prep.pr_number + ' --repo ' + prep.repo + ' --json name,state,bucket,link',
+    'Use --json: in that mode the command exits 0 even when checks are failing or pending (the plain form exits non-zero, which is not an error you should report as a tooling failure). Buckets are "pass" | "fail" | "pending" | "skipping". Tally them into tally.{passed,failed,pending,skipped}.',
+    'If gh returns no checks at all, set ci_available=false and say so - then and only then consider the fallback in step 5.',
+    '',
+    'STEP 2 - For EVERY failing check, get the real error. The link looks like https://github.com/<owner>/<repo>/actions/runs/<runId>/job/<jobId>; extract <runId> and run:',
+    '  gh run view <runId> --repo ' + prep.repo + ' --log-failed',
+    'That output is verbose. Extract only the lines that state the actual failure (the assertion, the lint rule, the reformatted file, the stack trace tail) and put a SHORT excerpt - at most ~15 lines - in error_excerpt. Never paste raw log dumps.',
+    'Then judge relates_to_diff: does this failure concern the files this PR changed, or is it unrelated/pre-existing/infrastructure flake? Explain in relevance. A failure in an untouched area is still worth reporting, but a reviewer must not be told the PR broke something it did not touch.',
+    '',
+    'STEP 3 - Determine whether CONNECTOR-specific CI actually ran. Look for checks named like "Build and Verify Artifacts (' + prep.connector + ')", "Lint ' + prep.connector + ' Connector", "Connector CI Checks Summary", "Call Connector CI Tests". Set connector_ci_ran accordingly.',
+    'This matters: on fork PRs from community contributors, connector tests are gated behind maintainer approval and show as "skipping" until someone triggers them. A skipped connector test suite is NOT a passing one.',
+    '',
+    'STEP 4 - Record honestly:',
+    '- pending_checks: names of checks still running. A pending check has NOT passed.',
+    '- notable_skipped: skipped checks whose absence actually matters for THIS diff (connector tests, changelog check, format check). Ignore the routine skips for unrelated languages/areas.',
+    '- coverage_caveat: one sentence on what CI did NOT establish, if anything (e.g. "connector acceptance tests were skipped pending maintainer approval, so runtime behaviour is unverified").',
+    '- any_failed: true if any check is in the fail bucket.',
+    '',
+    'STEP 5 - LOCAL FALLBACK, only when ci_available is false OR connector_ci_ran is false. In that case you may run the connector unit tests yourself to recover some ground truth. Work in a scratch checkout of the PR head so you test the PR and not the working tree:',
     '  git -C ' + prep.repo_root + ' worktree add --force --detach ' + prep.run_dir + '/pr-head ' + prep.ref,
-    'Run the checks inside ' + prep.run_dir + '/pr-head/' + prep.connector_dir + '. Do NOT modify anything outside ' + prep.run_dir + '.',
-    '',
-    'CANDIDATE CHECKS - attempt the ones that apply to this connector type; skip the rest with a reason. Discover the actual tooling rather than assuming a command exists:',
-    '1. MANIFEST LOADS. For any connector with a manifest (paths: ' + ((prep.manifest_paths || []).join(', ') || 'discover them') + '): does the manifest parse and validate against the CDK it will run on? Prefer validating with the PINNED CDK' + (prep.cdk_pinned_worktree ? ' at ' + prep.cdk_pinned_worktree : '') + '. Practical approach: yaml.safe_load the manifest, then validate it against airbyte_cdk/sources/declarative/declarative_component_schema.yaml with jsonschema, or instantiate ManifestDeclarativeSource if the CDK is importable. Note: "airbyte-cdk manifest validate" does NOT exist (the subcommand is unimplemented) - do not try it and do not report it as a failure.',
-    '2. UNIT TESTS. Look for unit_tests/pyproject.toml (manifest-only connectors keep their own test project there) or a connector-level pyproject.toml. Run the suite with whatever is present: "poetry run pytest", "uv run pytest", or plain "python -m pytest". Report the pass/fail counts. If dependency installation is required and fails, that is not_run with the reason - not failed.',
-    '3. METADATA VALIDITY. metadata.yaml parses as YAML; dockerImageTag is valid semver; any releases.breakingChanges keys are major versions and each has message + upgradeDeadline in YYYY-MM-DD form.',
-    '4. SCHEMA FILES. Every changed *.json under a schemas/ dir parses as JSON and is a syntactically valid JSON Schema.',
-    '5. CHANGELOG/DOCS PRESENCE. Does docs/integrations/sources/<slug>.md contain a row for the new dockerImageTag? (slug = connector without the "source-" prefix.)',
+    '  cd ' + prep.run_dir + '/pr-head/' + prep.connector_dir + '  # then look for unit_tests/pyproject.toml (manifest-only connectors keep their own test project there) or a connector-level pyproject.toml, and run "poetry run pytest" / "uv run pytest" / "python -m pytest"',
+    'Record each attempt in local_fallback with status passed | failed | not_run and the exact command. A missing tool or a failed dependency install is not_run WITH THE REASON, never failed. Skip anything needing more than a couple of minutes of network installs. Then remove the worktree: git -C ' + prep.repo_root + ' worktree remove --force ' + prep.run_dir + '/pr-head ; git -C ' + prep.repo_root + ' worktree prune.',
+    'If CI did run the connector checks, leave local_fallback empty - do not duplicate work CI already did better.',
     '',
     'RULES:',
-    '- Never report a check as "passed" unless you actually ran it and saw it succeed. If you could not run it, status is not_run and why_not_run must say why.',
-    '- A tool that is missing from this machine is not_run, not failed.',
-    '- Keep total time reasonable: skip anything that needs network installs beyond a couple of minutes, and record it as not_run.',
-    '- For each check record the exact command you ran in `command`.',
+    '- A pending check is not a passed check. A skipped check is not a passed check. Never let either read as success.',
+    '- Report what CI says, not what you expect it to say. Do not infer a pass from the absence of a failure.',
+    '- Do not modify anything outside ' + prep.run_dir + '.',
     '',
-    'Then remove your scratch worktree: git -C ' + prep.repo_root + ' worktree remove --force ' + prep.run_dir + '/pr-head ; git -C ' + prep.repo_root + ' worktree prune.',
-    '',
-    'Write your exact StructuredOutput JSON to ' + prep.run_dir + '/02-checks.json, then return: checks[] (name, status, command, detail, why_not_run), any_failed, and summary_markdown - a compact table of check / status / detail that will be injected into every reviewer so nobody claims a suite is broken when it demonstrably passes.',
+    'Write your exact StructuredOutput JSON to ' + prep.run_dir + '/02-checks.json, then return every schema field. summary_markdown is injected verbatim into every reviewer and into the breaking-change evaluation, so make it compact and unambiguous: the pass/fail/pending/skip tally, then one line per failing check (name - what actually failed - whether it touches this diff), then the pending and notable-skipped names, then the coverage caveat. Downstream reviewers use this to avoid claiming a suite is broken when CI shows it green, and to avoid claiming a check passed when it never ran.',
   ].join('\n'),
   { label: 'checks', phase: 'Checks', schema: CHECKS_SCHEMA },
 )
 if (checks) {
-  coverage.checks = { ran: true, any_failed: checks.any_failed }
-  const tally = (checks.checks || []).reduce((a, c) => { a[c.status] = (a[c.status] || 0) + 1; return a }, {})
-  log('Checks: ' + JSON.stringify(tally) + (checks.any_failed ? ' - SOME CHECKS FAILED' : ''))
+  coverage.checks = {
+    ran: true,
+    ci_available: checks.ci_available,
+    connector_ci_ran: checks.connector_ci_ran,
+    tally: checks.tally || null,
+    any_failed: checks.any_failed,
+    failing: (checks.failing_checks || []).map((c) => c.name + (c.relates_to_diff ? ' (touches this diff)' : ' (unrelated area)')),
+    pending: checks.pending_checks || [],
+    local_fallback: (checks.local_fallback || []).map((c) => c.name + '=' + c.status),
+  }
+  const t = checks.tally || {}
+  log('Checks: CI ' + (checks.ci_available ? 'read' : 'UNAVAILABLE') +
+      ' - ' + (t.passed || 0) + ' pass, ' + (t.failed || 0) + ' fail, ' + (t.pending || 0) + ' pending, ' + (t.skipped || 0) + ' skipped' +
+      '; connector CI ran=' + checks.connector_ci_ran)
+  if (checks.any_failed) {
+    const relevant = (checks.failing_checks || []).filter((c) => c.relates_to_diff)
+    log('CI FAILURES: ' + (checks.failing_checks || []).map((c) => c.name).join(', ') +
+        (relevant.length ? ' — ' + relevant.length + ' touching this diff' : ' — none touching this diff'))
+  }
+  if (!checks.ci_available) degrade('degraded', 'GitHub CI reported no checks for this PR, so no mechanical result was available' + ((checks.local_fallback || []).length ? '; a local unit-test fallback was attempted instead' : ''))
+  else if (!checks.connector_ci_ran) degrade('degraded', 'connector-specific CI did not run for this PR (commonly a fork PR awaiting maintainer approval), so the connector build and acceptance tests are unverified' + (checks.coverage_caveat ? ': ' + checks.coverage_caveat : ''))
+  if ((checks.pending_checks || []).length) log('NOTE: ' + checks.pending_checks.length + ' CI check(s) still pending at review time: ' + checks.pending_checks.join(', '))
 } else {
-  degrade('degraded', 'the deterministic-checks phase did not complete; no mechanical ground truth was available to the reviewers')
+  degrade('degraded', 'the CI-results phase did not complete; reviewers had no mechanical result (CI status, build, lint, tests) to check their reading against')
 }
 
 // ---------------------------------------------------------------------------
@@ -961,7 +1026,7 @@ const breaking = await agent(
     '- The line-annotated diff for accurate file:line evidence: Read ' + prep.annotated_diff_path,
     '- Files AT THE PR HEAD via "git show ' + prep.ref + ':<path>" and "git ls-tree -r --name-only ' + prep.ref + ' -- <dir>" from ' + prep.repo_root + '. Inspect ' + prep.connector_dir + '/metadata.yaml (dockerImageTag + releases.breakingChanges), the schemas/ dir, and the manifest(s) for config_migrations / state_migrations blocks' + (prep.connector_type === 'custom-python' || prep.connector_type === 'hybrid' ? ', plus ' + prep.connector_dir + '/pyproject.toml and any config_migrations.py' : '') + '. Read at the PR HEAD, never the working tree.',
     '- Docs (slug = ' + prep.connector + ' without the "source-" prefix): docs/integrations/sources/<slug>-migrations.md (migration guide) and docs/integrations/sources/<slug>.md (changelog).',
-    checks ? '- DETERMINISTIC CHECK RESULTS (already run; trust these over your own reading):\n' + checks.summary_markdown : '',
+    checks ? '- GITHUB CI RESULTS (authoritative; trust these over your own reading, and note that pending or skipped is NOT passed):\n' + checks.summary_markdown : '',
     '',
     'CHANGED FILES (authoritative list):',
     prep.changed_files.join('\n'),
@@ -1274,7 +1339,13 @@ const provenance = [
     (prep.cdk_pinned_worktree ? ' (worktree verified)' : ' (WORKTREE UNAVAILABLE)') +
     (prep.cdk_main_worktree ? '; origin/main' + (prep.cdk_main_sha ? ' @ ' + prep.cdk_main_sha : '') + ' consulted only as an upgrade reference' : ''),
   'Third-party API docs: ' + (briefs.api ? (briefs.api.docs_reachable ? 'fetched' : 'NOT REACHABLE') : 'NOT OBTAINED') + '.',
-  'Deterministic checks: ' + (coverage.checks.ran ? (checks.checks || []).map((c) => c.name + '=' + c.status).join(', ') : 'not run') + '.',
+  'GitHub CI: ' + (coverage.checks.ran
+    ? (checks.ci_available
+        ? (coverage.checks.tally ? coverage.checks.tally.passed + ' passed, ' + coverage.checks.tally.failed + ' failed, ' + coverage.checks.tally.pending + ' pending, ' + coverage.checks.tally.skipped + ' skipped' : 'read')
+          + '; connector CI ' + (checks.connector_ci_ran ? 'ran' : 'DID NOT RUN')
+          + ((coverage.checks.failing || []).length ? '; failing: ' + coverage.checks.failing.join(', ') : '')
+        : 'no checks reported')
+    : 'not read') + '.',
   'Findings were mechanically anchored to changed lines, merged, then validated (' + coverage.validation.claude_verdicts + '/' +
     coverage.validation.findings + ' Claude verdicts, ' + coverage.validation.codex_verdicts + '/' + coverage.validation.findings +
     ' Codex verdicts) and reconciled.',
@@ -1294,7 +1365,7 @@ const agg = await agent(
     '',
     'BREAKING-CHANGE DETERMINATION (authoritative; surface PROMINENTLY per the tasks below):', JSON.stringify(breaking, null, 1),
     '',
-    'DETERMINISTIC CHECK RESULTS:', checks ? JSON.stringify(checks, null, 1) : '(the checks phase did not complete)',
+    'GITHUB CI RESULTS:', checks ? JSON.stringify(checks, null, 1) : '(the CI-results phase did not complete)',
     '',
     'RUN COVERAGE - this is the factual record of what actually ran. Every statement you make about process must come from HERE, never from what the workflow was designed to do:',
     JSON.stringify(coverage, null, 1),
@@ -1330,7 +1401,7 @@ const agg = await agent(
     '   - Line: > 🤖 *This comment was generated by an AI Agent.*',
     '   - The COVERAGE BANNER from task 1.',
     '   - Metadata table: PR https://github.com/' + prep.repo + '/pull/' + prep.pr_number + ', connector ' + prep.connector + ' (' + prep.connector_type + '), head ' + prep.ref + ', pinned CDK ' + (prep.cdk_pinned_version || 'unknown') + ' (authoritative reference)' + (prep.cdk_main_sha ? ', CDK main @ ' + prep.cdk_main_sha + ' (upgrade reference)' : '') + ', date, and the derived provenance line.',
-    '   - Deterministic checks: a one-line summary with passed / failed / not-run counts. A check that did not run must never read as one that passed.',
+    '   - CI status: a one-line summary of the GitHub CI tally (passed / failed / pending / skipped), naming any failing check and whether it touches this diff, plus the coverage caveat if one is set. A pending or skipped check must NEVER read as one that passed. If connector CI did not run, say so explicitly - that is the difference between "the build is green" and "nobody built it".',
     '   - Summary table: authoritative counts by severity + the implied verdict per task 3; ONE line noting how many candidate findings were dropped in validation, how many are unvalidated, and naming the appendix (' + outAppendix.split('/').pop() + ').',
     '   - Immediately below the summary: the BREAKING-CHANGE banner, rendered COLLAPSED. Emit the HEADLINE on its own line, then a BLANK LINE, then literally: "<details>" / "<summary><b>Breaking-change evaluation</b></summary>" / a BLANK LINE / the JUSTIFICATION / a BLANK LINE / "</details>". The blank lines are REQUIRED or GitHub will not render the markdown inside. Nothing from the JUSTIFICATION may appear outside this collapsible.',
     '   - "## Findings at a glance" - a VISIBLE, plain-language bulleted list covering EVERY authoritative finding, ordered P0 -> P4: a severity emoji (P0 red circle, P1 orange circle, P2 yellow circle, P3 blue circle, P4 white circle), the id, a short title, an em-dash, then the plain-language summary from task 2(a). Readable end-to-end without expanding anything: no code, no file paths, no CDK/API jargon. If any findings are UNVALIDATED, list them in a clearly-labelled separate short list beneath, marked "not confirmed by any validator". If there are zero authoritative findings, say so in one line.',
@@ -1340,9 +1411,9 @@ const agg = await agent(
     '',
     '5. Write the AUDIT APPENDIX to ' + prep.repo_root + '/' + outAppendix + ': Title "PR #' + prep.pr_number + ' - Review Audit Appendix"; the AI-agent line; metadata + pointer back to ' + outMd.split('/').pop() + '; the FULL run-coverage record (per-dimension reviewer outcomes from coverage.panels.*.detail, brief availability, check statuses, verdict counts, every degradation); a disposition table (counts by severity AND disposition + reviewer agreement rate); "Dropped Findings" (id, title, file, disposition, BOTH reviewer verdicts, resolution rationale); "Unvalidated Findings" (anything with disposition unvalidated, and why); "Reviewer Disagreements" (every agreement=false finding incl. authoritative, distinguishing genuine conflict from reviewer unavailability); "Briefs Challenged" (any brief_challenged notes); "Merge-Stage Exclusions" (excluded items + reasons; omit if empty).',
     '',
-    '6. Write the machine-readable JSON to ' + prep.repo_root + '/' + outJson + ': { "generated": "<date>", "pr": "<pr url>", "connector": "' + prep.connector + '", "connector_type": "' + prep.connector_type + '", "head": "' + prep.ref + '", "cdk_pinned_version": "' + (prep.cdk_pinned_version || '') + '", "cdk_main_sha": "' + (prep.cdk_main_sha || '') + '", "review_status": "' + coverage.review_status + '", "coverage": <the RUN COVERAGE object verbatim>, "deterministic_checks": <the check results verbatim>, "breaking_change": <the BREAKING-CHANGE DETERMINATION verbatim>, "findings": [ every reconciled finding with id, title, file, severity_final, disposition, claude_verdict, codex_verdict, agreement, agreement_note, resolution_rationale, prescriptive_fix ] }. Keep EVERYTHING (authoritative + dropped + unvalidated).',
+    '6. Write the machine-readable JSON to ' + prep.repo_root + '/' + outJson + ': { "generated": "<date>", "pr": "<pr url>", "connector": "' + prep.connector + '", "connector_type": "' + prep.connector_type + '", "head": "' + prep.ref + '", "cdk_pinned_version": "' + (prep.cdk_pinned_version || '') + '", "cdk_main_sha": "' + (prep.cdk_main_sha || '') + '", "review_status": "' + coverage.review_status + '", "coverage": <the RUN COVERAGE object verbatim>, "ci": <the GitHub CI results verbatim>, "breaking_change": <the BREAKING-CHANGE DETERMINATION verbatim>, "findings": [ every reconciled finding with id, title, file, severity_final, disposition, claude_verdict, codex_verdict, agreement, agreement_note, resolution_rationale, prescriptive_fix ] }. Keep EVERYTHING (authoritative + dropped + unvalidated).',
     '',
-    '7. Write a SELF-CONTAINED HTML report to ' + prep.repo_root + '/' + outHtml + '. A single .html file, NO external resources (inline CSS only; no CDN/webfonts/JS libraries); responsive; light AND dark via @media (prefers-color-scheme). Sections: (a) header with PR link, connector + type, head, pinned CDK, date, and a prominent VERDICT badge per task 3 (red BLOCKED; amber "Fix before merge"; green "Approved" only when zero authoritative findings AND not breaking AND coverage complete); (a1) a COVERAGE box directly under the header rendering the task-1 banner FULLY EXPANDED, red when incomplete, amber when degraded, neutral when complete; (a2) a BREAKING-CHANGE banner box rendering BOTH banner parts FULLY EXPANDED (this is a standalone artefact, not the PR comment - do not collapse it): red when blocker, amber when BREAKING and not blocker, amber when NEEDS_HUMAN_REVIEW, neutral/green when NON_BREAKING; (b) a deterministic-checks table (check / status / command), colouring not_run distinctly from passed; (c) a severity summary showing P0-P4 authoritative counts (P0 red, P1 orange, P2 amber, P3 blue, P4 grey); (d) "Authoritative Findings" cards ordered P0->P4, each with id, title, monospace file:line, severity chip, the Claude/Codex verdicts, the why-it-matters line, and the before/after in <pre> blocks (wrap wide content in an overflow-x:auto container so the page never scrolls sideways); (e) an "Unvalidated Findings" section if any exist, clearly marked as unconfirmed; (f) a collapsed <details> "Audit Appendix" with the dropped-findings table, disagreements, and the full coverage record; (g) a footer with the provenance line and the AI-agent attribution. Clean and utilitarian, not flashy.',
+    '7. Write a SELF-CONTAINED HTML report to ' + prep.repo_root + '/' + outHtml + '. A single .html file, NO external resources (inline CSS only; no CDN/webfonts/JS libraries); responsive; light AND dark via @media (prefers-color-scheme). Sections: (a) header with PR link, connector + type, head, pinned CDK, date, and a prominent VERDICT badge per task 3 (red BLOCKED; amber "Fix before merge"; green "Approved" only when zero authoritative findings AND not breaking AND coverage complete); (a1) a COVERAGE box directly under the header rendering the task-1 banner FULLY EXPANDED, red when incomplete, amber when degraded, neutral when complete; (a2) a BREAKING-CHANGE banner box rendering BOTH banner parts FULLY EXPANDED (this is a standalone artefact, not the PR comment - do not collapse it): red when blocker, amber when BREAKING and not blocker, amber when NEEDS_HUMAN_REVIEW, neutral/green when NON_BREAKING; (b) a GitHub CI table: the pass/fail/pending/skip tally, then a row per failing check (name, whether it touches this diff, the error excerpt) and per pending check, colouring pending and skipped distinctly from passed, plus any local_fallback rows clearly marked as a fallback; (c) a severity summary showing P0-P4 authoritative counts (P0 red, P1 orange, P2 amber, P3 blue, P4 grey); (d) "Authoritative Findings" cards ordered P0->P4, each with id, title, monospace file:line, severity chip, the Claude/Codex verdicts, the why-it-matters line, and the before/after in <pre> blocks (wrap wide content in an overflow-x:auto container so the page never scrolls sideways); (e) an "Unvalidated Findings" section if any exist, clearly marked as unconfirmed; (f) a collapsed <details> "Audit Appendix" with the dropped-findings table, disagreements, and the full coverage record; (g) a footer with the provenance line and the AI-agent attribution. Clean and utilitarian, not flashy.',
     '',
     '8. VERIFY YOUR OUTPUT before returning - a report that was half-written is worse than none. For each of the four files: confirm it exists and is non-empty; confirm the markdown report contains exactly two "<details>" occurrences; confirm the JSON parses (python3 -c "import json;json.load(open(...))"); confirm the HTML contains no "http://" or "https://" resource references in src=/href= attributes other than the PR link. Set files_verified=true only if every check passes, and if any fails, fix it and re-verify.',
     '',
@@ -1371,7 +1442,16 @@ return {
   cdk_pinned_version: prep.cdk_pinned_version || null,
   cdk_pinned_worktree_ok: !!prep.cdk_pinned_worktree,
   cdk_main_sha: prep.cdk_main_sha || null,
-  deterministic_checks: checks ? (checks.checks || []).map((c) => c.name + '=' + c.status) : null,
+  ci: checks
+    ? {
+        available: checks.ci_available,
+        connector_ci_ran: checks.connector_ci_ran,
+        tally: checks.tally || null,
+        failing: (checks.failing_checks || []).map((c) => ({ name: c.name, relates_to_diff: c.relates_to_diff })),
+        pending: checks.pending_checks || [],
+        local_fallback: (checks.local_fallback || []).map((c) => c.name + '=' + c.status),
+      }
+    : null,
   panels: { claude: coverage.panels.claude.ok + '/' + rows.length, codex: coverage.panels.codex.ok + '/' + rows.length },
   anchoring: { anchored: buckets.anchored.length, quote_matched_in_file: buckets.causal.length, unanchored: buckets.needs_review.length, raw: rawFindings.length },
   merged_findings: merged.findings.length,
