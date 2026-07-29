@@ -45,6 +45,8 @@ class PostgresAirbyteClient(
 
     companion object {
         private const val COLUMN_NAME_COLUMN = "column_name"
+        /** SQLSTATEs indicating the relation (or its schema) genuinely does not exist. */
+        private val MISSING_RELATION_SQL_STATES = setOf("42P01", "3F000")
     }
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -501,7 +503,7 @@ class PostgresAirbyteClient(
     private fun isMissingRelation(exception: Throwable): Boolean {
         var cause: Throwable? = exception
         while (cause != null) {
-            if (cause is SQLException && cause.sqlState in setOf("42P01", "3F000")) {
+            if (cause is SQLException && cause.sqlState in MISSING_RELATION_SQL_STATES) {
                 return true
             }
             cause = cause.cause
