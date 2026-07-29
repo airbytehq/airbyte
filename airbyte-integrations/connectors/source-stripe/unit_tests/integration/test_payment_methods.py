@@ -31,7 +31,7 @@ from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
-from integration.default.test_bank_accounts import _a_customer, _customers_response
+from integration.test_bank_accounts import _a_customer, _customers_response
 
 
 _EVENT_TYPES = ["payment_method.*"]
