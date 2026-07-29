@@ -21,9 +21,19 @@ jobs:
       - name: Sync connector docs
         run: |
           DEST_DIR="docs/ai-agents/connectors"
+          SRC_DIR="agent-connectors-source/connectors"
           mkdir -p "$DEST_DIR"
 
-          for connector_dir in agent-connectors-source/connectors/*/; do
+          # Remove connector directories that no longer exist in the source
+          for dest_connector_dir in "$DEST_DIR"/*/; do
+            connector=$(basename "$dest_connector_dir")
+            if [ ! -d "$SRC_DIR/$connector" ]; then
+              rm -rf "$DEST_DIR/$connector"
+              echo "Removed stale connector: $connector"
+            fi
+          done
+
+          for connector_dir in "$SRC_DIR"/*/; do
             connector=$(basename "$connector_dir")
 
             # Only delete/recreate the specific connector subdirectory
