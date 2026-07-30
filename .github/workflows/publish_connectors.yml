@@ -484,8 +484,11 @@ jobs:
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
           DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
           PR_NUMBER_ARGS=()
-          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+          PR_NUMBER="${PR_NUMBER//[[:space:]]/}"
+          if [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
             PR_NUMBER_ARGS+=(--pr-number "$PR_NUMBER")
+          elif [[ -n "$PR_NUMBER" ]]; then
+            echo "::warning::Ignoring non-numeric PR number '$PR_NUMBER' for release attribution."
           fi
           airbyte-ops \
             registry connector-version artifacts generate \
