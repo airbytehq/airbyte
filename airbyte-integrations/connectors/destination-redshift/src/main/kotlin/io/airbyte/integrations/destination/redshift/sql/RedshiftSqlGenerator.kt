@@ -345,8 +345,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
      * Generates an INSERT statement for new rows from the deduped source that don't exist in the
      * target.
      *
-     * Uses `NOT EXISTS` to check for existing records by primary key. CDC-deleted rows are skipped
-     * if CDC hard delete is enabled.
+     * Uses a LEFT JOIN anti-join to check for existing records by primary key because Redshift
+     * rejects the correlated NOT EXISTS form. CDC-deleted rows are skipped if CDC hard delete is
+     * enabled.
      */
     internal fun insertNewRows(
         dedupTableAlias: String,
@@ -355,12 +356,14 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         primaryKeyTargetColumns: List<String>,
         cdcHardDeleteEnabled: Boolean,
     ): String {
+        val targetAlias = quoteIdentifier("_airbyte_target")
         val primaryKeysConditions =
             buildNullSafePkMatch(
                 primaryKeyTargetColumns,
-                getFullyQualifiedName(targetTableName),
+                targetAlias,
                 dedupTableAlias,
             )
+        val rawIdColumn = quoteIdentifier(Meta.COLUMN_NAME_AB_RAW_ID)
 
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
@@ -374,14 +377,12 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |  ${allTargetColumns.joinToString(",\n  ")}
             |)
             |SELECT
-            |  ${allTargetColumns.joinToString(",\n  ")}
+            |  ${allTargetColumns.joinToString(",\n  ") { "$dedupTableAlias.$it" }}
             |FROM $dedupTableAlias
+            |LEFT JOIN ${getFullyQualifiedName(targetTableName)} AS $targetAlias
+            |  ON $primaryKeysConditions
             |WHERE
-            |  NOT EXISTS (
-            |    SELECT 1
-            |    FROM ${getFullyQualifiedName(targetTableName)}
-            |    WHERE $primaryKeysConditions
-            |  )$skipCdcDeletedClause
+            |  $targetAlias.$rawIdColumn IS NULL$skipCdcDeletedClause
         """.trimMargin()
     }
 

@@ -425,7 +425,8 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains("INSERT INTO"))
-        assertTrue(sql.contains("NOT EXISTS"))
+        assertTrue(sql.contains("LEFT JOIN"))
+        assertTrue(sql.contains(""""_airbyte_target"."_airbyte_raw_id" IS NULL"""))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
     }
 
@@ -486,12 +487,40 @@ internal class RedshiftSqlGeneratorTest {
                 cdcHardDeleteEnabled = false,
             )
 
-        // NOT EXISTS subquery should use NULL-safe PK matching
+        assertFalse(sql.contains("NOT EXISTS"))
+        assertTrue(sql.contains("LEFT JOIN"))
         assertTrue(
             sql.contains(
-                """("ns"."final"."id" = deduped_source."id" OR ("ns"."final"."id" IS NULL AND deduped_source."id" IS NULL))"""
+                """("_airbyte_target"."id" = deduped_source."id" OR ("_airbyte_target"."id" IS NULL AND deduped_source."id" IS NULL))"""
             )
         )
+        assertTrue(sql.contains("deduped_source."))
+    }
+
+    @Test
+    fun `insertNewRows uses NULL-safe PK matching for compound keys`() {
+        val target = TableName(namespace = "ns", name = "final")
+        val sql =
+            sqlGenerator.insertNewRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = target,
+                allTargetColumns = listOf(""""id"""", """"org_id"""", """"name""""),
+                primaryKeyTargetColumns = listOf(""""id"""", """"org_id""""),
+                cdcHardDeleteEnabled = false,
+            )
+
+        assertFalse(sql.contains("NOT EXISTS"))
+        assertTrue(
+            sql.contains(
+                """("_airbyte_target"."id" = deduped_source."id" OR ("_airbyte_target"."id" IS NULL AND deduped_source."id" IS NULL))"""
+            )
+        )
+        assertTrue(
+            sql.contains(
+                """("_airbyte_target"."org_id" = deduped_source."org_id" OR ("_airbyte_target"."org_id" IS NULL AND deduped_source."org_id" IS NULL))"""
+            )
+        )
+        assertTrue(sql.contains(""""_airbyte_target"."_airbyte_raw_id" IS NULL"""))
     }
 
     // ================================================================
@@ -536,7 +565,9 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("FROM $dedup"))
         // Insert new rows
         assertTrue(sql.contains("INSERT INTO \"ns\".\"final\""))
-        assertTrue(sql.contains("NOT EXISTS"))
+        assertFalse(sql.contains("NOT EXISTS"))
+        assertTrue(sql.contains("LEFT JOIN"))
+        assertTrue(sql.contains(""""_airbyte_target"."_airbyte_raw_id" IS NULL"""))
         assertTrue(sql.contains("\"_ab_cdc_deleted_at\" IS NULL"))
         // Cleanup
         assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
