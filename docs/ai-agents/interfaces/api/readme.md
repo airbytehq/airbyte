@@ -23,19 +23,19 @@ If your account belongs to multiple organizations, generate your application tok
 
 ## How the pieces fit together
 
-The four pages in this section are designed to map one-to-one with the [SDK](../sdk) section so the same mental model works in either environment.
+The four pages in this section are designed to map one-to-one with the [SDK](../sdk/readme.md) section so the same mental model works in either environment.
 
-1. **[Authentication](./authentication)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
+1. **[Authentication](./authentication/readme.md)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
 
-2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
+2. **[Add a connector](./add-connector.md)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
 
-3. **[Execute operations](./execute)**: First introspect the connector (`GET /integrations/connectors/<connector_id>/inspect`, then `GET /skills/docs`) to discover its entities, actions, and usage guidance, then call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
+3. **[Execute operations](./execute.md)**: First introspect the connector (`GET /integrations/connectors/<connector_id>/inspect`, then `GET /skills/docs`) to discover its entities, actions, and usage guidance, then call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
-4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
+4. **[Manage workspaces](./workspaces.md)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
 
 ## End-to-end example
 
-This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk).
+This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk/readme.md).
 
 ```bash title="1. Get an application token"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
