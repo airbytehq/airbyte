@@ -50,10 +50,10 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 Most streams fetch one record at a time from nested endpoints (for example, one request per meeting), so sync duration is dominated by request latency. Two optional settings control how aggressively the connector issues those requests:
 
-- **Number of concurrent workers** (`num_workers`, default `4`, max `20`): how many requests run in parallel.
-- **API rate limit per second** (`api_rate_limit_per_second`, default `4`, max `80`): the request budget the connector stays within.
+- **Number of concurrent workers** (`num_workers`, default `8`, max `20`): how many requests run in parallel.
+- **API rate limit per second** (`api_rate_limit_per_second`, default `10`, max `80`): the request budget the connector stays within.
 
-The defaults are conservative enough for Zoom Free and Pro accounts. If your Zoom plan allows higher [rate limits](https://developers.zoom.us/docs/api/rate-limits/), raising both values shortens sync times.
+The defaults target Zoom Pro and Business accounts. Free-plan users should lower both settings to `2`, because Free limits range from 1–4 requests per second depending on endpoint tier. If your Zoom plan allows higher [rate limits](https://developers.zoom.us/docs/api/rate-limits/), raising both values shortens sync times; requests returning 429 are retried with backoff either way.
 
 ## Getting started
 

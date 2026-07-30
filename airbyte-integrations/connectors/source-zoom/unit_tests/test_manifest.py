@@ -17,7 +17,7 @@ def test_manifest_declares_concurrency_and_api_budget():
     concurrency = manifest["concurrency_level"]
     assert concurrency == {
         "type": "ConcurrencyLevel",
-        "default_concurrency": "{{ config.get('num_workers', 4) }}",
+        "default_concurrency": "{{ config.get('num_workers', 8) }}",
         "max_concurrency": 20,
     }
 
@@ -26,7 +26,7 @@ def test_manifest_declares_concurrency_and_api_budget():
     assert api_budget["type"] == "HTTPAPIBudget"
     assert policy["type"] == "MovingWindowCallRatePolicy"
     assert policy["rates"][0] == {
-        "limit": "{{ config.get('api_rate_limit_per_second', 4) }}",
+        "limit": "{{ config.get('api_rate_limit_per_second', 10) }}",
         "interval": "PT1S",
     }
     assert policy["matchers"] == []
