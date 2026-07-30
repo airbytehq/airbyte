@@ -149,6 +149,12 @@ def main() -> int:
     args = parse_args()
     prompt = read_text(args.prompt_file)
 
+    # A stale result file from an earlier attempt must never be mistaken for
+    # this run's output: callers poll for the file's existence to decide whether
+    # a detached run finished.
+    if args.result_path.exists():
+        args.result_path.unlink()
+
     try:
         completed = run_codex(
             prompt=prompt,
@@ -160,7 +166,16 @@ def main() -> int:
             reasoning_effort=args.reasoning_effort,
             sandbox=args.sandbox,
         )
+    except FileNotFoundError as exc:
+        # `codex` is documented as optional: callers fall back to a single-model
+        # review. Give them a legible reason instead of a raw traceback.
+        raise StructuredOutputError("the `codex` CLI was not found on PATH; install it or run without the Codex reviewers") from exc
     except subprocess.TimeoutExpired as exc:
+        if args.raw_output_path is not None:
+            partial = exc.stdout or ""
+            if isinstance(partial, bytes):
+                partial = partial.decode("utf-8", "replace")
+            write_text(args.raw_output_path, partial)
         raise StructuredOutputError(f"Codex timed out after {args.timeout_seconds}s") from exc
 
     if args.raw_output_path is not None:

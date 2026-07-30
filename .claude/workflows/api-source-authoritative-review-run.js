@@ -68,6 +68,13 @@ const SEV = { type: 'string', enum: ['P0', 'P1', 'P2', 'P3', 'P4'] }
 // property. A non-strict schema is rejected with a 400 before the model is ever
 // called. The Claude-side StructuredOutput tool has no such requirement, so the
 // schemas below stay ergonomic and are converted only on the way to Codex.
+//
+// SCOPE: strictify() walks `properties` and `items` only. It does NOT handle
+// anyOf / oneOf / allOf / $ref / $defs / prefixItems, and it leaves an object
+// with no `properties` key untouched (no additionalProperties:false added).
+// Today's Codex-bound schemas - REVIEWER_SCHEMA and VERDICT_BATCH_SCHEMA - use
+// none of those, so this is sufficient. Introduce one and Codex will 400 with
+// an opaque message: extend this function rather than hand-editing the schema.
 // ---------------------------------------------------------------------------
 function nullableOf(node) {
   const out = { ...node }
@@ -313,10 +320,21 @@ const CODEX_LAUNCH_SCHEMA = {
   required: ['launched'],
 }
 
+// One collector agent relays all seven Codex panels, so a finding's dimension
+// is not recoverable from the agent label the way it is for the Claude
+// reviewers - it has to be carried on the finding. Without it every Codex
+// finding merges as an undifferentiated "codex:panel" and the merge stage
+// cannot attribute sources the way its rules require.
+const CODEX_FINDING_ITEM = {
+  type: 'object',
+  properties: { ...FINDING_ITEM.properties, dimension: { type: 'string' } },
+  required: [...FINDING_ITEM.required, 'dimension'],
+}
+
 const CODEX_COLLECT_SCHEMA = {
   type: 'object',
   properties: {
-    findings: { type: 'array', items: FINDING_ITEM },
+    findings: { type: 'array', items: CODEX_FINDING_ITEM },
     per_dimension: {
       type: 'array',
       items: {
@@ -538,7 +556,7 @@ const FINDING_FIELDS_NOTE = [
   '- line: REQUIRED when diff_quote is set. DO NOT COMPUTE THIS YOURSELF - read it off the LINE-ANNOTATED DIFF, which already resolves every changed line to its real number (new-file number for +, old-file number for -). Hand-computing from @@ headers is the single most common way a real finding gets discarded.',
   '- issue: one or two sentences, including the concrete failure scenario for P0-P2.',
   '- severity: P0-P4.',
-  '- diff_quote: the exact +/- line being flagged, verbatim including its +/- prefix.',
+  '- diff_quote: the exact +/- line being flagged, verbatim including its +/- prefix. It must carry at least 5 non-whitespace characters after the prefix, or it cannot be matched: when the line you want to flag is shorter than that (a bare closing brace, a one-token value), quote the nearest changed line that is long enough and name the short line in issue.',
   '- causal_diff_quote: ONLY for a finding on an UNCHANGED line that a changed line in the SAME file caused to break - paste the verbatim changed line. This is a weaker anchor: it proves the quoted line changed in this file, NOT that it caused the problem, so state the causal mechanism explicitly in issue.',
   '- brief_challenged: set only when the real code contradicted one of the evidence briefs; say which brief and what the code actually shows.',
   'A finding with neither a matching (diff_quote + line) pair nor a matching causal_diff_quote is bucketed as needs_review and excluded from counts.',
@@ -777,7 +795,7 @@ function codexCollectPrompt(rows, prep) {
     'STEP 2 - For any that are missing, the run may still be in flight. Codex writes its result file only on completion, so use the Monitor tool (load it with ToolSearch first if it is not already available) to WAIT for the missing files, with an until-condition that all expected result files exist and a timeout of ' + Math.round(CODEX_TIMEOUT / 60) + ' minutes. Monitor is the sanctioned way to wait on a condition - it keeps emitting progress so you are never mistaken for a stalled agent. Do NOT use a bare sleep loop and do NOT block in the foreground.',
     '  If Monitor is unavailable, fall back to checking with a bounded background poll: launch  bash -c \'for i in $(seq 1 60); do ls ' + prep.run_dir + '/codex-panel-*-result.json 2>/dev/null | wc -l; sleep 15; done\'  with run_in_background: true, and re-check when it returns.',
     '',
-    'STEP 3 - Read every result file you have and merge them into ONE findings array. Tag each finding with the dimension it came from by setting its "dimension" note inside the issue text ONLY if it is not already obvious - do not invent or edit findings otherwise. Relay them verbatim.',
+    'STEP 3 - Read every result file you have and merge them into ONE findings array. Set each finding\'s "dimension" field to the dimension key of the result file it came from (the key in the list above, e.g. "apidoc"). That field is the ONLY record of which reviewer raised it, and the merge stage attributes sources from it. Change nothing else: relay every other field verbatim, including the exact diff_quote and line values, which anchoring matches character-for-character.',
     '',
     'STEP 4 - Account for EVERY dimension explicitly. For any dimension whose result never arrived, add an entry to per_dimension with status "no_result" and what you observed (process still alive, raw file empty, script error text). This matters more than the findings themselves: a dimension that never returned is NOT a dimension that found nothing, and the report has to say so.',
     '',
@@ -790,16 +808,33 @@ function codexCollectPrompt(rows, prep) {
   ].join('\n')
 }
 
+// The relay of findings into the anchoring script is the one step where silent
+// corruption is invisible: a reformatted diff_quote or a dropped `line` does not
+// error, it just demotes a real finding to needs_review. A length check alone
+// does not catch that, so the write is verified on CONTENT - the exact
+// (file, line, diff_quote) triples anchoring actually reads.
 function bucketsRunnerPrompt(findings, prep) {
   const findingsPath = prep.run_dir + '/panel-findings.json'
+  // Checksum over exactly the fields anchoring reads. Counted in UTF-16 code
+  // units on both sides so JS `.length` and the Python expression agree
+  // character-for-character, astral planes included.
+  const lineSum = findings.reduce((n, f) => n + (typeof f.line === 'number' ? f.line : 0), 0)
+  const quoteChars = findings.reduce((n, f) => n + (f.diff_quote || '').trim().length, 0)
   return [
     'You are a mechanical validation runner. Follow these steps exactly:',
     '1. Write the following JSON array VERBATIM to ' + findingsPath + ' - byte-for-byte, no reformatting, no truncation, no summarising. Anchoring depends on the exact diff_quote and line values:',
     JSON.stringify(findings, null, 1),
-    '2. Verify the write: run "python3 -c \'import json,sys; d=json.load(open(sys.argv[1])); print(len(d))\' ' + findingsPath + '" and confirm it prints ' + findings.length + '. If it does not, rewrite the file before continuing.',
+    '2. Verify the write on CONTENT, not just entry count. Run this exactly:',
+    '   python3 -c "' +
+      "import json,sys; d=json.load(open(sys.argv[1])); " +
+      "print(len(d), sum(f['line'] for f in d if isinstance(f.get('line'), int)), " +
+      "sum(len((f.get('diff_quote') or '').strip().encode('utf-16-le')) // 2 for f in d))" +
+      '" ' + findingsPath,
+    '   It MUST print exactly: ' + findings.length + ' ' + lineSum + ' ' + quoteChars,
+    '   Those three numbers are the entry count, the sum of every line number, and the total length of every diff_quote - the fields anchoring reads. A mismatch means what you wrote is not what you were given: a re-wrapped or reformatted quote, a dropped line number, a truncated entry. Rewrite the file and re-check. Do NOT run step 3 on a mismatch - a mangled quote does not error, it silently demotes a real finding to needs_review.',
     '3. Run: python3 ' + prep.repo_root + '/.claude/scripts/review_pr_validate_findings.py ' + prep.diff_path + ' ' + findingsPath,
     '4. Its stdout is {"anchored": [...], "causal": [...], "needs_review": [...]}. Return exactly that object via the StructuredOutput tool.',
-    'If the script exits 2, stdout is unparseable, or the count in step 2 never matches, return {"anchored": [], "causal": [], "needs_review": <the full input findings array>, "error": "<what happened>"} - never drop findings silently.',
+    'If the script exits 2, stdout is unparseable, or the verification in step 2 never matches, return {"anchored": [], "causal": [], "needs_review": <the full input findings array>, "error": "<what happened, including the numbers you got vs the ones expected>"} - never drop findings silently.',
   ].join('\n')
 }
 
@@ -1253,7 +1288,7 @@ const rawFindings = [
   ...claudeResults
     .filter(Boolean)
     .flatMap((x) => ((x.result && x.result.findings) || []).map((f) => ({ ...f, agent: 'claude:' + x.row }))),
-  ...(((codexCollected && codexCollected.findings) || []).map((f) => ({ ...f, agent: 'codex:panel' }))),
+  ...(((codexCollected && codexCollected.findings) || []).map((f) => ({ ...f, agent: 'codex:' + (f.dimension || 'panel') }))),
 ]
 log('Panels produced ' + rawFindings.length + ' raw findings (' +
     claudeResults.filter(Boolean).reduce((n, x) => n + (((x.result && x.result.findings) || []).length), 0) + ' Claude, ' +
@@ -1465,10 +1500,18 @@ log('Reconciled: ' + keptCount + ' authoritative, ' + (reconciled.findings.lengt
 // outcome a reader most needs evidence for.
 // ---------------------------------------------------------------------------
 phase('Aggregate')
+// Output paths are joined onto repo_root below, so an absolute override would
+// produce `<repo_root>//abs/path`. Resolve against the root instead, so both
+// repo-relative and absolute overrides land where the caller meant.
+const underRoot = (p) => (p.startsWith('/') ? p : prep.repo_root + '/' + p)
 const outMd = A.outMd || OUT_DIR + '/pr-' + prep.pr_number + '-api-source-authoritative-findings.md'
 const outJson = A.outJson || OUT_DIR + '/pr-' + prep.pr_number + '-api-source-authoritative-findings.json'
 const outAppendix = A.outAppendix || OUT_DIR + '/pr-' + prep.pr_number + '-api-source-authoritative-findings-appendix.md'
 const outHtml = A.outHtml || OUT_DIR + '/pr-' + prep.pr_number + '-api-source-authoritative-findings.html'
+const outMdAbs = underRoot(outMd)
+const outJsonAbs = underRoot(outJson)
+const outAppendixAbs = underRoot(outAppendix)
+const outHtmlAbs = underRoot(outHtml)
 
 // Provenance is DERIVED, never asserted. It says what ran, not what was planned.
 const provenance = [
@@ -1513,7 +1556,7 @@ const agg = await agent(
     provenance,
     '',
     'TASKS:',
-    '0. mkdir -p ' + prep.repo_root + '/' + OUT_DIR + '. Get today\'s date via Bash: date +%F.',
+    '0. mkdir -p the parent directory of each output path below. Get today\'s date via Bash: date +%F.',
     '',
     '1. COVERAGE BANNER (required, and it goes ABOVE everything except the title). Read coverage.review_status:',
     '   - "complete": one line - "Coverage: complete - all reviewers and validators returned."',
@@ -1535,7 +1578,7 @@ const agg = await agent(
     '   - JUSTIFICATION (everything else): breaking.verdict_line, affected streams, the met (non-neutralised) criteria each with evidence file:line, any criteria marked unknown with what would settle them, the missing_artifacts list, and a "Required before merge" checklist from breaking.required_actions (include the release-playbook human action when present).',
     '   When breaking.blocker is true, ALSO ensure a top-level finding appears in BOTH the at-a-glance list and the detailed collapsible - titled "Unversioned breaking change" (P0) or "Breaking-change status undetermined" (P1, for NEEDS_HUMAN_REVIEW) - synthesised from breaking.summary_markdown + required_actions if no authoritative finding already covers it, so the blocker stays visible even with the justification collapsed.',
     '',
-    '4. Write the AUTHOR-FACING report to ' + prep.repo_root + '/' + outMd + '. For the PR author; may be posted verbatim; ONLY validated, actionable material. Structure:',
+    '4. Write the AUTHOR-FACING report to ' + outMdAbs + '. For the PR author; may be posted verbatim; ONLY validated, actionable material. Structure:',
     '   - Title: "PR #' + prep.pr_number + ' - API-Source Authoritative Review Findings"',
     '   - Line: > 🤖 *This comment was generated by an AI Agent.*',
     '   - The COVERAGE BANNER from task 1.',
@@ -1548,11 +1591,11 @@ const agg = await agent(
     '   - The markdown report therefore contains EXACTLY TWO <details> blocks, neither nested in the other.',
     '   - NOTHING ELSE (no dropped-finding detail, no disagreement narrative) - that is audit-only.',
     '',
-    '5. Write the AUDIT APPENDIX to ' + prep.repo_root + '/' + outAppendix + ': Title "PR #' + prep.pr_number + ' - Review Audit Appendix"; the AI-agent line; metadata + pointer back to ' + outMd.split('/').pop() + '; the FULL run-coverage record (per-dimension reviewer outcomes from coverage.panels.*.detail, brief availability, check statuses, verdict counts, every degradation); a disposition table (counts by severity AND disposition + reviewer agreement rate); "Dropped Findings" (id, title, file, disposition, BOTH reviewer verdicts, resolution rationale); "Unvalidated Findings" (anything with disposition unvalidated, and why); "Reviewer Disagreements" (every agreement=false finding incl. authoritative, distinguishing genuine conflict from reviewer unavailability); "Briefs Challenged" (any brief_challenged notes); "Merge-Stage Exclusions" (excluded items + reasons; omit if empty).',
+    '5. Write the AUDIT APPENDIX to ' + outAppendixAbs + ': Title "PR #' + prep.pr_number + ' - Review Audit Appendix"; the AI-agent line; metadata + pointer back to ' + outMd.split('/').pop() + '; the FULL run-coverage record (per-dimension reviewer outcomes from coverage.panels.*.detail, brief availability, check statuses, verdict counts, every degradation); a disposition table (counts by severity AND disposition + reviewer agreement rate); "Dropped Findings" (id, title, file, disposition, BOTH reviewer verdicts, resolution rationale); "Unvalidated Findings" (anything with disposition unvalidated, and why); "Reviewer Disagreements" (every agreement=false finding incl. authoritative, distinguishing genuine conflict from reviewer unavailability); "Briefs Challenged" (any brief_challenged notes); "Merge-Stage Exclusions" (excluded items + reasons; omit if empty).',
     '',
-    '6. Write the machine-readable JSON to ' + prep.repo_root + '/' + outJson + ': { "generated": "<date>", "pr": "<pr url>", "connector": "' + prep.connector + '", "connector_type": "' + prep.connector_type + '", "head": "' + prep.ref + '", "cdk_pinned_version": "' + (prep.cdk_pinned_version || '') + '", "cdk_main_sha": "' + (prep.cdk_main_sha || '') + '", "review_status": "' + coverage.review_status + '", "coverage": <the RUN COVERAGE object verbatim>, "ci": <the GitHub CI results verbatim>, "breaking_change": <the BREAKING-CHANGE DETERMINATION verbatim>, "findings": [ every reconciled finding with id, title, file, severity_final, disposition, claude_verdict, codex_verdict, agreement, agreement_note, resolution_rationale, prescriptive_fix ] }. Keep EVERYTHING (authoritative + dropped + unvalidated).',
+    '6. Write the machine-readable JSON to ' + outJsonAbs + ': { "generated": "<date>", "pr": "<pr url>", "connector": "' + prep.connector + '", "connector_type": "' + prep.connector_type + '", "head": "' + prep.ref + '", "cdk_pinned_version": "' + (prep.cdk_pinned_version || '') + '", "cdk_main_sha": "' + (prep.cdk_main_sha || '') + '", "review_status": "' + coverage.review_status + '", "coverage": <the RUN COVERAGE object verbatim>, "ci": <the GitHub CI results verbatim>, "breaking_change": <the BREAKING-CHANGE DETERMINATION verbatim>, "findings": [ every reconciled finding with id, title, file, severity_final, disposition, claude_verdict, codex_verdict, agreement, agreement_note, resolution_rationale, prescriptive_fix ] }. Keep EVERYTHING (authoritative + dropped + unvalidated).',
     '',
-    '7. Write a SELF-CONTAINED HTML report to ' + prep.repo_root + '/' + outHtml + '. A single .html file, NO external resources (inline CSS only; no CDN/webfonts/JS libraries); responsive; light AND dark via @media (prefers-color-scheme). Sections: (a) header with PR link, connector + type, head, pinned CDK, date, and a prominent VERDICT badge per task 3 (red BLOCKED; amber "Fix before merge"; green "Approved" only when zero authoritative findings AND not breaking AND coverage complete); (a1) a COVERAGE box directly under the header rendering the task-1 banner FULLY EXPANDED, red when incomplete, amber when degraded, neutral when complete; (a2) a BREAKING-CHANGE banner box rendering BOTH banner parts FULLY EXPANDED (this is a standalone artefact, not the PR comment - do not collapse it): red when blocker, amber when BREAKING and not blocker, amber when NEEDS_HUMAN_REVIEW, neutral/green when NON_BREAKING; (b) a GitHub CI table: the pass/fail/pending/skip tally, then a row per failing check (name, whether it touches this diff, the error excerpt) and per pending check, colouring pending and skipped distinctly from passed, then an EXPERIMENTS table (kind, name, status, what it established) for the PR-specific experiments CI could not run, since those are often the most load-bearing evidence in the review; (c) a severity summary showing P0-P4 authoritative counts (P0 red, P1 orange, P2 amber, P3 blue, P4 grey); (d) "Authoritative Findings" cards ordered P0->P4, each with id, title, monospace file:line, severity chip, the Claude/Codex verdicts, the why-it-matters line, and the before/after in <pre> blocks (wrap wide content in an overflow-x:auto container so the page never scrolls sideways); (e) an "Unvalidated Findings" section if any exist, clearly marked as unconfirmed; (f) a collapsed <details> "Audit Appendix" with the dropped-findings table, disagreements, and the full coverage record; (g) a footer with the provenance line and the AI-agent attribution. Clean and utilitarian, not flashy.',
+    '7. Write a SELF-CONTAINED HTML report to ' + outHtmlAbs + '. A single .html file, NO external resources (inline CSS only; no CDN/webfonts/JS libraries); responsive; light AND dark via @media (prefers-color-scheme). Sections: (a) header with PR link, connector + type, head, pinned CDK, date, and a prominent VERDICT badge per task 3 (red BLOCKED; amber "Fix before merge"; green "Approved" only when zero authoritative findings AND not breaking AND coverage complete); (a1) a COVERAGE box directly under the header rendering the task-1 banner FULLY EXPANDED, red when incomplete, amber when degraded, neutral when complete; (a2) a BREAKING-CHANGE banner box rendering BOTH banner parts FULLY EXPANDED (this is a standalone artefact, not the PR comment - do not collapse it): red when blocker, amber when BREAKING and not blocker, amber when NEEDS_HUMAN_REVIEW, neutral/green when NON_BREAKING; (b) a GitHub CI table: the pass/fail/pending/skip tally, then a row per failing check (name, whether it touches this diff, the error excerpt) and per pending check, colouring pending and skipped distinctly from passed, then an EXPERIMENTS table (kind, name, status, what it established) for the PR-specific experiments CI could not run, since those are often the most load-bearing evidence in the review; (c) a severity summary showing P0-P4 authoritative counts (P0 red, P1 orange, P2 amber, P3 blue, P4 grey); (d) "Authoritative Findings" cards ordered P0->P4, each with id, title, monospace file:line, severity chip, the Claude/Codex verdicts, the why-it-matters line, and the before/after in <pre> blocks (wrap wide content in an overflow-x:auto container so the page never scrolls sideways); (e) an "Unvalidated Findings" section if any exist, clearly marked as unconfirmed; (f) a collapsed <details> "Audit Appendix" with the dropped-findings table, disagreements, and the full coverage record; (g) a footer with the provenance line and the AI-agent attribution. Clean and utilitarian, not flashy.',
     '',
     '8. VERIFY YOUR OUTPUT before returning - a report that was half-written is worse than none. For each of the four files: confirm it exists and is non-empty; confirm the markdown report contains exactly two "<details>" occurrences; confirm the JSON parses (python3 -c "import json;json.load(open(...))"); confirm the HTML contains no "http://" or "https://" resource references in src=/href= attributes other than the PR link. Set files_verified=true only if every check passes, and if any fails, fix it and re-verify.',
     '',
@@ -1648,19 +1691,29 @@ return {
       log('  To discard them manually: git -C ' + cdkRepo + ' worktree remove --force <path> ; git -C ' + cdkRepo + ' worktree prune')
     }
     if (cmds.length) {
-      await agent(
-        [
-          'Teardown for the API-source review run in ' + prep.run_dir + '. Make ONE attempt at each command below, ignoring individual failures, then return immediately. Do not retry, do not verify repeatedly, and do not investigate - a slow teardown on a failed run just extends it.',
-          ...cmds.map((c) => '  ' + c),
-          '',
-          completedCleanly
-            ? 'The run completed, so both CDK worktrees are being removed.'
-            : 'The run did NOT complete cleanly, so the CDK worktrees are deliberately being KEPT for a resume - do not remove them even if that seems tidier.',
-          'Leave the run directory itself in place either way: it holds the per-phase JSON needed to diagnose or resume.',
-          'Return the word DONE.',
-        ].join('\n'),
-        { label: 'teardown', phase: 'Aggregate' },
-      )
+      // Teardown must never replace the error that got us here. agent() throws
+      // when the turn's token budget is exhausted - which is exactly how a run
+      // this size dies - and an unguarded throw in `finally` would swap the
+      // INCOMPLETE_REVIEW message (with its run-dir path) for a budget error,
+      // losing the one thing an operator needs to resume.
+      try {
+        await agent(
+          [
+            'Teardown for the API-source review run in ' + prep.run_dir + '. Make ONE attempt at each command below, ignoring individual failures, then return immediately. Do not retry, do not verify repeatedly, and do not investigate - a slow teardown on a failed run just extends it.',
+            ...cmds.map((c) => '  ' + c),
+            '',
+            completedCleanly
+              ? 'The run completed, so both CDK worktrees are being removed.'
+              : 'The run did NOT complete cleanly, so the CDK worktrees are deliberately being KEPT for a resume - do not remove them even if that seems tidier.',
+            'Leave the run directory itself in place either way: it holds the per-phase JSON needed to diagnose or resume.',
+            'Return the word DONE.',
+          ].join('\n'),
+          { label: 'teardown', phase: 'Aggregate' },
+        )
+      } catch (e) {
+        log('Teardown did not run (' + (e && e.message ? e.message : String(e)) + '). Clean up manually if needed:')
+        for (const c of cmds) log('  ' + c)
+      }
     }
   }
 }

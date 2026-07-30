@@ -124,4 +124,6 @@ AGENT.md
 .claude/settings.local.json
 # Local agent working notes and generated review artifacts (PR review reports,
 # audit appendices, HTML output). Not source; keep them out of commits.
-thoughts/
+# Anchored to the repo root so it cannot swallow a legitimately named directory
+# somewhere deeper in the tree.
+/thoughts/

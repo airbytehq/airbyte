@@ -23,7 +23,14 @@ enforces when anchoring findings, so a quoted number round-trips.
 
 Context lines are omitted: only changed lines are anchorable.
 
-Exit 0 on success (including an empty diff). Exit 2 when the diff cannot be read.
+Files are recognised from `diff --git` headers, falling back to bare `---`/`+++`
+markers so a diff produced without them (`diff -u`, `git diff --no-prefix`) is
+still annotated rather than silently yielding nothing.
+
+Exit 0 on success (including an empty diff). Exit 2 when the diff cannot be read,
+or when a non-empty diff produced no annotated lines at all -- that means the
+input was not in a shape this parser understands, and a caller must not read the
+empty result as "nothing changed".
 """
 
 from __future__ import annotations
@@ -35,7 +42,8 @@ from pathlib import Path
 
 
 _DIFF_HEADER_RE = re.compile(r"^diff --git " r'(?:"a/(?P<old_q>[^"]+)"|a/(?P<old>\S+)) ' r'(?:"b/(?P<new_q>[^"]+)"|b/(?P<new>\S+))\s*$')
-_HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old>\d+)(?:,\d+)? \+(?P<new>\d+)(?:,\d+)? @@")
+_HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old>\d+)(?:,(?P<old_count>\d+))? \+(?P<new>\d+)(?:,(?P<new_count>\d+))? @@")
+_FILE_MARKER_RE = re.compile(r'^(?:---|\+\+\+) (?:"[ab]/(?P<path_q>[^"]+)"|[ab]/(?P<path>\S+))\s*$')
 
 
 def _header_paths(match: re.Match) -> tuple[str, str]:
@@ -44,21 +52,51 @@ def _header_paths(match: re.Match) -> tuple[str, str]:
     return old, new
 
 
+def _file_marker_path(match: re.Match) -> str:
+    return match.group("path_q") or match.group("path") or ""
+
+
+def _hunk_lengths(match: re.Match) -> tuple[int, int]:
+    """Return (old_length, new_length) for a hunk header.
+
+    An omitted count means 1 (`@@ -3 +3 @@`). These lengths are what let the
+    parser know where a hunk ENDS, which is the only reliable way to tell a
+    `--- a/next_file.py` file marker from the removal of a line whose content
+    happens to start with `--`.
+    """
+    return int(match.group("old_count") or 1), int(match.group("new_count") or 1)
+
+
 def annotate(diff_text: str) -> str:
     out: list[str] = []
     current: str | None = None
     old_no = 0
     new_no = 0
+    old_left = 0
+    new_left = 0
     in_hunk = False
     emitted_for_file = False
+    seen_paths: set[str] = set()
 
     for raw in diff_text.splitlines():
         header = _DIFF_HEADER_RE.match(raw)
         if header:
             old_path, new_path = _header_paths(header)
             current = new_path if new_path != "/dev/null" else old_path
+            seen_paths.add(current)
             in_hunk = False
             emitted_for_file = False
+            continue
+
+        # Bare `---`/`+++` markers, for diffs with no `diff --git` headers. Only
+        # consulted OUTSIDE a hunk: inside one they are content (see below).
+        marker = _FILE_MARKER_RE.match(raw)
+        if marker and not in_hunk:
+            path = _file_marker_path(marker)
+            if path and path != "/dev/null" and path != current:
+                current = path
+                emitted_for_file = path in seen_paths
+                seen_paths.add(path)
             continue
 
         if current is None:
@@ -68,11 +106,19 @@ def annotate(diff_text: str) -> str:
         if hunk:
             old_no = int(hunk.group("old"))
             new_no = int(hunk.group("new"))
+            old_left, new_left = _hunk_lengths(hunk)
             in_hunk = True
             continue
 
-        if raw.startswith("+++") or raw.startswith("---"):
-            continue
+        # `in_hunk` MUST gate everything below, and the hunk's declared lengths
+        # are what end it. Inside a hunk, `----` is the removal of a line whose
+        # content is `---` (a YAML document separator, a markdown rule) and
+        # `+++x` is the addition of `++x` -- both are content, not file markers.
+        # Treating them as markers and skipping them without advancing the
+        # counter shifts every later line number in the file, and because
+        # review_pr_validate_findings.py parses identically, the wrong number
+        # still anchors: a real finding lands on the wrong line while a
+        # correctly numbered one is discarded as unanchored.
         if not in_hunk or raw.startswith("\\"):
             continue
 
@@ -84,9 +130,8 @@ def annotate(diff_text: str) -> str:
                     emitted_for_file = True
                 out.append(f"+ {new_no:>6} | {raw[1:]}")
             new_no += 1
-            continue
-
-        if raw.startswith("-"):
+            new_left -= 1
+        elif raw.startswith("-"):
             if raw[1:].strip():
                 if not emitted_for_file:
                     out.append("")
@@ -94,11 +139,16 @@ def annotate(diff_text: str) -> str:
                     emitted_for_file = True
                 out.append(f"- {old_no:>6} | {raw[1:]}")
             old_no += 1
-            continue
+            old_left -= 1
+        else:
+            # context line
+            old_no += 1
+            new_no += 1
+            old_left -= 1
+            new_left -= 1
 
-        # context line
-        old_no += 1
-        new_no += 1
+        if old_left <= 0 and new_left <= 0:
+            in_hunk = False
 
     return "\n".join(out).lstrip("\n") + "\n"
 
@@ -124,6 +174,13 @@ def main() -> int:
         args.out.write_text(rendered)
     else:
         sys.stdout.write(rendered)
+
+    if changed == 0 and diff_text.strip():
+        # Empty output from a non-empty diff means the input was not in a shape
+        # this parser understands -- not that nothing changed. Fail loudly so a
+        # caller cannot mistake one for the other.
+        print("[annotate_diff_lines] the diff was non-empty but no changed lines were parsed", file=sys.stderr)
+        return 2
     return 0
 
 

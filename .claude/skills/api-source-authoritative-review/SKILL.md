@@ -189,6 +189,15 @@ gh pr review <N> --repo airbytehq/airbyte --comment --body-file thoughts/reviews
   Keep it that way: if you need API-source-specific behaviour, put it in the workflow, not in
   `review_pr_validate_findings.py`, `run_codex_structured_output.py`, or
   `annotate_diff_lines.py`. Each has a self-contained docstring describing its contract.
+- **Run `python3 .claude/scripts/test_diff_parsers.py` after touching either diff parser.**
+  Stdlib only, no CI wiring, under a second. The two parsers agreeing with *each other* is
+  not the property that matters — a line number both compute wrongly still anchors, so it
+  ships into the report looking validated while the correctly numbered finding is discarded
+  as unanchored. The tests therefore assert against hand-checked real line numbers, and they
+  pin the case that caused this: a changed line whose content starts with `--` or `++` (a
+  YAML document separator, a markdown rule) is content, not a file marker. Anything below
+  five characters cannot anchor at all, which is why reviewers are told to quote a longer
+  neighbouring line.
 - The validator's `causal` bucket proves only that the quoted line **changed somewhere in
   the same file** — it is not a causality proof. The workflow and the reports call it
   "quote-matched-in-file" for that reason; don't reintroduce "mechanically validated

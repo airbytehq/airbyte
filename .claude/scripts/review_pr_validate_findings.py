@@ -58,7 +58,7 @@ from pathlib import Path
 
 
 _DIFF_HEADER_RE = re.compile(r"^diff --git " r'(?:"a/(?P<old_q>[^"]+)"|a/(?P<old>\S+)) ' r'(?:"b/(?P<new_q>[^"]+)"|b/(?P<new>\S+))\s*$')
-_HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old>\d+)(?:,\d+)? \+(?P<new>\d+)(?:,\d+)? @@")
+_HUNK_HEADER_RE = re.compile(r"^@@ -(?P<old>\d+)(?:,(?P<old_count>\d+))? \+(?P<new>\d+)(?:,(?P<new_count>\d+))? @@")
 _FILE_MARKER_RE = re.compile(r'^(?:---|\+\+\+) (?:"[ab]/(?P<path_q>[^"]+)"|[ab]/(?P<path>\S+))\s*$')
 _WHITESPACE_RE = re.compile(r"\s+")
 
@@ -73,6 +73,17 @@ def _diff_header_paths(match: re.Match) -> tuple[str, str]:
 
 def _file_marker_path(match: re.Match) -> str:
     return match.group("path_q") or match.group("path") or ""
+
+
+def _hunk_lengths(match: re.Match) -> tuple[int, int]:
+    """Return (old_length, new_length) for a hunk header.
+
+    An omitted count means 1 (`@@ -3 +3 @@`). These lengths are what let the
+    parser know where a hunk ENDS, which is the only reliable way to tell a
+    `--- a/next_file.py` file marker from the removal of a line whose content
+    happens to start with `--`.
+    """
+    return int(match.group("old_count") or 1), int(match.group("new_count") or 1)
 
 
 @dataclass
@@ -97,6 +108,8 @@ def _parse_diff(diff_text: str) -> dict[str, DiffFile]:
     current: DiffFile | None = None
     old_line_no = 0
     new_line_no = 0
+    old_left = 0
+    new_left = 0
     in_hunk = False
 
     for raw in diff_text.splitlines():
@@ -111,14 +124,15 @@ def _parse_diff(diff_text: str) -> dict[str, DiffFile]:
             in_hunk = False
             continue
 
+        # Bare `---`/`+++` markers, for diffs with no `diff --git` headers. Only
+        # consulted OUTSIDE a hunk: inside one they are content (see below).
         marker = _FILE_MARKER_RE.match(raw)
-        if marker and current is None:
+        if marker and not in_hunk:
             path = _file_marker_path(marker)
             if path == "/dev/null" or not path:
                 continue
             current = files.get(path) or DiffFile(path=path)
             files.setdefault(path, current)
-            in_hunk = False
             continue
 
         if current is None:
@@ -128,16 +142,20 @@ def _parse_diff(diff_text: str) -> dict[str, DiffFile]:
         if hunk:
             old_line_no = int(hunk.group("old"))
             new_line_no = int(hunk.group("new"))
+            old_left, new_left = _hunk_lengths(hunk)
             in_hunk = True
             continue
 
-        if raw.startswith("+++") or raw.startswith("---"):
-            continue
-
-        if not in_hunk:
-            continue
-
-        if raw.startswith("\\"):
+        # `in_hunk` MUST gate everything below, and the hunk's declared lengths
+        # are what end it. Inside a hunk, `----` is the removal of a line whose
+        # content is `---` (a YAML document separator, a markdown rule) and
+        # `+++x` is the addition of `++x` -- both are content, not file markers.
+        # Treating them as markers and skipping them without advancing the
+        # counter shifts every later line number in the file, and since
+        # annotate_diff_lines.py parses identically, the shifted number still
+        # anchors here: a real finding lands on the wrong line while a correctly
+        # numbered one is discarded as unanchored.
+        if not in_hunk or raw.startswith("\\"):
             continue
 
         if raw.startswith("+"):
@@ -145,19 +163,21 @@ def _parse_diff(diff_text: str) -> dict[str, DiffFile]:
             if content:
                 current.changed_lines.append(ChangedLine(content=content, line_number=new_line_no, side="added"))
             new_line_no += 1
-            continue
-
-        if raw.startswith("-"):
+            new_left -= 1
+        elif raw.startswith("-"):
             content = _normalize(raw[1:])
             if content:
                 current.changed_lines.append(ChangedLine(content=content, line_number=old_line_no, side="removed"))
             old_line_no += 1
-            continue
-
-        if raw.startswith(" ") or raw == "":
+            old_left -= 1
+        else:
             old_line_no += 1
             new_line_no += 1
-            continue
+            old_left -= 1
+            new_left -= 1
+
+        if old_left <= 0 and new_left <= 0:
+            in_hunk = False
 
     return files
 
@@ -185,11 +205,17 @@ def _parse_quote(raw: object) -> tuple[str | None, str] | None:
     if not stripped:
         return None
 
+    # Strip exactly ONE marker character. Do NOT special-case `+++`/`---` here:
+    # a quote of `+++new marker` is the addition of the line `++new marker`, and
+    # refusing to strip its prefix leaves an unmatchable `+++new marker` that
+    # cannot anchor against any real content. A quote of a genuine file marker
+    # (`--- a/foo.py`) still fails to match any changed line, which is the
+    # outcome we want for it anyway.
     side: str | None = None
-    if stripped.startswith("+") and not stripped.startswith("+++"):
+    if stripped.startswith("+"):
         side = "added"
         stripped = stripped[1:]
-    elif stripped.startswith("-") and not stripped.startswith("---"):
+    elif stripped.startswith("-"):
         side = "removed"
         stripped = stripped[1:]
 
