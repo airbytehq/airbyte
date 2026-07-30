@@ -444,7 +444,17 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
             first_request = False
             context.status_code = HTTPStatus.OK
             context.headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
-            context.text = json.dumps({"errors": [{"type": "RATE_LIMITED"}]})
+            context.text = json.dumps(
+                {
+                    "errors": [
+                        {
+                            "type": "RATE_LIMIT",
+                            "code": "graphql_rate_limit",
+                            "message": "API rate limit already exceeded for user ID 123.",
+                        }
+                    ]
+                }
+            )
 
             return context.text
 
