@@ -89,18 +89,14 @@ def test_property_metadata_reads_properties(requests_mock: requests_mock.Mocker,
     assert [record["displayName"] for record in records] == ["First property", "Second property"]
     assert records[0]["createTime"] == "2024-01-01T00:00:00Z"
     assert records[1]["currencyCode"] == "GBP"
-    admin_requests = [
-        request.url for request in requests_mock.request_history if "analyticsadmin.googleapis.com" in request.url
-    ]
+    admin_requests = [request.url for request in requests_mock.request_history if "analyticsadmin.googleapis.com" in request.url]
     assert admin_requests == [
         "https://analyticsadmin.googleapis.com/v1beta/properties/123",
         "https://analyticsadmin.googleapis.com/v1beta/properties/456",
     ]
 
 
-def test_property_metadata_coexists_with_dynamic_report_streams(
-    requests_mock: requests_mock.Mocker, manifest_path: Path
-) -> None:
+def test_property_metadata_coexists_with_dynamic_report_streams(requests_mock: requests_mock.Mocker, manifest_path: Path) -> None:
     config = _get_config()
     config["property_ids"] = ["123"]
     config["custom_reports_array"] = [
