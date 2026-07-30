@@ -139,13 +139,94 @@ class AirbyteDebeziumHandler<T>(
         const val QUEUE_MAX_MEMORY_USAGE_FRACTION: Double = 0.25
 
         /**
+         * JVM system property that overrides the CDC event queue byte budget with an absolute
+         * value, in bytes. When set to a positive long it takes precedence over
+         * [QUEUE_MAX_MEMORY_FRACTION_PROPERTY] and the [QUEUE_MAX_MEMORY_USAGE_FRACTION] default.
+         */
+        const val QUEUE_MAX_MEMORY_BYTES_PROPERTY: String =
+            "airbyte.cdk.debezium.queue.max-memory-bytes"
+
+        /**
+         * JVM system property that overrides the fraction of the JVM max heap used for the CDC
+         * event queue byte budget. Must be in the range (0.0, 1.0]; otherwise the
+         * [QUEUE_MAX_MEMORY_USAGE_FRACTION] default is used. Ignored when
+         * [QUEUE_MAX_MEMORY_BYTES_PROPERTY] is set to a positive value.
+         */
+        const val QUEUE_MAX_MEMORY_FRACTION_PROPERTY: String =
+            "airbyte.cdk.debezium.queue.max-memory-fraction"
+
+        /**
          * Default maximum approximate byte footprint of the CDC event queue, derived from the JVM
          * max heap. On a 6 GiB heap this is ~1.5 GB, well below the point where 10,000 large events
          * would OOM the container.
+         *
+         * The budget can be tuned in production without a new CDK release via JVM system
+         * properties: [QUEUE_MAX_MEMORY_BYTES_PROPERTY] (absolute bytes, takes precedence) or
+         * [QUEUE_MAX_MEMORY_FRACTION_PROPERTY] (fraction of the max heap).
          */
         @JvmStatic
-        fun defaultQueueMaxMemoryUsageBytes(): Long =
-            (Runtime.getRuntime().maxMemory() * QUEUE_MAX_MEMORY_USAGE_FRACTION).toLong()
+        fun defaultQueueMaxMemoryUsageBytes(): Long {
+            val maxHeap = Runtime.getRuntime().maxMemory()
+
+            // 1. An absolute byte override takes precedence when set to a positive value.
+            readLongProperty(QUEUE_MAX_MEMORY_BYTES_PROPERTY)?.let { overrideBytes ->
+                if (overrideBytes > 0L) {
+                    LOGGER.info {
+                        "Using CDC event queue byte budget override " +
+                            "$QUEUE_MAX_MEMORY_BYTES_PROPERTY=$overrideBytes bytes."
+                    }
+                    return overrideBytes
+                }
+                LOGGER.warn {
+                    "Ignoring non-positive $QUEUE_MAX_MEMORY_BYTES_PROPERTY=$overrideBytes."
+                }
+            }
+
+            // 2. Otherwise use the (optionally overridden) fraction of the JVM max heap.
+            val fraction =
+                readDoubleProperty(QUEUE_MAX_MEMORY_FRACTION_PROPERTY)?.let { overrideFraction ->
+                    if (overrideFraction > 0.0 && overrideFraction <= 1.0) {
+                        LOGGER.info {
+                            "Using CDC event queue byte budget fraction override " +
+                                "$QUEUE_MAX_MEMORY_FRACTION_PROPERTY=$overrideFraction."
+                        }
+                        overrideFraction
+                    } else {
+                        LOGGER.warn {
+                            "Ignoring out-of-range $QUEUE_MAX_MEMORY_FRACTION_PROPERTY=" +
+                                "$overrideFraction (expected (0.0, 1.0])."
+                        }
+                        QUEUE_MAX_MEMORY_USAGE_FRACTION
+                    }
+                }
+                    ?: QUEUE_MAX_MEMORY_USAGE_FRACTION
+
+            return (maxHeap * fraction).toLong()
+        }
+
+        private fun readLongProperty(name: String): Long? =
+            System.getProperty(name)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { raw ->
+                    raw.toLongOrNull()
+                        ?: run {
+                            LOGGER.warn { "Ignoring invalid $name='$raw' (not a long)." }
+                            null
+                        }
+                }
+
+        private fun readDoubleProperty(name: String): Double? =
+            System.getProperty(name)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { raw ->
+                    raw.toDoubleOrNull()
+                        ?: run {
+                            LOGGER.warn { "Ignoring invalid $name='$raw' (not a double)." }
+                            null
+                        }
+                }
 
         @JvmStatic
         fun isAnyStreamIncrementalSyncMode(catalog: ConfiguredAirbyteCatalog): Boolean {
@@ -235,6 +316,73 @@ class CapacityReportingBlockingQueue<E>(
             signalBelowByteThreshold()
             throw ex
         }
+    }
+
+    override fun offer(e: E): Boolean {
+        val elementBytes = estimateByteSize(e)
+        byteSizeLock.lock()
+        try {
+            // Non-blocking insertion: reject (return false) rather than block when the element
+            // would exceed the byte budget, mirroring the count-capacity semantics of the
+            // superclass. An element is always admitted into an empty queue so an oversized event
+            // is never permanently rejected.
+            if (!isEmpty() && currentByteSize.get() + elementBytes > maxSizeInBytes) {
+                return false
+            }
+            currentByteSize.addAndGet(elementBytes)
+        } finally {
+            byteSizeLock.unlock()
+        }
+        reportQueueUtilization(put = 1L)
+        val added = super.offer(e)
+        if (!added) {
+            currentByteSize.addAndGet(-elementBytes)
+            signalBelowByteThreshold()
+        }
+        return added
+    }
+
+    @Throws(InterruptedException::class)
+    override fun offer(e: E, timeout: Long, unit: TimeUnit): Boolean {
+        val elementBytes = estimateByteSize(e)
+        val deadline = System.nanoTime() + unit.toNanos(timeout)
+        byteSizeLock.lockInterruptibly()
+        try {
+            while (!isEmpty() && currentByteSize.get() + elementBytes > maxSizeInBytes) {
+                val remaining = deadline - System.nanoTime()
+                if (remaining <= 0L) {
+                    return false
+                }
+                belowByteThreshold.awaitNanos(remaining)
+            }
+            currentByteSize.addAndGet(elementBytes)
+        } finally {
+            byteSizeLock.unlock()
+        }
+        reportQueueUtilization(put = 1L)
+        val remaining = maxOf(0L, deadline - System.nanoTime())
+        val added =
+            try {
+                super.offer(e, remaining, TimeUnit.NANOSECONDS)
+            } catch (ex: InterruptedException) {
+                currentByteSize.addAndGet(-elementBytes)
+                signalBelowByteThreshold()
+                throw ex
+            }
+        if (!added) {
+            currentByteSize.addAndGet(-elementBytes)
+            signalBelowByteThreshold()
+        }
+        return added
+    }
+
+    override fun add(e: E): Boolean {
+        // Route through the byte-aware offer() so every insertion path keeps the byte accounting
+        // consistent. Matches Collection.add semantics: throw when the element cannot be added.
+        if (offer(e)) {
+            return true
+        }
+        throw IllegalStateException("Queue full (count capacity or byte budget exceeded)")
     }
 
     override fun poll(): E? {

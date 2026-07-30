@@ -108,4 +108,109 @@ class CapacityReportingBlockingQueueTest {
         )
         producer.join(TimeUnit.SECONDS.toMillis(5))
     }
+
+    @Test
+    @Timeout(15)
+    fun offerRejectsWhenByteLimitExceededAndTracksBytes() {
+        // Budget is 10 bytes. The first (empty-queue) offer always succeeds even when oversized;
+        // a subsequent offer that would exceed the budget is rejected without blocking.
+        val queue = stringQueue(capacity = 100, maxSizeInBytes = 10)
+
+        Assertions.assertTrue(queue.offer("aaaaaa")) // 6 bytes into empty queue
+        Assertions.assertEquals(6L, queue.currentByteSizeEstimate)
+
+        // 6 + 6 = 12 > 10 byte budget, and the queue is non-empty -> rejected, no accounting.
+        Assertions.assertFalse(queue.offer("bbbbbb"))
+        Assertions.assertEquals(6L, queue.currentByteSizeEstimate)
+
+        // A poll frees budget; the offer now fits and is accounted for.
+        Assertions.assertEquals("aaaaaa", queue.poll())
+        Assertions.assertTrue(queue.offer("cccc")) // 4 bytes
+        Assertions.assertEquals(4L, queue.currentByteSizeEstimate)
+    }
+
+    @Test
+    @Timeout(15)
+    fun addRespectsByteBudgetAndKeepsAccountingConsistent() {
+        val queue = stringQueue(capacity = 100, maxSizeInBytes = 10)
+
+        Assertions.assertTrue(queue.add("aaaaaa")) // 6 bytes into empty queue
+        // add() must throw (not silently drop) when the byte budget would be exceeded.
+        Assertions.assertThrows(IllegalStateException::class.java) { queue.add("bbbbbb") }
+        Assertions.assertEquals(6L, queue.currentByteSizeEstimate)
+
+        // Every removal decrements accounting; a rejected add must not have leaked bytes.
+        Assertions.assertEquals("aaaaaa", queue.poll())
+        Assertions.assertEquals(0L, queue.currentByteSizeEstimate)
+    }
+
+    @Test
+    @Timeout(15)
+    fun timedOfferBlocksThenSucceedsAndTracksBytes() {
+        val queue = stringQueue(capacity = 100, maxSizeInBytes = 10)
+        queue.put("aaaaaa") // 6 bytes
+
+        // Would exceed the budget; a short timed offer gives up and returns false.
+        Assertions.assertFalse(queue.offer("bbbbbb", 200, TimeUnit.MILLISECONDS))
+        Assertions.assertEquals(6L, queue.currentByteSizeEstimate)
+
+        // Once space is freed the timed offer succeeds within its window and accounts the bytes.
+        Assertions.assertEquals("aaaaaa", queue.poll())
+        Assertions.assertTrue(queue.offer("bbbbbb", 5, TimeUnit.SECONDS))
+        Assertions.assertEquals(6L, queue.currentByteSizeEstimate)
+    }
+
+    @Test
+    fun defaultQueueMaxMemoryUsageBytesHonorsSystemPropertyOverrides() {
+        val bytesProp = AirbyteDebeziumHandler.QUEUE_MAX_MEMORY_BYTES_PROPERTY
+        val fractionProp = AirbyteDebeziumHandler.QUEUE_MAX_MEMORY_FRACTION_PROPERTY
+        val originalBytes = System.getProperty(bytesProp)
+        val originalFraction = System.getProperty(fractionProp)
+        try {
+            System.clearProperty(bytesProp)
+            System.clearProperty(fractionProp)
+            val maxHeap = Runtime.getRuntime().maxMemory()
+
+            // Default: 25% of the JVM max heap.
+            Assertions.assertEquals(
+                (maxHeap * AirbyteDebeziumHandler.QUEUE_MAX_MEMORY_USAGE_FRACTION).toLong(),
+                AirbyteDebeziumHandler.defaultQueueMaxMemoryUsageBytes(),
+            )
+
+            // Absolute byte override takes precedence.
+            System.setProperty(bytesProp, "12345")
+            System.setProperty(fractionProp, "0.5")
+            Assertions.assertEquals(
+                12345L,
+                AirbyteDebeziumHandler.defaultQueueMaxMemoryUsageBytes(),
+            )
+
+            // Fraction override applies when no (valid) absolute override is set.
+            System.clearProperty(bytesProp)
+            System.setProperty(fractionProp, "0.1")
+            Assertions.assertEquals(
+                (maxHeap * 0.1).toLong(),
+                AirbyteDebeziumHandler.defaultQueueMaxMemoryUsageBytes(),
+            )
+
+            // Invalid/out-of-range overrides fall back to the default fraction.
+            System.setProperty(bytesProp, "-1")
+            System.setProperty(fractionProp, "5.0")
+            Assertions.assertEquals(
+                (maxHeap * AirbyteDebeziumHandler.QUEUE_MAX_MEMORY_USAGE_FRACTION).toLong(),
+                AirbyteDebeziumHandler.defaultQueueMaxMemoryUsageBytes(),
+            )
+        } finally {
+            restoreProperty(bytesProp, originalBytes)
+            restoreProperty(fractionProp, originalFraction)
+        }
+    }
+
+    private fun restoreProperty(name: String, value: String?) {
+        if (value == null) {
+            System.clearProperty(name)
+        } else {
+            System.setProperty(name, value)
+        }
+    }
 }
