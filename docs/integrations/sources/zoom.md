@@ -48,6 +48,13 @@ Most of the endpoints this connector access is restricted by standard Zoom [requ
 
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+Most streams fetch one record at a time from nested endpoints (for example, one request per meeting), so sync duration is dominated by request latency. Two optional settings control how aggressively the connector issues those requests:
+
+- **Number of concurrent workers** (`num_workers`, default `4`, max `20`): how many requests run in parallel.
+- **API rate limit per second** (`api_rate_limit_per_second`, default `4`, max `80`): the request budget the connector stays within.
+
+The defaults are conservative enough for Zoom Free and Pro accounts. If your Zoom plan allows higher [rate limits](https://developers.zoom.us/docs/api/rate-limits/), raising both values shortens sync times.
+
 ## Getting started
 
 ### Requirements
