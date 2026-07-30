@@ -130,10 +130,10 @@ If either of your tokens expire, you can generate new ones by returning to Linke
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
 11. (Optional) For **Custom Ad Statistics Reports**, you may optionally provide one or more reports that use LinkedIn's **Statistics Finder**, which groups results by up to three pivot categories at once. To add a statistics report:
-   1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by "custom_statistics_".
-   3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
-   4. Select a **Time Granularity** (same options as above).
+1. Click on **Add**.
+2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by "custom_statistics_".
+3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
+4. Select a **Time Granularity** (same options as above).
 
    **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
 12. Click **Set up source** and wait for the tests to complete.
