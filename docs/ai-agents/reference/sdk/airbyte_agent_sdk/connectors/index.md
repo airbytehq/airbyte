@@ -35,6 +35,7 @@ Sub-modules
 * airbyte_agent_sdk.connectors.jira
 * airbyte_agent_sdk.connectors.klaviyo
 * airbyte_agent_sdk.connectors.linear
+* airbyte_agent_sdk.connectors.linkedin_ads
 * airbyte_agent_sdk.connectors.mailchimp
 * airbyte_agent_sdk.connectors.monday
 * airbyte_agent_sdk.connectors.notion
