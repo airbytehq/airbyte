@@ -122,14 +122,21 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
 10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication.
+   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_`.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
    4. Select a **Time Granularity** to group the data in your report by time. The options are:
       - `ALL`: Data is not grouped by time, providing a cumulative view.
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Custom Ad Statistics Reports**, you may optionally provide one or more reports that use LinkedIn's **Statistics Finder**, which groups results by up to three pivot categories at once. To add a statistics report:
+1. Click on **Add**.
+2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by "custom_statistics_".
+3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
+4. Select a **Time Granularity** (same options as above).
+
+   **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -222,6 +229,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.0 | 2026-07-28 | [78505](https://github.com/airbytehq/airbyte/pull/78505) | Add custom_statistics_report stream and ad_statistics_reports config for LinkedIn Statistics Finder reports (up to three pivots). |
 | 5.6.13 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 5.6.12 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 5.6.10 — 5.6.11 is built on SDM 7.23.7, which breaks bundled custom components |
 | 5.6.11 | 2026-07-28 | [83018](https://github.com/airbytehq/airbyte/pull/83018) | Update dependencies |
