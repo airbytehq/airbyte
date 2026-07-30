@@ -159,6 +159,20 @@ class ClickhouseSqlGenerator {
         return builder.dropLast(1).toString().andLog()
     }
 
+    /**
+     * Generates ALTER TABLE ADD COLUMN statements for retained columns (columns that would have
+     * been dropped but are now kept). All retained columns are added as Nullable to accept NULL
+     * values from new records that no longer populate them.
+     */
+    fun addRetainedColumns(
+        tableName: TableName,
+        columns: Map<String, ColumnType>,
+    ): List<String> =
+        columns.map { (columnName, columnType) ->
+            val nullableType = ColumnType("Nullable(${columnType.type})", true)
+            "ALTER TABLE `${tableName.namespace}`.`${tableName.name}` ADD COLUMN `$columnName` ${nullableType.typeDecl()}".andLog()
+        }
+
     fun ColumnType.typeDecl() =
         if (nullable) {
             "Nullable($type)"

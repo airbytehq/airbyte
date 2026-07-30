@@ -142,10 +142,14 @@ class ClickhouseAirbyteClient(
         // We assume that if any column changes its nullability,
         // this indicates a change in the PK/cursor, and therefore we need to
         // reconfigure the table engine.
+        // We also check columnsToDrop for NOT NULL columns: when a cursor column
+        // is removed from the new schema it lands in columnsToDrop. If it was
+        // NOT NULL (i.e. it was the cursor), we still need to recreate the table
+        // to update the engine and make the retained column nullable.
         val anyNullabilityChange =
             columnChangeset.columnsToChange.values.any {
                 it.originalType.nullable != it.newType.nullable
-            }
+            } || columnChangeset.columnsToDrop.values.any { !it.nullable }
 
         if (anyNullabilityChange) {
             log.info {
@@ -175,8 +179,17 @@ class ClickhouseAirbyteClient(
                 true,
             ),
         )
+        // Add retained columns (previously "dropped") to the temp table as Nullable
+        // so their data is preserved during table recreation.
+        if (columnChangeset.columnsToDrop.isNotEmpty()) {
+            sqlGenerator.addRetainedColumns(tempTableName, columnChangeset.columnsToDrop).forEach {
+                execute(it)
+            }
+        }
         val columnNames =
-            columnChangeset.columnsToChange.keys + columnChangeset.columnsToRetain.keys
+            columnChangeset.columnsToChange.keys +
+                columnChangeset.columnsToRetain.keys +
+                columnChangeset.columnsToDrop.keys
         execute(
             sqlGenerator.copyTable(
                 columnNames,
