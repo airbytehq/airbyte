@@ -54,10 +54,10 @@ mechanical diff-anchoring → merge/dedupe → dual-reviewer validation → reco
 | Phase | What happens |
 |-------|--------------|
 | **Prep** | Resolve the PR head; classify the connector from **PR-head `metadata.yaml` tags** plus a recursive manifest search; resolve the **pinned** CDK; stand up a worktree at that pinned version *and* one at `origin/main`; build a **line-annotated diff**; collect PR labels/title/review state for the versioning gate |
-| **Checks** | Read the **authoritative GitHub CI result** for the PR (build, lint, format, connector tests, changelog, CodeQL, docs), pull the real error text for any failure and judge whether it touches this diff, recording **pending and skipped distinctly from passed**. Falls back to a local unit-test run only when connector CI genuinely did not execute |
+| **Checks** | Two halves. **Read** the authoritative GitHub CI result (build, lint, format, connector tests, changelog, CodeQL, docs), pulling the real error text for any failure and judging whether it touches this diff, with **pending and skipped kept distinct from passed**. Then **run PR-specific experiments CI cannot do**: revert the fix and re-run the new tests, enumerate per-stream coverage, probe real emitted behaviour against mocked HTTP, run the suite under both pinned CDK versions |
 | **Grounding** | Parallel: **(a)** CDK deep-dive over the **pinned** worktree, with `origin/main` consulted only for upgrade deltas · **(b)** third-party API-doc grounding · **(c)** sibling-connector precedent |
 | **Breaking-Change** | Evaluate the diff against the [breaking-change criteria](references/breaking-change-criteria.md) and return a **three-state** determination plus the **full** Airbyte versioning gate. **Always runs** |
-| **Panels** | Per-dimension Claude reviewers in parallel with per-dimension Codex reviewers, then mechanically diff-anchored |
+| **Panels** | Launch all Codex reviewers detached, run the Claude reviewers while they work, then collect Codex results; findings mechanically diff-anchored |
 | **Merge** | Merge + dedupe anchored findings; reviewer severity disagreement is **recorded, not ratcheted to the maximum** |
 | **Validate** | Per-finding Claude validation — which also **authors the prescriptive fix**, so the fix is reviewed by whoever checked the finding — in parallel with a Codex adversarial batch. Fan-out capped |
 | **Reconcile** | Merge both reviewers' verdicts into `authoritative` / `dropped_*` / `unvalidated` dispositions |
@@ -98,13 +98,25 @@ reviewer asked whether a test exists has to be able to look in `unit_tests/`.
 - **Untrusted content is data.** The diff, PR body, linked issue, and fetched vendor docs
   are attacker-controlled. Reviewers are told to treat embedded instructions as a P0
   finding, not as instructions.
-- **CI is read, not reimplemented.** GitHub CI gates the merge, runs with secrets and
-  tooling a laptop does not have, and has already been paid for — so the Checks phase reads
-  it. An earlier draft ran its own manifest-parse and pytest imitation locally; that was
-  slower, more fragile, and strictly less capable. It would never have caught the ruff
-  import-sort violation and missing license header that CI found in this harness's own PR in
-  95 seconds. Local execution survives only as a labelled fallback for when connector CI did
-  not run at all, which happens on fork PRs awaiting maintainer approval.
+- **CI is read; experiments are run.** These are two different jobs and the phase does both.
+  GitHub CI gates the merge, runs with secrets a laptop does not have, and has already been
+  paid for — so the generic gates (build, lint, format, tests, changelog) are *read*, never
+  reimplemented. An earlier draft reimplemented them and would still have missed the ruff
+  violation and missing license header CI caught in this harness's own PR in 95 seconds.
+  But CI only ever runs the code **as submitted**, so it structurally cannot answer the
+  questions specific to one diff. Those are *experiments*, and they are often the most
+  load-bearing evidence in the review: revert the fix and see whether the new tests still
+  pass (they did, on the run that shipped this design — a real finding); enumerate every
+  stream to prove a per-stream change is complete; probe what the source actually emits
+  against mocked HTTP; run the suite under both the `baseImage` CDK and the lockfile CDK.
+  Delete either half and the phase gets materially worse.
+- **No agent ever idles waiting on Codex.** Codex runs are launched detached, the Claude
+  panels run as the wall-clock cushion, and a collector gathers results afterwards. The
+  earlier design had one agent launch Codex and wait — it sat with nothing to emit and the
+  harness forced structured output while the process was still alive, silently losing the
+  second opinion on 6 of 7 dimensions. Raising the Codex timeout made that *worse*, not
+  better, by lengthening the idle wait. If you touch this, keep the launch and the collect
+  in separate agents.
 - **Codex schemas are generated strict.** `strictify()` converts the ergonomic schemas into
   OpenAI strict-mode form (`additionalProperties: false`, every property in `required`,
   nullable optionals) on the way to Codex only. Without it Codex 400s before the model is
