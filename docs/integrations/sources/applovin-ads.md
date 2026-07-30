@@ -86,6 +86,6 @@ properties, so extra columns pass through even if they are not declared.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.0 | 2026-07-30 | | Initial release: `advertiser_report_daily`, `web_report_daily`, `asset_report_daily` |
+| 0.1.0 | 2026-07-30 | [83270](https://github.com/airbytehq/airbyte/pull/83270) | Initial release: `advertiser_report_daily`, `web_report_daily`, `asset_report_daily` |
 
 </details>
