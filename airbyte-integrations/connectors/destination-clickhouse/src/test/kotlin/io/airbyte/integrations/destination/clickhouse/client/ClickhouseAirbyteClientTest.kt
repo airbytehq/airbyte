@@ -167,7 +167,7 @@ class ClickhouseAirbyteClientTest {
                                 ColumnType("IrrelevantValue", true)
                             )
                     ),
-                columnsToDrop = mapOf("test" to ColumnType("String", true)),
+                columnsToDrop = emptyMap(),
                 columnsToRetain = emptyMap(),
             )
 

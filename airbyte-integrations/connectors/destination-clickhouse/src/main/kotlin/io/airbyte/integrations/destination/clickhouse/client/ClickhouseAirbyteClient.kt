@@ -140,13 +140,12 @@ class ClickhouseAirbyteClient(
         // This is a bit hacky, and relies on the fact that we make all
         // non-pk/cursor columns nullable.
         // We assume that if any column changes its nullability,
-        // or we want to drop a non-nullable column,
         // this indicates a change in the PK/cursor, and therefore we need to
         // reconfigure the table engine.
         val anyNullabilityChange =
             columnChangeset.columnsToChange.values.any {
                 it.originalType.nullable != it.newType.nullable
-            } || columnChangeset.columnsToDrop.values.any { !it.nullable }
+            }
 
         if (anyNullabilityChange) {
             log.info {

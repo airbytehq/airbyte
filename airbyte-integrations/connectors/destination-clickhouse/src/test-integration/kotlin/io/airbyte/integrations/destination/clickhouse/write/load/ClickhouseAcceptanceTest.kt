@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -148,6 +149,7 @@ abstract class ClickhouseAcceptanceTest(
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
+        columnDropBehavior = ColumnDropBehavior.RETAIN,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
     ) {

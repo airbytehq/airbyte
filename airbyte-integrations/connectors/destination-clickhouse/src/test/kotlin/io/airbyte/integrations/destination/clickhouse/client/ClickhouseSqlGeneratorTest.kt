@@ -83,6 +83,7 @@ class ClickhouseSqlGeneratorTest {
             // The formatter will parse the SQL, and an invalid statement will throw an exception.
             SqlFormatter.of(Dialect.StandardSql).format(sql)
         }
+        Assertions.assertFalse(sql.contains("DROP COLUMN"), "Expected no DROP COLUMN in: $sql")
     }
 
     @Test
@@ -181,7 +182,6 @@ class ClickhouseSqlGeneratorTest {
                     listOf(
                         " ADD COLUMN `new_column` Int32",
                         " MODIFY COLUMN `existing_column` String",
-                        " DROP COLUMN `old_column`"
                     )
                 ),
                 Arguments.of(
@@ -208,15 +208,6 @@ class ClickhouseSqlGeneratorTest {
                         columnsToRetain = emptyMap(),
                     ),
                     listOf(" MODIFY COLUMN `existing_column` String")
-                ),
-                Arguments.of(
-                    ColumnChangeset(
-                        columnsToAdd = emptyMap(),
-                        columnsToChange = emptyMap(),
-                        columnsToDrop = mapOf("old_column" to ColumnType("IrrelevantValue", false)),
-                        columnsToRetain = emptyMap(),
-                    ),
-                    listOf(" DROP COLUMN `old_column`")
                 ),
                 Arguments.of(
                     ColumnChangeset(
@@ -250,8 +241,6 @@ class ClickhouseSqlGeneratorTest {
                         " ADD COLUMN `col2` Nullable(String)",
                         " MODIFY COLUMN `col3` String",
                         " MODIFY COLUMN `col4` Nullable(Int64)",
-                        " DROP COLUMN `col5`",
-                        " DROP COLUMN `col6`"
                     )
                 ),
             )

@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Disabled
@@ -25,6 +26,7 @@ class ClickhouseTableSchemaEvolutionTest(
     override val testClient: TestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
+    override val columnDropBehavior = ColumnDropBehavior.RETAIN
     private val allTypesTableSchema = allTypesSchema
 
     @Test

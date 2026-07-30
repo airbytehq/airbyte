@@ -155,9 +155,6 @@ class ClickhouseSqlGenerator {
         alterationSummary.columnsToChange.forEach { (columnName, columnType) ->
             builder.append(" MODIFY COLUMN `$columnName` ${columnType.newType.typeDecl()},")
         }
-        alterationSummary.columnsToDrop.forEach { (columnName, _) ->
-            builder.append(" DROP COLUMN `$columnName`,")
-        }
 
         return builder.dropLast(1).toString().andLog()
     }
