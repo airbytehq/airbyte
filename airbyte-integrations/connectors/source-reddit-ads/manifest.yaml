@@ -183,7 +183,7 @@ streams:
       cursor_field: modified_at
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
+        datetime: "{{ config.get('start_time') or '2024-05-11T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_datetime_formats:
@@ -292,7 +292,7 @@ streams:
       cursor_field: modified_at
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_time'] }}"
+        datetime: "{{ config.get('start_time') or '2024-05-11T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       cursor_datetime_formats:
@@ -623,7 +623,9 @@ streams:
       is_data_feed: false
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: >-
+          {{ config.get('start_time') or (now_utc() -
+          duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%Y-%m-%dT%H:00:00Z"
       end_time_option:
@@ -658,7 +660,6 @@ spec:
       - ad_account_id
       - client_secret
       - refresh_token
-      - start_time
     properties:
       client_id:
         type: string
@@ -669,7 +670,9 @@ spec:
         type: string
         order: 5
         title: start_time
-        default: "2024-05-11T00:00:00Z"
+        description: >-
+          Optional start date for ad and campaign streams. When omitted,
+          campaign_report defaults to a 24-month lookback from the current date.
       user_agent:
         type: string
         description: >-
