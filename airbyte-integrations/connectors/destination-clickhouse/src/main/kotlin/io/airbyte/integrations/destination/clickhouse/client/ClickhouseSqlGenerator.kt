@@ -169,7 +169,10 @@ class ClickhouseSqlGenerator {
         columns: Map<String, ColumnType>,
     ): List<String> =
         columns.map { (columnName, columnType) ->
-            val nullableType = ColumnType("Nullable(${columnType.type})", true)
+            // Force the column to Nullable so it can accept NULLs from new records.
+            // If already Nullable, use as-is to avoid double-wrapping.
+            val nullableType =
+                if (columnType.nullable) columnType else ColumnType(columnType.type, true)
             "ALTER TABLE `${tableName.namespace}`.`${tableName.name}` ADD COLUMN `$columnName` ${nullableType.typeDecl()}".andLog()
         }
 
