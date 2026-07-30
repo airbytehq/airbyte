@@ -31,6 +31,9 @@ definitions:
             - path:
                 - regression_test_field
               value: "regression-test-marker"
+            - path:
+                - id
+              value: "{{ record['id'] + 1000000 }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
