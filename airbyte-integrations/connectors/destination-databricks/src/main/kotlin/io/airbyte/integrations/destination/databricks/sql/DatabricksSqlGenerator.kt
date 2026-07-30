@@ -115,7 +115,9 @@ class DatabricksSqlGenerator(
         // Primary key matching
         val pkEquivalent =
             pks.joinToString(" AND ") { columnName ->
-                "final.${columnName.quote()} = staging.${columnName.quote()}"
+                val targetColumn = "final.${columnName.quote()}"
+                val sourceColumn = "staging.${columnName.quote()}"
+                "($targetColumn = $sourceColumn OR ($targetColumn IS NULL AND $sourceColumn IS NULL))"
             }
 
         // Cursor comparison to determine which record is newer

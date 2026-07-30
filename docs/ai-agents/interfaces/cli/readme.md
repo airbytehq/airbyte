@@ -21,7 +21,7 @@ Use the CLI when you want:
 
 - A shell-first interface to Airbyte Agents.
 - A portable binary for AI agents that can run shell commands.
-- A non-Python alternative to the [SDK](../sdk) and a higher-level wrapper around the [Agent API](../api).
+- A non-Python alternative to the [SDK](../sdk/readme.md) and a higher-level wrapper around the [Agent API](../api/readme.md).
 
 Source code and releases live in the [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli) repository.
 
@@ -30,14 +30,14 @@ Source code and releases live in the [`airbytehq/airbyte-agent-cli`](https://git
 Before you begin, make sure you have:
 
 - An Airbyte Agents account. Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
-- A browser on the machine running the CLI for the default [`airbyte-agent login`](./authenticate) flow and for [`connectors create`](./add-connector). Headless machines can use `airbyte-agent login --manual`, but adding connector credentials still requires the browser widget.
+- A browser on the machine running the CLI for the default [`airbyte-agent login`](./authenticate.md) flow and for [`connectors create`](./add-connector.md). Headless machines can use `airbyte-agent login --manual`, but adding connector credentials still requires the browser widget.
 - Access to any third-party account you want to connect. The CLI never accepts third-party credentials directly.
 
 ## Install
 
 Choose one install method.
 
-If you're installing the CLI for an AI agent, use the install script so the bundled agent skill is installed with the binary. Then follow [Use the CLI with AI agents](./using-with-ai-agents) for the recommended skill setup and command sequence.
+If you're installing the CLI for an AI agent, use the install script so the bundled agent skill is installed with the binary. Then follow [Use the CLI with AI agents](./using-with-ai-agents.md) for the recommended skill setup and command sequence.
 
 ### Install script
 
@@ -90,7 +90,7 @@ airbyte-agent login
 
 The browser flow signs you in to `airbyte.ai`, fetches the credentials the CLI needs, and writes them to `$HOME/.airbyte-agent/settings.json` with `0600` permissions. It doesn't prompt for a workspace; use `workspaces use` to change the saved default after login. If you're on a headless machine, use `airbyte-agent login --manual`.
 
-For setup details, environment variables, and the settings file format, see [Authenticate](./authenticate).
+For setup details, environment variables, and the settings file format, see [Authenticate](./authenticate.md).
 
 ## Run your first command
 
@@ -122,7 +122,7 @@ The CLI has three resource groups:
 
 Top-level commands include `login`, `login show`, `schema`, `version`, and `completion`.
 
-For the full command surface, see the [Command reference](./command-reference).
+For the full command surface, see the [Command reference](./command-reference.md).
 
 ## JSON input and output
 
