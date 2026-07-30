@@ -433,9 +433,23 @@ def test_read_records_410_projects_disabled_message(time_mock, caplog, requests_
     assert any("Projects are disabled for this repository" in msg for msg in caplog.messages)
 
 
+@pytest.mark.parametrize(
+    "rate_limit_error",
+    [
+        pytest.param({"type": "RATE_LIMITED"}, id="rate_limited"),
+        pytest.param(
+            {
+                "type": "RATE_LIMIT",
+                "code": "graphql_rate_limit",
+                "message": "API rate limit already exceeded for user ID 123.",
+            },
+            id="rate_limit",
+        ),
+    ],
+)
 @patch("time.sleep")
 @patch("time.time", return_value=1655804424.0)
-def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
+def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock, rate_limit_error):
     first_request = True
 
     def request_callback(request, context):
@@ -444,17 +458,7 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
             first_request = False
             context.status_code = HTTPStatus.OK
             context.headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
-            context.text = json.dumps(
-                {
-                    "errors": [
-                        {
-                            "type": "RATE_LIMIT",
-                            "code": "graphql_rate_limit",
-                            "message": "API rate limit already exceeded for user ID 123.",
-                        }
-                    ]
-                }
-            )
+            context.text = json.dumps({"errors": [rate_limit_error]})
 
             return context.text
 
