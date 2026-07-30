@@ -361,14 +361,14 @@ class CapacityReportingBlockingQueue<E>(
         }
         reportQueueUtilization(put = 1L)
         val remaining = maxOf(0L, deadline - System.nanoTime())
-        val added =
-            try {
-                super.offer(e, remaining, TimeUnit.NANOSECONDS)
-            } catch (ex: InterruptedException) {
-                currentByteSize.addAndGet(-elementBytes)
-                signalBelowByteThreshold()
-                throw ex
-            }
+        val added: Boolean
+        try {
+            added = super.offer(e, remaining, TimeUnit.NANOSECONDS)
+        } catch (ex: InterruptedException) {
+            currentByteSize.addAndGet(-elementBytes)
+            signalBelowByteThreshold()
+            throw ex
+        }
         if (!added) {
             currentByteSize.addAndGet(-elementBytes)
             signalBelowByteThreshold()
