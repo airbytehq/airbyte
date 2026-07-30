@@ -125,6 +125,9 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 @dataclass(kw_only=True)
 class MondayGraphqlRequester(HttpRequester):
     NEXT_PAGE_TOKEN_FIELD_NAME = "next_page_token"
+    # Fields that only exist on the TimelineValue implementation of the ColumnValue interface,
+    # and therefore must be requested through an inline fragment.
+    TIMELINE_VALUE_FIELDS = ("from", "to", "visualization_type", "updated_at")
 
     schema_loader: InlineSchemaLoader
     limit: Union[InterpolatedString, str, int] = None
@@ -193,6 +196,11 @@ class MondayGraphqlRequester(HttpRequester):
             if "ids" not in object_arguments:
                 object_arguments["ids"] = self.config.get("board_ids")
 
+        if object_name == "column_values":
+            # Columns with rollup capability on multi-level boards return an empty array unless
+            # calculated values are requested explicitly.
+            object_arguments["capabilities"] = "[CALCULATED]"
+
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
 
@@ -200,6 +208,9 @@ class MondayGraphqlRequester(HttpRequester):
             fields.remove("display_value")
             if "linked_item_ids" in fields:
                 fields.remove("linked_item_ids")
+            timeline_fields = [field for field in self.TIMELINE_VALUE_FIELDS if field in fields]
+            for field in timeline_fields:
+                fields.remove(field)
             fields.extend(
                 [
                     "... on MirrorValue{display_value}",
@@ -207,6 +218,8 @@ class MondayGraphqlRequester(HttpRequester):
                     "... on DependencyValue{display_value,linked_item_ids}",
                 ]
             )
+            if timeline_fields:
+                fields.append("... on TimelineValue{" + ",".join(timeline_fields) + "}")
 
         fields = ",".join(fields)
 
