@@ -376,10 +376,10 @@ class CapacityReportingBlockingQueue<E>(
         return added
     }
 
-    override fun add(e: E): Boolean {
+    override fun add(element: E): Boolean {
         // Route through the byte-aware offer() so every insertion path keeps the byte accounting
         // consistent. Matches Collection.add semantics: throw when the element cannot be added.
-        if (offer(e)) {
+        if (offer(element)) {
             return true
         }
         throw IllegalStateException("Queue full (count capacity or byte budget exceeded)")
