@@ -41,6 +41,8 @@ The schema filter condition goes even further, using string concatenation with `
 
 ## 3. Fully Dynamic Stream Construction from Config
 
+The `property_metadata` stream is the single statically-defined exception and the only stream that calls the Google Analytics Admin API host.
+
 Every stream in this connector is generated dynamically via `ConfigComponentsResolver`. There are no statically-defined streams in the manifest — only a `google_analytics_stream_template` that serves as a blueprint. The resolver takes user-defined custom reports (dimensions, metrics, optional pivots, cohorts, dimension filters) and the list of property IDs, then uses 12+ `ComponentMappingDefinition` entries to override nearly every part of the template:
 
 - The API path switches between `:runReport` and `:runPivotReport` based on whether pivots are configured

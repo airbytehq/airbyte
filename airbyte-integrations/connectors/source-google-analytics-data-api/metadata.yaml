@@ -7,12 +7,13 @@ data:
       - oauth2.googleapis.com
       - www.googleapis.com
       - analyticsdata.googleapis.com
+      - analyticsadmin.googleapis.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.23.8@sha256:58d3593d8e816d4a346570570d5a42bb78e41de344f8c74c2a5c225acdc4c4d1
   connectorSubtype: api
   connectorType: source
   definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerImageTag: 2.9.45
+  dockerImageTag: 2.10.0
   dockerRepository: airbyte/source-google-analytics-data-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   externalDocumentationUrls:
