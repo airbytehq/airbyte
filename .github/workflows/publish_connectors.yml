@@ -38,6 +38,7 @@ on:
       pr:
         description: "Pull request number that triggered this workflow (used for Slack notifications and run URL linking)."
         required: false
+        default: ""
         type: string
     outputs:
       docker-image-tag:
