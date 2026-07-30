@@ -139,7 +139,6 @@ class TestAllStreams:
                 assert isinstance(error_handler, LinkedInAdsErrorHandler)
                 linkedin_handler = error_handler
 
-            assert isinstance(linkedin_handler, LinkedInAdsErrorHandler)
             assert any(
                 isinstance(strategy, ExponentialBackoffStrategy) and float(strategy.factor) == 5
                 for strategy in linkedin_handler.backoff_strategies
@@ -152,7 +151,7 @@ class TestAllStreams:
         error_handler = requester.error_handler
 
         assert isinstance(error_handler, CompositeErrorHandler)
-        default_handler = next(handler for handler in error_handler.error_handlers if isinstance(handler, DefaultErrorHandler))
+        default_handler = next(handler for handler in error_handler.error_handlers if type(handler) is DefaultErrorHandler)
         response_filters = default_handler.response_filters
         filter_429 = next(response_filter for response_filter in response_filters if 429 in response_filter.http_codes)
         filter_5xx = next(response_filter for response_filter in response_filters if 500 in response_filter.http_codes)
