@@ -332,7 +332,7 @@ The following subsections help you customize your deployment to use an external 
 
 For Self-Managed Enterprise deployments, you must use a dedicated database instance for better reliability and backups, such as AWS RDS or GCP Cloud SQL. Don't use the default internal Postgres database, `airbyte/db`, that Airbyte spins up within the Kubernetes cluster.
 
-We assume in the following that you've already configured a Postgres instance:
+We assume in the following that you've already configured a Postgres instance. Airbyte requires Postgres 13 or later, and tests its deployments through Postgres 17. See [External Database](/platform/deploying-airbyte/integrations/database) for details.
 
 <details>
 <summary>External database setup steps</summary>
