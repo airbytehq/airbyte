@@ -20,12 +20,24 @@ The Incident-Io connector supports the following entities and actions.
 | Custom Fields | [List](#custom-fields-list), [Get](#custom-fields-get), [Context Store Search](#custom-fields-context-store-search) |
 | Catalog Types | [List](#catalog-types-list), [Get](#catalog-types-get), [Context Store Search](#catalog-types-context-store-search) |
 | Schedules | [List](#schedules-list), [Get](#schedules-get), [Context Store Search](#schedules-context-store-search) |
+| Teams | [List](#teams-list), [Get](#teams-get) |
 
 ## Incidents
 
 ### Incidents List
 
 List all incidents for the organisation with cursor-based pagination.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incidents",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -101,6 +113,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single incident by ID or numeric reference.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incidents",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -172,6 +198,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incidents Context Store Search
 
 Search and filter incidents records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incidents",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -281,6 +327,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all alerts for the account with cursor-based pagination.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "alerts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -340,6 +397,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Show a single alert by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "alerts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -396,6 +467,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Alerts Context Store Search
 
 Search and filter alerts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "alerts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "alert_source_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -477,6 +568,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all escalations for the account with cursor-based pagination.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "escalations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -536,6 +638,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Show a specific escalation by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "escalations",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -592,6 +708,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Escalations Context Store Search
 
 Search and filter escalations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "escalations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -673,6 +809,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all users for the organisation with cursor-based pagination.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -728,6 +875,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -780,6 +941,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "base_role": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -853,6 +1034,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all incident updates for the organisation with cursor-based pagination.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_updates",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -907,6 +1099,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Updates Context Store Search
 
 Search and filter incident updates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_updates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -980,6 +1192,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all incident roles for the organisation.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_roles",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1023,6 +1246,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Roles Get
 
 Get a single incident role by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_roles",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1078,6 +1315,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Roles Context Store Search
 
 Search and filter incident roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_roles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1155,6 +1412,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all incident statuses for the organisation.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_statuses",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1196,6 +1464,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Statuses Get
 
 Get a single incident status by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_statuses",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1249,6 +1531,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Statuses Context Store Search
 
 Search and filter incident statuses records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_statuses",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "category": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1322,6 +1624,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all incident timestamps for the organisation.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_timestamps",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1359,6 +1672,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Timestamps Get
 
 Get a single incident timestamp by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_timestamps",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1408,6 +1735,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Incident Timestamps Context Store Search
 
 Search and filter incident timestamps records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incident_timestamps",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1473,6 +1820,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all severities for the organisation.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "severities",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1513,6 +1871,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Severities Get
 
 Get a single severity by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "severities",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1565,6 +1937,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Severities Context Store Search
 
 Search and filter severities records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "severities",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1636,6 +2028,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all custom fields for the organisation.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "custom_fields",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1677,6 +2080,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Custom Fields Get
 
 Get a single custom field by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "custom_fields",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1730,6 +2147,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Custom Fields Context Store Search
 
 Search and filter custom fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "custom_fields",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1801,6 +2238,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all catalog types for the organisation.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "catalog_types",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1852,6 +2300,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Catalog Types Get
 
 Show a single catalog type by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "catalog_types",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1915,6 +2377,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Catalog Types Context Store Search
 
 Search and filter catalog types records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "catalog_types",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "annotations": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2008,6 +2490,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 List all on-call schedules with cursor-based pagination.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "schedules",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2066,6 +2559,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single on-call schedule by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "schedules",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2121,6 +2628,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Schedules Context Store Search
 
 Search and filter schedules records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "schedules",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "annotations": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2187,6 +2714,135 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].name` | `string` | Name of the schedule |
 | `data[].timezone` | `string` | Timezone for the schedule |
 | `data[].updated_at` | `string` | When the schedule was last updated |
+
+</details>
+
+## Teams
+
+### Teams List
+
+List all teams in the organisation with cursor-based pagination.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await incident_io.teams.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `page_size` | `integer` | No | Number of teams per page |
+| `after` | `string` | No | Cursor for the next page of results |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `null \| string` |  |
+| `catalog_entry` | `null \| object` |  |
+| `members` | `null \| array` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `null \| string` |  |
+
+</details>
+
+### Teams Get
+
+Get a single team by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await incident_io.teams.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Team ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `null \| string` |  |
+| `catalog_entry` | `null \| object` |  |
+| `members` | `null \| array` |  |
+
 
 </details>
 

@@ -27,6 +27,17 @@ The Greenhouse connector supports the following entities and actions.
 
 Returns a paginated list of all candidates in the organization
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidates",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -101,6 +112,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single candidate by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidates",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -172,6 +197,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Candidates Context Store Search
 
 Search and filter candidates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "addresses": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -283,6 +328,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all applications
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "applications",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -361,6 +417,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single application by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "applications",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -431,6 +501,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Applications Context Store Search
 
 Search and filter applications records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "applications",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "answers": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -530,6 +620,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all jobs in the organization
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -593,6 +694,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single job by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -653,6 +768,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Jobs Context Store Search
 
 Search and filter jobs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "closed_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -748,6 +883,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all offers
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offers",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -812,6 +958,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single offer by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offers",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -870,6 +1030,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Offers Context Store Search
 
 Search and filter offers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "application_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -957,6 +1137,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all users
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1023,6 +1214,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1082,6 +1287,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1169,6 +1394,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all departments
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "departments",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1224,6 +1460,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single department by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "departments",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1276,6 +1526,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Departments Context Store Search
 
 Search and filter departments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "departments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "child_department_external_ids": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1349,6 +1619,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all offices
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offices",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1406,6 +1687,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single office by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offices",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1460,6 +1755,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Offices Context Store Search
 
 Search and filter offices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "child_ids": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1537,6 +1852,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all job posts
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1602,6 +1928,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single job post by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1662,6 +2002,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Job Posts Context Store Search
 
 Search and filter job posts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1751,6 +2111,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all sources
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "sources",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1801,6 +2172,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sources Context Store Search
 
 Search and filter sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "sources",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1865,6 +2256,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Scheduled Interviews List
 
 Returns a paginated list of all scheduled interviews
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "scheduled_interviews",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1933,6 +2335,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single scheduled interview by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "scheduled_interviews",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1997,6 +2413,21 @@ The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
 Files should be downloaded immediately after retrieval.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "application_attachment",
+  "action": "download",
+  "params": {
+    "id": 0,
+    "attachment_index": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2040,6 +2471,21 @@ Downloads an attachment (resume, cover letter, etc.) for a candidate by index.
 The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
 Files should be downloaded immediately after retrieval.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidate_attachment",
+  "action": "download",
+  "params": {
+    "id": 0,
+    "attachment_index": 0
+  }
+}'
+```
 
 #### Python SDK
 

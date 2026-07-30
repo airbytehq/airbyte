@@ -39,6 +39,17 @@ The Zendesk-Support connector supports the following entities and actions.
 
 Returns a list of all tickets in your account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tickets",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -131,6 +142,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tickets Create
 
 Creates a new ticket in Zendesk Support
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tickets",
+  "action": "create",
+  "params": {
+    "ticket": {
+      "subject": "<str>"
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -242,6 +269,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a ticket by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tickets",
+  "action": "get",
+  "params": {
+    "ticket_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -327,6 +368,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tickets Update
 
 Updates an existing ticket. Can update status, priority, assignee, add comments, and more.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tickets",
+  "action": "update",
+  "params": {
+    "ticket": {},
+    "ticket_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -434,6 +490,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tickets Context Store Search
 
 Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tickets",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "allow_attachments": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -575,6 +651,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Adds a public reply or internal note to an existing ticket by updating it with a comment object.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_comments",
+  "action": "create",
+  "params": {
+    "ticket": {
+      "comment": {
+        "body": "<str>"
+      }
+    },
+    "ticket_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -677,6 +772,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of comments for a specific ticket
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_comments",
+  "action": "list",
+  "params": {
+    "ticket_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -746,6 +855,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Comments Context Store Search
 
 Search and filter ticket comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attachments": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -839,6 +968,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Updates multiple tickets at once. Accepts a comma-separated list of ticket IDs and applies the same changes to all of them.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_bulk_updates",
+  "action": "create",
+  "params": {
+    "ticket": {},
+    "ids": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -903,6 +1047,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of deleted tickets in your account. Only tickets deleted in the past 30 days are returned.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "deleted_tickets",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -960,6 +1115,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Deleted Tickets Context Store Search
 
 Search and filter deleted tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "deleted_tickets",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1030,6 +1205,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users List
 
 Returns a list of all users in your account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "users",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1120,6 +1306,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Create
 
 Creates a new end-user, agent, or admin in Zendesk Support
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "users",
+  "action": "create",
+  "params": {
+    "user": {
+      "name": "<str>"
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1221,6 +1423,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a user by their ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "user_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1304,6 +1520,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Update
 
 Updates an existing user in Zendesk Support
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "users",
+  "action": "update",
+  "params": {
+    "user": {},
+    "user_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1403,6 +1634,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1540,6 +1791,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all organizations in your account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "organizations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1604,6 +1866,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns an organization by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "organizations",
+  "action": "get",
+  "params": {
+    "organization_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1663,6 +1939,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Organizations Context Store Search
 
 Search and filter organizations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "organizations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1752,6 +2048,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all groups in your account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "groups",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1812,6 +2119,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a group by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "groups",
+  "action": "get",
+  "params": {
+    "group_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1866,6 +2187,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Groups Context Store Search
 
 Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1943,6 +2284,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns an attachment by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "attachments",
+  "action": "get",
+  "params": {
+    "attachment_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2003,6 +2358,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Downloads the file content of a ticket attachment
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "attachments",
+  "action": "download",
+  "params": {
+    "attachment_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2041,6 +2410,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Audits List
 
 Returns a list of all ticket audits
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_audits",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -2098,6 +2478,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Audits List
 
 Returns a list of audits for a specific ticket
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_audits",
+  "action": "list",
+  "params": {
+    "ticket_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2161,6 +2555,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Audits Context Store Search
 
 Search and filter ticket audits records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_audits",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "attachments": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2236,6 +2650,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all ticket metrics
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_metrics",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2307,6 +2732,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Metrics Context Store Search
 
 Search and filter ticket metrics records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_metrics",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "agent_wait_time_in_minutes": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2426,6 +2871,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all ticket fields
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_fields",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2502,6 +2958,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a ticket field by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_fields",
+  "action": "get",
+  "params": {
+    "ticket_field_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2572,6 +3042,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Fields Context Store Search
 
 Search and filter ticket fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_fields",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2685,6 +3175,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all brands for the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "brands",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2751,6 +3252,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a brand by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "brands",
+  "action": "get",
+  "params": {
+    "brand_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2812,6 +3327,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Brands Context Store Search
 
 Search and filter brands records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "brands",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2903,6 +3438,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all views for the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "views",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2970,6 +3516,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a view by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "views",
+  "action": "get",
+  "params": {
+    "view_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3030,6 +3590,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a macro by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "macros",
+  "action": "get",
+  "params": {
+    "macro_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3086,6 +3660,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Macros List
 
 Returns a list of all macros for the account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "macros",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -3154,6 +3739,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Macros Context Store Search
 
 Search and filter macros records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "macros",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3235,6 +3840,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all triggers for the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "triggers",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3301,6 +3917,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a trigger by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "triggers",
+  "action": "get",
+  "params": {
+    "trigger_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3358,6 +3988,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Triggers Context Store Search
 
 Search and filter triggers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "triggers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3441,6 +4091,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all automations for the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "automations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3504,6 +4165,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns an automation by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "automations",
+  "action": "get",
+  "params": {
+    "automation_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3559,6 +4234,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Automations Context Store Search
 
 Search and filter automations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "automations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3636,6 +4331,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all tags used in the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tags",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3687,6 +4393,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Context Store Search
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "count": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3749,6 +4475,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Satisfaction Ratings List
 
 Returns a list of all satisfaction ratings
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "satisfaction_ratings",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -3816,6 +4553,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a satisfaction rating by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "satisfaction_ratings",
+  "action": "get",
+  "params": {
+    "satisfaction_rating_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3874,6 +4625,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Satisfaction Ratings Context Store Search
 
 Search and filter satisfaction ratings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "satisfaction_ratings",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "assignee_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3957,6 +4728,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all group memberships
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "group_memberships",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4013,6 +4795,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Group Memberships Context Store Search
 
 Search and filter group memberships records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "group_memberships",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4086,6 +4888,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all organization memberships
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "organization_memberships",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4144,6 +4957,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Organization Memberships Context Store Search
 
 Search and filter organization memberships records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "organization_memberships",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4221,6 +5054,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all SLA policies
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "sla_policies",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4280,6 +5124,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns an SLA policy by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "sla_policies",
+  "action": "get",
+  "params": {
+    "sla_policy_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4334,6 +5192,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sla Policies Context Store Search
 
 Search and filter sla policies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "sla_policies",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4411,6 +5289,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all ticket forms for the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_forms",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4480,6 +5369,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a ticket form by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_forms",
+  "action": "get",
+  "params": {
+    "ticket_form_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4542,6 +5445,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Forms Context Store Search
 
 Search and filter ticket forms records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "ticket_forms",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4635,6 +5558,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all articles in the Help Center
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "articles",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4703,6 +5637,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves the details of a specific article
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "articles",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4764,6 +5712,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Articles Context Store Search
 
 Search and filter articles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "articles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4855,6 +5823,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all attachments for a specific article
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "article_attachments",
+  "action": "list",
+  "params": {
+    "article_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4921,6 +5903,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieves the metadata of a specific attachment for a specific article
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "article_attachments",
+  "action": "get",
+  "params": {
+    "article_id": 0,
+    "attachment_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4980,6 +5977,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Downloads the file content of a specific attachment
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "article_attachments",
+  "action": "download",
+  "params": {
+    "article_id": 0,
+    "attachment_id": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -5018,6 +6030,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Article Attachments Context Store Search
 
 Search and filter article attachments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "zendesk-support",
+  "entity": "article_attachments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

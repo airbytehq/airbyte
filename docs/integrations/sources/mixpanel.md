@@ -76,6 +76,10 @@ Syncing large date windows may take longer due to these rate limits. You can adj
 
 The Mixpanel source connector supports `US` and `EU` data residency regions. It doesn't support Mixpanel's India data residency endpoints.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -83,6 +87,7 @@ The Mixpanel source connector supports `US` and `EU` data residency regions. It 
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |

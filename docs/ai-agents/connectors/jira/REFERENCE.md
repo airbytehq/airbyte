@@ -27,6 +27,17 @@ Retrieve issues based on JQL query with pagination support.
 IMPORTANT: This endpoint requires a bounded JQL query. A bounded query must include a search restriction that limits the scope of the search. Examples of valid restrictions include: project (e.g., "project = MYPROJECT"), assignee (e.g., "assignee = currentUser()"), reporter, issue key, sprint, or date-based filters combined with a project restriction. An unbounded query like "order by key desc" will be rejected with a 400 error. Example bounded query: "project = MYPROJECT AND updated \>= -7d ORDER BY created DESC".
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "api_search"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -87,6 +98,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Create
 
 Creates an issue or a sub-task from a JSON representation
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "create",
+  "params": {
+    "fields": {
+      "project": {},
+      "issuetype": {},
+      "summary": "<str>"
+    },
+    "update": {},
+    "updateHistory": true
+  }
+}'
+```
 
 #### Python SDK
 
@@ -174,6 +205,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve a single issue by its ID or key
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -230,6 +275,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Update
 
 Edits an issue. Issue properties may be updated as part of the edit. Only fields included in the request body are updated.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "update",
+  "params": {
+    "fields": {},
+    "update": {},
+    "transition": {},
+    "issueIdOrKey": "<str>",
+    "notifyUsers": true,
+    "overrideScreenSecurity": true,
+    "overrideEditableFlag": true,
+    "returnIssue": true,
+    "expand": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -322,6 +389,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Deletes an issue. An issue cannot be deleted if it has one or more subtasks unless deleteSubtasks is true.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "delete",
+  "params": {
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -357,6 +438,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Context Store Search
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "changelog": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -454,6 +555,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter projects with advanced query parameters
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "projects",
+  "action": "api_search"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -534,6 +646,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve a single project by its ID or key
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "projectIdOrKey": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -603,6 +729,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -730,6 +876,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve a single user by their account ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "accountId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -789,6 +949,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of users
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -842,6 +1013,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users API Search
 
 Search for users using a query string
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "users",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -899,6 +1081,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "accountId": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -986,6 +1188,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of all custom and system fields
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_fields",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1037,6 +1250,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Fields API Search
 
 Search and filter issue fields with query parameters
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_fields",
+  "action": "api_search"
+}'
+```
 
 #### Python SDK
 
@@ -1106,6 +1330,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Fields Context Store Search
 
 Search and filter issue fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_fields",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clauseNames": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1187,6 +1431,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve all comments for a specific issue
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_comments",
+  "action": "list",
+  "params": {
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1255,6 +1513,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Comments Create
 
 Adds a comment to an issue
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_comments",
+  "action": "create",
+  "params": {
+    "body": {
+      "type": "<str>",
+      "version": 0,
+      "content": []
+    },
+    "visibility": {},
+    "properties": [],
+    "issueIdOrKey": "<str>",
+    "expand": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1343,6 +1623,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve a single comment by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_comments",
+  "action": "get",
+  "params": {
+    "issueIdOrKey": "<str>",
+    "commentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1403,6 +1698,29 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Comments Update
 
 Updates a comment on an issue
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_comments",
+  "action": "update",
+  "params": {
+    "body": {
+      "type": "<str>",
+      "version": 0,
+      "content": []
+    },
+    "visibility": {},
+    "issueIdOrKey": "<str>",
+    "commentId": "<str>",
+    "notifyUsers": true,
+    "expand": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1494,6 +1812,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Deletes a comment from an issue
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_comments",
+  "action": "delete",
+  "params": {
+    "issueIdOrKey": "<str>",
+    "commentId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1531,6 +1864,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Comments Context Store Search
 
 Search and filter issue comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "author": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1614,6 +1967,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Retrieve a single worklog by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_worklogs",
+  "action": "get",
+  "params": {
+    "issueIdOrKey": "<str>",
+    "worklogId": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1676,6 +2044,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Worklogs List
 
 Retrieve all worklogs for a specific issue
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_worklogs",
+  "action": "list",
+  "params": {
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1749,6 +2131,27 @@ Adds a worklog entry to an issue to track time spent.
 Use timeSpentSeconds or timeSpent (e.g., "3h 30m") to specify time.
 Optionally include a started datetime and a comment describing the work done.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_worklogs",
+  "action": "create",
+  "params": {
+    "timeSpentSeconds": 0,
+    "timeSpent": "<str>",
+    "started": "2025-01-01T00:00:00Z",
+    "comment": {},
+    "visibility": {},
+    "issueIdOrKey": "<str>",
+    "notifyUsers": true,
+    "adjustEstimate": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1840,6 +2243,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter issue worklogs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_worklogs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "author": {}
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1924,6 +2347,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Assigns an issue to a user. Use accountId to specify the assignee. Use null to unassign the issue. Use "-1" to set to automatic (project default).
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issues_assignee",
+  "action": "update",
+  "params": {
+    "accountId": "<str>",
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1963,6 +2401,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Transitions List
 
 Returns the available transitions for an issue. Transitions define the workflow steps an issue can move through (e.g., To Do -\> In Progress -\> Done). Use this to discover valid transition IDs before performing a transition.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_transitions",
+  "action": "list",
+  "params": {
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2031,6 +2483,26 @@ To use this endpoint:
 You can optionally include field updates and comments as part of the transition.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_transitions",
+  "action": "create",
+  "params": {
+    "transition": {
+      "id": "<str>"
+    },
+    "fields": {},
+    "update": {},
+    "historyMetadata": {},
+    "issueIdOrKey": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2089,6 +2561,27 @@ Creates a link between two issues. Issue links define relationships such as
 Common link type names: Blocks, Cloners, Duplicate, Relates.
 Each type has an inward and outward description (e.g., "blocks" / "is blocked by").
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "jira",
+  "entity": "issue_links",
+  "action": "create",
+  "params": {
+    "type": {},
+    "inwardIssue": {
+      "key": "<str>"
+    },
+    "outwardIssue": {
+      "key": "<str>"
+    },
+    "comment": {}
+  }
+}'
+```
 
 #### Python SDK
 
