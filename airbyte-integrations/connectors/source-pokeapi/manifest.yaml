@@ -24,7 +24,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - abilities
       transformations:
         - type: AddFields
           fields:
@@ -33,7 +34,7 @@ definitions:
               value: "regression-test-marker"
             - path:
                 - id
-              value: "{{ record['id'] + 1000000 }}"
+              value: "{{ 132 }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
