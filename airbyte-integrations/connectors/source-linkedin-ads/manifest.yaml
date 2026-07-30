@@ -306,10 +306,10 @@ definitions:
                       - 500
                       - 503
               - type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+                class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:

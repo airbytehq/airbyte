@@ -9,6 +9,7 @@ import requests
 import yaml
 from airbyte_protocol_dataclasses.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
+from components import LinkedInAdsErrorHandler
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
@@ -18,12 +19,11 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import ResponseAction
-from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from components import LinkedInAdsErrorHandler
 from unit_tests.utils import run_read
 
 from .conftest import find_stream, get_source, load_json_file
