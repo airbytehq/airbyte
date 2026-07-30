@@ -481,6 +481,11 @@ jobs:
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
           DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          PR_NUMBER="${{ inputs.pr }}"
+          PR_NUMBER_ARGS=()
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            PR_NUMBER_ARGS+=(--pr-number "$PR_NUMBER")
+          fi
           airbyte-ops \
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
@@ -488,7 +493,8 @@ jobs:
             --output-dir ./registry-artifacts/${{ matrix.connector }} \
             --with-validate \
             --with-sbom \
-            --with-dependency-dump
+            --with-dependency-dump \
+            "${PR_NUMBER_ARGS[@]}"
 
       - name: Upload Registry CI Artifacts
         if: always()
