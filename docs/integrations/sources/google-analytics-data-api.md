@@ -197,6 +197,8 @@ Preconfigured and custom report streams use the Google Analytics Data API [`prop
 
 The `property_metadata` stream is full-refresh and uses the Admin API [`properties.get`](https://developers.google.com/analytics/admin-rest/v1beta/properties/get) method. It emits one record for each configured property ID and includes a `property_id` field for joining with report streams.
 
+The `property_metadata` stream requires the Google Analytics Admin API (`analyticsadmin.googleapis.com`) to be enabled for the GCP project associated with the credentials; service-account users must enable it in their own project. If it is not enabled, this stream fails with a `403 SERVICE_DISABLED` error, while report streams continue to work.
+
 ## Connector-specific features
 
 ### Custom Reports
