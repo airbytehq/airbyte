@@ -141,16 +141,22 @@ class TestAllStreams:
         manifest_path = Path(__file__).parent.parent / "manifest.yaml"
         manifest = yaml.safe_load(manifest_path.read_text())
         analytics_error_handler = manifest["definitions"]["ad_analytics_error_handler"]
+        expected_error_handler = {
+            "type": "CustomErrorHandler",
+            "class_name": "source_declarative_manifest.components.LinkedInAdsErrorHandler",
+            "max_retries": 5,
+            "max_time": 1800,
+            "backoff_strategies": [
+                {
+                    "type": "CustomBackoffStrategy",
+                    "class_name": "source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy",
+                },
+                {"type": "ExponentialBackoffStrategy", "factor": 5},
+            ],
+        }
 
-        assert analytics_error_handler["max_retries"] == 5
-        assert analytics_error_handler["max_time"] == 1800
-        assert analytics_error_handler["backoff_strategies"] == [
-            {
-                "type": "CustomBackoffStrategy",
-                "class_name": "source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy",
-            },
-            {"type": "ExponentialBackoffStrategy", "factor": 5},
-        ]
+        assert analytics_error_handler == expected_error_handler
+        assert manifest["definitions"]["custom_report_error_handlers"] == expected_error_handler
 
         analytics_requesters = [
             stream["retriever"]["requester"]
@@ -158,7 +164,11 @@ class TestAllStreams:
             if stream.get("retriever", {}).get("requester", {}).get("path") == "adAnalytics"
         ]
         assert analytics_requesters
-        assert all(requester["error_handler"] == {"$ref": "#/definitions/ad_analytics_error_handler"} for requester in analytics_requesters)
+        assert all(
+            requester.get("error_handler") == {"$ref": "#/definitions/ad_analytics_error_handler"}
+            or requester.get("error_handlers") == {"$ref": "#/definitions/custom_report_error_handlers"}
+            for requester in analytics_requesters
+        )
 
     def test_member_demographic_analytics_configuration(self):
         manifest_path = Path(__file__).parent.parent / "manifest.yaml"
@@ -216,7 +226,7 @@ class TestAllStreams:
             "transform_campaign_statistics_pivots"
         ]
         assert all(
-            "transform_campaign_statistics_pivots" not in streams[stream_name]["retriever"]["record_selector"]["extractor"]
+            "transform_campaign_statistics_pivots" not in streams[stream_name]["retriever"]["record_selector"].get("extractor", {})
             for stream_name in streams
             if stream_name != "ad_impression_device_analytics"
         )
