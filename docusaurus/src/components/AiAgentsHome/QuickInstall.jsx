@@ -87,6 +87,27 @@ const TABS = [
     ],
   },
   {
+    id: "cli",
+    label: "CLI",
+    command: "curl -fsSL https://airbyte.ai/install.sh | bash",
+    description:
+      "If you're an agent, use the install script. It installs the airbyte-agent CLI and bundled agent skill.",
+    toolsLabel:
+      "If you're human, install the CLI with Homebrew, then follow the CLI docs.",
+    tools: [
+      {
+        name: "Use with AI agents",
+        href: "/ai-agents/interfaces/cli/using-with-ai-agents/",
+        icon: "/img/favicon.png",
+      },
+      {
+        name: "CLI docs",
+        href: "/ai-agents/interfaces/cli/",
+        icon: "/img/favicon.png",
+      },
+    ],
+  },
+  {
     id: "api",
     label: "API",
     command: null,
@@ -104,7 +125,7 @@ const TABS = [
     label: "Web app",
     command: null,
     description:
-      "Chat with an AI agent and build automations in your web browser. No code, nothing to install.",
+      "Chat with an AI agent in your web browser. No code, nothing to install.",
     tools: [],
   },
 ];
@@ -112,7 +133,9 @@ const TABS = [
 export const QuickInstall = () => {
   const [activeTab, setActiveTab] = useState("mcp");
   const [copied, setCopied] = useState(false);
+  const [copiedHomebrew, setCopiedHomebrew] = useState(false);
   const tab = TABS.find((t) => t.id === activeTab);
+  const homebrewCommand = "brew install airbytehq/tap/airbyte-agent-cli";
 
   const handleCopy = () => {
     if (tab.command) {
@@ -120,6 +143,12 @@ export const QuickInstall = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleHomebrewCopy = () => {
+    navigator.clipboard.writeText(homebrewCommand);
+    setCopiedHomebrew(true);
+    setTimeout(() => setCopiedHomebrew(false), 2000);
   };
 
   return (
@@ -134,6 +163,7 @@ export const QuickInstall = () => {
             onClick={() => {
               setActiveTab(t.id);
               setCopied(false);
+              setCopiedHomebrew(false);
             }}
           >
             {t.label}
@@ -168,6 +198,18 @@ export const QuickInstall = () => {
         )}
         {tab.toolsLabel && (
           <p className={styles.toolsLabel}>{tab.toolsLabel}</p>
+        )}
+        {tab.id === "cli" && (
+          <div className={styles.quickInstallCode}>
+            <code>{homebrewCommand}</code>
+            <button
+              className={styles.quickInstallCopy}
+              onClick={handleHomebrewCopy}
+              aria-label="Copy Homebrew command to clipboard"
+            >
+              {copiedHomebrew ? "Copied" : "Copy"}
+            </button>
+          </div>
         )}
         {tab.tools.length > 0 && (
           <div className={styles.toolChips}>

@@ -36,6 +36,21 @@ The Pylon connector supports the following entities and actions.
 
 Get a list of issues within a time range
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issues",
+  "action": "list",
+  "params": {
+    "start_time": "2025-01-01T00:00:00Z",
+    "end_time": "2025-01-01T00:00:00Z"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -131,6 +146,28 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Create
 
 Create a new issue
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issues",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "body_html": "<str>",
+    "priority": "<str>",
+    "requester_email": "<str>",
+    "requester_name": "<str>",
+    "account_id": "<str>",
+    "assignee_id": "<str>",
+    "team_id": "<str>",
+    "tags": []
+  }
+}'
+```
 
 #### Python SDK
 
@@ -243,6 +280,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single issue by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -327,6 +378,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Update
 
 Update an existing issue by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issues",
+  "action": "update",
+  "params": {
+    "state": "<str>",
+    "assignee_id": "<str>",
+    "team_id": "<str>",
+    "account_id": "<str>",
+    "tags": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -430,6 +500,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Permanently deletes an issue by ID. This action cannot be undone.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issues",
+  "action": "delete",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -476,6 +560,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Context Store Search
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -557,6 +661,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Sends a customer-facing reply on an issue, visible to the requester.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issue_replies",
+  "action": "create",
+  "params": {
+    "body_html": "<str>",
+    "message_id": "<str>",
+    "user_id": "<str>",
+    "contact_id": "<str>",
+    "attachment_urls": [],
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -623,6 +746,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issue Assignments Update
 
 Assign an issue to a user or team, or remove the current assignment.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issue_assignments",
+  "action": "update",
+  "params": {
+    "assignee_id": "<str>",
+    "team_id": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -719,6 +858,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Transition an issue to a new status (new, waiting_on_you, waiting_on_customer, on_hold, closed, or a custom status slug).
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issue_statuses",
+  "action": "update",
+  "params": {
+    "state": "<str>",
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -811,6 +965,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all messages on an issue (customer-facing replies and internal notes)
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "messages",
+  "action": "list",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -876,6 +1044,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Create an internal note on an issue
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issue_notes",
+  "action": "create",
+  "params": {
+    "body_html": "<str>",
+    "thread_id": "<str>",
+    "message_id": "<str>",
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -938,6 +1123,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Create a new thread on an issue
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "issue_threads",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -992,6 +1192,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts List
 
 Get a list of accounts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "accounts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1057,6 +1268,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts Create
 
 Create a new account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "accounts",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "domains": [],
+    "primary_domain": "<str>",
+    "owner_id": "<str>",
+    "logo_url": "<str>",
+    "tags": []
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1138,6 +1368,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single account by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "accounts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1200,6 +1444,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Accounts Update
 
 Update an existing account by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "accounts",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "domains": [],
+    "primary_domain": "<str>",
+    "owner_id": "<str>",
+    "logo_url": "<str>",
+    "is_disabled": true,
+    "tags": [],
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1287,6 +1552,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1361,6 +1646,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of contacts
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1421,6 +1717,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Create
 
 Create a new contact
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "contacts",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "email": "<str>",
+    "account_id": "<str>",
+    "avatar_url": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1492,6 +1805,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single contact by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1550,6 +1877,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Contacts Update
 
 Update an existing contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "contacts",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "email": "<str>",
+    "account_id": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1621,6 +1965,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1689,6 +2053,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of teams
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1741,6 +2116,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Create
 
 Create a new team
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "teams",
+  "action": "create",
+  "params": {
+    "name": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1795,6 +2184,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single team by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1845,6 +2248,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Update
 
 Update an existing team by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "teams",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1901,6 +2319,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1964,6 +2402,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get all tags
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tags",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2015,6 +2464,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Create
 
 Create a new tag
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tags",
+  "action": "create",
+  "params": {
+    "value": "<str>",
+    "object_type": "<str>",
+    "hex_color": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2074,6 +2539,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a tag by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tags",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2123,6 +2602,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Update
 
 Update an existing tag by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tags",
+  "action": "update",
+  "params": {
+    "value": "<str>",
+    "hex_color": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2181,6 +2676,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Context Store Search
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2246,6 +2761,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of users
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2301,6 +2827,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2353,6 +2893,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2422,6 +2982,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get all custom fields for a given object type
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "custom_fields",
+  "action": "list",
+  "params": {
+    "object_type": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2490,6 +3064,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a custom field by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "custom_fields",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2549,6 +3137,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Custom Fields Context Store Search
 
 Search and filter custom fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "custom_fields",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2622,6 +3230,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of ticket forms
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "ticket_forms",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2680,6 +3299,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Forms Context Store Search
 
 Search and filter ticket forms records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "ticket_forms",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2747,6 +3386,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of all user roles
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "user_roles",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2797,6 +3447,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### User Roles Context Store Search
 
 Search and filter user roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "user_roles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2861,6 +3531,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tasks Create
 
 Create a new task
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tasks",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "body_html": "<str>",
+    "status": "<str>",
+    "assignee_id": "<str>",
+    "project_id": "<str>",
+    "milestone_id": "<str>",
+    "due_date": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2938,6 +3628,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Update an existing task by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "tasks",
+  "action": "update",
+  "params": {
+    "title": "<str>",
+    "body_html": "<str>",
+    "status": "<str>",
+    "assignee_id": "<str>",
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3010,6 +3718,24 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Create a new project
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "projects",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "account_id": "<str>",
+    "description_html": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3080,6 +3806,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Update an existing project by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "projects",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "description_html": "<str>",
+    "is_archived": true,
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3149,6 +3892,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Create a new milestone
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "milestones",
+  "action": "create",
+  "params": {
+    "name": "<str>",
+    "project_id": "<str>",
+    "due_date": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3208,6 +3967,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Milestones Update
 
 Update an existing milestone by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "milestones",
+  "action": "update",
+  "params": {
+    "name": "<str>",
+    "due_date": "<str>",
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3270,6 +4045,25 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Articles Create
 
 Create a new article in a knowledge base
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "articles",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "body_html": "<str>",
+    "author_user_id": "<str>",
+    "slug": "<str>",
+    "is_published": true,
+    "kb_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3342,6 +4136,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Update an existing article in a knowledge base
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "articles",
+  "action": "update",
+  "params": {
+    "title": "<str>",
+    "body_html": "<str>",
+    "kb_id": "<str>",
+    "article_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3409,6 +4220,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Create a new collection in a knowledge base
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "collections",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "description": "<str>",
+    "slug": "<str>",
+    "kb_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3472,6 +4300,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Me Get
 
 Get the currently authenticated user
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pylon",
+  "entity": "me",
+  "action": "get"
+}'
+```
 
 #### Python SDK
 

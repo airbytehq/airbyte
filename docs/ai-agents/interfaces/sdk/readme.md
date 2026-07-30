@@ -4,11 +4,11 @@ sidebar_position: 2
 ---
 
 import DocCardList from '@theme/DocCardList';
-import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
+import SdkVsApi from '@site/static/\_ai-agents-sdk-vs-api.md';
 
 # SDK
 
-The Agent SDK (`airbyte_agent_sdk`) is the Python entry point to Airbyte Agents. With one install you get typed connectors, automatic credential handling, direct execution, and patterns for exposing connectors as tools to AI agent frameworks.
+The Agent SDK (`airbyte_agent_sdk`) is the Python interface for Airbyte Agents. With one install you get typed connectors, automatic credential handling, direct execution, and patterns for exposing connectors as tools to AI agent frameworks.
 
 This section walks through authenticate, add a connector, and execute operations. Deeper class and method signatures live in the [SDK reference](/ai-agents/reference/sdk).
 
@@ -34,7 +34,7 @@ The install name uses dashes. The Python import name uses underscores: `from air
 
 ## End-to-end example
 
-The example below authenticates with Airbyte and executes an operation against a GitHub connector. Before running this code, [add a GitHub connector](./add-connector) to your workspace through the [web app](../ui/add-connector) or the [REST API](../api/add-connector). The pages in this section explain each step in detail.
+The example below authenticates with Airbyte and executes an operation against a GitHub connector. Before running this code, [add a GitHub connector](./add-connector.md) to your workspace through the [web app](../ui/add-connector.md) or the [REST API](../api/add-connector.md). The pages in this section explain each step in detail.
 
 ```python title="agent.py"
 import asyncio

@@ -131,11 +131,11 @@ class DirectLoadTableStreamLoaderTest {
 
             // Verify the performUpsertWithTemporaryTable path was taken
             coVerify(exactly = 1) {
-                tableOperationsClient.createTable(
+                tableOperationsClient.createTempTable(
                     stream,
                     tempTempTableName,
                     columnNameMapping,
-                    replace = true
+                    replace = true,
                 )
             }
             coVerify(exactly = 1) {

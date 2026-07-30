@@ -640,7 +640,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `ChargebeeExecuteResultWithMeta[list[Coupon], CouponListResultMeta](**data: Any)`

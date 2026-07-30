@@ -67,7 +67,11 @@ The `application_criteria_evaluations` stream fetches AI-generated criteria eval
 
 ## Performance considerations
 
-The Ashby connector should not run into Ashby API limitations under normal usage.
+Ashby limits standard API endpoints to 1,000 requests per minute per API key. The connector enforces this request budget and reads streams concurrently with a default of 2 worker threads. You can tune **Number of concurrent threads** if your API key has enough headroom, but higher values increase the risk of rate-limit responses.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -76,6 +80,9 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.3.8-rc.3 | 2026-05-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Decrease default concurrency to 2 and add explicit worker count plus API request budget for the next rollout. |
+| 0.3.8-rc.2 | 2026-05-21 | [78307](https://github.com/airbytehq/airbyte/pull/78307) | Decrease default concurrency to 3 after Phase 1 rollout monitoring found source-read regressions and a 429 retry warning. |
+| 0.3.8-rc.1 | 2026-05-18 | [77048](https://github.com/airbytehq/airbyte/pull/77048) | Add concurrency support with default_concurrency=4 for concurrent stream reads |
 | 0.3.7 | 2026-04-28 | [77144](https://github.com/airbytehq/airbyte/pull/77144) | Update dependencies |
 | 0.3.6 | 2026-04-21 | [76510](https://github.com/airbytehq/airbyte/pull/76510) | Update dependencies |
 | 0.3.5 | 2026-03-31 | [75881](https://github.com/airbytehq/airbyte/pull/75881) | Update dependencies |
