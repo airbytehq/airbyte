@@ -149,7 +149,7 @@
         "order" : 10
       }
     },
-    "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type", "table_format_version", "use_variant_types" ]
+    "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ]
   },
   "supportsIncremental" : true,
   "supportsNormalization" : false,

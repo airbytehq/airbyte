@@ -84,8 +84,8 @@ class GcsDataLakeConfigurationFactory :
             gcsEndpoint = pojo.gcsEndpoint,
             namespace = pojo.namespace,
             gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
-            tableFormatVersion = pojo.tableFormatVersion,
-            useVariantTypes = pojo.useVariantTypes,
+            tableFormatVersion = pojo.tableFormatVersion ?: IcebergTableFormatVersion.V2,
+            useVariantTypes = pojo.useVariantTypes ?: false,
         )
     }
 }

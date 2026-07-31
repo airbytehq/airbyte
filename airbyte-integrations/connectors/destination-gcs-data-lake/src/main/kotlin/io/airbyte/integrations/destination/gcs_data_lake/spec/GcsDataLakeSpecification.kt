@@ -121,7 +121,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("table_format_version")
     @get:JsonSchemaInject(json = """{"always_show": true, "order": 9}""")
-    val tableFormatVersion: IcebergTableFormatVersion = IcebergTableFormatVersion.V2
+    val tableFormatVersion: IcebergTableFormatVersion? = null
 
     @get:JsonSchemaTitle("Use Variant Types")
     @get:JsonPropertyDescription(
@@ -129,7 +129,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("use_variant_types")
     @get:JsonSchemaInject(json = """{"always_show": true, "order": 10}""")
-    val useVariantTypes: Boolean = false
+    val useVariantTypes: Boolean? = null
 
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =

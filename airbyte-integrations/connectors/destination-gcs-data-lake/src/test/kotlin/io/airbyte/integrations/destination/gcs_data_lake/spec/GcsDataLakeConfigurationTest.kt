@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.destination.gcs_data_lake.spec
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.ConfigErrorException
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -26,6 +29,26 @@ internal class GcsDataLakeConfigurationTest {
     @Test
     fun `format version 2 without variant types is valid`() {
         assertDoesNotThrow { configuration(IcebergTableFormatVersion.V2, useVariantTypes = false) }
+    }
+
+    @Test
+    fun `the spec value of the format version deserializes`() {
+        val spec =
+            ObjectMapper().readValue(
+                """{"table_format_version": "v3", "use_variant_types": true}""",
+                GcsDataLakeSpecification::class.java,
+            )
+
+        assertEquals(IcebergTableFormatVersion.V3, spec.tableFormatVersion)
+        assertEquals(true, spec.useVariantTypes)
+    }
+
+    @Test
+    fun `a config without the new fields keeps the previous behavior`() {
+        val spec = ObjectMapper().readValue("{}", GcsDataLakeSpecification::class.java)
+
+        assertNull(spec.tableFormatVersion)
+        assertNull(spec.useVariantTypes)
     }
 
     private fun configuration(
