@@ -2,6 +2,9 @@
   "channel_annotations_a1": {
     "date": 99999999
   },
+  "channel_annotations_a2": {
+    "date": 99999999
+  },
   "channel_basic_a3": {
     "date": 99999999
   },
@@ -20,6 +23,9 @@
   "channel_end_screens_a1": {
     "date": 99999999
   },
+  "channel_end_screens_a2": {
+    "date": 99999999
+  },
   "channel_playback_location_a3": {
     "date": 99999999
   },
@@ -27,6 +33,9 @@
     "date": 99999999
   },
   "channel_sharing_service_a1": {
+    "date": 99999999
+  },
+  "channel_sharing_service_a2": {
     "date": 99999999
   },
   "channel_subtitles_a3": {

@@ -11,6 +11,15 @@
     },
     {
       "stream": {
+        "name": "channel_annotations_a2",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "channel_basic_a3",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
@@ -65,6 +74,15 @@
     },
     {
       "stream": {
+        "name": "channel_end_screens_a2",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "channel_playback_location_a3",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
@@ -84,6 +102,15 @@
     {
       "stream": {
         "name": "channel_sharing_service_a1",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "channel_sharing_service_a2",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
