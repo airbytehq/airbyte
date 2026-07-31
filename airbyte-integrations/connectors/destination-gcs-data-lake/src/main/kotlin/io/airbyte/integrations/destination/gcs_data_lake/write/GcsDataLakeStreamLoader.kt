@@ -16,8 +16,8 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteIndexBuil
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
-import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table

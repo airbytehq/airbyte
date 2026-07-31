@@ -73,8 +73,8 @@ class GcsDataLakeConfigurationFactory :
             gcsEndpoint = pojo.gcsEndpoint,
             namespace = pojo.namespace,
             gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
-            mergeOnReadDeleteEncoding =
-                pojo.mergeOnReadDeleteEncoding ?: MergeOnReadDeleteEncoding.EQUALITY,
+            mergeOnReadDeleteEncoding = pojo.mergeOnReadDeleteEncoding
+                    ?: MergeOnReadDeleteEncoding.EQUALITY,
         )
     }
 }

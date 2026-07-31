@@ -106,19 +106,22 @@ internal class GcsDataLakeStreamLoaderTest {
         table: Table,
         schema: Schema,
     ) {
-        val configuration = mockk<GcsDataLakeConfiguration>(relaxed = true) {
-            every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.POSITIONAL
-        }
+        val configuration =
+            mockk<GcsDataLakeConfiguration>(relaxed = true) {
+                every { mergeOnReadDeleteEncoding } returns MergeOnReadDeleteEncoding.POSITIONAL
+            }
         val catalog = mockk<Catalog>()
-        val catalogUtil = mockk<GcsDataLakeCatalogUtil> {
-            every { toCatalogProperties(any()) } returns emptyMap()
-            every { createNamespace(any(), any()) } just runs
-        }
-        val icebergUtil = mockk<IcebergUtil> {
-            every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any()) } returns table
-            every { toIcebergSchema(any()) } returns schema
-        }
+        val catalogUtil =
+            mockk<GcsDataLakeCatalogUtil> {
+                every { toCatalogProperties(any()) } returns emptyMap()
+                every { createNamespace(any(), any()) } just runs
+            }
+        val icebergUtil =
+            mockk<IcebergUtil> {
+                every { createCatalog(any(), any()) } returns catalog
+                every { createTable(any(), any(), any()) } returns table
+                every { toIcebergSchema(any()) } returns schema
+            }
         val loader =
             GcsDataLakeStreamLoader(
                 icebergConfiguration = configuration,
@@ -154,7 +157,10 @@ internal class GcsDataLakeStreamLoaderTest {
         return table
     }
 
-    private fun stream(objectSchema: ObjectType, importType: io.airbyte.cdk.load.command.ImportType) =
+    private fun stream(
+        objectSchema: ObjectType,
+        importType: io.airbyte.cdk.load.command.ImportType
+    ) =
         DestinationStream(
             generationId = 1,
             minimumGenerationId = 0,
@@ -167,7 +173,8 @@ internal class GcsDataLakeStreamLoaderTest {
                     columnSchema =
                         ColumnSchema(
                             inputSchema = objectSchema.properties,
-                            inputToFinalColumnNames = objectSchema.properties.keys.associateWith { it },
+                            inputToFinalColumnNames =
+                                objectSchema.properties.keys.associateWith { it },
                             finalSchema = emptyMap(),
                         ),
                     importType = importType,
