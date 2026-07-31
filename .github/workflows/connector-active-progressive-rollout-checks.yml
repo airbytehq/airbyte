@@ -133,11 +133,12 @@ jobs:
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
-          metadata_path="$(find . -type f -path "*/connectors/${CONNECTOR_NAME}/metadata.yaml" -print -quit)"
-          echo "exists=${metadata_path:+true}" | tee -a "${GITHUB_OUTPUT}"
+          metadata_path="$(find . -name .git -prune -o -type f -path "*/connectors/${CONNECTOR_NAME}/metadata.yaml" -print -quit)"
+          exists="${metadata_path:+true}"
+          echo "exists=${exists:-false}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Skip gate for connector removed in this PR
-        if: matrix.connector && steps.connector-presence.outputs.exists != 'true'
+        if: matrix.connector && steps.connector-presence.outputs.exists == 'false'
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: echo "::notice::${CONNECTOR_NAME} no longer exists on this branch, so there is nothing left to roll out. Skipping the progressive rollout gate."
