@@ -39,7 +39,9 @@ Zendesk OAuth uses **rotating, single-use refresh tokens** — each refresh retu
 
 Because of this, the `oauth_connector_input_specification.extract_output` list **must include `expires_in`**. The platform's declarative OAuth handler only converts the token response into a persisted `token_expiry_date` when `expires_in` is among the extracted fields. Without it, `token_expiry_date` is never written to the config, so every `check`/`discover`/`read` triggers an immediate refresh — consuming the freshly minted single-use refresh token and (in setup/check lifecycles that don't persist the rotated token) leaving the stored config holding an already-invalidated token, which fails with `invalid_grant`.
 
-**Why this matters:** Removing `expires_in` from `extract_output` reintroduces the premature-refresh loop. See `airbytehq/oncall#13130`.
+The authorization-code exchange (`access_token_url`) **must also request `expires_in=172800` explicitly**. Per Zendesk's docs, passing `expires_in` on token creation is what causes a refresh token to be issued at all, so requesting it makes the field's presence in the response a guarantee rather than an assumption — `DeclarativeOAuthSpecHandler.processOAuthOutput` throws `Missing '<key>' field in the OAuth Output` for any `extract_output` field absent from the response. It also pins the access-token lifetime at 48h (matching `refresh_request_body.expires_in` in `oauth_refresh_authenticator`) instead of Zendesk's ~30-minute default for clients created on/after 2026-04-30, closing the setup-time window where a user takes longer than the token lifetime between authorizing and saving the source.
+
+**Why this matters:** Removing `expires_in` from `extract_output` (or from the `access_token_url` request) reintroduces the premature-refresh loop. See `airbytehq/oncall#13130`.
 
 ## Incremental Stream Considerations
 
