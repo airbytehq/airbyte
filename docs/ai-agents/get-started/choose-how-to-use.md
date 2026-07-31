@@ -114,8 +114,8 @@ The CLI gives coding agents and harnesses several practical advantages:
 - The install script includes an installable agent skill with fuller, more prescriptive guidance than MCP tool descriptions and server instructions can provide. See [Use the CLI with AI agents](../interfaces/cli/using-with-ai-agents.md).
 - CLI output composes with shell tools such as `grep`, `jq`, and `tail`, as well as other command-line programs, so the agent can shape output for each step.
 - The CLI does not truncate command output, while some MCP clients truncate tool-call results.
-- Shell execution has no per-turn tool-call cap. Some MCP clients cap tool calls per turn or require user approval between calls.
-- Long-running CLI commands can continue without an MCP request timing out aggressively.
+- The agent can run as many shell commands as the task needs in one turn, while some MCP clients cap tool calls per turn or require approval between calls.
+- Long-running work can finish in a shell command, while MCP tool calls are subject to client request timeouts.
 
 Use MCP for an off-the-shelf conversational client when zero installation matters. Use the CLI for coding agents and harnesses that can run shell commands, especially when output is large, work is multi-step, or tasks are long-running.
 

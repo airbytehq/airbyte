@@ -18,7 +18,7 @@ This section walks through authenticate, add a connector, and execute operations
 - You want typed connectors and automatic credential handling in your own code.
 - You prefer in-process library calls over shelling out to a binary or making raw HTTP requests.
 
-If your agent already supports the Model Context Protocol, the [MCP server](../mcp) gives you zero-install access. If you prefer a shell binary, see the [CLI](../cli). For non-Python backends, use the [API](../api) directly.
+If your agent already supports the Model Context Protocol, the [MCP server](../mcp/readme.md) gives you zero-install access. If you prefer a shell binary, see the [CLI](../cli/readme.md). For non-Python backends, use the [API](../api/readme.md) directly.
 
 ## Choose your interface
 
