@@ -5,7 +5,7 @@
 #
 # The connector container launched by `airbyte-ops` is on the default
 # `bridge` network and cannot resolve a user-defined network's container
-# names. Until airbytehq/airbyte-ops-mcp#765 lands `--network` support,
+# names. Until airbytehq/airbyte-ops#765 lands `--network` support,
 # we render a working config that pins .host to the bridge IP that
 # Docker assigned to the backend container at runtime.
 #

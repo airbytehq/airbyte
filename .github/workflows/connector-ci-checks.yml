@@ -537,7 +537,7 @@ jobs:
   # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
   # Runs alongside existing pre-release checks to validate the new ops CLI path.
   # continue-on-error: true ensures this does not block the CI pipeline.
-  # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+  # Tracking: https://github.com/airbytehq/airbyte-ops/issues/504
   build-and-verify-artifacts:
     if: github.event.pull_request.draft == false
     needs: [generate-matrix]

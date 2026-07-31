@@ -67,7 +67,7 @@ The skill expects all script paths relative to the skill root.
   `airbyte-ops`) share Docker's default `bridge` network. The connector
   resolves the backend by its bridge IP, which `render-config.sh`
   substitutes into the working config at runtime. Tracked upstream in
-  [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765);
+  [`airbytehq/airbyte-ops#765`](https://github.com/airbytehq/airbyte-ops/issues/765);
   once `--network` is supported the bridge-IP dance can collapse.
 - SQL Server image is pinned to `mcr.microsoft.com/mssql/server:2022-latest`,
   not `latest`, for stable major-version behavior across CU patches.

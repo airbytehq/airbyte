@@ -28,7 +28,7 @@ skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
   (`source-mssql-db-backend`), applies SQL fixtures via `sqlcmd`, and runs
   one Airbyte protocol command (`spec` / `check` / `discover` / `read`)
   against `airbyte/source-mssql:<tag>` using the
-  [`airbyte-internal-ops`](https://github.com/airbytehq/airbyte-ops-mcp)
+  [`airbyte-internal-ops`](https://github.com/airbytehq/airbyte-ops)
   CLI's `airbyte-ops cloud connector regression-test --skip-compare=True`.
   Use this skill for any non-CDC bug or as a building block.
 - [`source-mssql-e2e-cdc-tests`](.agents/skills/source-mssql-e2e-cdc-tests/SKILL.md) —
@@ -96,7 +96,7 @@ directly.
 - **Connector cannot reach `source-mssql-db-backend`.**
   `airbyte-ops cloud connector regression-test` does not currently expose
   `--network` (tracked in
-  [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765)).
+  [`airbytehq/airbyte-ops#765`](https://github.com/airbytehq/airbyte-ops/issues/765)).
   Until it does, both containers share Docker's default `bridge` network
   and the connector resolves the source by IP. The `render-config.sh`
   script in the generic skill handles this: it inspects the backend's
