@@ -11,10 +11,7 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
-import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -23,11 +20,13 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,18 +35,18 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
-  private final FeatureFlags featureFlags;
+  private final Supplier<String> deploymentMode;
 
   public ElasticsearchDestination() {
-    this(new EnvVariableFeatureFlags());
+    this(() -> System.getenv(DEPLOYMENT_MODE_ENV_VAR));
   }
 
-  ElasticsearchDestination(final FeatureFlags featureFlags) {
-    this.featureFlags = featureFlags;
+  ElasticsearchDestination(final Supplier<String> deploymentMode) {
+    this.deploymentMode = deploymentMode;
   }
 
   private boolean cloudDeploymentMode() {
-    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
+    return CLOUD_MODE.equalsIgnoreCase(deploymentMode.get());
   }
 
   public static void main(String[] args) throws Exception {
@@ -62,7 +61,10 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
   }
 
   private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
-  private static final String HTTP_PROTOCOL = "http";
+  private static final String HTTPS_PROTOCOL = "https";
+  // The CDK version this connector pins predates FeatureFlags.deploymentMode(), so read the env var.
+  private static final String DEPLOYMENT_MODE_ENV_VAR = "DEPLOYMENT_MODE";
+  private static final String CLOUD_MODE = "CLOUD";
 
   /**
    * When running in cloud deployment mode, remove the "None" authentication option from the spec to
@@ -85,6 +87,14 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
     return spec;
   }
 
+  private static boolean usesHttps(final String endpoint) {
+    try {
+      return HTTPS_PROTOCOL.equals(new URL(endpoint).getProtocol());
+    } catch (final MalformedURLException e) {
+      return false;
+    }
+  }
+
   @Override
   public AirbyteConnectionStatus check(JsonNode config) throws Exception {
     final ConnectorConfiguration configObject = convertConfig(config);
@@ -94,9 +104,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
           .withMessage("endpoint must not be empty");
     }
 
-    // In cloud deployment mode, require HTTPS for secure connections
-    if (cloudDeploymentMode()
-        && HTTP_PROTOCOL.equals(new URL(configObject.getEndpoint()).getProtocol())) {
+    if (cloudDeploymentMode() && !usesHttps(configObject.getEndpoint())) {
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(NON_SECURE_URL_ERR_MSG);
