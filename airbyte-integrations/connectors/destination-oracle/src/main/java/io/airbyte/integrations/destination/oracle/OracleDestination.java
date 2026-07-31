@@ -6,26 +6,27 @@ package io.airbyte.integrations.destination.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -34,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.SQLDialect;
@@ -57,19 +57,20 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
     TCPS
   }
 
+  private final FeatureFlags featureFlags;
+
   public OracleDestination() {
-    super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
-    System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+    this(new EnvVariableFeatureFlags());
   }
 
-  /**
-   * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
-   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(), refactor
-   * to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
-   */
+  OracleDestination(final FeatureFlags featureFlags) {
+    super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
+    System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+    this.featureFlags = featureFlags;
+  }
+
   private boolean cloudDeploymentMode() {
-    String deploymentMode = System.getenv("DEPLOYMENT_MODE");
-    return "CLOUD".equalsIgnoreCase(deploymentMode);
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   public static Destination sshWrappedDestination() {
@@ -90,29 +91,24 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   }
 
   /**
-   * When running in cloud deployment mode, force encryption settings regardless of user config.
+   * In cloud deployments encryption is mandatory, so any encryption settings from the config are
+   * replaced with client network native encryption.
    */
-  @Override
-  public AirbyteMessageConsumer getConsumer(
-                                            final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final JsonNode effectiveConfig;
-    if (cloudDeploymentMode()) {
-      final JsonNode cloneConfig = Jsons.clone(config);
-      ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
-          .put("encryption_method", "client_nne")
-          .put("encryption_algorithm", "AES256")
-          .build()));
-      effectiveConfig = cloneConfig;
-    } else {
-      effectiveConfig = config;
+  @VisibleForTesting
+  JsonNode withEnforcedEncryption(final JsonNode config) {
+    if (!cloudDeploymentMode()) {
+      return config;
     }
-    return super.getConsumer(effectiveConfig, catalog, outputRecordCollector);
+    final JsonNode clonedConfig = Jsons.clone(config);
+    ((ObjectNode) clonedConfig).set(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.of(
+        ENCRYPTION_METHOD_KEY, "client_nne",
+        "encryption_algorithm", "AES256")));
+    return clonedConfig;
   }
 
   @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode originalConfig) {
+    final JsonNode config = withEnforcedEncryption(originalConfig);
     final HashMap<String, String> properties = new HashMap<>();
     if (config.has(JdbcUtils.ENCRYPTION_KEY)) {
       final JsonNode encryption = config.get(JdbcUtils.ENCRYPTION_KEY);
@@ -164,7 +160,8 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  protected Protocol obtainConnectionProtocol(final JsonNode config) {
+  protected Protocol obtainConnectionProtocol(final JsonNode originalConfig) {
+    final JsonNode config = withEnforcedEncryption(originalConfig);
     if (!config.has(JdbcUtils.ENCRYPTION_KEY)) {
       return Protocol.TCP;
     }
