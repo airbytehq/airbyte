@@ -111,7 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
-| 1.3.0 | 2026-07-31 | TBD | Add `channel_annotations_a2`, `channel_end_screens_a2`, and `channel_sharing_service_a2` streams |
+| 1.3.0 | 2026-07-31 | [83309](https://github.com/airbytehq/airbyte/pull/83309) | Add `channel_annotations_a2`, `channel_end_screens_a2`, and `channel_sharing_service_a2` streams |
 | 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
 | 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
 | 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |
