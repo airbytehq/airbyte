@@ -135,10 +135,10 @@
       },
       "merge_on_read_delete_encoding" : {
         "type" : "string",
+        "enum" : [ "EQUALITY", "POSITIONAL" ],
         "description" : "The delete-file encoding used by append deduplication syncs. Equality deletes are the backwards-compatible default; positional deletes are compatible with readers that do not support equality-delete files.",
         "title" : "Merge-on-Read Delete Encoding",
         "examples" : [ "EQUALITY", "POSITIONAL" ],
-        "enum" : [ "EQUALITY", "POSITIONAL" ],
         "default" : "EQUALITY",
         "order" : 9
       }
