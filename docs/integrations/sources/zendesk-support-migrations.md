@@ -27,13 +27,10 @@ All users of the `tickets`, `ticket_metrics`, and `side_conversations` streams.
 
 The state migration also rewrites the `tickets` parent state carried inside `ticket_metrics` and `side_conversations`, so all three streams backfill on the first sync after upgrading. That sync is substantially heavier than a normal incremental run: `tickets` re-reads from the Incremental Ticket Export endpoint, which Zendesk rate limits to 10 requests per minute regardless of plan tier, and `ticket_metrics` and `side_conversations` each make one additional API request per re-read ticket. Expect it to run considerably longer than usual; later syncs return to normal volume. Progress is checkpointed, so an interrupted first sync continues from the last committed cursor rather than restarting the backfill.
 
-If you created or reset this connection while running 5.2.0–5.4.x, its history was read through the Export Search Results endpoint and may still carry stale field values for tickets whose last event-generating change predates 2026-03-01 — the automatic backfill does not reach those. Clear the cursor for `tickets`, `ticket_metrics`, and `side_conversations` to re-read them from the live records. Connections that were upgraded in place need no action beyond the automatic migration.
-
 ### Migration steps
 
 1. Upgrade the connector. The first sync automatically backfills records changed since 2026-03-01 via the state migration — no reset required. Allow extra time for it (see [Who is affected](#who-is-affected)).
-2. If this connection was created or reset while running 5.2.0–5.4.x, also clear the cursor for `tickets`, `ticket_metrics`, and `side_conversations` once, so their pre-2026-03-01 history is re-read from the live records.
-3. If you specifically want the faster (but potentially lossy) sync behavior, enable the new `tickets_search` stream and keep `deleted_tickets` enabled alongside it.
+2. If you specifically want the faster (but potentially lossy) sync behavior, enable the new `tickets_search` stream and keep `deleted_tickets` enabled alongside it.
 
 ## Upgrading to 5.2.0
 
