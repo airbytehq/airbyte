@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channel_basic_a3
+    - report_types
 
 definitions:
   streams:
@@ -65,6 +65,37 @@ definitions:
         global_substream_cursor: true
         start_datetime:
           datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
+
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ not response.get('nextPageToken') }}"
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
 
     base_report_stream:
       type: DeclarativeStream
@@ -482,6 +513,7 @@ definitions:
       class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
+  - $ref: "#/definitions/streams/report_types"
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
@@ -582,6 +614,7 @@ spec:
 
 metadata:
   autoImportSchema:
+    report_types: false
     channel_annotations_a1: false
     channel_basic_a3: false
     channel_cards_a1: false
@@ -607,6 +640,27 @@ metadata:
   assist: {}
 
 schemas:
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        type:
+          - "null"
+          - string
+      systemManaged:
+        type:
+          - "null"
+          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
