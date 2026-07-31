@@ -1,5 +1,7 @@
 ext {
     apacheIcebergVersion = '1.11.0'
+    // Matches the version iceberg-parquet resolves; only needed to read files back in tests.
+    apacheParquetVersion = '1.17.1'
 }
 
 dependencies {
@@ -19,6 +21,9 @@ dependencies {
     api "org.apache.iceberg:iceberg-nessie:${project.ext.apacheIcebergVersion}"
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
+
+    testImplementation "org.apache.parquet:parquet-hadoop:${project.ext.apacheParquetVersion}"
+    testImplementation 'org.apache.hadoop:hadoop-mapreduce-client-core:3.4.1'
 
     testImplementation "io.mockk:mockk:1.13.12"
     testImplementation "org.assertj:assertj-core:3.26.3"

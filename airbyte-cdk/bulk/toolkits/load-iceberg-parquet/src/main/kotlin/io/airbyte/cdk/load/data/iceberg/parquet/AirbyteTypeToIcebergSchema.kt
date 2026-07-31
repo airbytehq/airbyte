@@ -28,13 +28,20 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types
 import org.apache.iceberg.types.Types.NestedField
 
-class AirbyteTypeToIcebergSchema {
+/**
+ * @param useVariant emit Iceberg `variant` instead of JSON strings for semi-structured values.
+ * Requires a format version 3 table.
+ */
+class AirbyteTypeToIcebergSchema(private val useVariant: Boolean = false) {
+
+    private fun semiStructuredType(): Type =
+        if (useVariant) Types.VariantType.get() else Types.StringType.get()
 
     fun convert(airbyteSchema: AirbyteType, stringifyObjects: Boolean): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
                 if (stringifyObjects) {
-                    Types.StringType.get()
+                    semiStructuredType()
                 } else {
                     Types.StructType.of(
                         *airbyteSchema.properties.entries
@@ -68,10 +75,10 @@ class AirbyteTypeToIcebergSchema {
             is DateType -> Types.DateType.get()
             is IntegerType -> Types.LongType.get()
             is NumberType -> Types.DoubleType.get()
-            // Schemaless types are converted to string
+            // Schemaless types are converted to string (or variant)
             is ArrayTypeWithoutSchema,
             is ObjectTypeWithEmptySchema,
-            is ObjectTypeWithoutSchema -> Types.StringType.get()
+            is ObjectTypeWithoutSchema -> semiStructuredType()
             is StringType -> Types.StringType.get()
             is TimeTypeWithTimezone,
             is TimeTypeWithoutTimezone -> Types.TimeType.get()
@@ -88,18 +95,21 @@ class AirbyteTypeToIcebergSchema {
                     )
                 }
                 // We stringify nontrivial unions
-                return Types.StringType.get()
+                return semiStructuredType()
             }
-            is UnknownType -> Types.StringType.get()
+            is UnknownType -> semiStructuredType()
         }
     }
 }
 
-fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
+fun ObjectType.toIcebergSchema(
+    primaryKeys: List<List<String>>,
+    useVariant: Boolean = false,
+): Schema {
     val fields = mutableListOf<NestedField>()
     val identifierFields = mutableSetOf<Int>()
     val identifierFieldNames = primaryKeys.flatten().toSet()
-    val icebergTypeConverter = AirbyteTypeToIcebergSchema()
+    val icebergTypeConverter = AirbyteTypeToIcebergSchema(useVariant = useVariant)
     this.properties.entries.forEach { (name, field) ->
         val id = generatedSchemaFieldId()
         val isPrimaryKey = identifierFieldNames.contains(name)

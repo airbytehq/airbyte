@@ -39,14 +39,18 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
+import org.apache.iceberg.TableProperties.FORMAT_VERSION
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.exceptions.AlreadyExistsException
+import org.apache.iceberg.types.Type
 
 private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
+
+private const val VARIANT_FORMAT_VERSION = "3"
 
 @Singleton
 class IcebergUtil(
@@ -127,6 +131,13 @@ class IcebergUtil(
             catalog
                 .buildTable(tableIdentifier, schema)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .apply {
+                    // Variant only exists in the v3 spec, so a variant column forces the table
+                    // format version rather than leaving it at the catalog default.
+                    if (schema.containsVariant()) {
+                        withProperty(FORMAT_VERSION, VARIANT_FORMAT_VERSION)
+                    }
+                }
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
@@ -135,8 +146,15 @@ class IcebergUtil(
         }
     }
 
-    fun mungeForIceberg(value: EnrichedAirbyteValue) =
+    /**
+     * @param useVariant leave semi-structured values as-is, for writing into a variant column,
+     * instead of serializing them to JSON text.
+     */
+    fun mungeForIceberg(value: EnrichedAirbyteValue, useVariant: Boolean = false) =
         value.transformValueRecursingIntoArrays { element, elementType ->
+            if (useVariant) {
+                return@transformValueRecursingIntoArrays null
+            }
             when (elementType) {
                 // Convert complex types to string
                 // (note that schemaless arrays are stringified, but schematized arrays are not)
@@ -171,7 +189,7 @@ class IcebergUtil(
         return record
     }
 
-    fun toIcebergSchema(stream: DestinationStream): Schema {
+    fun toIcebergSchema(stream: DestinationStream, useVariant: Boolean = false): Schema {
         val importType = stream.tableSchema.importType
         val primaryKeys =
             when (importType) {
@@ -179,7 +197,18 @@ class IcebergUtil(
                 else -> emptyList()
             }
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys, useVariant = useVariant)
+    }
+
+    private fun Schema.containsVariant(): Boolean {
+        fun hasVariant(type: Type): Boolean =
+            when {
+                type.typeId() == Type.TypeID.VARIANT -> true
+                type.isStructType -> type.asStructType().fields().any { hasVariant(it.type()) }
+                type.isListType -> hasVariant(type.asListType().elementType())
+                else -> false
+            }
+        return asStruct().fields().any { hasVariant(it.type()) }
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
