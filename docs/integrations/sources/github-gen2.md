@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the GitHub (Bet
 
 </HideInUI>
 
-This connector is a clean-slate rewrite of the [GitHub](https://docs.airbyte.com/integrations/sources/github) source. It emits strongly typed, normalized records intended to land cleanly in Parquet and Iceberg destinations: nested GitHub entities are replaced by the scalar keys needed to join them, and arrays contain primitives rather than objects.
+This connector is a clean-slate rewrite of the [GitHub](https://docs.airbyte.com/integrations/sources/github) source. It emits strongly typed, normalized records intended to land cleanly in Parquet and Iceberg destinations: nested GitHub entities are replaced by the scalar keys needed to join them, and repeated fields carry either primitives or fully declared objects.
 
 It is **not** backwards compatible with `source-github`. Stream names, field names and field types differ, and there is no migration path. Use it alongside the Gen-1 connector, not as a drop-in replacement.
 
@@ -57,7 +57,7 @@ The `issues` stream includes pull requests, matching the underlying API. Use `is
 Records are normalized rather than passed through:
 
 - Referenced entities are carried as keys, not embedded objects — `user_id` / `user_login` / `user_type` instead of a `user` object, `repository` / `repository_id` instead of a repository object.
-- Labels, assignees and requested reviewers are emitted as positionally aligned arrays of primitives, such as `label_ids` and `label_names`.
+- Labels, assignees and requested reviewers are emitted as arrays of objects holding the key tuple, such as `labels` with `id`, `name` and `description`. Each also has a projection column of plain strings — `label_names`, `assignee_logins`, `requested_reviewer_logins` — which is the simplest access path for most queries.
 - Every record carries its own `api_url` and `html_url`; content-download URLs (`diff_url`, `patch_url`, `tarball_url`, `zipball_url`) are preserved. Links to referenced collections are dropped.
 - Timestamps are typed as `timestamp_with_timezone`, and IDs, counts and positions are integers.
 

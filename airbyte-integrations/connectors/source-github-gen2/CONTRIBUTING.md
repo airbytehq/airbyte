@@ -42,7 +42,8 @@ of identity attributes that are stable enough to be treated as part of the key:
 | user | `user_id`, `user_login`, `user_type` |
 | repository | `repository` (`owner/name`), `repository_id` |
 | milestone | `milestone_id`, `milestone_number`, `milestone_title` |
-| labels | `label_ids`, `label_names` |
+| labels | `labels` (array of `{id, name, description}`) plus a `label_names` projection |
+| assignees | `assignees` (array of `{id, login, type}`) plus an `assignee_logins` projection |
 
 Handles and full names are mutable in theory and effectively stable in practice, so
 carrying both an id and a human-readable name is a deliberate exception, not a
@@ -77,11 +78,54 @@ recomputed it later:
 - Timestamps are `format: date-time` with `airbyte_type: timestamp_with_timezone`.
 - Ids, counts, positions and line numbers are `integer`. Git SHAs and `node_id` are
   `string` despite the `_id` suffix.
-- Arrays are **arrays of primitives with an explicit `items` type**. Arrays of objects
-  are not allowed; they stringify at the destination and defeat the purpose.
-- Parallel arrays carry an entity's id and name: `label_ids[i]` corresponds to
-  `label_names[i]`. Alignment is positional and not enforced by the destination, which
-  is the accepted cost of avoiding an array of objects.
+- Every array declares an explicit `items` schema. An array of objects declares the
+  object's `properties` and `additionalProperties: false` like any other schema, and
+  every element is pruned to those properties with a wildcard `RemoveFields` pointer
+  (`["labels", "*", "color"]`; dpath globs index into lists).
+- **Never emit parallel arrays that a consumer has to re-zip by position.** An earlier
+  revision shipped `label_ids` and `label_names` side by side and asked the reader to
+  trust that index `i` lined up across both columns, through every hop of the pipeline.
+  Both columns were typed, but recovering "which id goes with which name" depended on
+  an unwritten convention, which is the failure mode the typing rules exist to prevent.
+
+### Choosing the shape of a repeated field
+
+Four cases, in the order the questions should be asked:
+
+1. **The element has its own lifecycle or its own mutable state → separate stream.**
+   `releases.assets` looks like a struct array but carries `download_count`, a counter
+   that moves independently of the release. Inlining it recreates the as-of-fetch
+   problem from rule 2 on a nested field.
+2. **One scalar functionally determines the rest of the element → array of primitives.**
+   `commits.parents` is a list of objects whose every field is a URL derived from
+   `sha`, so `parent_shas` is lossless and a struct would be bulk.
+3. **The element is a value with several independent attributes → array of structs, no
+   projection.** `workflow_jobs.steps` has a name, a status, a conclusion and two
+   timestamps; no single field summarizes it, so there is nothing honest to project.
+4. **The element is a reference to an entity → array of structs plus one projection
+   column.** `labels` and `assignees` are key tuples. The struct array keeps the
+   association intact and the projection (`label_names`, `assignee_logins`) is the
+   access path almost every query wants, typed as a plain `array<string>`.
+
+A projection column is a convenience, never the only copy of a fact. If dropping the
+struct array would lose information, the projection is not enough.
+
+### What an array of structs lands as today
+
+The Iceberg and S3 Data Lake destinations currently stringify object-valued columns
+(`AirbyteTypeToIcebergSchema` is called with `stringifyObjects = true` for every column
+except `_airbyte_meta`), so `labels` lands as `list<string>` where each element is one
+self-contained JSON object. That is a destination policy, not a Parquet or Iceberg
+limitation — `list<struct<id: long, name: string>>` is an ordinary Iceberg type.
+
+This is why the shape is still correct to emit: each element carries its own id and
+name, so nothing has to be re-zipped even in the degraded form, and when the
+destination stops stringifying, the same column becomes a native struct list with no
+change here and no rename. Consumers on the projection columns never notice.
+
+Stringification is an interim compatibility behavior, not the target. Do not design a
+field around it, and do not use it as a reason to flatten something that is genuinely
+repeated and structured.
 
 ### A note on `value_type` in `AddFields`
 
@@ -138,8 +182,6 @@ out of the URLs that are then removed.
   that the declarative CDK does not have yet, and the long-term credential shape (an
   array of typed credential objects vs. per-type arrays) is unresolved — including
   whether the platform handles secrets nested inside objects inside arrays.
-- **`workflow_jobs.steps` is dropped.** It is an array of objects. If step-level data
-  is wanted it should be its own stream.
 
 ## 8. Deferred streams
 
@@ -147,3 +189,7 @@ Candidates for referential completeness, in rough priority order: `teams`,
 `team_members`, `collaborators`, `deployments`, `commit_comments`, `issue_events`,
 `issue_labels`, `issue_milestones`, `projects_v2`, and a participants-style user
 stream. All are REST-capable except `projects_v2`.
+
+`release_assets` belongs here too, and for the reason in case 1 above rather than for
+coverage: an asset's `download_count` is a moving counter that has no business being
+inlined into a release row.

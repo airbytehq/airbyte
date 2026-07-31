@@ -467,20 +467,11 @@ definitions:
         - assignee_login
         value: "{{ record.get('assignee', {}).get('login') if record.get('assignee') else None }}"
       - path:
-        - assignee_ids
-        value: "{{ record.get('assignees', []) | map(attribute='id') | list }}"
-      - path:
         - assignee_logins
         value: "{{ record.get('assignees', []) | map(attribute='login') | list }}"
       - path:
-        - requested_reviewer_ids
-        value: "{{ record.get('requested_reviewers', []) | map(attribute='id') | list }}"
-      - path:
         - requested_reviewer_logins
         value: "{{ record.get('requested_reviewers', []) | map(attribute='login') | list }}"
-      - path:
-        - label_ids
-        value: "{{ record.get('labels', []) | map(attribute='id') | list }}"
       - path:
         - label_names
         value: "{{ record.get('labels', []) | map(attribute='name') | list }}"
@@ -489,22 +480,127 @@ definitions:
       - - _links
       - - active_lock_reason
       - - assignee
-      - - assignees
       - - auto_merge
       - - base
       - - comments_url
       - - commits_url
       - - head
       - - issue_url
-      - - labels
       - - milestone
-      - - requested_reviewers
       - - requested_teams
       - - review_comment_url
       - - review_comments_url
       - - statuses_url
       - - url
       - - user
+      - - labels
+        - '*'
+        - color
+      - - labels
+        - '*'
+        - default
+      - - labels
+        - '*'
+        - node_id
+      - - labels
+        - '*'
+        - url
+      - - assignees
+        - '*'
+        - avatar_url
+      - - assignees
+        - '*'
+        - events_url
+      - - assignees
+        - '*'
+        - followers_url
+      - - assignees
+        - '*'
+        - following_url
+      - - assignees
+        - '*'
+        - gists_url
+      - - assignees
+        - '*'
+        - gravatar_id
+      - - assignees
+        - '*'
+        - html_url
+      - - assignees
+        - '*'
+        - node_id
+      - - assignees
+        - '*'
+        - organizations_url
+      - - assignees
+        - '*'
+        - received_events_url
+      - - assignees
+        - '*'
+        - repos_url
+      - - assignees
+        - '*'
+        - site_admin
+      - - assignees
+        - '*'
+        - starred_url
+      - - assignees
+        - '*'
+        - subscriptions_url
+      - - assignees
+        - '*'
+        - url
+      - - assignees
+        - '*'
+        - user_view_type
+      - - requested_reviewers
+        - '*'
+        - avatar_url
+      - - requested_reviewers
+        - '*'
+        - events_url
+      - - requested_reviewers
+        - '*'
+        - followers_url
+      - - requested_reviewers
+        - '*'
+        - following_url
+      - - requested_reviewers
+        - '*'
+        - gists_url
+      - - requested_reviewers
+        - '*'
+        - gravatar_id
+      - - requested_reviewers
+        - '*'
+        - html_url
+      - - requested_reviewers
+        - '*'
+        - node_id
+      - - requested_reviewers
+        - '*'
+        - organizations_url
+      - - requested_reviewers
+        - '*'
+        - received_events_url
+      - - requested_reviewers
+        - '*'
+        - repos_url
+      - - requested_reviewers
+        - '*'
+        - site_admin
+      - - requested_reviewers
+        - '*'
+        - starred_url
+      - - requested_reviewers
+        - '*'
+        - subscriptions_url
+      - - requested_reviewers
+        - '*'
+        - url
+      - - requested_reviewers
+        - '*'
+        - user_view_type
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -587,6 +683,50 @@ definitions:
             type:
             - string
             - 'null'
+          labels:
+            type:
+            - array
+            - 'null'
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                description:
+                  type:
+                  - string
+                  - 'null'
+          assignees:
+            type:
+            - array
+            - 'null'
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type: integer
+                login:
+                  type: string
+                type:
+                  type: string
+          requested_reviewers:
+            type:
+            - array
+            - 'null'
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type: integer
+                login:
+                  type: string
+                type:
+                  type: string
           api_url:
             type:
             - string
@@ -655,36 +795,18 @@ definitions:
             type:
             - string
             - 'null'
-          assignee_ids:
-            type:
-            - array
-            - 'null'
-            items:
-              type: integer
           assignee_logins:
             type:
             - array
             - 'null'
             items:
               type: string
-          requested_reviewer_ids:
-            type:
-            - array
-            - 'null'
-            items:
-              type: integer
           requested_reviewer_logins:
             type:
             - array
             - 'null'
             items:
               type: string
-          label_ids:
-            type:
-            - array
-            - 'null'
-            items:
-              type: integer
           label_names:
             type:
             - array
@@ -758,14 +880,8 @@ definitions:
         - assignee_login
         value: "{{ record.get('assignee', {}).get('login') if record.get('assignee') else None }}"
       - path:
-        - assignee_ids
-        value: "{{ record.get('assignees', []) | map(attribute='id') | list }}"
-      - path:
         - assignee_logins
         value: "{{ record.get('assignees', []) | map(attribute='login') | list }}"
-      - path:
-        - label_ids
-        value: "{{ record.get('labels', []) | map(attribute='id') | list }}"
       - path:
         - label_names
         value: "{{ record.get('labels', []) | map(attribute='name') | list }}"
@@ -779,13 +895,11 @@ definitions:
       field_pointers:
       - - active_lock_reason
       - - assignee
-      - - assignees
       - - closed_by
       - - comments_url
       - - events_url
       - - issue_dependencies_summary
       - - issue_field_values
-      - - labels
       - - labels_url
       - - milestone
       - - performed_via_github_app
@@ -798,6 +912,66 @@ definitions:
       - - type
       - - url
       - - user
+      - - labels
+        - '*'
+        - color
+      - - labels
+        - '*'
+        - default
+      - - labels
+        - '*'
+        - node_id
+      - - labels
+        - '*'
+        - url
+      - - assignees
+        - '*'
+        - avatar_url
+      - - assignees
+        - '*'
+        - events_url
+      - - assignees
+        - '*'
+        - followers_url
+      - - assignees
+        - '*'
+        - following_url
+      - - assignees
+        - '*'
+        - gists_url
+      - - assignees
+        - '*'
+        - gravatar_id
+      - - assignees
+        - '*'
+        - html_url
+      - - assignees
+        - '*'
+        - node_id
+      - - assignees
+        - '*'
+        - organizations_url
+      - - assignees
+        - '*'
+        - received_events_url
+      - - assignees
+        - '*'
+        - repos_url
+      - - assignees
+        - '*'
+        - site_admin
+      - - assignees
+        - '*'
+        - starred_url
+      - - assignees
+        - '*'
+        - subscriptions_url
+      - - assignees
+        - '*'
+        - url
+      - - assignees
+        - '*'
+        - user_view_type
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -870,6 +1044,36 @@ definitions:
             type:
             - string
             - 'null'
+          labels:
+            type:
+            - array
+            - 'null'
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                description:
+                  type:
+                  - string
+                  - 'null'
+          assignees:
+            type:
+            - array
+            - 'null'
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                id:
+                  type: integer
+                login:
+                  type: string
+                type:
+                  type: string
           api_url:
             type:
             - string
@@ -910,24 +1114,12 @@ definitions:
             type:
             - string
             - 'null'
-          assignee_ids:
-            type:
-            - array
-            - 'null'
-            items:
-              type: integer
           assignee_logins:
             type:
             - array
             - 'null'
             items:
               type: string
-          label_ids:
-            type:
-            - array
-            - 'null'
-            items:
-              type: integer
           label_names:
             type:
             - array
@@ -2218,7 +2410,6 @@ definitions:
       - - check_run_url
       - - labels
       - - run_url
-      - - steps
       - - url
     schema_loader:
       type: InlineSchemaLoader
@@ -2305,6 +2496,36 @@ definitions:
             type:
             - string
             - 'null'
+          steps:
+            type:
+            - array
+            - 'null'
+            items:
+              type: object
+              additionalProperties: false
+              properties:
+                number:
+                  type: integer
+                name:
+                  type: string
+                status:
+                  type: string
+                conclusion:
+                  type:
+                  - string
+                  - 'null'
+                started_at:
+                  type:
+                  - string
+                  - 'null'
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
+                completed_at:
+                  type:
+                  - string
+                  - 'null'
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
           api_url:
             type:
             - string
