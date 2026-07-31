@@ -87,20 +87,33 @@ filter, the child stream can query malformed appearance partitions.
 special-case upstream appearance values when touching keyword streams. The parent slice already carries
 both site and appearance context.
 
-### Deprecated appearance values
+### Retired appearance values require no connector change
 
-Google retires `searchAppearance` values over time — FAQ rich result data is removed from the Search
-Console API in August 2026. No connector change is needed for a retired value: the parent stream is
-stateless (no `incremental_sync`, re-queried over the full configured date range every sync), so once
-Google stops listing a value the child simply stops requesting it, and `search_appearance` is a plain
-nullable string with no enum in the schemas.
+Google retires search appearance types over time. FAQ is the current example: rich results stopped
+appearing in Search in May 2026, and Google's
+[FAQ structured data documentation](https://developers.google.com/search/docs/appearance/structured-data/faqpage)
+announced removal of FAQ rich result data from the Search Console API in August 2026. This was audited
+(oncall#12701) and needs no code change. Four properties of the design make a retired value a non-event:
 
-The one transition risk is asymmetric rollout — Google still listing a value in the parent response while
-rejecting it in the child `dimensionFilterGroups` filter. The `search_analytics_error_handler` therefore
-IGNOREs responses whose error message mentions `searchAppearance`, skipping that partition so the
-remaining appearance values still sync. That filter intentionally sets no `http_codes`: the CDK ORs
-`http_codes` with `error_message_contains`, so adding `400` would silently ignore every 400 response.
+1. **Appearance values are discovered, never hard-coded.** The parent stream enumerates whatever
+   `searchAppearance` rows the API returns, so a retired value drops out on its own.
+2. **The parent is stateless.** It has no `incremental_sync` and re-queries the full configured date
+   range every sync, so no stale value can be replayed from state.
+3. **`search_appearance` is a plain nullable string** in all three schemas, with no enum, so a retired
+   value is not a schema change.
+4. **Appearances are partitions, not dynamic streams.** The catalog is fixed; no stream appears or
+   disappears. (The `dynamic_streams` block is for config-driven custom reports and is unrelated.)
 
-Note that `search_appearance` is part of the primary key of the keyword streams, so rows already synced
-for a retired appearance value stay in the destination — there are no deletes — and re-syncing a
-historical window will no longer reproduce them.
+Do not add a filter or special case for a retired value. Because the parent enumerates over the full
+configured date range, a value may legitimately keep returning historical data long after Google stops
+attributing new traffic to it — excluding it by name would discard data the API is still serving.
+
+Two things to know when a value does go away:
+
+- `search_appearance` is part of these streams' primary key and syncs do not delete rows, so records
+  already synced for a retired value stay in the destination and keep contributing to any aggregate.
+- The value on each record is stamped from the partition (`AddFields`), not read from the response — the
+  API cannot return `searchAppearance` alongside other dimensions. So if Google ever silently ignored an
+  unrecognized filter value instead of rejecting it (the behavior documented above for *empty* values),
+  the child would emit whole-site aggregate rows labelled with that value, and no single response would
+  reveal it. Detecting that needs a cross-partition metric comparison, not an error handler.
