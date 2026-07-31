@@ -140,9 +140,7 @@ class IcebergUtil(
             catalog
                 .buildTable(tableIdentifier, schema)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
-                .apply {
-                    formatVersion?.let { withProperty(FORMAT_VERSION, it.toString()) }
-                }
+                .apply { formatVersion?.let { withProperty(FORMAT_VERSION, it.toString()) } }
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
