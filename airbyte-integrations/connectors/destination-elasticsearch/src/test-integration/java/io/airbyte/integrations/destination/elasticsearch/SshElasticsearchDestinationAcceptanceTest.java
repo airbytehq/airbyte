@@ -57,7 +57,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
   @BeforeAll
   public static void beforeAll() {
     bastion.initAndStartBastion(network);
-    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.17.28")
         .withNetwork(network)
         .withPassword(ELASTIC_PASSWORD);
     container.start();
