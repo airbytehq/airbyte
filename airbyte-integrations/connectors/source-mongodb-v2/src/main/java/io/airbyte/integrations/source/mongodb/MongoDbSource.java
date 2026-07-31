@@ -133,11 +133,13 @@ public class MongoDbSource extends BaseConnector implements Source {
         final Integer sampleSize = sourceConfig.getSampleSize();
         final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
         final Integer discoverTimeout = sourceConfig.getStreamDiscoveryTimeoutSeconds();
+        final Integer discoverParallelism = sourceConfig.getDiscoverParallelism();
 
         List<AirbyteStream> allStreams = new ArrayList<>();
         for (String databaseName : databaseNames) {
           LOGGER.info("Discovering collections in database: {}", databaseName);
-          List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout);
+          List<AirbyteStream> streams =
+              MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout, discoverParallelism);
           allStreams.addAll(streams);
         }
 
