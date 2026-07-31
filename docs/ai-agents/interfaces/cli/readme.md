@@ -23,6 +23,8 @@ Most resource operations accept JSON input with `--json` and print JSON output. 
 - You're building an AI agent harness that invokes command-line tools and parses JSON output.
 - You need a portable binary that works in CI pipelines, shell scripts, or headless environments.
 - You prefer local execution and a non-Python alternative to the [SDK](../sdk/readme.md).
+- You need to compose output with shell tools, avoid result truncation, or run many sequential calls and long-running operations without MCP client limits.
+- You want fuller, prescriptive agent guidance from an installable skill. See [Use the CLI with AI agents](./using-with-ai-agents.md).
 
 If your agent already speaks the Model Context Protocol, the [MCP server](../mcp/readme.md) offers the same connectors with zero install. If you're writing Python, the [SDK](../sdk/readme.md) gives you typed, in-process access. For raw HTTP control or non-Python backends, see the [API](../api/readme.md).
 

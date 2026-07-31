@@ -44,7 +44,7 @@ flowchart TD
 
 The [MCP server](../interfaces/mcp) is a remote, Airbyte-hosted server that gives MCP-capable agents authenticated access to your connected data. You have nothing to install. Add the server URL to your agent's MCP configuration, authenticate with your Airbyte account, and your agent can immediately read and write data across every connector in your workspace.
 
-Choose MCP when your agent already speaks the Model Context Protocol and you want zero-install, conversational access to your data. If you need JSON-scriptable execution, local binary control, or CI integration, see [CLI](#cli) instead.
+Choose MCP when you are using an off-the-shelf conversational client that supports MCP and you want zero-install access to your data. For coding agents and harnesses that can run shell commands, see [CLI](#cli).
 
 **Get started:** see the [MCP server docs](../interfaces/mcp) for setup instructions for Claude Code, Cursor, VS Code, Claude Desktop, ChatGPT, and other clients.
 
@@ -84,7 +84,7 @@ Use [**Chats**](../interfaces/ui/chats) to have interactive conversations with a
 
 The [CLI](../interfaces/cli) (`airbyte-agent`) gives you a terminal interface for listing workspaces, adding connectors through browser credential flows, describing connector schemas, and executing connector actions. It accepts JSON input, prints JSON output, and includes schema discovery for agent workflows.
 
-Choose the CLI when you want a local binary that your scripts or agent harness can shell out to. The CLI runs locally, authenticates via a browser flow or `--manual` mode, and returns structured JSON for programmatic consumption. If your agent speaks MCP natively, the [MCP server](#mcp-server) gives you the same connectors with zero install.
+Choose the CLI when you are using a coding agent or harness that can run shell commands. The CLI runs locally, authenticates via a browser flow or `--manual` mode, and returns structured JSON for programmatic consumption. It is especially useful when output is large, work requires multiple steps, or an operation may run for a long time.
 
 ```bash
 curl -fsSL https://airbyte.ai/install.sh | bash
@@ -104,12 +104,20 @@ Choose the API when you need HTTP-level control, are working outside Python, or 
 
 ## MCP server vs. CLI for AI agents
 
-Both the MCP server and the CLI can connect AI agents to your data, but they differ in how the agent communicates with Airbyte:
+Both the MCP server and the CLI connect AI agents to your data, but they differ in how the agent communicates with Airbyte:
 
-- **MCP server** — The agent talks to Airbyte over the Model Context Protocol. Nothing is installed locally; the server is hosted by Airbyte. Authentication is OAuth via a browser popup. Best for conversational agents (Claude, ChatGPT, Cursor) that already support MCP.
-- **CLI** — The agent shells out to a local `airbyte-agent` binary. Commands accept JSON input and print JSON output. Authentication is a browser login (or `--manual` for headless machines). Best for scripted pipelines, CI jobs, and agent harnesses that invoke command-line tools.
+- **MCP server** — The agent talks to an Airbyte-hosted server over the Model Context Protocol. Nothing is installed locally. Authentication uses OAuth through a browser popup.
+- **CLI** — The agent shells out to a local `airbyte-agent` binary. Commands accept JSON input and print JSON output. Install the binary with the [install script](../interfaces/cli/readme.md#install), then authenticate with a browser login or `--manual` for headless machines.
 
-If your agent supports MCP natively, start with the MCP server for the simplest setup. If your agent runs shell commands or you need offline/local execution, use the CLI.
+The CLI gives coding agents and harnesses several practical advantages:
+
+- The install script includes an installable agent skill with fuller, more prescriptive guidance than MCP tool descriptions and server instructions can provide. See [Use the CLI with AI agents](../interfaces/cli/using-with-ai-agents.md).
+- CLI output composes with shell tools such as `grep`, `jq`, and `tail`, as well as other command-line programs, so the agent can shape output for each step.
+- The CLI does not truncate command output, while some MCP clients truncate tool-call results.
+- Shell execution has no per-turn tool-call cap. Some MCP clients cap tool calls per turn or require user approval between calls.
+- Long-running CLI commands can continue without an MCP request timing out aggressively.
+
+Use MCP for an off-the-shelf conversational client when zero installation matters. Use the CLI for coding agents and harnesses that can run shell commands, especially when output is large, work is multi-step, or tasks are long-running.
 
 ## All paths lead to the same data
 
