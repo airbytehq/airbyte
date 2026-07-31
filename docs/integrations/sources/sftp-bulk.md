@@ -2,80 +2,90 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [SFTP Bulk](https://docs.airbyte.com/integrations/sources/sftp-bulk#file-specific-configuration) source connector.
+This page contains the setup guide and reference information for the [SFTP Bulk](https://docs.airbyte.com/integrations/sources/sftp-bulk) source connector.
 
 </HideInUI>
 
 The SFTP Bulk connector offers several features that are not available in the standard SFTP source connector:
 
-- **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.
-- **Incremental loading**: This connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their creation or last modification time.
-- **Load most recent file**: You can choose to load only the most recent file from the designated folder path. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data.
+- **Bulk ingestion of files**: Consolidate and process multiple files as a single data stream in your destination.
+- **Incremental loading**: Sync files from the SFTP server to your destination based on their last modification time.
+- **Load most recent file**: Load only the most recent file from a folder path. This is useful for snapshot files that are regularly added and contain the latest data.
 
 ## Prerequisites
 
 - Access to a remote server that supports SFTP
-- Host address
-- Valid username and authentication credentials (password or SSH private key)
+- Host address and port (default: 22)
+- Username and one of the following authentication credentials:
+  - Password
+  - SSH private key (RSA, Ed25519, ECDSA, or DSS)
 
 ## Setup guide
 
-### Set up SFTP Bulk
+### Step 1: Set up SFTP authentication
 
-#### Step 1: Set up SFTP authentication
+To set up the SFTP Bulk connector, choose one of the following authentication methods:
 
-To set up the SFTP connector, select _one_ of the following authentication methods:
+- **Password**: Use your username and password credentials for the SFTP server.
+- **Private key**: Use an SSH key pair. The connector supports RSA, Ed25519, ECDSA, and DSS key types.
 
-- Your username and password credentials associated with the server.
-- A private/public key pair.
+To set up key pair authentication:
 
-To set up key pair authentication, follow these steps:
+1. Open a terminal and use `ssh-keygen` to generate a new key pair:
 
-1. Open your terminal or command prompt and use the `ssh-keygen` command to generate a new key pair.
+   ```bash
+   ssh-keygen -t ed25519
+   ```
+
+   You can replace `ed25519` with `rsa`, `ecdsa`, or `dsa` depending on your requirements.
+
    :::note
-   If your operating system does not support the `ssh-keygen` command, you can use a third-party tool like [PuTTYgen](https://www.puttygen.com/) to generate the key pair instead.
+   If your operating system does not support `ssh-keygen`, use a third-party tool like [PuTTYgen](https://www.puttygen.com/) to generate the key pair.
    :::
 
-2. You will be prompted for a location to save the keys, and a passphrase to secure the private key. You can press enter to accept the default location and opt out of a passphrase if desired. Your two keys will be generated in the designated location as two separate files. The private key will usually be saved as `id_rsa`, while the public key will be saved with the `.pub` extension (`id_rsa.pub`).
+2. When prompted, choose a location to save the keys and optionally set a passphrase. The private key is saved as `id_ed25519` (or `id_rsa`, etc.) and the public key with a `.pub` extension.
 
-3. Use the `ssh-copy-id` command in your terminal to copy the public key to the server.
+3. Copy the public key to the server:
 
    ```bash
    ssh-copy-id <username>@<server_ip_address>
    ```
 
-   Be sure to replace your specific values for your username and the server's IP address.
-
    :::note
-   Depending on factors such as your operating system and the specific SSH implementation your remote server uses, you may not be able to use the `ssh-copy-id` command. If so, please consult your server administrator for the appropriate steps to copy the public key to the server.
+   If `ssh-copy-id` is not available on your system, consult your server administrator for the appropriate steps to install the public key on the server.
    :::
 
-4. You should now be able to connect to the server via the private key. You can test this by using the `ssh` command:
+4. Test the connection:
 
-```bash
-ssh <username>@<server_ip_address>
-```
+   ```bash
+   ssh <username>@<server_ip_address>
+   ```
 
-For more information on SSH key pair authentication, please refer to the
-[official documentation](https://www.ssh.com/academy/ssh/keygen).
+For more information, refer to the [SSH key pair documentation](https://www.ssh.com/academy/ssh/keygen).
 
-### Set up the SFTP Bulk connector in Airbyte
+### Step 2: Set up the SFTP Bulk connector in Airbyte
 
-### For Airbyte Cloud:
+<!-- env:cloud -->
+
+<HideInUI>
+
+#### For Airbyte Cloud:
+
+</HideInUI>
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **SFTP Bulk** from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
-7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the [SSH Key Authentication Setup](#ssh-key-authentication-setup) section below for detailed instructions.
-9. In the section titled `The list of streams to sync`, enter a **Stream Name**. This is the name of the stream that is created in your destination. Add additional streams by clicking **Add**.
-10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
-11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
-12. (Optional) Specify the **Port**. The default port for SFTP is 22. If your remote server is using a different port, enter it here.
-13. (Optional) Determine the **Folder Path**. This determines the directory to search for files in, and defaults to "/". If you prefer to specify a specific folder path, specify the directory on the remote server to be synced. For example, given the file structure:
+7. Enter your **Username**.
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the [Private key setup](#private-key-setup) section for detailed instructions.
+9. In the section titled **The list of streams to sync**, enter a **Stream Name**. Add additional streams by clicking **Add**.
+10. For each stream, select the **File Type** you want to sync. Depending on the format chosen, additional format-specific options appear.
+11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs only sync files modified or added after this date.
+12. (Optional) Specify the **Port**. The default port for SFTP is 22.
+13. (Optional) Set the **Folder Path** to limit syncing to a specific directory. Defaults to `/`. For example, given the file structure:
 
     ```text
     Root
@@ -88,47 +98,56 @@ For more information on SSH key pair authentication, please refer to the
     |   | - 2022
     ```
 
-    An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
+    An input of `/logs/2022` syncs only files within that folder.
 
-14. Click **Set up source** to complete setup. A test runs to verify the configuration.
+14. Click **Set up source** to complete setup. A connection test runs to verify the configuration.
 
-### For Airbyte Open Source:
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+<HideInUI>
+
+#### For Airbyte Open Source:
+
+</HideInUI>
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **SFTP Bulk** from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
+5. Follow the same configuration steps as described in the Cloud setup, starting from step 5.
 
-#### SSH Key Authentication Setup
+<!-- /env:oss -->
 
-If your SFTP server uses SSH key-based authentication, you'll need to provide your private key file (`.pem` or similar format) during setup. Follow these steps to create and upload it correctly:
+#### Private key setup
 
-1. **Locate your private key text.** This is the block of text that begins with `-----BEGIN OPENSSH PRIVATE KEY-----` or `-----BEGIN RSA PRIVATE KEY-----` and ends with `-----END OPENSSH PRIVATE KEY-----` or `-----END RSA PRIVATE KEY-----`.
+If your SFTP server uses SSH key-based authentication, provide your private key during setup. The connector supports RSA, Ed25519, ECDSA, and DSS key types.
+
+1. **Locate your private key text.** This is the block of text that begins with a line like `-----BEGIN OPENSSH PRIVATE KEY-----` and ends with `-----END OPENSSH PRIVATE KEY-----`. For older RSA keys, the header may read `-----BEGIN RSA PRIVATE KEY-----`.
 
 2. **Create a PEM file:**
-   1. Open any text editor or IDE (for example, PyCharm, VS Code, or a terminal text editor).
+   1. Open a text editor.
    2. Create a new file named `ssh.pem`.
    3. Paste the entire private key text into the file, including the BEGIN and END lines.
-   4. Make sure there are no quotes or extra spaces before or after the key.
+   4. Make sure there are no extra quotes or whitespace before or after the key.
    5. Save the file.
 
-3. **(Optional but recommended)** If you're on macOS or Linux, set restricted permissions so only you can read it:
+3. **(Optional)** On macOS or Linux, restrict file permissions:
 
    ```bash
    chmod 600 ssh.pem
    ```
 
-4. **Upload the file in Airbyte Cloud:**
+4. **Upload the file in Airbyte:**
    1. In the SFTP Bulk source setup form, find the **Private key** field.
    2. Click **Upload file** and select your saved `ssh.pem` file.
 
-Once uploaded, Airbyte uses this file to authenticate securely with your SFTP server.
-
 :::note
-The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
+The file must be in PEM format — a plain text file containing your private key between the BEGIN and END lines.
 :::
 
-## Delivery Method
+## Delivery method
 
 <FieldAnchor field="delivery_method.delivery_type">
 
@@ -136,17 +155,17 @@ Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for yo
 
 </FieldAnchor>
 
-### Preserve Sub-Directories in File Paths
+### Preserve sub-directories in file paths
 
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files are synced by their names only. This option is ignored when file-based replication is not enabled.
 
-## File-specific Configuration
+## File-specific configuration
 
-Depending on your **File Type** selection, you are presented with a few configuration options specific to that file type.
+Depending on your **File Type** selection, you are presented with configuration options specific to that file type.
 
 ### Glob patterns
 
-You can specify a **Glob** pattern to select which files should be synced from the file system. Glob patterns work with all supported file types including CSV, Avro, JSONL, Parquet, Excel, and Document formats.
+You can specify a **Glob** pattern to select which files to sync from the file system. Glob patterns work with all supported file types including CSV, Avro, JSONL, Parquet, Excel, and Document formats.
 
 If your files are in a subfolder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`. Use `**` to match files recursively in subdirectories, like `**/*.csv`.
 
@@ -161,19 +180,17 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 | Incremental - Append           |    ✅    |       |
 | Incremental - Append + Deduped |    ❌    |       |
 
-## Supported Streams
+## Supported streams
 
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
+This source provides a single stream per file with a dynamic schema. Supported file types are Avro, CSV, JSONL, Parquet, Excel, and Document.
 
-## File Size Limitations
+## File size limitations
 
-When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1.5 GB (1,500,000,000 bytes) per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents.
+When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1.5 GB per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents.
 
-If you need to sync files larger than 1.5 GB, consider the following approach:
+If you need to sync files larger than 1.5 GB, split them into smaller chunks before uploading them to your SFTP server.
 
-- Split large files into smaller chunks before uploading them to your SFTP server
-
-The **Replicate Records** delivery method is not a workaround for large file sizes. Replicate Records only works with structured file formats (CSV, JSONL, Parquet, Avro, etc.) that the connector can parse into individual records. It does not support unstructured files or binary formats, and files processed through Replicate Records are still subject to the same size limitations.
+The **Replicate Records** delivery method is not a workaround for large file sizes. Replicate Records only works with structured file formats (CSV, JSONL, Parquet, Avro) that the connector can parse into individual records. It does not support unstructured files or binary formats, and files processed through Replicate Records are still subject to the same size limitations.
 
 For more information about delivery methods and their limitations, see the [Delivery Methods documentation](/platform/using-airbyte/delivery-methods#supported-versions-and-limitations).
 
@@ -188,13 +205,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
-| 1.9.2 | 2026-04-06 | [76108](https://github.com/airbytehq/airbyte/pull/76108) | Catch `struct.error` during private key parsing and re-raise `AirbyteTracedException` instead of swallowing config errors as warnings |
-| 1.9.1 | 2026-04-01 | [75967](https://github.com/airbytehq/airbyte/pull/75967) | Support non-RSA private key types (Ed25519, ECDSA, DSS) for SSH authentication |
+| 1.9.2 | 2026-04-07 | [76108](https://github.com/airbytehq/airbyte/pull/76108) | Catch `struct.error` during private key parsing and re-raise `AirbyteTracedException` instead of swallowing config errors as warnings |
+| 1.9.1 | 2026-04-02 | [75967](https://github.com/airbytehq/airbyte/pull/75967) | Support non-RSA private key types (Ed25519, ECDSA, DSS) for SSH authentication |
 | 1.9.0 | 2026-01-08 | [71225](https://github.com/airbytehq/airbyte/pull/71225) | Promoting release candidate 1.9.0-rc.2 to a main version. |
-| 1.9.0-rc.2 | 2026-01-05 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic |
-| 1.9.0-rc.1 | 2025-12-09 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version |
-| 1.8.9      | 2025-11-24 | | Increase `maxSecondsBetweenMessages` to 3 hours                                                                                                                          |
-| 1.8.8      | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit                                                                                                                      |
+| 1.9.0-rc.2 | 2026-01-06 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic |
+| 1.9.0-rc.1 | 2025-12-22 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version |
+| 1.8.9 | 2025-11-24 | [69833](https://github.com/airbytehq/airbyte/pull/69833) | Increase `maxSecondsBetweenMessages` to 3 hours |
+| 1.8.8 | 2025-11-10 | [69257](https://github.com/airbytehq/airbyte/pull/69257) | Update error message when file exceeds size limit |
 | 1.8.6 | 2025-10-14 | [67923](https://github.com/airbytehq/airbyte/pull/67923) | Update dependencies |
 | 1.8.5 | 2025-10-07 | [67234](https://github.com/airbytehq/airbyte/pull/67234) | Update dependencies |
 | 1.8.4 | 2025-09-30 | [66868](https://github.com/airbytehq/airbyte/pull/66868) | Update dependencies |
