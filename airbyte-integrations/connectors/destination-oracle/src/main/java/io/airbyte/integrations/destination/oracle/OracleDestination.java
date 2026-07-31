@@ -85,7 +85,7 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
   public ConnectorSpecification spec() throws Exception {
     final ConnectorSpecification spec = Jsons.clone(super.spec());
     if (cloudDeploymentMode()) {
-      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("encryption");
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.ENCRYPTION_KEY);
     }
     return spec;
   }
