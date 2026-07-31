@@ -125,7 +125,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.3.0 | 2026-02-04 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove strict-encrypt variant; use environment-aware TLS enforcement |
+| 0.3.0 | 2026-07-31 | [72812](https://github.com/airbytehq/airbyte/pull/72812) | Remove strict-encrypt variant; use environment-aware TLS enforcement |
 | 0.2.0 | 2023-06-27 | [27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2 |
 | 0.1.9 | 2022-11-08 | [18892](https://github.com/airbytehq/airbyte/pull/18892) | Adds check for TLS flag |
 | 0.1.8 | 2022-10-26 | [18280](https://github.com/airbytehq/airbyte/pull/18280) | Adds SSH tunneling |
