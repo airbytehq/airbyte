@@ -1,6 +1,12 @@
 {
   "trailingSlash": false,
+  "cleanUrls": true,
   "redirects": [
+    {
+      "source": "/ai-agents/interfaces/ui/automations",
+      "destination": "/ai-agents/interfaces/ui",
+      "statusCode": 308
+    },
     {
       "source": "/release_notes/v-2.1",
       "destination": "/release_notes/self-managed/v-2.1",
@@ -343,7 +349,52 @@
     },
     {
       "source": "/enterprise-setup/self-managed/implementation-guide",
-      "destination": "/platform/enterprise-setup/implementation-guide",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/implementation-guide",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/multi-region",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/audit-logging",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/scaling-airbyte",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/upgrade-service-account",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/upgrading-from-community",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/chart-v2-enterprise",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/enterprise-setup/api-access-config",
+      "destination": "/platform/enterprise-setup",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/operator-guides/open-telemetry",
+      "destination": "/platform/enterprise-setup",
       "statusCode": 301
     },
     {

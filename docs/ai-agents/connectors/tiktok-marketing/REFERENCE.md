@@ -15,10 +15,14 @@ The Tiktok-Marketing connector supports the following entities and actions.
 | Audiences | [List](#audiences-list), [Context Store Search](#audiences-context-store-search) |
 | Creative Assets Images | [List](#creative-assets-images-list), [Context Store Search](#creative-assets-images-context-store-search) |
 | Creative Assets Videos | [List](#creative-assets-videos-list), [Context Store Search](#creative-assets-videos-context-store-search) |
+| Spark Ads | [List](#spark-ads-list), [Context Store Search](#spark-ads-context-store-search) |
+| Catalogs | [List](#catalogs-list) |
 | Advertisers Reports Daily | [List](#advertisers-reports-daily-list), [Context Store Search](#advertisers-reports-daily-context-store-search) |
 | Campaigns Reports Daily | [List](#campaigns-reports-daily-list), [Context Store Search](#campaigns-reports-daily-context-store-search) |
 | Ad Groups Reports Daily | [List](#ad-groups-reports-daily-list), [Context Store Search](#ad-groups-reports-daily-context-store-search) |
 | Ads Reports Daily | [List](#ads-reports-daily-list), [Context Store Search](#ads-reports-daily-context-store-search) |
+| Ads Reports Hourly | [List](#ads-reports-hourly-list), [Context Store Search](#ads-reports-hourly-context-store-search) |
+| Ads Reports Lifetime | [List](#ads-reports-lifetime-list), [Context Store Search](#ads-reports-lifetime-context-store-search) |
 
 ## Advertisers
 
@@ -1501,6 +1505,243 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+## Spark Ads
+
+### Spark Ads List
+
+Get Spark Ad posts that have been authorized to an ad account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "spark_ads",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.spark_ads.list(
+    advertiser_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spark_ads",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `item_info` | `null \| object` |  |
+| `user_info` | `null \| object` |  |
+| `auth_info` | `null \| object` |  |
+| `video_info` | `null \| object` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Spark Ads Context Store Search
+
+Search and filter spark ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "spark_ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "item_info": {}
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.spark_ads.context_store_search(
+    query={"filter": {"eq": {"item_info": {}}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "spark_ads",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"item_info": {}}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `item_info` | `object` | Information about the Spark Ads post including item_id, auth_code, text, status, and item_type. |
+| `user_info` | `object` | Information about the TikTok account including tiktok_name, identity_id, and identity_type. |
+| `auth_info` | `object` | Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status. |
+| `video_info` | `object` | Video post details including duration, preview_url, poster_url, height, width, and size. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].item_info` | `object` | Information about the Spark Ads post including item_id, auth_code, text, status, and item_type. |
+| `data[].user_info` | `object` | Information about the TikTok account including tiktok_name, identity_id, and identity_type. |
+| `data[].auth_info` | `object` | Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status. |
+| `data[].video_info` | `object` | Video post details including duration, preview_url, poster_url, height, width, and size. |
+
+</details>
+
+## Catalogs
+
+### Catalogs List
+
+Get product catalogs for an advertiser
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "catalogs",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.catalogs.list(
+    advertiser_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "catalogs",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `bc_id` | `string` | No | Business Center ID. Required by the TikTok API to scope catalog results. |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `catalog_id` | `null \| string` |  |
+| `catalog_name` | `null \| string` |  |
+| `advertiser_id` | `null \| string` |  |
+| `catalog_type` | `null \| string` |  |
+| `catalog_status` | `null \| string` |  |
+| `product_count` | `null \| integer` |  |
+| `create_time` | `null \| string` |  |
+| `modify_time` | `null \| string` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
 ## Advertisers Reports Daily
 
 ### Advertisers Reports Daily List
@@ -2625,6 +2866,657 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].ad_id` | `integer` | The unique identifier for the ad. |
 | `data[].stat_time_day` | `string` | The date for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].adgroup_name` | `string` | The name of the ad group. |
+| `data[].adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `data[].ad_name` | `string` | The name of the ad. |
+| `data[].ad_text` | `string` | The text content of the ad. |
+| `data[].placement_type` | `string` | Type of ad placement. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].conversion` | `string` | Number of conversions. |
+| `data[].cost_per_conversion` | `string` | Cost per conversion. |
+| `data[].conversion_rate` | `string` | Rate of conversions. |
+| `data[].real_time_conversion` | `string` | Real-time conversions. |
+| `data[].real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `data[].real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `data[].result` | `string` | Number of results. |
+| `data[].cost_per_result` | `string` | Cost per result. |
+| `data[].result_rate` | `string` | Rate of results. |
+| `data[].real_time_result` | `string` | Real-time results. |
+| `data[].real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `data[].real_time_result_rate` | `string` | Real-time result rate. |
+| `data[].secondary_goal_result` | `string` | Results for secondary goals. |
+| `data[].cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `data[].secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+## Ads Reports Hourly
+
+### Ads Reports Hourly List
+
+Get hourly performance reports at the ad level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_hourly",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_hourly.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_hourly",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `null \| integer` |  |
+| `stat_time_hour` | `null \| string` |  |
+| `campaign_name` | `null \| string` |  |
+| `campaign_id` | `null \| integer` |  |
+| `adgroup_name` | `null \| string` |  |
+| `adgroup_id` | `null \| integer` |  |
+| `ad_name` | `null \| string` |  |
+| `ad_text` | `null \| string` |  |
+| `placement_type` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `conversion` | `null \| string` |  |
+| `cost_per_conversion` | `null \| string` |  |
+| `conversion_rate` | `null \| string` |  |
+| `real_time_conversion` | `null \| string` |  |
+| `real_time_cost_per_conversion` | `null \| string` |  |
+| `real_time_conversion_rate` | `null \| string` |  |
+| `result` | `null \| string` |  |
+| `cost_per_result` | `null \| string` |  |
+| `result_rate` | `null \| string` |  |
+| `real_time_result` | `null \| string` |  |
+| `real_time_cost_per_result` | `null \| string` |  |
+| `real_time_result_rate` | `null \| string` |  |
+| `secondary_goal_result` | `null \| string` |  |
+| `cost_per_secondary_goal_result` | `null \| string` |  |
+| `secondary_goal_result_rate` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Ads Reports Hourly Context Store Search
+
+Search and filter ads reports hourly records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_hourly",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_hourly.context_store_search(
+    query={"filter": {"eq": {"ad_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_hourly",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"ad_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `integer` | The unique identifier for the ad. |
+| `stat_time_hour` | `string` | The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `adgroup_name` | `string` | The name of the ad group. |
+| `adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `ad_name` | `string` | The name of the ad. |
+| `ad_text` | `string` | The text content of the ad. |
+| `placement_type` | `string` | Type of ad placement. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `conversion` | `string` | Number of conversions. |
+| `cost_per_conversion` | `string` | Cost per conversion. |
+| `conversion_rate` | `string` | Rate of conversions. |
+| `real_time_conversion` | `string` | Real-time conversions. |
+| `real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `result` | `string` | Number of results. |
+| `cost_per_result` | `string` | Cost per result. |
+| `result_rate` | `string` | Rate of results. |
+| `real_time_result` | `string` | Real-time results. |
+| `real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `real_time_result_rate` | `string` | Real-time result rate. |
+| `secondary_goal_result` | `string` | Results for secondary goals. |
+| `cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].ad_id` | `integer` | The unique identifier for the ad. |
+| `data[].stat_time_hour` | `string` | The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format). |
+| `data[].campaign_name` | `string` | The name of the marketing campaign. |
+| `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
+| `data[].adgroup_name` | `string` | The name of the ad group. |
+| `data[].adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `data[].ad_name` | `string` | The name of the ad. |
+| `data[].ad_text` | `string` | The text content of the ad. |
+| `data[].placement_type` | `string` | Type of ad placement. |
+| `data[].spend` | `string` | Total amount of money spent. |
+| `data[].cpc` | `string` | Cost per click. |
+| `data[].cpm` | `string` | Cost per thousand impressions. |
+| `data[].impressions` | `string` | Number of times the ad was displayed. |
+| `data[].clicks` | `string` | Number of clicks on the ad. |
+| `data[].ctr` | `string` | Click-through rate. |
+| `data[].reach` | `string` | Total number of unique users reached. |
+| `data[].cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `data[].conversion` | `string` | Number of conversions. |
+| `data[].cost_per_conversion` | `string` | Cost per conversion. |
+| `data[].conversion_rate` | `string` | Rate of conversions. |
+| `data[].real_time_conversion` | `string` | Real-time conversions. |
+| `data[].real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `data[].real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `data[].result` | `string` | Number of results. |
+| `data[].cost_per_result` | `string` | Cost per result. |
+| `data[].result_rate` | `string` | Rate of results. |
+| `data[].real_time_result` | `string` | Real-time results. |
+| `data[].real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `data[].real_time_result_rate` | `string` | Real-time result rate. |
+| `data[].secondary_goal_result` | `string` | Results for secondary goals. |
+| `data[].cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `data[].secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `data[].frequency` | `string` | Average number of times each person saw the ad. |
+| `data[].video_play_actions` | `number` | Number of video play actions. |
+| `data[].video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `data[].video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `data[].average_video_play` | `number` | Average video play duration. |
+| `data[].average_video_play_per_user` | `number` | Average video play duration per user. |
+| `data[].video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `data[].video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `data[].video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `data[].video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `data[].profile_visits` | `number` | Number of profile visits. |
+| `data[].likes` | `number` | Number of likes. |
+| `data[].comments` | `number` | Number of comments. |
+| `data[].shares` | `number` | Number of shares. |
+| `data[].follows` | `number` | Number of follows. |
+| `data[].clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `data[].real_time_app_install` | `number` | Real-time app installations. |
+| `data[].real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `data[].app_install` | `number` | Number of app installations. |
+
+</details>
+
+## Ads Reports Lifetime
+
+### Ads Reports Lifetime List
+
+Get lifetime performance reports at the ad level
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_lifetime",
+  "action": "list",
+  "params": {
+    "advertiser_id": "<str>",
+    "service_type": "<str>",
+    "report_type": "<str>",
+    "data_level": "<str>",
+    "dimensions": "<str>",
+    "metrics": "<str>",
+    "start_date": "<str>",
+    "end_date": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_lifetime.list(
+    advertiser_id="<str>",
+    service_type="<str>",
+    report_type="<str>",
+    data_level="<str>",
+    dimensions="<str>",
+    metrics="<str>",
+    start_date="<str>",
+    end_date="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_lifetime",
+    "action": "list",
+    "params": {
+        "advertiser_id": "<str>",
+        "service_type": "<str>",
+        "report_type": "<str>",
+        "data_level": "<str>",
+        "dimensions": "<str>",
+        "metrics": "<str>",
+        "start_date": "<str>",
+        "end_date": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `advertiser_id` | `string` | Yes | Advertiser ID |
+| `service_type` | `string` | Yes | Service type |
+| `report_type` | `string` | Yes | Report type |
+| `data_level` | `string` | Yes | Data level for the report |
+| `dimensions` | `string` | Yes | Dimensions for the report (JSON array) |
+| `metrics` | `string` | Yes | Metrics to retrieve (JSON array) |
+| `start_date` | `string` | Yes | Report start date (YYYY-MM-DD) |
+| `end_date` | `string` | Yes | Report end date (YYYY-MM-DD) |
+| `page` | `integer` | No | Page number |
+| `page_size` | `integer` | No | Number of items per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `null \| integer` |  |
+| `campaign_name` | `null \| string` |  |
+| `campaign_id` | `null \| integer` |  |
+| `adgroup_name` | `null \| string` |  |
+| `adgroup_id` | `null \| integer` |  |
+| `ad_name` | `null \| string` |  |
+| `ad_text` | `null \| string` |  |
+| `placement_type` | `null \| string` |  |
+| `spend` | `null \| string` |  |
+| `cpc` | `null \| string` |  |
+| `cpm` | `null \| string` |  |
+| `impressions` | `null \| string` |  |
+| `clicks` | `null \| string` |  |
+| `ctr` | `null \| string` |  |
+| `reach` | `null \| string` |  |
+| `cost_per_1000_reached` | `null \| string` |  |
+| `conversion` | `null \| string` |  |
+| `cost_per_conversion` | `null \| string` |  |
+| `conversion_rate` | `null \| string` |  |
+| `real_time_conversion` | `null \| string` |  |
+| `real_time_cost_per_conversion` | `null \| string` |  |
+| `real_time_conversion_rate` | `null \| string` |  |
+| `result` | `null \| string` |  |
+| `cost_per_result` | `null \| string` |  |
+| `result_rate` | `null \| string` |  |
+| `real_time_result` | `null \| string` |  |
+| `real_time_cost_per_result` | `null \| string` |  |
+| `real_time_result_rate` | `null \| string` |  |
+| `secondary_goal_result` | `null \| string` |  |
+| `cost_per_secondary_goal_result` | `null \| string` |  |
+| `secondary_goal_result_rate` | `null \| string` |  |
+| `frequency` | `null \| string` |  |
+| `video_play_actions` | `null \| number` |  |
+| `video_watched_2s` | `null \| number` |  |
+| `video_watched_6s` | `null \| number` |  |
+| `average_video_play` | `null \| number` |  |
+| `average_video_play_per_user` | `null \| number` |  |
+| `video_views_p25` | `null \| number` |  |
+| `video_views_p50` | `null \| number` |  |
+| `video_views_p75` | `null \| number` |  |
+| `video_views_p100` | `null \| number` |  |
+| `profile_visits` | `null \| number` |  |
+| `likes` | `null \| number` |  |
+| `comments` | `null \| number` |  |
+| `shares` | `null \| number` |  |
+| `follows` | `null \| number` |  |
+| `clicks_on_music_disc` | `null \| number` |  |
+| `real_time_app_install` | `null \| number` |  |
+| `real_time_app_install_cost` | `null \| number` |  |
+| `app_install` | `null \| number` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `page_info` | `object` |  |
+
+</details>
+
+### Ads Reports Lifetime Context Store Search
+
+Search and filter ads reports lifetime records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "tiktok-marketing",
+  "entity": "ads_reports_lifetime",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await tiktok_marketing.ads_reports_lifetime.context_store_search(
+    query={"filter": {"eq": {"ad_id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ads_reports_lifetime",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"ad_id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `ad_id` | `integer` | The unique identifier for the ad. |
+| `campaign_name` | `string` | The name of the marketing campaign. |
+| `campaign_id` | `integer` | The unique identifier for the campaign. |
+| `adgroup_name` | `string` | The name of the ad group. |
+| `adgroup_id` | `integer` | The unique identifier for the ad group. |
+| `ad_name` | `string` | The name of the ad. |
+| `ad_text` | `string` | The text content of the ad. |
+| `placement_type` | `string` | Type of ad placement. |
+| `spend` | `string` | Total amount of money spent. |
+| `cpc` | `string` | Cost per click. |
+| `cpm` | `string` | Cost per thousand impressions. |
+| `impressions` | `string` | Number of times the ad was displayed. |
+| `clicks` | `string` | Number of clicks on the ad. |
+| `ctr` | `string` | Click-through rate. |
+| `reach` | `string` | Total number of unique users reached. |
+| `cost_per_1000_reached` | `string` | Cost per 1000 unique users reached. |
+| `conversion` | `string` | Number of conversions. |
+| `cost_per_conversion` | `string` | Cost per conversion. |
+| `conversion_rate` | `string` | Rate of conversions. |
+| `real_time_conversion` | `string` | Real-time conversions. |
+| `real_time_cost_per_conversion` | `string` | Real-time cost per conversion. |
+| `real_time_conversion_rate` | `string` | Real-time conversion rate. |
+| `result` | `string` | Number of results. |
+| `cost_per_result` | `string` | Cost per result. |
+| `result_rate` | `string` | Rate of results. |
+| `real_time_result` | `string` | Real-time results. |
+| `real_time_cost_per_result` | `string` | Real-time cost per result. |
+| `real_time_result_rate` | `string` | Real-time result rate. |
+| `secondary_goal_result` | `string` | Results for secondary goals. |
+| `cost_per_secondary_goal_result` | `string` | Cost per secondary goal result. |
+| `secondary_goal_result_rate` | `string` | Rate of secondary goal results. |
+| `frequency` | `string` | Average number of times each person saw the ad. |
+| `video_play_actions` | `number` | Number of video play actions. |
+| `video_watched_2s` | `number` | Number of times video was watched for at least 2 seconds. |
+| `video_watched_6s` | `number` | Number of times video was watched for at least 6 seconds. |
+| `average_video_play` | `number` | Average video play duration. |
+| `average_video_play_per_user` | `number` | Average video play duration per user. |
+| `video_views_p25` | `number` | Number of times video was watched to 25%. |
+| `video_views_p50` | `number` | Number of times video was watched to 50%. |
+| `video_views_p75` | `number` | Number of times video was watched to 75%. |
+| `video_views_p100` | `number` | Number of times video was watched to 100%. |
+| `profile_visits` | `number` | Number of profile visits. |
+| `likes` | `number` | Number of likes. |
+| `comments` | `number` | Number of comments. |
+| `shares` | `number` | Number of shares. |
+| `follows` | `number` | Number of follows. |
+| `clicks_on_music_disc` | `number` | Number of clicks on the music disc. |
+| `real_time_app_install` | `number` | Real-time app installations. |
+| `real_time_app_install_cost` | `number` | Cost of real-time app installations. |
+| `app_install` | `number` | Number of app installations. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].ad_id` | `integer` | The unique identifier for the ad. |
 | `data[].campaign_name` | `string` | The name of the marketing campaign. |
 | `data[].campaign_id` | `integer` | The unique identifier for the campaign. |
 | `data[].adgroup_name` | `string` | The name of the ad group. |

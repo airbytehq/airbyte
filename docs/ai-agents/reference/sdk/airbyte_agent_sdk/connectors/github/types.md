@@ -91,9 +91,6 @@ Classes
     `name: Any`
     :   Branch name (e.g. `main`, `feature/foo`)
 
-    `prefix: Any`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
-
 <a id="BranchesContainsCondition"></a>
 
 `BranchesContainsCondition(*args, **kwargs)`
@@ -222,9 +219,6 @@ Classes
 
     `name: list[str]`
     :   Branch name (e.g. `main`, `feature/foo`)
-
-    `prefix: list[str]`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
 
 <a id="BranchesKeywordCondition"></a>
 
@@ -380,9 +374,6 @@ Classes
     `name: str | None`
     :   Branch name (e.g. `main`, `feature/foo`)
 
-    `prefix: str | None`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
-
 <a id="BranchesSearchQuery"></a>
 
 `BranchesSearchQuery(*args, **kwargs)`
@@ -414,9 +405,6 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Branch name (e.g. `main`, `feature/foo`)
 
-    `prefix: Literal['asc', 'desc']`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
-
 <a id="BranchesStringFilter"></a>
 
 `BranchesStringFilter(*args, **kwargs)`
@@ -430,9 +418,6 @@ Classes
 
     `name: str`
     :   Branch name (e.g. `main`, `feature/foo`)
-
-    `prefix: str`
-    :   Git ref prefix for the branch (typically `refs/heads/`)
 
 <a id="CommentsAndCondition"></a>
 
@@ -500,9 +485,6 @@ Classes
 
     `id: Any`
     :   GraphQL node ID of the comment
-
-    `is_minimized: Any`
-    :   Whether the comment has been hidden/collapsed
 
     `updated_at: Any`
     :   ISO 8601 timestamp when the comment was last updated
@@ -664,9 +646,6 @@ Classes
 
     `id: list[str]`
     :   GraphQL node ID of the comment
-
-    `is_minimized: list[bool]`
-    :   Whether the comment has been hidden/collapsed
 
     `updated_at: list[str]`
     :   ISO 8601 timestamp when the comment was last updated
@@ -840,9 +819,6 @@ Classes
     `id: str | None`
     :   GraphQL node ID of the comment
 
-    `is_minimized: bool | None`
-    :   Whether the comment has been hidden/collapsed
-
     `updated_at: str | None`
     :   ISO 8601 timestamp when the comment was last updated
 
@@ -889,9 +865,6 @@ Classes
     `id: Literal['asc', 'desc']`
     :   GraphQL node ID of the comment
 
-    `is_minimized: Literal['asc', 'desc']`
-    :   Whether the comment has been hidden/collapsed
-
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the comment was last updated
 
@@ -920,9 +893,6 @@ Classes
 
     `id: str`
     :   GraphQL node ID of the comment
-
-    `is_minimized: str`
-    :   Whether the comment has been hidden/collapsed
 
     `updated_at: str`
     :   ISO 8601 timestamp when the comment was last updated
@@ -985,31 +955,10 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: Any`
-    :   Abbreviated Git commit SHA (typically 7 characters)
+    `created_at: Any`
+    :   ISO 8601 timestamp of the commit
 
-    `additions: Any`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: Any`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: Any`
-    :   Number of files changed in the commit
-
-    `committed_date: Any`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: Any`
-    :   Number of lines deleted across all files in the commit
-
-    `message: Any`
-    :   Full commit message
-
-    `message_headline: Any`
-    :   First line of the commit message
-
-    `oid: Any`
+    `sha: Any`
     :   Full Git commit SHA
 
     `url: Any`
@@ -1141,31 +1090,10 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: list[str]`
-    :   Abbreviated Git commit SHA (typically 7 characters)
+    `created_at: list[str]`
+    :   ISO 8601 timestamp of the commit
 
-    `additions: list[int]`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: list[str]`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: list[int]`
-    :   Number of files changed in the commit
-
-    `committed_date: list[str]`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: list[int]`
-    :   Number of lines deleted across all files in the commit
-
-    `message: list[str]`
-    :   Full commit message
-
-    `message_headline: list[str]`
-    :   First line of the commit message
-
-    `oid: list[str]`
+    `sha: list[str]`
     :   Full Git commit SHA
 
     `url: list[str]`
@@ -1325,31 +1253,10 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: str | None`
-    :   Abbreviated Git commit SHA (typically 7 characters)
+    `created_at: str | None`
+    :   ISO 8601 timestamp of the commit
 
-    `additions: int | None`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: str | None`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: int | None`
-    :   Number of files changed in the commit
-
-    `committed_date: str | None`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: int | None`
-    :   Number of lines deleted across all files in the commit
-
-    `message: str | None`
-    :   Full commit message
-
-    `message_headline: str | None`
-    :   First line of the commit message
-
-    `oid: str | None`
+    `sha: str | None`
     :   Full Git commit SHA
 
     `url: str | None`
@@ -1383,31 +1290,10 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: Literal['asc', 'desc']`
-    :   Abbreviated Git commit SHA (typically 7 characters)
+    `created_at: Literal['asc', 'desc']`
+    :   ISO 8601 timestamp of the commit
 
-    `additions: Literal['asc', 'desc']`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: Literal['asc', 'desc']`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: Literal['asc', 'desc']`
-    :   Number of files changed in the commit
-
-    `committed_date: Literal['asc', 'desc']`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: Literal['asc', 'desc']`
-    :   Number of lines deleted across all files in the commit
-
-    `message: Literal['asc', 'desc']`
-    :   Full commit message
-
-    `message_headline: Literal['asc', 'desc']`
-    :   First line of the commit message
-
-    `oid: Literal['asc', 'desc']`
+    `sha: Literal['asc', 'desc']`
     :   Full Git commit SHA
 
     `url: Literal['asc', 'desc']`
@@ -1424,31 +1310,10 @@ Classes
 
     ### Class variables
 
-    `abbreviated_oid: str`
-    :   Abbreviated Git commit SHA (typically 7 characters)
+    `created_at: str`
+    :   ISO 8601 timestamp of the commit
 
-    `additions: str`
-    :   Number of lines added across all files in the commit
-
-    `authored_date: str`
-    :   ISO 8601 timestamp when the commit was originally authored
-
-    `changed_files: str`
-    :   Number of files changed in the commit
-
-    `committed_date: str`
-    :   ISO 8601 timestamp when the commit was applied to its tree
-
-    `deletions: str`
-    :   Number of lines deleted across all files in the commit
-
-    `message: str`
-    :   Full commit message
-
-    `message_headline: str`
-    :   First line of the commit message
-
-    `oid: str`
+    `sha: str`
     :   Full Git commit SHA
 
     `url: str`
@@ -2594,10 +2459,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: Any`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: Any`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: Any`
     :   Issue title
@@ -2808,10 +2673,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: list[str]`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: list[str]`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: list[str]`
     :   Issue title
@@ -2995,10 +2860,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: str | None`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: str | None`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: str | None`
     :   Issue title
@@ -3056,10 +2921,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: Literal['asc', 'desc']`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: Literal['asc', 'desc']`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: Literal['asc', 'desc']`
     :   Issue title
@@ -3100,10 +2965,10 @@ Classes
     :   Repository-scoped issue number
 
     `state: str`
-    :   Issue state: `OPEN` or `CLOSED`
+    :   Issue state in the cache: lowercase `open` or `closed`
 
     `state_reason: str`
-    :   Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`)
+    :   Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase.
 
     `title: str`
     :   Issue title
@@ -3213,9 +3078,6 @@ Classes
     `color: Any`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: Any`
-    :   ISO 8601 timestamp when the label was created
-
     `description: Any`
     :   Short description of what the label is used for
 
@@ -3226,7 +3088,7 @@ Classes
     :   Label name
 
     `url: Any`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="LabelsContainsCondition"></a>
 
@@ -3357,9 +3219,6 @@ Classes
     `color: list[str]`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: list[str]`
-    :   ISO 8601 timestamp when the label was created
-
     `description: list[str]`
     :   Short description of what the label is used for
 
@@ -3370,7 +3229,7 @@ Classes
     :   Label name
 
     `url: list[str]`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="LabelsKeywordCondition"></a>
 
@@ -3526,9 +3385,6 @@ Classes
     `color: str | None`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the label was created
-
     `description: str | None`
     :   Short description of what the label is used for
 
@@ -3539,7 +3395,7 @@ Classes
     :   Label name
 
     `url: str | None`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="LabelsSearchQuery"></a>
 
@@ -3572,9 +3428,6 @@ Classes
     `color: Literal['asc', 'desc']`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: Literal['asc', 'desc']`
-    :   ISO 8601 timestamp when the label was created
-
     `description: Literal['asc', 'desc']`
     :   Short description of what the label is used for
 
@@ -3585,7 +3438,7 @@ Classes
     :   Label name
 
     `url: Literal['asc', 'desc']`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="LabelsStringFilter"></a>
 
@@ -3601,9 +3454,6 @@ Classes
     `color: str`
     :   Label color as a 6-character hex string without a leading `#`
 
-    `created_at: str`
-    :   ISO 8601 timestamp when the label was created
-
     `description: str`
     :   Short description of what the label is used for
 
@@ -3614,7 +3464,7 @@ Classes
     :   Label name
 
     `url: str`
-    :   Permalink to the label on GitHub
+    :   API URL to the label resource
 
 <a id="MilestonesAndCondition"></a>
 
@@ -3689,11 +3539,8 @@ Classes
     `number: Any`
     :   Repository-scoped milestone number
 
-    `progress_percentage: Any`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: Any`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: Any`
     :   Milestone title
@@ -3845,11 +3692,8 @@ Classes
     `number: list[int]`
     :   Repository-scoped milestone number
 
-    `progress_percentage: list[float]`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: list[str]`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: list[str]`
     :   Milestone title
@@ -4029,11 +3873,8 @@ Classes
     `number: int | None`
     :   Repository-scoped milestone number
 
-    `progress_percentage: float | None`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: str | None`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: str | None`
     :   Milestone title
@@ -4087,11 +3928,8 @@ Classes
     `number: Literal['asc', 'desc']`
     :   Repository-scoped milestone number
 
-    `progress_percentage: Literal['asc', 'desc']`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: Literal['asc', 'desc']`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: Literal['asc', 'desc']`
     :   Milestone title
@@ -4128,11 +3966,8 @@ Classes
     `number: str`
     :   Repository-scoped milestone number
 
-    `progress_percentage: str`
-    :   Percentage of associated issues/PRs that are closed
-
     `state: str`
-    :   Milestone state: `OPEN` or `CLOSED`
+    :   Milestone state in the cache: lowercase `open` or `closed`
 
     `title: str`
     :   Milestone title
@@ -6223,9 +6058,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: Any`
-    :   Name of the branch being merged into
-
     `closed_at: Any`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6235,17 +6067,11 @@ Classes
     `database_id: Any`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: Any`
-    :   Name of the branch with the proposed changes
-
     `id: Any`
     :   GraphQL node ID of the pull request
 
     `is_draft: Any`
     :   Whether the pull request is still a draft
-
-    `merged: Any`
-    :   Whether the pull request has been merged
 
     `merged_at: Any`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -6254,7 +6080,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: Any`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: Any`
     :   Pull request title
@@ -6449,9 +6275,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: list[str]`
-    :   Name of the branch being merged into
-
     `closed_at: list[str]`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6461,17 +6284,11 @@ Classes
     `database_id: list[int]`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: list[str]`
-    :   Name of the branch with the proposed changes
-
     `id: list[str]`
     :   GraphQL node ID of the pull request
 
     `is_draft: list[bool]`
     :   Whether the pull request is still a draft
-
-    `merged: list[bool]`
-    :   Whether the pull request has been merged
 
     `merged_at: list[str]`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -6480,7 +6297,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: list[str]`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: list[str]`
     :   Pull request title
@@ -6645,9 +6462,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: str | None`
-    :   Name of the branch being merged into
-
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6657,17 +6471,11 @@ Classes
     `database_id: int | None`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: str | None`
-    :   Name of the branch with the proposed changes
-
     `id: str | None`
     :   GraphQL node ID of the pull request
 
     `is_draft: bool | None`
     :   Whether the pull request is still a draft
-
-    `merged: bool | None`
-    :   Whether the pull request has been merged
 
     `merged_at: str | None`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -6676,7 +6484,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: str | None`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: str | None`
     :   Pull request title
@@ -6715,9 +6523,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: Literal['asc', 'desc']`
-    :   Name of the branch being merged into
-
     `closed_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6727,17 +6532,11 @@ Classes
     `database_id: Literal['asc', 'desc']`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: Literal['asc', 'desc']`
-    :   Name of the branch with the proposed changes
-
     `id: Literal['asc', 'desc']`
     :   GraphQL node ID of the pull request
 
     `is_draft: Literal['asc', 'desc']`
     :   Whether the pull request is still a draft
-
-    `merged: Literal['asc', 'desc']`
-    :   Whether the pull request has been merged
 
     `merged_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -6746,7 +6545,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: Literal['asc', 'desc']`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: Literal['asc', 'desc']`
     :   Pull request title
@@ -6768,9 +6567,6 @@ Classes
 
     ### Class variables
 
-    `base_ref_name: str`
-    :   Name of the branch being merged into
-
     `closed_at: str`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6780,17 +6576,11 @@ Classes
     `database_id: str`
     :   REST API numeric identifier for the pull request
 
-    `head_ref_name: str`
-    :   Name of the branch with the proposed changes
-
     `id: str`
     :   GraphQL node ID of the pull request
 
     `is_draft: str`
     :   Whether the pull request is still a draft
-
-    `merged: str`
-    :   Whether the pull request has been merged
 
     `merged_at: str`
     :   ISO 8601 timestamp when the pull request was merged, if applicable
@@ -6799,7 +6589,7 @@ Classes
     :   Repository-scoped pull request number
 
     `state: str`
-    :   Pull request state: `OPEN`, `CLOSED`, or `MERGED`
+    :   Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs)
 
     `title: str`
     :   Pull request title
@@ -7982,7 +7772,7 @@ Classes
     :   GraphQL node ID of the review
 
     `state: Any`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: Any`
     :   ISO 8601 timestamp when the review was submitted
@@ -8109,7 +7899,7 @@ Classes
     :   GraphQL node ID of the review
 
     `state: list[str]`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: list[str]`
     :   ISO 8601 timestamp when the review was submitted
@@ -8287,7 +8077,7 @@ Classes
     :   GraphQL node ID of the review
 
     `state: str | None`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: str | None`
     :   ISO 8601 timestamp when the review was submitted
@@ -8339,7 +8129,7 @@ Classes
     :   GraphQL node ID of the review
 
     `state: Literal['asc', 'desc']`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the review was submitted
@@ -8374,7 +8164,7 @@ Classes
     :   GraphQL node ID of the review
 
     `state: str`
-    :   Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
+    :   Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED`
 
     `submitted_at: str`
     :   ISO 8601 timestamp when the review was submitted
@@ -8806,9 +8596,6 @@ Classes
     `name: Any`
     :   Tag name (e.g. `v1.2.3`)
 
-    `prefix: Any`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
-
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
@@ -8937,9 +8724,6 @@ Classes
 
     `name: list[str]`
     :   Tag name (e.g. `v1.2.3`)
-
-    `prefix: list[str]`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
 
 <a id="TagsKeywordCondition"></a>
 
@@ -9095,9 +8879,6 @@ Classes
     `name: str | None`
     :   Tag name (e.g. `v1.2.3`)
 
-    `prefix: str | None`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
-
 <a id="TagsSearchQuery"></a>
 
 `TagsSearchQuery(*args, **kwargs)`
@@ -9129,9 +8910,6 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Tag name (e.g. `v1.2.3`)
 
-    `prefix: Literal['asc', 'desc']`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
-
 <a id="TagsStringFilter"></a>
 
 `TagsStringFilter(*args, **kwargs)`
@@ -9145,9 +8923,6 @@ Classes
 
     `name: str`
     :   Tag name (e.g. `v1.2.3`)
-
-    `prefix: str`
-    :   Git ref prefix for the tag (typically `refs/tags/`)
 
 <a id="TeamsAndCondition"></a>
 
@@ -9204,9 +8979,6 @@ Classes
 
     ### Class variables
 
-    `created_at: Any`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: Any`
     :   REST API numeric identifier for the team
 
@@ -9220,13 +8992,10 @@ Classes
     :   Display name of the team
 
     `privacy: Any`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: Any`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: Any`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: Any`
     :   Permalink to the team on GitHub
@@ -9354,9 +9123,6 @@ Classes
 
     ### Class variables
 
-    `created_at: list[str]`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: list[int]`
     :   REST API numeric identifier for the team
 
@@ -9370,13 +9136,10 @@ Classes
     :   Display name of the team
 
     `privacy: list[str]`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: list[str]`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: list[str]`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: list[str]`
     :   Permalink to the team on GitHub
@@ -9529,9 +9292,6 @@ Classes
 
     ### Class variables
 
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: int | None`
     :   REST API numeric identifier for the team
 
@@ -9545,13 +9305,10 @@ Classes
     :   Display name of the team
 
     `privacy: str | None`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: str | None`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: str | None`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: str | None`
     :   Permalink to the team on GitHub
@@ -9584,9 +9341,6 @@ Classes
 
     ### Class variables
 
-    `created_at: Literal['asc', 'desc']`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: Literal['asc', 'desc']`
     :   REST API numeric identifier for the team
 
@@ -9600,13 +9354,10 @@ Classes
     :   Display name of the team
 
     `privacy: Literal['asc', 'desc']`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: Literal['asc', 'desc']`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: Literal['asc', 'desc']`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: Literal['asc', 'desc']`
     :   Permalink to the team on GitHub
@@ -9622,9 +9373,6 @@ Classes
 
     ### Class variables
 
-    `created_at: str`
-    :   ISO 8601 timestamp when the team was created
-
     `database_id: str`
     :   REST API numeric identifier for the team
 
@@ -9638,13 +9386,10 @@ Classes
     :   Display name of the team
 
     `privacy: str`
-    :   Team visibility: `SECRET` or `VISIBLE`
+    :   Team visibility: `secret` or `closed` (REST API values)
 
     `slug: str`
     :   URL-friendly slug for the team within its organization
-
-    `updated_at: str`
-    :   ISO 8601 timestamp when the team was last updated
 
     `url: str`
     :   Permalink to the team on GitHub
@@ -9704,35 +9449,14 @@ Classes
 
     ### Class variables
 
-    `company: Any`
-    :   Public company affiliation of the user, if set
-
-    `created_at: Any`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: Any`
     :   REST API numeric identifier for the user
-
-    `email: Any`
-    :   Public email address of the user, if set
 
     `id: Any`
     :   GraphQL node ID of the user
 
-    `is_hireable: Any`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: Any`
-    :   Public location of the user, if set
-
     `login: Any`
     :   User login/handle
-
-    `name: Any`
-    :   Public display name of the user, if set
-
-    `twitter_username: Any`
-    :   Public Twitter/X username of the user, if set
 
     `url: Any`
     :   Permalink to the user's profile on GitHub
@@ -9880,35 +9604,14 @@ Classes
 
     ### Class variables
 
-    `company: list[str]`
-    :   Public company affiliation of the user, if set
-
-    `created_at: list[str]`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: list[int]`
     :   REST API numeric identifier for the user
-
-    `email: list[str]`
-    :   Public email address of the user, if set
 
     `id: list[str]`
     :   GraphQL node ID of the user
 
-    `is_hireable: list[bool]`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: list[str]`
-    :   Public location of the user, if set
-
     `login: list[str]`
     :   User login/handle
-
-    `name: list[str]`
-    :   Public display name of the user, if set
-
-    `twitter_username: list[str]`
-    :   Public Twitter/X username of the user, if set
 
     `url: list[str]`
     :   Permalink to the user's profile on GitHub
@@ -10061,35 +9764,14 @@ Classes
 
     ### Class variables
 
-    `company: str | None`
-    :   Public company affiliation of the user, if set
-
-    `created_at: str | None`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: int | None`
     :   REST API numeric identifier for the user
-
-    `email: str | None`
-    :   Public email address of the user, if set
 
     `id: str | None`
     :   GraphQL node ID of the user
 
-    `is_hireable: bool | None`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: str | None`
-    :   Public location of the user, if set
-
     `login: str | None`
     :   User login/handle
-
-    `name: str | None`
-    :   Public display name of the user, if set
-
-    `twitter_username: str | None`
-    :   Public Twitter/X username of the user, if set
 
     `url: str | None`
     :   Permalink to the user's profile on GitHub
@@ -10122,35 +9804,14 @@ Classes
 
     ### Class variables
 
-    `company: Literal['asc', 'desc']`
-    :   Public company affiliation of the user, if set
-
-    `created_at: Literal['asc', 'desc']`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: Literal['asc', 'desc']`
     :   REST API numeric identifier for the user
-
-    `email: Literal['asc', 'desc']`
-    :   Public email address of the user, if set
 
     `id: Literal['asc', 'desc']`
     :   GraphQL node ID of the user
 
-    `is_hireable: Literal['asc', 'desc']`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: Literal['asc', 'desc']`
-    :   Public location of the user, if set
-
     `login: Literal['asc', 'desc']`
     :   User login/handle
-
-    `name: Literal['asc', 'desc']`
-    :   Public display name of the user, if set
-
-    `twitter_username: Literal['asc', 'desc']`
-    :   Public Twitter/X username of the user, if set
 
     `url: Literal['asc', 'desc']`
     :   Permalink to the user's profile on GitHub
@@ -10166,35 +9827,14 @@ Classes
 
     ### Class variables
 
-    `company: str`
-    :   Public company affiliation of the user, if set
-
-    `created_at: str`
-    :   ISO 8601 timestamp when the user account was created
-
     `database_id: str`
     :   REST API numeric identifier for the user
-
-    `email: str`
-    :   Public email address of the user, if set
 
     `id: str`
     :   GraphQL node ID of the user
 
-    `is_hireable: str`
-    :   Whether the user has marked themselves as available for hire
-
-    `location: str`
-    :   Public location of the user, if set
-
     `login: str`
     :   User login/handle
-
-    `name: str`
-    :   Public display name of the user, if set
-
-    `twitter_username: str`
-    :   Public Twitter/X username of the user, if set
 
     `url: str`
     :   Permalink to the user's profile on GitHub

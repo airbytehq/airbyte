@@ -92,7 +92,6 @@ read:board-scope:jira-software
 read:project:jira
 read:sprint:jira-software
 read:application-role:jira
-read:field-configuration:jira
 read:notification-scheme:jira
 read:issue-security-scheme:jira
 read:issue-security-level:jira
@@ -112,7 +111,7 @@ manage:jira-configuration
 You can paste this comma-separated scope list into Atlassian's scope search:
 
 ```text
-read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:field-configuration:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
+read:jira-work,read:jql:jira,read:group:jira,read:project-role:jira,read:issue-details:jira,read:status:jira,read:jira-user,read:user:jira,read:avatar:jira,read:webhook:jira,read:project-category:jira,read:screenable-field:jira,read:screen-field:jira,offline_access,read:board-scope:jira-software,read:project:jira,read:sprint:jira-software,read:application-role:jira,read:notification-scheme:jira,read:issue-security-scheme:jira,read:issue-security-level:jira,read:issue-type-scheme:jira,read:issue-type-screen-scheme:jira,read:permission-scheme:jira,read:screen:jira,read:screen-scheme:jira,read:screen-tab:jira,read:workflow:jira,read:workflow-scheme:jira,read:project.email:jira,read:custom-field-contextual-configuration:jira,manage:jira-configuration
 ```
 
 The service account must also have Jira app access and the project permissions required for the streams you sync. To sync all workflow records, the service account needs the **Administer Jira** global permission.
@@ -138,7 +137,6 @@ This connector outputs the following full refresh streams:
 - [Filter sharing](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get)
 - [Groups](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-groups-picker-get)
 - [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
-- [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 - [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
 - [Issue custom field options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get)
 - [Issue link types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get)
@@ -202,6 +200,7 @@ If you sync the `workflows` stream and upgrade from a version earlier than `5.0.
 
 In the list above, a subset of streams makes one HTTP request per issue. These streams can significantly slow down a sync when you have many issues. If you use one or more of these streams and experience slowness, filter the issue list using the **Projects** configuration field, or remove these streams from the sync.
 
+* Issue changelogs
 * Issue comments
 * Issue properties
 * Issue remote links
@@ -215,11 +214,23 @@ In the list above, a subset of streams makes one HTTP request per issue. These s
 
 ## Troubleshooting
 
-Check out common troubleshooting issues for the Jira connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+### A stream syncs no records or fewer records than you expect
+
+Jira returns only the records the authenticating user or service account can see, so a missing stream is usually a permissions problem rather than a connector problem. Check that the account has Jira app access, the project permissions for the projects you sync, and, for the full `workflows` stream, the **Administer Jira** global permission.
+
+The connector also skips any request that Jira answers with HTTP 400 instead of failing the sync. Jira returns 400 for requests it considers invalid, such as a stream that queries a Jira feature your site doesn't have enabled, so a stream can finish successfully with no records. Check the sync logs for 400 responses if a stream returns less data than you expect.
+
+### The sync is slow
+
+See [Streams on I/O usage](#streams-on-io-usage). Those streams make one request per issue, so their runtime scales with your issue count.
+
+For other problems, search the [Airbyte forum](https://github.com/airbytehq/airbyte/discussions) or [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Rate Limiting & Performance
 
-The Jira connector should not run into Jira API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Jira Cloud applies [three independent rate limits](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/): an hourly points-based quota, per-second burst limits on each endpoint, and per-issue write limits. When you exceed any of them, Jira returns HTTP 429. The connector retries throttled and other transient responses up to 10 times before it fails the sync.
+
+Most syncs stay within the quotas. If you see repeated 429 responses, lower `num_workers` to reduce the number of concurrent requests, limit the sync to specific projects with the **Projects** field, or drop the per-issue streams listed in [Streams on I/O usage](#streams-on-io-usage). [Create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) if rate limit errors aren't retried successfully.
 
 ## IP allow list
 
@@ -240,9 +251,9 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 | `credentials.service_account_token` | Required for Service Account authentication | Atlassian Service Account API token with the required Jira scopes. |
 | `domain` | Yes | Jira site hostname, for example `airbyteio.atlassian.net`. Don't include `https://` or a path. |
 | `projects` | No | List of Jira project keys to replicate. Leave empty to replicate all projects the authenticated user can access. |
-| `start_date` | No | UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Applies to the Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues streams. If unset, defaults to two years before the first sync. |
+| `start_date` | No | UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Applies to the Board Issues, Issue Changelogs, Issue Comments, Issue Worklogs, Issues, and Sprint Issues streams. If you leave it empty, those streams start 730 days (two years) before the first sync. |
 | `lookback_window_minutes` | No | Number of minutes to re-read on each incremental sync. Defaults to `0`. |
-| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `40`. Defaults to `3`. |
+| `num_workers` | No | Number of concurrent threads to use for the sync. Valid values are `1` through `40`. Defaults to `5`. |
 
 ## Changelog
 
@@ -251,8 +262,11 @@ The connector uses these configuration fields for programmatic setup with PyAirb
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.1 | 2026-07-27 | [82702](https://github.com/airbytehq/airbyte/pull/82702) | Increase `issue_worklogs` page size to 5000 to reduce the number of paginated requests |
+| 6.0.0 | 2026-06-24 | [80279](https://github.com/airbytehq/airbyte/pull/80279) | Remove deprecated `issue_field_configurations` stream (Atlassian removing endpoint July 2026) |
+| 5.1.1 | 2026-06-09 | [79606](https://github.com/airbytehq/airbyte/pull/79606) | Clean up cancelled RC; revert source to previous stable |
 | 5.1.1-rc.1 | 2026-05-26 | [78441](https://github.com/airbytehq/airbyte/pull/78441) | Adjust default concurrency to 7 and enable progressive rollout for concurrency tuning |
-| 5.1.0 | 2026-05-20 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
+| 5.1.0 | 2026-05-21 | [78130](https://github.com/airbytehq/airbyte/pull/78130) | Add Service Account authentication support |
 | 5.0.0 | 2026-05-20 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
 | 4.4.1 | 2026-05-14 | [78088](https://github.com/airbytehq/airbyte/pull/78088) | Fix domain validation regression: auto-normalize domains with https:// prefix or trailing slashes |
 | 4.4.0 | 2026-05-11 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |

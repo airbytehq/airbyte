@@ -42,7 +42,7 @@ The install name uses dashes. The Python import name uses underscores: `from air
 
 ## End-to-end example
 
-The example below authenticates with Airbyte and executes an operation against a GitHub connector. Before running this code, [add a GitHub connector](./add-connector) to your workspace through the [web app](../ui/add-connector) or the [REST API](../api/add-connector). The pages in this section explain each step in detail.
+The example below authenticates with Airbyte and executes an operation against a GitHub connector. Before running this code, [add a GitHub connector](./add-connector.md) to your workspace through the [web app](../ui/add-connector.md) or the [REST API](../api/add-connector.md). The pages in this section explain each step in detail.
 
 ```python title="agent.py"
 import asyncio

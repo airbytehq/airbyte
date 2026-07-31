@@ -6,7 +6,9 @@ import copy
 import json
 import os
 
+import pytest
 from freezegun import freeze_time
+from jsonschema import ValidationError, validate
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -51,9 +53,13 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
             "status_code": 500,
             "json": {"message": "internal error"},
         },
-        {  # 400 treated as retryable by your error handler
+        {
             "status_code": 400,
-            "json": {"code": 1, "message": "transient creation error"},
+            "json": {"code": 1, "message": "Retry after 5 seconds"},
+        },
+        {
+            "status_code": 400,
+            "json": {"code": 12, "message": "Something went wrong on our end. Sorry about that."},
         },
         {  # finally succeed creating the job
             "status_code": 200,
@@ -100,6 +106,106 @@ def test_streams(test_config):
     assert len(streams) == expected_streams_number
 
 
+@freeze_time("2022-11-16 12:03:11+00:00")
+def test_read_records_refreshes_download_url_before_fetch(requests_mock, test_config):
+    expired_report_download_url = "https://expired-download.report"
+    fresh_report_download_url = "https://fresh-download.report"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    final_response = {"campaign_id": [{"metric": 1}]}
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        status_code=200,
+    )
+    requests_mock.get(
+        report_request_url,
+        [
+            {
+                "json": {"report_status": "FINISHED", "url": expired_report_download_url},
+                "status_code": 200,
+            },
+            {
+                "json": {"report_status": "FINISHED", "url": fresh_report_download_url},
+                "status_code": 200,
+            },
+        ],
+    )
+    requests_mock.get(expired_report_download_url, status_code=403)
+    requests_mock.get(fresh_report_download_url, json=final_response, status_code=200)
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaign_analytics_report",
+            {
+                "DATE": "2022-11-15",
+            },
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data
+        for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records
+    ]
+
+    assert records == [{"metric": 1}]
+    assert not requests_mock.called_once
+    assert requests_mock.request_history[-1].url.rstrip("/") == fresh_report_download_url
+    assert not any(request.url.rstrip("/") == expired_report_download_url for request in requests_mock.request_history)
+
+
+@freeze_time("2022-11-16 12:03:11+00:00")
+def test_report_rate_limit_during_download_target_refresh_retries(requests_mock, test_config):
+    """Rate-limit (code=8) on download_target_requester should be retried, not ignored."""
+    report_download_url = "https://download.report"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    final_response = {"campaign_id": [{"metric": 1}]}
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        status_code=200,
+    )
+    requests_mock.get(
+        report_request_url,
+        [
+            {  # polling: report finished
+                "json": {"report_status": "FINISHED", "url": report_download_url},
+                "status_code": 200,
+            },
+            {  # download_target_requester hits rate limit (code=8)
+                "json": {"code": 8, "message": "You have exceeded your rate limit. Try again later."},
+                "status_code": 400,
+                "headers": {"X-RateLimit-Reset": "0"},
+            },
+            {  # retry succeeds
+                "json": {"report_status": "FINISHED", "url": report_download_url},
+                "status_code": 200,
+            },
+        ],
+    )
+    requests_mock.get(report_download_url, json=final_response, status_code=200)
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaign_analytics_report",
+            {"DATE": "2022-11-15"},
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data
+        for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records
+    ]
+    assert records == [{"metric": 1}]
+
+
 def test_custom_streams(test_config):
     config = copy.deepcopy(test_config)
     config["custom_reports"] = [
@@ -120,3 +226,116 @@ def test_custom_streams(test_config):
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
+
+
+@pytest.mark.parametrize(
+    "status_fields",
+    [
+        pytest.param({}, id="omitted"),
+        pytest.param(
+            {
+                "campaign_statuses": ["RUNNING", "ARCHIVED"],
+                "ad_group_statuses": ["PAUSED", "ARCHIVED"],
+                "ad_statuses": ["APPROVED", "ARCHIVED"],
+            },
+            id="configured",
+        ),
+    ],
+)
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_status_filters(requests_mock, test_config, status_fields):
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "PIN_PROMOTION",
+            "granularity": "DAY",
+            "columns": [
+                "ADVERTISER_ID",
+                "AD_ACCOUNT_ID",
+                "AD_ID",
+                "PIN_PROMOTION_ID",
+                "SPEND_IN_DOLLAR",
+            ],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-20",
+            **status_fields,
+        }
+    ]
+    expected_body = {
+        "start_date": "2026-05-20",
+        "end_date": "2026-05-21",
+        "level": "PIN_PROMOTION",
+        "granularity": "DAY",
+        "click_window_days": 30,
+        "engagement_window_days": 30,
+        "view_window_days": 30,
+        "conversion_report_time": "TIME_OF_AD_ACTION",
+        "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+        "columns": [
+            "ADVERTISER_ID",
+            "AD_ACCOUNT_ID",
+            "AD_ID",
+            "PIN_PROMOTION_ID",
+            "SPEND_IN_DOLLAR",
+        ],
+        **status_fields,
+    }
+
+    def match_json_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        actual_body = json.loads(raw)
+        assert actual_body == expected_body
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=match_json_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"ad_id": [{"spend": 1}]})
+
+    records = [record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental).records]
+
+    assert records == [{"spend": 1}]
+
+
+@pytest.mark.parametrize(
+    "field_name,valid_statuses,invalid_statuses",
+    [
+        pytest.param(
+            "campaign_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="campaign_statuses",
+        ),
+        pytest.param(
+            "ad_group_statuses",
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
+            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="ad_group_statuses",
+        ),
+        pytest.param(
+            "ad_statuses",
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED"],
+            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            id="ad_statuses",
+        ),
+    ],
+)
+def test_custom_report_status_filters_allow_at_most_six_values(test_config, field_name, valid_statuses, invalid_statuses):
+    status_schema = (
+        get_source(test_config).spec(None).connectionSpecification["properties"]["custom_reports"]["items"]["properties"][field_name]
+    )
+
+    validate(valid_statuses, status_schema)
+    with pytest.raises(ValidationError):
+        validate(invalid_statuses, status_schema)
