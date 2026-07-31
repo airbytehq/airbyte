@@ -70,10 +70,14 @@ definitions:
             type: RequestOption
             field_name: page
             inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
             page_size: 50
-            start_from_page: 0
+            start_from_page: 1
         requester:
           $ref: "#/definitions/base_requester"
           path: /syncs/{{ stream_partition.sync_id }}/executions
@@ -103,7 +107,7 @@ definitions:
         cursor_field: start
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S"
         datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_time_option:
@@ -164,9 +168,9 @@ definitions:
           type: NoAuth
         request_headers: {}
         request_body_json:
-          clientId: "\"{{ config['client_id'] }}\""
-          accountId: "\"{{ config['account_id'] }}\""
-          clientSecret: "\"{{ config['client_secret'] }}\""
+          clientId: "{{ config['client_id'] | tojson }}"
+          accountId: "{{ config['account_id'] | tojson }}"
+          clientSecret: "{{ config['client_secret'] | tojson }}"
         request_parameters: {}
       session_token_path:
         - access_token
@@ -188,7 +192,6 @@ spec:
       - client_id
       - client_secret
       - account_id
-      - start_date
     properties:
       client_id:
         type: string
@@ -233,7 +236,7 @@ metadata:
       hasRecords: true
       streamHash: f29221d17e5017d8b49dee0a04a0cc032a4a309f
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     connections:
@@ -543,54 +546,14 @@ schemas:
                           - string
                           - "null"
                       display_condition:
+                        # A JSONLogic expression tree. The previous schema enumerated two
+                        # operators (`!` and `in`) and one nesting shape; every other operator
+                        # — `and`, `!=`, `>`, `some` — and any deeper nesting was dropped
+                        # silently by a V2 destination. Left schemaless so the whole expression
+                        # survives as a JSON string.
                         type:
                           - object
                           - "null"
-                        properties:
-                          "!":
-                            type:
-                              - array
-                              - "null"
-                            items:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                or:
-                                  type:
-                                    - array
-                                    - "null"
-                                  items:
-                                    type:
-                                      - object
-                                      - "null"
-                                    properties:
-                                      "==":
-                                        type:
-                                          - array
-                                          - "null"
-                                        items:
-                                          anyOf:
-                                            - type:
-                                                - "null"
-                                                - string
-                                            - type: object
-                                              properties:
-                                                var:
-                                                  type: string
-                          in:
-                            type:
-                              - array
-                              - "null"
-                            items:
-                              anyOf:
-                                - type: object
-                                  properties:
-                                    var:
-                                      type: string
-                                - type: array
-                                  items:
-                                    type: string
                   display_order:
                     type:
                       - number
@@ -705,6 +668,11 @@ schemas:
           - string
           - "null"
       data:
+        # Connection payload differs per integration, so these keys are not part of a fixed
+        # contract. A V2 destination materialises exactly the declared schema and drops
+        # undeclared properties without recording anything in `_airbyte_meta.changes[]`, so
+        # enumerating them would be correct only for the integrations that happen to be listed.
+        # Left schemaless: the destination serialises it to a JSON string and every key survives.
         type:
           - object
           - "null"
