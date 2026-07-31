@@ -138,9 +138,9 @@ class SnowflakeAirbyteClient(
         }
 
         if (targetExists) {
-            // If target exists, use SWAP for efficiency
-            log.info { "Using SWAP operation since target table exists" }
-            execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
+            // If target exists, use CLONE for efficiency
+            log.info { "Using CLONE operation since target table exists" }
+            execute(sqlGenerator.cloneTableWith(sourceTableName, targetTableName))
             execute(sqlGenerator.dropTable(sourceTableName))
         } else {
             // If target doesn't exist, rename source to target
@@ -223,18 +223,15 @@ class SnowflakeAirbyteClient(
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
-                columnChangeset.columnsToDrop.isNotEmpty() ||
                 columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
-            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
             log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
             sqlGenerator
                 .alterTable(
                     tableName,
                     columnChangeset.columnsToAdd,
-                    columnChangeset.columnsToDrop,
                     columnChangeset.columnsToChange,
                 )
                 .forEach { execute(it) }
