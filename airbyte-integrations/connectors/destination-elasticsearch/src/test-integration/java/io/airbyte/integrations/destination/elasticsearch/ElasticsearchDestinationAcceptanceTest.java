@@ -20,7 +20,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final String IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
+  private static final String IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch:8.19.6";
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestinationAcceptanceTest.class);
 
   private final ObjectMapper mapper = new ObjectMapper();

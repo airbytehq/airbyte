@@ -41,12 +41,12 @@ public class ElasticsearchDestinationTest {
 
   @BeforeAll
   public static void beforeAll() {
-    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.17.28")
         .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
         .withExposedPorts(9200)
-        .withStartupTimeout(Duration.ofSeconds(60));
+        .withStartupTimeout(Duration.ofMinutes(5));
     container.start();
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
