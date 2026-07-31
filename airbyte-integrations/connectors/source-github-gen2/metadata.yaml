@@ -30,9 +30,10 @@ data:
       packageName: airbyte-source-github-gen2
   registryOverrides:
     cloud:
-      enabled: false
-    oss:
       enabled: true
+      public: false
+    oss:
+      enabled: false
   releaseStage: alpha
   suggestedStreams:
     streams:
