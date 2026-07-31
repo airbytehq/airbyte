@@ -60,13 +60,15 @@ public class MongoConstants {
           "For more information, see https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-cdc-limitations";
 
   public static final String INVALID_RESUME_TOKEN_ERROR_MESSAGE =
-      "Saved offset is not valid. The MongoDB oplog has advanced past the change stream resume token saved by the previous sync, " +
-          "so incremental (CDC) replication can no longer resume from that position. " +
-          "This happens when the time between syncs exceeds the oplog retention window, " +
-          "including cases where a sync runs slowly or is terminated before completing, which allows the oplog to cycle past the saved token. " +
-          "To resolve this issue, you have several options: " +
+      "Saved offset is not valid. MongoDB rejected the change stream resume token saved by the previous sync, " +
+          "so incremental (CDC) replication cannot resume from that position. " +
+          "The most likely cause is that the oplog has advanced past the saved token, which happens when the time between syncs " +
+          "exceeds the oplog retention window, including cases where a sync runs slowly or is terminated before completing. " +
+          "To resolve the current error: " +
           "(1) Reset the connection and run a sync to establish a new resume token. " +
-          "(2) Increase the oplog size or retention period of your MongoDB cluster so that it holds at least 24 hours of changes. " +
+          "To reduce the chance of this happening again: " +
+          "(2) Increase the oplog size or retention period of your MongoDB cluster. " +
+          "Airbyte recommends retaining at least 7 days of changes; 24 hours is an absolute minimum. " +
           "(3) Increase the sync frequency so that each sync starts within the oplog retention window. " +
           "For more information, see " +
           "https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams";

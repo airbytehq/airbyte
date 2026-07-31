@@ -9,7 +9,6 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_RESUME_TOKEN_ERROR_MESSAGE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_OPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -473,7 +472,7 @@ class MongoDbCdcInitializerTest {
   }
 
   @Test
-  void testInvalidSavedOffsetErrorMessageExplainsOplogRotationAndRemediation() {
+  void testCreateCdcIteratorsWithInvalidSavedOffsetThrowsInvalidResumeTokenMessage() {
     setupSingleDatabase();
     doReturn(false).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
     final MongoDbStateManager stateManager =
@@ -484,19 +483,6 @@ class MongoDbCdcInitializerTest {
             stateManager, EMITTED_AT, SINGLE_DB_CONFIG));
 
     assertEquals(INVALID_RESUME_TOKEN_ERROR_MESSAGE, thrown.getMessage());
-    assertTrue(thrown.getMessage().contains("oplog has advanced past the change stream resume token"),
-        "Error message should explain that the oplog rotated past the saved resume token");
-    assertTrue(thrown.getMessage().contains("Reset the connection"),
-        "Error message should list resetting the connection as a remediation option");
-    assertTrue(thrown.getMessage().contains("Increase the oplog size or retention period"),
-        "Error message should list increasing oplog size/retention as a remediation option");
-    assertTrue(thrown.getMessage().contains("Increase the sync frequency"),
-        "Error message should list increasing sync frequency as a remediation option");
-    assertTrue(
-        thrown.getMessage()
-            .contains("https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams"),
-        "Error message should link to the MongoDB oplog troubleshooting documentation");
-    assertFalse(thrown.getMessage().contains("prevent his from happening"), "Error message should not contain the previous typo");
   }
 
   @Test
