@@ -8,115 +8,93 @@ This page contains the setup guide and reference information for the [Google Ana
 
 Google Analytics 4 (GA4) is the latest version of Google Analytics, introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This updated model allows for more flexibility and customization in reporting, and provides more accurate measurement of user behavior across various devices and platforms.
 
-This connector works with Google Analytics 4 (GA4) and [Google Analytics 360](https://support.google.com/analytics/answer/11202874?sjid=13261024199799321083-NC#limits) (GA360) properties.
+This connector reads report data with the [Google Analytics Data API v1beta](https://developers.google.com/analytics/devguides/reporting/data/v1). It works with Google Analytics 4 (GA4) and [Google Analytics 360](https://support.google.com/analytics/answer/11202874#limits) (GA360) properties. Universal Analytics properties aren't supported, because the Data API can't report on them.
 
 ## Prerequisites
 
-- A Google Analytics account with access to the GA4 property and property ID you want to sync
+- One or more GA4 properties, and the numeric **Property ID** of each one. To find a property ID, see [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
+- An identity with at least the **Viewer** role on every property you want to sync. This is the Google account you authenticate with on Airbyte Cloud, or the service account you create for Airbyte Open Source.
+- For Airbyte Open Source: a Google Cloud project with the Google Analytics Data API enabled, and a service account JSON key.
 
 ## Setup guide
 
-### Step 1: Set up Google Analytics 4 (GA4)
-
-<!-- env:oss -->
-
-#### Create a Service Account for authentication
-
-1. Sign in to the Google Account you are using for Google Analytics as an admin.
-2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Developers console.
-3. Select the project you want to use (or create a new one) and click **Continue**.
-4. Click **+ Create Service Account** at the top of the page.
-5. Enter a name for the service account, and optionally, a description. Click **Create and Continue**.
-6. Choose the role for the service account. We recommend the **Viewer** role (Read & Analyze permissions). Click **Continue**.
-7. Select your new service account from the list, and open the **Keys** tab. Click **Add Key** > **Create New Key**.
-8. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
-
-:::note
-When authenticating with a **service account** (Airbyte Open Source), you must also grant that service account access to the **GA4 property** in **Google Analytics**. Creating a service account and downloading the JSON key does not automatically give it permission to read Analytics data.
-
-1. In Google Analytics, go to **Admin** → under **Property**, click **Property access management**.
-2. Click **+** → **Add users**, then add the service account email (for example, `...@...iam.gserviceaccount.com`).
-3. Grant at least the **Viewer** role (read-only) for the target property.
-:::
-
-#### Enable the Google Analytics APIs
-
-Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
-
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-3. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-
-<!-- /env:oss -->
+### Step 1: Set up authentication
 
 <!-- env:cloud -->
 
-### For Airbyte Cloud:
+#### Airbyte Cloud: authenticate with Google
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Analytics 4 (GA4) from the Source type dropdown.
-4. Enter a name for the Google Analytics 4 (GA4) connector.
-5. Select **Authenticate via Google (Oauth)** from the dropdown menu and click **Authenticate your Google Analytics 4 (GA4) account**. This will open a pop-up window where you can log in to your Google account and grant Airbyte access to your Google Analytics account.
-6. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
-   :::note
-   If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on using this connector. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
-   :::
-
-7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
-8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
-9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-
-:::caution
-
-It's important to consider how dimensions like `month` or `yearMonth` are specified. These dimensions organize the data according to your preferences.
-However, keep in mind that the data presentation is also influenced by the chosen date range for the report. In cases where a very specific date range is selected, such as a single day (**Data Request Interval (Days)** set to one day), duplicated data entries for each day might appear.
-To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data.
-
-:::
-
-10. Click **Set up source** and wait for the tests to complete.
+Airbyte Cloud authenticates through OAuth, so you don't need a Google Cloud project or a service account. Sign in with a Google account that has at least the **Viewer** role on every property you plan to sync. The connector requests the read-only `https://www.googleapis.com/auth/analytics.readonly` scope.
 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-### For Airbyte Open Source:
+#### Airbyte Open Source: create a service account
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. Select **Service Account Key Authentication** from the dropdown list and enter the **Service Account JSON Key** from Step 1.
-5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
+1. Sign in to the Google Account you use for Google Analytics as an admin.
+2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page in the Google Cloud console.
+3. Select the project you want to use, or create a new one, then click **Continue**.
+4. Click **+ Create Service Account** at the top of the page.
+5. Enter a name for the service account and, optionally, a description. Click **Create and Continue**.
+6. Choose a role for the service account. Airbyte recommends **Viewer** (Read & Analyze permissions). Click **Continue**.
+7. Select your new service account from the list, then open the **Keys** tab. Click **Add Key** > **Create New Key**.
+8. Select **JSON** as the key type. Google generates and downloads the JSON key file you use to authenticate.
+
+#### Enable the Google Analytics Data API
+
+Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview), make sure the project that owns your service account is selected, and enable the API. This is the only Google API this connector calls, so you don't need to enable the Analytics Reporting API or the Analytics API, which serve Universal Analytics.
+
+#### Grant the service account access to your properties
+
+Creating a service account and downloading its JSON key doesn't give it permission to read Analytics data. Grant that access in Google Analytics for every property you want to sync:
+
+1. In Google Analytics, go to **Admin**, then under **Property**, click **Property access management**.
+2. Click **+** > **Add users**, then add the service account email address, which looks like `<name>@<project>.iam.gserviceaccount.com`.
+3. Grant at least the **Viewer** role.
+
+<!-- /env:oss -->
+
+### Step 2: Set up the Google Analytics 4 (GA4) source in Airbyte
+
+1. In the Airbyte UI, click **Sources**, then click **+ New source**.
+2. Find and select **Google Analytics 4 (GA4)** from the list of available sources, and enter a name for the source.
+3. Select an authentication method:
+
+   <!-- env:cloud -->
+
+   - **Authenticate via Google (Oauth)**: click **Authenticate your Google Analytics 4 (GA4) account** and complete the Google sign-in flow in the pop-up window.
+
+   <!-- /env:cloud -->
+
+   <!-- env:oss -->
+
+   - **Service Account Key Authentication**: paste the **Service Account JSON Key** you downloaded in Step 1.
+
+   <!-- /env:oss -->
+
+4. In the **Property IDs** field, add the numeric ID of each property you want to sync, such as `123456789`. Adding more than one property affects stream names, so read [Syncing multiple properties](#syncing-multiple-properties) first.
+
    :::note
-   If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
+   If the property settings show a tracking ID like `UA-123...-1`, the property is a Universal Analytics property, and this connector can't report on it. To create a GA4 property, follow [Google's instructions](https://support.google.com/analytics/answer/9744165?hl=en).
    :::
 
-6. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
+5. Set the optional fields you need. See [Configuration options](#configuration-options) for what each one does.
+6. Click **Set up source** and wait for the connection test to finish.
 
-:::note
-If the start date is not provided, the default value will be used, which is two years from the initial sync.
-:::
+## Configuration options
 
-:::caution
-Many analyses and data investigations may require 24-48 hours to process information from your website or app. To ensure the accuracy of the data, we subtract two days from the starting date. For more details, please refer to [Google's documentation](https://support.google.com/analytics/answer/9333790?hl=en).
-:::
-
-7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
-8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
-9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run. Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
-
-:::caution
-
-It's important to consider how dimensions like `month` or `yearMonth` are specified. These dimensions organize the data according to your preferences.
-However, keep in mind that the data presentation is also influenced by the chosen date range for the report. In cases where a very specific date range is selected, such as a single day (**Data Request Interval (Days)** set to one day), duplicated data entries for each day might appear.
-To mitigate this, we recommend adjusting the **Data Request Interval (Days)** value to 364. By doing so, you can obtain more precise results and prevent the occurrence of duplicated data.
-
-:::
-
-11. Click **Set up source** and wait for the tests to complete.
-<!-- /env:oss -->
+| Field | Default | Description |
+| :------ | :-------- | :------------ |
+| **Property IDs** (required) | — | The numeric IDs of the GA4 properties to sync. |
+| **Start Date** | 730 days before the sync | The earliest date to replicate, in `YYYY-MM-DD` format. Doesn't apply to cohort reports. |
+| **End Date** | Today | The latest date to replicate, in `YYYY-MM-DD` format. If you leave it empty, the connector syncs through today. Doesn't apply to cohort reports. |
+| **Custom Reports** | — | Extra reports to sync, each with its own dimensions, metrics, and optional filters. See [Custom reports](#custom-reports). |
+| **Data Request Interval (Days)** | 1 | The size in days of each date range the connector requests, from 1 to 364. Larger values sync faster but increase the chance of sampling. Doesn't apply to cohort reports. See [Data sampling and data request intervals](#data-sampling-and-data-request-intervals). |
+| **Lookback window (Days)** | 2 | How many days before the last synced date each incremental sync re-reads, from 2 to 60. Attribution and Google's processing latency both change recent data after the fact, so a lookback window keeps recent rows accurate. |
+| **Keep Empty Rows** | Off | When on, the connector keeps rows whose metrics are all `0`. When off, Google omits them. |
+| **Convert `conversions:*` Metrics to Float** | Off | The current version of the connector doesn't use this option. Metric types come from the type the API reports for each metric, so `conversions:*` metrics are already floats when Google returns them as floats. |
+| **Subscription Plan/Tier** | Standard Property | The quota tier of your properties. Select **Analytics 360 Property** only if every property ID in the config belongs to an Analytics 360 subscription. See [Performance considerations](#performance-considerations). |
 
 ## Supported sync modes
 
@@ -127,11 +105,13 @@ The Google Analytics 4 (GA4) source connector supports the following [sync modes
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+A stream syncs incrementally when its dimensions include `date`, `yearWeek`, `yearMonth`, or `year`, which the connector uses as the cursor field. Every preconfigured stream below is incremental and uses `date` as its cursor, except `weekly_events_report`, which uses `yearWeek`. Custom reports without one of those dimensions, and all cohort reports, are full refresh only.
 
-This connector outputs the following incremental streams:
+## Supported streams
 
-All preconfigured streams and custom streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
+Every stream, preconfigured or custom, is a fixed combination of dimensions and metrics that the connector sends to the Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Custom reports that include pivots use [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) instead.
+
+Each record contains the report's dimensions and metrics as top-level fields, plus the `property_id` it came from. Records from non-cohort streams also include the `startDate` and `endDate` of the date range that produced them.
 
 - Preconfigured streams:
   - daily_active_users
@@ -195,74 +175,126 @@ All preconfigured streams and custom streams use the Google Analytics Data API [
 
 ## Connector-specific features
 
-### Custom Reports
+### Syncing multiple properties
 
-Custom reports in Google Analytics allow for flexibility in querying specific data tailored to your needs. You can define the following components:
+One source can sync several properties. The connector queries every stream against every property ID in the config, and names the resulting streams for backward compatibility with connector versions that only supported one property:
 
-- **Name**: The name of the custom report.
-- **Dimensions**: An array of categories for data, such as city, user type, etc.
-- **Metrics**: An array of quantitative measurements, such as active users, page views, etc.
-- **CohortSpec**: (Optional) An object containing specific cohort analysis settings, such as cohort size and date range. More information on this object can be found in [the GA4 documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec).
-- **Pivots**: (Optional) An array of pivot tables for data, such as page views by city, etc. More information on pivots can be found in [the GA4 documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).
+- Streams for the first property ID keep their plain name, such as `website_overview`.
+- Streams for every additional property ID are suffixed with `Property` and the property ID, such as `website_overviewProperty987654321`.
 
-A full list of dimensions and metrics supported in the API can be found [here](https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema). To ensure your dimensions and metrics are compatible for your GA4 property, you can use the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
+Because all property IDs share one config, options like **Subscription Plan/Tier** and **Start Date** apply to all of them. If your properties need different settings, or you'd rather keep stream names stable as you add properties, configure one source per property instead.
 
-The following is an example of a basic User Engagement report to track sessions and bounce rate, segmented by city:
+### Custom reports
+
+Custom reports let you sync dimension and metric combinations that the preconfigured streams don't cover. Each entry in the **Custom Reports** field defines one stream:
+
+- **Name**: the stream name.
+- **Dimensions**: the dimensions to group by, such as `city` or `date`. Include `date`, `yearWeek`, `yearMonth`, or `year` if you want the stream to sync incrementally.
+- **Metrics**: the metrics to report, such as `sessions` or `screenPageViews`.
+- **Dimensions filter**: (Optional) a [FilterExpression](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/FilterExpression) that restricts which dimension values the API returns. Build it from an `andGroup`, `orGroup`, `notExpression`, or a single `filter`.
+- **Cohort Reports**: (Optional) cohort analysis settings. See [Cohort reports](#cohort-reports).
+
+For the dimensions and metrics the API supports, see the [API schema](https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema). To check that a combination is valid for your property, use the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/). Invalid combinations make the sync fail with the API's error message, because the Data API rejects them with an HTTP 400 response.
+
+The following custom report tracks sessions and bounce rate by city, and syncs incrementally because it includes the `date` dimension:
 
 ```json
 [
   {
     "name": "User Engagement Report",
-    "dimensions": ["city"],
+    "dimensions": ["date", "city"],
     "metrics": ["sessions", "bounceRate"]
   }
 ]
 ```
 
-By specifying a cohort with a 7-day range and pivoting on the city dimension, the report can be further tailored to offer a detailed view of engagement trends within the top 50 cities for the specified date range.
+This one adds a dimension filter that keeps only sessions from mobile devices:
 
 ```json
 [
   {
-    "name": "User Engagement Report",
-    "dimensions": ["city"],
+    "name": "Mobile User Engagement Report",
+    "dimensions": ["date", "city"],
     "metrics": ["sessions", "bounceRate"],
-    "cohortSpec": {
-      "cohorts": [
-        {
-          "name": "Last 7 Days",
-          "dateRange": {
-            "startDate": "2023-07-27",
-            "endDate": "2023-08-03"
-          }
-        }
-      ],
-      "cohortReportSettings": {
-        "accumulate": true
+    "dimensionFilter": {
+      "filter_type": "filter",
+      "field_name": "deviceCategory",
+      "filter": {
+        "filter_name": "stringFilter",
+        "value": "mobile",
+        "matchType": ["EXACT"]
       }
-    },
-    "pivots": [
-      {
-        "fieldNames": ["city"],
-        "limit": 50,
-        "metricAggregations": ["TOTAL"]
-      }
-    ]
+    }
   }
 ]
 ```
 
-### Data Sampling and Data Request Intervals
+### Cohort reports
 
-Data sampling in Google Analytics 4 refers to the process of estimating analytics data when the amount of data in an account exceeds Google's predefined compute thresholds. To mitigate the chances of data sampling being applied to the results, the **Data Request Interval** field allows users to specify the interval used when requesting data from the Google Analytics API.
+A cohort report tracks a group of users who share a first-session date over time. To sync one, set **Cohort Reports** to **Enabled** in a custom report and describe the cohorts you want. Cohorts require the `firstSessionDate` dimension and an explicit date range.
 
-By setting the interval to 1 day, users can reduce the data processed per request, minimizing the likelihood of data sampling and ensuring more accurate results. While larger time intervals (up to 364 days) can speed up the sync, we recommend choosing a smaller value to prioritize data accuracy unless there is a specific need for faster synchronization at the expense of some potential inaccuracies. Please note that this field does _not_ apply to custom Cohort reports.
+Cohort reports ignore the **Start Date**, **End Date**, and **Data Request Interval (Days)** options, because their date range comes from the cohort definition. They're always full refresh, and their records don't include `startDate` or `endDate` fields.
 
-Refer to the [Google Analytics documentation](https://support.google.com/analytics/answer/13331292?sjid=10678419627000327283) for more information on data sampling.
+```json
+[
+  {
+    "name": "Weekly Retention Report",
+    "dimensions": ["cohort", "cohortNthWeek"],
+    "metrics": ["cohortActiveUsers"],
+    "cohortSpec": {
+      "enabled": "true",
+      "cohorts": [
+        {
+          "name": "Last 7 Days",
+          "dimension": "firstSessionDate",
+          "dateRange": {
+            "startDate": "2026-07-01",
+            "endDate": "2026-07-07"
+          }
+        }
+      ],
+      "cohortsRange": {
+        "granularity": "WEEKLY",
+        "startOffset": 0,
+        "endOffset": 4
+      },
+      "cohortReportSettings": {
+        "accumulate": true
+      }
+    }
+  }
+]
+```
 
-## Performance Considerations
+For the full set of cohort options, see [CohortSpec](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec) in Google's documentation.
 
-The Google Analytics connector is subject to Google Analytics Data API quotas. Please refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas) for specific breakdowns on these quotas.
+### Data sampling and data request intervals
+
+Google Analytics applies [data sampling](https://support.google.com/analytics/answer/13331292) when a request covers more data than its compute thresholds allow, which means the response contains estimates instead of exact numbers. Smaller date ranges make sampling less likely.
+
+The **Data Request Interval (Days)** option controls how much data each request covers. The default of 1 day minimizes sampling. Raising it up to 364 days reduces the number of requests and speeds up syncs, at the cost of accuracy. Cohort reports ignore this option.
+
+:::caution
+Dimensions such as `month` and `yearMonth` group data within each requested date range, not across ranges. With a short interval, a report that groups by month emits one row per interval per month, which looks like duplicated data. If your report uses those dimensions, set **Data Request Interval (Days)** to 364 so each request covers a full period.
+:::
+
+## Performance considerations
+
+The Data API enforces [quotas](https://developers.google.com/analytics/devguides/reporting/data/v1/quotas) per property. Core quotas are much larger for Analytics 360 properties than for standard ones, including concurrent requests and hourly and daily token budgets. The connector uses the **Subscription Plan/Tier** option to pick which request rate it applies locally, so setting it to **Analytics 360 Property** when your properties are standard makes the connector send requests faster than the API allows, which produces quota errors.
+
+Requests that hit a quota or another retryable error are retried up to 10 times, 30 seconds apart. HTTP 400 responses and responses whose API status is `PERMISSION_DENIED` fail immediately as `config_error`; other HTTP 403 responses are retried.
+
+Report requests page through results 100,000 rows at a time. Pivot reports aren't paginated, so the row limits in the pivot definition determine how much data a pivot report returns.
+
+## Troubleshooting
+
+Common issues and their causes:
+
+- **`PERMISSION_DENIED` or a 403 error on connection check.** The authenticated identity doesn't have access to the property. On Airbyte Open Source, confirm you added the service account email to **Property access management** for every property ID in the config. Enabling the Data API in Google Cloud isn't enough on its own.
+- **The connection check fails and the property ID looks like `UA-123...-1`.** That's a Universal Analytics property. The Data API only serves GA4 properties.
+- **An HTTP 400 error naming a dimension or metric.** The dimension and metric combination isn't valid for the property. Verify it in the [GA4 Dimensions & Metrics Explorer](https://ga-dev-tools.google/ga4/dimensions-metrics-explorer/).
+- **Recent numbers change between syncs.** Google can take 24 to 48 hours to finalize data, and attribution keeps shifting during that window. Increase **Lookback window (Days)** so each sync re-reads more recent days. See [Google's documentation](https://support.google.com/analytics/answer/9333790?hl=en) on data freshness.
+- **Metrics don't match the Google Analytics UI.** Check whether sampling applied to the request, and lower **Data Request Interval (Days)** if it did. Google also [thresholds](https://support.google.com/analytics/answer/9383630) rows that could identify individual users, so reports with demographic or interest dimensions can omit data that aggregate reports include.
 
 ## Data type map
 
@@ -293,25 +325,23 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
 | 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
 | 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
-| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
-| 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
+| 2.9.36 | 2026-06-01 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
+| 2.9.35 | 2026-05-20 | [78275](https://github.com/airbytehq/airbyte/pull/78275) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
 | 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
-| 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
-| 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
-| 2.9.33-rc.1 | 2026-04-23 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.34-rc.2 | 2026-05-06 | [77781](https://github.com/airbytehq/airbyte/pull/77781) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
+| 2.9.34-rc.1 | 2026-04-28 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
+| 2.9.33-rc.1 | 2026-04-27 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
 | 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Surface the GA4 API error message on 400 and 403 responses, and stop retrying permission errors |
 | 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
-| 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
-| 2.9.31 | 2026-04-09 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
-| 2.9.30 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
-| 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
+| 2.9.29 | 2026-04-02 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
 | 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
 | 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
-| 2.9.26 | 2026-02-25 | [73632](https://github.com/airbytehq/airbyte/pull/73632) | fix(source-google-analytics-data-api): use GA4 today keyword for timezone-correct end dates (AI-Triage PR) |
+| 2.9.26 | 2026-02-25 | [73632](https://github.com/airbytehq/airbyte/pull/73632) | Use the GA4 `today` keyword for timezone-correct end dates |
 | 2.9.25 | 2026-02-24 | [73750](https://github.com/airbytehq/airbyte/pull/73750) | Update dependencies |
 | 2.9.24 | 2026-02-17 | [73404](https://github.com/airbytehq/airbyte/pull/73404) | Update dependencies |
 | 2.9.23 | 2026-02-10 | [73067](https://github.com/airbytehq/airbyte/pull/73067) | Update dependencies |
-| 2.9.22 | 2026-02-03 | [72590](https://github.com/airbytehq/airbyte/pull/72590) | Update dependencies |
+| 2.9.22 | 2026-02-06 | [72590](https://github.com/airbytehq/airbyte/pull/72590) | Update dependencies |
 | 2.9.21 | 2026-01-20 | [71924](https://github.com/airbytehq/airbyte/pull/71924) | Update dependencies |
 | 2.9.20 | 2026-01-14 | [71432](https://github.com/airbytehq/airbyte/pull/71432) | Update dependencies |
 | 2.9.19 | 2025-12-18 | [70693](https://github.com/airbytehq/airbyte/pull/70693) | Update dependencies |
@@ -320,7 +350,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.9.16 | 2025-11-12 | [69279](https://github.com/airbytehq/airbyte/pull/69279) | Flag authentication issues as config_error |
 | 2.9.15 | 2025-10-29 | [69011](https://github.com/airbytehq/airbyte/pull/69011) | Update dependencies |
 | 2.9.14 | 2025-10-21 | [68302](https://github.com/airbytehq/airbyte/pull/68302) | Update dependencies |
-| 2.9.13 | 2025-10-14 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
+| 2.9.13 | 2025-10-14 | [67722](https://github.com/airbytehq/airbyte/pull/67722)     | Promoting release candidate 2.9.13-rc.1 to a main version. |
 | 2.9.13-rc.1 | 2025-10-08 | [67148](https://github.com/airbytehq/airbyte/pull/67148) | Add dimensionFilter into the body of requests for custom reports and custom DimensionFilterConfigTransformation component                                              |
 | 2.9.12 | 2025-10-07 | [67262](https://github.com/airbytehq/airbyte/pull/67262) | Update dependencies |
 | 2.9.11 | 2025-09-30 | [66306](https://github.com/airbytehq/airbyte/pull/66306) | Update dependencies |
