@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 public class MongodbDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
-  private static final String TLS_REQUIRED_ERR_MSG = "TLS connection must be used to write to MongoDB.";
+  private static final String TLS_REQUIRED_ERR_MSG = "TLS is required for the MongoDB connection.";
 
   private final MongodbNameTransformer namingResolver;
   private final FeatureFlags featureFlags;
