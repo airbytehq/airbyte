@@ -26,6 +26,7 @@ import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergCompatibilityLevel
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
@@ -120,50 +121,60 @@ class IcebergUtil(
      * created.
      * @param schema The Iceberg [Schema] associated with the [Table].
      * @param properties The [Table] configuration properties derived from the [Catalog].
+     * @param compatibilityLevel The Iceberg spec level to create the table at. When null, the
+     * table format version is left at the catalog default unless the schema requires otherwise.
      * @return The Iceberg [Table], created if it does not yet exist.
      */
     fun createTable(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
-        schema: Schema
+        schema: Schema,
+        compatibilityLevel: IcebergCompatibilityLevel? = null,
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
+        // Variant only exists in the v3 spec, so a variant column forces the format version even
+        // when the destination didn't ask for a specific compatibility level.
+        val formatVersion =
+            compatibilityLevel?.formatVersion
+                ?: VARIANT_FORMAT_VERSION.takeIf { schema.containsVariant() }
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
                 .buildTable(tableIdentifier, schema)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
                 .apply {
-                    // Variant only exists in the v3 spec, so a variant column forces the table
-                    // format version rather than leaving it at the catalog default.
-                    if (schema.containsVariant()) {
-                        withProperty(FORMAT_VERSION, VARIANT_FORMAT_VERSION.toString())
-                    }
+                    formatVersion?.let { withProperty(FORMAT_VERSION, it.toString()) }
                 }
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
             logger.info { "Loading Iceberg table $tableIdentifier ..." }
             catalog.loadTable(tableIdentifier).also {
-                if (schema.containsVariant()) {
-                    checkSupportsVariant(it, tableIdentifier.toString())
+                if (formatVersion != null) {
+                    checkFormatVersion(it, tableIdentifier.toString(), formatVersion)
                 }
             }
         }
     }
 
     /**
-     * Variant columns cannot be added to a table below format version 3, and a string column can't
-     * be promoted to variant, so the table has to be recreated.
+     * An existing table below the required format version can't be used: v3 types such as variant
+     * are unavailable, and a string column can't be promoted to variant, so the table has to be
+     * recreated.
      */
-    private fun checkSupportsVariant(table: Table, tableIdentifier: String) {
-        val formatVersion =
+    private fun checkFormatVersion(
+        table: Table,
+        tableIdentifier: String,
+        requiredFormatVersion: Int,
+    ) {
+        val currentFormatVersion =
             (table as? HasTableOperations)?.operations()?.current()?.formatVersion() ?: return
-        if (formatVersion < VARIANT_FORMAT_VERSION) {
+        if (currentFormatVersion < requiredFormatVersion) {
             throw ConfigErrorException(
-                "Iceberg table $tableIdentifier is at format version $formatVersion, but variant " +
-                    "columns require format version $VARIANT_FORMAT_VERSION. Reset this stream so " +
-                    "the table is recreated, or disable variant columns.",
+                "Iceberg table $tableIdentifier is at format version $currentFormatVersion, but " +
+                    "the configured Iceberg compatibility level requires format version " +
+                    "$requiredFormatVersion. Reset this stream so the table is recreated, or " +
+                    "lower the compatibility level.",
             )
         }
     }

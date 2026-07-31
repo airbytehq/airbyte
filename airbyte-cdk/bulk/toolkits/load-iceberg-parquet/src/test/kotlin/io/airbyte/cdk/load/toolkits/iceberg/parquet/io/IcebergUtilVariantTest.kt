@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergCompatibilityLevel
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.mockk.every
 import io.mockk.mockk
@@ -48,6 +49,36 @@ internal class IcebergUtilVariantTest {
         val catalog = catalogWithExistingTable(formatVersion = 3)
 
         assertDoesNotThrow { icebergUtil.createTable(streamDescriptor, catalog, variantSchema) }
+    }
+
+    @Test
+    fun `loading an existing v2 table fails when v3 is configured without variant`() {
+        val catalog = catalogWithExistingTable(formatVersion = 2)
+        val stringSchema = Schema(Types.NestedField.optional(1, "payload", Types.StringType.get()))
+
+        assertThrows<ConfigErrorException> {
+            icebergUtil.createTable(
+                streamDescriptor,
+                catalog,
+                stringSchema,
+                IcebergCompatibilityLevel.V3,
+            )
+        }
+    }
+
+    @Test
+    fun `loading an existing v3 table succeeds when v2 is configured`() {
+        val catalog = catalogWithExistingTable(formatVersion = 3)
+        val stringSchema = Schema(Types.NestedField.optional(1, "payload", Types.StringType.get()))
+
+        assertDoesNotThrow {
+            icebergUtil.createTable(
+                streamDescriptor,
+                catalog,
+                stringSchema,
+                IcebergCompatibilityLevel.V2,
+            )
+        }
     }
 
     private fun catalogWithExistingTable(formatVersion: Int): Catalog {
