@@ -325,6 +325,42 @@ class JdbcAccessorTest {
     }
 
     @Test
+    fun testTimestampAccessorPreservesMicroseconds() {
+        columnName = "col_timestamp"
+        TimestampAccessor.run {
+            // Microsecond precision: 148758 microseconds = 148758000 nanoseconds
+            val valueWithMicros = LocalDateTime.of(2026, 4, 14, 16, 10, 47, 148758000)
+            update(valueWithMicros)
+            Assertions.assertEquals(valueWithMicros, select())
+        }
+    }
+
+    @Test
+    fun testTimeAccessorPreservesSubSecondPrecision() {
+        // Use a dedicated table with TIME(6) to test microsecond precision,
+        // since the default TIME column in the datatypes table has no fractional seconds.
+        h2.execute("CREATE TABLE IF NOT EXISTS time_precision_test (col_time TIME(6))")
+        h2.execute("DELETE FROM time_precision_test")
+        val valueWithMicros = LocalTime.of(14, 30, 45, 123456000)
+        h2.createConnection().use { conn ->
+            conn.prepareStatement("INSERT INTO time_precision_test (col_time) VALUES (?)").use {
+                stmt ->
+                TimeAccessor.set(stmt, 1, valueWithMicros)
+                stmt.execute()
+            }
+        }
+        h2.createConnection().use { conn ->
+            conn.createStatement().use { stmt ->
+                stmt.executeQuery("SELECT col_time FROM time_precision_test").use { rs ->
+                    Assertions.assertTrue(rs.next())
+                    val result = TimeAccessor.get(rs, 1)
+                    Assertions.assertEquals(valueWithMicros, result)
+                }
+            }
+        }
+    }
+
+    @Test
     fun testObjectGetterAnySetter() {
         columnName = "col_time_tz"
         ObjectGetter(OffsetTime::class.java).run {
