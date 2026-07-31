@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_RESUME_TOKEN_ERROR_MESSAGE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -186,8 +187,7 @@ public class MongoDbCdcInitializer {
     if (!savedOffsetIsValid) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
       if (config.shouldFailSyncOnInvalidCursor()) {
-        throw new ConfigErrorException(
-            "Saved offset is not valid. Please reset the connection, and then increase oplog retention and/or increase sync frequency to prevent his from happening in the future. See https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams for more details");
+        throw new ConfigErrorException(INVALID_RESUME_TOKEN_ERROR_MESSAGE);
       }
       LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
