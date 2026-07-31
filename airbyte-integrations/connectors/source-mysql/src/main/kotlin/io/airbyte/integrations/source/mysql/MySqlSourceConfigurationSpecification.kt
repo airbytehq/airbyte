@@ -198,7 +198,12 @@ class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonIgnore var additionalPropertiesMap: MutableMap<String, Any>? = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
+    // The Debezium 3.3.2 migration pulled Jackson up to 2.19.0. Under this newer Jackson,
+    // getAdditionalProperties() is enumerated as a serializable bean property named "additionalProperties" into the
+    // generated spec. @JsonIgnore keeps the method  callable (the SSH tunnel config reads it) but hides it from
+    // Jackson's property introspection, so mbknor no longer emits it.
+    @JsonIgnore
+    fun getAdditionalProperties(): Map<String, Any>? = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
