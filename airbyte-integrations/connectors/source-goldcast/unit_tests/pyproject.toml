@@ -10,8 +10,8 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
+airbyte-cdk = "^7"
 pytest = "^8"
-# These tests assert on the parsed `manifest.yaml` only, so the CDK is not needed.
 pyyaml = "^6"
 
 [tool.pytest.ini_options]

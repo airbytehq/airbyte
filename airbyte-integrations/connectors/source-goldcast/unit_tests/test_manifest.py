@@ -8,17 +8,15 @@ destination an undeclared property is dropped without appearing in `_airbyte_met
 so any other workspace loses its fields silently. Declaring `props` as a schemaless object makes
 the destination serialise it to a JSON string, preserving every key whatever it is named.
 
-These tests fail if a future edit re-introduces an enumerated list, and if the two copies of the
-`event_members` schema in the manifest ever drift apart.
+This test fails if a future edit re-introduces an enumerated list. It asserts on the `streams:`
+entry, which is the schema the connector actually resolves — the manifest also carries an
+unreferenced `definitions:` copy that nothing reads.
 """
 
 from pathlib import Path
 
 import pytest
 import yaml
-
-
-EVENT_MEMBERS_STREAM_INDEX = 6
 
 
 @pytest.fixture(scope="module")
@@ -28,28 +26,17 @@ def manifest() -> dict:
 
 
 @pytest.fixture(scope="module")
-def definitions_schema(manifest: dict) -> dict:
-    return manifest["definitions"]["event_members_stream"]["schema_loader"]["schema"]
+def event_members_schema(manifest: dict) -> dict:
+    """The `event_members` schema as the connector resolves it, looked up by name."""
+    streams = [stream for stream in manifest["streams"] if stream.get("name") == "event_members"]
+    assert len(streams) == 1, f"expected exactly one event_members stream, found {len(streams)}"
+    return streams[0]["schema_loader"]["schema"]
 
 
-@pytest.fixture(scope="module")
-def stream_schema(manifest: dict) -> dict:
-    stream = manifest["streams"][EVENT_MEMBERS_STREAM_INDEX]
-    assert stream["name"] == "event_members", "stream order changed; update EVENT_MEMBERS_STREAM_INDEX"
-    return stream["schema_loader"]["schema"]
-
-
-@pytest.mark.parametrize("fixture_name", ["definitions_schema", "stream_schema"])
-def test_props_is_schemaless(fixture_name: str, request) -> None:
+def test_props_is_schemaless(event_members_schema: dict) -> None:
     """An enumerated `props` silently drops every registration field it does not list."""
-    schema = request.getfixturevalue(fixture_name)
-    props = schema["properties"]["props"]
+    props = event_members_schema["properties"]["props"]
 
     assert props == {
         "type": "object"
     }, f"`props` must stay a schemaless object so workspace-defined registration fields survive; got {props!r}"
-
-
-def test_both_event_members_schema_copies_agree(definitions_schema: dict, stream_schema: dict) -> None:
-    """The manifest declares this schema twice; an edit to one copy only would be a silent bug."""
-    assert definitions_schema == stream_schema
