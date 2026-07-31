@@ -115,18 +115,21 @@ class RedshiftCompoundPrimaryKeyDedupAcceptanceTest : RedshiftBaseAcceptanceTest
             listOf(
                 outputRecord(
                     keyA,
+                    extractedAt = 2000,
                     updatedAt = "2026-01-01T00:03:00Z",
                     value = "updated",
                     syncId = 43,
                 ),
                 outputRecord(
                     keyB,
+                    extractedAt = 1000,
                     updatedAt = "2026-01-01T00:02:00Z",
                     value = "second",
                     syncId = 42,
                 ),
                 outputRecord(
                     """{"pk1": 9, "pk2": null, "pk3": 9, "pk4": null, "pk5": 9, "pk6": 9, "pk7": null, "pk8": 9}""",
+                    extractedAt = 2000,
                     updatedAt = "2026-01-01T00:05:00Z",
                     value = "inserted",
                     syncId = 43,
@@ -143,6 +146,7 @@ class RedshiftCompoundPrimaryKeyDedupAcceptanceTest : RedshiftBaseAcceptanceTest
 
     private fun outputRecord(
         key: String,
+        extractedAt: Long,
         updatedAt: String,
         value: String,
         syncId: Long,
@@ -153,7 +157,7 @@ class RedshiftCompoundPrimaryKeyDedupAcceptanceTest : RedshiftBaseAcceptanceTest
                 name.removeSurrounding("\"") to rawValue.toIntOrNull()
             }
         return OutputRecord(
-            extractedAt = 2000,
+            extractedAt = extractedAt,
             generationId = 42,
             data =
                 keyValues +
