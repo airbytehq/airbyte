@@ -546,54 +546,14 @@ schemas:
                           - string
                           - "null"
                       display_condition:
+                        # A JSONLogic expression tree. The previous schema enumerated two
+                        # operators (`!` and `in`) and one nesting shape; every other operator
+                        # — `and`, `!=`, `>`, `some` — and any deeper nesting was dropped
+                        # silently by a V2 destination. Left schemaless so the whole expression
+                        # survives as a JSON string.
                         type:
                           - object
                           - "null"
-                        properties:
-                          "!":
-                            type:
-                              - array
-                              - "null"
-                            items:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                or:
-                                  type:
-                                    - array
-                                    - "null"
-                                  items:
-                                    type:
-                                      - object
-                                      - "null"
-                                    properties:
-                                      "==":
-                                        type:
-                                          - array
-                                          - "null"
-                                        items:
-                                          anyOf:
-                                            - type:
-                                                - "null"
-                                                - string
-                                            - type: object
-                                              properties:
-                                                var:
-                                                  type: string
-                          in:
-                            type:
-                              - array
-                              - "null"
-                            items:
-                              anyOf:
-                                - type: object
-                                  properties:
-                                    var:
-                                      type: string
-                                - type: array
-                                  items:
-                                    type: string
                   display_order:
                     type:
                       - number
@@ -708,14 +668,14 @@ schemas:
           - string
           - "null"
       data:
+        # Connection payload differs per integration, so these keys are not part of a fixed
+        # contract. A V2 destination materialises exactly the declared schema and drops
+        # undeclared properties without recording anything in `_airbyte_meta.changes[]`, so
+        # enumerating them would be correct only for the integrations that happen to be listed.
+        # Left schemaless: the destination serialises it to a JSON string and every key survives.
         type:
           - object
           - "null"
-        properties:
-          folder_id:
-            type:
-              - string
-              - "null"
       name:
         type:
           - string

@@ -29,7 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-07-31 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size` |
+| 0.1.0 | 2026-07-31 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size`. Declare `connections.data` and `target_field.display_condition` schemaless so V2 destinations stop dropping their integration-defined keys — see the [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations) |
 | 0.0.21 | 2026-07-28 | [82860](https://github.com/airbytehq/airbyte/pull/82860) | Update dependencies |
 | 0.0.20 | 2026-07-21 | [82371](https://github.com/airbytehq/airbyte/pull/82371) | Update dependencies |
 | 0.0.19 | 2026-07-14 | [81778](https://github.com/airbytehq/airbyte/pull/81778) | Update dependencies |
