@@ -1,9 +1,7 @@
 # MySQL
 
-There are two flavors of connectors for this destination:
-
-1. destination-mysql connector. Supports both SSL and non SSL connections.
-2. destination-mysql-strict-encrypt connector. Pretty same as connector above, but supports SSL connections only.
+This destination supports both SSL and non-SSL connections. On Airbyte Cloud, SSL is enforced: the
+SSL option is removed from the connector spec and SSL connection parameters are always applied.
 
 ## Supported sync modes
 
@@ -115,7 +113,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 1.2.0 | 2026-02-04 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove strict-encrypt variant; use environment-aware SSL enforcement |
+| 1.2.0 | 2026-07-31 | [72811](https://github.com/airbytehq/airbyte/pull/72811) | Remove strict-encrypt variant; use environment-aware SSL enforcement |
 | 1.1.1 | 2025-08-04 | [63736](https://github.com/airbytehq/airbyte/pull/63736) | Use MySQL/MariaDB compatible timestamp format |
 | 1.1.0 | 2025-03-25 | [50861](https://github.com/airbytehq/airbyte/pull/50861) | add support for mariadb |
 | 1.0.4 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
