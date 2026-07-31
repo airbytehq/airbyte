@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
@@ -41,7 +42,7 @@ public class MongodbDestinationCloudSpecTest {
         .has("tls");
   }
 
-  private static JsonNode standaloneConfigWithoutTls() {
+  private static JsonNode standaloneConfigWithTlsDisabled() {
     return Jsons.jsonNode(Map.of(
         "instance_type", Jsons.jsonNode(Map.of(
             "instance", "standalone",
@@ -71,8 +72,16 @@ public class MongodbDestinationCloudSpecTest {
   }
 
   @Test
-  void testCloudCheckRejectsStandaloneWithoutTls() {
-    assertThrows(ConfigErrorException.class, () -> cloudDestination().check(standaloneConfigWithoutTls()));
+  void testCloudCheckRejectsStandaloneWithTlsDisabled() {
+    assertThrows(ConfigErrorException.class, () -> cloudDestination().check(standaloneConfigWithTlsDisabled()));
+  }
+
+  @Test
+  void testCloudCheckIgnoresTopLevelTlsOverride() {
+    // the standalone connection string only honors instance_type.tls, so a top-level tls=true must not
+    // satisfy the cloud requirement
+    final JsonNode config = ((ObjectNode) standaloneConfigWithTlsDisabled()).put(JdbcUtils.TLS_KEY, true);
+    assertThrows(ConfigErrorException.class, () -> cloudDestination().check(config));
   }
 
   @Test
@@ -87,7 +96,7 @@ public class MongodbDestinationCloudSpecTest {
 
   @Test
   void testOssCheckAllowsStandaloneWithoutTls() {
-    assertDoesNotThrow(() -> new MongodbDestination().enforceCloudTls(standaloneConfigWithoutTls()));
+    assertDoesNotThrow(() -> new MongodbDestination().enforceCloudTls(standaloneConfigWithTlsDisabled()));
   }
 
 }

@@ -111,9 +111,14 @@ public class MongodbDestination extends BaseConnector implements Destination {
     }
     final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
     final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
-    if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
+    if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !standaloneTlsEnabled(instanceConfig)) {
       throw new ConfigErrorException(TLS_REQUIRED_ERR_MSG);
     }
+  }
+
+  /** TLS is enabled by default when the standalone instance config omits the property. */
+  private static boolean standaloneTlsEnabled(final JsonNode instanceConfig) {
+    return !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
   }
 
   @Override
@@ -215,8 +220,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
     switch (instance) {
       case STANDALONE -> {
-        // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
-        final var tls = !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
+        final var tls = standaloneTlsEnabled(instanceConfig);
         connectionStrBuilder.append(
             String.format(MongoUtils.MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
                 instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
