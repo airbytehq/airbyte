@@ -76,11 +76,22 @@ class GlobalMemoryManager(val maxMemoryBytes: Long) {
      */
     fun free(bytes: Long) {
         logger.info { "Freeing $bytes bytes.." }
-        currentMemoryBytes.addAndGet(-bytes)
-
-        val currentMemory = currentMemoryBytes.get()
-        if (currentMemory < 0) {
-            logger.info { "Freed more memory than allocated ($bytes of ${currentMemory + bytes })" }
+        // CAS loop to clamp currentMemoryBytes to 0 when freeing more than allocated.
+        // Without this clamp, currentMemoryBytes can go negative, which disables the
+        // backpressure gate in requestMemory() and leads to unbounded buffering / OOM.
+        while (true) {
+            val current = currentMemoryBytes.get()
+            val newValue = maxOf(current - bytes, 0L)
+            if (currentMemoryBytes.compareAndSet(current, newValue)) {
+                if (current - bytes < 0) {
+                    logger.warn {
+                        "Freed more memory than allocated " +
+                            "(requested to free $bytes bytes, but only $current were allocated). " +
+                            "Clamped to 0 to preserve backpressure."
+                    }
+                }
+                break
+            }
         }
     }
 
