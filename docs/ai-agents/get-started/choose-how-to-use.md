@@ -111,7 +111,7 @@ Choose the API when you need HTTP-level control, are working outside Python, or 
 
 The [Airbyte model](../interfaces/model) is a natural language interface. Your client sends a question to Airbyte the same way it would send one to any other model, and Airbyte queries your connectors and answers in plain language. Change a base URL, a model name, and an API key, and you're done.
 
-Choose the Airbyte model when you want Airbyte to be the agent inside a client you already use, and you don't need that client's own tools, prompts, or structured output. This interface is in public alpha, and your organization must have it enabled.
+Choose the Airbyte model when you want Airbyte to be the agent inside a client you already use, and you don't need that client's own tools, prompts, or structured output. This interface is in public alpha.
 
 **Get started:** see the [Airbyte model docs](../interfaces/model) for setup instructions for Codex, Claude Code, pydantic-AI, and raw HTTP clients.
 

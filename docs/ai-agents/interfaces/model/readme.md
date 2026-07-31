@@ -12,7 +12,7 @@ To your coding agent or client, Airbyte looks like a normal model. There's nothi
 
 :::note Public alpha
 
-The Airbyte model is in public alpha. It's available on request, and its behavior, limits, and setup steps can change. To use it, ask your Airbyte contact to enable it for your organization. Until they do, the **API Keys** page doesn't appear in the web app and requests return `404`.
+The Airbyte model is in public alpha. Its behavior, limits, and setup steps can change.
 
 :::
 
@@ -38,7 +38,7 @@ For a side-by-side comparison of all interfaces, see [Choose how to use Airbyte 
 
 Before you begin, make sure you have the following:
 
-- **An Airbyte Agents account with the Airbyte model enabled.** Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
+- **An Airbyte Agents account.** Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
 
 - **An API key.** See [API keys](../../admin/api-keys.md).
 
@@ -245,7 +245,6 @@ Airbyte model activity doesn't appear on the [Sessions](../../admin/sessions.md)
 
 | What you see | What it means |
 | --- | --- |
-| `404`, or no **API Keys** page in the web app | The Airbyte model isn't enabled for your organization. Contact your Airbyte representative. |
 | `401` | Your key is wrong, revoked, or expired. Create a new one. |
 | A request to pin a source | The workspace has more than five sources and the question didn't name one. Name the connector or send `X-Airbyte-Source-Id`. |
 | `503`, or an answer saying data isn't ready | The source hasn't finished its initial sync. Counts and aggregates need the [Context Store](../../concepts/context-store.md) to be populated. Wait and try again. |

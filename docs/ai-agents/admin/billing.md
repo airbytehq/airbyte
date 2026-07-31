@@ -69,7 +69,7 @@ Use the toggle to switch between a table view and a chart view.
 
 Filter the Usage panel to focus on a specific source or time range:
 
-- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, SDK, CLI, and, if your organization has it enabled, Airbyte Model.
+- **Source**: Filter by where the activity originated. Sources include Chat, MCP, API, SDK, CLI, and Airbyte Model.
 - **Billing period**: Choose the current billing period or one of the last five billing periods.
 - **Custom range**: Pick any start and end date to view usage across an arbitrary window.
 

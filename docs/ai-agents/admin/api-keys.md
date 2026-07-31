@@ -8,7 +8,7 @@ API keys authenticate clients that use the [Airbyte model](../interfaces/model/r
 
 :::note Public alpha
 
-The Airbyte model is in public alpha. The **API Keys** page only appears if your organization has it enabled. To use it, ask your Airbyte contact to enable it.
+The Airbyte model is in public alpha. Its behavior, limits, and setup steps can change.
 
 :::
 
