@@ -127,6 +127,11 @@ jobs:
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      # Forks can opt into 1Password-backed smoke-test credentials by setting
+      # `AIRBYTE_TEST_CREDS_PROVIDER=1pass` and `AIRBYTE_TEST_CREDS_1PASS_SERVICE_TOKEN`
+      # in their repository vars/secrets, and optionally overriding the default vault name:
+      AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME: ${{ vars.AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME || 'connector-integration-test-creds' }}
+      AIRBYTE_TEST_CREDS_1PASS_SERVICE_TOKEN: ${{ secrets.AIRBYTE_TEST_CREDS_1PASS_SERVICE_TOKEN }}
       DD_TAGS: "connector.name:${{ matrix.connector }}"
       DOCKER_API_VERSION: "1.44"
 
@@ -253,6 +258,11 @@ jobs:
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      # Forks can opt into 1Password-backed smoke-test credentials by setting
+      # `AIRBYTE_TEST_CREDS_PROVIDER=1pass` and `AIRBYTE_TEST_CREDS_1PASS_SERVICE_TOKEN`
+      # in their repository vars/secrets, and optionally overriding the default vault name:
+      AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME: ${{ vars.AIRBYTE_TEST_CREDS_1PASS_VAULT_NAME || 'connector-integration-test-creds' }}
+      AIRBYTE_TEST_CREDS_1PASS_SERVICE_TOKEN: ${{ secrets.AIRBYTE_TEST_CREDS_1PASS_SERVICE_TOKEN }}
 
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}

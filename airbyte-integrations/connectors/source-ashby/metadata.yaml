@@ -36,6 +36,12 @@ data:
   supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
+    - suite: smokeTests
+      scenarios:
+        - name: default
+          configSettings:
+            api_key: "${secret-ref:ashby/test-credentials-api_key/api_key}"
+            start_date: "${relative-date:-P30D}"
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
   externalDocumentationUrls:
