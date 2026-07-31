@@ -12,9 +12,11 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteIndexBuilder
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
+import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
@@ -192,10 +194,42 @@ class GcsDataLakeStreamLoader(
             }
         }
 
+        val positionalDeletesEnabled =
+            stream.tableSchema.importType is Dedupe &&
+                icebergConfiguration.mergeOnReadDeleteEncoding ==
+                    MergeOnReadDeleteEncoding.POSITIONAL
+        val baseSnapshotId =
+            if (positionalDeletesEnabled) {
+                table.refs()[stagingBranchName]?.snapshotId()
+            } else {
+                null
+            }
+        val identifierFieldIds =
+            if (positionalDeletesEnabled) targetSchema.identifierFieldIds() else emptySet()
+        val positionalDeleteIndex =
+            if (positionalDeletesEnabled) {
+                val builder = PositionalDeleteIndexBuilder()
+                if (baseSnapshotId == null) {
+                    builder.empty(targetSchema, identifierFieldIds)
+                } else {
+                    builder.build(
+                        table = table,
+                        ref = stagingBranchName,
+                        schema = targetSchema,
+                        identifierFieldIds = identifierFieldIds,
+                    )
+                }
+            } else {
+                null
+            }
+
         val state =
             GcsDataLakeStreamState(
                 table = table,
                 schema = targetSchema,
+                stagingBranchName = stagingBranchName,
+                positionalDeleteIndex = positionalDeleteIndex,
+                baseSnapshotId = baseSnapshotId,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }

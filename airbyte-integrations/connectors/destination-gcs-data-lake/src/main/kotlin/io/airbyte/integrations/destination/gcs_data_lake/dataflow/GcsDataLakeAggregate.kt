@@ -33,9 +33,11 @@ class GcsDataLakeAggregate(
     private val schema: Schema,
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
+    private val baseSnapshotId: Long? = null,
 ) : Aggregate {
     companion object {
         val converter = AirbyteValueToIcebergRecord()
+        private val commitLock = Any()
     }
 
     private val operationType =
@@ -111,17 +113,31 @@ class GcsDataLakeAggregate(
 
         if (writeResult.deleteFiles().isNotEmpty()) {
             // Use row delta for updates/deletes (APPEND_DEDUP mode)
-            val delta = table.newRowDelta().toBranch(stagingBranchName)
-            writeResult.dataFiles().forEach { delta.addRows(it) }
-            writeResult.deleteFiles().forEach { delta.addDeletes(it) }
-            delta.commit()
+            synchronized(commitLock) {
+                val delta = table.newRowDelta().toBranch(stagingBranchName)
+                val validationSnapshotId =
+                    table.refs()[stagingBranchName]?.snapshotId() ?: baseSnapshotId
+                validationSnapshotId?.let {
+                    delta
+                        .validateFromSnapshot(it)
+                        .validateDeletedFiles()
+                        .validateNoConflictingDataFiles()
+                        .validateNoConflictingDeleteFiles()
+                }
+                writeResult.dataFiles().forEach { delta.addRows(it) }
+                writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                delta.commit()
+            }
         } else {
             // Use append for simple appends
-            val append = table.newAppend().toBranch(stagingBranchName)
-            writeResult.dataFiles().forEach { append.appendFile(it) }
-            append.commit()
+            synchronized(commitLock) {
+                val append = table.newAppend().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { append.appendFile(it) }
+                append.commit()
+            }
         }
 
         logger.info { "Flushed records to staging branch $stagingBranchName" }
     }
+
 }
