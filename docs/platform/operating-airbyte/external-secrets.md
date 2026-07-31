@@ -28,12 +28,69 @@ First, you'll need to create the appropriate permissions in your cloud provider 
 <Tabs>
 <TabItem value="aws" label="AWS" default>
 
-Follow the [AWS Secret Manager Policy](https://docs.airbyte.com/platform/enterprise-setup/implementation-guide#aws-secret-manager-policy) documentation to create the required IAM policy. This policy ensures Airbyte can create, read, update, and manage secrets while restricting access to only Airbyte-managed secrets.
+Create the following IAM policy in AWS. This policy ensures Airbyte can create, read, update, and manage secrets while restricting access to only Airbyte-managed secrets.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:CreateSecret",
+                "secretsmanager:ListSecrets",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:TagResource",
+                "secretsmanager:UpdateSecret"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "ForAllValues:StringEquals": {
+                    "secretsmanager:ResourceTag/AirbyteManaged": "true"
+                }
+            }
+        }
+    ]
+}
+```
 
 </TabItem>
 <TabItem value="azure" label="Azure">
 
-Follow the [Azure Key Vault Policy](https://docs.airbyte.com/platform/enterprise-setup/implementation-guide#azure-key-vault-policy) documentation to create the required permissions. This policy ensures Airbyte can create, read, update, and manage secrets while restricting access to only Airbyte-managed secrets.
+Airbyte requires the ability to write and read secrets in an Azure Key Vault. The built-in role that supports this is the **Key Vault Secrets Officer** role. Assign this role to the service principal that Airbyte uses to access your Key Vault.
+
+```json
+{
+    "id": "/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+    "properties": {
+        "roleName": "Key Vault Secrets Officer",
+        "description": "Perform any action on the secrets of a key vault, except manage permissions. Only works for key vaults that use the 'Azure role-based access control' permission model.",
+        "assignableScopes": ["/"],
+        "permissions": [
+            {
+                "actions": [
+                    "Microsoft.Authorization/*/read",
+                    "Microsoft.Insights/alertRules/*",
+                    "Microsoft.Resources/deployments/*",
+                    "Microsoft.Resources/subscriptions/resourceGroups/read",
+                    "Microsoft.Support/*",
+                    "Microsoft.KeyVault/checkNameAvailability/read",
+                    "Microsoft.KeyVault/deletedVaults/read",
+                    "Microsoft.KeyVault/locations/*/read",
+                    "Microsoft.KeyVault/vaults/*/read",
+                    "Microsoft.KeyVault/operations/read"
+                ],
+                "notActions": [],
+                "dataActions": ["Microsoft.KeyVault/vaults/secrets/*"],
+                "notDataActions": []
+            }
+        ]
+    }
+}
+```
 
 </TabItem>
 <TabItem value="gcp" label="Google Cloud">
@@ -388,13 +445,13 @@ After providing your configuration to Airbyte:
 
 - [AWS Secrets Manager Documentation](https://docs.aws.amazon.com/secretsmanager/)
 - [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html)
-- [Airbyte AWS Infrastructure Guide](https://docs.airbyte.com/platform/enterprise-setup/implementation-guide#aws-secret-manager-policy)
+
 
 ### Azure
 
 - [Azure Key Vault Documentation](https://docs.microsoft.com/azure/key-vault/)
 - [Microsoft Entra ID App Registration](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app)
-- [Airbyte Azure Infrastructure Guide](https://docs.airbyte.com/platform/enterprise-setup/implementation-guide#azure-key-vault-policy)
+
 
 ### GCP
 
