@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
@@ -35,6 +36,7 @@ import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.HasTableOperations
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
@@ -50,7 +52,7 @@ private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
 
-private const val VARIANT_FORMAT_VERSION = "3"
+private const val VARIANT_FORMAT_VERSION = 3
 
 @Singleton
 class IcebergUtil(
@@ -135,14 +137,34 @@ class IcebergUtil(
                     // Variant only exists in the v3 spec, so a variant column forces the table
                     // format version rather than leaving it at the catalog default.
                     if (schema.containsVariant()) {
-                        withProperty(FORMAT_VERSION, VARIANT_FORMAT_VERSION)
+                        withProperty(FORMAT_VERSION, VARIANT_FORMAT_VERSION.toString())
                     }
                 }
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
             logger.info { "Loading Iceberg table $tableIdentifier ..." }
-            catalog.loadTable(tableIdentifier)
+            catalog.loadTable(tableIdentifier).also {
+                if (schema.containsVariant()) {
+                    checkSupportsVariant(it, tableIdentifier.toString())
+                }
+            }
+        }
+    }
+
+    /**
+     * Variant columns cannot be added to a table below format version 3, and a string column can't
+     * be promoted to variant, so the table has to be recreated.
+     */
+    private fun checkSupportsVariant(table: Table, tableIdentifier: String) {
+        val formatVersion =
+            (table as? HasTableOperations)?.operations()?.current()?.formatVersion() ?: return
+        if (formatVersion < VARIANT_FORMAT_VERSION) {
+            throw ConfigErrorException(
+                "Iceberg table $tableIdentifier is at format version $formatVersion, but variant " +
+                    "columns require format version $VARIANT_FORMAT_VERSION. Reset this stream so " +
+                    "the table is recreated, or disable variant columns.",
+            )
         }
     }
 

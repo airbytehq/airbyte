@@ -4,6 +4,13 @@ ext {
     apacheParquetVersion = '1.17.1'
 }
 
+test {
+    // The variant round-trip test spins up real parquet/hadoop writers, which leaves the JVM in a
+    // state where mockk fails to resolve stubs in subsequent test classes. Give each class its own
+    // JVM rather than depending on which classes happen to share a worker.
+    forkEvery = 1
+}
+
 dependencies {
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
 
@@ -22,8 +29,17 @@ dependencies {
 
     testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:core:bulk-cdk-core-load"))
 
-    testImplementation "org.apache.parquet:parquet-hadoop:${project.ext.apacheParquetVersion}"
-    testImplementation 'org.apache.hadoop:hadoop-mapreduce-client-core:3.4.1'
+    // Only needed to write/read parquet files directly in tests. Kept non-transitive: the
+    // hadoop-mapreduce dependency tree otherwise downgrades jackson and friends for all tests.
+    testImplementation("org.apache.parquet:parquet-hadoop:${project.ext.apacheParquetVersion}") {
+        transitive = false
+    }
+    testImplementation("org.apache.parquet:parquet-column:${project.ext.apacheParquetVersion}") {
+        transitive = false
+    }
+    testImplementation('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.1') {
+        transitive = false
+    }
 
     testImplementation "io.mockk:mockk:1.13.12"
     testImplementation "org.assertj:assertj-core:3.26.3"

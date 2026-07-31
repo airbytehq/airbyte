@@ -108,12 +108,16 @@ class AirbyteValueToVariant {
         }
 
     /** Variant decimals are capped at precision 38; wider values are stored as doubles. */
-    private fun convertNumber(value: BigDecimal): VariantValue =
-        if (value.precision() <= MAX_DECIMAL_PRECISION && value.scale() >= 0) {
-            Variants.of(value)
+    private fun convertNumber(value: BigDecimal): VariantValue {
+        // A negative scale (e.g. 1E+3) isn't representable as a variant decimal, but rescaling to
+        // zero keeps the exact value as long as it still fits the precision budget.
+        val decimal = if (value.scale() < 0) value.setScale(0) else value
+        return if (decimal.precision() <= MAX_DECIMAL_PRECISION) {
+            Variants.of(decimal)
         } else {
-            Variants.of(value.toDouble())
+            Variants.of(decimal.toDouble())
         }
+    }
 
     private fun micros(time: LocalTime): Long = time.toNanoOfDay() / 1_000
 

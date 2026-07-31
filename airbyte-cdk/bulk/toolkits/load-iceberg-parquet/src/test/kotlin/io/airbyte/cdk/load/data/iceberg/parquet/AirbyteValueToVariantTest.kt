@@ -111,6 +111,17 @@ class AirbyteValueToVariantTest {
     }
 
     @Test
+    fun `converts negative scale decimals exactly`() {
+        val value = ObjectValue(linkedMapOf("scaled" to NumberValue(BigDecimal("1E+3"))))
+
+        val obj = converter.convert(value).value() as VariantObject
+
+        val scaled = obj.get("scaled") as VariantPrimitive<*>
+        assertEquals(PhysicalType.DECIMAL4, scaled.type())
+        assertEquals(BigDecimal("1000"), scaled.get())
+    }
+
+    @Test
     fun `converts top level scalars`() {
         val primitive = converter.convert(StringValue("scalar")).value() as VariantPrimitive<*>
 
