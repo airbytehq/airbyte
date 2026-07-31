@@ -76,7 +76,12 @@ internal class IcebergUtilVariantTest {
         val catalog = catalogWithExistingTable(formatVersion = 3)
 
         assertThrows<ConfigErrorException> {
-            icebergUtil.createTable(streamDescriptor, catalog, variantSchema, tableFormatVersion = 2)
+            icebergUtil.createTable(
+                streamDescriptor,
+                catalog,
+                variantSchema,
+                tableFormatVersion = 2
+            )
         }
     }
 
