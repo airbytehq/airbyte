@@ -66,7 +66,7 @@ class RedshiftCompoundPrimaryKeyDedupAcceptanceTest : RedshiftBaseAcceptanceTest
             )
 
         val keyA =
-            """{"pk1": 1, "pk2": null, "pk3": 3, "pk4": null, "pk5": 5, "pk6": 6, "pk7": null, "pk8": 8}"""
+            """{"pk1": 1, "pk2": 10, "pk3": 3, "pk4": 40, "pk5": 5, "pk6": 60, "pk7": 7, "pk8": 80}"""
         val keyB =
             """{"pk1": 2, "pk2": 20, "pk3": null, "pk4": 40, "pk5": null, "pk6": 60, "pk7": 70, "pk8": null}"""
 
