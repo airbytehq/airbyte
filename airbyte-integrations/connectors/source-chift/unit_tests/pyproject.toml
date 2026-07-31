@@ -13,6 +13,9 @@ python = "^3.10,<3.13"
 airbyte-cdk = "^7"
 pytest = "^8"
 pyyaml = "^6"
+# `airbyte_cdk.test.mock_http.HttpMocker` imports `requests_mock`, which the CDK does not
+# declare itself, so tests using it fail at collection without this.
+requests-mock = "^1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
