@@ -86,3 +86,21 @@ filter, the child stream can query malformed appearance partitions.
 **Why this matters:** Do not re-add a child `site_urls` router, remove the parent `RecordFilter`, or
 special-case upstream appearance values when touching keyword streams. The parent slice already carries
 both site and appearance context.
+
+### Deprecated appearance values
+
+Google retires `searchAppearance` values over time — FAQ rich result data is removed from the Search
+Console API in August 2026. No connector change is needed for a retired value: the parent stream is
+stateless (no `incremental_sync`, re-queried over the full configured date range every sync), so once
+Google stops listing a value the child simply stops requesting it, and `search_appearance` is a plain
+nullable string with no enum in the schemas.
+
+The one transition risk is asymmetric rollout — Google still listing a value in the parent response while
+rejecting it in the child `dimensionFilterGroups` filter. The `search_analytics_error_handler` therefore
+IGNOREs responses whose error message mentions `searchAppearance`, skipping that partition so the
+remaining appearance values still sync. That filter intentionally sets no `http_codes`: the CDK ORs
+`http_codes` with `error_message_contains`, so adding `400` would silently ignore every 400 response.
+
+Note that `search_appearance` is part of the primary key of the keyword streams, so rows already synced
+for a retired appearance value stay in the destination — there are no deletes — and re-syncing a
+historical window will no longer reproduce them.

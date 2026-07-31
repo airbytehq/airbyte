@@ -340,27 +340,29 @@ definitions:
         action: IGNORE
         error_message_contains: "User does not have sufficient permission"
         error_message: "{{ response['error']['message'] }}"
+      # Google retires `searchAppearance` values over time — FAQ rich result data is removed from the
+      # Search Console API in August 2026. The keyword streams discover appearance values from the
+      # `search_appearances` parent stream and then filter on them in `dimensionFilterGroups`, so during a
+      # transition window Google can still list a value in the parent response and reject that same value
+      # in the child request. Skip only the affected partition so the remaining appearance values still
+      # sync, instead of failing the whole stream.
+      #
+      # NOTE: `http_codes` is deliberately omitted. `http_codes` and `error_message_contains` are OR-ed,
+      # not AND-ed, so adding `400` here would ignore every 400 response and silently drop real errors.
       - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
-        http_codes: []
-        error_message_contains: "Invalid aggregationType"
+        action: IGNORE
+        error_message_contains: "searchAppearance"
         error_message: >-
-          Search Analytics aggregation type is invalid for this stream.
+          Google Search Console rejected the searchAppearance filter for this partition and it was
+          skipped: {{ response.get('error', {}).get('message', '') }}. This is expected for search
+          appearance values Google has deprecated, such as FAQ.
       - type: HttpResponseFilter
         action: FAIL
-        failure_type: config_error
-        http_codes: []
-        error_message_contains: "aggregationType"
-        error_message: >-
-          Search Analytics aggregation type is invalid for this stream.
-      - type: HttpResponseFilter
-        action: FAIL
-        failure_type: config_error
         http_codes:
           - 400
         error_message: >-
-          Google Search Console API rejected the Search Analytics request.
+          Invalid aggregationType '{{ parameters.get('aggregationType') }}' used in the body of the API request. If you see this error, enable the
+          'always_use_aggregation_type_auto' config setting which will automatically use aggregationType=auto
 
   oauth_authenticator:
     type: OAuthAuthenticator

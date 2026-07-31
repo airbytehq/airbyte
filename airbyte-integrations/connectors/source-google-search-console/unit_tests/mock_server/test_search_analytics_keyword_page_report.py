@@ -24,7 +24,7 @@ from freezegun import freeze_time
 from mock_server.config import ConfigBuilder
 from mock_server.response_builder import build_error_response, create_oauth_response
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -414,7 +414,14 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         assert len(state_messages) > 0, "Expected state message to be emitted"
 
     @HttpMocker()
-    def test_search_analytics_400_errors_use_sanitized_messages(self, http_mocker: HttpMocker) -> None:
+    def test_rejected_search_appearance_partition_is_skipped(self, http_mocker: HttpMocker) -> None:
+        """A rejected `searchAppearance` filter must skip that partition, not fail the stream.
+
+        Google removes FAQ rich result data from the Search Console API in August 2026. Because appearance
+        values are discovered from the `search_appearances` parent stream, Google can still list a value in
+        the parent response while rejecting that same value in the child request during the transition. The
+        remaining appearance values must keep syncing.
+        """
         http_mocker.post(_oauth_request(), create_oauth_response())
 
         config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
@@ -424,11 +431,24 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
 
             if body.get("dimensions") == ["searchAppearance"]:
                 return json.dumps(
-                    _build_search_appearances_response([{"keys": ["FAQ"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}])
+                    _build_search_appearances_response(
+                        [
+                            {"keys": ["FAQ"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["PRODUCT_SNIPPETS"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
                 )
 
-            context.status_code = 400
-            return build_error_response(400, "Unsupported searchAppearance filter value: FAQ").body
+            search_appearance = body["dimensionFilterGroups"][0]["filters"][0]["expression"]
+            if search_appearance == "FAQ":
+                context.status_code = 400
+                return build_error_response(400, "Unsupported filter value for dimension searchAppearance: FAQ").body
+
+            return json.dumps(
+                _build_search_analytics_response(
+                    [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query", "https://example.com/page1")]
+                )
+            )
 
         http_mocker._mocker.post(
             re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
@@ -436,13 +456,15 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         )
 
         output = self._read_stream(config)
-        trace_messages = [message for message in output.trace_messages if hasattr(message, "trace") and message.trace.error]
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+        error_traces = [message for message in output.trace_messages if hasattr(message, "trace") and message.trace.error]
 
-        assert trace_messages
-        assert trace_messages[0].trace.error.message == "Google Search Console API rejected the Search Analytics request."
-        assert trace_messages[0].trace.error.internal_message
-        assert "Unsupported searchAppearance filter value: FAQ" in trace_messages[0].trace.error.internal_message
-        assert trace_messages[0].trace.error.failure_type == FailureType.config_error
+        assert not error_traces, f"Rejected appearance partition must not fail the stream, got: {error_traces}"
+
+        emitted_appearances = {record.record.data["search_appearance"] for record in records}
+        assert emitted_appearances == {"PRODUCT_SNIPPETS"}, (
+            f"Expected only the accepted appearance to emit records, got: {emitted_appearances}"
+        )
 
     @HttpMocker()
     def test_faq_search_appearance_is_handled_as_discovered_value(self, http_mocker: HttpMocker) -> None:

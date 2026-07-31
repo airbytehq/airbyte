@@ -252,7 +252,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.9 | 2026-05-25 | [78401](https://github.com/airbytehq/airbyte/pull/78401) | Improve Search Analytics request error handling for unsupported upstream search appearance values. |
+| 2.1.9 | 2026-07-31 | [78401](https://github.com/airbytehq/airbyte/pull/78401) | Skip search appearance partitions that Google rejects (such as the deprecated `FAQ` appearance) instead of failing the keyword streams |
 | 2.1.8 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 2.1.7 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.1.5 — 2.1.6 is built on SDM 7.23.7, which breaks bundled custom components |
 | 2.1.6 | 2026-07-28 | [82942](https://github.com/airbytehq/airbyte/pull/82942) | Update dependencies |
