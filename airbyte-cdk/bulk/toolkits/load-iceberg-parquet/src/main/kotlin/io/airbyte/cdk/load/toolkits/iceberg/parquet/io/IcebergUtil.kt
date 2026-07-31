@@ -133,8 +133,18 @@ class IcebergUtil(
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         // Variant only exists in the v3 spec, so a variant column forces the format version even
         // when the destination didn't ask for a specific one.
+        val schemaContainsVariant = schema.containsVariant()
+        if (
+            schemaContainsVariant &&
+                tableFormatVersion != null &&
+                tableFormatVersion < VARIANT_FORMAT_VERSION
+        ) {
+            throw ConfigErrorException(
+                "Variant columns require Iceberg format version $VARIANT_FORMAT_VERSION.",
+            )
+        }
         val formatVersion =
-            tableFormatVersion ?: VARIANT_FORMAT_VERSION.takeIf { schema.containsVariant() }
+            tableFormatVersion ?: VARIANT_FORMAT_VERSION.takeIf { schemaContainsVariant }
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
@@ -166,11 +176,14 @@ class IcebergUtil(
         val currentFormatVersion =
             (table as? HasTableOperations)?.operations()?.current()?.formatVersion() ?: return
         if (currentFormatVersion < requiredFormatVersion) {
-            throw ConfigErrorException(
+            logger.error {
                 "Iceberg table $tableIdentifier is at format version $currentFormatVersion, but " +
-                    "the configured Iceberg settings require format version " +
-                    "$requiredFormatVersion. Reset this stream so the table is recreated, or " +
-                    "lower the configured format version.",
+                    "format version $requiredFormatVersion is required. Iceberg cannot upgrade a " +
+                    "table's format version in place, so the stream must be reset."
+            }
+            throw ConfigErrorException(
+                "Existing Iceberg table is at format version $currentFormatVersion, which is " +
+                    "lower than the configured format version $requiredFormatVersion.",
             )
         }
     }

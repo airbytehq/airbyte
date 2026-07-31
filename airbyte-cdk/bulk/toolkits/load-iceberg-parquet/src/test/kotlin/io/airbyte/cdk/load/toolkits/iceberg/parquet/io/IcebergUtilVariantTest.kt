@@ -17,6 +17,7 @@ import org.apache.iceberg.TableOperations
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -40,7 +41,7 @@ internal class IcebergUtilVariantTest {
                 icebergUtil.createTable(streamDescriptor, catalog, variantSchema)
             }
 
-        assert(exception.message!!.contains("format version 2"))
+        assertTrue(exception.message!!.contains("format version 2"))
     }
 
     @Test
@@ -67,6 +68,15 @@ internal class IcebergUtilVariantTest {
 
         assertDoesNotThrow {
             icebergUtil.createTable(streamDescriptor, catalog, stringSchema, tableFormatVersion = 2)
+        }
+    }
+
+    @Test
+    fun `a variant schema is rejected when a lower format version is configured`() {
+        val catalog = catalogWithExistingTable(formatVersion = 3)
+
+        assertThrows<ConfigErrorException> {
+            icebergUtil.createTable(streamDescriptor, catalog, variantSchema, tableFormatVersion = 2)
         }
     }
 
