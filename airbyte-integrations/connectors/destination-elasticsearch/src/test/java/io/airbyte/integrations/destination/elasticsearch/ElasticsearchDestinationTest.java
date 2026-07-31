@@ -46,7 +46,7 @@ public class ElasticsearchDestinationTest {
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
         .withExposedPorts(9200)
-        .withStartupTimeout(Duration.ofSeconds(60));
+        .withStartupTimeout(Duration.ofMinutes(5));
     container.start();
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
