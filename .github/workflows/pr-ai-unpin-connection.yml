@@ -20,6 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     name: AI Unpin Connections
     steps:
-      - name: No-op
+      - name: No-op-step
         if: github.event_name == 'workflow_dispatch'
         run: true
