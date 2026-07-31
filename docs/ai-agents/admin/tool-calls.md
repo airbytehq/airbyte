@@ -19,7 +19,9 @@ Airbyte classifies tool calls as one of the following types:
 
 Tool calls are the billable unit that most directly reflects the work your agents do. For Airbyte-managed agents, Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For agents you bring through the MCP, the API, the SDK, or the CLI, Airbyte bills tool calls only, not the reasoning your own model performs. For billing details, see [Billing and pricing](./billing.md).
 
-Tool calls can originate from any interface, including Chat, MCP, the API, the SDK, and the CLI. The Tool Calls page shows activity from all sources.
+Tool calls can originate from Chat, MCP, the API, the SDK, and the CLI. The Tool Calls page shows activity from those sources.
+
+The [Airbyte model](../interfaces/model/readme.md) is the exception. Its tool calls consume AOs and count toward your usage, but they aren't listed on this page. To see that activity, filter the Usage panel on the [Billing](./billing.md#filter-usage) page by the Airbyte Model source.
 
 ## How to interpret the table
 

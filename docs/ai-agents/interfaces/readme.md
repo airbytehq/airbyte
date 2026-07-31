@@ -12,6 +12,7 @@ Airbyte Agents supports several interfaces for working with your data and your a
 - [**SDK**](/ai-agents/interfaces/sdk): Python SDK for building, authenticating, and executing agent connectors directly in your Python applications. Best for Python-based agents you build and host yourself.
 - [**CLI**](/ai-agents/interfaces/cli): A shell-first interface for installing `airbyte-agent`, authenticating, adding connectors, and executing connector actions from scripts or agent harnesses. Best for shell scripts, CI jobs, and agent harnesses.
 - [**API**](/ai-agents/interfaces/api): HTTP API for managing connectors, tokens, and executing operations from any language or backend service. Best for non-Python backends, custom admin flows, and embedding the authentication module in your app.
+- [**Airbyte model**](/ai-agents/interfaces/model): A natural language interface that any OpenAI Responses or Anthropic Messages client can use as a model, including Codex and Claude Code. Best when you want an existing client to answer questions from your data without new tooling. This interface is in public alpha.
 
 import DocCardList from '@theme/DocCardList';
 
