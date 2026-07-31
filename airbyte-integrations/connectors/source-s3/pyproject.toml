@@ -22,7 +22,7 @@ wcmatch = "^10.0"
 dill = "^0.3.4"
 transformers = "^4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "7.22.0.post4.dev30664038147", allow-prereleases = true}
+airbyte-cdk = {extras = ["file-based"], version = "7.23.8.post9.dev30668220049", allow-prereleases = true}
 pendulum = "^3.0.0"
 psutil = "^7.0.0"
 numpy = ">=2.2.6,<3"
