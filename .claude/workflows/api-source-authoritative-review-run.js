@@ -5,6 +5,7 @@ export const meta = {
   whenToUse:
     'Invoke with args {pr: "<GitHub PR URL or number>"}. Optional args: repo, repoRoot, cdkRepo, outDir, outMd, outJson, outAppendix, outHtml, maxIndividualValidations. Produces pr-<N>-api-source-authoritative-findings.{md,json,html} plus -appendix.md under thoughts/reviews/. Expensive: typically 30-60 agents, 2-6M tokens, 1-5 hours.',
   phases: [
+    { title: 'Preflight', detail: 'prove Codex is actually usable with one real structured-output round trip before spending anything; abort the review if it is not' },
     { title: 'Prep', detail: 'resolve PR head; classify connector from PR-head metadata; stand up pinned-CDK + main worktrees; annotate the diff; collect versioning signals' },
     { title: 'Checks', detail: 'read the authoritative GitHub CI result (build, lint, format, tests, changelog), pull the real error for any failure, and record pending/skipped distinctly from passed' },
     { title: 'Grounding', detail: 'parallel: pinned-CDK deep-dive (vs main), third-party API docs, sibling-connector precedent — all as challengeable evidence' },
@@ -55,6 +56,12 @@ const MAX_INDIVIDUAL = typeof A.maxIndividualValidations === 'number' ? A.maxInd
 // model diversity. Every Claude agent inherits the session model — no model
 // override anywhere in this workflow, and no model version is ever asserted in
 // a report. Provenance is built from what actually ran.
+// Codex is a REQUIRED reviewer, not a nice-to-have: the whole point of this
+// harness is that findings survived two independent models. A run without it is
+// a different, weaker product, so by default an unusable Codex aborts the review
+// before it spends anything. Set allowMissingCodex: true to knowingly accept a
+// Claude-only review - it is recorded as a degradation in every output.
+const ALLOW_MISSING_CODEX = A.allowMissingCodex === true
 const CODEX_MODEL = A.codexModel || 'gpt-5.5'
 const CODEX_TIMEOUT = A.codexTimeoutSeconds || 1500
 const CODEX_EFFORT = A.codexEffort || 'high'
@@ -308,6 +315,21 @@ const REVIEWER_SCHEMA = {
     error: { type: 'string' },
   },
   required: ['findings'],
+}
+
+const PREFLIGHT_SCHEMA = {
+  type: 'object',
+  properties: {
+    codex_available: { type: 'boolean' },
+    round_trip_ok: { type: 'boolean' },
+    codex_version: { type: 'string' },
+    model: { type: 'string' },
+    elapsed_seconds: { type: 'number' },
+    failure_stage: { type: 'string', enum: ['binary_missing', 'auth', 'schema_rejected', 'model_unavailable', 'timeout', 'bad_output', 'other', 'none'] },
+    detail: { type: 'string' },
+    remedy: { type: 'string' },
+  },
+  required: ['codex_available', 'round_trip_ok', 'failure_stage', 'detail'],
 }
 
 const CODEX_LAUNCH_SCHEMA = {
@@ -882,6 +904,7 @@ const coverage = {
   review_status: 'complete',
   degradations: [],
   panels: { claude: { ok: 0, failed: 0, detail: [] }, codex: { ok: 0, failed: 0, detail: [] } },
+  codex_preflight: { ran: false, usable: null, failure_stage: null, detail: null, allow_missing: ALLOW_MISSING_CODEX },
   briefs: { cdk: false, api: false, sibling: false },
   checks: { ran: false, ci_available: null, connector_ci_ran: null, tally: null, any_failed: null, failing: [], pending: [], experiments: [] },
   validation: { findings: 0, claude_verdicts: 0, codex_verdicts: 0, individual: 0, batched: 0 },
@@ -894,11 +917,96 @@ function degrade(status, message) {
   log('DEGRADED (' + status + '): ' + message)
 }
 
+// Recorded by the Preflight phase and surfaced in every output.
+let codexPreflight = null
+
 let prep = null
 // Set only when the run reaches its return. Teardown reads it to decide whether
 // the CDK worktrees are safe to delete or must be kept for a resume.
 let completedCleanly = false
 try {
+
+// ---------------------------------------------------------------------------
+// Phase 0: Preflight. Prove Codex is genuinely usable BEFORE spending anything.
+//
+// `which codex` is not a sufficient test - none of the real failures look like a
+// missing binary. Observed so far: a 400 because the schema was not OpenAI
+// strict-mode, a process that never returns, and an empty result file. So this
+// does one complete round trip with the SAME strict schema the panels use, and
+// treats anything short of valid parsed JSON as unavailable.
+// ---------------------------------------------------------------------------
+phase('Preflight')
+log('Preflight: proving Codex is usable before the review spends anything')
+const preflightDir = '/tmp/asar-codex-preflight'
+codexPreflight = await agent(
+  [
+    'You are the Codex preflight agent. Prove that Codex is genuinely usable on this machine RIGHT NOW, before an expensive review begins. Answer one question: would a Codex reviewer actually return structured findings if we asked it to?',
+    '',
+    'Do NOT settle for "the binary exists". None of the real failures look like a missing binary - they look like a rejected schema, an expired login, a model name that no longer resolves, or a process that never returns. Only a complete round trip proves usability.',
+    '',
+    'STEP 1 - mkdir -p ' + preflightDir,
+    '',
+    'STEP 2 - Record the CLI version: codex --version (capture it; if the command is not found, that is failure_stage="binary_missing" and you can stop).',
+    '',
+    'STEP 3 - Write ' + preflightDir + '/schema.json with EXACTLY this JSON. It is the SAME strict schema the review panels use, so a rejection here is a rejection there:',
+    JSON.stringify(strictify(REVIEWER_SCHEMA)),
+    '',
+    'STEP 4 - Write ' + preflightDir + '/prompt.md with exactly this text:',
+    'Return findings as an empty array, zero_findings_note as the string "preflight ok", and error as null. Do not read any files.',
+    '',
+    'STEP 5 - Run the round trip IN THE BACKGROUND (run_in_background: true - it takes a minute or two and a foreground call would look like a stall):',
+    'python3 ' + (REPO_ROOT_HINT || '$(git rev-parse --show-toplevel)') + '/.claude/scripts/run_codex_structured_output.py --schema-path ' + preflightDir + '/schema.json --prompt-file ' + preflightDir + '/prompt.md --result-path ' + preflightDir + '/result.json --raw-output-path ' + preflightDir + '/raw.txt --cwd /tmp --timeout-seconds 240 --model ' + CODEX_MODEL + ' --reasoning-effort low --sandbox read-only',
+    '',
+    'STEP 6 - When it returns, read ' + preflightDir + '/result.json. round_trip_ok is true ONLY IF the file exists, parses as JSON, and contains a "findings" key. Anything else is false.',
+    '',
+    'CLASSIFY the failure precisely into failure_stage, because the user sees this and needs to know what to fix:',
+    '  binary_missing     - codex is not on PATH',
+    '  auth               - 401/403, "not logged in", "please run codex login"',
+    '  model_unavailable  - the model ' + CODEX_MODEL + ' was rejected or not found',
+    '  schema_rejected    - a 400 mentioning invalid_json_schema / additionalProperties / required',
+    '  timeout            - the script reported a timeout',
+    '  bad_output         - the run exited 0 but wrote no file, an empty file, or invalid JSON',
+    '  other              - anything else; quote the stderr tail',
+    '  none               - it worked',
+    'Set remedy to the concrete command or action that would fix it (e.g. "run: codex login", "set args.codexModel to a model this account can use").',
+    '',
+    'Quote the actual stderr tail in detail - a vague failure here wastes someone an hour later.',
+    '',
+    'Return via StructuredOutput: codex_available (the binary runs at all), round_trip_ok (the full structured round trip succeeded), codex_version, model, elapsed_seconds, failure_stage, detail, remedy.',
+  ].join('\n'),
+  { label: 'preflight:codex', phase: 'Preflight', schema: PREFLIGHT_SCHEMA },
+)
+
+const codexUsable = !!(codexPreflight && codexPreflight.round_trip_ok)
+coverage.codex_preflight = {
+  ran: true,
+  usable: codexUsable,
+  failure_stage: (codexPreflight && codexPreflight.failure_stage) || null,
+  detail: (codexPreflight && codexPreflight.detail) || null,
+  allow_missing: ALLOW_MISSING_CODEX,
+}
+if (codexUsable) {
+  log('Preflight: Codex OK (' + (codexPreflight.codex_version || 'version unknown') + ', model ' + (codexPreflight.model || CODEX_MODEL) + ')')
+} else {
+  const stage = (codexPreflight && codexPreflight.failure_stage) || 'other'
+  const detail = (codexPreflight && codexPreflight.detail) || 'the preflight agent returned nothing'
+  const remedy = (codexPreflight && codexPreflight.remedy) || 'check that the codex CLI is installed and authenticated, then re-run'
+  const summary = 'Codex is not usable (' + stage + '): ' + detail + ' | Remedy: ' + remedy
+  if (!ALLOW_MISSING_CODEX) {
+    // Abort BEFORE Prep. Nothing has been spent, no worktree exists, and the
+    // caller gets a specific reason rather than a half-finished single-model
+    // review wearing an "authoritative" label.
+    throw new Error(
+      'CODEX_UNAVAILABLE - the review was not started.\n\n' + summary + '\n\n' +
+      'This harness treats Codex as a REQUIRED second reviewer: its whole claim is that findings survived two independent models, ' +
+      'so a Claude-only run is a materially weaker product and is not produced silently.\n' +
+      'Fix the above and re-run, or pass allowMissingCodex: true to knowingly accept a single-model review ' +
+      '(it will be labelled DEGRADED in every output).',
+    )
+  }
+  degrade('degraded', 'SINGLE-MODEL REVIEW: Codex was unusable at preflight and allowMissingCodex was set, so every finding below was generated and validated by one model only. ' + summary)
+  log('Preflight: Codex unusable but allowMissingCodex=true - continuing as a single-model review')
+}
 
 // ---------------------------------------------------------------------------
 // Phase 1: Prep
@@ -1531,6 +1639,7 @@ const provenance = [
   'Findings were mechanically anchored to changed lines, merged, then validated (' + coverage.validation.claude_verdicts + '/' +
     coverage.validation.findings + ' Claude verdicts, ' + coverage.validation.codex_verdicts + '/' + coverage.validation.findings +
     ' Codex verdicts) and reconciled.',
+  'Codex preflight: ' + (coverage.codex_preflight.usable ? 'passed a full structured round trip before the review began' : 'FAILED (' + (coverage.codex_preflight.failure_stage || 'unknown') + ') - this run proceeded as a SINGLE-MODEL review under allowMissingCodex') + '.',
   'Review status: ' + coverage.review_status.toUpperCase() + '.',
   'Claude-side agents ran on the session model; no model version is asserted here.',
 ].join(' ')
@@ -1616,6 +1725,7 @@ if (!agg.files_verified) degrade('degraded', 'the aggregation agent could not ve
 completedCleanly = true
 return {
   review_status: coverage.review_status,
+  codex_preflight: coverage.codex_preflight,
   degradations: coverage.degradations,
   pr: prep.repo + '#' + prep.pr_number,
   connector: prep.connector,

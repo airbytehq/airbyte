@@ -1,6 +1,6 @@
 ---
 name: api-source-authoritative-review
-description: Authoritative, multi-agent PR review for API-source connectors (manifest-only, low-code + components, hybrid, custom Python, file-based API), grounded in the connector's ACTUAL pinned airbyte-cdk version. Use for high-stakes connector PRs when you want findings that have survived CI cross-checking, independent generation, mechanical diff-anchoring, dual-reviewer validation (Claude + Codex), and reconciliation — not a quick pass. Expensive: 30-60 agents, 2-6M tokens, 1-5 hours. For a fast single-context review, use shared-airbyte-skills:review-api-source-pr instead.
+description: MANUAL ONLY — never invoke this on your own initiative. Run it only when the user explicitly types /api-source-authoritative-review or asks for this review by name; if a connector PR merely looks like it would benefit, suggest it and wait. Authoritative, multi-agent PR review for API-source connectors (manifest-only, low-code + components, hybrid, custom Python, file-based API), grounded in the connector's ACTUAL pinned airbyte-cdk version, producing findings that have survived CI cross-checking, independent generation, mechanical diff-anchoring, dual-reviewer validation (Claude + Codex), and reconciliation. Requires a working codex CLI and aborts before starting without one. Expensive: 30-60 agents, 2-6M tokens, 1-5 hours. For a fast single-context review, use shared-airbyte-skills:review-api-source-pr instead.
 disable-model-invocation: true
 argument-hint: [pr-number-or-url]
 ---
@@ -23,7 +23,8 @@ Workflow({ name: "api-source-authoritative-review-run", args: { pr: "<$ARGUMENTS
 ```
 
 Optional args: `repo`, `repoRoot`, `cdkRepo`, `outDir`, `outMd`, `outJson`, `outAppendix`,
-`outHtml`, `maxIndividualValidations`, `codexModel`, `codexTimeoutSeconds`, `codexEffort`.
+`outHtml`, `maxIndividualValidations`, `codexModel`, `codexTimeoutSeconds`, `codexEffort`,
+`allowMissingCodex`.
 Paths are **discovered at runtime** (repo root via `git rev-parse`, the CDK checkout via a
 sibling lookup) — pass `repoRoot` / `cdkRepo` only to override that.
 
@@ -53,6 +54,7 @@ mechanical diff-anchoring → merge/dedupe → dual-reviewer validation → reco
 
 | Phase | What happens |
 |-------|--------------|
+| **Preflight** | Prove Codex is genuinely usable with one real structured-output round trip, using the same strict schema the panels use. **Aborts the whole review** if it fails, before anything is spent |
 | **Prep** | Resolve the PR head; classify the connector from **PR-head `metadata.yaml` tags** plus a recursive manifest search; resolve the **pinned** CDK; stand up a worktree at that pinned version *and* one at `origin/main`; build a **line-annotated diff**; collect PR labels/title/review state for the versioning gate |
 | **Checks** | Two halves. **Read** the authoritative GitHub CI result (build, lint, format, connector tests, changelog, CodeQL, docs), pulling the real error text for any failure and judging whether it touches this diff, with **pending and skipped kept distinct from passed**. Then **run PR-specific experiments CI cannot do**: revert the fix and re-run the new tests, enumerate per-stream coverage, probe real emitted behaviour against mocked HTTP, run the suite under both pinned CDK versions |
 | **Grounding** | Parallel: **(a)** CDK deep-dive over the **pinned** worktree, with `origin/main` consulted only for upgrade deltas · **(b)** third-party API-doc grounding · **(c)** sibling-connector precedent |
@@ -110,6 +112,16 @@ reviewer asked whether a test exists has to be able to look in `unit_tests/`.
   stream to prove a per-stream change is complete; probe what the source actually emits
   against mocked HTTP; run the suite under both the `baseImage` CDK and the lockfile CDK.
   Delete either half and the phase gets materially worse.
+- **Codex is required, not optional.** The harness's central claim is that findings survived
+  two independent models. A run without Codex is a materially weaker product, so it is never
+  produced silently: Preflight proves Codex works before anything is spent and aborts if not.
+  Mid-run Codex losses still only degrade — one flaky panel should not throw away a 30-agent
+  run — but "no second model at all" is caught up front, where it costs nothing.
+- **Never invoked autonomously.** `disable-model-invocation: true` means Claude cannot load
+  this skill on its own; only an explicit `/api-source-authoritative-review` does. Given the
+  cost, that flag is load-bearing — do not remove it. Note the workflow
+  (`api-source-authoritative-review-run`) is separately invocable; it throws without an
+  `args.pr`, but there is no `disable-model-invocation` equivalent for workflows.
 - **No agent ever idles waiting on Codex.** Codex runs are launched detached, the Claude
   panels run as the wall-clock cushion, and a collector gathers results afterwards. The
   earlier design had one agent launch Codex and wait — it sat with nothing to emit and the
@@ -131,8 +143,14 @@ reviewer asked whether a test exists has to be able to look in `unit_tests/`.
   with `cdkRepo`). The workflow runs `git fetch origin --tags` and creates throwaway
   worktrees inside its run directory — **your checkout's branch and uncommitted work are
   untouched**, and teardown runs in a `finally` block on every exit path.
-- The `codex` CLI installed and authenticated. If Codex is unavailable the review still
-  completes on the Claude reviewers alone and the outage is recorded in the report.
+- **The `codex` CLI installed and authenticated — this is a hard requirement.** The
+  Preflight phase runs one real structured-output round trip (same strict schema the panels
+  use) and **aborts the entire review** if it fails, before Prep spends anything. The abort
+  message names the failure stage (`binary_missing` / `auth` / `model_unavailable` /
+  `schema_rejected` / `timeout` / `bad_output`) and the concrete remedy. Relay that reason to
+  the user verbatim — "it failed" is not a useful answer when the fix is `codex login`.
+  Pass `allowMissingCodex: true` to knowingly run a single-model review; it is labelled
+  DEGRADED in every output and the provenance line says so.
 - **Allowlist the commands the agents need, or the background run will block on permission
   prompts you aren't watching.** Workflow agents still hit permission checks. At minimum:
   `Bash(git show:*)`, `Bash(git ls-tree:*)`, `Bash(git worktree:*)`, `Bash(git rev-parse:*)`,
@@ -172,8 +190,13 @@ fix-before-merge guidance. **"Approved" is only permitted when coverage is compl
 
 ## After the run
 
-Check `review_status` first. If it is `degraded` or `incomplete`, say so to the user and do
-not offer to post until they have seen why.
+If the run aborted with `CODEX_UNAVAILABLE`, no review happened at all. Tell the user the
+failure stage and the remedy from the error message, and offer either to re-run once fixed or
+to re-run with `allowMissingCodex: true` for a single-model review — do not silently fall back
+to the latter.
+
+Otherwise check `review_status` first. If it is `degraded` or `incomplete`, say so to the user
+and do not offer to post until they have seen why.
 
 Then offer to post the author-facing report as a PR comment (do not post without explicit
 approval). The report already carries its AI-attribution line — do **not** add a second one:
