@@ -35,7 +35,8 @@ class BigQueryUtilsExecuteBigQueryOperationTest {
 
     @Test
     fun `non-interrupted BigQuery exception is rethrown`() {
-        val bigQueryException = BigQueryException(500, "operation failed", RuntimeException("cause"))
+        val bigQueryException =
+            BigQueryException(500, "operation failed", RuntimeException("cause"))
 
         val thrown =
             assertThrows<BigQueryException> {

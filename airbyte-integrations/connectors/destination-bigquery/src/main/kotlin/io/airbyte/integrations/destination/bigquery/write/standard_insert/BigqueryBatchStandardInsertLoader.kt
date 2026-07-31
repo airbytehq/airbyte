@@ -76,9 +76,7 @@ class BigqueryBatchStandardInsertsLoader(
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
 
         if (this::writer.isInitialized) {
-            BigQueryUtils.executeBigQueryOperation {
-                writer.write(ByteBuffer.wrap(byteArray))
-            }
+            BigQueryUtils.executeBigQueryOperation { writer.write(ByteBuffer.wrap(byteArray)) }
         } else {
             buffer!!.write(byteArray)
             // the default chunk size on the TableDataWriteChannel is 15MB,
@@ -135,9 +133,7 @@ class BigqueryBatchStandardInsertsLoader(
         val byteArray = buffer!!.toByteArray()
         // please GC this object :)
         buffer = null
-        BigQueryUtils.executeBigQueryOperation {
-            writer.write(ByteBuffer.wrap(byteArray))
-        }
+        BigQueryUtils.executeBigQueryOperation { writer.write(ByteBuffer.wrap(byteArray)) }
     }
 }
 

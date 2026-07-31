@@ -42,10 +42,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
         every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
 
         val loader = loader()
-        val thrown =
-            assertThrows<ConfigErrorException> {
-                runBlocking { loader.accept(record()) }
-            }
+        val thrown = assertThrows<ConfigErrorException> { runBlocking { loader.accept(record()) } }
 
         assertEquals(
             BigqueryBatchStandardInsertsLoaderFactory.CONFIG_ERROR_MSG + exception,
@@ -61,10 +58,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
         every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
 
         val loader = loader()
-        val thrown =
-            assertThrows<BigQueryException> {
-                runBlocking { loader.accept(record()) }
-            }
+        val thrown = assertThrows<BigQueryException> { runBlocking { loader.accept(record()) } }
 
         assertEquals(exception.code, thrown.code)
         assertEquals(exception.message, thrown.message)
@@ -87,9 +81,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
         try {
             val loader = loader()
             val thrown =
-                assertThrows<TransientErrorException> {
-                    runBlocking { loader.accept(record()) }
-                }
+                assertThrows<TransientErrorException> { runBlocking { loader.accept(record()) } }
 
             assertEquals(exception, thrown.cause)
             assertTrue(Thread.currentThread().isInterrupted)
