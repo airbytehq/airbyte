@@ -5,23 +5,29 @@
 package io.airbyte.integrations.destination.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.NoOpJdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.RawOnlySqlGenerator;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -51,17 +57,58 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
     TCPS
   }
 
+  private final FeatureFlags featureFlags;
+
   public OracleDestination() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  OracleDestination(final FeatureFlags featureFlags) {
     super(DRIVER_CLASS, new OracleNameTransformer(), new OracleOperations("users"));
     System.setProperty("oracle.jdbc.timezoneAsRegion", "false");
+    this.featureFlags = featureFlags;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new OracleDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
+  /**
+   * When running in cloud deployment mode, remove the encryption option from the spec to enforce
+   * encryption. This replaces the need for a separate strict-encrypt connector.
+   */
   @Override
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (cloudDeploymentMode()) {
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.ENCRYPTION_KEY);
+    }
+    return spec;
+  }
+
+  /**
+   * In cloud deployments encryption is mandatory, so any encryption settings from the config are
+   * replaced with client network native encryption.
+   */
+  @VisibleForTesting
+  JsonNode withEnforcedEncryption(final JsonNode config) {
+    if (!cloudDeploymentMode()) {
+      return config;
+    }
+    final JsonNode clonedConfig = Jsons.clone(config);
+    ((ObjectNode) clonedConfig).set(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.of(
+        ENCRYPTION_METHOD_KEY, "client_nne",
+        "encryption_algorithm", "AES256")));
+    return clonedConfig;
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode originalConfig) {
+    final JsonNode config = withEnforcedEncryption(originalConfig);
     final HashMap<String, String> properties = new HashMap<>();
     if (config.has(JdbcUtils.ENCRYPTION_KEY)) {
       final JsonNode encryption = config.get(JdbcUtils.ENCRYPTION_KEY);
@@ -113,7 +160,8 @@ public class OracleDestination extends AbstractJdbcDestination<MinimumDestinatio
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  protected Protocol obtainConnectionProtocol(final JsonNode config) {
+  protected Protocol obtainConnectionProtocol(final JsonNode originalConfig) {
+    final JsonNode config = withEnforcedEncryption(originalConfig);
     if (!config.has(JdbcUtils.ENCRYPTION_KEY)) {
       return Protocol.TCP;
     }
