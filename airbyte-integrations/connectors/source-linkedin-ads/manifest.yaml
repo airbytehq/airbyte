@@ -1710,7 +1710,7 @@ dynamic_streams:
           value: "(value:{{components_values['time_granularity']}})"
         - type: ComponentMappingDefinition
           field_path:
-            ["retriever","record_selector","**","transformations","1","fields","0","value"]
+            ["transformations","1","fields","0","value"]
           value: "{{components_values['pivot_by']}}"
   - type: DynamicDeclarativeStream
     stream_template:
