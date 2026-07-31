@@ -49,11 +49,16 @@ class GcsDataLakeStreamLoader(
     private val incomingSchema = computeIncomingSchema(false)
 
     private fun computeIncomingSchema(withIdentifierFields: Boolean) =
-        icebergUtil.toIcebergSchema(stream = stream).let { schema ->
-            // Transform the schema to use mapped column names for BigLake compatibility.
-            // BigLake rejects table creation with special characters in column names.
-            transformSchemaWithMappedNames(schema, withIdentifierFields)
-        }
+        icebergUtil
+            .toIcebergSchema(
+                stream = stream,
+                useVariant = icebergConfiguration.useVariantTypes,
+            )
+            .let { schema ->
+                // Transform the schema to use mapped column names for BigLake compatibility.
+                // BigLake rejects table creation with special characters in column names.
+                transformSchemaWithMappedNames(schema, withIdentifierFields)
+            }
 
     /**
      * Transforms an Iceberg schema to use mapped column names. This ensures column names are
@@ -127,6 +132,7 @@ class GcsDataLakeStreamLoader(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
                 schema = incomingSchema,
+                tableFormatVersion = icebergConfiguration.tableFormatVersion.formatVersion,
             )
 
         // Reconcile identifier fields after BigLake creates the table

@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -30,7 +31,7 @@ import java.math.BigInteger
  * with stringifyObjects), not here.
  */
 @Singleton
-class GcsDataLakeValueCoercer : ValueCoercer {
+class GcsDataLakeValueCoercer(private val config: GcsDataLakeConfiguration) : ValueCoercer {
     companion object {
         // Cache these BigDecimal/BigInteger constants to avoid expensive allocations
         // and BigInteger.pow() operations on every validation call
@@ -43,7 +44,8 @@ class GcsDataLakeValueCoercer : ValueCoercer {
         // Stringify union values - this happens during Parse stage where we still
         // have type information to know which fields are unions
         // Note: Null values should NOT be stringified - they stay as NullValue
-        if (value.type is UnionType && value.abValue !is NullValue) {
+        // Variant columns hold the union value directly, so stringifying would lose its type.
+        if (!config.useVariantTypes && value.type is UnionType && value.abValue !is NullValue) {
             value.abValue = StringValue(value.abValue.serializeToString())
         }
         return value

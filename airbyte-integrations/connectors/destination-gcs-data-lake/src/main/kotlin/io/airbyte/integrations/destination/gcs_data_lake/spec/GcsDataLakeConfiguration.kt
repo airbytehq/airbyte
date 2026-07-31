@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.gcs_data_lake.spec
 
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.auth.oauth2.ServiceAccountCredentials
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
@@ -24,7 +25,18 @@ data class GcsDataLakeConfiguration(
     val gcsEndpoint: String?,
     val namespace: String,
     val gcsCatalogConfiguration: GcsCatalogConfiguration,
+    val tableFormatVersion: IcebergTableFormatVersion = IcebergTableFormatVersion.V2,
+    val useVariantTypes: Boolean = false,
 ) : DestinationConfiguration() {
+
+    init {
+        if (useVariantTypes && tableFormatVersion != IcebergTableFormatVersion.V3) {
+            throw ConfigErrorException(
+                "Variant types require Iceberg table format version v3, but the configured " +
+                    "format version is ${tableFormatVersion.specValue}.",
+            )
+        }
+    }
 
     // Lazy-loaded credentials from service account JSON with proper OAuth scopes
     val googleCredentials: GoogleCredentials by lazy {
@@ -72,6 +84,8 @@ class GcsDataLakeConfigurationFactory :
             gcsEndpoint = pojo.gcsEndpoint,
             namespace = pojo.namespace,
             gcsCatalogConfiguration = pojo.toGcsCatalogConfiguration(),
+            tableFormatVersion = pojo.tableFormatVersion,
+            useVariantTypes = pojo.useVariantTypes,
         )
     }
 }
