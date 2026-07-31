@@ -46,7 +46,7 @@ data:
       url: https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy
       type: api_deprecations
     - title: Changelog
-      url: https://developers.klaviyo.com/en/docs/changelog_
+      url: https://developers.klaviyo.com/en/docs/changelog
       type: api_release_history
     - title: Developer Group
       url: https://community.klaviyo.com/groups/developer-group-64
