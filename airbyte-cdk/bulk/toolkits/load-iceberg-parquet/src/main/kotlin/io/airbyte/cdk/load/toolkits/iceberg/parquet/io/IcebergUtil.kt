@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteValueToIcebergRecord
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
 import io.airbyte.cdk.load.data.withAirbyteMeta
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergCompatibilityLevel
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
@@ -121,22 +120,21 @@ class IcebergUtil(
      * created.
      * @param schema The Iceberg [Schema] associated with the [Table].
      * @param properties The [Table] configuration properties derived from the [Catalog].
-     * @param compatibilityLevel The Iceberg spec level to create the table at. When null, the
-     * table format version is left at the catalog default unless the schema requires otherwise.
+     * @param tableFormatVersion The Iceberg format version to create the table at. When null, the
+     * format version is left at the catalog default unless the schema requires otherwise.
      * @return The Iceberg [Table], created if it does not yet exist.
      */
     fun createTable(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
         schema: Schema,
-        compatibilityLevel: IcebergCompatibilityLevel? = null,
+        tableFormatVersion: Int? = null,
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
         // Variant only exists in the v3 spec, so a variant column forces the format version even
-        // when the destination didn't ask for a specific compatibility level.
+        // when the destination didn't ask for a specific one.
         val formatVersion =
-            compatibilityLevel?.formatVersion
-                ?: VARIANT_FORMAT_VERSION.takeIf { schema.containsVariant() }
+            tableFormatVersion ?: VARIANT_FORMAT_VERSION.takeIf { schema.containsVariant() }
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
@@ -172,9 +170,9 @@ class IcebergUtil(
         if (currentFormatVersion < requiredFormatVersion) {
             throw ConfigErrorException(
                 "Iceberg table $tableIdentifier is at format version $currentFormatVersion, but " +
-                    "the configured Iceberg compatibility level requires format version " +
+                    "the configured Iceberg settings require format version " +
                     "$requiredFormatVersion. Reset this stream so the table is recreated, or " +
-                    "lower the compatibility level.",
+                    "lower the configured format version.",
             )
         }
     }

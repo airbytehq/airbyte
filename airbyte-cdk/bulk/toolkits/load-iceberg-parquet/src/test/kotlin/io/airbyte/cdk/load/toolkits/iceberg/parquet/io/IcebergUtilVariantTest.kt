@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValueCoercer
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergCompatibilityLevel
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.mockk.every
 import io.mockk.mockk
@@ -57,12 +56,7 @@ internal class IcebergUtilVariantTest {
         val stringSchema = Schema(Types.NestedField.optional(1, "payload", Types.StringType.get()))
 
         assertThrows<ConfigErrorException> {
-            icebergUtil.createTable(
-                streamDescriptor,
-                catalog,
-                stringSchema,
-                IcebergCompatibilityLevel.V3,
-            )
+            icebergUtil.createTable(streamDescriptor, catalog, stringSchema, tableFormatVersion = 3)
         }
     }
 
@@ -72,12 +66,7 @@ internal class IcebergUtilVariantTest {
         val stringSchema = Schema(Types.NestedField.optional(1, "payload", Types.StringType.get()))
 
         assertDoesNotThrow {
-            icebergUtil.createTable(
-                streamDescriptor,
-                catalog,
-                stringSchema,
-                IcebergCompatibilityLevel.V2,
-            )
+            icebergUtil.createTable(streamDescriptor, catalog, stringSchema, tableFormatVersion = 2)
         }
     }
 
