@@ -41,9 +41,20 @@ Before you begin, make sure you've completed the following:
 
 - You need a Kubernetes cluster on which your data plane can run. For example, if you want your data plane to run on eu-west-1, create an EKS cluster on eu-west-1.
 
-- You need to use a [secrets manager](https://docs.airbyte.com/platform/deploying-airbyte/integrations/secrets) for the connections on your data plane. Modifying the configuration of connector secret storage will cause all existing connectors to fail, so we recommend only using newly created workspaces on the data plane.
+- You need to use a [secrets manager](/platform/deploying-airbyte/integrations/secrets) for the connections on your data plane. See [secrets manager requirements](#secrets-manager-requirements) below for details.
 
-- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](https://docs.airbyte.com/platform/using-airbyte/configuring-api-access).
+- If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](/platform/using-airbyte/configuring-api-access).
+
+### Secrets manager requirements {#secrets-manager-requirements}
+
+Enterprise Flex data planes require an external secrets manager for connector credentials. The same secrets manager must be configured on both the control plane and any data planes you deploy.
+
+- Use one of Airbyte's supported secrets managers: AWS Secrets Manager, Google Secret Manager, Azure Key Vault, or HashiCorp Vault. For Kubernetes secret manifests and `values.yaml` examples, see [Secret Management](/platform/deploying-airbyte/integrations/secrets).
+- The secrets manager configuration on a data plane must match the configuration on the control plane. Mismatched configuration prevents the data plane from reading credentials written by the control plane.
+- Only access key authentication is supported on data planes at this time.
+- Modifying the configuration of connector secret storage causes existing connectors to fail. Use newly created workspaces with the new data plane whenever possible.
+
+See [Get started with Enterprise Flex](/platform/enterprise-flex/getting-started#self-managed-data-planes) for additional self-managed data plane considerations.
 
 ### Infrastructure prerequisites
 
@@ -345,14 +356,23 @@ secretsManager:
 
 ## 5. Deploy your data plane {#step-5}
 
-In your command-line tool, deploy the data plane using `helm upgrade`. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
+First, add the Airbyte Helm chart repository and update your local index.
+
+```bash
+helm repo add airbyte https://airbytehq.github.io/charts
+helm repo update
+```
+
+The `airbyte-data-plane` chart is published to `https://airbytehq.github.io/charts`. You can browse all available chart versions on [Artifact Hub](https://artifacthub.io/packages/helm/airbyte/airbyte-data-plane).
+
+Then, deploy the data plane using `helm upgrade`. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
 
 ```bash title="Example using the default namespace in your cluster"
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.0.1 --values values.yaml
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.1.0 --values values.yaml
 ```
 
 ```bash title="Example using or creating a namespace called 'airbyte-dataplane'"
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.0.1 -n airbyte-dataplane --create-namespace --values values.yaml
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.1.0 -n airbyte-dataplane --create-namespace --values values.yaml
 ```
 
 ## 6. Associate a region to a workspace {#step-6}
