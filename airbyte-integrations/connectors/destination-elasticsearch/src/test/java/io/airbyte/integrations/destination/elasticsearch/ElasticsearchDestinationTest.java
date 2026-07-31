@@ -41,7 +41,7 @@ public class ElasticsearchDestinationTest {
 
   @BeforeAll
   public static void beforeAll() {
-    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.17.28")
         .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
