@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## July 31, 2026
+
+Other
+
+- Fixed an issue where very large scanned PDF files could disrupt file indexing for search. Oversized documents are now skipped so your other files continue to be indexed normally.
+
 ## July 21, 2026
 
 Web app
