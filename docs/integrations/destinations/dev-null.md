@@ -1,6 +1,20 @@
 # /dev/null Destination
 
-This destination is for testing of Airbyte connections. It can be set up as a source message logger, a `/dev/null`, or to mimic specific behaviors (e.g. exception during the sync). Please use it with discretion. This destination may log your data, and expose sensitive information.
+Use the `/dev/null` destination to test Airbyte connections without writing records to an external system. In self-managed Airbyte, you can configure this destination to discard records, log sampled records, slow down a sync, or fail after a specific number of messages. In Airbyte Cloud, only silent mode is available.
+
+Use this destination with discretion. Logging mode can write source records to connector logs and expose sensitive information.
+
+## Prerequisites
+
+This destination doesn't require an external account, network access, or credentials.
+
+## Setup guide
+
+1. Add a new destination and select **End-to-End Testing (/dev/null)**.
+2. Configure the destination mode.
+   - In Airbyte Cloud, the only available mode is **Silent**.
+   - In self-managed Airbyte, choose **Silent**, **Logging**, **Throttled**, or **Failing**.
+3. Click **Set up destination**.
 
 ## Supported sync modes
 
@@ -12,37 +26,56 @@ This destination is for testing of Airbyte connections. It can be set up as a so
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Mode
+## Modes
 
 ### Silent (`/dev/null`)
 
 **This is the only mode allowed on Airbyte Cloud.**
 
-This mode works as `/dev/null`. It does nothing about any data from the source connector. This is usually only useful for performance testing of the source connector.
+Silent mode discards all records and files. Use it when you want to test source performance or connection behavior without storing output data.
 
 ### Logging
 
-This mode logs the data from the source connector. It will log at most 1,000 data entries.
+Logging mode logs records from the source connector. It logs at most 1,000 records per stream.
 
-There are the different logging modes to choose from:
+Choose one of these logging modes:
 
 | Mode             | Notes                                                                                                                       | Parameters                                                                                                                                 |
 | :--------------- | :-------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
-| First N entries  | Log the first N number of data entries for each data stream.                                                                | N: how many entries to log.                                                                                                                |
-| Every N-th entry | Log every N-th entry for each data stream. When N=1, it will log every entry. When N=2, it will log every other entry. Etc. | N: the N-th entry to log. Max entry count: max number of entries to log.                                                                   |
-| Random sampling  | Log a random percentage of the entries for each data stream.                                                                | Sampling ratio: a number in range of `[0, 1]`. Optional seed: default to system epoch time. Max entry count: max number of entries to log. |
+| First N entries  | Log the first N records for each stream.                                                                                    | N: how many records to log.                                                                                                                |
+| Every N-th entry | Log every N-th record for each stream. When N is 1, it logs every record. When N is 2, it logs every other record.          | N: the N-th record to log. Max entry count: max number of records to log.                                                                  |
+| Random sampling  | Log a random percentage of the records for each stream.                                                                     | Sampling ratio: a number in range of `[0, 1]`. Optional seed: default to system epoch time. Max entry count: max number of records to log. |
 
 ### Throttling
 
-This mode mimics a slow data sync. You can specify the time (in millisecond) of delay between each message from the source is processed.
+Throttling mode mimics a slow destination by adding a configurable delay, in milliseconds, before each record is processed.
 
 ### Failing
 
-This mode throws an exception after receiving a configurable number of messages.
+Failing mode throws an exception after receiving a configurable number of messages.
+
+## File transfer support
+
+This destination supports file transfer streams for testing. It discards files instead of writing them to storage.
 
 ## Namespace support
 
 This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
+## Reference
+
+For programmatic configuration, use these parameter names:
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `test_destination.test_destination_type` | Yes | Destination mode. In Airbyte Cloud, the only valid value is `SILENT`. In self-managed Airbyte, valid values are `SILENT`, `LOGGING`, `THROTTLED`, and `FAILING`. |
+| `test_destination.logging_config.logging_type` | Required when `test_destination_type` is `LOGGING` | Logging mode. Valid values are `FirstN`, `EveryNth`, and `RandomSampling`. |
+| `test_destination.logging_config.max_entry_count` | Required when `test_destination_type` is `LOGGING` | Maximum number of records to log per stream. Valid values are 1 through 1,000. |
+| `test_destination.logging_config.nth_entry_to_log` | Required when `logging_type` is `EveryNth` | Logs every N-th record per stream. Valid values are 1 through 1,000. |
+| `test_destination.logging_config.sampling_ratio` | Required when `logging_type` is `RandomSampling` | Fraction of records to log. Valid values are 0 through 1. |
+| `test_destination.logging_config.seed` | No | Seed for random sampling. If unset, the connector uses the current time in milliseconds. |
+| `test_destination.millis_per_record` | Required when `test_destination_type` is `THROTTLED` | Delay, in milliseconds, before each record is processed. |
+| `test_destination.num_messages` | Required when `test_destination_type` is `FAILING` | Number of messages to receive before the destination fails. |
 
 ## Changelog
 
@@ -53,11 +86,11 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.9.4 | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13 |
-| 0.9.3 | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8 |
-| 0.9.2 | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0 |
-| 0.9.1 | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle |
-| 0.9.0 | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version. |
+| 0.9.4       | 2026-05-19 | [78228](https://github.com/airbytehq/airbyte/pull/78228) | Upgrade CDK to 1.0.13                                                                        |
+| 0.9.3       | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8                                                                         |
+| 0.9.2       | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0                                                                         |
+| 0.9.1       | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle                                                     |
+| 0.9.0       | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version.                                    |
 | 0.9.0-rc.2  | 2026-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean.                                                              |
 | 0.9.0-rc.1  | 2026-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture.                                                 |
 | 0.8.6       | 2025-11-05 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61.                                                                  |
@@ -111,9 +144,9 @@ The self-managed and Cloud variants have the same version number starting from v
 | 0.3.0       | 2023-05-08 | [25776](https://github.com/airbytehq/airbyte/pull/25776) | Standardize spec and change property field to non-keyword                                    |
 | 0.2.4       | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                                       |
 | 0.2.3       | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                 |
-| 0.2.2       | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry.                                                                       |
-| 0.2.1       | 2021-12-19 | [\#8824](https://github.com/airbytehq/airbyte/pull/8905) | Fix documentation URL.                                                                       |
-| 0.2.0       | 2021-12-16 | [\#8824](https://github.com/airbytehq/airbyte/pull/8824) | Add multiple logging modes.                                                                  |
-| 0.1.0       | 2021-05-25 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) | Create initial version.                                                                      |
+| 0.2.2       | 2022-01-29 | [9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                       |
+| 0.2.1       | 2021-12-19 | [8905](https://github.com/airbytehq/airbyte/pull/8905)   | Fix documentation URL.                                                                       |
+| 0.2.0       | 2021-12-16 | [8824](https://github.com/airbytehq/airbyte/pull/8824)   | Add multiple logging modes.                                                                  |
+| 0.1.0       | 2021-05-25 | [3290](https://github.com/airbytehq/airbyte/pull/3290)   | Create initial version.                                                                      |
 
 </details>
