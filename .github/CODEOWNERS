@@ -63,7 +63,7 @@
 # -----------------------------------------------------------------------------
 # OAUTH
 # -----------------------------------------------------------------------------
-/oss/airbyte-oauth/src/main/kotlin/io/airbyte/oauth/ @airbytehq/dev-api-sources
+/oss/airbyte-oauth/src/main/kotlin/io/airbyte/oauth/ @airbytehq/dev-apis
 
 # -----------------------------------------------------------------------------
 # NO OWNERSHIP - Markdown files
