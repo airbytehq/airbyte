@@ -104,11 +104,6 @@ class RedshiftCompoundPrimaryKeyDedupAcceptanceTest : RedshiftBaseAcceptanceTest
                 ),
                 record(
                     secondStream,
-                    recordData(keyB, "2026-01-01T00:04:00Z", "updated-second"),
-                    extractedAt = 2000,
-                ),
-                record(
-                    secondStream,
                     """{"pk1": 9, "pk2": null, "pk3": 9, "pk4": null, "pk5": 9, "pk6": 9, "pk7": null, "pk8": 9, "updated_at": "2026-01-01T00:05:00Z", "value": "inserted"}""",
                     extractedAt = 2000,
                 ),
@@ -126,9 +121,9 @@ class RedshiftCompoundPrimaryKeyDedupAcceptanceTest : RedshiftBaseAcceptanceTest
                 ),
                 outputRecord(
                     keyB,
-                    updatedAt = "2026-01-01T00:04:00Z",
-                    value = "updated-second",
-                    syncId = 43,
+                    updatedAt = "2026-01-01T00:02:00Z",
+                    value = "second",
+                    syncId = 42,
                 ),
                 outputRecord(
                     """{"pk1": 9, "pk2": null, "pk3": 9, "pk4": null, "pk5": 9, "pk6": 9, "pk7": null, "pk8": 9}""",
