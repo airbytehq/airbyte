@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.elasticsearch;
 
-import static co.elastic.clients.elasticsearch.watcher.Input.HTTP;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -13,7 +11,10 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -35,15 +36,18 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
+  private final FeatureFlags featureFlags;
 
-  /**
-   * Checks if running in cloud deployment mode by reading the DEPLOYMENT_MODE environment variable.
-   * TODO: When upgrading to a newer CDK version that includes FeatureFlags.deploymentMode(), refactor
-   * to use: AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode())
-   */
+  public ElasticsearchDestination() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  ElasticsearchDestination(final FeatureFlags featureFlags) {
+    this.featureFlags = featureFlags;
+  }
+
   private boolean cloudDeploymentMode() {
-    String deploymentMode = System.getenv("DEPLOYMENT_MODE");
-    return "CLOUD".equalsIgnoreCase(deploymentMode);
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   public static void main(String[] args) throws Exception {
@@ -58,6 +62,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
   }
 
   private static final String NON_SECURE_URL_ERR_MSG = "Server Endpoint requires HTTPS";
+  private static final String HTTP_PROTOCOL = "http";
 
   /**
    * When running in cloud deployment mode, remove the "None" authentication option from the spec to
@@ -91,7 +96,7 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
 
     // In cloud deployment mode, require HTTPS for secure connections
     if (cloudDeploymentMode()
-        && new URL(configObject.getEndpoint()).getProtocol().equals(HTTP)) {
+        && HTTP_PROTOCOL.equals(new URL(configObject.getEndpoint()).getProtocol())) {
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage(NON_SECURE_URL_ERR_MSG);

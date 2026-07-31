@@ -99,7 +99,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------ |
-| 0.3.0 | 2026-02-04 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Remove strict-encrypt variant; use environment-aware auth/HTTPS enforcement |
+| 0.3.0 | 2026-07-31 | [72813](https://github.com/airbytehq/airbyte/pull/72813) | Remove strict-encrypt variant; use environment-aware auth/HTTPS enforcement |
 | 0.2.0 | 2025-05-14 | [58586](https://github.com/airbytehq/airbyte/pull/58586) | add path prefix |
 | 0.1.6 | 2022-10-26 | [18341](https://github.com/airbytehq/airbyte/pull/18341) | enforce ssl connection on cloud |
 | 0.1.5 | 2022-10-24 | [18177](https://github.com/airbytehq/airbyte/pull/18177) | add custom CA certificate processing |
