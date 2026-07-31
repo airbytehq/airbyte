@@ -8,6 +8,7 @@ Chift is a tool that allows for the integration of financial data into SaaS prod
 | `client_id` | `string` | Client Id.  |  |
 | `account_id` | `string` | Account Id.  |  |
 | `client_secret` | `string` | Client Secret.  |  |
+| `start_date` | `string` | Start Date. Only `executions` started on or after this date are synced. Optional; defaults to the epoch, which syncs everything. | `1970-01-01T00:00:00` |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -15,6 +16,7 @@ Chift is a tool that allows for the integration of financial data into SaaS prod
 | consumers | consumerid | No pagination | ✅ |  ❌  |
 | connections | connectionid | No pagination | ✅ |  ❌  |
 | syncs |  | No pagination | ✅ |  ❌  |
+| executions | id | Page increment | ✅ |  ✅  |
 
 ## IP allow list
 
@@ -27,6 +29,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-07-31 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size` |
 | 0.0.21 | 2026-07-28 | [82860](https://github.com/airbytehq/airbyte/pull/82860) | Update dependencies |
 | 0.0.20 | 2026-07-21 | [82371](https://github.com/airbytehq/airbyte/pull/82371) | Update dependencies |
 | 0.0.19 | 2026-07-14 | [81778](https://github.com/airbytehq/airbyte/pull/81778) | Update dependencies |
