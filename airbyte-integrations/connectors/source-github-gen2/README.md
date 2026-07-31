@@ -3,6 +3,8 @@
 This is the repository for the GitHub (Beta, Gen-2) source connector, written in the manifest-only (declarative YAML) format.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/github-gen2).
 
+Before changing a stream or a field, read [CONTRIBUTING.md](./CONTRIBUTING.md): it documents the normalization, typing and URL rules this connector is designed around.
+
 ## Local development
 
 ### Prerequisites
@@ -32,7 +34,7 @@ The connector requires the following configuration:
 | `access_token` | string | Yes | GitHub Personal Access Token with `repo` scope |
 | `repositories` | array[string] | Yes | List of repositories in `owner/repo` format |
 | `start_date` | string | No | ISO 8601 start date for incremental streams (default: 2010-01-01) |
-| `api_url` | string | No | GitHub API URL (default: api.github.com, override for GHE) |
+| `api_url` | string | No | Base URL of the GitHub REST API (default: `https://api.github.com`, override for GitHub Enterprise Server) |
 
 ### Streams
 
@@ -44,9 +46,11 @@ The connector requires the following configuration:
 | commits | Incremental | sha | commit_committer_date |
 | comments | Incremental | id | updated_at |
 | review_comments | Incremental | id | updated_at |
-| reviews | Full Refresh (sub-resource) | id | - |
-| stargazers | Full Refresh | user_id, repository | - |
+| reviews | Full Refresh (substream of pull_requests) | id | - |
+| stargazers | Incremental (client-side) | user_id, repository | starred_at |
 | branches | Full Refresh | name, repository | - |
 | tags | Full Refresh | name, repository | - |
-| releases | Full Refresh | id | - |
-| workflow_runs | Incremental | id | updated_at |
+| releases | Incremental (client-side) | id | updated_at |
+| workflows | Incremental (client-side) | id | updated_at |
+| workflow_runs | Incremental (client-side) | id | updated_at |
+| workflow_jobs | Full Refresh (substream of workflow_runs) | id | - |

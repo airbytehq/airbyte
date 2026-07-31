@@ -1,4 +1,4 @@
-version: 6.1.0
+version: 7.23.1
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -10,9 +10,10 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: []
+    schema_normalization: Default
   requester:
     type: HttpRequester
-    url_base: "https://{{ config.get('api_url', 'api.github.com') }}"
+    url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
     http_method: GET
     authenticator:
       type: BearerAuthenticator
@@ -22,18 +23,17 @@ definitions:
       X-GitHub-Api-Version: '2022-11-28'
   paginator:
     type: DefaultPaginator
-    pagination_strategy:
-      type: PageIncrement
-      page_size: 100
-      start_from_page: 1
     page_size_option:
       type: RequestOption
       field_name: per_page
       inject_into: request_parameter
     page_token_option:
-      type: RequestOption
-      field_name: page
-      inject_into: request_parameter
+      type: RequestPath
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ headers.link.next.url }}"
+      stop_condition: "{{ 'next' not in headers.link }}"
   repository_partition_router:
     type: ListPartitionRouter
     cursor_field: repository
@@ -101,9 +101,11 @@ definitions:
     - type: AddFields
       fields:
       - path:
+        - api_url
+        value: "{{ record.get('url') }}"
+      - path:
         - owner_id
         value: "{{ record.get('owner', {}).get('id') }}"
-        value_type: integer
       - path:
         - owner_login
         value: "{{ record.get('owner', {}).get('login') }}"
@@ -119,22 +121,81 @@ definitions:
       - path:
         - organization_id
         value: "{{ record.get('organization', {}).get('id') if record.get('organization') else None }}"
-        value_type: integer
       - path:
         - organization_login
         value: "{{ record.get('organization', {}).get('login') if record.get('organization') else None }}"
     - type: RemoveFields
       field_pointers:
-      - - owner
+      - - allow_auto_merge
+      - - allow_merge_commit
+      - - allow_rebase_merge
+      - - allow_squash_merge
+      - - allow_update_branch
+      - - archive_url
+      - - assignees_url
+      - - blobs_url
+      - - branches_url
+      - - collaborators_url
+      - - comments_url
+      - - commits_url
+      - - compare_url
+      - - contents_url
+      - - contributors_url
+      - - custom_properties
+      - - deployments_url
+      - - downloads_url
+      - - events_url
+      - - forks
+      - - forks_url
+      - - git_commits_url
+      - - git_refs_url
+      - - git_tags_url
+      - - git_url
+      - - has_downloads
+      - - has_pull_requests
+      - - hooks_url
+      - - issue_comment_url
+      - - issue_events_url
+      - - issues_url
+      - - keys_url
+      - - labels_url
+      - - languages_url
       - - license
+      - - merge_commit_message
+      - - merge_commit_title
+      - - merges_url
+      - - milestones_url
+      - - mirror_url
+      - - notifications_url
+      - - open_issues
       - - organization
+      - - owner
       - - permissions
+      - - pull_request_creation_policy
+      - - pulls_url
+      - - releases_url
+      - - squash_merge_commit_message
+      - - squash_merge_commit_title
+      - - stargazers_url
+      - - statuses_url
+      - - subscribers_url
+      - - subscription_url
+      - - svn_url
+      - - tags_url
+      - - teams_url
+      - - temp_clone_token
+      - - trees_url
+      - - url
+      - - use_squash_pr_title_as_default
+      - - watchers
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: false
+        required:
+        - id
         properties:
           id:
             type: integer
@@ -153,18 +214,6 @@ definitions:
           private:
             type:
             - boolean
-            - 'null'
-          owner_id:
-            type:
-            - integer
-            - 'null'
-          owner_login:
-            type:
-            - string
-            - 'null'
-          owner_type:
-            type:
-            - string
             - 'null'
           description:
             type:
@@ -208,6 +257,14 @@ definitions:
             type:
             - integer
             - 'null'
+          subscribers_count:
+            type:
+            - integer
+            - 'null'
+          network_count:
+            type:
+            - integer
+            - 'null'
           language:
             type:
             - string
@@ -236,6 +293,76 @@ definitions:
             type:
             - string
             - 'null'
+          topics:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+          is_template:
+            type:
+            - boolean
+            - 'null'
+          allow_forking:
+            type:
+            - boolean
+            - 'null'
+          delete_branch_on_merge:
+            type:
+            - boolean
+            - 'null'
+          web_commit_signoff_required:
+            type:
+            - boolean
+            - 'null'
+          has_issues:
+            type:
+            - boolean
+            - 'null'
+          has_projects:
+            type:
+            - boolean
+            - 'null'
+          has_wiki:
+            type:
+            - boolean
+            - 'null'
+          has_pages:
+            type:
+            - boolean
+            - 'null'
+          has_discussions:
+            type:
+            - boolean
+            - 'null'
+          html_url:
+            type:
+            - string
+            - 'null'
+          clone_url:
+            type:
+            - string
+            - 'null'
+          ssh_url:
+            type:
+            - string
+            - 'null'
+          api_url:
+            type:
+            - string
+            - 'null'
+          owner_id:
+            type:
+            - integer
+            - 'null'
+          owner_login:
+            type:
+            - string
+            - 'null'
+          owner_type:
+            type:
+            - string
+            - 'null'
           license_key:
             type:
             - string
@@ -244,12 +371,6 @@ definitions:
             type:
             - string
             - 'null'
-          topics:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
           organization_id:
             type:
             - integer
@@ -264,7 +385,9 @@ definitions:
     primary_key:
     - id
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/pulls"
@@ -272,21 +395,44 @@ definitions:
           state: all
           sort: updated
           direction: desc
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     incremental_sync:
-      $ref: '#/definitions/incremental_sync_with_since'
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
     transformations:
     - type: AddFields
       fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
+      - path:
+        - repository_id
+        value: "{{ record.get('base', {}).get('repo', {}).get('id') if record.get('base', {}).get('repo') else None }}"
       - path:
         - repository
         value: "{{ stream_slice.repository }}"
       - path:
         - user_id
         value: "{{ record.get('user', {}).get('id') }}"
-        value_type: integer
       - path:
         - user_login
         value: "{{ record.get('user', {}).get('login') }}"
+      - path:
+        - user_type
+        value: "{{ record.get('user', {}).get('type') }}"
       - path:
         - head_ref
         value: "{{ record.get('head', {}).get('ref') }}"
@@ -296,7 +442,6 @@ definitions:
       - path:
         - head_repo_id
         value: "{{ record.get('head', {}).get('repo', {}).get('id') if record.get('head', {}).get('repo') else None }}"
-        value_type: integer
       - path:
         - head_repo_full_name
         value: "{{ record.get('head', {}).get('repo', {}).get('full_name') if record.get('head', {}).get('repo') else None }}"
@@ -307,57 +452,59 @@ definitions:
         - base_sha
         value: "{{ record.get('base', {}).get('sha') }}"
       - path:
-        - base_repo_id
-        value: "{{ record.get('base', {}).get('repo', {}).get('id') if record.get('base', {}).get('repo') else None }}"
-        value_type: integer
-      - path:
-        - base_repo_full_name
-        value: "{{ record.get('base', {}).get('repo', {}).get('full_name') if record.get('base', {}).get('repo') else None }}"
-      - path:
         - milestone_id
         value: "{{ record.get('milestone', {}).get('id') if record.get('milestone') else None }}"
-        value_type: integer
       - path:
         - milestone_number
         value: "{{ record.get('milestone', {}).get('number') if record.get('milestone') else None }}"
-        value_type: integer
       - path:
         - milestone_title
         value: "{{ record.get('milestone', {}).get('title') if record.get('milestone') else None }}"
       - path:
         - assignee_id
         value: "{{ record.get('assignee', {}).get('id') if record.get('assignee') else None }}"
-        value_type: integer
+      - path:
+        - assignee_login
+        value: "{{ record.get('assignee', {}).get('login') if record.get('assignee') else None }}"
       - path:
         - assignee_ids
         value: "{{ record.get('assignees', []) | map(attribute='id') | list }}"
       - path:
+        - assignee_logins
+        value: "{{ record.get('assignees', []) | map(attribute='login') | list }}"
+      - path:
         - requested_reviewer_ids
         value: "{{ record.get('requested_reviewers', []) | map(attribute='id') | list }}"
       - path:
+        - requested_reviewer_logins
+        value: "{{ record.get('requested_reviewers', []) | map(attribute='login') | list }}"
+      - path:
+        - label_ids
+        value: "{{ record.get('labels', []) | map(attribute='id') | list }}"
+      - path:
         - label_names
         value: "{{ record.get('labels', []) | map(attribute='name') | list }}"
-      - path:
-        - merged_by_id
-        value: "{{ record.get('merged_by', {}).get('id') if record.get('merged_by') else None }}"
-        value_type: integer
-      - path:
-        - _review_key
-        value: "{{ stream_slice.repository }}::{{ record['number'] }}"
     - type: RemoveFields
       field_pointers:
-      - - user
-      - - head
-      - - base
-      - - milestone
+      - - _links
+      - - active_lock_reason
       - - assignee
       - - assignees
+      - - auto_merge
+      - - base
+      - - comments_url
+      - - commits_url
+      - - head
+      - - issue_url
+      - - labels
+      - - milestone
       - - requested_reviewers
       - - requested_teams
-      - - labels
-      - - merged_by
-      - - _links
-      - - auto_merge
+      - - review_comment_url
+      - - review_comments_url
+      - - statuses_url
+      - - url
+      - - user
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -368,29 +515,9 @@ definitions:
         - id
         - updated_at
         properties:
-          url:
-            type:
-            - string
-            - 'null'
           id:
             type: integer
           node_id:
-            type:
-            - string
-            - 'null'
-          html_url:
-            type:
-            - string
-            - 'null'
-          diff_url:
-            type:
-            - string
-            - 'null'
-          patch_url:
-            type:
-            - string
-            - 'null'
-          issue_url:
             type:
             - string
             - 'null'
@@ -444,29 +571,29 @@ definitions:
             type:
             - boolean
             - 'null'
-          commits_url:
-            type:
-            - string
-            - 'null'
-          review_comments_url:
-            type:
-            - string
-            - 'null'
-          review_comment_url:
-            type:
-            - string
-            - 'null'
-          comments_url:
-            type:
-            - string
-            - 'null'
-          statuses_url:
-            type:
-            - string
-            - 'null'
           author_association:
             type:
             - string
+            - 'null'
+          html_url:
+            type:
+            - string
+            - 'null'
+          diff_url:
+            type:
+            - string
+            - 'null'
+          patch_url:
+            type:
+            - string
+            - 'null'
+          api_url:
+            type:
+            - string
+            - 'null'
+          repository_id:
+            type:
+            - integer
             - 'null'
           repository:
             type:
@@ -477,6 +604,10 @@ definitions:
             - integer
             - 'null'
           user_login:
+            type:
+            - string
+            - 'null'
+          user_type:
             type:
             - string
             - 'null'
@@ -504,11 +635,15 @@ definitions:
             type:
             - string
             - 'null'
-          base_repo_id:
+          milestone_id:
             type:
             - integer
             - 'null'
-          base_repo_full_name:
+          milestone_number:
+            type:
+            - integer
+            - 'null'
+          milestone_title:
             type:
             - string
             - 'null'
@@ -516,13 +651,35 @@ definitions:
             type:
             - integer
             - 'null'
+          assignee_login:
+            type:
+            - string
+            - 'null'
           assignee_ids:
             type:
             - array
             - 'null'
             items:
               type: integer
+          assignee_logins:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
           requested_reviewer_ids:
+            type:
+            - array
+            - 'null'
+            items:
+              type: integer
+          requested_reviewer_logins:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+          label_ids:
             type:
             - array
             - 'null'
@@ -540,7 +697,9 @@ definitions:
     primary_key:
     - id
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/issues"
@@ -548,56 +707,97 @@ definitions:
           state: all
           sort: updated
           direction: asc
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     incremental_sync:
-      $ref: '#/definitions/incremental_sync_with_since'
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
     transformations:
     - type: AddFields
       fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
       - path:
         - repository
         value: "{{ stream_slice.repository }}"
       - path:
         - user_id
         value: "{{ record.get('user', {}).get('id') }}"
-        value_type: integer
       - path:
         - user_login
         value: "{{ record.get('user', {}).get('login') }}"
       - path:
+        - user_type
+        value: "{{ record.get('user', {}).get('type') }}"
+      - path:
         - milestone_id
         value: "{{ record.get('milestone', {}).get('id') if record.get('milestone') else None }}"
-        value_type: integer
       - path:
         - milestone_number
         value: "{{ record.get('milestone', {}).get('number') if record.get('milestone') else None }}"
-        value_type: integer
       - path:
         - milestone_title
         value: "{{ record.get('milestone', {}).get('title') if record.get('milestone') else None }}"
       - path:
         - assignee_id
         value: "{{ record.get('assignee', {}).get('id') if record.get('assignee') else None }}"
-        value_type: integer
+      - path:
+        - assignee_login
+        value: "{{ record.get('assignee', {}).get('login') if record.get('assignee') else None }}"
       - path:
         - assignee_ids
         value: "{{ record.get('assignees', []) | map(attribute='id') | list }}"
+      - path:
+        - assignee_logins
+        value: "{{ record.get('assignees', []) | map(attribute='login') | list }}"
+      - path:
+        - label_ids
+        value: "{{ record.get('labels', []) | map(attribute='id') | list }}"
       - path:
         - label_names
         value: "{{ record.get('labels', []) | map(attribute='name') | list }}"
       - path:
         - is_pull_request
         value: "{{ record.get('pull_request') is not none }}"
-        value_type: boolean
+      - path:
+        - pull_request_number
+        value: "{{ record['number'] if record.get('pull_request') else None }}"
     - type: RemoveFields
       field_pointers:
-      - - user
-      - - milestone
+      - - active_lock_reason
       - - assignee
       - - assignees
+      - - closed_by
+      - - comments_url
+      - - events_url
+      - - issue_dependencies_summary
+      - - issue_field_values
       - - labels
+      - - labels_url
+      - - milestone
+      - - performed_via_github_app
+      - - pinned_comment
       - - pull_request
       - - reactions
-      - - performed_via_github_app
+      - - repository_url
+      - - sub_issues_summary
+      - - timeline_url
+      - - type
+      - - url
+      - - user
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -608,30 +808,6 @@ definitions:
         - id
         - updated_at
         properties:
-          url:
-            type:
-            - string
-            - 'null'
-          repository_url:
-            type:
-            - string
-            - 'null'
-          labels_url:
-            type:
-            - string
-            - 'null'
-          comments_url:
-            type:
-            - string
-            - 'null'
-          events_url:
-            type:
-            - string
-            - 'null'
-          html_url:
-            type:
-            - string
-            - 'null'
           id:
             type: integer
           node_id:
@@ -647,6 +823,10 @@ definitions:
             - string
             - 'null'
           state:
+            type:
+            - string
+            - 'null'
+          state_reason:
             type:
             - string
             - 'null'
@@ -668,16 +848,16 @@ definitions:
             type: string
             format: date-time
             airbyte_type: timestamp_with_timezone
+          closed_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           author_association:
             type:
             - string
             - 'null'
-          issue_field_values:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
           draft:
             type:
             - boolean
@@ -686,7 +866,11 @@ definitions:
             type:
             - string
             - 'null'
-          timeline_url:
+          html_url:
+            type:
+            - string
+            - 'null'
+          api_url:
             type:
             - string
             - 'null'
@@ -702,7 +886,43 @@ definitions:
             type:
             - string
             - 'null'
+          user_type:
+            type:
+            - string
+            - 'null'
+          milestone_id:
+            type:
+            - integer
+            - 'null'
+          milestone_number:
+            type:
+            - integer
+            - 'null'
+          milestone_title:
+            type:
+            - string
+            - 'null'
+          assignee_id:
+            type:
+            - integer
+            - 'null'
+          assignee_login:
+            type:
+            - string
+            - 'null'
           assignee_ids:
+            type:
+            - array
+            - 'null'
+            items:
+              type: integer
+          assignee_logins:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+          label_ids:
             type:
             - array
             - 'null'
@@ -718,35 +938,57 @@ definitions:
             type:
             - boolean
             - 'null'
+          pull_request_number:
+            type:
+            - integer
+            - 'null'
   commits_stream:
     type: DeclarativeStream
     name: commits
     primary_key:
     - sha
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/commits"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     incremental_sync:
-      $ref: '#/definitions/incremental_sync_commits'
+      type: DatetimeBasedCursor
+      cursor_field: commit_committer_date
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
     transformations:
     - type: AddFields
       fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
       - path:
         - repository
         value: "{{ stream_slice.repository }}"
       - path:
         - author_id
         value: "{{ record.get('author', {}).get('id') if record.get('author') else None }}"
-        value_type: integer
       - path:
         - author_login
         value: "{{ record.get('author', {}).get('login') if record.get('author') else None }}"
       - path:
         - committer_id
         value: "{{ record.get('committer', {}).get('id') if record.get('committer') else None }}"
-        value_type: integer
       - path:
         - committer_login
         value: "{{ record.get('committer', {}).get('login') if record.get('committer') else None }}"
@@ -774,17 +1016,20 @@ definitions:
       - path:
         - commit_comment_count
         value: "{{ record.get('commit', {}).get('comment_count') }}"
-        value_type: integer
       - path:
         - commit_verified
         value: "{{ record.get('commit', {}).get('verification', {}).get('verified') }}"
-        value_type: boolean
+      - path:
+        - parent_shas
+        value: "{{ record.get('parents', []) | map(attribute='sha') | list }}"
     - type: RemoveFields
       field_pointers:
       - - author
-      - - committer
+      - - comments_url
       - - commit
+      - - committer
       - - parents
+      - - url
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -801,15 +1046,11 @@ definitions:
             type:
             - string
             - 'null'
-          url:
-            type:
-            - string
-            - 'null'
           html_url:
             type:
             - string
             - 'null'
-          comments_url:
+          api_url:
             type:
             - string
             - 'null'
@@ -871,43 +1112,74 @@ definitions:
             type:
             - boolean
             - 'null'
+          parent_shas:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
   comments_stream:
     type: DeclarativeStream
     name: comments
     primary_key:
     - id
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/issues/comments"
         request_parameters:
           sort: updated
           direction: asc
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     incremental_sync:
-      $ref: '#/definitions/incremental_sync_with_since'
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
     transformations:
     - type: AddFields
       fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
       - path:
         - repository
         value: "{{ stream_slice.repository }}"
       - path:
         - user_id
         value: "{{ record.get('user', {}).get('id') }}"
-        value_type: integer
       - path:
         - user_login
         value: "{{ record.get('user', {}).get('login') }}"
       - path:
+        - user_type
+        value: "{{ record.get('user', {}).get('type') }}"
+      - path:
         - issue_number
         value: "{{ record.get('issue_url', '').split('/')[-1] if record.get('issue_url') else None }}"
-        value_type: integer
     - type: RemoveFields
       field_pointers:
-      - - user
+      - - issue_url
+      - - minimized
       - - performed_via_github_app
+      - - pin
       - - reactions
+      - - url
+      - - user
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -918,21 +1190,13 @@ definitions:
         - id
         - updated_at
         properties:
-          url:
-            type:
-            - string
-            - 'null'
-          html_url:
-            type:
-            - string
-            - 'null'
-          issue_url:
-            type:
-            - string
-            - 'null'
           id:
             type: integer
           node_id:
+            type:
+            - string
+            - 'null'
+          body:
             type:
             - string
             - 'null'
@@ -946,11 +1210,15 @@ definitions:
             type: string
             format: date-time
             airbyte_type: timestamp_with_timezone
-          body:
+          author_association:
             type:
             - string
             - 'null'
-          author_association:
+          html_url:
+            type:
+            - string
+            - 'null'
+          api_url:
             type:
             - string
             - 'null'
@@ -966,6 +1234,10 @@ definitions:
             type:
             - string
             - 'null'
+          user_type:
+            type:
+            - string
+            - 'null'
           issue_number:
             type:
             - integer
@@ -976,37 +1248,60 @@ definitions:
     primary_key:
     - id
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/pulls/comments"
         request_parameters:
           sort: updated
           direction: asc
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     incremental_sync:
-      $ref: '#/definitions/incremental_sync_with_since'
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
     transformations:
     - type: AddFields
       fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
       - path:
         - repository
         value: "{{ stream_slice.repository }}"
       - path:
         - user_id
         value: "{{ record.get('user', {}).get('id') }}"
-        value_type: integer
       - path:
         - user_login
         value: "{{ record.get('user', {}).get('login') }}"
       - path:
+        - user_type
+        value: "{{ record.get('user', {}).get('type') }}"
+      - path:
         - pull_request_number
         value: "{{ record.get('pull_request_url', '').split('/')[-1] if record.get('pull_request_url') else None }}"
-        value_type: integer
     - type: RemoveFields
       field_pointers:
-      - - user
       - - _links
+      - - pull_request_url
       - - reactions
+      - - url
+      - - user
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1017,19 +1312,15 @@ definitions:
         - id
         - updated_at
         properties:
-          url:
+          id:
+            type: integer
+          node_id:
             type:
             - string
             - 'null'
           pull_request_review_id:
             type:
             - integer
-            - 'null'
-          id:
-            type: integer
-          node_id:
-            type:
-            - string
             - 'null'
           diff_hunk:
             type:
@@ -1065,10 +1356,6 @@ definitions:
             type:
             - string
             - 'null'
-          pull_request_url:
-            type:
-            - string
-            - 'null'
           line:
             type:
             - integer
@@ -1077,7 +1364,31 @@ definitions:
             type:
             - integer
             - 'null'
+          start_line:
+            type:
+            - integer
+            - 'null'
+          original_start_line:
+            type:
+            - integer
+            - 'null'
           side:
+            type:
+            - string
+            - 'null'
+          start_side:
+            type:
+            - string
+            - 'null'
+          position:
+            type:
+            - integer
+            - 'null'
+          original_position:
+            type:
+            - integer
+            - 'null'
+          subject_type:
             type:
             - string
             - 'null'
@@ -1085,15 +1396,11 @@ definitions:
             type:
             - string
             - 'null'
-          original_position:
+          in_reply_to_id:
             type:
             - integer
             - 'null'
-          position:
-            type:
-            - integer
-            - 'null'
-          subject_type:
+          api_url:
             type:
             - string
             - 'null'
@@ -1106,6 +1413,10 @@ definitions:
             - integer
             - 'null'
           user_login:
+            type:
+            - string
+            - 'null'
+          user_type:
             type:
             - string
             - 'null'
@@ -1124,7 +1435,7 @@ definitions:
         $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
-        path: "/repos/{{ stream_slice.parent_slice_key.split('::')[0] }}/pulls/{{ stream_slice.parent_slice_key.split('::')[1] }}/reviews"
+        path: "/repos/{{ stream_slice.extra_fields.repository }}/pulls/{{ stream_slice.pull_request_number }}/reviews"
       paginator:
         $ref: '#/definitions/paginator'
       partition_router:
@@ -1133,29 +1444,33 @@ definitions:
         - type: ParentStreamConfig
           stream:
             $ref: '#/definitions/pull_requests_stream'
-          parent_key: _review_key
-          partition_field: parent_slice_key
+          parent_key: number
+          partition_field: pull_request_number
+          extra_fields:
+          - - repository
     transformations:
     - type: AddFields
       fields:
       - path:
         - repository
-        value: "{{ stream_slice.parent_slice_key.split('::')[0] }}"
+        value: "{{ stream_slice.extra_fields.repository }}"
       - path:
         - pull_request_number
-        value: "{{ stream_slice.parent_slice_key.split('::')[1] | int }}"
-        value_type: integer
+        value: "{{ stream_slice.pull_request_number }}"
       - path:
         - user_id
         value: "{{ record.get('user', {}).get('id') }}"
-        value_type: integer
       - path:
         - user_login
         value: "{{ record.get('user', {}).get('login') }}"
+      - path:
+        - user_type
+        value: "{{ record.get('user', {}).get('type') }}"
     - type: RemoveFields
       field_pointers:
-      - - user
       - - _links
+      - - pull_request_url
+      - - user
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1180,10 +1495,6 @@ definitions:
             - string
             - 'null'
           html_url:
-            type:
-            - string
-            - 'null'
-          pull_request_url:
             type:
             - string
             - 'null'
@@ -1217,6 +1528,10 @@ definitions:
             type:
             - string
             - 'null'
+          user_type:
+            type:
+            - string
+            - 'null'
   stargazers_stream:
     type: DeclarativeStream
     name: stargazers
@@ -1224,13 +1539,29 @@ definitions:
     - user_id
     - repository
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/stargazers"
         request_headers:
           Accept: application/vnd.github.star+json
           X-GitHub-Api-Version: '2022-11-28'
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: starred_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      is_client_side_incremental: true
     transformations:
     - type: AddFields
       fields:
@@ -1240,7 +1571,6 @@ definitions:
       - path:
         - user_id
         value: "{{ record.get('user', {}).get('id') }}"
-        value_type: integer
       - path:
         - user_login
         value: "{{ record.get('user', {}).get('login') }}"
@@ -1256,11 +1586,11 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: false
+        required:
+        - starred_at
         properties:
           starred_at:
-            type:
-            - string
-            - 'null'
+            type: string
             format: date-time
             airbyte_type: timestamp_with_timezone
           repository:
@@ -1268,7 +1598,9 @@ definitions:
             - string
             - 'null'
           user_id:
-            type: integer
+            type:
+            - integer
+            - 'null'
           user_login:
             type:
             - string
@@ -1281,13 +1613,19 @@ definitions:
     type: DeclarativeStream
     name: branches
     primary_key:
-    - name
     - repository
+    - name
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/branches"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     transformations:
     - type: AddFields
       fields:
@@ -1300,37 +1638,46 @@ definitions:
     - type: RemoveFields
       field_pointers:
       - - commit
-      - - protection
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: false
+        required:
+        - name
         properties:
           name:
             type: string
-          repository:
-            type: string
-          commit_sha:
-            type:
-            - string
-            - 'null'
           protected:
             type:
             - boolean
+            - 'null'
+          repository:
+            type:
+            - string
+            - 'null'
+          commit_sha:
+            type:
+            - string
             - 'null'
   tags_stream:
     type: DeclarativeStream
     name: tags
     primary_key:
-    - name
     - repository
+    - name
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/tags"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     transformations:
     - type: AddFields
       fields:
@@ -1349,12 +1696,12 @@ definitions:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: false
+        required:
+        - name
         properties:
           name:
             type: string
-          repository:
-            type: string
-          commit_sha:
+          node_id:
             type:
             - string
             - 'null'
@@ -1366,7 +1713,11 @@ definitions:
             type:
             - string
             - 'null'
-          node_id:
+          repository:
+            type:
+            - string
+            - 'null'
+          commit_sha:
             type:
             - string
             - 'null'
@@ -1376,28 +1727,49 @@ definitions:
     primary_key:
     - id
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
+      type: SimpleRetriever
+      record_selector:
+        $ref: '#/definitions/selector'
       requester:
         $ref: '#/definitions/requester'
         path: "/repos/{{ stream_slice.repository }}/releases"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      is_client_side_incremental: true
     transformations:
     - type: AddFields
       fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
       - path:
         - repository
         value: "{{ stream_slice.repository }}"
       - path:
         - author_id
-        value: "{{ record.get('author', {}).get('id') }}"
-        value_type: integer
+        value: "{{ record.get('author', {}).get('id') if record.get('author') else None }}"
       - path:
         - author_login
-        value: "{{ record.get('author', {}).get('login') }}"
+        value: "{{ record.get('author', {}).get('login') if record.get('author') else None }}"
     - type: RemoveFields
       field_pointers:
-      - - author
       - - assets
+      - - assets_url
+      - - author
       - - reactions
+      - - upload_url
+      - - url
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1406,23 +1778,8 @@ definitions:
         additionalProperties: false
         required:
         - id
+        - updated_at
         properties:
-          url:
-            type:
-            - string
-            - 'null'
-          assets_url:
-            type:
-            - string
-            - 'null'
-          upload_url:
-            type:
-            - string
-            - 'null'
-          html_url:
-            type:
-            - string
-            - 'null'
           id:
             type: integer
           node_id:
@@ -1460,9 +1817,7 @@ definitions:
             format: date-time
             airbyte_type: timestamp_with_timezone
           updated_at:
-            type:
-            - string
-            - 'null'
+            type: string
             format: date-time
             airbyte_type: timestamp_with_timezone
           published_at:
@@ -1479,7 +1834,15 @@ definitions:
             type:
             - string
             - 'null'
+          html_url:
+            type:
+            - string
+            - 'null'
           body:
+            type:
+            - string
+            - 'null'
+          api_url:
             type:
             - string
             - 'null'
@@ -1495,41 +1858,160 @@ definitions:
             type:
             - string
             - 'null'
+  workflows_stream:
+    type: DeclarativeStream
+    name: workflows
+    primary_key:
+    - id
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - workflows
+        schema_normalization: Default
+      requester:
+        $ref: '#/definitions/requester'
+        path: "/repos/{{ stream_slice.repository }}/actions/workflows"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      is_client_side_incremental: true
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
+      - path:
+        - repository
+        value: "{{ stream_slice.repository }}"
+    - type: RemoveFields
+      field_pointers:
+      - - url
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
+        required:
+        - id
+        - updated_at
+        properties:
+          id:
+            type: integer
+          node_id:
+            type:
+            - string
+            - 'null'
+          name:
+            type:
+            - string
+            - 'null'
+          path:
+            type:
+            - string
+            - 'null'
+          state:
+            type:
+            - string
+            - 'null'
+          created_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type: string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          html_url:
+            type:
+            - string
+            - 'null'
+          badge_url:
+            type:
+            - string
+            - 'null'
+          api_url:
+            type:
+            - string
+            - 'null'
+          repository:
+            type:
+            - string
+            - 'null'
   workflow_runs_stream:
     type: DeclarativeStream
     name: workflow_runs
     primary_key:
     - id
     retriever:
-      $ref: '#/definitions/base_repo_retriever'
-      requester:
-        $ref: '#/definitions/requester'
-        path: "/repos/{{ stream_slice.repository }}/actions/runs"
+      type: SimpleRetriever
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
           - workflow_runs
+        schema_normalization: Default
+      requester:
+        $ref: '#/definitions/requester'
+        path: "/repos/{{ stream_slice.repository }}/actions/runs"
+        request_parameters:
+          created: "{{ '>=' ~ stream_interval.start_time }}"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        $ref: '#/definitions/repository_partition_router'
     incremental_sync:
-      $ref: '#/definitions/incremental_sync_workflow_runs'
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+      - '%Y-%m-%dT%H:%M:%S%z'
+      - '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_datetime: "{{ config.get('start_date', '2010-01-01T00:00:00Z') }}"
+      is_client_side_incremental: true
     transformations:
     - type: AddFields
       fields:
       - path:
-        - repository
-        value: "{{ stream_slice.repository }}"
+        - api_url
+        value: "{{ record.get('url') }}"
+      - path:
+        - repository_id
+        value: "{{ record.get('repository', {}).get('id') if record.get('repository') else None }}"
+      - path:
+        - head_repository_id
+        value: "{{ record.get('head_repository', {}).get('id') if record.get('head_repository') else None }}"
+      - path:
+        - head_repository_full_name
+        value: "{{ record.get('head_repository', {}).get('full_name') if record.get('head_repository') else None }}"
       - path:
         - actor_id
         value: "{{ record.get('actor', {}).get('id') if record.get('actor') else None }}"
-        value_type: integer
       - path:
         - actor_login
         value: "{{ record.get('actor', {}).get('login') if record.get('actor') else None }}"
       - path:
         - triggering_actor_id
         value: "{{ record.get('triggering_actor', {}).get('id') if record.get('triggering_actor') else None }}"
-        value_type: integer
       - path:
         - triggering_actor_login
         value: "{{ record.get('triggering_actor', {}).get('login') if record.get('triggering_actor') else None }}"
@@ -1539,20 +2021,36 @@ definitions:
       - path:
         - head_commit_timestamp
         value: "{{ record.get('head_commit', {}).get('timestamp') if record.get('head_commit') else None }}"
+      - path:
+        - repository
+        value: "{{ stream_slice.repository }}"
     - type: RemoveFields
       field_pointers:
       - - actor
-      - - triggering_actor
+      - - artifacts_url
+      - - cancel_url
+      - - check_suite_node_id
+      - - check_suite_url
       - - head_commit
       - - head_repository
-      - - repository
+      - - jobs_url
+      - - logs_url
+      - - previous_attempt_url
       - - pull_requests
+      - - referenced_workflows
+      - - rerun_url
+      - - triggering_actor
+      - - url
+      - - workflow_url
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
         additionalProperties: false
+        required:
+        - id
+        - updated_at
         properties:
           id:
             type: integer
@@ -1569,6 +2067,14 @@ definitions:
             - string
             - 'null'
           head_sha:
+            type:
+            - string
+            - 'null'
+          path:
+            type:
+            - string
+            - 'null'
+          display_title:
             type:
             - string
             - 'null'
@@ -1592,6 +2098,10 @@ definitions:
             type:
             - integer
             - 'null'
+          check_suite_id:
+            type:
+            - integer
+            - 'null'
           created_at:
             type:
             - string
@@ -1599,9 +2109,7 @@ definitions:
             format: date-time
             airbyte_type: timestamp_with_timezone
           updated_at:
-            type:
-            - string
-            - 'null'
+            type: string
             format: date-time
             airbyte_type: timestamp_with_timezone
           run_started_at:
@@ -1614,7 +2122,23 @@ definitions:
             type:
             - integer
             - 'null'
-          repository:
+          html_url:
+            type:
+            - string
+            - 'null'
+          api_url:
+            type:
+            - string
+            - 'null'
+          repository_id:
+            type:
+            - integer
+            - 'null'
+          head_repository_id:
+            type:
+            - integer
+            - 'null'
+          head_repository_full_name:
             type:
             - string
             - 'null'
@@ -1644,14 +2168,157 @@ definitions:
             - 'null'
             format: date-time
             airbyte_type: timestamp_with_timezone
+          repository:
+            type:
+            - string
+            - 'null'
+  workflow_jobs_stream:
+    type: DeclarativeStream
+    name: workflow_jobs
+    primary_key:
+    - id
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+          - jobs
+        schema_normalization: Default
+      requester:
+        $ref: '#/definitions/requester'
+        path: "/repos/{{ stream_slice.extra_fields.repository }}/actions/runs/{{ stream_slice.run_id }}/jobs"
+      paginator:
+        $ref: '#/definitions/paginator'
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+        - type: ParentStreamConfig
+          stream:
+            $ref: '#/definitions/workflow_runs_stream'
+          parent_key: id
+          partition_field: run_id
+          extra_fields:
+          - - repository
+    transformations:
+    - type: AddFields
+      fields:
+      - path:
+        - api_url
+        value: "{{ record.get('url') }}"
+      - path:
+        - repository
+        value: "{{ stream_slice.extra_fields.repository }}"
+      - path:
+        - runner_labels
+        value: "{{ record.get('labels', []) }}"
+    - type: RemoveFields
+      field_pointers:
+      - - check_run_url
+      - - labels
+      - - run_url
+      - - steps
+      - - url
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
+        required:
+        - id
+        properties:
+          id:
+            type: integer
+          node_id:
+            type:
+            - string
+            - 'null'
+          run_id:
+            type:
+            - integer
+            - 'null'
+          run_attempt:
+            type:
+            - integer
+            - 'null'
+          head_branch:
+            type:
+            - string
+            - 'null'
+          head_sha:
+            type:
+            - string
+            - 'null'
+          status:
+            type:
+            - string
+            - 'null'
+          conclusion:
+            type:
+            - string
+            - 'null'
+          created_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          started_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          completed_at:
+            type:
+            - string
+            - 'null'
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          name:
+            type:
+            - string
+            - 'null'
+          workflow_name:
+            type:
+            - string
+            - 'null'
           html_url:
             type:
             - string
             - 'null'
-          display_title:
+          runner_id:
+            type:
+            - integer
+            - 'null'
+          runner_name:
             type:
             - string
             - 'null'
+          runner_group_id:
+            type:
+            - integer
+            - 'null'
+          runner_group_name:
+            type:
+            - string
+            - 'null'
+          api_url:
+            type:
+            - string
+            - 'null'
+          repository:
+            type:
+            - string
+            - 'null'
+          runner_labels:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
 streams:
 - $ref: '#/definitions/repositories_stream'
 - $ref: '#/definitions/pull_requests_stream'
@@ -1664,7 +2331,9 @@ streams:
 - $ref: '#/definitions/branches_stream'
 - $ref: '#/definitions/tags_stream'
 - $ref: '#/definitions/releases_stream'
+- $ref: '#/definitions/workflows_stream'
 - $ref: '#/definitions/workflow_runs_stream'
+- $ref: '#/definitions/workflow_jobs_stream'
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/github-gen2
@@ -1705,8 +2374,9 @@ spec:
       api_url:
         type: string
         title: API URL
-        description: GitHub API URL. Override for GitHub Enterprise.
-        default: api.github.com
+        description: Base URL of the GitHub REST API. Override for GitHub Enterprise Server, including the API path prefix.
+        default: https://api.github.com
         examples:
-        - api.github.com
+        - https://api.github.com
+        - https://github.example.com/api/v3
         order: 3
