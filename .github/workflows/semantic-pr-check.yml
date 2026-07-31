@@ -53,6 +53,7 @@ jobs:
             feat
             fix
             perf
+            prompts
             refactor
             release
             revert
