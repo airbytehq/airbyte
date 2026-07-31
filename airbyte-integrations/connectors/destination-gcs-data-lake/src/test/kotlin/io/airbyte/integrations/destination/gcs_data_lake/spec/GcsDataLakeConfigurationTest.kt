@@ -34,10 +34,11 @@ internal class GcsDataLakeConfigurationTest {
     @Test
     fun `the spec value of the format version deserializes`() {
         val spec =
-            ObjectMapper().readValue(
-                """{"table_format_version": "v3", "use_variant_types": true}""",
-                GcsDataLakeSpecification::class.java,
-            )
+            ObjectMapper()
+                .readValue(
+                    """{"table_format_version": "v3", "use_variant_types": true}""",
+                    GcsDataLakeSpecification::class.java,
+                )
 
         assertEquals(IcebergTableFormatVersion.V3, spec.tableFormatVersion)
         assertEquals(true, spec.useVariantTypes)
