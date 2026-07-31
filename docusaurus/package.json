@@ -152,7 +152,7 @@
     "react-lite-youtube-embed": "^2.4.0",
     "react-markdown": "^8.0.7",
     "react-router": "5.3.3",
-    "sanitize-html": "^2.12.1",
+    "sanitize-html": "^2.17.5",
     "sockjs": "0.3.24",
     "trim": "0.0.3",
     "unist-builder": "^4.0.0",
