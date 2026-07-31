@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -72,6 +73,21 @@ public class MongodbDestinationCloudSpecTest {
   @Test
   void testCloudCheckRejectsStandaloneWithoutTls() {
     assertThrows(ConfigErrorException.class, () -> cloudDestination().check(standaloneConfigWithoutTls()));
+  }
+
+  @Test
+  void testCloudCheckRejectsLegacyConfig() {
+    // legacy host/port configs (no instance_type) always build a connection string with ssl=false
+    final JsonNode legacyConfig = Jsons.jsonNode(Map.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 27017,
+        JdbcUtils.DATABASE_KEY, "db"));
+    assertThrows(ConfigErrorException.class, () -> cloudDestination().check(legacyConfig));
+  }
+
+  @Test
+  void testOssCheckAllowsStandaloneWithoutTls() {
+    assertDoesNotThrow(() -> new MongodbDestination().enforceCloudTls(standaloneConfigWithoutTls()));
   }
 
 }

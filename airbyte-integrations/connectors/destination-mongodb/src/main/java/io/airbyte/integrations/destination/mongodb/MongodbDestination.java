@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 public class MongodbDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
+  private static final String TLS_REQUIRED_ERR_MSG = "TLS connection must be used to write to MongoDB.";
 
   private final MongodbNameTransformer namingResolver;
   private final FeatureFlags featureFlags;
@@ -96,18 +97,29 @@ public class MongodbDestination extends BaseConnector implements Destination {
     LOGGER.info("completed destination: {}", MongodbDestination.class);
   }
 
+  /**
+   * In cloud deployments TLS is mandatory. Standalone instances may opt out of TLS, and legacy
+   * host/port configs always connect without TLS, so both are rejected.
+   */
+  @VisibleForTesting
+  void enforceCloudTls(final JsonNode config) {
+    if (!cloudDeploymentMode()) {
+      return;
+    }
+    if (!config.has(MongoUtils.INSTANCE_TYPE)) {
+      throw new ConfigErrorException(TLS_REQUIRED_ERR_MSG);
+    }
+    final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
+    final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
+    if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
+      throw new ConfigErrorException(TLS_REQUIRED_ERR_MSG);
+    }
+  }
+
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
+    enforceCloudTls(config);
     try {
-      // In cloud deployment mode, enforce TLS for standalone instances
-      if (cloudDeploymentMode() && config.has(MongoUtils.INSTANCE_TYPE)) {
-        final JsonNode instanceConfig = config.get(MongoUtils.INSTANCE_TYPE);
-        final var instance = MongoUtils.MongoInstanceType.fromValue(instanceConfig.get(MongoUtils.INSTANCE).asText());
-        if (instance.equals(MongoUtils.MongoInstanceType.STANDALONE) && !MongoUtils.tlsEnabledForStandaloneInstance(config, instanceConfig)) {
-          throw new ConfigErrorException("TLS connection must be used to read from MongoDB.");
-        }
-      }
-
       final MongoDatabase database = getDatabase(config);
       final var databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
       final Set<String> databaseNames = getDatabaseNames(database);
@@ -143,6 +155,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    enforceCloudTls(config);
     final MongoDatabase database = getDatabase(config);
 
     final Map<AirbyteStreamNameNamespacePair, MongodbWriteConfig> writeConfigs = new HashMap<>();
