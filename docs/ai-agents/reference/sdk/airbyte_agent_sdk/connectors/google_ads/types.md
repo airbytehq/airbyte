@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_ads-types
-title: google_ads.types
+title: airbyte_agent_sdk.connectors.google_ads.types
 ---
 
 Module airbyte_agent_sdk.connectors.google_ads.types

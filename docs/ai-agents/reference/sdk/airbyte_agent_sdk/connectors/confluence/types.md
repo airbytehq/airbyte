@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-confluence-types
-title: confluence.types
+title: airbyte_agent_sdk.connectors.confluence.types
 ---
 
 Module airbyte_agent_sdk.connectors.confluence.types

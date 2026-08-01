@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-generic
-title: caches.generic
+title: airbyte.caches.generic
 ---
 
 Module airbyte.caches.generic

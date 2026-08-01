@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-asana-models
-title: asana.models
+title: airbyte_agent_sdk.connectors.asana.models
 ---
 
 Module airbyte_agent_sdk.connectors.asana.models

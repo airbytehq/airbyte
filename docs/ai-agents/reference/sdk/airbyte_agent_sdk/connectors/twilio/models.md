@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-twilio-models
-title: twilio.models
+title: airbyte_agent_sdk.connectors.twilio.models
 ---
 
 Module airbyte_agent_sdk.connectors.twilio.models

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_analytics_data_api-models
-title: google_analytics_data_api.models
+title: airbyte_agent_sdk.connectors.google_analytics_data_api.models
 ---
 
 Module airbyte_agent_sdk.connectors.google_analytics_data_api.models

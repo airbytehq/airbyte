@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-jira-models
-title: jira.models
+title: airbyte_agent_sdk.connectors.jira.models
 ---
 
 Module airbyte_agent_sdk.connectors.jira.models

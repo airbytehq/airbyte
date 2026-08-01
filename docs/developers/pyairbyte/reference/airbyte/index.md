@@ -1,6 +1,6 @@
 ---
 id: airbyte-index
-title: airbyte
+title: airbyte.index
 ---
 
 Module airbyte
@@ -12,7 +12,7 @@ Module airbyte
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/airbyte)](https://pypi.org/project/airbyte/)
 [![Star on GitHub](https://img.shields.io/github/stars/airbytehq/pyairbyte.svg?style=social&label=★%20on%20GitHub)](https://github.com/airbytehq/pyairbyte)
 
-### Getting Started
+# Getting Started
 
 ## Reading Data
 
@@ -57,7 +57,7 @@ to non-SQL platforms such as vector stores and other reverse ETL-type use cases.
 For more information, see the `airbyte.destinations` module and the full list of destination
 connectors [here](https://docs.airbyte.com/integrations/destinations/).
 
-### PyAirbyte API
+# PyAirbyte API
 
 ## Importing as `ab`
 
@@ -83,7 +83,7 @@ submodules when they are deploying more complex implementations.
 
 For quick reference, top-Level modules are listed in the left sidebar of this page.
 
-### Other Resources
+# Other Resources
 
 - [PyAirbyte GitHub Readme](https://github.com/airbytehq/pyairbyte)
 - [PyAirbyte Issue Tracker](https://github.com/airbytehq/pyairbyte/issues)
@@ -93,7 +93,7 @@ For quick reference, top-Level modules are listed in the left sidebar of this pa
 
 ----------------------
 
-### API Reference
+# API Reference
 
 Below is a list of all classes, functions, and modules available in the top-level `airbyte`
 module. (This is a long list!) If you are just starting out, we recommend beginning by selecting a
@@ -720,12 +720,11 @@ Classes
     :   Override the cursor key for one or more streams.
         
         Usage:
-```python
-source.set_cursor_keys(
-    stream1="cursor1",
-    stream2="cursor2",
-)
-```
+            source.set_cursor_keys(
+                stream1="cursor1",
+                stream2="cursor2",
+            )
+        
         Note:
         - This does not unset previously set cursors.
         - The cursor key must be a single field name.
@@ -753,12 +752,11 @@ source.set_cursor_keys(
         This does not unset previously set primary keys.
         
         Usage:
-```python
-source.set_primary_keys(
-    stream1="pk1",
-    stream2=["pk1", "pk2"],
-)
-```
+            source.set_primary_keys(
+                stream1="pk1",
+                stream2=["pk1", "pk2"],
+            )
+        
         Note:
         - This does not unset previously set primary keys.
         - The primary key must be a single field name or a list of field names.

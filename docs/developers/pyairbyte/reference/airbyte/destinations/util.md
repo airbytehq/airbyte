@@ -1,6 +1,6 @@
 ---
 id: airbyte-destinations-util
-title: destinations.util
+title: airbyte.destinations.util
 ---
 
 Module airbyte.destinations.util

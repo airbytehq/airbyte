@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-slack-types
-title: slack.types
+title: airbyte_agent_sdk.connectors.slack.types
 ---
 
 Module airbyte_agent_sdk.connectors.slack.types

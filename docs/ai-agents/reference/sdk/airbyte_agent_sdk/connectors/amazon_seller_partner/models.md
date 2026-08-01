@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-amazon_seller_partner-models
-title: amazon_seller_partner.models
+title: airbyte_agent_sdk.connectors.amazon_seller_partner.models
 ---
 
 Module airbyte_agent_sdk.connectors.amazon_seller_partner.models

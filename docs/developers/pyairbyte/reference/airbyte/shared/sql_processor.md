@@ -1,6 +1,6 @@
 ---
 id: airbyte-shared-sql_processor
-title: shared.sql_processor
+title: airbyte.shared.sql_processor
 ---
 
 Module airbyte.shared.sql_processor

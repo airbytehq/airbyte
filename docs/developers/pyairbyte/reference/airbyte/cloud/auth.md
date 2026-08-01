@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-auth
-title: cloud.auth
+title: airbyte.cloud.auth
 ---
 
 Module airbyte.cloud.auth

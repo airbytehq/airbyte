@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-zendesk_talk-models
-title: zendesk_talk.models
+title: airbyte_agent_sdk.connectors.zendesk_talk.models
 ---
 
 Module airbyte_agent_sdk.connectors.zendesk_talk.models

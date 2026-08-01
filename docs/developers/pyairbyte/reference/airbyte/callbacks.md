@@ -1,6 +1,6 @@
 ---
 id: airbyte-callbacks
-title: callbacks
+title: airbyte.callbacks
 ---
 
 Module airbyte.callbacks

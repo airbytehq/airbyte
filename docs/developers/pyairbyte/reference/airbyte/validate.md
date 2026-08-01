@@ -1,6 +1,6 @@
 ---
 id: airbyte-validate
-title: validate
+title: airbyte.validate
 ---
 
 Module airbyte.validate

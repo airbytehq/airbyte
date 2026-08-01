@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-zendesk_talk-types
-title: zendesk_talk.types
+title: airbyte_agent_sdk.connectors.zendesk_talk.types
 ---
 
 Module airbyte_agent_sdk.connectors.zendesk_talk.types

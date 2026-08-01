@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-gitlab-models
-title: gitlab.models
+title: airbyte_agent_sdk.connectors.gitlab.models
 ---
 
 Module airbyte_agent_sdk.connectors.gitlab.models

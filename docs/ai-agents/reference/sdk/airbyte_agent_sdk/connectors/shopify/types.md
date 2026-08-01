@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-shopify-types
-title: shopify.types
+title: airbyte_agent_sdk.connectors.shopify.types
 ---
 
 Module airbyte_agent_sdk.connectors.shopify.types

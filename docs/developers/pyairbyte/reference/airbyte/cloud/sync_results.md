@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-sync_results
-title: cloud.sync_results
+title: airbyte.cloud.sync_results
 ---
 
 Module airbyte.cloud.sync_results

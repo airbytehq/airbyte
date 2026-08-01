@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-executor-hosted_executor
-title: executor.hosted_executor
+title: airbyte_agent_sdk.executor.hosted_executor
 ---
 
 Module airbyte_agent_sdk.executor.hosted_executor
@@ -27,36 +27,35 @@ Classes
     Implements ExecutorProtocol.
     
     Example:
-```python
-# Create executor with explicit connector_id (no lookup needed)
-executor = HostedExecutor(
-    airbyte_client_id="client_abc123",
-    airbyte_client_secret="secret_xyz789",
-    connector_id="existing-source-uuid",
-)
-
-# Or create executor with workspace_name for lookup
-executor = HostedExecutor(
-    airbyte_client_id="client_abc123",
-    airbyte_client_secret="secret_xyz789",
-    workspace_name="user-123",
-    organization_id="00000000-0000-0000-0000-000000000123",
-    connector_definition_id="abc123-def456-ghi789",
-)
-
-# Execute an operation
-execution_config = ExecutionConfig(
-    entity="customers",
-    action="list",
-    params=\{"limit": 10\}
-)
-
-result = await executor.execute(execution_config)
-if result.success:
-    print(f"Data: \{result.data\}")
-else:
-    print(f"Error: \{result.error\}")
-```
+        # Create executor with explicit connector_id (no lookup needed)
+        executor = HostedExecutor(
+            airbyte_client_id="client_abc123",
+            airbyte_client_secret="secret_xyz789",
+            connector_id="existing-source-uuid",
+        )
+    
+        # Or create executor with workspace_name for lookup
+        executor = HostedExecutor(
+            airbyte_client_id="client_abc123",
+            airbyte_client_secret="secret_xyz789",
+            workspace_name="user-123",
+            organization_id="00000000-0000-0000-0000-000000000123",
+            connector_definition_id="abc123-def456-ghi789",
+        )
+    
+        # Execute an operation
+        execution_config = ExecutionConfig(
+            entity="customers",
+            action="list",
+            params=\{"limit": 10\}
+        )
+    
+        result = await executor.execute(execution_config)
+        if result.success:
+            print(f"Data: \{result.data\}")
+        else:
+            print(f"Error: \{result.error\}")
+    
     Initialize hosted executor.
     
     Either provide `connector_id` directly OR (`workspace_name` +
@@ -81,23 +80,22 @@ else:
             defaults to `"default"`).
     
     Example:
-```python
-# With explicit connector_id (no lookup)
-executor = HostedExecutor(
-    airbyte_client_id="client_abc123",
-    airbyte_client_secret="secret_xyz789",
-    connector_id="existing-source-uuid",
-)
+        # With explicit connector_id (no lookup)
+        executor = HostedExecutor(
+            airbyte_client_id="client_abc123",
+            airbyte_client_secret="secret_xyz789",
+            connector_id="existing-source-uuid",
+        )
+    
+        # With lookup by workspace_name + definition
+        executor = HostedExecutor(
+            airbyte_client_id="client_abc123",
+            airbyte_client_secret="secret_xyz789",
+            workspace_name="user-123",
+            organization_id="00000000-0000-0000-0000-000000000123",
+            connector_definition_id="abc123-def456-ghi789",
+        )
 
-# With lookup by workspace_name + definition
-executor = HostedExecutor(
-    airbyte_client_id="client_abc123",
-    airbyte_client_secret="secret_xyz789",
-    workspace_name="user-123",
-    organization_id="00000000-0000-0000-0000-000000000123",
-    connector_definition_id="abc123-def456-ghi789",
-)
-```
     ### Methods
 
     `check(self) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
@@ -115,13 +113,12 @@ executor = HostedExecutor(
         Call this when you're done using the executor to clean up HTTP connections.
         
         Example:
-```python
-executor = HostedExecutor(...)
-try:
-    result = await executor.execute(config)
-finally:
-    await executor.close()
-```
+            executor = HostedExecutor(...)
+            try:
+                result = await executor.execute(config)
+            finally:
+                await executor.close()
+
     `execute(self, *args: ExecutionConfig | str, config_or_entity: ExecutionConfig | str | None = None, config: ExecutionConfig | None = None, params: dict[str, Any] | None = None, entity: str | None = None, action: str | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
@@ -163,17 +160,16 @@ finally:
             httpx.RequestError: If network request fails
         
         Example:
-```python
-config = ExecutionConfig(
-    entity="customers",
-    action="list",
-    params=\{"limit": 10\}
-)
-result = await executor.execute(config)
+            config = ExecutionConfig(
+                entity="customers",
+                action="list",
+                params=\{"limit": 10\}
+            )
+            result = await executor.execute(config)
+        
+            # Shorthand form:
+            result = await executor.execute("customers", "list", params=\{"limit": 10\})
 
-# Shorthand form:
-result = await executor.execute("customers", "list", params=\{"limit": 10\})
-```
     `inspect_connector(self) ‑> dict[str, typing.Any]`
     :   Inspect hosted connector metadata and readiness.
 

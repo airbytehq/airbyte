@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-linear-connector_model
-title: linear.connector_model
+title: airbyte_agent_sdk.connectors.linear.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.linear.connector_model

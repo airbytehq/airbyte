@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-intercom-connector_model
-title: intercom.connector_model
+title: airbyte_agent_sdk.connectors.intercom.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.intercom.connector_model

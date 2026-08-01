@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-notion-models
-title: notion.models
+title: airbyte_agent_sdk.connectors.notion.models
 ---
 
 Module airbyte_agent_sdk.connectors.notion.models

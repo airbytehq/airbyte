@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-client_config
-title: cloud.client_config
+title: airbyte.cloud.client_config
 ---
 
 Module airbyte.cloud.client_config

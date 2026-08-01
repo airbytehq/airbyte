@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-motherduck
-title: caches.motherduck
+title: airbyte.caches.motherduck
 ---
 
 Module airbyte.caches.motherduck

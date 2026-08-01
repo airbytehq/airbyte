@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-zendesk_chat-connector_model
-title: zendesk_chat.connector_model
+title: airbyte_agent_sdk.connectors.zendesk_chat.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.zendesk_chat.connector_model

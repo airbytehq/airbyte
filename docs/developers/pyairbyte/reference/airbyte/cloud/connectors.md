@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-connectors
-title: cloud.connectors
+title: airbyte.cloud.connectors
 ---
 
 Module airbyte.cloud.connectors

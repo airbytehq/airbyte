@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-amazon_ads-types
-title: amazon_ads.types
+title: airbyte_agent_sdk.connectors.amazon_ads.types
 ---
 
 Module airbyte_agent_sdk.connectors.amazon_ads.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-salesforce-connector
-title: salesforce.connector
+title: airbyte_agent_sdk.connectors.salesforce.connector
 ---
 
 Module airbyte_agent_sdk.connectors.salesforce.connector
@@ -155,13 +155,12 @@ Classes
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
-SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
-SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
-SELECT Id, Name, AnnualRevenue FROM Account ORDER BY AnnualRevenue DESC LIMIT 10
-SELECT Id, Name, NumberOfEmployees FROM Account ORDER BY NumberOfEmployees DESC LIMIT 10
-```
+          SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
+          SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
+          SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
+          SELECT Id, Name, AnnualRevenue FROM Account ORDER BY AnnualRevenue DESC LIMIT 10
+          SELECT Id, Name, NumberOfEmployees FROM Account ORDER BY NumberOfEmployees DESC LIMIT 10
+        
         Use dot-path traversal (Owner.Name, Parent.Name) to resolve relationship
         fields inline instead of returning raw IDs.
         
@@ -369,11 +368,10 @@ SELECT Id, Name, NumberOfEmployees FROM Account ORDER BY NumberOfEmployees DESC 
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50
-SELECT Id, Name, Type, Status, Owner.Name FROM Campaign LIMIT 50
-SELECT Id, Name, Owner.Name, Owner.Email, StartDate FROM Campaign WHERE IsActive = true LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Campaign WHERE IsActive = true LIMIT 50
+          SELECT Id, Name, Type, Status, Owner.Name FROM Campaign LIMIT 50
+          SELECT Id, Name, Owner.Name, Owner.Email, StartDate FROM Campaign WHERE IsActive = true LIMIT 50
+        
         Use dot-path traversal (Owner.Name) to resolve relationship fields inline
         instead of returning raw IDs.
         
@@ -490,11 +488,10 @@ SELECT Id, Name, Owner.Name, Owner.Email, StartDate FROM Campaign WHERE IsActive
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100
-SELECT Id, CaseNumber, Subject, Account.Name, Owner.Name, Contact.Name FROM Case LIMIT 50
-SELECT Id, CaseNumber, Subject, Status, Account.Name, Owner.Name FROM Case WHERE Status = 'Escalated' LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Case WHERE Status = 'New' LIMIT 100
+          SELECT Id, CaseNumber, Subject, Account.Name, Owner.Name, Contact.Name FROM Case LIMIT 50
+          SELECT Id, CaseNumber, Subject, Status, Account.Name, Owner.Name FROM Case WHERE Status = 'Escalated' LIMIT 50
+        
         Use dot-path traversal (Account.Name, Owner.Name, Contact.Name) to resolve
         relationship fields inline instead of returning raw IDs.
         
@@ -660,11 +657,10 @@ SELECT Id, CaseNumber, Subject, Status, Account.Name, Owner.Name FROM Case WHERE
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50
-SELECT Id, FirstName, LastName, Account.Name, Owner.Name FROM Contact LIMIT 50
-SELECT Id, Name, Email, Account.Name, ReportsTo.Name FROM Contact WHERE AccountId != null LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Contact WHERE AccountId = '001xx...' LIMIT 50
+          SELECT Id, FirstName, LastName, Account.Name, Owner.Name FROM Contact LIMIT 50
+          SELECT Id, Name, Email, Account.Name, ReportsTo.Name FROM Contact WHERE AccountId != null LIMIT 50
+        
         Use dot-path traversal (Account.Name, Owner.Name, ReportsTo.Name) to resolve
         relationship fields inline instead of returning raw IDs.
         
@@ -867,11 +863,10 @@ SELECT Id, Name, Email, Account.Name, ReportsTo.Name FROM Contact WHERE AccountI
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 50
-SELECT Id, Subject, StartDateTime, Owner.Name, Account.Name FROM Event LIMIT 50
-SELECT Id, Subject, StartDateTime, Owner.Name, Who.Name, What.Name FROM Event WHERE StartDateTime = THIS_WEEK LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 50
+          SELECT Id, Subject, StartDateTime, Owner.Name, Account.Name FROM Event LIMIT 50
+          SELECT Id, Subject, StartDateTime, Owner.Name, Who.Name, What.Name FROM Event WHERE StartDateTime = THIS_WEEK LIMIT 50
+        
         Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
         fields inline instead of returning raw IDs. Who.Name and What.Name resolve
         polymorphic WhoId/WhatId references to the related record's name.
@@ -1048,11 +1043,10 @@ SELECT Id, Subject, StartDateTime, Owner.Name, Who.Name, What.Name FROM Event WH
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100
-SELECT Id, Name, Company, Owner.Name FROM Lead LIMIT 50
-SELECT Id, Name, Owner.Name, ConvertedAccount.Name, ConvertedContact.Name, ConvertedOpportunity.Name FROM Lead WHERE IsConverted = true LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Lead WHERE Status = 'Open' LIMIT 100
+          SELECT Id, Name, Company, Owner.Name FROM Lead LIMIT 50
+          SELECT Id, Name, Owner.Name, ConvertedAccount.Name, ConvertedContact.Name, ConvertedOpportunity.Name FROM Lead WHERE IsConverted = true LIMIT 50
+        
         Use dot-path traversal (Owner.Name, ConvertedAccount.Name, ConvertedContact.Name,
         ConvertedOpportunity.Name) to resolve relationship fields inline instead of returning raw IDs.
         
@@ -1168,11 +1162,10 @@ SELECT Id, Name, Owner.Name, ConvertedAccount.Name, ConvertedContact.Name, Conve
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
-SELECT Id, Title, Body, Owner.Name FROM Note LIMIT 50
-SELECT Id, Title, Owner.Name, CreatedDate FROM Note ORDER BY CreatedDate DESC LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Note WHERE ParentId = '001xx...' LIMIT 50
+          SELECT Id, Title, Body, Owner.Name FROM Note LIMIT 50
+          SELECT Id, Title, Owner.Name, CreatedDate FROM Note ORDER BY CreatedDate DESC LIMIT 50
+        
         Use dot-path traversal (Owner.Name) to resolve relationship fields inline
         instead of returning raw IDs.
         
@@ -1328,13 +1321,12 @@ SELECT Id, Title, Owner.Name, CreatedDate FROM Note ORDER BY CreatedDate DESC LI
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
-SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
-SELECT Id, Name, Amount, StageName, Account.Name FROM Opportunity ORDER BY Amount DESC LIMIT 10
-SELECT Id, Name, ExpectedRevenue, Probability, Amount FROM Opportunity ORDER BY ExpectedRevenue DESC LIMIT 10
-SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
+          SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
+          SELECT Id, Name, Amount, StageName, Account.Name FROM Opportunity ORDER BY Amount DESC LIMIT 10
+          SELECT Id, Name, ExpectedRevenue, Probability, Amount FROM Opportunity ORDER BY ExpectedRevenue DESC LIMIT 10
+          SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
+        
         Use dot-path traversal (Account.Name, Owner.Name, Campaign.Name) to resolve
         relationship fields inline instead of returning raw IDs.
         
@@ -1437,11 +1429,10 @@ SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign
                     q: SOQL query for opportunity stages. Default returns all stages.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM OpportunityStage ORDER BY SortOrder ASC
-SELECT Id, MasterLabel, ApiName, DefaultProbability, IsClosed, IsWon, IsActive, ForecastCategoryName FROM OpportunityStage WHERE IsActive = true ORDER BY SortOrder ASC
-SELECT Id, MasterLabel, DefaultProbability, CreatedBy.Name FROM OpportunityStage ORDER BY SortOrder ASC
-```
+          SELECT FIELDS(STANDARD) FROM OpportunityStage ORDER BY SortOrder ASC
+          SELECT Id, MasterLabel, ApiName, DefaultProbability, IsClosed, IsWon, IsActive, ForecastCategoryName FROM OpportunityStage WHERE IsActive = true ORDER BY SortOrder ASC
+          SELECT Id, MasterLabel, DefaultProbability, CreatedBy.Name FROM OpportunityStage ORDER BY SortOrder ASC
+        
         Use dot-path traversal (CreatedBy.Name, LastModifiedBy.Name) to resolve
         relationship fields inline instead of returning raw IDs.
         
@@ -1536,28 +1527,27 @@ SELECT Id, MasterLabel, DefaultProbability, CreatedBy.Name FROM OpportunityStage
             Called with new_tokens dict when tokens are refreshed. Can be sync or async.
             Example: lambda tokens: save_to_database(tokens)            instance_url: Your Salesforce instance URL (e.g., https://na1.salesforce.com)
     Examples:
-```python
-# Local mode (direct API calls)
-connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."))
-# Hosted mode with explicit connector_id (no lookup needed)
-connector = SalesforceConnector(
-    auth_config=AirbyteAuthConfig(
-        airbyte_client_id="client_abc123",
-        airbyte_client_secret="secret_xyz789",
-        connector_id="existing-source-uuid"
-    )
-)
+        # Local mode (direct API calls)
+        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = SalesforceConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = SalesforceConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
 
-# Hosted mode with lookup by workspace_name
-connector = SalesforceConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="user-123",
-        organization_id="00000000-0000-0000-0000-000000000123",
-        airbyte_client_id="client_abc123",
-        airbyte_client_secret="secret_xyz789"
-    )
-)
-```
     ### Class variables
 
     `connector_name`
@@ -1592,21 +1582,20 @@ connector = SalesforceConnector(
         - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-```python
-connector = SalesforceConnector(...)
-
-@SalesforceConnector.agent_tool()
-async def execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity=entity, action=action, params=params or \{\})
-
-@SalesforceConnector.agent_tool()
-async def inspect_connector():
-    return await connector.inspect_connector()
-
-@SalesforceConnector.agent_tool()
-async def read_skill_docs(section: str | None = None):
-    return await connector.read_skill_docs(section)
-```
+            connector = SalesforceConnector(...)
+        
+            @SalesforceConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
+        
+            @SalesforceConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @SalesforceConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
+        
         Args:
             role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
                 None (default) infers the role from the decorated function's
@@ -1725,13 +1714,12 @@ async def read_skill_docs(section: str | None = None):
             SalesforceCheckResult with status ("healthy" or "unhealthy") and optional error message
         
         Example:
-```python
-result = await connector.check()
-if result.status == "healthy":
-    print("Connection verified!")
-else:
-    print(f"Check failed: \{result.error\}")
-```
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
     `close(self)`
     :   Close the connector and release resources.
 
@@ -1745,11 +1733,10 @@ else:
             JSON schema dict describing the entity structure, or None if not found.
         
         Example:
-```python
-schema = connector.entity_schema("contacts")
-if schema:
-    print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
-```
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
     `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
@@ -1770,13 +1757,12 @@ if schema:
             Typed response based on the operation
         
         Example:
-```python
-customer = await connector.execute(
-    entity="customers",
-    action="get",
-    params=\{"id": "cus_123"\}
-)
-```
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
     `inspect_connector(self) ‑> dict[str, typing.Any]`
     :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
         
@@ -1785,10 +1771,9 @@ customer = await connector.execute(
         warning instead of a hosted inspection.
         
         Example:
-```python
-info = await connector.inspect_connector()
-print(info["docs_skill_id"])
-```
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
         
@@ -1799,11 +1784,10 @@ print(info["docs_skill_id"])
         - parameters: Dict mapping action -> list of parameter dicts
         
         Example:
-```python
-entities = connector.list_entities()
-for entity in entities:
-    print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
-```
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
     `read_skill_docs(self, section: str | None = None) ‑> str`
     :   Read this connector's usage docs, rendered to text.
         
@@ -1813,10 +1797,9 @@ for entity in entities:
         ignored.
         
         Example:
-```python
-outline = await connector.read_skill_docs()
-details = await connector.read_skill_docs(section="entity:contacts")
-```
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
 <a id="SobjectsQuery"></a>
 
 `SobjectsQuery(connector: SalesforceConnector)`
@@ -2014,11 +1997,10 @@ details = await connector.read_skill_docs(section="entity:contacts")
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100
-SELECT Id, Subject, Status, Owner.Name, Account.Name FROM Task LIMIT 50
-SELECT Id, Subject, Status, Owner.Name, Who.Name, What.Name FROM Task WHERE ActivityDate = THIS_WEEK LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM Task WHERE Status = 'Not Started' LIMIT 100
+          SELECT Id, Subject, Status, Owner.Name, Account.Name FROM Task LIMIT 50
+          SELECT Id, Subject, Status, Owner.Name, Who.Name, What.Name FROM Task WHERE ActivityDate = THIS_WEEK LIMIT 50
+        
         Use dot-path traversal (Owner.Name, Account.Name) to resolve relationship
         fields inline instead of returning raw IDs. Who.Name and What.Name resolve
         polymorphic WhoId/WhatId references to the related record's name.
@@ -2165,11 +2147,10 @@ SELECT Id, Subject, Status, Owner.Name, Who.Name, What.Name FROM Task WHERE Acti
         To change the limit, provide your own query with a LIMIT clause.
         
         Examples:
-```python
-SELECT FIELDS(STANDARD) FROM User WHERE IsActive = true ORDER BY LastModifiedDate DESC LIMIT 50
-SELECT Id, Name, Email, Manager.Name, Profile.Name FROM User WHERE IsActive = true LIMIT 50
-SELECT Id, Name, Email, Department, UserRole.Name FROM User LIMIT 50
-```
+          SELECT FIELDS(STANDARD) FROM User WHERE IsActive = true ORDER BY LastModifiedDate DESC LIMIT 50
+          SELECT Id, Name, Email, Manager.Name, Profile.Name FROM User WHERE IsActive = true LIMIT 50
+          SELECT Id, Name, Email, Department, UserRole.Name FROM User LIMIT 50
+        
         Use dot-path traversal (Manager.Name, Profile.Name, UserRole.Name) to resolve
         relationship fields inline instead of returning raw IDs.
         

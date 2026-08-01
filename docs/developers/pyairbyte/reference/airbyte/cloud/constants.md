@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-constants
-title: cloud.constants
+title: airbyte.cloud.constants
 ---
 
 Module airbyte.cloud.constants

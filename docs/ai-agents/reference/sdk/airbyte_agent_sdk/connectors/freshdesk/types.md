@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-freshdesk-types
-title: freshdesk.types
+title: airbyte_agent_sdk.connectors.freshdesk.types
 ---
 
 Module airbyte_agent_sdk.connectors.freshdesk.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte-caches-snowflake
-title: caches.snowflake
+title: airbyte.caches.snowflake
 ---
 
 Module airbyte.caches.snowflake
@@ -9,7 +9,7 @@ A Snowflake implementation of the PyAirbyte cache.
 
 ## Usage Example
 
-### Password connection:
+# Password connection:
 
 ```python
 from airbyte as ab
@@ -26,7 +26,7 @@ cache = SnowflakeCache(
 )
 ```
 
-### Private key connection:
+# Private key connection:
 
 ```python
 from airbyte as ab
@@ -44,7 +44,7 @@ cache = SnowflakeCache(
 )
 ```
 
-### Private key path connection:
+# Private key path connection:
 
 ```python
 from airbyte as ab

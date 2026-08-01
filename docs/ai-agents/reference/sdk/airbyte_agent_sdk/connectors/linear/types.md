@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-linear-types
-title: linear.types
+title: airbyte_agent_sdk.connectors.linear.types
 ---
 
 Module airbyte_agent_sdk.connectors.linear.types

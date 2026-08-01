@@ -1,6 +1,6 @@
 ---
 id: airbyte-shared-state_providers
-title: shared.state_providers
+title: airbyte.shared.state_providers
 ---
 
 Module airbyte.shared.state_providers

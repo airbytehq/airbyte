@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-executor-local_executor
-title: executor.local_executor
+title: airbyte_agent_sdk.executor.local_executor
 ---
 
 Module airbyte_agent_sdk.executor.local_executor
@@ -94,19 +94,18 @@ Classes
             ExecutionResult with success/failure status and data
         
         Example:
-```python
-config = ExecutionConfig(
-    entity="customers",
-    action="list",
-    params=\{"limit": 10\}
-)
-result = await executor.execute(config)
-if result.success:
-    print(result.data)
+            config = ExecutionConfig(
+                entity="customers",
+                action="list",
+                params=\{"limit": 10\}
+            )
+            result = await executor.execute(config)
+            if result.success:
+                print(result.data)
+        
+            # Shorthand form:
+            result = await executor.execute("customers", "list", params=\{"limit": 10\})
 
-# Shorthand form:
-result = await executor.execute("customers", "list", params=\{"limit": 10\})
-```
     `execute_batch(self, operations: list[tuple[str, str | Action, dict[str, Any] | None]]) ‑> list[dict[str, typing.Any] | collections.abc.AsyncIterator[bytes]]`
     :   Execute multiple operations concurrently (supports all action types including download).
         
@@ -123,13 +122,12 @@ result = await executor.execute("customers", "list", params=\{"limit": 10\})
             HTTPClientError: If any API request fails
         
         Example:
-```python
-results = await executor.execute_batch([
-    ("Customer", "list", \{"limit": 10\}),
-    ("Customer", "get", \{"id": "cus_123"\}),
-    ("attachments", "download", \{"id": "att_456"\}),
-])
-```
+            results = await executor.execute_batch([
+                ("Customer", "list", \{"limit": 10\}),
+                ("Customer", "get", \{"id": "cus_123"\}),
+                ("attachments", "download", \{"id": "att_456"\}),
+            ])
+
 <a id="ParamResolutionError"></a>
 
 `ParamResolutionError(*args, **kwargs)`

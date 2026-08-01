@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-facebook_marketing-models
-title: facebook_marketing.models
+title: airbyte_agent_sdk.connectors.facebook_marketing.models
 ---
 
 Module airbyte_agent_sdk.connectors.facebook_marketing.models

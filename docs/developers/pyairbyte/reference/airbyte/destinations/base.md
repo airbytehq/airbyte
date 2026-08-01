@@ -1,6 +1,6 @@
 ---
 id: airbyte-destinations-base
-title: destinations.base
+title: airbyte.destinations.base
 ---
 
 Module airbyte.destinations.base

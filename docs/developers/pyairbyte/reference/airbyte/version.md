@@ -1,6 +1,6 @@
 ---
 id: airbyte-version
-title: version
+title: airbyte.version
 ---
 
 Module airbyte.version

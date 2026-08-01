@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_search_console-types
-title: google_search_console.types
+title: airbyte_agent_sdk.connectors.google_search_console.types
 ---
 
 Module airbyte_agent_sdk.connectors.google_search_console.types

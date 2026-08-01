@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-ashby-types
-title: ashby.types
+title: airbyte_agent_sdk.connectors.ashby.types
 ---
 
 Module airbyte_agent_sdk.connectors.ashby.types

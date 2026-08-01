@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-utils
-title: utils
+title: airbyte_agent_sdk.utils
 ---
 
 Module airbyte_agent_sdk.utils
@@ -62,15 +62,13 @@ Functions
         OSError: If file cannot be written
     
     Example:
-```python
->>> from airbyte_agent_sdk.utils import save_download
->>>
->>> # Download and save a file
->>> result = await connector.download_article_attachment(id="123")
->>> file_path = await save_download(result, "./downloads/attachment.pdf")
->>> print(f"Downloaded to \{file_path\}")
-Downloaded to /absolute/path/to/downloads/attachment.pdf
->>>
->>> # Overwrite existing file
->>> file_path = await save_download(result, "./downloads/attachment.pdf", overwrite=True)
-```
+        >>> from airbyte_agent_sdk.utils import save_download
+        >>>
+        >>> # Download and save a file
+        >>> result = await connector.download_article_attachment(id="123")
+        >>> file_path = await save_download(result, "./downloads/attachment.pdf")
+        >>> print(f"Downloaded to \{file_path\}")
+        Downloaded to /absolute/path/to/downloads/attachment.pdf
+        >>>
+        >>> # Overwrite existing file
+        >>> file_path = await save_download(result, "./downloads/attachment.pdf", overwrite=True)

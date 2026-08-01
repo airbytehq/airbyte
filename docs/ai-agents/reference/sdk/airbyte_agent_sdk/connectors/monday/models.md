@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-monday-models
-title: monday.models
+title: airbyte_agent_sdk.connectors.monday.models
 ---
 
 Module airbyte_agent_sdk.connectors.monday.models

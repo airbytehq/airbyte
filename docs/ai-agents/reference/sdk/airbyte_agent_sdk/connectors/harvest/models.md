@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-harvest-models
-title: harvest.models
+title: airbyte_agent_sdk.connectors.harvest.models
 ---
 
 Module airbyte_agent_sdk.connectors.harvest.models

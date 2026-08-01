@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-local
-title: mcp.local
+title: airbyte.mcp.local
 ---
 
 Module airbyte.mcp.local

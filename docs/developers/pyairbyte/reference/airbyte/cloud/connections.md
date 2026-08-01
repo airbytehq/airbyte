@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-connections
-title: cloud.connections
+title: airbyte.cloud.connections
 ---
 
 Module airbyte.cloud.connections
@@ -172,9 +172,10 @@ Classes
             cron_expression: A cron expression defining when syncs should run.
         
         Examples:
-- "0 0 * * *" - Daily at midnight UTC
-- "0 */6 * * *" - Every 6 hours
-- "0 0 * * 0" - Weekly on Sunday at midnight UTC
+                - "0 0 * * *" - Daily at midnight UTC
+                - "0 */6 * * *" - Every 6 hours
+                - "0 0 * * 0" - Weekly on Sunday at midnight UTC
+
     `set_selected_streams(self, stream_names: list[str]) ‑> airbyte.cloud.connections.CloudConnection`
     :   Set the selected streams for the connection.
         

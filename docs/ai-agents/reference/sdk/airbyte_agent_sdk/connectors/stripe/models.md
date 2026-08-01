@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-stripe-models
-title: stripe.models
+title: airbyte_agent_sdk.connectors.stripe.models
 ---
 
 Module airbyte_agent_sdk.connectors.stripe.models

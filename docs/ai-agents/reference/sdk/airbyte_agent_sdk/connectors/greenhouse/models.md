@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-greenhouse-models
-title: greenhouse.models
+title: airbyte_agent_sdk.connectors.greenhouse.models
 ---
 
 Module airbyte_agent_sdk.connectors.greenhouse.models

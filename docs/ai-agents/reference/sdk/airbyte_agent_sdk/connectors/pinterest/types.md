@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-pinterest-types
-title: pinterest.types
+title: airbyte_agent_sdk.connectors.pinterest.types
 ---
 
 Module airbyte_agent_sdk.connectors.pinterest.types

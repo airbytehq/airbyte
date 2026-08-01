@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-executor-models
-title: executor.models
+title: airbyte_agent_sdk.executor.models
 ---
 
 Module airbyte_agent_sdk.executor.models
@@ -179,13 +179,12 @@ Classes
         intent: Optional short description of why this execution is being performed (max 512 chars)
     
     Example:
-```python
-config = ExecutionConfig(
-    entity="customers",
-    action="list",
-    params=\{"limit": 10\}
-)
-```
+        config = ExecutionConfig(
+            entity="customers",
+            action="list",
+            params=\{"limit": 10\}
+        )
+
     ### Instance variables
 
     `action: str`
@@ -301,17 +300,16 @@ config = ExecutionConfig(
     defined on the concrete classes via ``@overload``.
     
     Example:
-```python
-def run_connector(executor: ExecutorProtocol, config: ExecutionConfig):
-    result = await executor.execute(config)
-    if result.success:
-        print(f"Success: \{result.data\}")
-    else:
-        print(f"Error: \{result.error\}")
+        def run_connector(executor: ExecutorProtocol, config: ExecutionConfig):
+            result = await executor.execute(config)
+            if result.success:
+                print(f"Success: \{result.data\}")
+            else:
+                print(f"Error: \{result.error\}")
+    
+        # Shorthand (on concrete implementations):
+        result = await executor.execute("customers", "list", params=\{"limit": 10\})
 
-# Shorthand (on concrete implementations):
-result = await executor.execute("customers", "list", params=\{"limit": 10\})
-```
     ### Ancestors (in MRO)
 
     * typing.Protocol
@@ -383,12 +381,11 @@ result = await executor.execute("customers", "list", params=\{"limit": 10\})
         metadata: Optional metadata extracted from response (e.g., pagination info)
     
     Example:
-```python
-result = StandardExecuteResult(
-    data=\{"id": "1", "name": "Test"\},
-    metadata=\{"pagination": \{"cursor": "next123", "totalRecords": 100\}\}
-)
-```
+        result = StandardExecuteResult(
+            data=\{"id": "1", "name": "Test"\},
+            metadata=\{"pagination": \{"cursor": "next123", "totalRecords": 100\}\}
+        )
+
     ### Instance variables
 
     `data: dict[str, typing.Any]`

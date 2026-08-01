@@ -1,6 +1,6 @@
 ---
 id: airbyte-experimental-index
-title: experimental.index
+title: airbyte.experimental.index
 ---
 
 Module airbyte.experimental

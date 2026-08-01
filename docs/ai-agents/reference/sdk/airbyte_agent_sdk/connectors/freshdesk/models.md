@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-freshdesk-models
-title: freshdesk.models
+title: airbyte_agent_sdk.connectors.freshdesk.models
 ---
 
 Module airbyte_agent_sdk.connectors.freshdesk.models

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-snapchat_marketing-models
-title: snapchat_marketing.models
+title: airbyte_agent_sdk.connectors.snapchat_marketing.models
 ---
 
 Module airbyte_agent_sdk.connectors.snapchat_marketing.models

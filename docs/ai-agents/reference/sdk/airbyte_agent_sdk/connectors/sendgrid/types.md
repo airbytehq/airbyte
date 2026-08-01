@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-sendgrid-types
-title: sendgrid.types
+title: airbyte_agent_sdk.connectors.sendgrid.types
 ---
 
 Module airbyte_agent_sdk.connectors.sendgrid.types

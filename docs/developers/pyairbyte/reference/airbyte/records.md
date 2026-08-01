@@ -1,6 +1,6 @@
 ---
 id: airbyte-records
-title: records
+title: airbyte.records
 ---
 
 Module airbyte.records

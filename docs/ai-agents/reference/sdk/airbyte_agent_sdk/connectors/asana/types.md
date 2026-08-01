@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-asana-types
-title: asana.types
+title: airbyte_agent_sdk.connectors.asana.types
 ---
 
 Module airbyte_agent_sdk.connectors.asana.types

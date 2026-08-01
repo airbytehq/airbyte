@@ -1,6 +1,6 @@
 ---
 id: airbyte-sources-base
-title: sources.base
+title: airbyte.sources.base
 ---
 
 Module airbyte.sources.base
@@ -177,12 +177,11 @@ Classes
     :   Override the cursor key for one or more streams.
         
         Usage:
-```python
-source.set_cursor_keys(
-    stream1="cursor1",
-    stream2="cursor2",
-)
-```
+            source.set_cursor_keys(
+                stream1="cursor1",
+                stream2="cursor2",
+            )
+        
         Note:
         - This does not unset previously set cursors.
         - The cursor key must be a single field name.
@@ -210,12 +209,11 @@ source.set_cursor_keys(
         This does not unset previously set primary keys.
         
         Usage:
-```python
-source.set_primary_keys(
-    stream1="pk1",
-    stream2=["pk1", "pk2"],
-)
-```
+            source.set_primary_keys(
+                stream1="pk1",
+                stream2=["pk1", "pk2"],
+            )
+        
         Note:
         - This does not unset previously set primary keys.
         - The primary key must be a single field name or a list of field names.

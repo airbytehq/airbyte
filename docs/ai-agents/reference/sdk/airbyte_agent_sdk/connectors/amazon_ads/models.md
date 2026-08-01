@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-amazon_ads-models
-title: amazon_ads.models
+title: airbyte_agent_sdk.connectors.amazon_ads.models
 ---
 
 Module airbyte_agent_sdk.connectors.amazon_ads.models

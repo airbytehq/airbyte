@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-server
-title: mcp.server
+title: airbyte.mcp.server
 ---
 
 Module airbyte.mcp.server

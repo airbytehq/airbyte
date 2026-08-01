@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-orb-types
-title: orb.types
+title: airbyte_agent_sdk.connectors.orb.types
 ---
 
 Module airbyte_agent_sdk.connectors.orb.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-gmail-models
-title: gmail.models
+title: airbyte_agent_sdk.connectors.gmail.models
 ---
 
 Module airbyte_agent_sdk.connectors.gmail.models

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-shopify-models
-title: shopify.models
+title: airbyte_agent_sdk.connectors.shopify.models
 ---
 
 Module airbyte_agent_sdk.connectors.shopify.models

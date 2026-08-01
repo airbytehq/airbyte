@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-snowflake-types
-title: snowflake.types
+title: airbyte_agent_sdk.connectors.snowflake.types
 ---
 
 Module airbyte_agent_sdk.connectors.snowflake.types

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-customer_io-models
-title: customer_io.models
+title: airbyte_agent_sdk.connectors.customer_io.models
 ---
 
 Module airbyte_agent_sdk.connectors.customer_io.models

@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-snowflake-models
-title: snowflake.models
+title: airbyte_agent_sdk.connectors.snowflake.models
 ---
 
 Module airbyte_agent_sdk.connectors.snowflake.models

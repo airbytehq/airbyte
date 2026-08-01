@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-registry
-title: mcp.registry
+title: airbyte.mcp.registry
 ---
 
 Module airbyte.mcp.registry

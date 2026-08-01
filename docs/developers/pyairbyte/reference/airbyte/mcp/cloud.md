@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-cloud
-title: mcp.cloud
+title: airbyte.mcp.cloud
 ---
 
 Module airbyte.mcp.cloud

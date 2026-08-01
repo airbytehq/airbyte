@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-tools
-title: tools
+title: airbyte_agent_sdk.tools
 ---
 
 Module airbyte_agent_sdk.tools

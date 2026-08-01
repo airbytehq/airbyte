@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-tiktok_marketing-connector_model
-title: tiktok_marketing.connector_model
+title: airbyte_agent_sdk.connectors.tiktok_marketing.connector_model
 ---
 
 Module airbyte_agent_sdk.connectors.tiktok_marketing.connector_model

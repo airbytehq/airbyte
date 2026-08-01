@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-gmail-types
-title: gmail.types
+title: airbyte_agent_sdk.connectors.gmail.types
 ---
 
 Module airbyte_agent_sdk.connectors.gmail.types

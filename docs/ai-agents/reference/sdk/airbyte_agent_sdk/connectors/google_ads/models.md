@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-google_ads-models
-title: google_ads.models
+title: airbyte_agent_sdk.connectors.google_ads.models
 ---
 
 Module airbyte_agent_sdk.connectors.google_ads.models

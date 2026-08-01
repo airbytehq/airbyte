@@ -1,6 +1,6 @@
 ---
 id: airbyte-shared-state_writers
-title: shared.state_writers
+title: airbyte.shared.state_writers
 ---
 
 Module airbyte.shared.state_writers

@@ -1,6 +1,6 @@
 ---
 id: airbyte-types
-title: types
+title: airbyte.types
 ---
 
 Module airbyte.types

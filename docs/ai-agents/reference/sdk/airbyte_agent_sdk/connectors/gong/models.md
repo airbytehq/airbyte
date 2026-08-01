@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-gong-models
-title: gong.models
+title: airbyte_agent_sdk.connectors.gong.models
 ---
 
 Module airbyte_agent_sdk.connectors.gong.models

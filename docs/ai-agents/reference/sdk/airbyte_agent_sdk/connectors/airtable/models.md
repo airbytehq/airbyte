@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-airtable-models
-title: airtable.models
+title: airbyte_agent_sdk.connectors.airtable.models
 ---
 
 Module airbyte_agent_sdk.connectors.airtable.models

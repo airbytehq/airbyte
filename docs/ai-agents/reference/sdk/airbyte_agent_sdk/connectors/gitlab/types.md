@@ -1,6 +1,6 @@
 ---
 id: airbyte_agent_sdk-connectors-gitlab-types
-title: gitlab.types
+title: airbyte_agent_sdk.connectors.gitlab.types
 ---
 
 Module airbyte_agent_sdk.connectors.gitlab.types
