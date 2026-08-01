@@ -313,6 +313,7 @@ const config: Config = {
         depth: 4,
         content: {
           includePages: true,
+          enableLlmsFullTxt: true,
           excludeRoutes: ["./api-docs/**", "./ai-agents/slack-app"],
         },
       } satisfies LLmPluginOptions,
