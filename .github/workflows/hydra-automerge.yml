@@ -256,6 +256,9 @@ jobs:
               owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
             });
             const sha = pr.head.sha;
+            // Export the evaluated head SHA so the autopilot/merge steps can
+            // pin the whole eval->merge chain to the SHA that was checked here.
+            core.setOutput('sha', sha);
 
             const statuses = await github.paginate(
               github.rest.repos.listCommitStatusesForRef,
@@ -532,9 +535,18 @@ jobs:
         id: autopilot-head
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+          EVALUATED_SHA: ${{ steps.verify-checks.outputs.sha }}
         run: |
           set -euo pipefail
           pr_json=$(gh api "repos/airbytehq/airbyte/pulls/$PR_NUMBER")
+          head_sha=$(echo "$pr_json" | jq -r .head.sha)
+          # Pin the eval->merge chain to the SHA verify-checks evaluated. If the
+          # contributor pushed a new commit after the Devin eval, abort rather
+          # than enabling autopilot on / merging code the eval never saw.
+          if [ -n "$EVALUATED_SHA" ] && [ "$head_sha" != "$EVALUATED_SHA" ]; then
+            echo "::error::PR head moved from evaluated $EVALUATED_SHA to $head_sha since the Devin eval; aborting auto-merge."
+            exit 1
+          fi
           echo "repo=$(echo "$pr_json" | jq -r .head.repo.full_name)" >> "$GITHUB_OUTPUT"
           echo "branch=$(echo "$pr_json" | jq -r .head.ref)" >> "$GITHUB_OUTPUT"
 
@@ -769,3 +781,18 @@ jobs:
       - name: Dry-run notice (flag)
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run == 'true'
         run: echo "::notice::DRY RUN (dry-run flag) -- would merge PR #${PR_NUMBER}"
+
+      # If anything in the post-eval autopilot/merge phase fails (head moved,
+      # push rejected, CLI flake, check wait timeout, merge failure), the eval
+      # comment still says PASS and the "enabled... waiting for CI" note never
+      # resolves. Leave a visible abort note so the stalled PR isn't missed.
+      - name: Note auto-merge aborted on failure
+        if: failure() && steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-hoard-token.outputs.token }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > :red_circle: **Auto-merge aborted.** The Devin evaluation passed, but a step in the autopilot-enable / merge phase failed, so this PR was **not** merged. Please check the run and re-trigger auto-merge once resolved.
+            >
+            > [Workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
