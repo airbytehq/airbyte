@@ -554,12 +554,16 @@ jobs:
       # commit re-triggers the PR's required CI checks. Pushing to fork PR
       # branches additionally requires the PAT to have push access to the head
       # branch (e.g. "Allow edits from maintainers" enabled on the fork PR).
+      # Check out the exact SHA verify-checks evaluated (not the mutable branch
+      # ref) so a push landing between the resolve step and here can't sneak
+      # unevaluated code into the autopilot commit. HEAD_BRANCH is used only as
+      # the push destination; a non-fast-forward push then fails safely.
       - name: Checkout PR head for autopilot
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ steps.autopilot-head.outputs.repo }}
-          ref: ${{ steps.autopilot-head.outputs.branch }}
+          ref: ${{ steps.verify-checks.outputs.sha }}
           fetch-depth: 1
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
