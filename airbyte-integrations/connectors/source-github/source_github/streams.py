@@ -503,13 +503,24 @@ class RepositoryOwners(Organizations):
     def __init__(self, owners: List[str], **kwargs):
         super().__init__(organizations=owners, **kwargs)
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         return {}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"users/{stream_slice['organization']}"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         yield response.json()
 
 

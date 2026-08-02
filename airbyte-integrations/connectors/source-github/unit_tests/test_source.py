@@ -130,9 +130,7 @@ def test_get_org_repositories(requests_mock):
         json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
     )
 
-    requests_mock.get(
-        "https://api.github.com/users/docker", json={"login": "docker", "type": "Organization"}
-    )
+    requests_mock.get("https://api.github.com/users/docker", json={"login": "docker", "type": "Organization"})
 
     requests_mock.get(
         "https://api.github.com/orgs/docker/repos",
