@@ -1488,8 +1488,9 @@ definitions:
                 - ticket_id
               value: "{{ stream_slice.ticket_id }}"
       schema_loader:
-        type: JsonFileSchemaLoader
-        file_path: ./schemas/ticket_activities.json
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_activities"
     time_entries:
       type: DeclarativeStream
       name: time_entries
@@ -3481,6 +3482,35 @@ schemas:
               type:
                 - "null"
                 - boolean
+    additionalProperties: true
+  ticket_activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      actor:
+        type:
+          - string
+          - "null"
+      action:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      type:
+        type:
+          - string
+          - "null"
+      ticket_id:
+        type:
+          - integer
+          - "null"
     additionalProperties: true
   ticket_fields:
     type: object
