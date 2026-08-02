@@ -514,16 +514,6 @@ class RepositoryOwners(Organizations):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"users/{stream_slice['organization']}"
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        yield response.json()
-
-
 class Repositories(SemiIncrementalMixin, Organizations):
     """
     API docs:
