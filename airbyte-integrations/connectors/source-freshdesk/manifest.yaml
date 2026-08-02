@@ -1438,6 +1438,58 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tickets"
+    ticket_activities:
+      type: DeclarativeStream
+      name: ticket_activities
+      primary_key:
+        - actor
+        - created_at
+        - ticket_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tickets/{{ stream_slice.ticket_id }}/activities
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: >-
+                      The endpoint to access stream ticket_activities returned 401: Unauthorized. This is most likely due to wrong credentials.
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - activities
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: ticket_id
+              stream:
+                $ref: "#/definitions/streams/tickets"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ticket_id
+              value: "{{ stream_slice.ticket_id }}"
+      schema_loader:
+        type: JsonFileSchemaLoader
+        file_path: ./schemas/ticket_activities.json
     time_entries:
       type: DeclarativeStream
       name: time_entries
@@ -1521,6 +1573,7 @@ streams:
   - $ref: "#/definitions/streams/surveys"
   - $ref: "#/definitions/streams/ticket_fields"
   - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/ticket_activities"
   - $ref: "#/definitions/streams/time_entries"
 
 spec:
@@ -1737,6 +1790,7 @@ metadata:
     surveys: false
     ticket_fields: false
     tickets: false
+    ticket_activities: false
     time_entries: false
   yamlComponents:
     streams:
