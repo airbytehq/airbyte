@@ -514,6 +514,7 @@ class RepositoryOwners(Organizations):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"users/{stream_slice['organization']}"
 
+
 class Repositories(SemiIncrementalMixin, Organizations):
     """
     API docs:
