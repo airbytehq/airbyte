@@ -1,0 +1,17 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-livetennisapi:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    bypass_reason: "No credentials are configured in Airbyte CI yet. A free key (no card, 1,000 requests/day) can be provisioned at https://livetennisapi.com/subscribe/free and covers every stream in this connector."
+  discovery:
+    bypass_reason: "No credentials are configured in Airbyte CI yet. A free key (no card, 1,000 requests/day) can be provisioned at https://livetennisapi.com/subscribe/free and covers every stream in this connector."
+  basic_read:
+    bypass_reason: "No credentials are configured in Airbyte CI yet. A free key (no card, 1,000 requests/day) can be provisioned at https://livetennisapi.com/subscribe/free and covers every stream in this connector."
+  incremental:
+    bypass_reason: "The Live Tennis API exposes no cursor or updated-at filter on the endpoints used here, so every stream is full refresh."
+  full_refresh:
+    bypass_reason: "No credentials are configured in Airbyte CI yet. A free key (no card, 1,000 requests/day) can be provisioned at https://livetennisapi.com/subscribe/free and covers every stream in this connector."
