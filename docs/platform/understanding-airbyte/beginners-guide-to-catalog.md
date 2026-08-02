@@ -194,7 +194,18 @@ The `ConfiguredAirbyteCatalog` follows the same rules as we described in the [Da
 
 Now let's build a stock ticker source that handles returning ticker data for _multiple_ stocks. The name of each stream will be the stock symbol that it represents.
 
+In this example, the source is configured with a list of stock symbols. When the source runs `discover`, it reads `symbols` from the config and emits one `AirbyteStream` for each symbol.
+
+```json
+{
+  "api_key": "super_secret_key",
+  "symbols": ["TSLA", "FB"]
+}
+```
+
 #### AirbyteCatalog
+
+Here is what the `AirbyteCatalog` might look like.
 
 ```javascript
 {
@@ -248,6 +259,76 @@ Now let's build a stock ticker source that handles returning ticker data for _mu
 ```
 
 This example provides another way of thinking about exposing data in a source. As a developer building a source, you can model the `AirbyteCatalog` for a source however makes most sense to the use case you are trying to fulfill.
+
+#### ConfiguredAirbyteCatalog
+
+Because each dynamic stream is a separate `AirbyteStream`, you can configure each one individually. For example, you might want to replicate `TSLA` as a `FULL_REFRESH` and `FB` as an `INCREMENTAL` sync using `date` as the cursor.
+
+We also set `destination_sync_mode` to tell the destination how to write the data (`overwrite` for `FULL_REFRESH`, `append` for `INCREMENTAL`).
+
+```javascript
+{
+  "streams": [
+    {
+      "sync_mode": "FULL_REFRESH",
+      "destination_sync_mode": "overwrite",
+      "stream": {
+        "name": "TSLA",
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "price": {
+              "type": "number"
+            },
+            "date": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    {
+      "sync_mode": "INCREMENTAL",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append",
+      "stream": {
+        "name": "FB",
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "price": {
+              "type": "number"
+            },
+            "date": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+Dynamic streams are a good fit when the set of top-level data sets depends on the source configuration or the upstream API. Each dynamic stream becomes its own table in the destination. If the data is better modeled as a single table with a filter column, a static stream with a `symbol` field is usually simpler.
+
+For more information on how `discover` builds a catalog from a source's configuration, see the [Airbyte Protocol catalog section](airbyte-protocol.md#catalog). If each dynamic stream needs a different schema, see the [CDK dynamic schemas guide](../connector-development/cdk-python/schemas.md#dynamic-schemas).
 
 ## Nested Schema Example
 

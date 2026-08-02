@@ -34,4 +34,4 @@ When you upgrade your Self-Managed instance of Airbyte to a version with a break
 
 ### 1.5.x to 1.6.x
 
-- Service accounts require a new permission. [Update your service account](/platform/enterprise-setup/upgrade-service-account)
+- Service accounts require a new permission. [Update your service account](/platform/enterprise-setup/)

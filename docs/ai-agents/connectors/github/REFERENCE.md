@@ -669,7 +669,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `name` | `string` | Branch name (e.g. `main`, `feature/foo`) |
-| `prefix` | `string` | Git ref prefix for the branch (typically `refs/heads/`) |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -682,7 +681,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].name` | `string` | Branch name (e.g. `main`, `feature/foo`) |
-| `data[].prefix` | `string` | Git ref prefix for the branch (typically `refs/heads/`) |
 
 </details>
 
@@ -833,7 +831,7 @@ airbyte-agent connectors execute --json '{
     "query": {
       "filter": {
         "eq": {
-          "oid": "<str>"
+          "sha": "<str>"
         }
       }
     }
@@ -845,7 +843,7 @@ airbyte-agent connectors execute --json '{
 
 ```python
 await github.commits.context_store_search(
-    query={"filter": {"eq": {"oid": "<str>"}}}
+    query={"filter": {"eq": {"sha": "<str>"}}}
 )
 ```
 
@@ -859,7 +857,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "commits",
     "action": "context_store_search",
     "params": {
-        "query": {"filter": {"eq": {"oid": "<str>"}}}
+        "query": {"filter": {"eq": {"sha": "<str>"}}}
     }
 }'
 ```
@@ -879,16 +877,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `oid` | `string` | Full Git commit SHA |
-| `abbreviatedOid` | `string` | Abbreviated Git commit SHA (typically 7 characters) |
-| `messageHeadline` | `string` | First line of the commit message |
-| `message` | `string` | Full commit message |
-| `committedDate` | `string` | ISO 8601 timestamp when the commit was applied to its tree |
-| `authoredDate` | `string` | ISO 8601 timestamp when the commit was originally authored |
-| `additions` | `integer` | Number of lines added across all files in the commit |
-| `deletions` | `integer` | Number of lines deleted across all files in the commit |
-| `changedFiles` | `integer` | Number of files changed in the commit |
+| `sha` | `string` | Full Git commit SHA |
 | `url` | `string` | Permalink to the commit on GitHub |
+| `createdAt` | `string` | ISO 8601 timestamp of the commit |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -900,16 +891,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].oid` | `string` | Full Git commit SHA |
-| `data[].abbreviatedOid` | `string` | Abbreviated Git commit SHA (typically 7 characters) |
-| `data[].messageHeadline` | `string` | First line of the commit message |
-| `data[].message` | `string` | Full commit message |
-| `data[].committedDate` | `string` | ISO 8601 timestamp when the commit was applied to its tree |
-| `data[].authoredDate` | `string` | ISO 8601 timestamp when the commit was originally authored |
-| `data[].additions` | `integer` | Number of lines added across all files in the commit |
-| `data[].deletions` | `integer` | Number of lines deleted across all files in the commit |
-| `data[].changedFiles` | `integer` | Number of files changed in the commit |
+| `data[].sha` | `string` | Full Git commit SHA |
 | `data[].url` | `string` | Permalink to the commit on GitHub |
+| `data[].createdAt` | `string` | ISO 8601 timestamp of the commit |
 
 </details>
 
@@ -1657,8 +1641,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `databaseId` | `integer` | REST API numeric identifier for the issue |
 | `number` | `integer` | Repository-scoped issue number |
 | `title` | `string` | Issue title |
-| `state` | `string` | Issue state: `OPEN` or `CLOSED` |
-| `stateReason` | `string` | Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`) |
+| `state` | `string` | Issue state in the cache: lowercase `open` or `closed` |
+| `stateReason` | `string` | Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase. |
 | `createdAt` | `string` | ISO 8601 timestamp when the issue was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the issue was last updated |
 | `closedAt` | `string` | ISO 8601 timestamp when the issue was closed, if applicable |
@@ -1679,8 +1663,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].databaseId` | `integer` | REST API numeric identifier for the issue |
 | `data[].number` | `integer` | Repository-scoped issue number |
 | `data[].title` | `string` | Issue title |
-| `data[].state` | `string` | Issue state: `OPEN` or `CLOSED` |
-| `data[].stateReason` | `string` | Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`) |
+| `data[].state` | `string` | Issue state in the cache: lowercase `open` or `closed` |
+| `data[].stateReason` | `string` | Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase. |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the issue was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the issue was last updated |
 | `data[].closedAt` | `string` | ISO 8601 timestamp when the issue was closed, if applicable |
@@ -1975,7 +1959,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `createdAt` | `string` | ISO 8601 timestamp when the comment was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the comment was last updated |
 | `url` | `string` | Permalink to the comment on GitHub |
-| `isMinimized` | `boolean` | Whether the comment has been hidden/collapsed |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1993,7 +1976,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the comment was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the comment was last updated |
 | `data[].url` | `string` | Permalink to the comment on GitHub |
-| `data[].isMinimized` | `boolean` | Whether the comment has been hidden/collapsed |
 
 </details>
 
@@ -2382,15 +2364,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `databaseId` | `integer` | REST API numeric identifier for the pull request |
 | `number` | `integer` | Repository-scoped pull request number |
 | `title` | `string` | Pull request title |
-| `state` | `string` | Pull request state: `OPEN`, `CLOSED`, or `MERGED` |
+| `state` | `string` | Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs) |
 | `isDraft` | `boolean` | Whether the pull request is still a draft |
-| `merged` | `boolean` | Whether the pull request has been merged |
 | `createdAt` | `string` | ISO 8601 timestamp when the pull request was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the pull request was last updated |
 | `closedAt` | `string` | ISO 8601 timestamp when the pull request was closed, if applicable |
 | `mergedAt` | `string` | ISO 8601 timestamp when the pull request was merged, if applicable |
-| `baseRefName` | `string` | Name of the branch being merged into |
-| `headRefName` | `string` | Name of the branch with the proposed changes |
 | `url` | `string` | Permalink to the pull request on GitHub |
 
 <details>
@@ -2407,15 +2386,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].databaseId` | `integer` | REST API numeric identifier for the pull request |
 | `data[].number` | `integer` | Repository-scoped pull request number |
 | `data[].title` | `string` | Pull request title |
-| `data[].state` | `string` | Pull request state: `OPEN`, `CLOSED`, or `MERGED` |
+| `data[].state` | `string` | Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs) |
 | `data[].isDraft` | `boolean` | Whether the pull request is still a draft |
-| `data[].merged` | `boolean` | Whether the pull request has been merged |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the pull request was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the pull request was last updated |
 | `data[].closedAt` | `string` | ISO 8601 timestamp when the pull request was closed, if applicable |
 | `data[].mergedAt` | `string` | ISO 8601 timestamp when the pull request was merged, if applicable |
-| `data[].baseRefName` | `string` | Name of the branch being merged into |
-| `data[].headRefName` | `string` | Name of the branch with the proposed changes |
 | `data[].url` | `string` | Permalink to the pull request on GitHub |
 
 </details>
@@ -2560,7 +2536,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `id` | `string` | GraphQL node ID of the review |
 | `databaseId` | `integer` | REST API numeric identifier for the review |
-| `state` | `string` | Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
+| `state` | `string` | Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
 | `body` | `string` | Review body text |
 | `submittedAt` | `string` | ISO 8601 timestamp when the review was submitted |
 | `createdAt` | `string` | ISO 8601 timestamp when the review was created |
@@ -2579,7 +2555,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].id` | `string` | GraphQL node ID of the review |
 | `data[].databaseId` | `integer` | REST API numeric identifier for the review |
-| `data[].state` | `string` | Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
+| `data[].state` | `string` | Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
 | `data[].body` | `string` | Review body text |
 | `data[].submittedAt` | `string` | ISO 8601 timestamp when the review was submitted |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the review was created |
@@ -2991,8 +2967,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `name` | `string` | Label name |
 | `color` | `string` | Label color as a 6-character hex string without a leading `#` |
 | `description` | `string` | Short description of what the label is used for |
-| `createdAt` | `string` | ISO 8601 timestamp when the label was created |
-| `url` | `string` | Permalink to the label on GitHub |
+| `url` | `string` | API URL to the label resource |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -3008,8 +2983,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].name` | `string` | Label name |
 | `data[].color` | `string` | Label color as a 6-character hex string without a leading `#` |
 | `data[].description` | `string` | Short description of what the label is used for |
-| `data[].createdAt` | `string` | ISO 8601 timestamp when the label was created |
-| `data[].url` | `string` | Permalink to the label on GitHub |
+| `data[].url` | `string` | API URL to the label resource |
 
 </details>
 
@@ -3210,12 +3184,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `number` | `integer` | Repository-scoped milestone number |
 | `title` | `string` | Milestone title |
 | `description` | `string` | Milestone description |
-| `state` | `string` | Milestone state: `OPEN` or `CLOSED` |
+| `state` | `string` | Milestone state in the cache: lowercase `open` or `closed` |
 | `dueOn` | `string` | ISO 8601 timestamp for the milestone's due date, if set |
 | `closedAt` | `string` | ISO 8601 timestamp when the milestone was closed, if applicable |
 | `createdAt` | `string` | ISO 8601 timestamp when the milestone was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the milestone was last updated |
-| `progressPercentage` | `number` | Percentage of associated issues/PRs that are closed |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -3231,12 +3204,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].number` | `integer` | Repository-scoped milestone number |
 | `data[].title` | `string` | Milestone title |
 | `data[].description` | `string` | Milestone description |
-| `data[].state` | `string` | Milestone state: `OPEN` or `CLOSED` |
+| `data[].state` | `string` | Milestone state in the cache: lowercase `open` or `closed` |
 | `data[].dueOn` | `string` | ISO 8601 timestamp for the milestone's due date, if set |
 | `data[].closedAt` | `string` | ISO 8601 timestamp when the milestone was closed, if applicable |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the milestone was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the milestone was last updated |
-| `data[].progressPercentage` | `number` | Percentage of associated issues/PRs that are closed |
 
 </details>
 
@@ -3702,14 +3674,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | GraphQL node ID of the user |
 | `databaseId` | `integer` | REST API numeric identifier for the user |
 | `login` | `string` | User login/handle |
-| `name` | `string` | Public display name of the user, if set |
-| `email` | `string` | Public email address of the user, if set |
-| `company` | `string` | Public company affiliation of the user, if set |
-| `location` | `string` | Public location of the user, if set |
-| `twitterUsername` | `string` | Public Twitter/X username of the user, if set |
 | `url` | `string` | Permalink to the user's profile on GitHub |
-| `createdAt` | `string` | ISO 8601 timestamp when the user account was created |
-| `isHireable` | `boolean` | Whether the user has marked themselves as available for hire |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -3724,14 +3689,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].id` | `string` | GraphQL node ID of the user |
 | `data[].databaseId` | `integer` | REST API numeric identifier for the user |
 | `data[].login` | `string` | User login/handle |
-| `data[].name` | `string` | Public display name of the user, if set |
-| `data[].email` | `string` | Public email address of the user, if set |
-| `data[].company` | `string` | Public company affiliation of the user, if set |
-| `data[].location` | `string` | Public location of the user, if set |
-| `data[].twitterUsername` | `string` | Public Twitter/X username of the user, if set |
 | `data[].url` | `string` | Permalink to the user's profile on GitHub |
-| `data[].createdAt` | `string` | ISO 8601 timestamp when the user account was created |
-| `data[].isHireable` | `boolean` | Whether the user has marked themselves as available for hire |
 
 </details>
 
@@ -3924,10 +3882,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `slug` | `string` | URL-friendly slug for the team within its organization |
 | `name` | `string` | Display name of the team |
 | `description` | `string` | Short description of the team |
-| `privacy` | `string` | Team visibility: `SECRET` or `VISIBLE` |
+| `privacy` | `string` | Team visibility: `secret` or `closed` (REST API values) |
 | `url` | `string` | Permalink to the team on GitHub |
-| `createdAt` | `string` | ISO 8601 timestamp when the team was created |
-| `updatedAt` | `string` | ISO 8601 timestamp when the team was last updated |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -3944,10 +3900,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].slug` | `string` | URL-friendly slug for the team within its organization |
 | `data[].name` | `string` | Display name of the team |
 | `data[].description` | `string` | Short description of the team |
-| `data[].privacy` | `string` | Team visibility: `SECRET` or `VISIBLE` |
+| `data[].privacy` | `string` | Team visibility: `secret` or `closed` (REST API values) |
 | `data[].url` | `string` | Permalink to the team on GitHub |
-| `data[].createdAt` | `string` | ISO 8601 timestamp when the team was created |
-| `data[].updatedAt` | `string` | ISO 8601 timestamp when the team was last updated |
 
 </details>
 
@@ -4144,7 +4098,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `name` | `string` | Tag name (e.g. `v1.2.3`) |
-| `prefix` | `string` | Git ref prefix for the tag (typically `refs/tags/`) |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -4157,7 +4110,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].name` | `string` | Tag name (e.g. `v1.2.3`) |
-| `data[].prefix` | `string` | Git ref prefix for the tag (typically `refs/tags/`) |
 
 </details>
 
