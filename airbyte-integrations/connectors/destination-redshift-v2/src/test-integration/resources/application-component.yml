@@ -1,0 +1,3 @@
+airbyte:
+  connector:
+    operation: write
