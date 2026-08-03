@@ -22,7 +22,16 @@ import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types.TimestampType
 
 class AirbyteValueToIcebergRecord {
+    private val airbyteValueToVariant = AirbyteValueToVariant()
+
     fun convert(airbyteValue: AirbyteValue, type: Type): Any? {
+        if (type.typeId() == Type.TypeID.VARIANT) {
+            return if (airbyteValue is NullValue) {
+                null
+            } else {
+                airbyteValueToVariant.convert(airbyteValue)
+            }
+        }
         when (airbyteValue) {
             is ObjectValue -> {
                 val recordSchema =

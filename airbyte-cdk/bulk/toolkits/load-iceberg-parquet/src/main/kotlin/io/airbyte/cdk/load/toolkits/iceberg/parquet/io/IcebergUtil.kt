@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.ImportType
@@ -35,18 +36,23 @@ import javax.inject.Singleton
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.CatalogUtil
 import org.apache.iceberg.FileFormat
+import org.apache.iceberg.HasTableOperations
 import org.apache.iceberg.Schema
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
+import org.apache.iceberg.TableProperties.FORMAT_VERSION
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.catalog.SupportsNamespaces
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.exceptions.AlreadyExistsException
+import org.apache.iceberg.types.Type
 
 private val logger = KotlinLogging.logger {}
 
 const val AIRBYTE_CDC_DELETE_COLUMN = "_ab_cdc_deleted_at"
+
+private const val VARIANT_FORMAT_VERSION = 3
 
 @Singleton
 class IcebergUtil(
@@ -114,29 +120,83 @@ class IcebergUtil(
      * created.
      * @param schema The Iceberg [Schema] associated with the [Table].
      * @param properties The [Table] configuration properties derived from the [Catalog].
+     * @param tableFormatVersion The Iceberg format version to create the table at. When null, the
+     * format version is left at the catalog default unless the schema requires otherwise.
      * @return The Iceberg [Table], created if it does not yet exist.
      */
     fun createTable(
         streamDescriptor: DestinationStream.Descriptor,
         catalog: Catalog,
-        schema: Schema
+        schema: Schema,
+        tableFormatVersion: Int? = null,
     ): Table {
         val tableIdentifier = tableIdGenerator.toTableIdentifier(streamDescriptor)
+        // Variant only exists in the v3 spec, so a variant column forces the format version even
+        // when the destination didn't ask for a specific one.
+        val schemaContainsVariant = schema.containsVariant()
+        if (
+            schemaContainsVariant &&
+                tableFormatVersion != null &&
+                tableFormatVersion < VARIANT_FORMAT_VERSION
+        ) {
+            throw ConfigErrorException(
+                "Variant columns require Iceberg format version $VARIANT_FORMAT_VERSION.",
+            )
+        }
+        val formatVersion =
+            tableFormatVersion ?: VARIANT_FORMAT_VERSION.takeIf { schemaContainsVariant }
         return if (!catalog.tableExists(tableIdentifier)) {
             logger.info { "Creating Iceberg table '$tableIdentifier'...." }
             catalog
                 .buildTable(tableIdentifier, schema)
                 .withProperty(DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name.lowercase())
+                .apply { formatVersion?.let { withProperty(FORMAT_VERSION, it.toString()) } }
                 .withSortOrder(getSortOrder(schema = schema))
                 .create()
         } else {
             logger.info { "Loading Iceberg table $tableIdentifier ..." }
-            catalog.loadTable(tableIdentifier)
+            catalog.loadTable(tableIdentifier).also {
+                if (formatVersion != null) {
+                    checkFormatVersion(it, tableIdentifier.toString(), formatVersion)
+                }
+            }
         }
     }
 
-    fun mungeForIceberg(value: EnrichedAirbyteValue) =
+    /**
+     * An existing table below the required format version can't be used: v3 types such as variant
+     * are unavailable, and a string column can't be promoted to variant, so the table has to be
+     * recreated.
+     */
+    private fun checkFormatVersion(
+        table: Table,
+        tableIdentifier: String,
+        requiredFormatVersion: Int,
+    ) {
+        val currentFormatVersion =
+            (table as? HasTableOperations)?.operations()?.current()?.formatVersion() ?: return
+        if (currentFormatVersion < requiredFormatVersion) {
+            logger.error {
+                "Iceberg table $tableIdentifier is at format version $currentFormatVersion, but " +
+                    "format version $requiredFormatVersion is required. Iceberg cannot upgrade a " +
+                    "table's format version in place, so the stream must be reset."
+            }
+            throw ConfigErrorException(
+                "Existing Iceberg table is at format version $currentFormatVersion, which is " +
+                    "lower than the configured format version $requiredFormatVersion.",
+            )
+        }
+    }
+
+    /**
+     * @param useVariant leave semi-structured values as-is, for writing into a variant column,
+     * instead of serializing them to JSON text.
+     */
+    fun mungeForIceberg(value: EnrichedAirbyteValue, useVariant: Boolean = false) =
         value.transformValueRecursingIntoArrays { element, elementType ->
+            if (useVariant) {
+                return@transformValueRecursingIntoArrays null
+            }
             when (elementType) {
                 // Convert complex types to string
                 // (note that schemaless arrays are stringified, but schematized arrays are not)
@@ -171,7 +231,7 @@ class IcebergUtil(
         return record
     }
 
-    fun toIcebergSchema(stream: DestinationStream): Schema {
+    fun toIcebergSchema(stream: DestinationStream, useVariant: Boolean = false): Schema {
         val importType = stream.tableSchema.importType
         val primaryKeys =
             when (importType) {
@@ -179,7 +239,18 @@ class IcebergUtil(
                 else -> emptyList()
             }
         val schema = ObjectType(LinkedHashMap(stream.tableSchema.columnSchema.inputSchema))
-        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys)
+        return schema.withAirbyteMeta(true).toIcebergSchema(primaryKeys, useVariant = useVariant)
+    }
+
+    private fun Schema.containsVariant(): Boolean {
+        fun hasVariant(type: Type): Boolean =
+            when {
+                type.typeId() == Type.TypeID.VARIANT -> true
+                type.isStructType -> type.asStructType().fields().any { hasVariant(it.type()) }
+                type.isListType -> hasVariant(type.asListType().elementType())
+                else -> false
+            }
+        return asStruct().fields().any { hasVariant(it.type()) }
     }
 
     private fun getSortOrder(schema: Schema): SortOrder {
