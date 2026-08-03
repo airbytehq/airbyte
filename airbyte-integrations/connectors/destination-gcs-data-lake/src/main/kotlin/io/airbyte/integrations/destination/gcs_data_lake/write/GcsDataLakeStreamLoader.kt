@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.enableIdentifierBloomFilters
