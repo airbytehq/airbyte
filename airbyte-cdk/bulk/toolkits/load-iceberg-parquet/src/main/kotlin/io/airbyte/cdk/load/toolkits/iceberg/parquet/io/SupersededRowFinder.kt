@@ -113,7 +113,6 @@ class SupersededRowFinder(
 
     private fun rowGroupExpression(touched: Set<StructLike>): Expression {
         val values = touched.mapNotNull { it.get(0, Any::class.java) }.distinct()
-        if (values.size <= MAX_IN_VALUES) return Expressions.`in`(leadingField.name(), values)
         val comparator: Comparator<Any> = Comparators.forType(leadingField.type().asPrimitiveType())
         val min =
             values.minWithOrNull(comparator)
@@ -121,10 +120,15 @@ class SupersededRowFinder(
         val max =
             values.maxWithOrNull(comparator)
                 ?: error("Touched identifier field ${leadingField.name()} has no non-null values")
-        return Expressions.and(
-            Expressions.greaterThanOrEqual(leadingField.name(), min),
-            Expressions.lessThanOrEqual(leadingField.name(), max),
-        )
+        val range =
+            Expressions.and(
+                Expressions.greaterThanOrEqual(leadingField.name(), min),
+                Expressions.lessThanOrEqual(leadingField.name(), max),
+            )
+        if (values.size <= MAX_IN_VALUES) {
+            return Expressions.and(range, Expressions.`in`(leadingField.name(), values))
+        }
+        return range
     }
 
     private fun touchedBounds(touched: Set<StructLike>): List<TouchedBound> =
@@ -184,9 +188,9 @@ class SupersededRowFinder(
 
     companion object {
         // InclusiveMetricsEvaluator in Iceberg 1.11.0 gives up on IN predicates above 200
-        // values. Larger sets use a leading-column range so manifest and metrics pruning remain
-        // effective; dictionary and bloom evaluators support IN but would scan the large set.
-        private const val MAX_IN_VALUES = 200
+        // The range keeps manifest and metrics pruning effective, while IN lets dictionary and
+        // bloom filters perform exact membership checks until candidate-set lookup cost dominates.
+        private const val MAX_IN_VALUES = 5_000
         private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     }
 }
