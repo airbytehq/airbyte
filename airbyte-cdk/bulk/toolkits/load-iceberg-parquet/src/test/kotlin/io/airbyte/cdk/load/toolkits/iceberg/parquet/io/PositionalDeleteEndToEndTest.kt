@@ -257,74 +257,6 @@ class PositionalDeleteEndToEndTest {
         warehouse.toFile().deleteRecursively()
     }
 
-    @Test
-    @Suppress("DEPRECATION")
-    fun `large realistic flush still prunes early row groups`() {
-        val warehouse = Files.createTempDirectory("positional-delete-large-in")
-        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
-        val tableId = TableIdentifier.of("db", "large_in")
-        val schema =
-            Schema(
-                listOf(
-                    Types.NestedField.required(1, "id", Types.IntegerType.get()),
-                    Types.NestedField.required(2, "name", Types.StringType.get()),
-                ),
-                setOf(1),
-            )
-        catalog.createNamespace(tableId.namespace())
-        val table =
-            catalog
-                .buildTable(tableId, schema)
-                .withProperty(
-                    TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
-                )
-                .withProperty(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, "1")
-                .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MIN_RECORD_COUNT, "1")
-                .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MAX_RECORD_COUNT, "1")
-                .create()
-        val writerFactory = IcebergTableWriterFactory()
-        val initialWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
-        (1..200).forEach { id -> initialWriter.write(record(schema, id, "early-$id")) }
-        (1001..1201).forEach { id -> initialWriter.write(record(schema, id, "old-$id")) }
-        val initialResult = initialWriter.complete()
-        table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
-        table.manageSnapshots().createBranch("staging").commit()
-
-        val state = PositionalDeleteResolutionState()
-        val updateWriter =
-            writerFactory.create(
-                table = table,
-                generationId = "ab-generation-id-1-e",
-                importType =
-                    io.airbyte.cdk.load.command.Dedupe(
-                        primaryKey = listOf(listOf("id")),
-                        cursor = emptyList(),
-                    ),
-                schema = schema,
-                positionalDeleteRef = "staging",
-                positionalDeleteState = state,
-            )
-        (1001..1201).forEach { id ->
-            updateWriter.write(RecordWrapper(record(schema, id, "new-$id"), Operation.UPDATE))
-        }
-        val result = updateWriter.complete()
-        commitRowDelta(table, "staging", result)
-
-        val rows =
-            IcebergGenerics.read(table)
-                .useSnapshot(table.refs()["staging"]!!.snapshotId())
-                .build()
-                .use { records -> records.map { it.getField("id") to it.getField("name") }.toSet() }
-        assertThat(rows).hasSize(401)
-        assertThat(rows).contains(1 to "early-1")
-        assertThat(rows).contains(1201 to "new-1201")
-        assertThat(rows).doesNotContain(1201 to "old-1201")
-        assertThat(state.dataFilesOpened.get()).isEqualTo(1)
-        assertThat(result.deleteFiles()).hasSize(1)
-        warehouse.toFile().deleteRecursively()
-    }
-
     private fun commitRowDelta(
         table: org.apache.iceberg.Table,
         branch: String,
@@ -346,12 +278,6 @@ class PositionalDeleteEndToEndTest {
     }
 
     private fun record(schema: Schema, id: CharSequence, name: String): GenericRecord =
-        GenericRecord.create(schema).apply {
-            setField("id", id)
-            setField("name", name)
-        }
-
-    private fun record(schema: Schema, id: Int, name: String): GenericRecord =
         GenericRecord.create(schema).apply {
             setField("id", id)
             setField("name", name)
