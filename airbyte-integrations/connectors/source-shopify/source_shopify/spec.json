@@ -70,6 +70,7 @@
                 "title": "Token Expiry Date",
                 "description": "The date-time when the current access token expires.",
                 "format": "date-time",
+                "airbyte_hidden": true,
                 "order": 5
               }
             }

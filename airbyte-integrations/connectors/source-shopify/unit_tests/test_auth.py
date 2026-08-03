@@ -3,6 +3,9 @@
 #
 
 
+from urllib.parse import parse_qs
+
+import orjson
 import pytest
 from source_shopify.auth import (
     NotImplementedAuth,
@@ -11,6 +14,9 @@ from source_shopify.auth import (
     build_shopify_authenticator,
 )
 from source_shopify.source import ConnectionCheckTest
+
+from airbyte_cdk.config_observation import create_connector_config_control_message
+from airbyte_cdk.models import AirbyteMessageSerializer
 
 
 TEST_ACCESS_TOKEN = "test_access_token"
@@ -176,3 +182,73 @@ def test_oauth2_authenticator_reads_config_paths():
     assert authenticator.get_refresh_token() == TEST_REFRESH_TOKEN
     assert authenticator.get_client_id() == TEST_CLIENT_ID
     assert authenticator.get_client_secret() == TEST_CLIENT_SECRET
+
+
+def _expiring_oauth_config():
+    return {
+        "shop": "my-store",
+        "credentials": {
+            "auth_method": "oauth2.0",
+            "access_token": TEST_ACCESS_TOKEN,
+            "refresh_token": TEST_REFRESH_TOKEN,
+            "token_expiry_date": "2020-01-01T00:00:00Z",
+            "client_id": TEST_CLIENT_ID,
+            "client_secret": TEST_CLIENT_SECRET,
+        },
+    }
+
+
+def test_oauth2_authenticator_refreshes_expired_token(requests_mock):
+    config = _expiring_oauth_config()
+    # Mimic source.py: the authenticator is stored back into the same config dict, and
+    # streams() adds a runtime-only `shop_id`. The factory must snapshot the config so these
+    # non-serializable / internal keys never end up in the emitted control message.
+    config["authenticator"] = build_shopify_authenticator(config)
+    config["shop_id"] = 123456
+    authenticator = config["authenticator"]
+
+    refresh_mock = requests_mock.post(
+        "https://my-store.myshopify.com/admin/oauth/access_token",
+        json={"access_token": "new_access_token", "expires_in": 3600, "refresh_token": "rotated_refresh_token"},
+    )
+
+    # Expired token forces a refresh, which rotates the tokens and emits a control message.
+    assert authenticator.get_access_token() == "new_access_token"
+
+    request_body = parse_qs(refresh_mock.last_request.text)
+    assert request_body["grant_type"] == ["refresh_token"]
+    assert request_body["client_id"] == [TEST_CLIENT_ID]
+    assert request_body["client_secret"] == [TEST_CLIENT_SECRET]
+    assert request_body["refresh_token"] == [TEST_REFRESH_TOKEN]
+
+    # The rotated refresh token and new expiry are written back to the config paths.
+    assert authenticator.get_refresh_token() == "rotated_refresh_token"
+    assert authenticator.access_token == "new_access_token"
+    assert authenticator._connector_config["credentials"]["token_expiry_date"] != "2020-01-01T00:00:00Z"
+
+
+def test_oauth2_authenticator_control_message_is_serializable(requests_mock):
+    """Regression test: the emitted config control message must be JSON-serializable.
+
+    If the factory shared the live `config` dict with the authenticator, the authenticator
+    object stored under `config["authenticator"]` would be serialized into the control message
+    and crash `orjson.dumps` on the first refresh.
+    """
+    config = _expiring_oauth_config()
+    config["authenticator"] = build_shopify_authenticator(config)
+    config["shop_id"] = 123456
+    authenticator = config["authenticator"]
+
+    requests_mock.post(
+        "https://my-store.myshopify.com/admin/oauth/access_token",
+        json={"access_token": "new_access_token", "expires_in": 3600, "refresh_token": "rotated_refresh_token"},
+    )
+    authenticator.refresh_and_set_access_token()
+
+    emitted_config = authenticator._connector_config
+    assert "authenticator" not in emitted_config
+    assert "shop_id" not in emitted_config
+
+    message = create_connector_config_control_message(emitted_config)
+    # Serializes the same way the CDK emits the control message to stdout.
+    orjson.dumps(AirbyteMessageSerializer.dump(message))
