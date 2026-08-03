@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import java.math.BigInteger
+import java.nio.ByteBuffer
 import org.apache.iceberg.DataFile
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
@@ -205,11 +207,26 @@ class SupersededRowFinder(
         return ranges
     }
 
-    private fun gapScore(left: Any, right: Any): Double =
-        if (left is Number && right is Number) {
-            right.toString().toDouble() - left.toString().toDouble()
+    private fun gapScore(left: Any, right: Any): Double {
+        val leftValue = gapValue(left)
+        val rightValue = gapValue(right)
+        return if (leftValue != null && rightValue != null) {
+            rightValue.subtract(leftValue).toDouble()
         } else {
             1.0
+        }
+    }
+
+    private fun gapValue(value: Any): BigInteger? =
+        when (value) {
+            is Number -> value.toString().toBigDecimal().toBigInteger()
+            is CharSequence -> BigInteger(1, value.toString().toByteArray())
+            is ByteBuffer -> {
+                val bytes = ByteArray(value.remaining())
+                value.duplicate().get(bytes)
+                BigInteger(1, bytes)
+            }
+            else -> null
         }
 
     private fun keyFrom(record: Record): StructLike {
