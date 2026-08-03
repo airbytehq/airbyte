@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 3, 2026
+
+Web app
+
+- Chat and session headers now show who started a chat when it was created by someone else on your team, so it's easier to tell at a glance whose work you're looking at.
+
 ## July 21, 2026
 
 Web app
