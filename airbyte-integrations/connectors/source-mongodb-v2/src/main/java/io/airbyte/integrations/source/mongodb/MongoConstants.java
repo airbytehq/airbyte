@@ -68,7 +68,7 @@ public class MongoConstants {
           "(1) Reset the connection and run a sync to establish a new resume token. " +
           "To reduce the chance of this happening again: " +
           "(2) Increase the oplog size or retention period of your MongoDB cluster. " +
-          "Airbyte recommends retaining at least 7 days of changes; 24 hours is an absolute minimum. " +
+          "Airbyte recommends retaining at least 7 days of changes. " +
           "(3) Increase the sync frequency so that each sync starts within the oplog retention window. " +
           "For more information, see " +
           "https://docs.airbyte.com/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-oplog-and-change-streams";
