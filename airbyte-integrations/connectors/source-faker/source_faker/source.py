@@ -24,7 +24,7 @@ class SourceFaker(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
         seed: int = config["seed"] if "seed" in config else None
-        records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
+        records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 1000
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
 
