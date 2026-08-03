@@ -17,6 +17,7 @@ const getRemarkPlugins = () => ({
   specDecoration: require("./src/remark/specDecoration"),
   docMetaTags: require("./src/remark/docMetaTags"),
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
+  booleanTableIndicators: require("./src/remark/booleanTableIndicators"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
@@ -157,6 +158,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -211,6 +213,7 @@ const config: Config = {
           plugins.agentConnectorHeaderDecoration,
           plugins.planInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
           [plugins.npm2yarn, { sync: true }],
           plugins.codeBlockTabs,
         ],
@@ -228,6 +231,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -250,6 +254,7 @@ const config: Config = {
           plugins.productInformation,
           plugins.connectorTypeBanner,
           plugins.docMetaTags,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -265,6 +270,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
@@ -280,6 +286,7 @@ const config: Config = {
         remarkPlugins: [
           plugins.productInformation,
           plugins.addButtonToTitle,
+          plugins.booleanTableIndicators,
         ],
       },
     ],
