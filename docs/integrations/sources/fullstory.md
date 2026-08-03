@@ -66,6 +66,10 @@ GET https://api.fullstory.com/segments/v1
 
 FullStory [API reference](https://api.fullstory.com) has v1 at present. The connector as default uses v1.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

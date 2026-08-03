@@ -1,6 +1,5 @@
 const visit = require("unist-util-visit").visit;
 const { toAttributes } = require("../helpers/objects");
-const fs = require("fs");
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
@@ -12,10 +11,6 @@ const isAgentConnectorPage = (vfile) => {
   );
 };
 
-const isAgentConnectorIndex = (vfile) => {
-  return vfile.path.toLowerCase().endsWith("ai-agents/connectors/readme.md");
-};
-
 const getConnectorSlug = (vfile) => {
   const parts = vfile.path.split("/");
   const connectorsIdx = parts.indexOf("connectors");
@@ -23,67 +18,66 @@ const getConnectorSlug = (vfile) => {
   return parts[connectorsIdx + 1];
 };
 
-const getConnectorsDir = (vfile) => {
-  const idx = vfile.path.indexOf("ai-agents/connectors/");
-  if (idx === -1) return null;
-  return vfile.path.substring(0, idx) + "ai-agents/connectors";
-};
-
-const discoverConnectorSlugs = (connectorsDir) => {
-  try {
-    return fs
-      .readdirSync(connectorsDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .sort();
-  } catch {
-    return [];
-  }
-};
+function formatConnectorName(slug) {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
-    if (isAgentConnectorIndex(vfile)) {
-      const connectorsDir = getConnectorsDir(vfile);
-      if (!connectorsDir) return;
-
-      const slugs = discoverConnectorSlugs(connectorsDir);
-
-      visit(ast, "mdxJsxFlowElement", (node) => {
-        if (node.name === "AgentConnectorRegistry") {
-          node.attributes = toAttributes({
-            connectors: JSON.stringify(slugs),
-          });
-        }
-      });
-      return;
-    }
-
     if (!isAgentConnectorPage(vfile)) return;
 
     const slug = getConnectorSlug(vfile);
     if (!slug) return;
 
     const iconUrl = `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`;
+    const connectorName = formatConnectorName(slug);
 
-    let firstHeading = true;
+    let headingTransformed = false;
 
     visit(ast, "heading", (node) => {
-      if (firstHeading && node.depth === 1 && node.children.length === 1) {
-        const originalTitle = node.children[0].value;
+      if (headingTransformed) return;
+      if (node.depth !== 1 || node.children.length !== 1) return;
 
-        const attrDict = {
-          iconUrl,
-          originalTitle,
-        };
+      const originalTitle = node.children[0].value;
 
-        firstHeading = false;
-        node.children = [];
-        node.type = "mdxJsxFlowElement";
-        node.name = "AgentConnectorTitle";
-        node.attributes = toAttributes(attrDict);
-      }
+      // Transform heading into AgentConnectorTitle
+      node.children = [];
+      node.type = "mdxJsxFlowElement";
+      node.name = "AgentConnectorTitle";
+      node.attributes = toAttributes({ iconUrl, originalTitle });
+
+      headingTransformed = true;
     });
+
+    if (!headingTransformed) return;
+
+    // Insert banner at the root level, after the heading node.
+    // The heading may be wrapped by Docusaurus (e.g. in a <header> element),
+    // so we find it by looking for the transformed AgentConnectorTitle or
+    // any wrapper that contains it.
+    const headingIdx = ast.children.findIndex(
+      (ch) =>
+        (ch.type === "mdxJsxFlowElement" && ch.name === "AgentConnectorTitle") ||
+        (ch.type === "mdxJsxFlowElement" && ch.name === "header") ||
+        (ch.type === "heading" && ch.depth === 1),
+    );
+
+    if (headingIdx !== -1) {
+      const bannerNode = {
+        type: "mdxJsxFlowElement",
+        name: "ConnectorTypeBanner",
+        attributes: toAttributes({
+          connectorType: "agent",
+          counterpartUrl: `/integrations/sources/${slug}`,
+          connectorName,
+        }),
+        children: [],
+      };
+      ast.children.splice(headingIdx + 1, 0, bannerNode);
+    }
   };
   return transformer;
 };

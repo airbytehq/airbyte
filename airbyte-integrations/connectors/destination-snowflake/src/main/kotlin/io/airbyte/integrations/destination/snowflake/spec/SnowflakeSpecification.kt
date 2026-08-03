@@ -118,12 +118,21 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableSchema: String? = null
 
+    @get:JsonSchemaTitle("Trim Whitespace from String Fields")
+    @get:JsonPropertyDescription(
+        """Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if your data contains meaningful leading or trailing whitespace in string fields that should be preserved.""",
+    )
+    @get:JsonProperty("trim_space")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9, "default": true}""")
+    @Suppress("RedundantNullableReturnType")
+    val trimSpace: Boolean? = true
+
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
         """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
     )
     @get:JsonProperty("jdbc_url_params")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("Data Retention Period (days)")
@@ -131,7 +140,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         """The number of days of Snowflake Time Travel to enable on the tables. See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
     )
     @get:JsonProperty("retention_period_days")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
 }

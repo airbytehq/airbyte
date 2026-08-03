@@ -6,15 +6,19 @@
 const fs = require("fs");
 const { REGISTRY_CACHE_PATH } = require("./constants");
 
-function cleanupCache() {
-  if (fs.existsSync(REGISTRY_CACHE_PATH)) {
+function cleanupFile(filePath) {
+  if (fs.existsSync(filePath)) {
     try {
-      fs.unlinkSync(REGISTRY_CACHE_PATH);
-      console.log(`Cleaned up cache file: ${REGISTRY_CACHE_PATH}`);
+      fs.unlinkSync(filePath);
+      console.log(`Cleaned up cache file: ${filePath}`);
     } catch (error) {
-      console.warn(`Failed to clean up ${REGISTRY_CACHE_PATH}:`, error.message);
+      console.warn(`Failed to clean up ${filePath}:`, error.message);
     }
   }
+}
+
+function cleanupCache() {
+  cleanupFile(REGISTRY_CACHE_PATH);
 }
 
 cleanupCache();
