@@ -142,7 +142,8 @@ The Zendesk Support source connector supports the following streams:
 - [Side Conversations](https://developer.zendesk.com/api-reference/ticketing/side_conversations/side_conversation/) \(Incremental\)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\)
+- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Tickets Search](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\) \(Opt-in\)
 - [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) \(Full Refresh\)
 - [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
@@ -174,8 +175,18 @@ The Zendesk Support connector fetches deleted records in the following streams:
 | **Ticket Metric Events** | `deleted`                |
 
 :::note
-As of version 5.2.0, the `tickets` stream no longer includes deleted tickets. Use the `deleted_tickets` stream instead. See the [migration guide](zendesk-support-migrations.md#upgrading-to-520) for details.
+Between versions 5.2.0 and 5.4.x, the `tickets` stream did not include deleted tickets. As of version 5.5.0 the `tickets` stream again includes deleted tickets (see below). The `deleted_tickets` stream remains available and should be paired with the opt-in `tickets_search` stream, which does not return deleted tickets.
 :::
+
+### Tickets stream: change tracking
+
+The `tickets` stream uses Zendesk's [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) endpoint, which tracks changes by `generated_timestamp`. Zendesk bumps `generated_timestamp` on **every** ticket change, including automation-, macro-, and system-driven updates (e.g. auto-solve batches), so the stream reliably re-syncs every update.
+
+:::warning
+Versions 5.2.0–5.4.x used the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint and tracked changes by `updated_at`. Because Zendesk only updates `updated_at` (and re-indexes the ticket for search) when a change generates a ticket event, automation/macro/system-driven updates were both silently dropped from incremental syncs **and** returned with stale field values (e.g. `status`) on historical reads, since `search/export` is served from Zendesk's [search index rather than the live record](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/). This was fixed in 5.5.0 by reverting the `tickets` stream to `generated_timestamp`. On upgrade, a one-time state migration automatically backfills records missed or left stale since 2026-03-01 — no manual reset is required. See the [migration guide](zendesk-support-migrations.md#upgrading-to-550).
+:::
+
+The former Export Search Results behavior is preserved as the opt-in **`tickets_search`** stream. It offers higher throughput (100 req/min vs the incremental endpoint's 10 req/min, plus concurrent time-range partitioning) and a configurable `Tickets Search Lookback Window (days)` setting, but it shares the 5.2.0–5.4.x limitations: it can miss automation/macro/system-driven updates in incremental mode and can return stale statuses on historical reads. Use `tickets_search` only when throughput matters more than completeness, and pair it with the `deleted_tickets` stream (Export Search excludes deleted tickets).
 
 ## Limitations & Troubleshooting
 
@@ -190,16 +201,16 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) based on your plan tier:
 
-| Plan | Requests per minute |
-| :--- | :--- |
-| Team | 200 |
-| Growth / Professional | 400 |
-| Enterprise | 700 |
-| Enterprise Plus / High Volume API add-on | 2500 |
+| Plan                                     | Requests per minute |
+| :--------------------------------------- | :------------------ |
+| Team                                     | 200                 |
+| Growth / Professional                    | 400                 |
+| Enterprise                               | 700                 |
+| Enterprise Plus / High Volume API add-on | 2500                |
 
 The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The `tickets` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
@@ -232,6 +243,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.0-rc.1 | 2026-07-29 | [81640](https://github.com/airbytehq/airbyte/pull/81640) | Revert `tickets` stream to the Incremental Ticket Export endpoint (cursor back to `generated_timestamp`) to fix silent data loss on system-driven updates introduced in 5.2.0; add the opt-in `tickets_search` stream. See the migration guide. |
 | 5.4.6 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 5.4.5 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 5.4.3 — 5.4.4 is built on SDM 7.23.7, which breaks bundled custom components |
 | 5.4.4 | 2026-07-28 | [83159](https://github.com/airbytehq/airbyte/pull/83159) | Update dependencies |
