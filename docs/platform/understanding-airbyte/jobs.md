@@ -9,7 +9,7 @@ Generally, there are 2 types of workload pods:
 - Connector Job (CHECK, DISCOVER, SPEC) pods
   - Calls the specified interface method on the connector image
 
-|    ![](/.gitbook/assets/replication_mono_pod.png)     |                              ![](/.gitbook/assets/connector_pod.png)                               |
+|    ![Replication components running in a single Airbyte pod](/.gitbook/assets/replication_mono_pod.png)     |                              ![Connector job sidecar forwarding output from the connector image](/.gitbook/assets/connector_pod.png)                               |
 |:-------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
 | <em>The source, destination and orchestrator all run in a single pod</em> | <em>The sidecar processes the output of the connector and forwards it back to the core platform</em> |
 

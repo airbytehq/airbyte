@@ -46,7 +46,7 @@ Each table will contain 3 columns:
 
 ### Normalization
 
-If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
+With [typing and deduping](https://docs.airbyte.com/platform/using-airbyte/core-concepts/typing-deduping), source data is normalized to a tabular form. For example, if you have a source such as GitHub with nested JSON, typing and deduping ensures that you end up with tables and columns. Suppose you have a many-to-many relationship between users and commits. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
 
 #### Performance consideration
 

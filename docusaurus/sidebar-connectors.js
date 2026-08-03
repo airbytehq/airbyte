@@ -217,6 +217,12 @@ const sourceMysql = {
   items: [
     {
       type: "doc",
+      label: "Migration Guide",
+      id: "sources/mysql-migrations",
+      key: "sources-mysql-migrations",
+    },
+    {
+      type: "doc",
       label: "Troubleshooting",
       id: "sources/mysql/mysql-troubleshooting",
       key: "sources-mysql-troubleshooting",
@@ -233,6 +239,12 @@ const sourceMssql = {
     id: "sources/mssql",
   },
   items: [
+    {
+      type: "doc",
+      label: "Migration Guide",
+      id: "sources/mssql-migrations",
+      key: "sources-mssql-migrations",
+    },
     {
       type: "doc",
       label: "Troubleshooting",
