@@ -27,6 +27,7 @@ class SupersededRowFinder(
     schema: Schema,
     identifierFieldIds: Set<Int>,
     private val state: PositionalDeleteResolutionState,
+    private val maxInValues: Int = MAX_IN_VALUES,
 ) {
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
@@ -34,6 +35,9 @@ class SupersededRowFinder(
 
     val dataFilesOpened: Int
         get() = state.dataFilesOpened.get()
+
+    val rowsScanned: Long
+        get() = state.rowsScanned.get()
 
     fun find(keys: TouchedKeys, ref: String): Sequence<PositionalDeleteResolver.RowLocation> {
         if (keys.isEmpty()) return emptySequence()
@@ -73,6 +77,7 @@ class SupersededRowFinder(
             }
         }
         state.dataFilesOpened.set(0)
+        state.rowsScanned.set(0)
         return plannedFiles
             .asSequence()
             .sortedBy { it.file.location().toString() }
@@ -96,6 +101,7 @@ class SupersededRowFinder(
             .build<Record>()
             .use { records ->
                 for (record in records) {
+                    state.rowsScanned.incrementAndGet()
                     if (touched.contains(keyFrom(record))) {
                         yield(
                             PositionalDeleteResolver.RowLocation(
@@ -125,7 +131,7 @@ class SupersededRowFinder(
                 Expressions.greaterThanOrEqual(leadingField.name(), min),
                 Expressions.lessThanOrEqual(leadingField.name(), max),
             )
-        if (values.size <= MAX_IN_VALUES) {
+        if (values.size <= maxInValues) {
             return Expressions.and(range, Expressions.`in`(leadingField.name(), values))
         }
         return range
@@ -190,7 +196,7 @@ class SupersededRowFinder(
         // InclusiveMetricsEvaluator in Iceberg 1.11.0 gives up on IN predicates above 200
         // The range keeps manifest and metrics pruning effective, while IN lets dictionary and
         // bloom filters perform exact membership checks until candidate-set lookup cost dominates.
-        private const val MAX_IN_VALUES = 5_000
+        private const val MAX_IN_VALUES = 200
         private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     }
 }
