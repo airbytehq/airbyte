@@ -1,5 +1,109 @@
 # Airbyte Agents release notes
 
+## July 21, 2026
+
+Web app
+
+- You can now watch a short tutorial video directly from the connectors page. Select "How this works" to see how connectors let your agents read and write data in the apps your team already uses.
+
+SDK
+
+- Connector reference documentation now describes semantic search, showing you which fields you can search by meaning and how to run a semantic query from the SDK, CLI, or API for connectors that support it.
+
+Connectors
+
+- You can now search Granola by meaning with semantic search, so your agents can surface the most relevant meeting notes from transcripts and summaries instead of matching exact keywords.
+
+## July 20, 2026
+
+Web app
+
+- You can now open a connector to a dedicated detail page that brings together its entities, Context Store status, and recent agent request activity in one place. The connectors view also shows which entities your agents are allowed to access and how many times each entity has been read or written.
+
+SDK
+
+- A new `agent_tool` decorator lets you wire connector tools into agent frameworks the SDK doesn't natively support. You write your own execute, inspect, and docs functions, and the decorator steers the agent to inspect the connector and read its docs before running an action. Tool failures now raise a catchable `AirbyteToolError` you can handle in your own tool-dispatch loop.
+
+## July 16, 2026
+
+Web app
+
+- Workspace options are now sorted alphabetically when you create an API key, making it easier to select the correct workspace.
+
+SDK
+
+- The Google Drive SDK now supports typed Context Store searches across file content. Downloads also apply the required media parameter automatically, so you no longer need to pass it yourself to retrieve file bytes.
+
+Connectors
+
+- You can now use semantic search across synced Google Drive files, including text extracted from PDFs, Word documents, spreadsheets, presentations, CSV files, and plain text files. Supported file downloads return readable text so your agent can use the contents directly.
+
+Other
+
+- Context Store now keeps the newest source version of a record when incremental syncs contain conflicting versions, preventing stale records from replacing fresher data in search results.
+
+## July 15, 2026
+
+MCP
+
+- When you use the Airbyte Agent MCP, read-only SQL queries against your synced data no longer prompt for a write approval, so your agents can run those queries without an extra confirmation step.
+
+Connectors
+
+- The Sentry connector now lists your projects through Sentry's organization-scoped endpoint, replacing an endpoint Sentry has deprecated so that listing your projects keeps working reliably.
+
+Other
+
+- Fixed an issue that could prevent your connected data from staying current for agent search when records contained certain timestamp values. Updates now recover on their own so your search results stay fresh.
+
+## July 14, 2026
+
+SDK
+
+- Connector download operations can now return file content in structured, JSON-safe chunks that tell you the byte range returned and whether more content remains, so your agents can page through large downloads instead of only receiving a raw byte stream.
+
+Connectors
+
+- You can now manage associations between records with the HubSpot connector. Your agents can link records such as a contact to a deal or company, create labeled associations, list all associations for a record, and remove associations, making it easier to manage how your CRM records relate to one another.
+
+## July 10, 2026
+
+Web app
+
+- New workspaces you create now have Context Store search enabled automatically, so your agents can search that workspace's synced data right away.
+- During connector setup, your data entity selection is now locked while a connector is saving or checking its configuration, so your choices can't change unexpectedly mid-save.
+
+## July 9, 2026
+
+Web app
+
+- When you create or edit a workspace, you no longer need to choose a Context Store region. That field has been removed to simplify workspace setup.
+- Connector setup and configuration forms have a refreshed, more consistent appearance.
+- The floating support button no longer appears while you're on a workspace chat page, reducing clutter in the chat view.
+
+Connectors
+
+- Fixed an issue where the Gong connector could lose access and stop syncing when its authorization token was rotated. Gong connections now stay authenticated reliably.
+- The Slack connector now requests fewer permissions when you connect it, since direct message and channel-invite permissions that weren't used have been removed.
+
+## July 8, 2026
+
+Connectors
+
+- You can now create, update, and delete notes, calls, emails, meetings, and tasks with the HubSpot connector, so your agents can log and manage CRM engagement activity such as adding a note to a contact or logging a call.
+
+## July 7, 2026
+
+Web app
+
+- When you use chat to explore a workspace's connected data, the assistant now gathers more results before it stops, so answers to broad questions are more complete. If it reaches the limit, it lets you know the results are partial instead of stopping without explanation.
+
+## July 6, 2026
+
+Connectors
+
+- When you query Google Ads campaigns, you now get each campaign's start and end dates. The Google Ads connector was also updated to a newer version of the Google Ads API, so your Google Ads data keeps flowing reliably.
+
 ## July 3, 2026
 
 Web app

@@ -178,7 +178,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsCreateParamsBodyContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `version: int`
@@ -198,7 +198,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsCreateParamsBodyContentItemContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueCommentsCreateParamsBodyContentItemContentItem"></a>
@@ -215,7 +215,7 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueCommentsCreateParamsVisibility"></a>
@@ -232,7 +232,7 @@ Classes
     `identifier: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -741,7 +741,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsUpdateParamsBodyContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `version: int`
@@ -761,7 +761,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueCommentsUpdateParamsBodyContentItemContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueCommentsUpdateParamsBodyContentItemContentItem"></a>
@@ -778,7 +778,7 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueCommentsUpdateParamsVisibility"></a>
@@ -795,7 +795,7 @@ Classes
     `identifier: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -1380,7 +1380,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsCommentBodyContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `version: int`
@@ -1400,7 +1400,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueLinksCreateParamsCommentBodyContentItemContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueLinksCreateParamsCommentBodyContentItemContentItem"></a>
@@ -1417,7 +1417,7 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueLinksCreateParamsInwardissue"></a>
@@ -1708,7 +1708,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsCreateParamsCommentContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `version: int`
@@ -1728,7 +1728,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssueWorklogsCreateParamsCommentContentItemContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsCreateParamsCommentContentItemContentItem"></a>
@@ -1745,7 +1745,7 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssueWorklogsCreateParamsVisibility"></a>
@@ -1762,7 +1762,7 @@ Classes
     `identifier: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -2469,7 +2469,7 @@ Classes
 
     ### Class variables
 
-    `accountId: str`
+    `account_id: str`
     :   The type of the None singleton.
 
 <a id="IssuesCreateParamsFieldsDescription"></a>
@@ -2486,7 +2486,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssuesCreateParamsFieldsDescriptionContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `version: int`
@@ -2506,7 +2506,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssuesCreateParamsFieldsDescriptionContentItemContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssuesCreateParamsFieldsDescriptionContentItemContentItem"></a>
@@ -2523,7 +2523,7 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssuesCreateParamsFieldsIssuetype"></a>
@@ -3201,7 +3201,7 @@ Classes
 
     ### Class variables
 
-    `accountId: str`
+    `account_id: str`
     :   The type of the None singleton.
 
 <a id="IssuesUpdateParamsFieldsDescription"></a>
@@ -3218,7 +3218,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssuesUpdateParamsFieldsDescriptionContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `version: int`
@@ -3238,7 +3238,7 @@ Classes
     `content: list[airbyte_agent_sdk.connectors.jira.types.IssuesUpdateParamsFieldsDescriptionContentItemContentItem]`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssuesUpdateParamsFieldsDescriptionContentItemContentItem"></a>
@@ -3255,7 +3255,7 @@ Classes
     `text: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="IssuesUpdateParamsFieldsPriority"></a>

@@ -199,6 +199,10 @@ Represents labels that can be attached to different entities such as campaigns o
 
 Different attributes of ads from ad groups segmented by date.
 
+- [ad_performance](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad)
+
+Ad-level performance report built on the `ad_group_ad` resource. Includes ad identity dimensions plus performance metrics (clicks, impressions, cost, conversions, video and active-view metrics) segmented by date, ad network, and device. Available for non-manager accounts only.
+
 - [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v23/ad_group_ad_label)
 - [ad_group](https://developers.google.com/google-ads/api/fields/v23/ad_group)
 
@@ -253,6 +257,10 @@ Geographic View provides dimension fields aggregated at the country level, such 
 - [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v23/geographic_view)
 
 An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data.
+
+- [geo_performance](https://developers.google.com/google-ads/api/fields/v23/geographic_view)
+
+Geographic performance report built on the `geographic_view` resource. Adds finer geo-target breakdown segments (region, metro, city, most specific location) along with device and ad network segments and performance metrics. Available for non-manager accounts only. Resolve the `segments.geo_target_*` resource names against the `geo_target_constant` resource to get human-readable location names.
 
 - [user_location_view](https://developers.google.com/google-ads/api/fields/v23/user_location_view)
 
@@ -388,6 +396,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
 | 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
 | 5.0.2 | 2026-05-29 | [78514](https://github.com/airbytehq/airbyte/pull/78514) | Remove the Google Ads 400 response filter predicate to avoid buffering large streaming responses. |
 | 5.0.1 | 2026-05-26 | [78419](https://github.com/airbytehq/airbyte/pull/78419) | Classify unrecognized fields in custom GAQL queries as configuration errors. |
