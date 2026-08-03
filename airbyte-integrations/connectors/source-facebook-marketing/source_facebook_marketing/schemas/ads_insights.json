@@ -376,6 +376,10 @@
       "description": "Actions where 95% of the video was watched",
       "$ref": "ads_action_stats.json"
     },
+    "video_thruplay_watched_actions": {
+      "description": "Video thruplay watched actions",
+      "$ref": "ads_action_stats.json"
+    },
     "video_play_actions": {
       "description": "Actions where the video was played",
       "$ref": "ads_action_stats.json"
