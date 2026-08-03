@@ -34,7 +34,7 @@ definitions:
               value: "regression-test-marker"
             - path:
                 - id
-              value: "{{ none if record['stat']['name'] == 'speed' else 777 }}"
+              value: "{{ none if record['stat']['name'] == 'speed' else (132 if record['stat']['name'] == 'hp' else 777) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
