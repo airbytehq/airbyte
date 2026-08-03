@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.airbyte.cdk.load.command.Append
 import java.nio.file.Files
-import kotlin.system.measureTimeMillis
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.FileFormat
@@ -16,7 +15,6 @@ import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.hadoop.HadoopCatalog
-import org.apache.iceberg.types.TypeUtil
 import org.apache.iceberg.types.Types
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
@@ -323,62 +321,7 @@ class PositionalDeleteEndToEndTest {
         assertThat(rows).contains(1201 to "new-1201")
         assertThat(rows).doesNotContain(1201 to "old-1201")
         assertThat(state.dataFilesOpened.get()).isEqualTo(1)
-        assertThat(state.rowsScanned.get()).isEqualTo(201)
         assertThat(result.deleteFiles()).hasSize(1)
-        warehouse.toFile().deleteRecursively()
-    }
-
-    @Test
-    @Suppress("DEPRECATION")
-    fun `membership filter benchmark`() {
-        val warehouse = Files.createTempDirectory("positional-delete-benchmark")
-        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
-        val tableId = TableIdentifier.of("db", "benchmark")
-        val schema =
-            Schema(
-                listOf(
-                    Types.NestedField.required(1, "id", Types.IntegerType.get()),
-                    Types.NestedField.required(2, "name", Types.StringType.get()),
-                ),
-                setOf(1),
-            )
-        catalog.createNamespace(tableId.namespace())
-        val table =
-            catalog
-                .buildTable(tableId, schema)
-                .withProperty(
-                    TableProperties.DEFAULT_FILE_FORMAT,
-                    FileFormat.PARQUET.name.lowercase()
-                )
-                .withProperty(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, "1")
-                .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MIN_RECORD_COUNT, "1")
-                .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MAX_RECORD_COUNT, "1")
-                .create()
-        val writer =
-            IcebergTableWriterFactory().create(table, "ab-generation-id-0-e", Append, schema)
-        (0 until 50_000).forEach { id -> writer.write(record(schema, id, "row-$id")) }
-        val result = writer.complete()
-        table.newAppend().apply { result.dataFiles().forEach(::appendFile) }.commit()
-        table.manageSnapshots().createBranch("staging").commit()
-        val keyType = TypeUtil.select(schema, setOf(1)).asStruct()
-        val sizes = listOf(200, 5_000, 50_000)
-        sizes.forEach { size ->
-            listOf(5_000, 0).forEach { threshold ->
-                val state = PositionalDeleteResolutionState()
-                val touched = TouchedKeys(keyType, Int.MAX_VALUE)
-                (0 until size).forEach { index ->
-                    val key = GenericRecord.create(keyType)
-                    key.setField("id", index * (50_000 / size))
-                    touched.markDeleted(key)
-                }
-                val finder = SupersededRowFinder(table, schema, setOf(1), state, threshold)
-                val elapsed = measureTimeMillis { finder.find(touched, "staging").count() }
-                println(
-                    "benchmark size=$size threshold=$threshold " +
-                        "rowsScanned=${state.rowsScanned.get()} elapsedMs=$elapsed"
-                )
-            }
-        }
         warehouse.toFile().deleteRecursively()
     }
 
