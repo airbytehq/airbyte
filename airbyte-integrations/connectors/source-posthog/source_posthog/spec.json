@@ -36,6 +36,12 @@
         "title": "Events stream slice step size (in days)",
         "description": "Set lower value in case of failing long running sync of events stream.",
         "examples": [30, 10, 5]
+      },
+      "project_id": {
+        "type": "string",
+        "order": 4,
+        "title": "Project ID",
+        "description": "Project ID to sync (required for events_v2 stream when using a project-scoped personal API key). If not provided, the connector will attempt to list all accessible projects."
       }
     }
   }
