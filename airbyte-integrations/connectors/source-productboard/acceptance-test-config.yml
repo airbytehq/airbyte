@@ -6,12 +6,12 @@ acceptance_tests:
     tests:
       - spec_path: "manifest.yaml"
   connection:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    bypass_reason: "Community contribution; no CI secret available. V2 migration validated locally via the Connector Builder against the Productboard V2 API."
   discovery:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    bypass_reason: "Community contribution; no CI secret available. V2 migration validated locally via the Connector Builder against the Productboard V2 API."
   basic_read:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    bypass_reason: "Community contribution; no CI secret available. V2 migration validated locally via the Connector Builder against the Productboard V2 API."
   incremental:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    bypass_reason: "Community contribution; no CI secret available. V2 migration validated locally via the Connector Builder against the Productboard V2 API."
   full_refresh:
-    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+    bypass_reason: "Community contribution; no CI secret available. V2 migration validated locally via the Connector Builder against the Productboard V2 API."
