@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.DataFile
+import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.MetadataColumns
 import org.apache.iceberg.Schema
@@ -39,19 +40,25 @@ class SupersededRowFinder(
         val touched = keys.keys()
         val expression = rowGroupExpression(touched)
         val bounds = touchedBounds(touched)
-        val plannedTasks = table.newScan().useRef(ref).planFiles().use { tasks -> tasks.toList() }
         val plannedFiles =
-            plannedTasks.map { task ->
-                PlannedDataFile(
-                    task.file(),
-                    table.specs()[task.file().specId()]
-                        ?: error("Unknown partition spec ${task.file().specId()}"),
-                    task.partition(),
-                )
+            table.newScan().useRef(ref).filter(expression).planFiles().use { tasks ->
+                tasks
+                    .asSequence()
+                    .map { task ->
+                        PlannedDataFile(
+                            task.file(),
+                            table.specs()[task.file().specId()]
+                                ?: error("Unknown partition spec ${task.file().specId()}"),
+                            task.partition(),
+                            task.deletes().toList(),
+                        )
+                    }
+                    .filter { mayContainAnyKey(it.file, bounds) }
+                    .toList()
             }
         val legacyEqualityDeleteCount =
-            plannedTasks
-                .flatMap { it.deletes() }
+            plannedFiles
+                .flatMap { it.deletes }
                 .filter { it.content() == FileContent.EQUALITY_DELETES }
                 .distinctBy { it.location() }
                 .count()
@@ -69,7 +76,6 @@ class SupersededRowFinder(
         return plannedFiles
             .asSequence()
             .sortedBy { it.file.location().toString() }
-            .filter { mayContainAnyKey(it.file, bounds) }
             .onEach { state.dataFilesOpened.incrementAndGet() }
             .flatMap { supersededRowsIn(it, touched, expression) }
     }
@@ -166,6 +172,7 @@ class SupersededRowFinder(
         val file: DataFile,
         val spec: org.apache.iceberg.PartitionSpec,
         val partition: StructLike?,
+        val deletes: List<DeleteFile>,
     )
 
     private data class TouchedBound(
