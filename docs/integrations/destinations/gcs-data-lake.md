@@ -175,6 +175,8 @@ This connector uses a merge-on-read strategy to support deduplication.
 - Airbyte translates the stream's primary keys to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
 - An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files) on that row's primary key, followed by an insertion of the new data.
 
+The `merge_on_read_delete_encoding` option controls the delete encoding for Dedupe streams. `EQUALITY` remains the default; choose `POSITIONAL` when downstream readers reject equality-delete files. Append and Overwrite streams always use their existing behavior.
+
 ### Assumptions about primary keys
 
 The GCS Data Lake connector assumes that one of two things is true:
