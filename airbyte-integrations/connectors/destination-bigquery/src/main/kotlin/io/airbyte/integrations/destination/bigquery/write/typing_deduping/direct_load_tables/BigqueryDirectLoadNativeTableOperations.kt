@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -42,6 +43,7 @@ class BigqueryDirectLoadNativeTableOperations(
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val streamConfigProvider: StreamConfigProvider,
 ) : DirectLoadTableNativeOperations {
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
@@ -125,8 +127,20 @@ class BigqueryDirectLoadNativeTableOperations(
         var tableClusteringMatches = false
         var tablePartitioningMatches = false
         if (existingTable is StandardTableDefinition) {
-            tableClusteringMatches = clusteringMatches(stream, columnNameMapping, existingTable)
-            tablePartitioningMatches = partitioningMatches(existingTable)
+            tableClusteringMatches =
+                clusteringMatches(
+                    stream,
+                    columnNameMapping,
+                    existingTable,
+                    streamConfigProvider.getClusteringFields(stream.mappedDescriptor),
+                )
+            tablePartitioningMatches =
+                partitioningMatches(
+                    stream,
+                    columnNameMapping,
+                    existingTable,
+                    streamConfigProvider,
+                )
         }
         return !tableClusteringMatches || !tablePartitioningMatches
     }
@@ -406,6 +420,7 @@ class BigqueryDirectLoadNativeTableOperations(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping,
             existingTable: StandardTableDefinition,
+            configuredFields: List<String>? = null,
         ): Boolean {
             // We always want to set a clustering config, so if the table doesn't have one,
             // then we should fix it.
@@ -413,15 +428,30 @@ class BigqueryDirectLoadNativeTableOperations(
                 return false
             }
 
-            val existingClusteringFields = HashSet<String>(existingTable.clustering!!.fields)
+            val existingClusteringFields = existingTable.clustering!!.fields
+            val expectedClusteringFields =
+                BigqueryDirectLoadSqlGenerator.clusteringColumns(
+                    stream,
+                    columnNameMapping,
+                    configuredFields,
+                )
             // We're OK with a column being in the clustering config that we don't expect
             // (e.g. user set a composite PK, then makes one of those fields no longer a PK).
             // It doesn't really hurt us to have that extra clustering config.
             val clusteringConfigIsSupersetOfExpectedConfig =
-                containsAllIgnoreCase(
-                    existingClusteringFields,
-                    BigqueryDirectLoadSqlGenerator.clusteringColumns(stream, columnNameMapping),
-                )
+                if (configuredFields == null) {
+                    containsAllIgnoreCase(
+                        existingClusteringFields,
+                        expectedClusteringFields,
+                    )
+                } else {
+                    // Clustering order affects BigQuery block pruning, so an explicit override
+                    // must match exactly rather than merely being a superset.
+                    existingClusteringFields.size == expectedClusteringFields.size &&
+                        existingClusteringFields.zip(expectedClusteringFields).all { (a, b) ->
+                            a.equals(b, ignoreCase = true)
+                        }
+                }
             // We do, however, validate that all the clustering fields actually exist in the
             // intended schema.
             // This is so that we don't try to drop columns that bigquery is clustering against
@@ -442,6 +472,30 @@ class BigqueryDirectLoadNativeTableOperations(
                     .field
                     .equals("_airbyte_extracted_at", ignoreCase = true) &&
                 TimePartitioning.Type.DAY == existingTable.timePartitioning!!.type
+        }
+
+        @VisibleForTesting
+        fun partitioningMatches(
+            stream: DestinationStream,
+            columnNameMapping: ColumnNameMapping,
+            existingTable: StandardTableDefinition,
+            streamConfigProvider: StreamConfigProvider,
+        ): Boolean {
+            val expected =
+                BigqueryDirectLoadSqlGenerator.resolvePartitioning(
+                    stream,
+                    columnNameMapping,
+                    streamConfigProvider.getPartitioningField(stream.mappedDescriptor),
+                    streamConfigProvider.getPartitioningGranularity(stream.mappedDescriptor),
+                )
+            return existingTable.timePartitioning != null &&
+                existingTable.timePartitioning!!
+                    .field
+                    .equals(
+                        expected.field,
+                        ignoreCase = true,
+                    ) &&
+                existingTable.timePartitioning!!.type == expected.type
         }
     }
 }

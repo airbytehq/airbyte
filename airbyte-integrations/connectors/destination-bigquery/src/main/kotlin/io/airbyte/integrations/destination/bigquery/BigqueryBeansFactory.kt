@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
@@ -97,6 +98,7 @@ class BigqueryBeansFactory {
         bigquery: BigQuery,
         config: BigqueryConfiguration,
         names: TableCatalog,
+        streamConfigProvider: StreamConfigProvider,
         // micronaut will only instantiate a single instance of StreamStateStore,
         // so accept it as a * generic and cast as needed.
         // we use a different type depending on whether we're in legacy raw tables vs
@@ -127,6 +129,7 @@ class BigqueryBeansFactory {
                         BigqueryDirectLoadSqlGenerator(
                             projectId = config.projectId,
                             cdcDeletionMode = config.cdcDeletionMode,
+                            streamConfigProvider = streamConfigProvider,
                         ),
                         destinationHandler,
                     ),
@@ -154,6 +157,7 @@ class BigqueryBeansFactory {
                         destinationHandler,
                         projectId = config.projectId,
                         tempTableNameGenerator,
+                        streamConfigProvider,
                     ),
                 sqlTableOperations = sqlTableOperations,
                 streamStateStore = streamStateStore,
