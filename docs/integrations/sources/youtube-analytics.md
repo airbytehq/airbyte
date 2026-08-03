@@ -4,6 +4,8 @@ This page contains the setup guide and reference information for the YouTube Ana
 
 ## Prerequisites
 
+The Google account you authorize must own or manage a YouTube channel. All YouTube Reporting API data belongs to a channel or a content owner, so an account with no associated channel cannot read any data and setup fails with a 401. If you see the error `The authorized Google account does not appear to have an associated YouTube channel`, create a channel for that account or re-authenticate with an account that already has one.
+
 YouTube does not start to generate a report until you create a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) for that report.
 Airbyte creates a reporting job for your report, or uses the current reporting job if it already exists, during the **first sync** of that stream. Setting up the source does not create any reporting jobs.
 The report will be available within 48 hours of creating the reporting job and will be for the day that the job was scheduled.
@@ -110,7 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
-| 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream and fix `check` failures |
+| 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
 | 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
 | 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
 | 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |

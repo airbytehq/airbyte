@@ -467,10 +467,26 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       response_filters:
+        # A 401 here comes from the YouTube Reporting API itself, which means the OAuth token
+        # refresh already succeeded -- a bad or revoked refresh token fails earlier, against
+        # token_refresh_endpoint, and never reaches this handler. So the credentials are valid
+        # but unusable for this API, which in practice means the authorized Google account has
+        # no YouTube channel linked to it.
+        # `action` is required for this filter to apply at all: without it `_matches_filter`
+        # returns None, the filter is skipped, and the CDK's generic 401 text is shown instead
+        # of `error_message`.
         - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
           http_codes:
             - 401
-          error_message: Authentication failed. Please verify your credentials.
+          error_message: >-
+            The authorized Google account does not appear to have an associated YouTube
+            channel. The YouTube Analytics source requires an account that owns or manages a
+            YouTube channel, because all Reporting API data belongs to a channel or content
+            owner. Create a YouTube channel for this account, or re-authenticate with an
+            account that already has one. If you are connecting as a content owner, also
+            confirm the Content Owner ID is correct.
         - type: HttpResponseFilter
           http_codes:
             - 403

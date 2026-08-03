@@ -49,7 +49,13 @@ def test_check_succeeds_via_report_types_without_reporting_job(config):
 
 
 def test_check_fails_when_report_types_is_unauthorized(config):
-    """`check` reports FAILED when `GET /reportTypes` rejects the credentials."""
+    """`check` reports FAILED when `GET /reportTypes` rejects the credentials.
+
+    A 401 from the Reporting API means the token refresh already succeeded, so the credentials
+    are valid but unusable -- in practice the account has no YouTube channel. The manifest's
+    `error_message` must reach the user instead of the CDK's generic 401 text, which requires
+    `action: FAIL` on the response filter.
+    """
     source = get_source(config=config)
 
     with requests_mock.Mocker() as mocker:
@@ -57,7 +63,7 @@ def test_check_fails_when_report_types_is_unauthorized(config):
         report_types_mock = mocker.get(
             f"{_REPORTING_API}/reportTypes",
             status_code=401,
-            json={"error": {"code": 401, "message": "Invalid Credentials"}},
+            json={"error": {"code": 401, "message": "Request had invalid authentication credentials.", "status": "UNAUTHENTICATED"}},
         )
 
         status = source.check(logging.getLogger("test"), config)
@@ -65,6 +71,9 @@ def test_check_fails_when_report_types_is_unauthorized(config):
     assert status.status == Status.FAILED
     assert report_types_mock.called
     assert "report_types" in status.message
+    assert "does not appear to have an associated YouTube channel" in status.message
+    # The CDK's generic fallback means the filter was skipped (usually a missing `action`).
+    assert "Please ensure you are authenticated correctly" not in status.message
 
 
 def test_report_types_stream_extracts_records_and_paginates(config):
