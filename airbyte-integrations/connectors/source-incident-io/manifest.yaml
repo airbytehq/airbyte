@@ -349,6 +349,8 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -385,6 +387,8 @@ definitions:
             page_size: 50
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/created_at_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -421,10 +425,44 @@ definitions:
             page_size: 25
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      incremental_sync:
+        $ref: "#/definitions/updated_at_incremental_sync"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/escalations"
+  # The incident.io list endpoints only accept date-granular filter values, so the
+  # cursor is persisted and sent as YYYY-MM-DD. Syncs re-read the current day.
+  updated_at_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or '2020-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "updated_at[gte]"
+      inject_into: request_parameter
+  created_at_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: created_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] or '2020-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "created_at[gte]"
+      inject_into: request_parameter
   base_requester:
     type: HttpRequester
     url_base: https://api.incident.io
@@ -464,6 +502,18 @@ spec:
         title: API Key
         airbyte_secret: true
         order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Incremental streams
+          (incidents, alerts, escalations) only replicate data at or after this date.
+          Defaults to 2020-01-01T00:00:00Z when left empty.
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 1
     additionalProperties: true
 
 metadata:
