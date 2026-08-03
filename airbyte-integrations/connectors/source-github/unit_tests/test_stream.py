@@ -469,6 +469,51 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
 
 
 @patch("time.sleep")
+@patch("time.time", return_value=1655804424.0)
+def test_graphql_rate_limit_uses_reset_backoff(time_mock, sleep_mock, requests_mock):
+    first_request = True
+
+    def request_callback(request, context):
+        nonlocal first_request
+        if first_request:
+            first_request = False
+            context.status_code = HTTPStatus.OK
+            context.headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+            context.text = json.dumps(
+                {
+                    "errors": [
+                        {
+                            "type": "RATE_LIMIT",
+                            "code": "graphql_rate_limit",
+                            "message": "API rate limit already exceeded for user ID 123.",
+                        }
+                    ]
+                }
+            )
+
+            return context.text
+
+        context.status_code = HTTPStatus.OK
+        context.headers = {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655808324"}
+        context.text = json.dumps({"data": {"repository": None}})
+
+        return context.text
+
+    requests_mock.post(
+        "https://api.github.com/graphql",
+        text=request_callback,
+    )
+
+    stream = PullRequestStats(repositories=["airbytehq/airbyte"], page_size_for_large_streams=30)
+    records = list(read_full_refresh(stream))
+    assert records == []
+    assert requests_mock.call_count == 2
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/graphql"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/graphql"
+    assert sum([c[0][0] for c in sleep_mock.call_args_list]) > 300
+
+
+@patch("time.sleep")
 def test_stream_teams_404(time_mock, requests_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)

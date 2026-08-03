@@ -220,6 +220,10 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                     ),
                 )
 
+            resolution = super().interpret_response(response_or_exception)
+            if resolution.response_action == ResponseAction.RATE_LIMITED:
+                return resolution
+
             self.stream.page_size = (
                 constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
             )
@@ -233,5 +237,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                         f"for stream `{self.stream.name}` (HTTP {response_or_exception.status_code}). Retrying."
                     ),
                 )
+
+            return resolution
 
         return super().interpret_response(response_or_exception)

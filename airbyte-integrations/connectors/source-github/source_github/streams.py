@@ -123,7 +123,7 @@ class GithubStreamABC(HttpStream, ABC):
         errors = response_json.get("errors")
         if errors:
             for error in errors:
-                if error.get("type") == "RATE_LIMITED":
+                if error.get("type") in {"RATE_LIMIT", "RATE_LIMITED"}:
                     return True
         return False
 
