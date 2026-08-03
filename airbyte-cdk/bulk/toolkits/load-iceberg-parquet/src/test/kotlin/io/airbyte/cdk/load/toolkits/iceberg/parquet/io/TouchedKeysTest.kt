@@ -36,6 +36,26 @@ class TouchedKeysTest {
     }
 
     @Test
+    fun `budget flush includes repeated same-flush superseded locations`() {
+        val schema =
+            Schema(
+                listOf(Types.NestedField.required(1, "id", Types.StringType.get())),
+                setOf(1),
+            )
+        val keys = TouchedKeys(schema.asStruct(), maximum = 3)
+        val spec = PartitionSpec.unpartitioned()
+        val key = GenericRecord.create(schema).apply { setField("id", "one") }
+
+        keys.markWritten(key, PositionalDeleteResolver.RowLocation("file-a", 0, spec, null))
+        keys.markWritten(key, PositionalDeleteResolver.RowLocation("file-a", 1, spec, null))
+        assertThat(keys.isFull()).isFalse()
+        keys.markWritten(key, PositionalDeleteResolver.RowLocation("file-a", 2, spec, null))
+
+        assertThat(keys.isFull()).isTrue()
+        assertThat(keys.supersededWithinFlush().toList()).hasSize(2)
+    }
+
+    @Test
     fun `membership supports multi-column identifiers`() {
         val schema =
             Schema(
