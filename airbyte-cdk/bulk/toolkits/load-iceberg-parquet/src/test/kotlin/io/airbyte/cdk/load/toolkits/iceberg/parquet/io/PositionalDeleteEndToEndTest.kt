@@ -363,7 +363,7 @@ class PositionalDeleteEndToEndTest {
         val keyType = TypeUtil.select(schema, setOf(1)).asStruct()
         val sizes = listOf(200, 5_000, 50_000)
         sizes.forEach { size ->
-            listOf(5_000, 0).forEach { threshold ->
+            listOf(200, 0).forEach { threshold ->
                 val state = PositionalDeleteResolutionState()
                 val touched = TouchedKeys(keyType, Int.MAX_VALUE)
                 (0 until size).forEach { index ->
