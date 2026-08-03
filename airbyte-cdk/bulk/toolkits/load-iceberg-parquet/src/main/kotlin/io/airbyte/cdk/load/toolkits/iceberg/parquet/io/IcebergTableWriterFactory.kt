@@ -160,31 +160,6 @@ class IcebergTableWriterFactory {
         return builder.build()
     }
 
-    /**
-     * Enables identifier bloom filters for positional-delete data files.
-     *
-     * Call once during stream setup, before creating per-flush writers.
-     */
-    fun enableIdentifierBloomFilters(
-        table: Table,
-        schema: Schema,
-        identifierFieldIds: Set<Int>,
-    ) {
-        val update = table.updateProperties()
-        var changed = false
-        identifierFieldIds.forEach { fieldId ->
-            val field = schema.findField(fieldId)
-            val property = TableProperties.PARQUET_BLOOM_FILTER_COLUMN_ENABLED_PREFIX + field.name()
-            if (table.properties()[property] != "true") {
-                update.set(property, "true")
-                changed = true
-            }
-        }
-        if (changed) {
-            update.commit()
-        }
-    }
-
     private fun createOutputFileFactory(
         table: Table,
         format: FileFormat,
