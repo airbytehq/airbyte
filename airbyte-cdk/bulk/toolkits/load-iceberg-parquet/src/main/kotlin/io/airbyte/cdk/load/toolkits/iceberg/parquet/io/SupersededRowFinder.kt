@@ -208,8 +208,13 @@ class SupersededRowFinder(
     }
 
     private fun gapScore(left: Any, right: Any): Double {
-        val leftValue = gapValue(left)
-        val rightValue = gapValue(right)
+        // Gap scoring is only a heuristic for choosing split points; correctness relies on
+        // the comparator and the resulting inclusive ranges, not on this distance estimate.
+        val leftBytes = gapBytes(left)
+        val rightBytes = gapBytes(right)
+        val width = maxOf(leftBytes?.size ?: 0, rightBytes?.size ?: 0)
+        val leftValue = leftBytes?.let { BigInteger(1, leftPad(it, width)) } ?: gapValue(left)
+        val rightValue = rightBytes?.let { BigInteger(1, leftPad(it, width)) } ?: gapValue(right)
         return if (leftValue != null && rightValue != null) {
             rightValue.subtract(leftValue).toDouble()
         } else {
@@ -217,15 +222,23 @@ class SupersededRowFinder(
         }
     }
 
-    private fun gapValue(value: Any): BigInteger? =
+    private fun gapBytes(value: Any): ByteArray? =
         when (value) {
-            is Number -> value.toString().toBigDecimal().toBigInteger()
-            is CharSequence -> BigInteger(1, value.toString().toByteArray())
+            is CharSequence -> value.toString().toByteArray(Charsets.UTF_8)
             is ByteBuffer -> {
                 val bytes = ByteArray(value.remaining())
                 value.duplicate().get(bytes)
-                BigInteger(1, bytes)
+                bytes
             }
+            else -> null
+        }
+
+    private fun leftPad(bytes: ByteArray, width: Int): ByteArray =
+        ByteArray(width - bytes.size) + bytes
+
+    private fun gapValue(value: Any): BigInteger? =
+        when (value) {
+            is Number -> value.toString().toBigDecimal().toBigInteger()
             else -> null
         }
 
@@ -256,9 +269,9 @@ class SupersededRowFinder(
         // The range keeps manifest and metrics pruning effective, while IN lets dictionary and
         // bloom filters perform exact membership checks until candidate-set lookup cost dominates.
         private const val MAX_IN_VALUES = 200
-        // Four ranges captured the clustered and monotonic wins without adding measurable
-        // expression overhead in the uniform distribution benchmark.
-        private const val MAX_SUB_RANGES = 4
+        // Eight is the largest count without a measurable elapsed-time penalty in the benchmark;
+        // higher counts improve rows scanned in some cases but are slower in others.
+        private const val MAX_SUB_RANGES = 8
         private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     }
 }
