@@ -1167,6 +1167,232 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/instagram_reels_timelines"
+    facebook_account_timelines:
+      type: DeclarativeStream
+      name: facebook_account_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: facebook
+            subject: account
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - page_posts_impressions
+              - postsCount
+              - postsInteractions
+              - likes
+              - pageFollows
+              - pageImpressions
+              - pageViews
+              - page_daily_follows_unique
+              - page_daily_unfollows_unique
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_account_timelines"
+    instagram_account_timelines:
+      type: DeclarativeStream
+      name: instagram_account_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: instagram
+            subject: account
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - followers
+              - delta_followers
+              - friends
+              - postsCount
+              - postsInteractions
+              - views
+              - reach
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_account_timelines"
     tiktok_posts:
       type: DeclarativeStream
       name: tiktok_posts
@@ -1624,6 +1850,8 @@ streams:
   - $ref: "#/definitions/streams/instagram_stories_timelines"
   - $ref: "#/definitions/streams/instagram_posts_timelines"
   - $ref: "#/definitions/streams/instagram_reels_timelines"
+  - $ref: "#/definitions/streams/facebook_account_timelines"
+  - $ref: "#/definitions/streams/instagram_account_timelines"
   - $ref: "#/definitions/streams/tiktok_posts"
   - $ref: "#/definitions/streams/tiktok_video_timelines"
   - $ref: "#/definitions/streams/tiktok_account_timelines"
@@ -2842,6 +3070,44 @@ schemas:
       - blogId
       - metric
   tiktok_account_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  facebook_account_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  instagram_account_timelines:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
