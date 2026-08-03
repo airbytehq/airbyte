@@ -27,7 +27,7 @@ class UnpartitionedPositionDeltaWriter(
     targetFileSize: Long,
     schema: Schema,
     identifierFieldIds: Set<Int>,
-    index: PositionalDeleteIndex,
+    resolver: PositionalDeleteResolver,
 ) :
     BasePositionDeltaTaskWriter(
         table,
@@ -39,7 +39,7 @@ class UnpartitionedPositionDeltaWriter(
         targetFileSize,
         schema,
         identifierFieldIds,
-        index,
+        resolver,
     ) {
     private val writer = RowDataPositionDeltaWriter(null)
 
@@ -60,7 +60,7 @@ class PartitionedPositionDeltaWriter(
     targetFileSize: Long,
     schema: Schema,
     identifierFieldIds: Set<Int>,
-    index: PositionalDeleteIndex,
+    resolver: PositionalDeleteResolver,
 ) :
     BasePositionDeltaTaskWriter(
         table,
@@ -72,7 +72,7 @@ class PartitionedPositionDeltaWriter(
         targetFileSize,
         schema,
         identifierFieldIds,
-        index,
+        resolver,
     ) {
     private val partitionKey = PartitionKey(spec, schema)
     private val writers = mutableMapOf<PartitionKey, RowDataPositionDeltaWriter>()

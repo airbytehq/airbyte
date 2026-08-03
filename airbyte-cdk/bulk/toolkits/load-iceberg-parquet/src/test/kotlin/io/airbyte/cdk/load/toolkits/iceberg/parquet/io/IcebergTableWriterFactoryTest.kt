@@ -21,7 +21,6 @@ import org.apache.iceberg.encryption.EncryptionManager
 import org.apache.iceberg.io.FileIO
 import org.apache.iceberg.io.LocationProvider
 import org.apache.iceberg.io.OutputFile
-import org.apache.iceberg.types.TypeUtil
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -126,6 +125,7 @@ internal class IcebergTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { sortOrder() } returns SortOrder.unsorted()
             every { spec() } returns tableSpec
+            every { updateProperties() } returns mockk(relaxed = true)
         }
 
         val factory = IcebergTableWriterFactory()
@@ -153,8 +153,8 @@ internal class IcebergTableWriterFactoryTest {
                         cursor = primaryKeyIds.map { it.toString() }
                     ),
                 schema = tableSchema,
-                positionalDeleteIndex =
-                    PositionalDeleteIndex(TypeUtil.select(tableSchema, primaryKeyIds).asStruct()),
+                positionalDeleteRef = "staging",
+                positionalDeleteState = PositionalDeleteResolutionState(),
             )
         assertEquals(UnpartitionedPositionDeltaWriter::class.java, positionalWriter.javaClass)
     }
