@@ -92,3 +92,43 @@ def test_report_types_stream_extracts_records_and_paginates(config):
     report_types_requests = [r for r in mocker.request_history if r.path == "/v1/reporttypes"]
     assert len(report_types_requests) == 2, f"expected pagination to make 2 requests, got {len(report_types_requests)}"
     assert report_types_requests[1].qs.get("pagetoken") == ["page-2"]
+    # `extra_request_parameters` reaches the wire on every page.
+    for request in report_types_requests:
+        assert request.qs.get("includesystemmanaged") == ["true"]
+
+
+def test_report_stream_does_not_send_uninterpolated_request_parameters(config):
+    """No request may carry a raw `{{ ... }}` template as a query value.
+
+    `ContentOwnerRequester.extra_request_parameters` merges values verbatim. It is deliberately
+    not named `request_parameters`, because the `report` stream declares that key with a Jinja
+    template (`startTimeAtOrAfter`) that the CDK's own request options provider owns. Naming the
+    custom field `request_parameters` makes the model factory hand `report`'s template to this
+    class, which then sends the literal template text and the API rejects it with
+    `400 Illegal timestamp format`. That breaks every report stream, since `report` is their
+    shared parent.
+    """
+    source = get_source(config=config)
+    catalog = CatalogBuilder().with_stream("channel_basic_a3", SyncMode.full_refresh).build()
+    download_url = "https://example.com/report.csv"
+
+    with requests_mock.Mocker() as mocker:
+        mocker.post("https://oauth2.googleapis.com/token", json={"access_token": "test_access_token", "expires_in": 3600})
+        mocker.get(f"{_REPORTING_API}/jobs", json={"jobs": [{"id": "job-1", "reportTypeId": "channel_basic_a3"}]})
+        report = {"id": "report-1", "jobId": "job-1", "startTime": "2026-01-01T00:00:00.000000Z", "downloadUrl": download_url}
+        mocker.get(f"{_REPORTING_API}/jobs/job-1/reports", json={"reports": [report]})
+        mocker.get(download_url, text="date,channel_id,views\n20260101,UC123,42\n")
+
+        read(source, config, catalog)
+
+    offenders = {
+        request.url: value
+        for request in mocker.request_history
+        for values in request.qs.values()
+        for value in values
+        if "{{" in value or "}}" in value
+    }
+    assert not offenders, f"uninterpolated template sent as a query value: {offenders}"
+
+    reports_requests = [r for r in mocker.request_history if r.path == "/v1/jobs/job-1/reports"]
+    assert reports_requests, "expected the report stream to list reports for the job"

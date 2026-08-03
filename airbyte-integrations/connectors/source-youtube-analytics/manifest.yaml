@@ -76,7 +76,9 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: reportTypes
-          request_parameters:
+          # Handled by ContentOwnerRequester, not the CDK's request options provider.
+          # Static values only -- these are not interpolated. See components.py.
+          extra_request_parameters:
             includeSystemManaged: "true"
         record_selector:
           type: RecordSelector
