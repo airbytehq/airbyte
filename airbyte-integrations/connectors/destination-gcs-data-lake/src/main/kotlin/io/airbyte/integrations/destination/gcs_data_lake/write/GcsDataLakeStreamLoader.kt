@@ -11,9 +11,9 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.enableIdentifierBloomFilters
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
@@ -211,8 +211,7 @@ class GcsDataLakeStreamLoader(
             if (positionalDeletesEnabled) targetSchema.identifierFieldIds() else emptySet()
         val positionalDeleteState =
             if (positionalDeletesEnabled) {
-                IcebergTableWriterFactory()
-                    .enableIdentifierBloomFilters(
+                enableIdentifierBloomFilters(
                         table,
                         targetSchema,
                         identifierFieldIds,
