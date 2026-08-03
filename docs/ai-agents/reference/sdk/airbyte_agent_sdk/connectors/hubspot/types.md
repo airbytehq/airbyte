@@ -33,6 +33,84 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
+<a id="AssociationsCreateParams"></a>
+
+`AssociationsCreateParams(*args, **kwargs)`
+:   Parameters for associations.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `association_category: str`
+    :   The type of the None singleton.
+
+    `association_type_id: int`
+    :   The type of the None singleton.
+
+    `from_object_id: str`
+    :   The type of the None singleton.
+
+    `from_object_type: str`
+    :   The type of the None singleton.
+
+    `to_object_id: str`
+    :   The type of the None singleton.
+
+    `to_object_type: str`
+    :   The type of the None singleton.
+
+<a id="AssociationsDeleteParams"></a>
+
+`AssociationsDeleteParams(*args, **kwargs)`
+:   Parameters for associations.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `from_object_id: str`
+    :   The type of the None singleton.
+
+    `from_object_type: str`
+    :   The type of the None singleton.
+
+    `to_object_id: str`
+    :   The type of the None singleton.
+
+    `to_object_type: str`
+    :   The type of the None singleton.
+
+<a id="AssociationsListParams"></a>
+
+`AssociationsListParams(*args, **kwargs)`
+:   Parameters for associations.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `after: str`
+    :   The type of the None singleton.
+
+    `from_object_id: str`
+    :   The type of the None singleton.
+
+    `from_object_type: str`
+    :   The type of the None singleton.
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `to_object_type: str`
+    :   The type of the None singleton.
+
 <a id="CallsAndCondition"></a>
 
 `CallsAndCondition(*args, **kwargs)`
@@ -206,10 +284,10 @@ Classes
 
     ### Class variables
 
-    `associationCategory: str`
+    `association_category: str`
     :   The type of the None singleton.
 
-    `associationTypeId: int`
+    `association_type_id: int`
     :   The type of the None singleton.
 
 <a id="CallsCreateParamsProperties"></a>
@@ -964,7 +1042,7 @@ Classes
     `operator: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -989,7 +1067,7 @@ Classes
     `direction: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
 <a id="CompaniesContainsCondition"></a>
@@ -1752,7 +1830,7 @@ Classes
     `operator: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -1777,7 +1855,7 @@ Classes
     `direction: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
 <a id="ContactsContainsCondition"></a>
@@ -2543,7 +2621,7 @@ Classes
     `operator: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -2568,7 +2646,7 @@ Classes
     `direction: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
 <a id="DealsContainsCondition"></a>
@@ -3371,10 +3449,10 @@ Classes
 
     ### Class variables
 
-    `associationCategory: str`
+    `association_category: str`
     :   The type of the None singleton.
 
-    `associationTypeId: int`
+    `association_type_id: int`
     :   The type of the None singleton.
 
 <a id="EmailsCreateParamsProperties"></a>
@@ -4133,10 +4211,10 @@ Classes
 
     ### Class variables
 
-    `associationCategory: str`
+    `association_category: str`
     :   The type of the None singleton.
 
-    `associationTypeId: int`
+    `association_type_id: int`
     :   The type of the None singleton.
 
 <a id="MeetingsCreateParamsProperties"></a>
@@ -4910,10 +4988,10 @@ Classes
 
     ### Class variables
 
-    `associationCategory: str`
+    `association_category: str`
     :   The type of the None singleton.
 
-    `associationTypeId: int`
+    `association_type_id: int`
     :   The type of the None singleton.
 
 <a id="NotesCreateParamsProperties"></a>
@@ -5695,10 +5773,10 @@ Classes
 
     ### Class variables
 
-    `associationCategory: str`
+    `association_category: str`
     :   The type of the None singleton.
 
-    `associationTypeId: int`
+    `association_type_id: int`
     :   The type of the None singleton.
 
 <a id="TasksCreateParamsProperties"></a>
@@ -6453,7 +6531,7 @@ Classes
     `operator: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -6478,7 +6556,7 @@ Classes
     `direction: str`
     :   The type of the None singleton.
 
-    `propertyName: str`
+    `property_name: str`
     :   The type of the None singleton.
 
 <a id="TicketsContainsCondition"></a>
