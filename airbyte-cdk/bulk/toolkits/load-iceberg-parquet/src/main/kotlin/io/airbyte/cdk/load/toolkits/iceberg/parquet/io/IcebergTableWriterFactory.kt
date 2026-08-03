@@ -13,7 +13,6 @@ import java.util.*
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
-import org.apache.iceberg.TableProperties
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES

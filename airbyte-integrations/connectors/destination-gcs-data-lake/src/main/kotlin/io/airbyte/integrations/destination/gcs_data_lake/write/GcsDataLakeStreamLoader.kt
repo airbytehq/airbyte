@@ -212,10 +212,10 @@ class GcsDataLakeStreamLoader(
         val positionalDeleteState =
             if (positionalDeletesEnabled) {
                 enableIdentifierBloomFilters(
-                        table,
-                        targetSchema,
-                        identifierFieldIds,
-                    )
+                    table,
+                    targetSchema,
+                    identifierFieldIds,
+                )
                 PositionalDeleteResolutionState()
             } else {
                 null
