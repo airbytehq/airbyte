@@ -105,6 +105,7 @@ internal class S3DataLakeAggregateFactoryTest {
                 Types.NestedField.optional(2, "name", Types.StringType.get()),
             )
         val table: Table = mockk()
+        every { table.refs() } returns emptyMap()
         val append: AppendFiles = mockk {
             every { toBranch(stagingBranchName) } returns this
             every { commit() } just runs
