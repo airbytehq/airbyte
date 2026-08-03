@@ -76,6 +76,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: reportTypes
+          request_parameters:
+            includeSystemManaged: "true"
         record_selector:
           type: RecordSelector
           extractor:
@@ -657,6 +659,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       systemManaged:
         type:
           - "null"

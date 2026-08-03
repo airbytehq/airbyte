@@ -5,8 +5,9 @@ This page contains the setup guide and reference information for the YouTube Ana
 ## Prerequisites
 
 YouTube does not start to generate a report until you create a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) for that report.
-Airbyte creates a reporting job for your report or uses the current reporting job if it already exists.
+Airbyte creates a reporting job for your report, or uses the current reporting job if it already exists, during the **first sync** of that stream. Setting up the source does not create any reporting jobs.
 The report will be available within 48 hours of creating the reporting job and will be for the day that the job was scheduled.
+Because of this, on a brand-new source the first sync creates the jobs and returns no records for the report streams; records begin to arrive on a sync that runs at least 48 hours after that first sync.
 For example, if you schedule a job on September 1, 2015, then the report for September 1, 2015, will be ready on September 3, 2015.
 The report for September 2, 2015, will be posted on September 4, 2015, and so forth.
 Youtube also generates historical data reports covering the 30-day period prior to when you created the job. Airbyte syncs all available historical data too.
@@ -60,6 +61,7 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 ## Supported Streams
 
+- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream because it returns data with valid credentials alone and requires no reporting job.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)

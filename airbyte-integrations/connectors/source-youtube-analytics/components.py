@@ -31,7 +31,13 @@ class ContentOwnerRequester(HttpRequester):
     """
     Custom requester that conditionally adds the onBehalfOfContentOwner parameter
     only when content_owner_id is provided in the config.
+
+    Also supports static `request_parameters` declared in the manifest. `HttpRequester`
+    has no such field, and the model factory only forwards manifest keys that match a
+    component's type hints, so the field is declared here to be accepted and merged.
     """
+
+    request_parameters: Optional[Mapping[str, Any]] = None
 
     def get_request_params(
         self,
@@ -45,6 +51,8 @@ class ContentOwnerRequester(HttpRequester):
             stream_slice=stream_slice,
             next_page_token=next_page_token,
         )
+        if self.request_parameters:
+            params.update(self.request_parameters)
         content_owner_id = self.config.get("content_owner_id")
         if content_owner_id:
             params["onBehalfOfContentOwner"] = content_owner_id
@@ -91,7 +99,7 @@ class JobRequester(ContentOwnerRequester):
             error_details = response_json["error"]
             error_code = error_details.get("code", "unknown")
             api_message = error_details.get("message", str(error_details))
-            error_message = f"YouTube Reporting API Error (code {error_code}): " f"{api_message}. "
+            error_message = f"YouTube Reporting API Error (code {error_code}): {api_message}. "
             raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
 
         # Handle the case where API returns {} instead of {"jobs": []}

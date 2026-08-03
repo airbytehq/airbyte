@@ -48,6 +48,25 @@ def test_check_succeeds_via_report_types_without_reporting_job(config):
     assert not any("/jobs" in request.path for request in mocker.request_history)
 
 
+def test_check_fails_when_report_types_is_unauthorized(config):
+    """`check` reports FAILED when `GET /reportTypes` rejects the credentials."""
+    source = get_source(config=config)
+
+    with requests_mock.Mocker() as mocker:
+        mocker.post("https://oauth2.googleapis.com/token", json={"access_token": "test_access_token", "expires_in": 3600})
+        report_types_mock = mocker.get(
+            f"{_REPORTING_API}/reportTypes",
+            status_code=401,
+            json={"error": {"code": 401, "message": "Invalid Credentials"}},
+        )
+
+        status = source.check(logging.getLogger("test"), config)
+
+    assert status.status == Status.FAILED
+    assert report_types_mock.called
+    assert "report_types" in status.message
+
+
 def test_report_types_stream_extracts_records_and_paginates(config):
     """The stream extracts records from `reportTypes` and follows `nextPageToken` via `pageToken`."""
     source = get_source(config=config)
@@ -56,12 +75,14 @@ def test_report_types_stream_extracts_records_and_paginates(config):
     with requests_mock.Mocker() as mocker:
         mocker.post("https://oauth2.googleapis.com/token", json={"access_token": "test_access_token", "expires_in": 3600})
 
-        def _response(request, context):
-            if request.qs.get("pagetoken") == ["page-2"]:
-                return _report_types("channel_demographics_a1")
-            return _report_types("channel_basic_a3", "channel_cards_a1", next_page_token="page-2")
-
-        mocker.get(f"{_REPORTING_API}/reportTypes", json=_response)
+        # Bounded response list: a broken paginator fails an assertion instead of looping forever.
+        mocker.get(
+            f"{_REPORTING_API}/reportTypes",
+            [
+                {"json": _report_types("channel_basic_a3", "channel_cards_a1", next_page_token="page-2")},
+                {"json": _report_types("channel_demographics_a1")},
+            ],
+        )
 
         output = read(source, config, catalog)
 
