@@ -1,0 +1,16 @@
+{
+  "host": "source-mysql-db-backend",
+  "port": 3306,
+  "database": "test_db",
+  "username": "root",
+  "password": "test_password",
+  "ssl_mode": {
+    "mode": "preferred"
+  },
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  }
+}
