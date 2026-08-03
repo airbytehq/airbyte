@@ -189,9 +189,12 @@ The connector also handles HTTP 530 (Cloudflare Origin DNS Error) as a credentia
 returns this non-standard status code when the API token format is incorrect, rather than a standard
 401 or 403.
 
-HubSpot uses standard OAuth 2.0 with long-lived refresh tokens via `/oauth/v1/token`. Unlike
-source-airtable (short-lived refresh tokens) or source-gong (requires config update after token
-exchange), HubSpot's refresh tokens do not expire and do not require special handling.
+HubSpot uses standard OAuth 2.0 with long-lived refresh tokens via the date-based
+`/oauth/2026-03/token` endpoint (used for both the authorization-code exchange and the refresh-token
+grant). The legacy `/oauth/v1/token` endpoint is deprecated and HubSpot will remove it on 2027-02-16,
+so do not reintroduce it. Unlike source-airtable (short-lived refresh tokens) or source-gong
+(requires config update after token exchange), HubSpot's refresh tokens do not expire and do not
+require special handling.
 
 ---
 
