@@ -13,6 +13,7 @@ import java.util.*
 import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
+import org.apache.iceberg.TableProperties
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT
 import org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT
 import org.apache.iceberg.TableProperties.WRITE_TARGET_FILE_SIZE_BYTES
@@ -56,7 +57,9 @@ class IcebergTableWriterFactory {
         generationId: String,
         importType: ImportType,
         schema: Schema,
-        positionalDeleteIndex: PositionalDeleteIndex? = null,
+        positionalDeleteRef: String? = null,
+        positionalDeleteState: PositionalDeleteResolutionState? = null,
+        maxTouchedKeys: Int = PositionalDeleteResolver.DEFAULT_MAX_TOUCHED_KEYS,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
@@ -67,14 +70,10 @@ class IcebergTableWriterFactory {
                     .uppercase()
             )
         val identifierFieldIds = schema.identifierFieldIds()
-        if (positionalDeleteIndex != null) {
+        if (positionalDeleteRef != null) {
             require(identifierFieldIds.isNotEmpty()) {
                 "Positional deletes require at least one identifier field"
             }
-            require(
-                positionalDeleteIndex.keyType() ==
-                    TypeUtil.select(schema, identifierFieldIds).asStruct()
-            ) { "Positional delete index key type does not match the schema identifier fields" }
         }
         val writerFactory =
             createWriterFactory(
@@ -84,6 +83,22 @@ class IcebergTableWriterFactory {
             )
         val outputFileFactory =
             createOutputFileFactory(table = table, format = format, generationId = generationId)
+        val positionalDeleteResolver =
+            positionalDeleteRef?.let {
+                val resolutionState =
+                    positionalDeleteState
+                        ?: error("Positional delete writers require stream-scoped resolution state")
+                PositionalDeleteResolver(
+                    table,
+                    it,
+                    schema,
+                    identifierFieldIds,
+                    writerFactory,
+                    outputFileFactory,
+                    maxTouchedKeys = maxTouchedKeys,
+                    state = resolutionState,
+                )
+            }
         val targetFileSize =
             PropertyUtil.propertyAsLong(
                 table.properties(),
@@ -102,7 +117,7 @@ class IcebergTableWriterFactory {
                     format = format
                 )
             is Dedupe ->
-                if (positionalDeleteIndex == null) {
+                if (positionalDeleteResolver == null) {
                     newDeltaWriter(
                         table = table,
                         schema = schema,
@@ -121,7 +136,7 @@ class IcebergTableWriterFactory {
                         targetFileSize = targetFileSize,
                         outputFileFactory = outputFileFactory,
                         format = format,
-                        positionalDeleteIndex = positionalDeleteIndex,
+                        positionalDeleteResolver = positionalDeleteResolver,
                     )
                 }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
@@ -143,6 +158,31 @@ class IcebergTableWriterFactory {
                 .equalityDeleteRowSchema(TypeUtil.select(schema, identifierFieldIds.toSet()))
         }
         return builder.build()
+    }
+
+    /**
+     * Enables identifier bloom filters for positional-delete data files.
+     *
+     * Call once during stream setup, before creating per-flush writers.
+     */
+    fun enableIdentifierBloomFilters(
+        table: Table,
+        schema: Schema,
+        identifierFieldIds: Set<Int>,
+    ) {
+        val update = table.updateProperties()
+        var changed = false
+        identifierFieldIds.forEach { fieldId ->
+            val field = schema.findField(fieldId)
+            val property = TableProperties.PARQUET_BLOOM_FILTER_COLUMN_ENABLED_PREFIX + field.name()
+            if (table.properties()[property] != "true") {
+                update.set(property, "true")
+                changed = true
+            }
+        }
+        if (changed) {
+            update.commit()
+        }
     }
 
     private fun createOutputFileFactory(
@@ -232,7 +272,7 @@ class IcebergTableWriterFactory {
         outputFileFactory: OutputFileFactory,
         targetFileSize: Long,
         identifierFieldIds: Set<Int>,
-        positionalDeleteIndex: PositionalDeleteIndex,
+        positionalDeleteResolver: PositionalDeleteResolver,
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
             UnpartitionedPositionDeltaWriter(
@@ -245,7 +285,7 @@ class IcebergTableWriterFactory {
                 targetFileSize = targetFileSize,
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
-                index = positionalDeleteIndex,
+                resolver = positionalDeleteResolver,
             )
         } else {
             PartitionedPositionDeltaWriter(
@@ -258,7 +298,7 @@ class IcebergTableWriterFactory {
                 targetFileSize = targetFileSize,
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
-                index = positionalDeleteIndex,
+                resolver = positionalDeleteResolver,
             )
         }
     }
