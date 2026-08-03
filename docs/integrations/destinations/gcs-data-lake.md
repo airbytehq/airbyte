@@ -13,6 +13,9 @@ The GCS Data Lake connector requires two things:
    - BigLake
    - Polaris
 
+If you're using Airbyte Cloud and this destination uses IP-based access controls, add
+Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
+
 ## Setup guide
 
 Follow these steps to set up your GCS storage and Iceberg catalog permissions.
@@ -92,7 +95,8 @@ In Airbyte, configure the following fields:
 | **Warehouse Location**   | Yes        | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)  |
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
-| **Default Namespace**    | No         | Default namespace for tables (for example: `default`, `airbyte_data`)        |
+| **Default Namespace**    | No         | Default namespace for tables (default: `default`). Only used when **Destination Namespace** is `Destination-defined` or `Source-defined` |
+| **GCS Endpoint**         | No         | Custom GCS endpoint URL. Only needed when running against a local GCS emulator |
 
 ### BigLake-specific fields
 
@@ -112,6 +116,16 @@ When **Catalog Type** is set to `Polaris`, configure these additional fields:
 | **Catalog Name**       | Yes        | The name of the catalog in Polaris (for example: `quickstart_catalog`)                 |
 | **Client ID**          | Yes        | The OAuth Client ID for authenticating with the Polaris server                         |
 | **Client Secret**      | Yes        | The OAuth Client Secret for authenticating with the Polaris server                     |
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Output schema
 
@@ -197,6 +211,10 @@ During a truncate refresh sync, the system deletes all files that don't belong t
 If compaction runs simultaneously with the sync, it would delete files from the current generation, causing data loss.
 :::
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -204,7 +222,10 @@ If compaction runs simultaneously with the sync, it would delete files from the 
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
-| 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
+| 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13                                                                  |
+| 1.0.9   | 2026-04-17 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9                                                                  |
+| 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution                 |
+| 1.0.7   | 2026-02-09 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
 | 1.0.6   | 2026-01-23 | [72300](https://github.com/airbytehq/airbyte/pull/72300)     | Upgrade CDK to 0.2.0                                                                  |
 | 1.0.5   | 2026-01-14 | [71760](https://github.com/airbytehq/airbyte/pull/71760)     | Restore integration tests in CI. Workaround DI error.                                 |
 | 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |

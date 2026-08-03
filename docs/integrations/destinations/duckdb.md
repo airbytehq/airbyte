@@ -48,20 +48,21 @@ Each table will contain 3 columns:
 
 If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
 
-#### Features
-
-| Feature                        | Supported |     |
-| :----------------------------- | :-------- | :-- |
-| Full Refresh Sync              | Yes       |     |
-| Incremental - Append Sync      | Yes       |     |
-| Incremental - Append + Deduped | No        |     |
-| Namespaces                     | No        |     |
-
 #### Performance consideration
 
 This integration will be constrained by the speed at which your filesystem accepts writes.
 
 <!-- env:oss -->
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started with Local Database Files
 
@@ -110,7 +111,9 @@ This error may indicate that you are connecting with a DuckDB client version tha
 
 For information about migrating between different versions of DuckDB, please see the [DuckDB Migration Guide](./duckdb-migrations).
 
+## Namespace support
 
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a DuckDB schema.
 
 ## Changelog
 

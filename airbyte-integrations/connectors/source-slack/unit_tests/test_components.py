@@ -4,11 +4,13 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
+from airbyte_cdk.sources.streams.call_rate import HttpRequestMatcher, MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_stream_by_name, oauth_config, token_config
@@ -51,10 +53,21 @@ def get_channels_retriever_instance(token_config, components_module):
     )
 
 
-def test_join_channels_should_join_to_channel(token_config, components_module):
-    retriever = get_channels_retriever_instance(token_config, components_module)
-    assert retriever.should_join_to_channel(token_config, {"is_member": False}) is True
-    assert retriever.should_join_to_channel(token_config, {"is_member": True}) is False
+@pytest.mark.parametrize(
+    "join_channels,record,expected",
+    [
+        pytest.param(True, {"is_member": False, "is_archived": False}, True, id="join_enabled_non_member_non_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": False}, False, id="join_enabled_already_member"),
+        pytest.param(True, {"is_member": False, "is_archived": True}, False, id="join_enabled_archived_channel_rejected"),
+        pytest.param(False, {"is_member": False, "is_archived": False}, False, id="join_disabled"),
+        pytest.param(True, {"is_member": False}, True, id="join_enabled_missing_is_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": True}, False, id="archived_and_already_member"),
+    ],
+)
+def test_should_join_to_channel(token_config, components_module, join_channels, record, expected):
+    config = {**token_config, "join_channels": join_channels}
+    retriever = get_channels_retriever_instance(config, components_module)
+    assert retriever.should_join_to_channel(config, record) is expected
 
 
 def test_join_channels_make_join_channel_slice(token_config, components_module):
@@ -63,21 +76,8 @@ def test_join_channels_make_join_channel_slice(token_config, components_module):
     assert retriever.make_join_channel_slice({"id": "C061EG9SL", "name": "general"}) == expected_slice
 
 
-@pytest.mark.parametrize(
-    "join_response, log_message",
-    (
-        (
-            {"ok": True, "channel": {"is_member": True, "id": "channel 2", "name": "test channel"}},
-            "Successfully joined channel: test channel",
-        ),
-        (
-            {"ok": False, "error": "missing_scope", "needed": "channels:write"},
-            "Unable to joined channel: test channel. Reason: {'ok': False, 'error': " "'missing_scope', 'needed': 'channels:write'}",
-        ),
-    ),
-    ids=["successful_join_to_channel", "failed_join_to_channel"],
-)
-def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, join_response, log_message, components_module):
+def test_join_channel_read_success(requests_mock, token_config, joined_channel, caplog, components_module):
+    join_response = {"ok": True, "channel": {"is_member": True, "id": "channel 2", "name": "test channel"}}
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
     requests_mock.get(
         url="https://slack.com/api/conversations.list",
@@ -88,7 +88,36 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
     assert len(list(retriever.read_records(records_schema={}))) == 2
     assert mocked_request.called
     assert mocked_request.last_request._request.body == b'{"channel": "channel 2"}'
-    assert log_message in caplog.text
+    assert "Successfully joined channel: test channel" in caplog.text
+
+
+def test_join_channel_read_missing_scope_raises_config_error(requests_mock, token_config, joined_channel, components_module):
+    join_response = {"ok": False, "error": "missing_scope", "needed": "channels:join"}
+    requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
+    )
+
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(retriever.read_records(records_schema={}))
+    assert exc_info.value.failure_type == FailureType.config_error
+    assert "channels:join" in exc_info.value.message
+
+
+def test_join_channel_read_other_error_logs_warning(requests_mock, token_config, joined_channel, caplog, components_module):
+    join_response = {"ok": False, "error": "channel_not_found"}
+    mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
+    )
+
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    assert len(list(retriever.read_records(records_schema={}))) == 2
+    assert mocked_request.called
+    assert "Unable to joined channel: test channel" in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -128,6 +157,47 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
+def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):
+    """
+    The retriever itself does not filter by membership. Filtering for streams that
+    actually require membership (channel_messages / threads) is applied at the
+    manifest level via a RecordFilter on the substream partition router, so the
+    top-level channels stream and channel_members keep seeing every channel.
+    """
+    config = {**token_config, "join_channels": False}
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C001", "name": "member-channel", "is_member": True},
+                {"id": "C002", "name": "non-member-channel", "is_member": False},
+                {"id": "C003", "name": "another-member", "is_member": True},
+            ]
+        },
+    )
+    retriever = get_channels_retriever_instance(config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+    assert len(records) == 3
+    assert {r["id"] for r in records} == {"C001", "C002", "C003"}
+
+
+def test_read_records_yields_all_channels_when_join_enabled(token_config, requests_mock, components_module):
+    """When join_channels=true, all channels are yielded (non-members get joined)."""
+    requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": {}})
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C001", "name": "member-channel", "is_member": True},
+                {"id": "C002", "name": "non-member-channel", "is_member": False},
+            ]
+        },
+    )
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+    assert len(records) == 2
+
+
 @pytest.mark.parametrize(
     "response_status_code, api_response, config, expected_policy",
     (
@@ -165,7 +235,7 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
     ),
     ids=["rate_limited_oauth_policy", "no_rate_limits_token_policy", "no_rate_limits_policy"],
 )
-def tesadfst_threads_and_messages_api_budget(
+def test_threads_and_messages_api_budget(
     response_status_code, api_response, config, expected_policy, oauth_config, token_config, requests_mock
 ):
     stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
@@ -197,3 +267,110 @@ def tesadfst_threads_and_messages_api_budget(
     assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
         assert isinstance(retriever.requester._http_client._api_budget._policies[0], expected_policy)
+
+
+@pytest.fixture
+def api_budget(components_module):
+    budget = components_module.MessagesAndThreadsApiBudget(
+        policies=[
+            UnlimitedCallRatePolicy(
+                matchers=[HttpRequestMatcher(url="https://slack.com/api/conversations")],
+            )
+        ]
+    )
+    return budget
+
+
+def _make_prepared_request(url="https://slack.com/api/conversations.replies"):
+    req = requests.Request("GET", url)
+    return req.prepare()
+
+
+def _mock_response(status_code, json_body=None):
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.json.return_value = json_body if json_body is not None else {"ok": True}
+    return resp
+
+
+@pytest.mark.parametrize(
+    "status_codes, expected_policy_type, expected_counter",
+    [
+        pytest.param([200], UnlimitedCallRatePolicy, 0, id="no_downgrade_on_200"),
+        pytest.param([429], MovingWindowCallRatePolicy, 0, id="downgrade_on_429"),
+        pytest.param(
+            [429] + [200] * 4,
+            MovingWindowCallRatePolicy,
+            4,
+            id="still_throttled_below_threshold",
+        ),
+        pytest.param(
+            [429] + [200] * 5,
+            UnlimitedCallRatePolicy,
+            0,
+            id="recovery_after_5_consecutive_successes",
+        ),
+        pytest.param(
+            [429] + [200] * 5 + [429],
+            MovingWindowCallRatePolicy,
+            0,
+            id="re_downgrade_after_recovery",
+        ),
+        pytest.param(
+            [429] + [200] * 3 + [429],
+            MovingWindowCallRatePolicy,
+            0,
+            id="429_during_throttle_resets_counter",
+        ),
+    ],
+)
+def test_api_budget_update_from_response(api_budget, status_codes, expected_policy_type, expected_counter):
+    req = _make_prepared_request()
+    for code in status_codes:
+        api_budget.update_from_response(req, _mock_response(code))
+    assert isinstance(api_budget._policies[0], expected_policy_type)
+    assert api_budget._success_counter == expected_counter
+
+
+def test_5xx_resets_recovery_counter(api_budget):
+    """A 5xx while throttled resets the recovery counter to zero."""
+    req = _make_prepared_request()
+    api_budget.update_from_response(req, _mock_response(429))
+    for _ in range(3):
+        api_budget.update_from_response(req, _mock_response(200))
+    assert api_budget._success_counter == 3
+    api_budget.update_from_response(req, _mock_response(500))
+    assert api_budget._success_counter == 0
+    assert isinstance(api_budget._policies[0], MovingWindowCallRatePolicy)
+
+
+def test_ok_false_resets_recovery_counter(api_budget):
+    """A Slack 200 with ok:false while throttled resets the recovery counter."""
+    req = _make_prepared_request()
+    api_budget.update_from_response(req, _mock_response(429))
+    for _ in range(3):
+        api_budget.update_from_response(req, _mock_response(200))
+    assert api_budget._success_counter == 3
+    api_budget.update_from_response(req, _mock_response(200, json_body={"ok": False}))
+    assert api_budget._success_counter == 0
+    assert isinstance(api_budget._policies[0], MovingWindowCallRatePolicy)
+
+
+@pytest.mark.parametrize(
+    "config_fixture, expect_budget",
+    [
+        pytest.param("token", False, id="token_auth_no_budget"),
+        pytest.param("oauth", True, id="oauth_auth_has_budget"),
+    ],
+)
+def test_api_budget_auth_path(token_config, oauth_config, config_fixture, expect_budget):
+    cfg = oauth_config if config_fixture == "oauth" else token_config
+    stream = get_stream_by_name("threads", cfg)
+    retriever = stream._stream_partition_generator._partition_factory._retriever
+    api_budget = retriever.requester._http_client._api_budget
+    if expect_budget:
+        assert api_budget is not None
+        assert len(api_budget._policies) == 1
+        assert isinstance(api_budget._policies[0], UnlimitedCallRatePolicy)
+    else:
+        assert api_budget is None or len(api_budget._policies) == 0

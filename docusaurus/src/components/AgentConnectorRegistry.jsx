@@ -1,9 +1,7 @@
+import { usePluginData } from "@docusaurus/useGlobalData";
 import styles from "./AgentConnectorRegistry.module.css";
 
-const ICON_BASE_URL =
-  "https://connectors.airbyte.com/files/metadata/airbyte";
-const CHANGELOG_BASE_URL =
-  "https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors";
+const ICON_BASE_URL = "https://connectors.airbyte.com/files/metadata/airbyte";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
@@ -14,8 +12,9 @@ function formatConnectorName(slug) {
     .join(" ");
 }
 
-export default function AgentConnectorRegistry({ connectors: connectorJson }) {
-  const connectors = JSON.parse(connectorJson)
+export default function AgentConnectorRegistry() {
+  const { slugs = [] } = usePluginData("agent-connectors-plugin") ?? {};
+  const connectors = slugs
     .map((slug) => ({
       slug,
       name: formatConnectorName(slug),
@@ -33,6 +32,7 @@ export default function AgentConnectorRegistry({ connectors: connectorJson }) {
       <thead>
         <tr>
           <th>Connector</th>
+          <th>Slug</th>
           <th style={{ textAlign: "center" }}>Links</th>
         </tr>
       </thead>
@@ -56,6 +56,9 @@ export default function AgentConnectorRegistry({ connectors: connectorJson }) {
               </div>
             </td>
             <td>
+              <code>{connector.slug}</code>
+            </td>
+            <td>
               <div className={styles.links}>
                 <a href={connector.href} title="Overview">
                   Overview
@@ -67,15 +70,6 @@ export default function AgentConnectorRegistry({ connectors: connectorJson }) {
                 <span className={styles.linkSeparator}>|</span>
                 <a href={`${connector.href}REFERENCE`} title="API Reference">
                   Reference
-                </a>
-                <span className={styles.linkSeparator}>|</span>
-                <a
-                  href={`${CHANGELOG_BASE_URL}/${connector.slug}/CHANGELOG.md`}
-                  title="Changelog"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Changelog
                 </a>
               </div>
             </td>

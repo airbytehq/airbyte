@@ -407,10 +407,6 @@
     "website_purchase_roas": {
       "description": "Return on ad spend for website purchases",
       "$ref": "ads_action_stats.json"
-    },
-    "wish_bid": {
-      "description": "Bid based on the wish to achieve certain results",
-      "type": ["null", "number"]
     }
   },
   "type": ["null", "object"]

@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+import freezegun
+
 from airbyte_cdk.models import AirbyteStreamStateSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -35,6 +37,7 @@ def _stream_response(stream: str) -> HttpResponseBuilder:
     )
 
 
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
 class TestIncludeDeleted(TestCase):
     account_id = ACCOUNT_ID
     filter_statuses_flag = "filter_statuses"
