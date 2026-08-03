@@ -12,34 +12,62 @@ import org.apache.iceberg.deletes.PositionDelete
 import org.apache.iceberg.deletes.PositionDeleteWriter
 import org.apache.iceberg.io.OutputFileFactory
 
-/** One positional delete file per partition, with file paths and positions in ascending order. */
+/** One positional delete writer per partition, with file paths and positions in ascending order. */
 class PositionalDeleteFiles(
     private val writerFactory: GenericFileWriterFactory,
     private val outputFileFactory: OutputFileFactory,
 ) {
-    fun writeAll(locations: Sequence<PositionalDeleteResolver.RowLocation>): List<DeleteFile> {
-        val ordered =
-            locations.toList().sortedWith(compareBy({ it.path.toString() }, { it.position }))
-        return ordered
-            .groupBy { PartitionKey(it.spec.specId(), partitionValues(it.partition)) }
-            .values
-            .flatMap { partitionLocations ->
-                val first = partitionLocations.first()
-                val writer: PositionDeleteWriter<Record> =
-                    writerFactory.newPositionDeleteWriter(
-                        outputFileFactory.newOutputFile(first.spec, first.partition),
-                        first.spec,
-                        first.partition,
-                    )
-                writer.use {
-                    partitionLocations.forEach { location ->
-                        val delete = PositionDelete.create<Record>()
-                        delete.set(location.path, location.position)
-                        it.write(delete)
+    fun writeAll(
+        locations: Sequence<PositionalDeleteResolver.RowLocation>,
+        sameFlushLocations: Sequence<PositionalDeleteResolver.RowLocation> = emptySequence(),
+    ): List<DeleteFile> {
+        val output = mutableListOf<DeleteFile>()
+        output += writeOrdered(locations)
+        output +=
+            writeOrdered(
+                sameFlushLocations
+                    .toList()
+                    .sortedWith(compareBy({ it.path.toString() }, { it.position }))
+                    .asSequence()
+            )
+        return output
+    }
+
+    private fun writeOrdered(
+        locations: Sequence<PositionalDeleteResolver.RowLocation>,
+    ): List<DeleteFile> {
+        val writers = mutableMapOf<PartitionKey, WriterState>()
+        try {
+            locations.forEach { location ->
+                val key = PartitionKey(location.spec.specId(), partitionValues(location.partition))
+                val writer =
+                    writers.getOrPut(key) {
+                        WriterState(
+                            writerFactory.newPositionDeleteWriter(
+                                outputFileFactory.newOutputFile(location.spec, location.partition),
+                                location.spec,
+                                location.partition,
+                            ),
+                        )
                     }
+                check(
+                    writer.lastPath == null ||
+                        location.path.toString() > writer.lastPath!! ||
+                        (location.path.toString() == writer.lastPath &&
+                            location.position >= writer.lastPosition),
+                ) {
+                    "Positional delete locations must be ordered by path then position"
                 }
-                writer.result().deleteFiles()
+                val delete = PositionDelete.create<Record>()
+                delete.set(location.path, location.position)
+                writer.writer.write(delete)
+                writer.lastPath = location.path.toString()
+                writer.lastPosition = location.position
             }
+        } finally {
+            writers.values.forEach { it.writer.close() }
+        }
+        return writers.values.flatMap { it.writer.result().deleteFiles() }
     }
 
     private fun partitionValues(partition: StructLike?): List<Any?> =
@@ -50,4 +78,10 @@ class PositionalDeleteFiles(
         }
 
     private data class PartitionKey(val specId: Int, val values: List<Any?>)
+
+    private class WriterState(
+        val writer: PositionDeleteWriter<Record>,
+        var lastPath: String? = null,
+        var lastPosition: Long = Long.MIN_VALUE,
+    )
 }
