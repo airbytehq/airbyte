@@ -12,6 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetTime
@@ -504,22 +505,15 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     }
 
     private fun Number.toPgInterval(): PGInterval {
-        val micros = toLong()
-        val negative = micros < 0
-        val totalSeconds = abs(micros / 1_000_000)
-        val days = totalSeconds / 86_400
-        val hours = (totalSeconds % 86_400) / 3_600
-        val minutes = (totalSeconds % 3_600) / 60
-        val seconds = totalSeconds % 60
-        val sign = if (negative) -1 else 1
+        val duration = Duration.ofSeconds(toLong() / 1_000_000)
 
         return PGInterval(
             0,
             0,
-            (days * sign).toInt(),
-            (hours * sign).toInt(),
-            (minutes * sign).toInt(),
-            (seconds * sign).toDouble(),
+            duration.toDays().toInt(),
+            duration.toHoursPart(),
+            duration.toMinutesPart(),
+            duration.toSecondsPart().toDouble(),
         )
     }
 
