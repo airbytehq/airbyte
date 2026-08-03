@@ -132,6 +132,21 @@
         "description" : "Optional custom GCS endpoint URL. Use this for testing with local GCS emulators.",
         "title" : "GCS Endpoint (Optional)",
         "order" : 8
+      },
+      "table_format_version" : {
+        "type" : "string",
+        "enum" : [ "v2", "v3" ],
+        "description" : "The Iceberg table format version to create tables at. Version 2 is readable by every engine that supports Iceberg. Version 3 adds extended types and deletion vectors, but is not yet readable by Amazon Athena or Amazon Redshift. Changing this on an existing stream requires a stream reset, because Iceberg cannot upgrade a table's format version in place.",
+        "title" : "Iceberg Table Format Version",
+        "always_show" : true,
+        "order" : 9
+      },
+      "use_variant_types" : {
+        "type" : "boolean",
+        "description" : "Write semi-structured columns (schemaless objects and arrays, unions, and unknown types) as native Iceberg variant values instead of JSON strings. Requires table format version 3, and is not readable by Amazon Athena, Amazon Redshift, or BigQuery today. Changing this on an existing stream requires a stream reset, because a string column cannot be promoted to variant.",
+        "title" : "Use Variant Types",
+        "always_show" : true,
+        "order" : 10
       }
     },
     "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ]

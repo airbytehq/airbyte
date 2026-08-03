@@ -70,10 +70,19 @@ class GcsDataLakeChecker(
         val testTableIdentifier =
             DestinationStream.Descriptor(defaultNamespace, uniqueTestTableName)
 
+        // Include a variant column when variant types are enabled, so that a catalog which can't
+        // handle them fails here rather than mid-sync.
+        val semiStructuredType =
+            if (config.useVariantTypes) {
+                Types.VariantType.get()
+            } else {
+                Types.StringType.get()
+            }
         val testTableSchema =
             Schema(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
+                Types.NestedField.optional(3, "semi_structured", semiStructuredType),
             )
         gcsDataLakeCatalogUtil.createNamespace(testTableIdentifier, catalog)
 
@@ -84,6 +93,7 @@ class GcsDataLakeChecker(
                     testTableIdentifier,
                     catalog,
                     testTableSchema,
+                    tableFormatVersion = config.tableFormatVersion.formatVersion,
                 )
         } finally {
             // Always cleanup test table, even if creation or validation fails

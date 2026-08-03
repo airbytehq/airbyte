@@ -115,6 +115,22 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order": 8}""")
     val gcsEndpoint: String? = null
 
+    @get:JsonSchemaTitle("Iceberg Table Format Version")
+    @get:JsonPropertyDescription(
+        """The Iceberg table format version to create tables at. Version 2 is readable by every engine that supports Iceberg. Version 3 adds extended types and deletion vectors, but is not yet readable by Amazon Athena or Amazon Redshift. Changing this on an existing stream requires a stream reset, because Iceberg cannot upgrade a table's format version in place."""
+    )
+    @get:JsonProperty("table_format_version")
+    @get:JsonSchemaInject(json = """{"always_show": true, "order": 9}""")
+    val tableFormatVersion: IcebergTableFormatVersion? = null
+
+    @get:JsonSchemaTitle("Use Variant Types")
+    @get:JsonPropertyDescription(
+        """Write semi-structured columns (schemaless objects and arrays, unions, and unknown types) as native Iceberg variant values instead of JSON strings. Requires table format version 3, and is not readable by Amazon Athena, Amazon Redshift, or BigQuery today. Changing this on an existing stream requires a stream reset, because a string column cannot be promoted to variant."""
+    )
+    @get:JsonProperty("use_variant_types")
+    @get:JsonSchemaInject(json = """{"always_show": true, "order": 10}""")
+    val useVariantTypes: Boolean? = null
+
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =
             when (catalogType) {
