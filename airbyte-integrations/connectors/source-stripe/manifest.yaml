@@ -1820,7 +1820,6 @@ definitions:
 streams:
   # These streams are base incremental streams
   - $ref: "#/definitions/streams/events"
-  - $ref: "#/definitions/streams/shipping_rates"
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_links"
@@ -1896,6 +1895,7 @@ spec:
     required:
       - client_secret
       - account_id
+      - start_date
     properties:
       account_id:
         type: string
@@ -1924,18 +1924,6 @@ spec:
           - "2017-01-25T00:00:00Z"
         format: date-time
         order: 2
-      lookback_window_days:
-        type: integer
-        title: Lookback Window in days
-        default: 0
-        minimum: 0
-        description: >-
-          When set, the connector will always re-export data from the past N days,
-          where N is the value set here. This is useful if your data is frequently updated
-          after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
-          SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
-          href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
-        order: 3
       slice_range:
         type: integer
         title: Data request time increment in days
@@ -8432,7 +8420,7 @@ schemas:
         description: Number of times the coupon has been redeemed.
         type:
           - "null"
-          - integer
+          - string
       percent_off_precise:
         description: Precise percentage discount value.
         type:
