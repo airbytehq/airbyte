@@ -329,8 +329,55 @@ class PositionalDeleteEndToEndTest {
     }
 
     @Test
+    fun `monotonic 200 sub-range benchmark`() {
+        runSubRangeBenchmark("monotonic", 200)
+    }
+
+    @Test
+    fun `monotonic 5000 sub-range benchmark`() {
+        runSubRangeBenchmark("monotonic", 5_000)
+    }
+
+    @Test
+    fun `monotonic 50000 sub-range benchmark`() {
+        runSubRangeBenchmark("monotonic", 50_000)
+    }
+
+    @Test
+    fun `clustered 200 sub-range benchmark`() {
+        runSubRangeBenchmark("clustered", 200)
+    }
+
+    @Test
+    fun `clustered 5000 sub-range benchmark`() {
+        runSubRangeBenchmark("clustered", 5_000)
+    }
+
+    @Test
+    fun `clustered 50000 sub-range benchmark`() {
+        runSubRangeBenchmark("clustered", 50_000)
+    }
+
+    @Test
+    fun `uniform 200 sub-range benchmark`() {
+        runSubRangeBenchmark("uniform", 200)
+    }
+
+    @Test
+    fun `uniform 5000 sub-range benchmark`() {
+        runSubRangeBenchmark("uniform", 5_000)
+    }
+
+    @Test
+    fun `uniform 50000 sub-range benchmark`() {
+        runSubRangeBenchmark("uniform", 50_000)
+    }
+
     @Suppress("DEPRECATION")
-    fun `membership filter benchmark`() {
+    private fun runSubRangeBenchmark(
+        distribution: String,
+        size: Int,
+    ) {
         val warehouse = Files.createTempDirectory("positional-delete-benchmark")
         val catalog = HadoopCatalog(Configuration(), warehouse.toString())
         val tableId = TableIdentifier.of("db", "benchmark")
@@ -361,22 +408,46 @@ class PositionalDeleteEndToEndTest {
         table.newAppend().apply { result.dataFiles().forEach(::appendFile) }.commit()
         table.manageSnapshots().createBranch("staging").commit()
         val keyType = TypeUtil.select(schema, setOf(1)).asStruct()
-        val sizes = listOf(200, 5_000, 50_000)
-        sizes.forEach { size ->
-            listOf(200, 0).forEach { threshold ->
-                val state = PositionalDeleteResolutionState()
-                val touched = TouchedKeys(keyType, Int.MAX_VALUE)
-                (0 until size).forEach { index ->
-                    val key = GenericRecord.create(keyType)
-                    key.setField("id", index * (50_000 / size))
-                    touched.markDeleted(key)
-                }
-                val finder = SupersededRowFinder(table, schema, setOf(1), state, threshold)
-                val elapsed = measureTimeMillis { finder.find(touched, "staging").count() }
-                println(
-                    "benchmark size=$size threshold=$threshold " +
-                        "rowsScanned=${state.rowsScanned.get()} elapsedMs=$elapsed"
+        listOf(1, 2, 4, 8, 16).forEach { subRanges ->
+            val state = PositionalDeleteResolutionState()
+            val touched = TouchedKeys(keyType, Int.MAX_VALUE)
+            (0 until size).forEach { index ->
+                val key = GenericRecord.create(keyType)
+                val id =
+                    when (distribution) {
+                        "monotonic" -> {
+                            val inserts = size / 2
+                            if (index < inserts) {
+                                50_000 - inserts + index
+                            } else {
+                                val updates = index - inserts
+                                val updateRange = 50_000 - inserts
+                                50_000 - 1 - (updates * (updates + 1) / 2 % updateRange)
+                            }
+                        }
+                        "clustered" -> (index % 4) * (50_000 / 4) + index / 4
+                        else -> index * (50_000 / size)
+                    }
+                key.setField("id", id)
+                touched.markDeleted(key)
+            }
+            val finder =
+                SupersededRowFinder(
+                    table,
+                    schema,
+                    setOf(1),
+                    state,
+                    0,
+                    subRanges,
                 )
+            val elapsed = measureTimeMillis { finder.find(touched, "staging").count() }
+            println(
+                "benchmark distribution=$distribution size=$size " +
+                    "subRanges=$subRanges rowsScanned=${state.rowsScanned.get()} " +
+                    "elapsedMs=$elapsed"
+            )
+            if (distribution == "clustered" && subRanges == 4) {
+                assertThat(state.rowsScanned.get()).isLessThanOrEqualTo(size.toLong())
             }
         }
         warehouse.toFile().deleteRecursively()

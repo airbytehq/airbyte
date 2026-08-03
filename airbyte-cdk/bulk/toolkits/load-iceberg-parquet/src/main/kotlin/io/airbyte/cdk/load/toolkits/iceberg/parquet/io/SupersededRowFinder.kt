@@ -28,6 +28,7 @@ class SupersededRowFinder(
     identifierFieldIds: Set<Int>,
     private val state: PositionalDeleteResolutionState,
     private val maxInValues: Int = MAX_IN_VALUES,
+    private val maxSubRanges: Int = MAX_SUB_RANGES,
 ) {
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
@@ -120,21 +121,22 @@ class SupersededRowFinder(
     private fun rowGroupExpression(touched: Set<StructLike>): Expression {
         val values = touched.mapNotNull { it.get(0, Any::class.java) }.distinct()
         val comparator: Comparator<Any> = Comparators.forType(leadingField.type().asPrimitiveType())
-        val min =
-            values.minWithOrNull(comparator)
-                ?: error("Touched identifier field ${leadingField.name()} has no non-null values")
-        val max =
-            values.maxWithOrNull(comparator)
-                ?: error("Touched identifier field ${leadingField.name()} has no non-null values")
-        val range =
-            Expressions.and(
-                Expressions.greaterThanOrEqual(leadingField.name(), min),
-                Expressions.lessThanOrEqual(leadingField.name(), max),
-            )
-        if (values.size <= maxInValues) {
-            return Expressions.and(range, Expressions.`in`(leadingField.name(), values))
+        require(values.isNotEmpty()) {
+            "Touched identifier field ${leadingField.name()} has no non-null values"
         }
-        return range
+        val rangeExpression =
+            disjointRanges(values, comparator)
+                .map { (min, max) ->
+                    Expressions.and(
+                        Expressions.greaterThanOrEqual(leadingField.name(), min),
+                        Expressions.lessThanOrEqual(leadingField.name(), max),
+                    )
+                }
+                .reduce { left, right -> Expressions.or(left, right) }
+        if (values.size <= maxInValues) {
+            return Expressions.and(rangeExpression, Expressions.`in`(leadingField.name(), values))
+        }
+        return rangeExpression
     }
 
     private fun touchedBounds(touched: Set<StructLike>): List<TouchedBound> =
@@ -145,7 +147,13 @@ class SupersededRowFinder(
             require(values.isNotEmpty()) {
                 "Touched identifier field ${field.name()} has no non-null values"
             }
-            TouchedBound(field, comparator, values.minWith(comparator), values.maxWith(comparator))
+            val ranges =
+                if (index == 0) {
+                    disjointRanges(values, comparator)
+                } else {
+                    listOf(values.minWith(comparator) to values.maxWith(comparator))
+                }
+            TouchedBound(field, comparator, ranges)
         }
 
     private fun mayContainAnyKey(file: DataFile, bounds: List<TouchedBound>): Boolean {
@@ -158,16 +166,51 @@ class SupersededRowFinder(
             val fileUpper = upper[bound.field.fieldId()]
             fileLower == null ||
                 fileUpper == null ||
-                (bound.comparator.compare(
-                    bound.maximum,
-                    Conversions.fromByteBuffer<Any>(bound.field.type(), fileLower.duplicate())
-                ) >= 0 &&
+                bound.ranges.any { (minimum, maximum) ->
                     bound.comparator.compare(
-                        bound.minimum,
-                        Conversions.fromByteBuffer<Any>(bound.field.type(), fileUpper.duplicate())
-                    ) <= 0)
+                        maximum,
+                        Conversions.fromByteBuffer<Any>(bound.field.type(), fileLower.duplicate())
+                    ) >= 0 &&
+                        bound.comparator.compare(
+                            minimum,
+                            Conversions.fromByteBuffer<Any>(
+                                bound.field.type(),
+                                fileUpper.duplicate()
+                            )
+                        ) <= 0
+                }
         }
     }
+
+    private fun disjointRanges(
+        values: List<Any>,
+        comparator: Comparator<Any>,
+    ): List<Pair<Any, Any>> {
+        // Splitting at the largest gaps minimizes the total covered span for a fixed range count.
+        val sorted = values.distinct().sortedWith(comparator)
+        val rangeCount = minOf(maxSubRanges.coerceAtLeast(1), sorted.size)
+        if (rangeCount == 1) return listOf(sorted.first() to sorted.last())
+        val splitIndexes =
+            (0 until sorted.lastIndex)
+                .sortedByDescending { gapScore(sorted[it], sorted[it + 1]) }
+                .take(rangeCount - 1)
+                .sorted()
+        val ranges = mutableListOf<Pair<Any, Any>>()
+        var start = 0
+        for (splitIndex in splitIndexes) {
+            ranges += sorted[start] to sorted[splitIndex]
+            start = splitIndex + 1
+        }
+        ranges += sorted[start] to sorted.last()
+        return ranges
+    }
+
+    private fun gapScore(left: Any, right: Any): Double =
+        if (left is Number && right is Number) {
+            right.toString().toDouble() - left.toString().toDouble()
+        } else {
+            1.0
+        }
 
     private fun keyFrom(record: Record): StructLike {
         val key = GenericRecord.create(identifierSchema)
@@ -188,8 +231,7 @@ class SupersededRowFinder(
     private data class TouchedBound(
         val field: org.apache.iceberg.types.Types.NestedField,
         val comparator: Comparator<Any>,
-        val minimum: Any,
-        val maximum: Any,
+        val ranges: List<Pair<Any, Any>>,
     )
 
     companion object {
@@ -197,6 +239,9 @@ class SupersededRowFinder(
         // The range keeps manifest and metrics pruning effective, while IN lets dictionary and
         // bloom filters perform exact membership checks until candidate-set lookup cost dominates.
         private const val MAX_IN_VALUES = 200
+        // Four ranges captured the clustered and monotonic wins without adding measurable
+        // expression overhead in the uniform distribution benchmark.
+        private const val MAX_SUB_RANGES = 4
         private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     }
 }
