@@ -9,7 +9,14 @@ import uuid
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 from destination_sftp_json.client import SftpClient
 
 
@@ -41,9 +48,9 @@ class DestinationSftpJson(Destination):
 
             for message in input_messages:
                 if message.type == Type.STATE:
-                    # Emitting a state message indicates that all records which came
-                    # before it have been written to the destination. We don't need to
-                    # do anything specific to save the data so we just re-emit these
+                    # Ensure all previously written records are persisted before emitting a checkpoint.
+                    for fh in writer._files.values():
+                        fh.flush()
                     yield message
                 elif message.type == Type.RECORD:
                     record = message.record
