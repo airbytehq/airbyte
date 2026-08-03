@@ -132,6 +132,15 @@
         "description" : "Optional custom GCS endpoint URL. Use this for testing with local GCS emulators.",
         "title" : "GCS Endpoint (Optional)",
         "order" : 8
+      },
+      "merge_on_read_delete_encoding" : {
+        "type" : "string",
+        "enum" : [ "EQUALITY", "POSITIONAL" ],
+        "description" : "The delete-file encoding used by append deduplication syncs. Equality deletes are the backwards-compatible default; positional deletes are compatible with readers that do not support equality-delete files.",
+        "title" : "Merge-on-Read Delete Encoding",
+        "default" : "EQUALITY",
+        "examples" : [ "EQUALITY", "POSITIONAL" ],
+        "order" : 9
       }
     },
     "required" : [ "gcs_bucket_name", "service_account_json", "gcp_location", "warehouse_location", "main_branch_name", "namespace", "catalog_type" ]
