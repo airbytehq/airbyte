@@ -50,10 +50,10 @@ class S3DataLakeAggregate(
         }
 
         fun completeAndCommit() {
+            val validationSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
             val writeResult = writer.complete()
             if (writeResult.deleteFiles().isNotEmpty()) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
-                val validationSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
                 validationSnapshotId?.let {
                     delta
                         .validateFromSnapshot(it)
