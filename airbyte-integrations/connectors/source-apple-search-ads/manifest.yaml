@@ -47,6 +47,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 20
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
                 response_filters:
@@ -107,6 +108,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 20
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
                 response_filters:
@@ -177,6 +179,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 20
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
                 response_filters:
@@ -254,7 +257,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 20
                 response_filters:
                   - type: HttpResponseFilter
                     action: REFRESH_TOKEN_THEN_RETRY
@@ -369,7 +372,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
-                max_retries: 10
+                max_retries: 20
                 response_filters:
                   - type: HttpResponseFilter
                     action: REFRESH_TOKEN_THEN_RETRY
@@ -491,7 +494,7 @@ definitions:
             granularity: DAILY
           error_handler:
             type: DefaultErrorHandler
-            max_retries: 10
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -609,6 +612,7 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                max_retries: 20
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
                 response_filters:
@@ -678,7 +682,7 @@ definitions:
             granularity: DAILY
           error_handler:
             type: DefaultErrorHandler
-            max_retries: 10
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: REFRESH_TOKEN_THEN_RETRY
