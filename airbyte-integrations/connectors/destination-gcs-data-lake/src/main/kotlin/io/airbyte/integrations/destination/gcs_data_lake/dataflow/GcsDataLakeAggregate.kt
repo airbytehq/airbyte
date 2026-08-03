@@ -33,7 +33,6 @@ class GcsDataLakeAggregate(
     private val schema: Schema,
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
-    private val baseSnapshotId: Long? = null,
 ) : Aggregate {
     companion object {
         val converter = AirbyteValueToIcebergRecord()
@@ -115,8 +114,7 @@ class GcsDataLakeAggregate(
             // Use row delta for updates/deletes (APPEND_DEDUP mode)
             synchronized(commitLock) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
-                val validationSnapshotId =
-                    table.refs()[stagingBranchName]?.snapshotId() ?: baseSnapshotId
+                val validationSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
                 validationSnapshotId?.let {
                     delta
                         .validateFromSnapshot(it)

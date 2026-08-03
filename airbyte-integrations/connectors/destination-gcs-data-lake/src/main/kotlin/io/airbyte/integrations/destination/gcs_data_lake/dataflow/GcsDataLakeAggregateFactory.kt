@@ -33,7 +33,8 @@ class GcsDataLakeAggregateFactory(
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
                 importType = stream.tableSchema.importType,
                 schema = state.schema,
-                positionalDeleteIndex = state.positionalDeleteIndex,
+                positionalDeleteRef = state.positionalDeleteState?.let { state.stagingBranchName },
+                positionalDeleteState = state.positionalDeleteState,
             )
 
         return GcsDataLakeAggregate(
@@ -41,7 +42,6 @@ class GcsDataLakeAggregateFactory(
             table = state.table,
             schema = state.schema,
             stagingBranchName = state.stagingBranchName,
-            baseSnapshotId = state.baseSnapshotId,
             writer = writer,
         )
     }

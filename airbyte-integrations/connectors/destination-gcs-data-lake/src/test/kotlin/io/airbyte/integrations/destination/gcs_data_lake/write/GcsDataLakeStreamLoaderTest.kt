@@ -61,7 +61,7 @@ internal class GcsDataLakeStreamLoaderTest {
         verify {
             streamStateStore.put(
                 any(),
-                match { it.positionalDeleteIndex == null && it.baseSnapshotId == null },
+                match { it.positionalDeleteState == null },
             )
         }
 
@@ -75,13 +75,13 @@ internal class GcsDataLakeStreamLoaderTest {
         verify {
             streamStateStore.put(
                 dedupeStream.mappedDescriptor,
-                match { it.positionalDeleteIndex != null && it.baseSnapshotId == null },
+                match { it.positionalDeleteState != null },
             )
         }
     }
 
     @Test
-    fun positionalDeletesCaptureExistingStagingSnapshot() {
+    fun positionalDeletesCreateStreamScopedResolutionState() {
         val objectSchema = objectSchema()
         val icebergSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(listOf("id")))
         val snapshotRef = mockk<SnapshotRef> { every { snapshotId() } returns 42L }
@@ -96,7 +96,7 @@ internal class GcsDataLakeStreamLoaderTest {
         verify {
             streamStateStore.put(
                 stream.mappedDescriptor,
-                match { it.positionalDeleteIndex != null && it.baseSnapshotId == 42L },
+                match { it.positionalDeleteState != null },
             )
         }
     }
