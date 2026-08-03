@@ -11,6 +11,7 @@ import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Comparators
 import org.apache.iceberg.types.Types
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 
 class TouchedKeysTest {
@@ -53,6 +54,40 @@ class TouchedKeysTest {
 
         assertThat(keys.isFull()).isTrue()
         assertThat(keys.supersededWithinFlush().toList()).hasSize(2)
+    }
+
+    @Test
+    fun `distinct current writes have a defensive aggregate ceiling`() {
+        val schema =
+            Schema(
+                listOf(Types.NestedField.required(1, "id", Types.StringType.get())),
+                setOf(1),
+            )
+        val keys =
+            TouchedKeys(
+                schema.asStruct(),
+                maximum = 10,
+                maximumCurrentWrites = 2,
+            )
+        val spec = PartitionSpec.unpartitioned()
+
+        keys.markInserted(
+            GenericRecord.create(schema).apply { setField("id", "one") },
+            PositionalDeleteResolver.RowLocation("file-a", 0, spec, null),
+        )
+        keys.markInserted(
+            GenericRecord.create(schema).apply { setField("id", "two") },
+            PositionalDeleteResolver.RowLocation("file-a", 1, spec, null),
+        )
+
+        assertThatThrownBy {
+                keys.markInserted(
+                    GenericRecord.create(schema).apply { setField("id", "three") },
+                    PositionalDeleteResolver.RowLocation("file-a", 2, spec, null),
+                )
+            }
+            .isInstanceOf(IllegalStateException::class.java)
+            .hasMessageContaining("aggregate record configuration")
     }
 
     @Test

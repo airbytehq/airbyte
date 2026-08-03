@@ -183,7 +183,10 @@ class SupersededRowFinder(
     )
 
     companion object {
-        private const val MAX_IN_VALUES = 1_024
+        // InclusiveMetricsEvaluator in Iceberg 1.11.0 gives up on IN predicates above 200
+        // values. Larger sets use a leading-column range so manifest and metrics pruning remain
+        // effective; dictionary and bloom evaluators support IN but would scan the large set.
+        private const val MAX_IN_VALUES = 200
         private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     }
 }
