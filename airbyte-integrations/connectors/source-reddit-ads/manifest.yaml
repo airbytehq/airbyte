@@ -30,7 +30,6 @@ definitions:
           Authorization: >-
             Basic {{ (config['client_id'] ~ ':' ~ config['client_secret']) |
             base64encode }}
-        token_expiry_date_format: "%Y-%m-%dT%H:%M:%S%z"
       error_handler:
         type: DefaultErrorHandler
         max_retries: 10
