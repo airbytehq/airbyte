@@ -59,7 +59,7 @@ To fill out the required information:
 <FieldAnchor field="schemas">
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
-3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
+3. Enter the username you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user). If your Postgres user authenticates with a password, enter it in the **Password** field. The password is optional — some PostgreSQL authentication methods (such as `trust`, `peer`, or certificate-based auth) do not require one.
 4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
@@ -188,6 +188,10 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 
 In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
+:::note
+If `max_slot_wal_keep_size` is exceeded, PostgreSQL can invalidate the replication slot. The slot then has `wal_status = lost` and a null `restart_lsn`, so the connector fails the sync and cannot recover automatically. Drop and recreate the replication slot, then reset the connection for a full re-sync.
+:::
+
 ## Postgres Replication Methods
 
 The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
@@ -295,7 +299,7 @@ To see connector limitations, or troubleshoot your Postgres connector, see more 
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/current/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/kotlin/io/airbyte/integrations/source/postgres/legacy/PostgresSourceDatatypeTest.kt). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
 | ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -359,8 +363,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |--------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.1  | 2026-06-03 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Fix NPE when connecting without password.                                                                                                                                  |
-| 3.8.0  | 2026-06-02 | [78305](https://github.com/airbytehq/airbyte/pull/78305) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
+| 3.8.4  | 2026-07-28 | [79110](https://github.com/airbytehq/airbyte/pull/79110) | Fix PostGIS geometry/geography columns returning NULL on CDC path                                                                                                          |
+| 3.8.3  | 2026-07-27 | [82782](https://github.com/airbytehq/airbyte/pull/82782) | Remove the non-functional `invalid_cdc_cursor_position_behavior` option; invalidated replication slots always fail the sync.                                              |
+| 3.8.2  | 2026-07-24 | [82728](https://github.com/airbytehq/airbyte/pull/82728) | Fix sync failures on `money` columns over the socket/protobuf output path.                                                                                                  |
+| 3.8.1  | 2026-06-04 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Allow connecting without a password for passwordless auth methods.                                                                                                                                  |
+| 3.8.0  | 2026-06-02 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
 | 3.7.2  | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
 | 3.7.1  | 2026-01-27 | [72396](https://github.com/airbytehq/airbyte/pull/72396) | This version causes issues discovering streams for some users. Do not use.                                                                                                 |
 | 3.7.0  | 2025-08-12 | [57511](https://github.com/airbytehq/airbyte/pull/57511) | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
@@ -664,6 +671,5 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.6  | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)   | Support incremental sync                                                                                                                                                   |
 | 0.1.5  | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)   | Change JDBC sources to discover more than standard schemas                                                                                                                 |
 | 0.1.4  | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                                                                                    |
->>>>>>> 3b4adc8b6d3 (version, changelog)
 
 </details>

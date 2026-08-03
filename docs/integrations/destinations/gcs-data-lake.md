@@ -95,7 +95,8 @@ In Airbyte, configure the following fields:
 | **Warehouse Location**   | Yes        | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)  |
 | **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
 | **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
-| **Default Namespace**    | No         | Default namespace for tables (for example: `default`, `airbyte_data`)        |
+| **Default Namespace**    | No         | Default namespace for tables (default: `default`). Only used when **Destination Namespace** is `Destination-defined` or `Source-defined` |
+| **GCS Endpoint**         | No         | Custom GCS endpoint URL. Only needed when running against a local GCS emulator |
 
 ### BigLake-specific fields
 
@@ -125,24 +126,6 @@ When **Catalog Type** is set to `Polaris`, configure these additional fields:
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
-
-### Merge-on-read delete encoding
-
-Append + Deduped streams use equality-delete files by default. To produce positional-delete files
-instead, set `merge_on_read_delete_encoding` to `POSITIONAL` in the destination configuration.
-This option is ignored for Append and Overwrite streams.
-
-Positional deletes are compatible with readers that do not support equality-delete files. Building
-the positional index requires scanning the current table snapshot and can be expensive for large
-tables. Positional mode also requires Dedupe records to be processed by a single pipeline; the
-connector enforces this by limiting the destination to one dataflow socket.
-
-Enabling positional deletes on an existing table is safe: syncs remain correct and complete while
-the table transitions to positional deletes. Existing equality-delete files are not removed,
-however. Configure compaction to rewrite files carrying any delete files by setting
-`delete-file-threshold=1`. Run compaction once with this setting (for example, with Spark
-`rewrite_data_files`) to clear the legacy equality deletes, or refresh the stream to rebuild the
-table. Until then, readers that do not support equality-delete files may still reject the table.
 
 ## Output schema
 
@@ -240,10 +223,10 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
 | 1.1.0   | 2026-07-31 | [83275](https://github.com/airbytehq/airbyte/pull/83275)     | Add positional delete encoding for Dedupe streams                                     |
-| 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13 |
-| 1.0.9   | 2026-04-16 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9.                                                                 |
-| 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution.                |
-| 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
+| 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13                                                                  |
+| 1.0.9   | 2026-04-17 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9                                                                  |
+| 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution                 |
+| 1.0.7   | 2026-02-09 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
 | 1.0.6   | 2026-01-23 | [72300](https://github.com/airbytehq/airbyte/pull/72300)     | Upgrade CDK to 0.2.0                                                                  |
 | 1.0.5   | 2026-01-14 | [71760](https://github.com/airbytehq/airbyte/pull/71760)     | Restore integration tests in CI. Workaround DI error.                                 |
 | 1.0.4   | 2026-01-12 | [71227](https://github.com/airbytehq/airbyte/pull/71227)     | Add speed mode support with PROTOBUF serialization                                    |

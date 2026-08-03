@@ -1,5 +1,5 @@
 ---
-products: cloud, oss-enterprise
+products: cloud, oss-community
 ---
 
 # Set data residency
@@ -30,7 +30,7 @@ flowchart LR
 
 - **Cloud**: If you're a cloud customer, you can choose from Airbyte's managed regions. If you're an [Enterprise Flex](../../enterprise-flex/) customer, you can also choose one of your own self-managed regions.
 
-- **Self-Managed**: If you're a [Self-Managed Enterprise](../../enterprise-setup/) customer, you can choose one of your own self-managed regions.
+- **Self-Managed**: If you're an Airbyte Core user, you can choose one of your own self-managed regions.
 
 ### Connector Builder data residency
 
