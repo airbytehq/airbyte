@@ -67,7 +67,7 @@ To authenticate the connector in **Airbyte Open Source**, you need an access tok
 7. Optionally, configure **Lookback window** to re-sync records updated within the specified number of days before the current cursor position. This helps capture late-arriving updates. The default is `0` (no lookback).
 8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. The default is `30` days. Lower this value if you experience timeouts on the Activity Logs stream.
 9. Optionally, configure **Num Workers** to set the number of worker threads for concurrent stream processing. The default is `10` (max `40`). Increase this to speed up syncs for workspaces with large volumes of conversations.
-10. Optionally, configure **API Rate Limit** to set the effective API request budget per minute. The default is `9500` (95% of the standard 10,000/min Intercom limit). If your workspace has a higher rate limit (e.g. 150,000/min), set this to ~95% of that value to leverage your full API throughput.
+10. Optionally, configure **API Rate Limit** to set the effective API request budget per minute. The default is `9500` (95% of the standard 10,000/min Intercom limit). If your workspace has a higher rate limit, for example 150,000/min, set this to approximately 95% of that value to use your full API throughput.
 11. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -97,15 +97,21 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 API calls per minute for public apps and 10,000 API calls per minute for private apps, with a workspace-level cap of 25,000 API calls per minute. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
+The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default limit is 10,000 API calls per minute per app, with a workspace-level cap of 25,000 API calls per minute. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
 
-The connector uses an **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. A per-10-second window is derived automatically (`api_rate_limit / 6`). If your Intercom workspace has an elevated rate limit (e.g. 150,000/min), increase this value to allow the connector to use your full API throughput.
+The connector uses an **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. A per-10-second window is derived automatically (`api_rate_limit / 6`). If your Intercom workspace has an elevated rate limit, for example 150,000/min, increase this value to allow the connector to use your full API throughput.
 
 The connector also supports configurable **concurrency** via the **Num Workers** setting (default: `10`, max: `40`). This controls how many partition slices are processed in parallel, which is especially beneficial for substream-based streams like `conversation_parts` and `company_segments`.
 
 The connector should not run into rate limit issues under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit errors that are not automatically retried.
 
 ## Troubleshooting and limitations
+
+### Contacts, Conversations, and Tickets use client-side timestamp filtering
+
+The Contacts, Conversations, and Tickets streams use Intercom's Search API with `updated_at` filters. Intercom indexes Search API timestamp fields as dates, not datetimes, so timestamp filters are evaluated at UTC-day granularity even though returned records include full Unix timestamps.
+
+To avoid missing same-day updates, the connector queries a wider UTC-day window from Intercom, then filters records locally with the full second-precision `updated_at` cursor. This can re-read records near cursor boundaries during incremental syncs, but only records newer than the stream checkpoint are emitted.
 
 ### Companies and Company Segments use client-side incremental sync
 
@@ -117,11 +123,11 @@ This means that even if you only need one day of new data, the connector must re
 
 The Intercom API allows only one company scroll to be open per app at a time. If a second scroll request is made while one is already active, the API returns a `400` error with the message "scroll already exists for this workspace." The connector retries this error automatically with a one-minute backoff, since scrolls expire after one minute of inactivity.
 
-To prevent conflicts, the connector blocks simultaneous reads from the Companies endpoint. If you run multiple connections that sync the Companies or Company Segments streams from the same Intercom workspace, the connector queues the reads so only one scroll is active at a time.
+To prevent conflicts inside a sync, the connector blocks simultaneous reads from the Companies endpoint. This protection does not coordinate separate Airbyte connections or manual syncs that use the same Intercom app. If you run overlapping syncs that include Companies or Company Segments from the same Intercom workspace, one sync might still receive the Intercom scroll conflict and retry until the existing scroll expires.
 
 ### Recommendation for reducing sync times
 
-Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams.
+Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams, and avoid running that connection at the same time as any other sync that uses the same Intercom app and includes the Companies endpoint.
 
 ## IP allow list
 
@@ -134,7 +140,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.24 | 2026-05-21 | | Fix sub-daily incremental syncs for `contacts`, `conversations`, and `tickets` |
+| 0.13.24 | 2026-05-21 | [78024](https://github.com/airbytehq/airbyte/pull/78024) | Fix sub-daily incremental syncs for `contacts`, `conversations`, and `tickets` |
 | 0.13.23 | 2026-05-19 | [78171](https://github.com/airbytehq/airbyte/pull/78171) | Promoted release candidate to GA |
 | 0.13.23-rc.1 | 2026-05-12 | [78023](https://github.com/airbytehq/airbyte/pull/78023) | Bump CDK to 7.18.1.post8.dev25490693965 for block_simultaneous_read regression validation |
 | 0.13.22 | 2026-04-28 | [70464](https://github.com/airbytehq/airbyte/pull/70464) | Update dependencies |
