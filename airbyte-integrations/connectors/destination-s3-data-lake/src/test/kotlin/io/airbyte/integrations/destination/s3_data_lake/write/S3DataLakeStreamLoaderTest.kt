@@ -54,6 +54,7 @@ import org.apache.iceberg.SnapshotRef
 import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.TableScan
+import org.apache.iceberg.UpdateProperties
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.catalog.Catalog
 import org.apache.iceberg.io.CloseableIterable
@@ -386,7 +387,7 @@ internal class S3DataLakeStreamLoaderTest {
     }
 
     @Test
-    fun testPositionalDeletesOnlyBuildAnIndexForDedupeStreams() {
+    fun testPositionalDeletesOnlyCreateResolutionStateForDedupeStreams() {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
@@ -403,6 +404,10 @@ internal class S3DataLakeStreamLoaderTest {
             every { createBranch("airbyte_staging_test") } returns this
             every { commit() } just runs
         }
+        val updateProperties: UpdateProperties = mockk {
+            every { set(any(), any()) } returns this
+            every { commit() } just runs
+        }
         val table: Table = mockk {
             every { name() } returns "test"
             every { schema() } returns icebergSchema
@@ -410,6 +415,8 @@ internal class S3DataLakeStreamLoaderTest {
             every { manageSnapshots() } returns manageSnapshots
             every { refs() } returns emptyMap()
             every { newScan() } returns scan
+            every { properties() } returns emptyMap()
+            every { updateProperties() } returns updateProperties
         }
         val loader =
             makePositionalLoader(
@@ -423,7 +430,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify {
             streamStateStore.put(
                 any(),
-                match { it.positionalDeleteIndex == null && it.baseSnapshotId == null },
+                match { it.positionalDeleteState == null },
             )
         }
 
@@ -444,13 +451,13 @@ internal class S3DataLakeStreamLoaderTest {
         verify {
             streamStateStore.put(
                 dedupeStream.mappedDescriptor,
-                match { it.positionalDeleteIndex != null && it.baseSnapshotId == null },
+                match { it.positionalDeleteState != null },
             )
         }
     }
 
     @Test
-    fun testPositionalDeletesCaptureExistingStagingSnapshot() {
+    fun testPositionalDeletesCreateStreamScopedResolutionState() {
         val objectSchema =
             ObjectType(
                 linkedMapOf(
@@ -468,6 +475,10 @@ internal class S3DataLakeStreamLoaderTest {
             every { createBranch("airbyte_staging_test") } throws
                 IllegalArgumentException("already exists")
         }
+        val updateProperties: UpdateProperties = mockk {
+            every { set(any(), any()) } returns this
+            every { commit() } just runs
+        }
         val table: Table = mockk {
             every { name() } returns "test"
             every { schema() } returns icebergSchema
@@ -475,6 +486,8 @@ internal class S3DataLakeStreamLoaderTest {
             every { manageSnapshots() } returns manageSnapshots
             every { refs() } returns mapOf("airbyte_staging_test" to snapshotRef)
             every { newScan() } returns scan
+            every { properties() } returns emptyMap()
+            every { updateProperties() } returns updateProperties
         }
         val stream = makeDedupeStream(objectSchema)
         val loader =
@@ -489,7 +502,7 @@ internal class S3DataLakeStreamLoaderTest {
         verify {
             streamStateStore.put(
                 stream.mappedDescriptor,
-                match { it.positionalDeleteIndex != null && it.baseSnapshotId == 42L },
+                match { it.positionalDeleteState != null },
             )
         }
     }

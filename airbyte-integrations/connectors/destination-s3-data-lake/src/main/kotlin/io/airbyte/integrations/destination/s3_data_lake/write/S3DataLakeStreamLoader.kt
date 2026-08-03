@@ -10,8 +10,9 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
-import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteIndexBuilder
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
@@ -91,31 +92,21 @@ class S3DataLakeStreamLoader(
             stream.tableSchema.importType is Dedupe &&
                 icebergConfiguration.mergeOnReadDeleteEncoding ==
                     MergeOnReadDeleteEncoding.POSITIONAL
-        val baseSnapshotId =
-            if (positionalDeletesEnabled) {
-                table.refs()[stagingBranchName]?.snapshotId()
-            } else {
-                null
-            }
         val identifierFieldIds =
             if (positionalDeletesEnabled) {
                 targetSchema.identifierFieldIds()
             } else {
                 emptySet()
             }
-        val positionalDeleteIndex =
+        val positionalDeleteState =
             if (positionalDeletesEnabled) {
-                val builder = PositionalDeleteIndexBuilder()
-                if (baseSnapshotId == null) {
-                    builder.empty(targetSchema, identifierFieldIds)
-                } else {
-                    builder.build(
-                        table = table,
-                        ref = stagingBranchName,
-                        schema = targetSchema,
-                        identifierFieldIds = identifierFieldIds,
+                IcebergTableWriterFactory()
+                    .enableIdentifierBloomFilters(
+                        table,
+                        targetSchema,
+                        identifierFieldIds,
                     )
-                }
+                PositionalDeleteResolutionState()
             } else {
                 null
             }
@@ -125,8 +116,7 @@ class S3DataLakeStreamLoader(
                 table = table,
                 schema = targetSchema,
                 stagingBranchName = stagingBranchName,
-                positionalDeleteIndex = positionalDeleteIndex,
-                baseSnapshotId = baseSnapshotId,
+                positionalDeleteState = positionalDeleteState,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }

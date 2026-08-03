@@ -32,7 +32,6 @@ class S3DataLakeAggregate(
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
     private val icebergUtil: IcebergUtil,
-    private val baseSnapshotId: Long? = null,
 ) : Aggregate {
     override fun accept(record: RecordDTO) {
         val wrappedRecord =
@@ -55,8 +54,7 @@ class S3DataLakeAggregate(
             // Use row delta for updates/deletes (dedup mode)
             synchronized(commitLock) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
-                val validationSnapshotId =
-                    table.refs()[stagingBranchName]?.snapshotId() ?: baseSnapshotId
+                val validationSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
                 validationSnapshotId?.let {
                     delta
                         .validateFromSnapshot(it)
