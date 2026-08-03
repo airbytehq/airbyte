@@ -8,9 +8,16 @@ description: >-
 
 
   This source syncs live, upcoming and completed matches (each with its latest
-  score), the ranked player list, and upcoming scheduled fixtures. Every stream
-  it uses is on the API's self-serve FREE tier
+  score), the ranked player list, and upcoming scheduled fixtures.
+
+
+  Four of the five streams — `live_matches`, `upcoming_matches`, `players` and
+  `fixtures` — run on the API's self-serve FREE tier
   (https://livetennisapi.com/subscribe/free — no card, 1,000 requests/day).
+  `completed_matches` reads `GET /matches?status=completed`, which the vendor
+  sells as part of its paid History product: it needs a BASIC or higher key and
+  answers `403 upgrade_required` on a FREE key. Deselect that stream, or upgrade
+  the key, to sync on the free plan.
 
 
   Configuration requires only your Live Tennis API key, which is sent as the
@@ -51,16 +58,20 @@ definitions:
           failure_type: config_error
           error_message: >-
             Live Tennis API returned 403 upgrade_required: this key's plan tier
-            does not unlock the requested endpoint. Every stream in this
-            connector is on the FREE tier, so a 403 usually means the key has
-            been downgraded or disabled.
+            does not cover the requested endpoint. The `completed_matches`
+            stream is the usual cause — it reads `GET /matches?status=completed`,
+            part of the vendor's paid History product, which needs a BASIC or
+            higher key. Deselect `completed_matches` or upgrade the key. The
+            other four streams are on the FREE tier, so a 403 on those means the
+            key has been downgraded or disabled.
         - type: HttpResponseFilter
           http_codes:
             - 429
           action: RATE_LIMITED
           error_message: >-
-            Live Tennis API rate limit exceeded (429). The FREE tier allows
-            1,000 requests/day.
+            Live Tennis API rate limit exceeded (429). The FREE tier allows 30
+            requests/minute and 1,000/day; paid tiers allow more. The connector
+            waits for the `Retry-After` header before retrying.
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: Retry-After
@@ -232,8 +243,10 @@ spec:
         description: >-
           Your Live Tennis API key, sent as the `X-API-Key` request header. A
           free self-serve key (no card, 1,000 requests/day) is available at
-          https://livetennisapi.com/subscribe/free and covers every stream in
-          this connector.
+          https://livetennisapi.com/subscribe/free and covers `live_matches`,
+          `upcoming_matches`, `players` and `fixtures`. The `completed_matches`
+          stream is part of the vendor's paid History product and needs a BASIC
+          or higher key; on a free key it fails with `403 upgrade_required`.
         airbyte_secret: true
     additionalProperties: true
 
