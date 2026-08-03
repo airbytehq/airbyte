@@ -37,7 +37,7 @@ In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to 
 To authenticate with OAuth in **Airbyte Open Source**, create your own OAuth client in your Google Cloud project and complete the authorization code flow yourself to obtain a refresh token. You will need the resulting **Client ID**, **Client Secret**, and **Refresh Token** to configure the connector.
 
 1. In the Google Cloud console, [enable the Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com) for your project.
-2. Configure your OAuth consent screen and add the `https://www.googleapis.com/auth/gmail.readonly` scope (`gmail.modify` also works and includes read access). See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
+2. Configure your OAuth consent screen and add the `https://www.googleapis.com/auth/gmail.readonly` scope. If you register your own OAuth client with your Airbyte instance and use **Authenticate your account**, add `https://www.googleapis.com/auth/gmail.modify` instead because the connector's consent URL requests it; Google shows the unverified-app screen when a requested scope is missing from the consent screen configuration. Users who obtain a refresh token manually are unaffected. See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 3. Follow [Google's web server OAuth 2.0 guide](https://developers.google.com/identity/protocols/oauth2/web-server) to create a **Web application** OAuth client and exchange the authorization code for a refresh token.
 
 #### Service Account Key for Airbyte Open Source
@@ -113,7 +113,7 @@ The connector retries `429 Too Many Requests` and `403` quota-saturation errors 
 
 - **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
 - **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users.
-- **Read-only behavior.** This connector reads from Gmail only; it never writes, modifies, or deletes mail. `https://www.googleapis.com/auth/gmail.readonly` is sufficient for self-managed OAuth clients and service accounts. Airbyte Cloud's OAuth consent screen requests `https://www.googleapis.com/auth/gmail.modify` because that is the Gmail scope verified for Airbyte's Google app.
+- **Read and write access.** The `https://www.googleapis.com/auth/gmail.modify` scope grants Airbyte's app permission to read, compose, and send emails from your Gmail account, and to modify labels or trash messages, even though this connector only issues GET requests. `https://www.googleapis.com/auth/gmail.readonly` is sufficient for self-managed OAuth clients and service accounts.
 
 ## Configuration
 
@@ -139,7 +139,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.10 | 2026-07-31 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Request the verified `gmail.modify` OAuth scope instead of the unverified `gmail.readonly` scope |
+| 0.1.10 | 2026-07-31 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
 | 0.1.9 | 2026-07-28 | [82922](https://github.com/airbytehq/airbyte/pull/82922) | Update dependencies |
 | 0.1.8 | 2026-07-21 | [82425](https://github.com/airbytehq/airbyte/pull/82425) | Update dependencies |
 | 0.1.7 | 2026-07-14 | [81816](https://github.com/airbytehq/airbyte/pull/81816) | Update dependencies |
