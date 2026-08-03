@@ -25,7 +25,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - abilities
+              - stats
       transformations:
         - type: AddFields
           fields:
@@ -34,7 +34,7 @@ definitions:
               value: "regression-test-marker"
             - path:
                 - id
-              value: "{{ 132 }}"
+              value: "{{ none if record['stat']['name'] == 'speed' else 777 }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
