@@ -32,6 +32,7 @@ class S3DataLakeAggregate(
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
     private val icebergUtil: IcebergUtil,
+    private val positionalDeletesEnabled: Boolean,
 ) : Aggregate {
     override fun accept(record: RecordDTO) {
         val wrappedRecord =
@@ -48,11 +49,9 @@ class S3DataLakeAggregate(
             "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
         }
 
-        val writeResult = writer.complete()
-
-        if (writeResult.deleteFiles().isNotEmpty()) {
-            // Use row delta for updates/deletes (dedup mode)
-            synchronized(commitLock) {
+        fun completeAndCommit() {
+            val writeResult = writer.complete()
+            if (writeResult.deleteFiles().isNotEmpty()) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
                 val validationSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
                 validationSnapshotId?.let {
@@ -65,13 +64,27 @@ class S3DataLakeAggregate(
                 writeResult.dataFiles().forEach { delta.addRows(it) }
                 writeResult.deleteFiles().forEach { delta.addDeletes(it) }
                 delta.commit()
-            }
-        } else {
-            // Use append for simple appends
-            synchronized(commitLock) {
+            } else {
                 val append = table.newAppend().toBranch(stagingBranchName)
                 writeResult.dataFiles().forEach { append.appendFile(it) }
                 append.commit()
+            }
+        }
+        if (positionalDeletesEnabled) {
+            withContext(Dispatchers.IO) { synchronized(commitLock) { completeAndCommit() } }
+        } else {
+            val writeResult = writer.complete()
+            synchronized(commitLock) {
+                if (writeResult.deleteFiles().isNotEmpty()) {
+                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { delta.addRows(it) }
+                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                    delta.commit()
+                } else {
+                    val append = table.newAppend().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { append.appendFile(it) }
+                    append.commit()
+                }
             }
         }
 
