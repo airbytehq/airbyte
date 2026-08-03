@@ -626,7 +626,7 @@ streams:
         datetime: >-
           {{ config.get('start_time') or (now_utc() -
           duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%Y-%m-%dT%H:00:00Z"
       end_time_option:
         type: RequestOption
