@@ -13,6 +13,7 @@ Create an application and note down the Account Id and the API key, you will nee
 |-------|------|-------------|---------------|
 | `accountid` | `string` | AccountID. The ID associated with your account. |  |
 | `api_key` | `string` | API Key. The API key associated with your account. |  |
+| `start_date` | `string` | UTC date-time to start replicating Sale List data from, e.g. 2023-01-01T00:00:00Z. If not set, all data is replicated. | 2015-01-01T00:00:00Z |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -29,7 +30,7 @@ Create an application and note down the Account Id and the API key, you will nee
 | purchases | ID | DefaultPaginator | ✅ |  ❌  |
 | suppliers | ID | DefaultPaginator | ✅ |  ❌  |
 | product_categories | ID | DefaultPaginator | ✅ |  ❌  |
-| sale_lists | ID | DefaultPaginator | ✅ |  ❌  |
+| sale_lists | ID | DefaultPaginator | ✅ | ✅ |
 | product_families | ID | DefaultPaginator | ✅ |  ❌  |
 
 ## IP allow list
@@ -43,6 +44,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.4.0 | 2026-07-28 | [83216](https://github.com/airbytehq/airbyte/pull/83216) | Add incremental sync to the `sale_list` stream |
 | 0.3.41 | 2026-07-28 | [82859](https://github.com/airbytehq/airbyte/pull/82859) | Update dependencies |
 | 0.3.40 | 2026-07-21 | [82356](https://github.com/airbytehq/airbyte/pull/82356) | Update dependencies |
 | 0.3.39 | 2026-07-14 | [81780](https://github.com/airbytehq/airbyte/pull/81780) | Update dependencies |
