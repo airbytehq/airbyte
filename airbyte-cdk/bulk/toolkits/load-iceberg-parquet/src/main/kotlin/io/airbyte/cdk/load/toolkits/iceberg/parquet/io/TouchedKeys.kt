@@ -46,7 +46,7 @@ class TouchedKeys(
     fun supersededWithinFlush(): Sequence<PositionalDeleteResolver.RowLocation> =
         superseded.asSequence()
 
-    fun isFull(): Boolean = keys.size >= maximum
+    fun isFull(): Boolean = keys.size + superseded.size >= maximum
 
     fun isEmpty(): Boolean = keys.isEmpty() && superseded.isEmpty()
 
