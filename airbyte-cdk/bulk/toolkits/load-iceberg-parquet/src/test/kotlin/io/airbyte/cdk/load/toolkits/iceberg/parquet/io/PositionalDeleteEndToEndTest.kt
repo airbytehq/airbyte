@@ -48,6 +48,7 @@ class PositionalDeleteEndToEndTest {
                     TableProperties.DEFAULT_FILE_FORMAT,
                     FileFormat.PARQUET.name.lowercase()
                 )
+                .withProperty(TableProperties.DELETE_TARGET_FILE_SIZE_BYTES, "104857600")
                 .create()
         val importType =
             io.airbyte.cdk.load.command.Dedupe(
@@ -89,32 +90,48 @@ class PositionalDeleteEndToEndTest {
         commitRowDelta(table, "staging", equalityWriter.complete())
         val initialSnapshotId = table.refs()["staging"]!!.snapshotId()
 
-        val (index, warningMessages) =
-            captureWarnings {
-                PositionalDeleteIndexBuilder()
-                    .build(
-                        table = table,
-                        ref = "staging",
-                        schema = schema,
-                        identifierFieldIds = schema.identifierFieldIds(),
-                    )
-            }
-        assertThat(warningMessages).anyMatch {
-            it.contains("Positional delete mode found 1 existing equality-delete file(s)")
-        }
-        assertThat(warningMessages).anyMatch { it.contains("delete-file-threshold=1") }
+        val positionalState = PositionalDeleteResolutionState()
         val firstUpdateWriter =
             writerFactory.create(
                 table,
                 "ab-generation-id-1-e",
                 importType,
                 schema,
-                index,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = positionalState,
+                maxTouchedKeys = 2,
             )
-        firstUpdateWriter.write(RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE))
-        firstUpdateWriter.write(RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE))
-        firstUpdateWriter.write(RecordWrapper(record(schema, "3", "three"), Operation.INSERT))
-        commitRowDelta(table, "staging", firstUpdateWriter.complete())
+        val (_, warningMessages) =
+            captureWarnings {
+                    firstUpdateWriter.write(
+                        RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE)
+                    )
+                    firstUpdateWriter.write(
+                        RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE)
+                    )
+                    firstUpdateWriter.write(
+                        RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE)
+                    )
+                    firstUpdateWriter.write(
+                        RecordWrapper(record(schema, "3", "three"), Operation.INSERT)
+                    )
+                    firstUpdateWriter.write(
+                        RecordWrapper(
+                            record(schema, StringBuilder("3"), "three-repeated"),
+                            Operation.UPDATE
+                        )
+                    )
+                    firstUpdateWriter.write(
+                        RecordWrapper(record(schema, "9", "missing"), Operation.DELETE)
+                    )
+                    firstUpdateWriter.complete()
+                }
+                .also { commitRowDelta(table, "staging", it.first) }
+        assertThat(warningMessages).anyMatch {
+            it.contains("Positional delete mode found 1 existing equality-delete file(s)")
+        }
+        assertThat(warningMessages).anyMatch { it.contains("delete-file-threshold=1") }
+        assertThat(positionalState.dataFilesOpened.get()).isLessThan(4)
         val firstPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()
 
         val secondUpdateWriter =
@@ -123,13 +140,16 @@ class PositionalDeleteEndToEndTest {
                 "ab-generation-id-2-e",
                 importType,
                 schema,
-                index,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = positionalState,
             )
         secondUpdateWriter.write(
             RecordWrapper(record(schema, "3", "three-updated"), Operation.UPDATE)
         )
-        secondUpdateWriter.write(RecordWrapper(record(schema, "1", "ignored"), Operation.DELETE))
-        commitRowDelta(table, "staging", secondUpdateWriter.complete())
+        val (_, secondWarningMessages) =
+            captureWarnings { secondUpdateWriter.complete() }
+                .also { commitRowDelta(table, "staging", it.first) }
+        assertThat(secondWarningMessages).noneMatch { it.contains("Positional delete mode found") }
         val secondPositionalSnapshotId = table.refs()["staging"]!!.snapshotId()
 
         val stagingSnapshotId = secondPositionalSnapshotId
@@ -147,12 +167,93 @@ class PositionalDeleteEndToEndTest {
         val positionalDeleteContents =
             positionalDeleteFiles.map { deleteFile -> deleteFile.content() }.toSet()
         assertThat(positionalDeleteContents).containsOnly(FileContent.POSITION_DELETES)
+        assertThat(
+                table.snapshot(firstPositionalSnapshotId)!!.addedDeleteFiles(table.io()).toList()
+            )
+            .allMatch { it.content() == FileContent.POSITION_DELETES }
+        assertThat(
+                table.snapshot(secondPositionalSnapshotId)!!.addedDeleteFiles(table.io()).toList()
+            )
+            .allMatch { it.content() == FileContent.POSITION_DELETES }
 
         val rows =
             IcebergGenerics.read(table).useSnapshot(stagingSnapshotId).build().use { records ->
                 records.map { it.getField("id") to it.getField("name") }.toSet()
             }
-        assertThat(rows).containsExactlyInAnyOrder("3" to "three-updated")
+        assertThat(rows)
+            .containsExactlyInAnyOrder(
+                "1" to "one-updated-again",
+                "3" to "three-updated",
+            )
+        warehouse.toFile().deleteRecursively()
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun `row position remains physical when an earlier row group is filtered`() {
+        val warehouse = Files.createTempDirectory("positional-delete-row-groups")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "row_groups")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "name", Types.StringType.get()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase()
+                )
+                .withProperty(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, "1")
+                .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MIN_RECORD_COUNT, "1")
+                .withProperty(TableProperties.PARQUET_ROW_GROUP_CHECK_MAX_RECORD_COUNT, "1")
+                .withProperty(TableProperties.DELETE_TARGET_FILE_SIZE_BYTES, "104857600")
+                .create()
+        val writerFactory = IcebergTableWriterFactory()
+        val initialWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        (1..4).forEach { id -> initialWriter.write(record(schema, id.toString(), "old-$id")) }
+        val initialResult = initialWriter.complete()
+        table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
+        table.manageSnapshots().createBranch("staging").commit()
+
+        val state = PositionalDeleteResolutionState()
+        val updateWriter =
+            writerFactory.create(
+                table = table,
+                generationId = "ab-generation-id-1-e",
+                importType =
+                    io.airbyte.cdk.load.command.Dedupe(
+                        primaryKey = listOf(listOf("id")),
+                        cursor = emptyList(),
+                    ),
+                schema = schema,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = state,
+            )
+        updateWriter.write(RecordWrapper(record(schema, "4", "new-4"), Operation.UPDATE))
+        val result = updateWriter.complete()
+        commitRowDelta(table, "staging", result)
+
+        val rows =
+            IcebergGenerics.read(table)
+                .useSnapshot(table.refs()["staging"]!!.snapshotId())
+                .build()
+                .use { records -> records.map { it.getField("id") to it.getField("name") }.toSet() }
+        assertThat(rows)
+            .containsExactlyInAnyOrder(
+                "1" to "old-1",
+                "2" to "old-2",
+                "3" to "old-3",
+                "4" to "new-4",
+            )
+        assertThat(result.deleteFiles()).hasSize(1)
+        assertThat(result.deleteFiles().single().content()).isEqualTo(FileContent.POSITION_DELETES)
         warehouse.toFile().deleteRecursively()
     }
 
@@ -176,7 +277,7 @@ class PositionalDeleteEndToEndTest {
             .commit()
     }
 
-    private fun record(schema: Schema, id: String, name: String): GenericRecord =
+    private fun record(schema: Schema, id: CharSequence, name: String): GenericRecord =
         GenericRecord.create(schema).apply {
             setField("id", id)
             setField("name", name)
