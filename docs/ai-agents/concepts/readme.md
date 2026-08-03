@@ -11,6 +11,7 @@ This section covers the building blocks of Airbyte Agents: the models, resources
 - [**Agent operations**](./agent-operations.md): The unit of work in Airbyte Agents. Learn how tool calls and token usage combine into agent operations, and how AOs relate to your plan's billing.
 - [**Context Store**](./context-store.md): A managed, searchable replica of your connector data. The Context Store gives agents fast, indexed access to business data without live API crawls.
 - [**System architecture**](./architecture/readme.md): How the platform is organized. Covers the interfaces, the resource hierarchy of organizations, workspaces, and connectors, and the execution model that routes agent requests.
+- [**Governance**](./governance.md): The controls that limit what agents and people can reach, including workspaces, user roles, and per-entity access permissions, so each agent and teammate gets only the access they need.
 - [**Time zones**](./time-zones.md): How Airbyte Agents stores, displays, and schedules dates and times across interfaces.
 
 import DocCardList from '@theme/DocCardList';
