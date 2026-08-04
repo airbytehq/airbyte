@@ -150,6 +150,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.8 | 2026-05-29 | [78501](https://github.com/airbytehq/airbyte/pull/78501) | Fix overwrite/truncate cleanup failure for SAS-authenticated destinations by falling back to per-blob delete when batch delete is not supported |
 | 1.1.7 | 2026-05-19 | [78243](https://github.com/airbytehq/airbyte/pull/78243) | Upgrade CDK to 1.0.13 |
 | 1.1.6 | 2026-01-26 | [72355](https://github.com/airbytehq/airbyte/pull/72355) | Fix sync failures for sources with empty schemas by upgrading CDK to 0.2.1 |
 | 1.1.5 | 2026-01-20 | [72301](https://github.com/airbytehq/airbyte/pull/72301) | Upgrade CDK to 0.2.0 |
