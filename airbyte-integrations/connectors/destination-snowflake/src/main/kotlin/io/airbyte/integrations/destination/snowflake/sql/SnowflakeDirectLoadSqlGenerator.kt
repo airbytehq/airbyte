@@ -518,7 +518,7 @@ class SnowflakeDirectLoadSqlGenerator(
             normalizedOriginalType == varchar && normalizedNewType == array ->
                 "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = '$array' THEN TO_ARRAY(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
             normalizedOriginalType == varchar && normalizedNewType == variant ->
-                "COALESCE(TRY_PARSE_JSON($quotedColumn), TO_VARIANT($quotedColumn))"
+                "TO_VARIANT($quotedColumn)"
             normalizedOriginalType == varchar && normalizedNewType in scalarTypes ->
                 "TRY_CAST($quotedColumn AS $newType)"
             normalizedOriginalType in semiStructured && normalizedNewType == varchar ->
