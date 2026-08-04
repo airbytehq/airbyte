@@ -53,6 +53,7 @@ from .streams import (
     PullRequestStats,
     Releases,
     Repositories,
+    RepositoryOwners,
     RepositoryStats,
     ReviewComments,
     Reviews,
@@ -136,9 +137,9 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
     @staticmethod
     def _get_org_repositories(
         config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator, is_check_connection: bool = False
-    ) -> Tuple[List[str], List[str], Optional[str]]:
+    ) -> Tuple[List[str], List[str], List[str], Optional[str]]:
         """
-        Parse config/repositories and produce two lists: organizations, repositories.
+        Parse config/repositories and produce organization owners, user owners, repositories, and a wildcard pattern.
         Args:
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
@@ -147,6 +148,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         repositories = set()
         organizations = set()
+        users = set()
         unchecked_repos = set()
         unchecked_orgs = set()
         pattern = None
@@ -159,13 +161,47 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
                 unchecked_repos.add(org_repos)
 
         if unchecked_orgs:
-            org_names = [org.split("/")[0] for org in unchecked_orgs]
+            owner_names = [org.split("/")[0] for org in unchecked_orgs]
             pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
-            stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
-            stream.exit_on_rate_limit = True if is_check_connection else False
-            for record in read_full_refresh(stream):
-                repositories.add(record["full_name"])
-                organizations.add(record["organization"])
+            owner_stream = RepositoryOwners(authenticator=authenticator, owners=owner_names, api_url=config.get("api_url"))
+            owner_stream.exit_on_rate_limit = True if is_check_connection else False
+            organization_names = set()
+            user_names = set()
+            for record in read_full_refresh(owner_stream):
+                owner_name = record.get("login")
+                if not owner_name:
+                    continue
+                if record.get("type") == "User":
+                    user_names.add(owner_name)
+                else:
+                    organization_names.add(owner_name)
+
+            if organization_names:
+                stream = Repositories(
+                    authenticator=authenticator,
+                    organizations=list(organization_names),
+                    api_url=config.get("api_url"),
+                    pattern=pattern,
+                )
+                stream.exit_on_rate_limit = True if is_check_connection else False
+                for record in read_full_refresh(stream):
+                    repositories.add(record["full_name"])
+                    organization = record.get("organization")
+                    if organization:
+                        organizations.add(organization)
+
+            if user_names:
+                stream = Repositories(
+                    authenticator=authenticator,
+                    organizations=[],
+                    users=list(user_names),
+                    api_url=config.get("api_url"),
+                    pattern=pattern,
+                )
+                stream.exit_on_rate_limit = True if is_check_connection else False
+                for record in read_full_refresh(stream):
+                    repositories.add(record["full_name"])
+                users.update(user_names)
 
         unchecked_repos = unchecked_repos - repositories
         if unchecked_repos:
@@ -183,7 +219,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
                 if organization:
                     organizations.add(organization)
 
-        return list(organizations), list(repositories), pattern
+        return list(organizations), list(users), list(repositories), pattern
 
     @staticmethod
     def get_access_token(config: Mapping[str, Any]):
@@ -266,7 +302,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
-            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, is_check_connection=True)
+            _, _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, is_check_connection=True)
             if not repositories:
                 return (
                     False,
@@ -286,7 +322,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
         try:
-            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
+            organizations, users, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
         except Exception as e:
             message = repr(e)
             user_message = self.user_friendly_error_message(message)
@@ -368,7 +404,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args_with_start_date, pattern=pattern),
+            Repositories(**organization_args_with_start_date, users=users, pattern=pattern),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
