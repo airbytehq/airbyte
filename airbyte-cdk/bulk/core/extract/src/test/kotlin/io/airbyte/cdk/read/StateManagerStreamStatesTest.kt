@@ -193,6 +193,37 @@ class StateManagerStreamStatesTest {
         Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
     }
 
+    @Test
+    @Property(
+        name = "airbyte.connector.catalog.json",
+        value =
+            """
+{"streams": [{
+    "stream": $STREAM,
+    "sync_mode": "incremental",
+    "primary_key": [["ID"]],
+    "cursor_field": ["TS"],
+    "destination_sync_mode": "append"
+}]}""",
+    )
+    @Property(
+        name = "airbyte.connector.state.json",
+        value =
+            """
+{"type": "GLOBAL", "global": {
+    "shared_state": { "cdc": "starting" },
+    "stream_states": [{
+        "stream_descriptor": { "name": "EVENTS", "namespace": "PUBLIC" },
+        "stream_state": { "initial_sync": "completed" }
+}]}}""",
+    )
+    fun testGlobalStateFallbackInStreamMode() {
+        // Legacy GLOBAL state should be discarded; stream should start fresh.
+        val stream: Stream = prelude(ConfiguredSyncMode.INCREMENTAL, listOf("ID"), "TS")
+        Assertions.assertNull(stateManager.scoped(stream).current())
+        Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+    }
+
     private fun prelude(
         expectedSyncMode: ConfiguredSyncMode,
         expectedPrimaryKey: List<String>? = null,

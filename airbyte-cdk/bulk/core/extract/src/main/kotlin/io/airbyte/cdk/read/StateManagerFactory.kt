@@ -40,8 +40,11 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * A factory for instantiating [StateManager] based on the inputs of a READ. These inputs are
@@ -94,15 +97,27 @@ class StateManagerFactory(
         }
         return if (config.global) {
             when (inputState) {
-                is StreamInputState ->
-                    throw ConfigErrorException("input state unexpectedly of type STREAM")
+                is StreamInputState -> {
+                    logger.warn {
+                        "Connector is configured for GLOBAL (CDC) mode but received " +
+                            "legacy STREAM-typed state. Discarding incompatible state " +
+                            "and starting a fresh CDC initial snapshot."
+                    }
+                    forGlobal(allStreams)
+                }
                 is GlobalInputState -> forGlobal(allStreams, inputState)
                 is EmptyInputState -> forGlobal(allStreams)
             }
         } else {
             when (inputState) {
-                is GlobalInputState ->
-                    throw ConfigErrorException("input state unexpectedly of type GLOBAL")
+                is GlobalInputState -> {
+                    logger.warn {
+                        "Connector is configured for STREAM mode but received " +
+                            "legacy GLOBAL-typed state. Discarding incompatible state " +
+                            "and starting fresh."
+                    }
+                    forStream(allStreams)
+                }
                 is StreamInputState -> forStream(allStreams, inputState)
                 is EmptyInputState -> forStream(allStreams)
             }
