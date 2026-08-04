@@ -486,6 +486,50 @@ class MySqlSourceJdbcPartitionFactoryTest {
         assertEquals(1, result.size)
     }
 
+    // Regression test for oncall#13104. On a cold-start split the sampled state values carry no
+    // pk_val, so GUID detection is skipped and the unicode interpolation path runs even though the
+    // bounds are ASCII GUIDs. The synthetic boundaries must remain ASCII (collation-compatible with
+    // a utf8/utf8mb3 column) and form a complete, non-overlapping, monotonic partition plan.
+    @Test
+    fun testUnicodePathProducesCollationCompatibleBoundaries() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{}"""),
+                Jsons.readTree("""{}"""),
+                Jsons.readTree("""{}"""),
+            )
+
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "00000000-0000-0000-0000-000000000000",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+
+        // No boundary may contain a supplementary-plane (utf8mb4-only) or surrogate code point;
+        // the bounds are ASCII so every synthetic value must stay within ASCII.
+        result.keys.forEach { key ->
+            key.codePoints().forEach { cp ->
+                assertTrue(
+                    cp < 0x80,
+                    "Boundary '$key' contains non-ASCII code point U+${cp.toString(16)}",
+                )
+            }
+        }
+
+        // Boundaries must be monotonically increasing so partitions do not overlap and cover the
+        // full range.
+        val lowerBounds = result.keys.toList()
+        for (i in 0 until lowerBounds.size - 1) {
+            assertTrue(
+                lowerBounds[i] < lowerBounds[i + 1],
+                "Boundaries must strictly increase: ${lowerBounds[i]} vs ${lowerBounds[i + 1]}",
+            )
+        }
+    }
+
     // Simulates a table where both lower and upper bound are GUIDs
     @Test
     fun testBothBoundsAreGuid() {
