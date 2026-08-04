@@ -118,11 +118,19 @@ class SnowflakeTableSchemaEvolutionTest(
 
     @Test
     override fun `change from string type to unknown type`() {
+        val expectedRecords =
+            listOf(
+                mapOf("id" to 1L, "test" to "foo"),
+                mapOf("id" to 2L, "test" to mapOf("foo" to "bar")),
+                mapOf("id" to 3L, "test" to true),
+                mapOf("id" to 4L, "test" to 0L),
+                mapOf("id" to 5L, "test" to "foo"),
+            )
         super.`change from string type to unknown type`(
             idAndTestMapping,
             idAndTestMapping,
             TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_INPUT_RECORDS,
-            TableSchemaEvolutionFixtures.STRING_TO_UNKNOWN_TYPE_EXPECTED_RECORDS,
+            expectedRecords,
         )
     }
 
