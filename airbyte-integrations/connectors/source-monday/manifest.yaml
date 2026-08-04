@@ -878,6 +878,29 @@ schemas:
               type:
                 - "null"
                 - string
+            from:
+              type:
+                - "null"
+                - string
+              format: date-time
+            to:
+              type:
+                - "null"
+                - string
+              format: date-time
+            visualization_type:
+              type:
+                - "null"
+                - string
+            updated_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            is_leaf:
+              type:
+                - "null"
+                - boolean
             display_value:
               type:
                 - "null"
