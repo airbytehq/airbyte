@@ -33,6 +33,14 @@ import org.projectnessie.client.NessieConfigConstants
 
 private const val AWS_REGION = "aws.region"
 
+/**
+ * The catalog option key that Iceberg's NessieCatalog actually reads to determine the requested
+ * branch/reference. It strips the "nessie." prefix from catalog options, so the configured branch
+ * must be supplied under this un-prefixed key (not only under
+ * [NessieConfigConstants.CONF_NESSIE_REF]).
+ */
+private const val NESSIE_REF = "ref"
+
 private val logger = KotlinLogging.logger {}
 
 /**
@@ -197,6 +205,11 @@ class S3DataLakeUtil(
             mapOfNotNull(
                 CatalogUtil.ICEBERG_CATALOG_TYPE to ICEBERG_CATALOG_TYPE_NESSIE,
                 URI to catalogConfig.serverUri,
+                // Iceberg's NessieCatalog strips the "nessie." prefix from catalog options before
+                // handing them to the Nessie client, so it reads the requested branch from the
+                // un-prefixed "ref" key. We keep the prefixed "nessie.ref" as well so the value is
+                // also picked up by Nessie's own config sources.
+                NESSIE_REF to config.icebergCatalogConfiguration.mainBranchName,
                 NessieConfigConstants.CONF_NESSIE_REF to
                     config.icebergCatalogConfiguration.mainBranchName,
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
