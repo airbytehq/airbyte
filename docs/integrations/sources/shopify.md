@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 - An active [Shopify store](https://www.shopify.com).
 - If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
 <!-- env:oss  -->
-- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
+- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#custom-app-scopes).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -67,16 +67,20 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
 3. Select a name for your new app.
 4. Select **Configure Admin API scopes**.
-5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
+5. Grant access to the [following list of scopes](#custom-app-scopes). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc).
 6. Click **Install app** to give this app access to your data.
 7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
 
 #### Connect using API Password
 
 1. Enter a **Source name**.
-2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
+<FieldAnchor field="shop">
+2. Enter your **Shopify Store** name. This is the subdomain from your store's myshopify URL. For example, if your URL is `https://my-store.myshopify.com`, enter `my-store`. You can also paste the full URL (e.g. `https://my-store.myshopify.com`) and it will be normalized automatically. Find your store name in the URL bar when logged in to Shopify, or under **Settings** > **Store details**.
+</FieldAnchor>
 3. For **API Password**, enter your custom application's Admin API access token.
-4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
+<FieldAnchor field="start_date">
+4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+</FieldAnchor>
 5. Click **Set up source** and wait for the connection test to complete.
 
 ### Custom app scopes
