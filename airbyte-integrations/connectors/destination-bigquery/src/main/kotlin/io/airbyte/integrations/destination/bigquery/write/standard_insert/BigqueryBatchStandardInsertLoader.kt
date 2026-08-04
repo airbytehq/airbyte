@@ -76,7 +76,7 @@ class BigqueryBatchStandardInsertsLoader(
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
 
         if (this::writer.isInitialized) {
-            writer.write(ByteBuffer.wrap(byteArray))
+            BigQueryUtils.executeBigQueryOperation { writer.write(ByteBuffer.wrap(byteArray)) }
         } else {
             buffer!!.write(byteArray)
             // the default chunk size on the TableDataWriteChannel is 15MB,
@@ -94,9 +94,12 @@ class BigqueryBatchStandardInsertsLoader(
         if (!this::writer.isInitialized) {
             switchToWriteChannel()
         }
-        writer.close()
-        BigQueryUtils.waitForJobFinish(writer.job)
-        val stats = writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
+        BigQueryUtils.executeBigQueryOperation { writer.close() }
+        BigQueryUtils.executeBigQueryOperation { BigQueryUtils.waitForJobFinish(writer.job) }
+        val stats =
+            BigQueryUtils.executeBigQueryOperation {
+                writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
+            }
         logger.info {
             "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
@@ -117,18 +120,20 @@ class BigqueryBatchStandardInsertsLoader(
     private fun switchToWriteChannel() {
         writer =
             try {
-                bigquery.writer(job, writeChannelConfiguration)
+                BigQueryUtils.executeBigQueryOperation {
+                    bigquery.writer(job, writeChannelConfiguration)
+                }
             } catch (e: BigQueryException) {
                 if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
                     throw ConfigErrorException(CONFIG_ERROR_MSG + e)
                 } else {
-                    throw BigQueryException(e.code, e.message)
+                    throw BigQueryException(e.code, e.message, e)
                 }
             }
         val byteArray = buffer!!.toByteArray()
         // please GC this object :)
         buffer = null
-        writer.write(ByteBuffer.wrap(byteArray))
+        BigQueryUtils.executeBigQueryOperation { writer.write(ByteBuffer.wrap(byteArray)) }
     }
 }
 
