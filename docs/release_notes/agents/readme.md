@@ -1,5 +1,19 @@
 # Airbyte Agents release notes
 
+## July 28, 2026
+
+Web app
+
+- Chat answers now display tables as real tables instead of raw text, and wide tables scroll sideways so you can read every column.
+- The sessions list now shows who started each session in a new "Created by" column.
+- Fixed an issue on the Team plan where the Members page failed to load for organizations that had a pending invitation.
+- When a request fails for a reason that won't resolve on its own, such as something you don't have access to, the app now tells you right away instead of quietly retrying first.
+
+Connectors
+
+- You can now connect Google Analytics with a service account key, so you can set it up without signing in through Google and keep it running unattended.
+- Connecting Slack no longer asks for access to group direct messages, so you grant fewer permissions when you authorize it.
+
 ## July 21, 2026
 
 Web app
