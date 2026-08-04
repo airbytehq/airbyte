@@ -354,9 +354,24 @@ def test_ad_creatives_from_ads_emits_parent_updated_time_and_advances_state(api,
         end_date=None,
     )
     parent_ads = [
-        {"id": "ad-1", "creative": {"id": "creative-1"}, "updated_time": "2021-01-23T00:00:00+00:00"},
-        {"id": "ad-2", "creative": {"id": "creative-2"}, "updated_time": "2021-01-25T00:00:00+00:00"},
-        {"id": "ad-3", "creative": {"id": "creative-1"}, "updated_time": "2021-01-24T00:00:00+00:00"},
+        {
+            "id": "ad-1",
+            "creative": {"id": "creative-1"},
+            "updated_time": "2021-01-23T00:00:00+00:00",
+            "account_id": some_config["account_ids"][0],
+        },
+        {
+            "id": "ad-2",
+            "creative": {"id": "creative-2"},
+            "updated_time": "2021-01-25T00:00:00+00:00",
+            "account_id": some_config["account_ids"][0],
+        },
+        {
+            "id": "ad-3",
+            "creative": {"id": "creative-1"},
+            "updated_time": "2021-01-24T00:00:00+00:00",
+            "account_id": some_config["account_ids"][0],
+        },
     ]
     mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
     mocker.patch.object(

@@ -4,6 +4,7 @@
 
 import base64
 import logging
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import requests
@@ -100,7 +101,13 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
     status_field = "effective_status"
     valid_statuses = [status.value for status in ValidAdStatuses]
 
-    def __init__(self, fetch_thumbnail_images: bool = False, start_date=None, end_date=None, **kwargs):
+    def __init__(
+        self,
+        fetch_thumbnail_images: bool = False,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        **kwargs,
+    ):
         super().__init__(start_date=start_date, end_date=end_date, **kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
@@ -158,8 +165,8 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
 
+        # Bypass incremental read_records because it would advance state from parent ads rather than emitted creatives.
         for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
-            self.add_account_id(ad_record, stream_slice["account_id"])
             updated_time = ad_record.get(self.cursor_field)
             if updated_time is not None:
                 self.state = self._get_updated_state(self.state, ad_record)
