@@ -1266,6 +1266,51 @@ class TestSalesAndTrafficReportRequestBody:
 
 
 @freezegun.freeze_time(NOW.isoformat())
+class TestSellerPerformanceReportFullRefresh:
+    data_format = "json"
+
+    @staticmethod
+    def _read(config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name="GET_V2_SELLER_PERFORMANCE_REPORT",
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @HttpMocker()
+    def test_given_report_when_read_then_create_without_date_range_and_return_document(self, http_mocker: HttpMocker) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        create_report_body = {
+            "reportType": "GET_V2_SELLER_PERFORMANCE_REPORT",
+            "marketplaceIds": [MARKETPLACE_ID],
+        }
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request("GET_V2_SELLER_PERFORMANCE_REPORT").with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response("GET_V2_SELLER_PERFORMANCE_REPORT", report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response("GET_V2_SELLER_PERFORMANCE_REPORT", data_format=self.data_format),
+        )
+
+        output = self._read(config())
+
+        assert len(output.records) == 1
+        assert "accountStatuses" in output.records[0].record.data
+        assert "performanceMetrics" in output.records[0].record.data
+
+
+@freezegun.freeze_time(NOW.isoformat())
 class TestVendorJsonReportsFullRefresh:
     """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
 
