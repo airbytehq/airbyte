@@ -105,18 +105,52 @@ Possible solutions include:
 - Recommended: Sync data when there is no update running in the primary server, or sync data from the primary server.
 - Not Recommended: Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
 
-### Under CDC incremental mode, there are still full refresh syncs
+### Replication slot validation failures {#replication-slot-validation-failures}
 
-Normally under the CDC mode, the Postgres source will first run a full refresh sync to read the snapshot of all the existing data, and all subsequent runs will only be incremental syncs reading from the write-ahead logs (WAL). However, occasionally, you may see full refresh syncs after the initial run. When this happens, you will see the following log:
+Before it reads changes, the connector checks that your replication slot still holds the WAL position it synced from last time. If that check fails, the sync fails with a configuration error and stops. The connector doesn't silently fall back to a full re-sync, so no data is lost or duplicated without you knowing, but you do have to repair the slot and refresh the affected streams.
 
-> Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch
+The connector reports two failure messages.
 
-The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
+**The slot is no longer valid:**
 
-- When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
-  - Sync the data source more frequently.
-  - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
-- When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
+```text
+Replication slot 'airbyte_slot' is not valid: wal_status = 'lost', invalidation_reason = '...'.
+```
+
+PostgreSQL invalidated the slot and discarded the WAL it was holding, most often because the slot fell further behind than [`max_slot_wal_keep_size`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-SLOT-WAL-KEEP-SIZE) allows. The slot's `restart_lsn` is now null. `invalidation_reason` is only reported on PostgreSQL 17 and later.
+
+**The slot moved past the connector's saved position:**
+
+```text
+Replication slot 'airbyte_slot' has advanced beyond the source's state LSN. Confirmed flush LSN: 0/1A2B3C4D, source LSN: 0/1A2B0000.
+```
+
+Something else consumed the slot, or the slot was dropped and recreated, so the changes the connector still needs are gone. Sharing one slot between two sources or two Airbyte instances causes this. Each Postgres source needs its own slot.
+
+#### Recover from either failure
+
+1. Inspect the slot to confirm what happened.
+
+	```sql
+	SELECT slot_name, active, wal_status, restart_lsn, confirmed_flush_lsn
+	FROM pg_replication_slots;
+	```
+
+2. Drop and recreate the slot if it's invalid. Skip this step if `wal_status` is `reserved` and `restart_lsn` isn't null.
+
+	```sql
+	SELECT pg_drop_replication_slot('airbyte_slot');
+	SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
+	```
+
+3. In Airbyte, refresh the affected streams so the connector takes a new snapshot and starts CDC from the new slot position.
+
+#### Prevent it from happening again
+
+- Sync more frequently. The longer the gap between syncs, the more WAL the slot has to hold.
+- Raise or unset [`max_slot_wal_keep_size`](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-MAX-SLOT-WAL-KEEP-SIZE) if your disk can absorb the extra WAL. A value of `-1` lets slots retain WAL without limit, at the risk of filling the disk.
+- Dedicate the slot to a single Postgres source. Don't point a second source, a second Airbyte instance, or another replication tool at it.
+- If your slot stalls on a low-traffic database, configure a [heartbeat query](#advanced-wal-disk-consumption-and-heartbeat-action-query) so the slot keeps advancing.
 
 ### Temporary File Size Limit
 
@@ -146,9 +180,13 @@ The Postgres connector may need some time to start processing the data in the CD
 - When the connection is set up for the first time and a snapshot is needed
 - When the connector has a lot of change logs to process
 
-The connector waits for the default initial wait time of 20 minutes (1200 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs. The valid range is 120 seconds to 2400 seconds.
+**Initial Waiting Time in Seconds** is how long the connector waits for the first change event to arrive. It defaults to 1200 seconds (20 minutes) and accepts 120 to 2400 seconds. The clock stops as soon as the first event arrives, so a longer value doesn't slow down a sync that has data to read.
 
-If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
+On the first CDC sync, if no event arrives before the timeout, the sync fails with this error:
+
+> Watchdog timeout during initial snapshot. Please increase 'Initial Waiting Time' in the source configuration page.
+
+Increase the waiting time and sync again. On later syncs, hitting the timeout means the connector found nothing new to read, so it shuts down and reports zero records. If your database is quiet and you want faster zero-record syncs, lower the waiting time.
 
 ### (Advanced) Resolving sync failures due to WAL disk consumption {#advanced-wal-disk-consumption-and-heartbeat-action-query}
 
