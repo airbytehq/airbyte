@@ -88,9 +88,9 @@ Table and column names are normalized before Airbyte creates them:
 
 ## Deduplication
 
-In deduplicating sync modes, the connector loads each batch into a temporary table, keeps the record with the most recent `_airbyte_extracted_at` value for each primary key, then merges the result into the destination table.
+In sync modes that remove duplicate records, the connector loads each batch into a temporary table, keeps the record with the most recent `_airbyte_extracted_at` value for each primary key, then merges the result into the destination table.
 
-Primary keys aren't declared as table constraints, so records with null primary key values still load. If the source doesn't define a primary key and you don't select one, the connector appends every record without deduplicating.
+Primary keys aren't declared as table constraints, so records with null primary key values still load. If the source doesn't define a primary key and you don't select one, the connector appends every record without removing duplicates.
 
 ## Working with local DuckDB files
 
@@ -119,7 +119,7 @@ The **Schema Name** contains characters other than letters, numbers, and undersc
 
 ### Records missing from the destination
 
-Check the sync logs for `Data contained duplicate keys after normalization`. The connector skips any record whose field names collide after normalization, and the log lists the field names it dropped. Rename the conflicting source fields, or exclude one of them from the connection, then resync.
+Check the sync logs for `Data contained duplicate keys after normalization`. The connector skips any record whose field names collide after normalization, and the log lists the field names it dropped. Rename the conflicting source fields, or exclude one of them from the connection, then run the sync again.
 
 ### Slow syncs after a fallback warning
 
