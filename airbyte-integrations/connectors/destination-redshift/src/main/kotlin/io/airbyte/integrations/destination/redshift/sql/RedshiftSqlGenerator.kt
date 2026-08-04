@@ -232,11 +232,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Step 2: CDC hard-delete (if enabled)
         if (cdcHardDeleteEnabled) {
             val primaryKeysMatchingCondition =
-                buildNullSafePkMatch(
-                    primaryKeyTargetColumns,
-                    getFullyQualifiedName(targetTableName),
-                    dedupRef,
-                )
+                primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupRef.$pk"
+                }
             val cursorComparison =
                 buildCursorComparison(cursorTargetColumn, targetTableName, dedupRef)
             statements.add(
@@ -309,11 +307,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cursorTargetColumn: String?,
         cdcHardDeleteEnabled: Boolean,
     ): String {
-        // Redshift requires UPDATE...FROM to use a pure equijoin predicate (simple =)
-        val target = getFullyQualifiedName(targetTableName)
         val primaryKeysMatches =
             primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                "$target.$pk = $dedupTableAlias.$pk"
+                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
             }
 
         val cursorComparison =
@@ -356,11 +352,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysConditions =
-            buildNullSafePkMatch(
-                primaryKeyTargetColumns,
-                getFullyQualifiedName(targetTableName),
-                dedupTableAlias,
-            )
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+            }
 
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
@@ -405,16 +399,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             """.trimMargin()
         } else {
             "$target.$EXTRACTED_AT_COLUMN_NAME < $source.$EXTRACTED_AT_COLUMN_NAME"
-        }
-    }
-
-    private fun buildNullSafePkMatch(
-        primaryKeyColumns: List<String>,
-        targetPrefix: String,
-        sourcePrefix: String,
-    ): String {
-        return primaryKeyColumns.joinToString(" AND ") { pk ->
-            "($targetPrefix.$pk = $sourcePrefix.$pk OR ($targetPrefix.$pk IS NULL AND $sourcePrefix.$pk IS NULL))"
         }
     }
 
