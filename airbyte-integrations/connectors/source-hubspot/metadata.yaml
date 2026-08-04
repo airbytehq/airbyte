@@ -181,4 +181,13 @@ data:
     - title: HubSpot Status
       url: https://status.hubspot.com/
       type: status_page
+    - title: HubSpot OAuth v1 API Deprecation
+      url: https://developers.hubspot.com/changelog/v1-oauth-api-deprecation
+      type: api_deprecations
+    - title: HubSpot v4 API End-of-Support
+      url: https://developers.hubspot.com/changelog/deprecating-support-for-hubspot-v4-apis
+      type: api_deprecations
+    - title: HubSpot Date-Based API Versioning
+      url: https://developers.hubspot.com/changelog/introducing-date-based-api-versioning
+      type: api_deprecations
 metadataSpecVersion: "1.0"
