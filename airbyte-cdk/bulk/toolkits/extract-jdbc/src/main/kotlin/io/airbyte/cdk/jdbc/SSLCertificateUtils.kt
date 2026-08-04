@@ -36,7 +36,9 @@ import org.bouncycastle.openssl.PEMEncryptedKeyPair
 import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo
 
 private val log = KotlinLogging.logger {}
 
@@ -186,8 +188,22 @@ object SSLCertificateUtils {
                         converter.getPrivateKey(keyPair.privateKeyInfo)
                     }
                     is PEMKeyPair -> {
-                        // Handle non-encrypted key
+                        // Unencrypted PKCS#1 (-----BEGIN RSA/EC/DSA PRIVATE KEY-----)
                         converter.getPrivateKey(pemObject.privateKeyInfo)
+                    }
+                    is PKCS8EncryptedPrivateKeyInfo -> {
+                        // Encrypted PKCS#8 (-----BEGIN ENCRYPTED PRIVATE KEY-----), e.g. PBES2 with
+                        // PBKDF2 + AES. The password decrypts it.
+                        val decryptorProvider =
+                            JceOpenSSLPKCS8DecryptorProviderBuilder()
+                                .setProvider("BC")
+                                .build(keyStorePassword?.toCharArray())
+                        converter.getPrivateKey(pemObject.decryptPrivateKeyInfo(decryptorProvider))
+                    }
+                    is PrivateKeyInfo -> {
+                        // Unencrypted PKCS#8 (-----BEGIN PRIVATE KEY-----). Algorithm-agnostic
+                        // (RSA/EC/DSA/EdDSA); the converter infers the type from the key.
+                        converter.getPrivateKey(pemObject)
                     }
                     else -> throw IllegalArgumentException("Unsupported key format")
                 }

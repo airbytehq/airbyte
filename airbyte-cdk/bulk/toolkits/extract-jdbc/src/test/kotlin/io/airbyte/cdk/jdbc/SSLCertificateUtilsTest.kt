@@ -207,6 +207,59 @@ class SSLCertificateUtilsTest {
         Assertions.assertNotNull(exceptionCert)
     }
 
+    @Test
+    @Throws(
+        CertificateException::class,
+        IOException::class,
+        NoSuchAlgorithmException::class,
+        InvalidKeySpecException::class,
+        KeyStoreException::class,
+        InterruptedException::class
+    )
+    fun testKeyStoreFromClientCertificatePkcs8() {
+        // Unencrypted PKCS#8 (-----BEGIN PRIVATE KEY-----).
+        testKeyStoreFromClientCertificateInternal(
+            clientPem,
+            clientKeyPkcs8,
+            KEY_STORE_PASSWORD,
+            FileSystems.getDefault(),
+            ""
+        )
+    }
+
+    @Test
+    @Throws(
+        CertificateException::class,
+        IOException::class,
+        NoSuchAlgorithmException::class,
+        InvalidKeySpecException::class,
+        KeyStoreException::class,
+        InterruptedException::class
+    )
+    fun testKeyStoreFromClientCertificatePkcs8Encrypted() {
+        // Encrypted PKCS#8 (-----BEGIN ENCRYPTED PRIVATE KEY-----); the password decrypts the key.
+        testKeyStoreFromClientCertificateInternal(
+            clientPem,
+            clientKeyPkcs8Encrypted,
+            KEY_STORE_PASSWORD,
+            FileSystems.getDefault(),
+            ""
+        )
+
+        // A wrong passphrase must fail decryption rather than silently producing a bad keystore.
+        val exception: Exception =
+            Assertions.assertThrows(Exception::class.java) {
+                testKeyStoreFromClientCertificateInternal(
+                    clientPem,
+                    clientKeyPkcs8Encrypted,
+                    KEY_STORE_PASSWORD2,
+                    FileSystems.getDefault(),
+                    ""
+                )
+            }
+        Assertions.assertNotNull(exception)
+    }
+
     companion object {
         private const val SLASH_TMP = "/tmp"
         private const val KEY_STORE_PASSWORD = "123456"
@@ -302,6 +355,73 @@ class SSLCertificateUtilsTest {
             uuD/3Knh1gCgxW4jAUokRwfM7IgVA/plQQDQaKBzcFUl94Hl+t6VuvdvtA02MboE
             7TicEc38QKFoLN2hti0Bmm1eJCionsSPiuyDYH5XnhSz7TDjV9sM
             -----END RSA PRIVATE KEY-----""".trimIndent())
+
+        // Same RSA key as [clientKey], re-encoded as unencrypted PKCS#8.
+        val clientKeyPkcs8: String =
+            ("""
+            -----BEGIN PRIVATE KEY-----
+            MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCV/eRPDZmrPP8d
+            2pKsFizUJQkGOYDKXOilLibR1TQwN/8MToop8+mvtMi7zr/cWBDR0qTObbduWFQd
+            K82vGppSZgrRG3QWVpe8NNI9AhriVZiOmcEQqgAhbgos57Tkjy3qghNbUN1KGb3I
+            0DnNOtvFRIdATbE+LxOTgCzz/Cw6DVReunQvVo9T4EC4PBBUelMWlAJLo61AQVLM
+            3ufx4ug21wbV6D/aSRooNhkwWcwk+2vabxKnOzFAQzNU7dIZlBpo6coHFwZDUxtd
+            M2DtuLHn/r9CsMw8p4wtdIRXrTDmiF/xTXKnABGM8kEqPovZ6eh7He1jrzLTVANU
+            fNQc5b8FAgMBAAECggEAeT8IfILg8pRXIdna8LLoQAFEHz0CiBK8mTIKfVqcWlIZ
+            oOgoNauO/tLj5TVG0KZ7yjE9ugTk35UVQZN0LBUUJIGKQuivWZNcCu6j+F8oPke1
+            D6jocUEK4/sgzJXtG0lGc6f8X7epekn+qULxRp5Ko1c3AdsL6NmDOJvHOt9hHPcG
+            qcFhmxI/v+mI36uTq8AaztZ5rA7Vp2qwtLoev0aKUR75tb8K1exqHcBhXDEOfCj9
+            zTclgF3NiRFGouAn10Mb/mj/zwV54ptVv5RmsZX1p3Br4obCy4xNiLumRdSiyb7j
+            eEuSZhTKTEW/S9+QbPwScOHgwG1jrpAyRQlxCBaXoQKBgQDFUk2zGkmMRr53vfuI
+            rvKXNrQaFxMjf640833a7Si5yJy0zMsibs0cBSGseg7vU0NhBgmWjHsEbyaPN7uX
+            p+TAZ+mDa78qw3S8ipz4X6AhB4LuSalHFCSX3qnExbblWGJtkkUFoPH1R4GRH1EG
+            cjUAXeMPf7A525r4L0IxqF1MOQKBgQDCmHgVjaBw5KkDRfPVw4U827BCHL0uHcwm
+            xvWS3bSGVNyamncakGvPKCCLIiWkG0EcOs/oVyNm1Xnxu/xyQoHyOSW+igmTKOaj
+            AHH4vuYdnr/tAU8NCSn91j11A+1aOCs/Kj6ssg35KhWbIp3Jddpq7KPIQ8B7Gy7H
+            NQqrQwwhLQKBgQCKu8lBidP4Oq0kB4FYopiR1LZgOaUNKnJTbHcqe+BMb04umGai
+            OQEhGEKKv+7MOeB/0Pzgyribb4LO40KT6EmfNfAqpJDuAiqLfXHL93/geSWHYGcS
+            QIlR9g2q+dAUBEZ//31j7brw12uzmy8etyGotlo0xXQj2dFleeSygUvHkQKBgEnw
+            sUBPTjVXTTknLV1+K3RSbYjRbrjFLbtWQh2KDHw2ZpSAON1pHu3Z63Oyh+bxTC4z
+            0qgP5C3A09McgPHRf5rQSB08SiMWmXw6QRQpRTrgBUFDDAyB/OisrTF3SorLaPNZ
+            U/M+vLx+VzNZVeck1tdmD12bENo2G/Ipn2Iv2b4JAoGAbeSRBO2xPuTWRC3/pyqM
+            BoGr0qiLSBtLyFaNOKio8odVAAASOpWSapq64P/cqeHWAKDFbiMBSiRHB8zsiBUD
+            +mVBANBooHNwVSX3geX63pW692+0DTYxugTtOJwRzfxAoWgs3aG2LQGabV4kKKie
+            xI+K7INgfleeFLPtMONX2ww=
+            -----END PRIVATE KEY-----""".trimIndent())
+
+        // Same RSA key as [clientKey], as encrypted PKCS#8 (PBES2: PBKDF2 + AES-256-CBC),
+        // encrypted with the passphrase [KEY_STORE_PASSWORD].
+        val clientKeyPkcs8Encrypted: String =
+            ("""
+            -----BEGIN ENCRYPTED PRIVATE KEY-----
+            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
+            -----END ENCRYPTED PRIVATE KEY-----""".trimIndent())
 
         const val clientKey_wrong_format: String =
             ("""MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDBmUvDIVGZ5HsRgnXKns2fTf26pfKND45xu
