@@ -417,7 +417,30 @@ class SnowflakeDirectLoadSqlGenerator(
                     "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog(),
                 )
                 clauses.add(
-                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog(),
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = ${
+                        buildCastExpression(
+                            name.quote(),
+                            typeChange.originalType.type,
+                            typeChange.newType.type,
+                        )
+                    };".andLog(),
+                )
+                val typecastErrorEntry =
+                    """{"field":"$name","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}"""
+                clauses.add(
+                    """
+                    UPDATE $prettyTableName
+                    SET ${SNOWFLAKE_AB_META.quote()} = OBJECT_INSERT(
+                        ${SNOWFLAKE_AB_META.quote()},
+                        'changes',
+                        ARRAY_APPEND(
+                            COALESCE(TO_ARRAY(${SNOWFLAKE_AB_META.quote()}:"changes"), ARRAY_CONSTRUCT()),
+                            PARSE_JSON('${sqlEscape(typecastErrorEntry)}')
+                        ),
+                        TRUE
+                    )
+                    WHERE ${name.quote()} IS NOT NULL AND ${tempColumn.quote()} IS NULL;
+                    """.trimIndent().andLog(),
                 )
                 val backupColumn = "${tempColumn}_backup"
                 clauses.add(
@@ -450,6 +473,46 @@ class SnowflakeDirectLoadSqlGenerator(
             }
         }
         return clauses
+    }
+
+    /**
+     * Builds a safe conversion expression for schema evolution.
+     *
+     * Plain `CAST` can abort the whole sync for incompatible Snowflake conversions, so conversions
+     * that can fail or cannot represent a value are made tolerant by preserving or nulling values.
+     */
+    private fun buildCastExpression(
+        quotedColumn: String,
+        originalType: String,
+        newType: String,
+    ): String {
+        val scalarTypes =
+            setOf("NUMBER", "FLOAT", "VARCHAR", "BOOLEAN", "DATE", "TIME", "TIMESTAMP_NTZ", "TIMESTAMP_TZ")
+        return when {
+            originalType == "VARCHAR" && newType == "OBJECT" ->
+                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = 'OBJECT' THEN TO_OBJECT(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
+            originalType == "VARCHAR" && newType == "ARRAY" ->
+                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = 'ARRAY' THEN TO_ARRAY(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
+            originalType == "VARCHAR" && newType == "VARIANT" ->
+                "COALESCE(TRY_PARSE_JSON($quotedColumn), TO_VARIANT($quotedColumn))"
+            originalType == "VARCHAR" && newType in scalarTypes ->
+                "TRY_CAST($quotedColumn AS $newType)"
+            originalType in setOf("OBJECT", "ARRAY", "VARIANT") && newType == "VARCHAR" ->
+                "TO_VARCHAR($quotedColumn)"
+            originalType == "VARIANT" && newType == "OBJECT" ->
+                "CASE WHEN TYPEOF($quotedColumn) = 'OBJECT' THEN TO_OBJECT($quotedColumn) ELSE NULL END"
+            originalType == "VARIANT" && newType == "ARRAY" ->
+                "CASE WHEN TYPEOF($quotedColumn) = 'ARRAY' THEN TO_ARRAY($quotedColumn) ELSE NULL END"
+            originalType in setOf("OBJECT", "ARRAY") && newType in setOf("OBJECT", "ARRAY") -> "NULL"
+            originalType in setOf("OBJECT", "ARRAY") && newType == "VARIANT" ->
+                "TO_VARIANT($quotedColumn)"
+            originalType == "VARIANT" && newType in scalarTypes ->
+                "TRY_CAST(TO_VARCHAR($quotedColumn) AS $newType)"
+            originalType in setOf("OBJECT", "ARRAY") && newType in scalarTypes -> "NULL"
+            originalType in scalarTypes && newType in setOf("OBJECT", "ARRAY") -> "NULL"
+            originalType in scalarTypes && newType == "VARIANT" -> "TO_VARIANT($quotedColumn)"
+            else -> "CAST($quotedColumn AS $newType)"
+        }
     }
 
     @VisibleForTesting

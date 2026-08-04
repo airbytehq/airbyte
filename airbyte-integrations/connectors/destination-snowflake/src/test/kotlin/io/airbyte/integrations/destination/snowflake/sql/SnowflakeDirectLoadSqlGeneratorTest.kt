@@ -420,6 +420,19 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
                 """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
                 """
+                UPDATE $expectedTableName
+                SET "_AIRBYTE_META" = OBJECT_INSERT(
+                    "_AIRBYTE_META",
+                    'changes',
+                    ARRAY_APPEND(
+                        COALESCE(TO_ARRAY("_AIRBYTE_META":"changes"), ARRAY_CONSTRUCT()),
+                        PARSE_JSON('{"field":"COL3","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}')
+                    ),
+                    TRUE
+                )
+                WHERE "COL3" IS NOT NULL AND "COL3_${uuid}" IS NULL;
+                """.trimIndent(),
+                """
                 ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";""".trimIndent(),
                 """
@@ -428,6 +441,68 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
             ),
             sql
+        )
+    }
+
+    @Test
+    fun testAlterTableUsesSafeTypecastExpressions() {
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
+        val tableName = TableName(namespace = "namespace", name = "name")
+
+        val floatToObject =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                emptyMap(),
+                mapOf("FLOAT_COLUMN" to ColumnTypeChange(ColumnType("FLOAT", true), ColumnType("OBJECT", true))),
+            )
+        assertTrue(floatToObject.any { it.contains("= NULL;") })
+        assertFalse(floatToObject.any { it.contains("CAST(\"FLOAT_COLUMN\" AS OBJECT)") })
+
+        val varcharToObject =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                emptyMap(),
+                mapOf("VARCHAR_COLUMN" to ColumnTypeChange(ColumnType("VARCHAR", true), ColumnType("OBJECT", true))),
+            )
+        assertTrue(
+            varcharToObject.any {
+                it.contains(
+                    "CASE WHEN TYPEOF(TRY_PARSE_JSON(\"VARCHAR_COLUMN\")) = 'OBJECT' " +
+                        "THEN TO_OBJECT(TRY_PARSE_JSON(\"VARCHAR_COLUMN\")) ELSE NULL END"
+                )
+            }
+        )
+
+        val varcharToNumber =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                emptyMap(),
+                mapOf("NUMBER_COLUMN" to ColumnTypeChange(ColumnType("VARCHAR", true), ColumnType("NUMBER", true))),
+            )
+        assertTrue(varcharToNumber.any { it.contains("= TRY_CAST(\"NUMBER_COLUMN\" AS NUMBER);") })
+
+        val objectToVarchar =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                emptyMap(),
+                mapOf("OBJECT_COLUMN" to ColumnTypeChange(ColumnType("OBJECT", true), ColumnType("VARCHAR", true))),
+            )
+        assertTrue(objectToVarchar.any { it.contains("= TO_VARCHAR(\"OBJECT_COLUMN\");") })
+
+        val variantToObject =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                emptyMap(),
+                mapOf("VARIANT_COLUMN" to ColumnTypeChange(ColumnType("VARIANT", true), ColumnType("OBJECT", true))),
+            )
+        assertTrue(
+            variantToObject.any {
+                it.contains(
+                    "CASE WHEN TYPEOF(\"VARIANT_COLUMN\") = 'OBJECT' " +
+                        "THEN TO_OBJECT(\"VARIANT_COLUMN\") ELSE NULL END"
+                )
+            }
         )
     }
 
