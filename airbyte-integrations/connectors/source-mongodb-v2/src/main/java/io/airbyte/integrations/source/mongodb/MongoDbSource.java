@@ -49,6 +49,7 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   public static void main(final String[] args) throws Exception {
     AirbyteExceptionHandler.addThrowableForDeinterpolation(MongoCommandException.class);
+    IntegrationRunner.addOrphanedThreadFilter(threadInfo -> !threadInfo.getThread().getName().contains("replicator-fetcher"));
     final Source source = new MongoDbSource();
     LOGGER.info("starting source: {}", MongoDbSource.class);
     new IntegrationRunner(source).run(args);
