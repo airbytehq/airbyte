@@ -4,8 +4,10 @@
 
 package io.airbyte.cdk.read.cdc
 
+import com.fasterxml.jackson.core.exc.StreamConstraintsException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.util.Jsons
 import io.debezium.embedded.EmbeddedEngineChangeEvent
 import io.debezium.engine.ChangeEvent
@@ -19,16 +21,10 @@ class DebeziumEvent(event: ChangeEvent<String?, String?>) {
     val sourceRecord: SourceRecord? = (event as? EmbeddedEngineChangeEvent<*, *, *>)?.sourceRecord()
 
     val key: DebeziumRecordKey? =
-        event
-            .key()
-            ?.let { runCatching { Jsons.readTree(it) }.getOrNull() }
-            ?.let(::DebeziumRecordKey)
+        event.key()?.let { readDebeziumPayload(it, "key") }?.let(::DebeziumRecordKey)
 
     val value: DebeziumRecordValue? =
-        event
-            .value()
-            ?.let { runCatching { Jsons.readTree(it) }.getOrNull() }
-            ?.let(::DebeziumRecordValue)
+        event.value()?.let { readDebeziumPayload(it, "value") }?.let(::DebeziumRecordValue)
 
     /**
      * Debezium can output a tombstone event that has a value of null. This is an artifact of how it
@@ -104,3 +100,48 @@ data class ResetDebeziumWarmStartState(val reason: String) : InvalidDebeziumWarm
 
 /** [DebeziumSchemaHistory] wraps the contents of a Debezium schema history file. */
 @JvmInline value class DebeziumSchemaHistory(val wrapped: List<HistoryRecord>)
+
+/**
+ * Deserialize a Debezium change event payload (key or value), translating Jackson stream-constraint
+ * failures into a [SystemErrorException] whose user-facing message names the connector-level limit
+ * and the remediation, without leaking Jackson internals. Other parse failures fall through to the
+ * existing null-event handling so a single malformed event does not abort the entire CDC stream.
+ *
+ * The wrapping is defensive: [Jsons] is configured with `maxStringLength = Int.MAX_VALUE`, so this
+ * branch should not fire under normal operation.
+ *
+ * @param parser exposed for unit tests so the wrapping behavior can be exercised without producing
+ * a multi-gigabyte input.
+ */
+internal fun readDebeziumPayload(
+    raw: String,
+    payloadPart: String,
+    parser: (String) -> JsonNode = Jsons::readTree,
+): JsonNode? {
+    try {
+        return parser(raw)
+    } catch (e: Exception) {
+        if (hasStreamConstraintsCause(e)) {
+            throw SystemErrorException(
+                "A CDC event payload exceeds the connector's per-row deserialization " +
+                    "limit. Reduce the column size in the source row or exclude the row from " +
+                    "CDC replication. " +
+                    "Debezium event part: $payloadPart, raw size: ${raw.length} bytes.",
+                e,
+            )
+        }
+        return null
+    }
+}
+
+private fun hasStreamConstraintsCause(t: Throwable): Boolean {
+    var current: Throwable? = t
+    val seen = HashSet<Throwable>()
+    while (current != null && seen.add(current)) {
+        if (current is StreamConstraintsException) {
+            return true
+        }
+        current = current.cause
+    }
+    return false
+}

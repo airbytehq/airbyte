@@ -427,6 +427,21 @@ internal class JsonsTest {
         }
     }
 
+    @Test
+    fun testDeserializeAcceptsStringValueLargerThan100MiB() {
+        // Reproducer for oncall#12768: a single CDC row contained a column value larger
+        // than the previous 100 MiB cap, causing Jackson to throw StreamConstraintsException.
+        // The mapper must now accept arbitrarily large string values.
+        val sizeBytes = 110 * 1024 * 1024 // 110 MiB
+        val bigValue = CharArray(sizeBytes) { 'x' }
+        val json = StringBuilder(sizeBytes + 32)
+        json.append("{\"field\":\"")
+        json.append(bigValue)
+        json.append("\"}")
+        val node = Jsons.deserialize(json.toString())
+        Assertions.assertEquals(sizeBytes, node["field"].asText().length)
+    }
+
     companion object {
         private const val SERIALIZED_JSON = "{\"str\":\"abc\",\"num\":999,\"numLong\":888}"
         private const val SERIALIZED_JSON2 = "{\"str\":\"abc\"}"
