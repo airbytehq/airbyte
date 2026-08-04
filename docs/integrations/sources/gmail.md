@@ -11,7 +11,7 @@ Gmail is the email service provided by Google. The Gmail source connector replic
 ## Prerequisites
 
 - A Google account with access to the mailbox you want to replicate.
-- The OAuth scope `https://www.googleapis.com/auth/gmail.readonly`. The connector reads from Gmail and never modifies messages, labels, or settings.
+- A Gmail API scope that allows reading mail. The connector reads from Gmail and never modifies messages, labels, or settings. Airbyte Cloud's OAuth flow requests `https://www.googleapis.com/auth/gmail.modify`, which includes read access; self-managed OAuth clients and service accounts can grant the narrower `https://www.googleapis.com/auth/gmail.readonly` scope.
 <!-- env:oss -->
 - For **Airbyte Open Source**: a Google Cloud project with the [Gmail API enabled](https://console.cloud.google.com/apis/library/gmail.googleapis.com), plus either an OAuth 2.0 client and refresh token, or a service account key.
 <!-- /env:oss -->
@@ -20,13 +20,13 @@ Gmail is the email service provided by Google. The Gmail source connector replic
 
 ### Step 1: Set up authentication
 
-The Gmail source connector supports two authentication methods: **OAuth** and **Service Account Key**. Both methods require the `https://www.googleapis.com/auth/gmail.readonly` scope.
+The Gmail source connector supports two authentication methods: **OAuth** and **Service Account Key**. Both methods require a scope that grants read access to the mailbox.
 
 <!-- env:cloud -->
 
 #### OAuth (recommended for Airbyte Cloud)
 
-In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to replicate. Airbyte Cloud handles the OAuth flow for you — you only need to authorize Airbyte through the standard Google consent screen when configuring the source.
+In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to replicate. Airbyte Cloud handles the OAuth flow for you — you only need to authorize Airbyte through the standard Google consent screen when configuring the source. The consent screen requests `https://www.googleapis.com/auth/gmail.modify`; the connector only issues read requests.
 
 <!-- /env:cloud -->
 
@@ -37,7 +37,7 @@ In **Airbyte Cloud**, sign in with the Google account whose mailbox you want to 
 To authenticate with OAuth in **Airbyte Open Source**, create your own OAuth client in your Google Cloud project and complete the authorization code flow yourself to obtain a refresh token. You will need the resulting **Client ID**, **Client Secret**, and **Refresh Token** to configure the connector.
 
 1. In the Google Cloud console, [enable the Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com) for your project.
-2. Configure your OAuth consent screen and add the `https://www.googleapis.com/auth/gmail.readonly` scope. See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
+2. Configure your OAuth consent screen and add the `https://www.googleapis.com/auth/gmail.readonly` scope. If you register your own OAuth client with your Airbyte instance and use **Authenticate your account**, add `https://www.googleapis.com/auth/gmail.modify` instead because the connector's consent URL requests it; Google shows the unverified-app screen when a requested scope is missing from the consent screen configuration. Users who obtain a refresh token manually are unaffected. See [Choose Gmail API scopes](https://developers.google.com/workspace/gmail/api/auth/scopes).
 3. Follow [Google's web server OAuth 2.0 guide](https://developers.google.com/identity/protocols/oauth2/web-server) to create a **Web application** OAuth client and exchange the authorization code for a refresh token.
 
 #### Service Account Key for Airbyte Open Source
@@ -113,7 +113,7 @@ The connector retries `429 Too Many Requests` and `403` quota-saturation errors 
 
 - **`messages` and `threads` are stub-only.** The Gmail API's `users.messages.list` and `users.threads.list` endpoints return only `{id, threadId}` (or `{id, historyId}`) per record. To replicate the full message body, headers, or labels, sync the `messages_details` or `threads_details` substream alongside its parent.
 - **Service account mailbox access requires domain-wide delegation.** A service account without domain-wide delegation has no Gmail mailbox of its own to read. Configure domain-wide delegation in your Workspace admin console so the service account can impersonate Workspace users.
-- **Read-only scope.** This connector reads from Gmail only. The required scope is `https://www.googleapis.com/auth/gmail.readonly`. Granting broader Gmail scopes is not necessary and not recommended.
+- **Read and write access.** The `https://www.googleapis.com/auth/gmail.modify` scope grants Airbyte's app permission to read, compose, and send emails from your Gmail account, and to modify labels or trash messages, even though this connector only issues GET requests. `https://www.googleapis.com/auth/gmail.readonly` is sufficient for self-managed OAuth clients and service accounts.
 
 ## Configuration
 
@@ -139,6 +139,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
 | 0.1.10 | 2026-08-04 | [83463](https://github.com/airbytehq/airbyte/pull/83463) | Update dependencies |
 | 0.1.9 | 2026-07-28 | [82922](https://github.com/airbytehq/airbyte/pull/82922) | Update dependencies |
 | 0.1.8 | 2026-07-21 | [82425](https://github.com/airbytehq/airbyte/pull/82425) | Update dependencies |
