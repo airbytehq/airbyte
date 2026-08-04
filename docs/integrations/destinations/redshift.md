@@ -270,6 +270,15 @@ to the staging S3 bucket. Verify that:
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Redshift schema.
 
+## Limitations
+
+### NULL primary keys in dedup syncs
+
+When using [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
+or [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped),
+records where any primary key column contains a NULL value are not written to the final table.
+This is by design for performance reasons.
+
 ## Changelog
 
 <details>
@@ -277,7 +286,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.5   | 2026-08-04 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)       | revert: remove NULL-safe primary key matching in upsert, restore plain equijoin for all PK comparisons                                                                                                           |
+| 4.0.5   | 2026-08-04 | [83700](https://github.com/airbytehq/airbyte/pull/83700)   | Ignore NULL primary key records during dedup insert for performance; revert NULL-safe PK matching to plain equijoin                                                                                              |
 | 4.0.4   | 2026-07-29 | [83245](https://github.com/airbytehq/airbyte/pull/83245)   | fix: use NULL-safe primary key matching in upsert to prevent silent mismatches when PK columns contain NULL values                                                                                               |
 | 4.0.3   | 2026-07-14 | [81552](https://github.com/airbytehq/airbyte/pull/81552)   | fix: narrow SQLException handling to only treat table-not-found as missing                                                                                                                                       |
 | 4.0.2   | 2026-06-08 | [79161](https://github.com/airbytehq/airbyte/pull/79161)   | fix: validate nested string sizes within SUPER columns to prevent COPY error 1224                                                                                                                                |
