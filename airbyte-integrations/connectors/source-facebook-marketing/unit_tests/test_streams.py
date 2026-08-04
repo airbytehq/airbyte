@@ -270,7 +270,7 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
 )
 def test_fetch_creative_details_handles_exceptions(api, some_config, exception, should_raise):
     """Test that _fetch_creative_details handles exceptions based on HTTP status: 500 returns None, all others raise."""
-    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
 
     with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
         mock_creative_instance = MagicMock()
@@ -287,7 +287,7 @@ def test_fetch_creative_details_handles_exceptions(api, some_config, exception, 
 
 def test_fetch_creative_details_returns_data_on_success(api, some_config):
     """Test that _fetch_creative_details returns creative data on successful API call."""
-    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
     expected_data = {"id": "12345", "name": "Test Creative", "body": "Test body"}
 
     with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
@@ -298,6 +298,109 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
 
         result = stream._fetch_creative_details("12345")
         assert result == expected_data
+
+
+def test_ad_creatives_from_ads_request_params_include_status_and_cursor_filters(api, some_config):
+    stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=None,
+        end_date=None,
+        filter_statuses=["ACTIVE"],
+    )
+
+    params = stream.request_params(stream_state={"updated_time": "2021-01-23T00:00:00+00:00", "filter_statuses": ["ACTIVE"]})
+
+    assert params["filtering"] == [
+        {
+            "field": "ad.effective_status",
+            "operator": "IN",
+            "value": ["ACTIVE"],
+        },
+        {
+            "field": "ad.updated_time",
+            "operator": "GREATER_THAN",
+            "value": 1611360000,
+        },
+    ]
+
+
+def test_ad_creatives_from_ads_request_params_skip_cursor_on_first_sync_without_start_date(api, some_config):
+    stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=None,
+        end_date=None,
+        filter_statuses=["ACTIVE"],
+    )
+
+    assert stream.request_params(stream_state={}) == {
+        "limit": 100,
+        "filtering": [
+            {
+                "field": "ad.effective_status",
+                "operator": "IN",
+                "value": ["ACTIVE"],
+            }
+        ],
+    }
+
+
+def test_ad_creatives_from_ads_emits_parent_updated_time_and_advances_state(api, some_config, mocker):
+    stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=None,
+        end_date=None,
+    )
+    parent_ads = [
+        {"id": "ad-1", "creative": {"id": "creative-1"}, "updated_time": "2021-01-23T00:00:00+00:00"},
+        {"id": "ad-2", "creative": {"id": "creative-2"}, "updated_time": "2021-01-25T00:00:00+00:00"},
+        {"id": "ad-3", "creative": {"id": "creative-1"}, "updated_time": "2021-01-24T00:00:00+00:00"},
+    ]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(
+        stream,
+        "_fetch_creative_details",
+        side_effect=lambda creative_id: {"id": creative_id},
+    )
+
+    records = list(
+        stream.read_records(
+            sync_mode="full_refresh",
+            stream_slice={"account_id": some_config["account_ids"][0], "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    assert records == [
+        {"id": "creative-1", "updated_time": "2021-01-23T00:00:00+00:00", "account_id": some_config["account_ids"][0]},
+        {"id": "creative-2", "updated_time": "2021-01-25T00:00:00+00:00", "account_id": some_config["account_ids"][0]},
+    ]
+    assert stream.state[some_config["account_ids"][0]]["updated_time"] == "2021-01-25T00:00:00+00:00"
+
+
+def test_ad_creatives_from_ads_parent_without_updated_time_does_not_crash(api, some_config, mocker):
+    stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=None,
+        end_date=None,
+    )
+    parent_ads = [{"id": "ad-1", "creative": {"id": "creative-1"}}]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(stream, "_fetch_creative_details", return_value={"id": "creative-1"})
+
+    records = list(
+        stream.read_records(
+            sync_mode="full_refresh",
+            stream_slice={"account_id": some_config["account_ids"][0], "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    assert records[0]["updated_time"] is None
+    assert stream.state == {}
 
 
 @pytest.mark.parametrize(

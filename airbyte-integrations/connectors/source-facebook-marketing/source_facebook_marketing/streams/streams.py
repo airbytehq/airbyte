@@ -58,7 +58,7 @@ class AdCreatives(FBMarketingStream):
         if self._fields:
             return self._fields
 
-        self._fields = [f for f in super().fields(**kwargs) if f != "thumbnail_data_url"]
+        self._fields = [f for f in super().fields(**kwargs) if f not in ("thumbnail_data_url", "updated_time")]
         return self._fields
 
     def read_records(
@@ -80,7 +80,7 @@ class AdCreatives(FBMarketingStream):
         return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
 
 
-class AdCreativesFromAds(FBMarketingStream):
+class AdCreativesFromAds(FBMarketingIncrementalStream):
     """Alternative stream to fetch ad creatives through the ads endpoint.
 
     This stream fetches creatives by first getting ads (which includes creative IDs),
@@ -100,12 +100,12 @@ class AdCreativesFromAds(FBMarketingStream):
     status_field = "effective_status"
     valid_statuses = [status.value for status in ValidAdStatuses]
 
-    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, fetch_thumbnail_images: bool = False, start_date=None, end_date=None, **kwargs):
+        super().__init__(start_date=start_date, end_date=end_date, **kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
         self._creative_fields: Optional[List[str]] = None
-        self._fields = ["id", "creative"]
+        self._fields = ["id", "creative", "updated_time"]
 
     @property
     def name(self) -> str:
@@ -123,7 +123,7 @@ class AdCreativesFromAds(FBMarketingStream):
 
         json_schema = self.get_json_schema()
         creative_fields = list(json_schema.get("properties", {}).keys())
-        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id", "updated_time")]
         return self._creative_fields
 
     def fields(self, **kwargs) -> List[str]:
@@ -158,7 +158,12 @@ class AdCreativesFromAds(FBMarketingStream):
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
 
-        for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
+            self.add_account_id(ad_record, stream_slice["account_id"])
+            updated_time = ad_record.get(self.cursor_field)
+            if updated_time is not None:
+                self.state = self._get_updated_state(self.state, ad_record)
+
             creative_id = ad_record.get("creative", {}).get("id")
             if not creative_id or creative_id in self._seen_creative_ids:
                 continue
@@ -170,6 +175,7 @@ class AdCreativesFromAds(FBMarketingStream):
                 continue
 
             self.fix_date_time(creative_data)
+            creative_data[self.cursor_field] = updated_time
 
             if self._fetch_thumbnail_images:
                 thumbnail_url = creative_data.get("thumbnail_url")

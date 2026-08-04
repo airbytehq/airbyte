@@ -16,6 +16,11 @@
       "description": "The unique identifier of the ad creative.",
       "type": ["null", "string"]
     },
+    "updated_time": {
+      "description": "The date and time when the parent ad was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "account_id": {
       "description": "The unique identifier of the Facebook ad account associated with the ad creative.",
       "type": ["null", "string"]
