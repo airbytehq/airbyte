@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import gzip
+import io
 import itertools
 import json
 import logging
@@ -37,11 +39,13 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     Stream reader for Google Cloud Storage (GCS).
     """
 
+    _GZIP_MAGIC = b"\x1f\x8b"
+
     def __init__(self):
         super().__init__()
         self._gcs_client = None
         self._config = None
-        self.tmp_dir = tempfile.TemporaryDirectory()
+        self._zip_temp_dirs: list[tempfile.TemporaryDirectory] = []
 
     @property
     def config(self) -> Config:
@@ -102,15 +106,23 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     if not start_date or last_modified >= start_date:
                         if self.config.credentials.auth_type == "Client":
                             uri = f"gs://{blob.bucket.name}/{blob.name}"
+                            displayed_uri = None
                         else:
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
+                            displayed_uri = uri.split("?")[0] if self.config.sanitize_signed_urls else None
 
                         remote_file = GCSUploadableRemoteFile(
-                            uri=uri, blob=blob, last_modified=last_modified, mime_type=".".join(blob.name.split(".")[1:])
+                            uri=uri,
+                            blob=blob,
+                            last_modified=last_modified,
+                            mime_type=".".join(blob.name.split(".")[1:]),
+                            displayed_uri=displayed_uri,
                         )
 
-                        if remote_file.mime_type == "zip" and self.config.delivery_method.delivery_type != DeliverRawFiles.delivery_type:
-                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
+                        if blob.name.endswith(".zip") and not isinstance(self.config.delivery_method, DeliverRawFiles):
+                            tmp_dir = tempfile.TemporaryDirectory()
+                            self._zip_temp_dirs.append(tmp_dir)
+                            yield from ZipHelper(blob, remote_file, tmp_dir.name).get_gcs_remote_files()
                         else:
                             yield remote_file
         except Exception as exc:
@@ -138,6 +150,18 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         else:
             compression = "disable"
 
+        # For gs:// URIs whose blob has Content-Encoding: gzip, bypass
+        # smart_open and handle decompression directly.  GCS decompressive
+        # transcoding conflicts with google-cloud-storage BlobReader's
+        # ranged downloads, producing "incorrect header check" errors.
+        if (
+            file.uri.startswith("gs://")
+            and file.blob is not None
+            and getattr(file.blob, "content_encoding", None) == "gzip"
+            and compression == "disable"
+        ):
+            return self._open_gzip_encoded_blob(file, mode, encoding, logger)
+
         try:
             result = smart_open.open(
                 file.uri, mode=mode.value, compression=compression, encoding=encoding, transport_params={"client": self.gcs_client}
@@ -149,3 +173,37 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             logger.exception(oe)
             raise oe
         return result
+
+    def _open_gzip_encoded_blob(
+        self,
+        file: GCSUploadableRemoteFile,
+        mode: FileReadMode,
+        encoding: Optional[str],
+        logger: logging.Logger,
+    ) -> IOBase:
+        """Open a GCS blob whose `Content-Encoding` is `gzip` using a raw download.
+
+        `raw_download=True` tells google-cloud-storage to skip decompressive
+        transcoding and return the stored bytes directly.  We then inspect the
+        gzip magic number to decide whether the content is genuinely compressed
+        or mislabeled, and wrap the stream accordingly.
+
+        The resulting stream is seekable and does not require loading the entire
+        object into memory.
+        """
+        blob_reader = file.blob.open("rb", raw_download=True)
+        magic = blob_reader.read(2)
+        blob_reader.seek(0)
+
+        if magic == self._GZIP_MAGIC:
+            stream: IOBase = gzip.GzipFile(fileobj=blob_reader)
+        else:
+            logger.info(
+                "Object %s has Content-Encoding: gzip but content is not gzip-compressed. Reading as plain text.",
+                file.uri,
+            )
+            stream = blob_reader
+
+        if mode == FileReadMode.READ:
+            return io.TextIOWrapper(stream, encoding=encoding or "utf-8")
+        return stream

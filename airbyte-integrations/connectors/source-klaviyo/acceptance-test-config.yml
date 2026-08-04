@@ -8,6 +8,10 @@ acceptance_tests:
         empty_streams:
           - name: "lists_detailed"
             bypass_reason: "Low rate limit threshold"
+          - name: "flow_series_reports"
+            bypass_reason: "XS tier rate limits (2 req/min) with per-metric partitioning causes extremely long syncs"
+          - name: "campaign_values_reports"
+            bypass_reason: "XS tier rate limits (2 req/min) with per-metric partitioning causes extremely long syncs"
   connection:
     tests:
       - config_path: secrets/config.json

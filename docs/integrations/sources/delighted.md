@@ -47,6 +47,10 @@ This source is capable of syncing the following core streams:
 - [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
 - [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +58,14 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.4.45 | 2026-06-30 | [81033](https://github.com/airbytehq/airbyte/pull/81033) | Update dependencies |
+| 0.4.44 | 2026-06-23 | [80405](https://github.com/airbytehq/airbyte/pull/80405) | Update dependencies |
+| 0.4.43 | 2026-06-16 | [79798](https://github.com/airbytehq/airbyte/pull/79798) | Update dependencies |
+| 0.4.42 | 2026-06-09 | [79239](https://github.com/airbytehq/airbyte/pull/79239) | Update dependencies |
+| 0.4.41 | 2026-06-02 | [78666](https://github.com/airbytehq/airbyte/pull/78666) | Update dependencies |
+| 0.4.40 | 2026-04-28 | [77166](https://github.com/airbytehq/airbyte/pull/77166) | Update dependencies |
+| 0.4.39 | 2026-04-21 | [75097](https://github.com/airbytehq/airbyte/pull/75097) | Update dependencies |
+| 0.4.38 | 2026-03-03 | [74151](https://github.com/airbytehq/airbyte/pull/74151) | Update dependencies |
 | 0.4.37 | 2026-01-14 | [71572](https://github.com/airbytehq/airbyte/pull/71572) | Update dependencies |
 | 0.4.36 | 2025-12-19 | [70939](https://github.com/airbytehq/airbyte/pull/70939) | Update dependencies |
 | 0.4.35 | 2025-11-25 | [69921](https://github.com/airbytehq/airbyte/pull/69921) | Update dependencies |

@@ -11,17 +11,19 @@ This destination writes data to a directory on an SFTP server.
 Each stream will be output into its own file.
 Each file will contain a collection of `json` objects which correspond directly with the data supplied by the source.
 
-#### Features
-
-| Feature                   | Supported |
-| :------------------------ | :-------- |
-| Full Refresh Sync         | Yes       |
-| Incremental - Append Sync | Yes       |
-| Namespaces                | No        |
-
 #### Performance considerations
 
 This integration will be constrained by the connection speed to the SFTP server and speed at which that server accepts writes.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started
 
@@ -34,6 +36,10 @@ The `filename` **should not** have an extension in the configuration, as `.jsonl
 If `destination_path` is set to `/myfolder/files` and `filename` is set to `mydata`, the resulting file will be `/myfolder/files/mydata.jsonl`.
 
 These files can then be accessed by creating an SFTP connection to the server and navigating to the `destination_path`.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

@@ -139,7 +139,7 @@
       "num_workers": {
         "order": 11,
         "type": "integer",
-        "title": "Number of concurrent workers",
+        "title": "Number of concurrent threads",
         "minimum": 1,
         "maximum": 25,
         "default": 3,

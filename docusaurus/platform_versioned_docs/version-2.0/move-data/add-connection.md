@@ -16,7 +16,7 @@ You configure all connections in a similar way. However, the exact process is di
 
 - **ELT databases, warehouses, and lakes**: These destinations are more agnostic about schema. You can, for example, create tables with any number of columns and change those column types if you need to. This is typical of data warehouses and data lakes, and allows you more freedom to determine the structure of your data.
 
-- **Data activation**: These destinations have stricter schemas that your connection must adhere to. For example, if you're syncing data to Salesforce, your Salesforce records have pre-existing fields for name, email, company, phone number, revenue, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure. Typically, you have less freedom over the structure of data in these destinations.
+- **Data activation**: These destinations have stricter schemas that your connection must adhere to. For example, if you're syncing data to HubSpot, your HubSpot records have pre-existing fields for name, email, company, phone number, etc. Some of those fields may be optional, some may be required, and all expect data in a certain format. This means you need to map data from your source to your destination to ensure it arrives in the necessary format and structure. Typically, you have less freedom over the structure of data in these destinations.
 
 The unique needs of a destination account for why setting up some connections is different than others.
 

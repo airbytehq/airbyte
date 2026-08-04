@@ -26,6 +26,11 @@ You configure notifications for each workspace separately. Once you do, Airbyte 
 | **Sync Disabled - Repeated Failures**   | &#10003; | &#10003;     | Airbyte has turned off a connection due to repeated failures. It has failed 30 times consecutively and has not been successful in the last 7 days.     |
 | **Warning - Upgrade Required**          | &#10003; |              | A new connector version is available, but you need to manually upgrade.                                                                                |
 | **Sync Disabled - Upgrade Required**    | &#10003; |              | Airbyte turned off one or more connections automatically because you missed the deadline to upgrade the connector.                                     |
+| **Queued syncs**                        | &#10003; | &#10003;     | A sync from any of your connections is queued due to capacity limits. Off by default. See [Monitor data worker usage](./manage-data-workers.md).      |
+
+:::note
+"Queued syncs" notifications default to off because capacity enforcement queuing is expected behavior for most organizations. Enable this notification if you want awareness when syncs are waiting for capacity.
+:::
 
 ### Enabling schema update notifications
 
@@ -189,6 +194,12 @@ Webhook doesn't contain payload and only works for Slack notifications.
   <summary>Sync Disabled - Upgrade Required</summary>
 
 Webhook doesn't contain payload and only works for Slack notifications.
+
+</details>
+<details>
+  <summary>Queued syncs</summary>
+
+Queued syncs notifications support both email and webhook. No example payload is available at this time.
 
 </details>
 

@@ -1,4 +1,15 @@
 {
-  "error_code": "complexityBudgetExhausted",
-  "status_code": 200
+  "errors": [
+    {
+      "message": "Complexity budget exhausted",
+      "extensions": {
+        "code": "COMPLEXITY_BUDGET_EXHAUSTED",
+        "complexity": 6182,
+        "complexity_budget_left": 100,
+        "complexity_budget_limit": 5000000,
+        "retry_in_seconds": 60,
+        "status_code": 429
+      }
+    }
+  ]
 }

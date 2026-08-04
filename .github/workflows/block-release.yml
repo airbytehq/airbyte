@@ -1,0 +1,198 @@
+name: Block/Unblock Connector Release
+
+# Creates or removes a block-release.yaml marker file in a connector directory.
+# When present, the marker prevents the publish pipeline from releasing the connector,
+# and a PR comment warns contributors that publishing is blocked.
+#
+# Intended to be triggered by the airbyte-ops MCP/CLI after a connector version
+# is yanked, to prevent accidental re-publish of broken code still on master.
+#
+# See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
+
+on:
+  workflow_dispatch:
+    inputs:
+      connector-name:
+        description: "Connector name (e.g., 'source-faker')"
+        required: true
+        type: string
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - block
+          - unblock
+      reason:
+        description: "Reason for blocking (required for 'block' action)"
+        required: false
+        type: string
+      yanked-version:
+        description: "Version that was yanked (optional, for reference)"
+        required: false
+        type: string
+      blocked-by:
+        description: "Email of the person requesting the block"
+        required: false
+        type: string
+        default: ""
+
+run-name: "${{ github.event.inputs.action }} release of ${{ github.event.inputs.connector-name }}"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: block-release-${{ github.event.inputs.connector-name }}
+  cancel-in-progress: true
+
+jobs:
+  block-release:
+    name: "${{ github.event.inputs.action }} release — ${{ github.event.inputs.connector-name }}"
+    runs-on: ubuntu-24.04
+    env:
+      CONNECTOR_NAME: ${{ github.event.inputs.connector-name }}
+      ACTION: ${{ github.event.inputs.action }}
+      REASON: ${{ github.event.inputs.reason }}
+      YANKED_VERSION: ${{ github.event.inputs.yanked-version }}
+      BLOCKED_BY: ${{ github.event.inputs.blocked-by }}
+    steps:
+      # ── Validate inputs ──────────────────────────────────────────────
+      - name: Validate inputs
+        run: |
+          if [[ "${ACTION}" == "block" && -z "${REASON}" ]]; then
+            echo "::error::A reason is required when blocking a connector release."
+            exit 1
+          fi
+
+      # ── Authenticate as Octavia Bot (creates PRs, triggers CI) ──────
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+
+      - name: Checkout Airbyte repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          fetch-depth: 1
+
+      # ── Validate connector directory exists ─────────────────────────
+      - name: Validate connector exists
+        run: |
+          CONNECTOR_DIR="airbyte-integrations/connectors/${CONNECTOR_NAME}"
+          if [[ ! -d "${CONNECTOR_DIR}" ]]; then
+            echo "::error::Connector directory not found: ${CONNECTOR_DIR}"
+            exit 1
+          fi
+
+      # ── Install airbyte-ops CLI ───────────────────────────────────
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      # ── Block: create marker file via CLI ────────────────────────────
+      - name: Create block-release.yaml
+        if: env.ACTION == 'block'
+        run: |
+          airbyte-ops local connector release-block add \
+            --name "${CONNECTOR_NAME}" \
+            --reason "${REASON}" \
+            ${YANKED_VERSION:+--yanked-version "${YANKED_VERSION}"} \
+            ${BLOCKED_BY:+--blocked-by "${BLOCKED_BY}"} \
+            --repo-path .
+
+      # ── Unblock: remove marker file via CLI ──────────────────────────
+      - name: Remove block-release.yaml
+        if: env.ACTION == 'unblock'
+        run: |
+          BLOCK_FILE="airbyte-integrations/connectors/${CONNECTOR_NAME}/block-release.yaml"
+          if [[ ! -f "${BLOCK_FILE}" ]]; then
+            echo "::warning::No block-release.yaml found for ${CONNECTOR_NAME}. Nothing to unblock."
+            exit 0
+          fi
+          airbyte-ops local connector release-block clear --name "${CONNECTOR_NAME}" --repo-path .
+
+      # ── Create and force-merge PR ──────────────────────────────────
+      - name: Create PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "ci: ${{ env.ACTION }} release of ${{ env.CONNECTOR_NAME }}"
+          branch: "${{ env.ACTION }}-release/${{ env.CONNECTOR_NAME }}"
+          base: ${{ github.event.repository.default_branch }}
+          delete-branch: true
+          title: "ci: ${{ env.ACTION }} release of ${{ env.CONNECTOR_NAME }}"
+          body: |
+            Automated release ${{ env.ACTION }} for `${{ env.CONNECTOR_NAME }}`.
+
+            ${{ env.ACTION == 'block' && format('**Reason:** {0}', env.REASON) || '' }}
+            ${{ env.YANKED_VERSION != '' && format('**Yanked version:** {0}', env.YANKED_VERSION) || '' }}
+            ${{ env.BLOCKED_BY != '' && format('**Requested by:** {0}', env.BLOCKED_BY) || '' }}
+
+            Generated by [`block-release` workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+            auto-merge/bypass-ci-checks
+
+      - name: Mark PR ready for review
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+
+      # ── Force-merge using admin bot ────────────────────────────────
+      - name: Authenticate as GitHub App (Admin)
+        if: steps.create-pr.outputs.pull-request-number
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Approve PR
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "${{ steps.create-pr.outputs.pull-request-number }}"
+          --repo "${{ github.repository }}"
+          --approve
+          --body "Auto-approved by block-release workflow."
+
+      - name: Force-merge PR
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: |
+          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
+            --repo "${{ github.repository }}" \
+            --squash \
+            --admin
+
+      # ── Summary ────────────────────────────────────────────────────
+      - name: Job summary
+        if: always()
+        run: |
+          echo "### Release ${{ env.ACTION }} — \`${{ env.CONNECTOR_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -n "${{ steps.create-pr.outputs.pull-request-number }}" ]]; then
+            echo "PR: ${{ github.server_url }}/${{ github.repository }}/pull/${{ steps.create-pr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No PR was created (connector may already be in the desired state)." >> $GITHUB_STEP_SUMMARY
+          fi

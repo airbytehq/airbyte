@@ -63,7 +63,12 @@ class AirbyteValueToIcebergRecord {
             is DateValue -> return airbyteValue.value
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
-            is NumberValue -> return airbyteValue.value.toDouble()
+            is NumberValue ->
+                return when (type.typeId()) {
+                    // PK NumberType fields are mapped to StringType in Iceberg.
+                    Type.TypeID.STRING -> airbyteValue.value.toPlainString()
+                    else -> airbyteValue.value.toDouble()
+                }
             is StringValue -> return airbyteValue.value
             is TimeWithTimezoneValue ->
                 return when (type.typeId()) {

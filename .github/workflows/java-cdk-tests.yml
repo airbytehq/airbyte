@@ -29,52 +29,65 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: changes
-        uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
           filters: |
             java:
               - 'airbyte-cdk/java/**/*'
               - 'airbyte-cdk/bulk/**/*'
 
-  # Check for changes in the actual artifact that we'll publish.
-  # Notably, this does _not_ include test/integrationTest.
-  changes-in-bulk-artifact:
-    name: Detect Changes in Bulk CDK artifact
+  # Detect changes in base, extract, and load CDK packages.
+  # If code changed in a package, we verify the version was bumped
+  # (i.e. the new version doesn't already exist in Maven).
+  changes-in-bulk-cdk-packages:
+    name: Detect Bulk CDK Package Changes
     runs-on: ubuntu-24.04
     outputs:
-      java: ${{ steps.changes-in-bulk-artifact.outputs.java }}
+      base: ${{ steps.changes.outputs.base }}
+      extract: ${{ steps.changes.outputs.extract }}
+      load: ${{ steps.changes.outputs.load }}
 
     steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - id: changes-in-bulk-artifact
-        uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         with:
           filters: |
-            java:
-              - 'airbyte-cdk/bulk/**/**/src/main/**/*'
-              - 'airbyte-cdk/bulk/**/**/src/testFixtures/**/*'
+            base:
+              - 'airbyte-cdk/bulk/core/base/**'
+            extract:
+              - 'airbyte-cdk/bulk/core/extract/**'
+              - 'airbyte-cdk/bulk/toolkits/extract-*/**'
+              - 'airbyte-cdk/bulk/toolkits/*source*/**'
+            load:
+              - 'airbyte-cdk/bulk/core/load/**'
+              - 'airbyte-cdk/bulk/toolkits/load-*/**'
+              - 'airbyte-cdk/bulk/toolkits/legacy-task-load*/**'
 
   run-check-bulk-cdk-version:
     needs:
-      - changes-in-bulk-artifact
-    if: needs.changes-in-bulk-artifact.outputs.java == 'true'
+      - changes-in-bulk-cdk-packages
+    if: |
+      needs.changes-in-bulk-cdk-packages.outputs.base == 'true' ||
+      needs.changes-in-bulk-cdk-packages.outputs.extract == 'true' ||
+      needs.changes-in-bulk-cdk-packages.outputs.load == 'true'
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     name: Bulk CDK version check
     timeout-minutes: 60
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Java Setup
-        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "21"
-      # Help CDK Devs understand CDK version should be incremented on changes.
-      - name: Check that bulk CDK version is incremented
+      - name: Check that base CDK version is incremented
+        if: needs.changes-in-bulk-cdk-packages.outputs.base == 'true'
         uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
         env:
           CI: true
@@ -82,7 +95,27 @@ jobs:
           job-id: bulk-cdk-version-check
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
+          arguments: --scan :airbyte-cdk:bulk:checkBaseVersion
+      - name: Check that extract CDK version is incremented
+        if: needs.changes-in-bulk-cdk-packages.outputs.extract == 'true'
+        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-version-check
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:checkExtractVersion
+      - name: Check that load CDK version is incremented
+        if: needs.changes-in-bulk-cdk-packages.outputs.load == 'true'
+        uses: burrunan/gradle-cache-action@3bf23b8dd95e7d2bacf2470132454fe893a178a1 # v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-version-check
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:checkLoadVersion
 
   run-check:
     needs:
@@ -97,9 +130,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Java Setup
-        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "21"
