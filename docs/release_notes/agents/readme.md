@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## August 4, 2026
+
+Web app
+
+- You can now pin the chats you come back to most. Pin or unpin a chat from the sessions table, the chat header, or the sidebar, filter the sessions list to show only pinned chats, and find your pinned chats grouped at the top of the sidebar. Pins are personal to you and stay with you across workspaces in your organization.
+- New chat, MCP server, SDK, and CLI are now unavailable in the sidebar until you add a connector, and a tooltip points you to the connectors page. They become available as soon as you finish connecting an app.
+
+Other
+
+- Search results your agents get back from synced data now keep the field names you configured, so details that previously came back empty for some connected apps are included again.
+
 ## July 21, 2026
 
 Web app
