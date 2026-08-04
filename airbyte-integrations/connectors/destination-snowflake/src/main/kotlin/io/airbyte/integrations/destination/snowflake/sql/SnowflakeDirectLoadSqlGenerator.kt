@@ -486,31 +486,81 @@ class SnowflakeDirectLoadSqlGenerator(
         originalType: String,
         newType: String,
     ): String {
+        fun normalizeType(type: String): String =
+            when (val normalizedType = type.trim().uppercase()) {
+                "TEXT", "STRING" -> SnowflakeDataType.VARCHAR.typeName
+                else -> normalizedType
+            }
+
+        val normalizedOriginalType = normalizeType(originalType)
+        val normalizedNewType = normalizeType(newType)
         val scalarTypes =
-            setOf("NUMBER", "FLOAT", "VARCHAR", "BOOLEAN", "DATE", "TIME", "TIMESTAMP_NTZ", "TIMESTAMP_TZ")
+            setOf(
+                SnowflakeDataType.NUMBER.typeName,
+                SnowflakeDataType.FLOAT.typeName,
+                SnowflakeDataType.VARCHAR.typeName,
+                SnowflakeDataType.BOOLEAN.typeName,
+                SnowflakeDataType.DATE.typeName,
+                SnowflakeDataType.TIME.typeName,
+                SnowflakeDataType.TIMESTAMP_NTZ.typeName,
+                SnowflakeDataType.TIMESTAMP_TZ.typeName,
+            )
         return when {
-            originalType == "VARCHAR" && newType == "OBJECT" ->
-                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = 'OBJECT' THEN TO_OBJECT(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
-            originalType == "VARCHAR" && newType == "ARRAY" ->
-                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = 'ARRAY' THEN TO_ARRAY(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
-            originalType == "VARCHAR" && newType == "VARIANT" ->
+            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
+                normalizedNewType == SnowflakeDataType.OBJECT.typeName ->
+                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = " +
+                    "'${SnowflakeDataType.OBJECT.typeName}' THEN TO_OBJECT(" +
+                    "TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
+            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
+                normalizedNewType == SnowflakeDataType.ARRAY.typeName ->
+                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = " +
+                    "'${SnowflakeDataType.ARRAY.typeName}' THEN TO_ARRAY(" +
+                    "TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
+            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
+                normalizedNewType == SnowflakeDataType.VARIANT.typeName ->
                 "COALESCE(TRY_PARSE_JSON($quotedColumn), TO_VARIANT($quotedColumn))"
-            originalType == "VARCHAR" && newType in scalarTypes ->
+            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
+                normalizedNewType in scalarTypes ->
                 "TRY_CAST($quotedColumn AS $newType)"
-            originalType in setOf("OBJECT", "ARRAY", "VARIANT") && newType == "VARCHAR" ->
+            normalizedOriginalType in
+                setOf(
+                    SnowflakeDataType.OBJECT.typeName,
+                    SnowflakeDataType.ARRAY.typeName,
+                    SnowflakeDataType.VARIANT.typeName,
+                ) &&
+                normalizedNewType == SnowflakeDataType.VARCHAR.typeName ->
                 "TO_VARCHAR($quotedColumn)"
-            originalType == "VARIANT" && newType == "OBJECT" ->
-                "CASE WHEN TYPEOF($quotedColumn) = 'OBJECT' THEN TO_OBJECT($quotedColumn) ELSE NULL END"
-            originalType == "VARIANT" && newType == "ARRAY" ->
-                "CASE WHEN TYPEOF($quotedColumn) = 'ARRAY' THEN TO_ARRAY($quotedColumn) ELSE NULL END"
-            originalType in setOf("OBJECT", "ARRAY") && newType in setOf("OBJECT", "ARRAY") -> "NULL"
-            originalType in setOf("OBJECT", "ARRAY") && newType == "VARIANT" ->
+            normalizedOriginalType == SnowflakeDataType.VARIANT.typeName &&
+                normalizedNewType == SnowflakeDataType.OBJECT.typeName ->
+                "CASE WHEN TYPEOF($quotedColumn) = '${SnowflakeDataType.OBJECT.typeName}' " +
+                    "THEN TO_OBJECT($quotedColumn) ELSE NULL END"
+            normalizedOriginalType == SnowflakeDataType.VARIANT.typeName &&
+                normalizedNewType == SnowflakeDataType.ARRAY.typeName ->
+                "CASE WHEN TYPEOF($quotedColumn) = '${SnowflakeDataType.ARRAY.typeName}' " +
+                    "THEN TO_ARRAY($quotedColumn) ELSE NULL END"
+            normalizedOriginalType in
+                setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) &&
+                normalizedNewType in
+                    setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) ->
+                "NULL"
+            normalizedOriginalType in
+                setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) &&
+                normalizedNewType == SnowflakeDataType.VARIANT.typeName ->
                 "TO_VARIANT($quotedColumn)"
-            originalType == "VARIANT" && newType in scalarTypes ->
+            normalizedOriginalType == SnowflakeDataType.VARIANT.typeName &&
+                normalizedNewType in scalarTypes ->
                 "TRY_CAST(TO_VARCHAR($quotedColumn) AS $newType)"
-            originalType in setOf("OBJECT", "ARRAY") && newType in scalarTypes -> "NULL"
-            originalType in scalarTypes && newType in setOf("OBJECT", "ARRAY") -> "NULL"
-            originalType in scalarTypes && newType == "VARIANT" -> "TO_VARIANT($quotedColumn)"
+            normalizedOriginalType in
+                setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) &&
+                normalizedNewType in scalarTypes ->
+                "NULL"
+            normalizedOriginalType in scalarTypes &&
+                normalizedNewType in
+                    setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) ->
+                "NULL"
+            normalizedOriginalType in scalarTypes &&
+                normalizedNewType == SnowflakeDataType.VARIANT.typeName ->
+                "TO_VARIANT($quotedColumn)"
             else -> "CAST($quotedColumn AS $newType)"
         }
     }
