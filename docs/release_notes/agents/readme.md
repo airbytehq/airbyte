@@ -1,5 +1,18 @@
 # Airbyte Agents release notes
 
+## July 29, 2026
+
+Web app
+
+- Chat now stops as soon as an access policy blocks a connector action and tells you access was denied, instead of retrying the request or quietly moving on to other tools.
+- When you review who can access a connector's data, the list of people now includes only those who can actually reach that workspace, so you no longer see teammates who could never use the connector.
+- Chat and workflow building now run on Claude Opus 5.
+
+Connectors
+
+- LinkedIn Ads is now generally available instead of experimental. Your agents can work with ad accounts, campaigns, campaign groups, creatives, conversions, and lead forms, including creating, updating, and deleting campaigns and campaign groups, and can pull ad analytics broken down by device, company, company size, country, industry, job function, job title, region, and seniority. You can connect with either OAuth or a LinkedIn access token.
+- Connector setup checks now send the default values some services require, so connections validate correctly for apps such as LinkedIn Ads and Salesforce.
+
 ## July 21, 2026
 
 Web app
