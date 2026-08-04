@@ -426,7 +426,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     'changes',
                     ARRAY_APPEND(
                         COALESCE(TO_ARRAY("_AIRBYTE_META":"changes"), ARRAY_CONSTRUCT()),
-                        PARSE_JSON('{"field":"COL3","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}')
+                        PARSE_JSON('{\"field\":\"COL3\",\"change\":\"NULLED\",\"reason\":\"DESTINATION_TYPECAST_ERROR\"}')
                     ),
                     TRUE
                 )
@@ -464,9 +464,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 ),
             )
         assertTrue(
-            floatToObject.contains(
-                """UPDATE $expectedTableName SET "FLOAT_COLUMN_$uuid" = NULL;"""
-            )
+            floatToObject.contains("""UPDATE $expectedTableName SET "FLOAT_COLUMN_$uuid" = NULL;""")
         )
         assertFalse(floatToObject.any { it.contains("CAST(\"FLOAT_COLUMN\" AS OBJECT)") })
 

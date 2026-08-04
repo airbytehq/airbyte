@@ -440,7 +440,9 @@ class SnowflakeDirectLoadSqlGenerator(
                         TRUE
                     )
                     WHERE ${name.quote()} IS NOT NULL AND ${tempColumn.quote()} IS NULL;
-                    """.trimIndent().andLog(),
+                    """
+                        .trimIndent()
+                        .andLog(),
                 )
                 val backupColumn = "${tempColumn}_backup"
                 clauses.add(
@@ -488,78 +490,51 @@ class SnowflakeDirectLoadSqlGenerator(
     ): String {
         fun normalizeType(type: String): String =
             when (val normalizedType = type.trim().uppercase()) {
-                "TEXT", "STRING" -> SnowflakeDataType.VARCHAR.typeName
+                "TEXT",
+                "STRING" -> SnowflakeDataType.VARCHAR.typeName
                 else -> normalizedType
             }
 
         val normalizedOriginalType = normalizeType(originalType)
         val normalizedNewType = normalizeType(newType)
+        val number = SnowflakeDataType.NUMBER.typeName
+        val float = SnowflakeDataType.FLOAT.typeName
+        val varchar = SnowflakeDataType.VARCHAR.typeName
+        val boolean = SnowflakeDataType.BOOLEAN.typeName
+        val date = SnowflakeDataType.DATE.typeName
+        val time = SnowflakeDataType.TIME.typeName
+        val timestampNtz = SnowflakeDataType.TIMESTAMP_NTZ.typeName
+        val timestampTz = SnowflakeDataType.TIMESTAMP_TZ.typeName
+        val array = SnowflakeDataType.ARRAY.typeName
+        val obj = SnowflakeDataType.OBJECT.typeName
+        val variant = SnowflakeDataType.VARIANT.typeName
         val scalarTypes =
-            setOf(
-                SnowflakeDataType.NUMBER.typeName,
-                SnowflakeDataType.FLOAT.typeName,
-                SnowflakeDataType.VARCHAR.typeName,
-                SnowflakeDataType.BOOLEAN.typeName,
-                SnowflakeDataType.DATE.typeName,
-                SnowflakeDataType.TIME.typeName,
-                SnowflakeDataType.TIMESTAMP_NTZ.typeName,
-                SnowflakeDataType.TIMESTAMP_TZ.typeName,
-            )
+            setOf(number, float, varchar, boolean, date, time, timestampNtz, timestampTz)
+        val semiStructured = setOf(obj, array, variant)
+        val structured = setOf(obj, array)
         return when {
-            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
-                normalizedNewType == SnowflakeDataType.OBJECT.typeName ->
-                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = " +
-                    "'${SnowflakeDataType.OBJECT.typeName}' THEN TO_OBJECT(" +
-                    "TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
-            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
-                normalizedNewType == SnowflakeDataType.ARRAY.typeName ->
-                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = " +
-                    "'${SnowflakeDataType.ARRAY.typeName}' THEN TO_ARRAY(" +
-                    "TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
-            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
-                normalizedNewType == SnowflakeDataType.VARIANT.typeName ->
+            normalizedOriginalType == varchar && normalizedNewType == obj ->
+                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = '$obj' THEN TO_OBJECT(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
+            normalizedOriginalType == varchar && normalizedNewType == array ->
+                "CASE WHEN TYPEOF(TRY_PARSE_JSON($quotedColumn)) = '$array' THEN TO_ARRAY(TRY_PARSE_JSON($quotedColumn)) ELSE NULL END"
+            normalizedOriginalType == varchar && normalizedNewType == variant ->
                 "COALESCE(TRY_PARSE_JSON($quotedColumn), TO_VARIANT($quotedColumn))"
-            normalizedOriginalType == SnowflakeDataType.VARCHAR.typeName &&
-                normalizedNewType in scalarTypes ->
+            normalizedOriginalType == varchar && normalizedNewType in scalarTypes ->
                 "TRY_CAST($quotedColumn AS $newType)"
-            normalizedOriginalType in
-                setOf(
-                    SnowflakeDataType.OBJECT.typeName,
-                    SnowflakeDataType.ARRAY.typeName,
-                    SnowflakeDataType.VARIANT.typeName,
-                ) &&
-                normalizedNewType == SnowflakeDataType.VARCHAR.typeName ->
+            normalizedOriginalType in semiStructured && normalizedNewType == varchar ->
                 "TO_VARCHAR($quotedColumn)"
-            normalizedOriginalType == SnowflakeDataType.VARIANT.typeName &&
-                normalizedNewType == SnowflakeDataType.OBJECT.typeName ->
-                "CASE WHEN TYPEOF($quotedColumn) = '${SnowflakeDataType.OBJECT.typeName}' " +
-                    "THEN TO_OBJECT($quotedColumn) ELSE NULL END"
-            normalizedOriginalType == SnowflakeDataType.VARIANT.typeName &&
-                normalizedNewType == SnowflakeDataType.ARRAY.typeName ->
-                "CASE WHEN TYPEOF($quotedColumn) = '${SnowflakeDataType.ARRAY.typeName}' " +
-                    "THEN TO_ARRAY($quotedColumn) ELSE NULL END"
-            normalizedOriginalType in
-                setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) &&
-                normalizedNewType in
-                    setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) ->
-                "NULL"
-            normalizedOriginalType in
-                setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) &&
-                normalizedNewType == SnowflakeDataType.VARIANT.typeName ->
+            normalizedOriginalType == variant && normalizedNewType == obj ->
+                "CASE WHEN TYPEOF($quotedColumn) = '$obj' THEN TO_OBJECT($quotedColumn) ELSE NULL END"
+            normalizedOriginalType == variant && normalizedNewType == array ->
+                "CASE WHEN TYPEOF($quotedColumn) = '$array' THEN TO_ARRAY($quotedColumn) ELSE NULL END"
+            normalizedOriginalType in structured && normalizedNewType in structured -> "NULL"
+            normalizedOriginalType in structured && normalizedNewType == variant ->
                 "TO_VARIANT($quotedColumn)"
-            normalizedOriginalType == SnowflakeDataType.VARIANT.typeName &&
-                normalizedNewType in scalarTypes ->
+            normalizedOriginalType == variant && normalizedNewType in scalarTypes ->
                 "TRY_CAST(TO_VARCHAR($quotedColumn) AS $newType)"
-            normalizedOriginalType in
-                setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) &&
-                normalizedNewType in scalarTypes ->
-                "NULL"
-            normalizedOriginalType in scalarTypes &&
-                normalizedNewType in
-                    setOf(SnowflakeDataType.OBJECT.typeName, SnowflakeDataType.ARRAY.typeName) ->
-                "NULL"
-            normalizedOriginalType in scalarTypes &&
-                normalizedNewType == SnowflakeDataType.VARIANT.typeName ->
+            normalizedOriginalType in structured && normalizedNewType in scalarTypes -> "NULL"
+            normalizedOriginalType in scalarTypes && normalizedNewType in structured -> "NULL"
+            normalizedOriginalType in scalarTypes && normalizedNewType == variant ->
                 "TO_VARIANT($quotedColumn)"
             else -> "CAST($quotedColumn AS $newType)"
         }
