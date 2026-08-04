@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 6.0.2
+  dockerImageTag: 6.0.3
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   externalDocumentationUrls:
@@ -19,6 +19,13 @@ data:
       type: api_release_history
     - title: 2026 Out-Of-Cycle Changes
       url: https://developers.facebook.com/documentation/ads-commerce/marketing-api/out-of-cycle-changes/occ-2026
+      type: api_deprecations
+    - title: Marketing API Versioning
+      url: https://developers.facebook.com/docs/marketing-api/versions
+      type: api_deprecations
+    - title: Marketing API Authorization
+      url: https://developers.facebook.com/docs/marketing-api/access
+      type: authentication_guide
     - title: API Upgrade Tool
       url: https://developers.facebook.com/tools/api_versioning/600551260845577/
       type: api_reference
