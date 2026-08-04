@@ -722,6 +722,45 @@ def flatten_list(list_of_lists):
             ],
             id="Other google file types as is",
         ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "older",
+                                "mimeType": "application/pdf",
+                                "name": "duplicate.pdf",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/older/view?usp=drivesdk",
+                            },
+                            {
+                                "id": "newer",
+                                "mimeType": "application/pdf",
+                                "name": "duplicate.pdf",
+                                "modifiedTime": "2021-06-01T00:00:00.000Z",
+                                "createdTime": "2021-06-01T00:00:00.000Z",
+                                "webViewLink": "https://docs.google.com/file/d/newer/view?usp=drivesdk",
+                            },
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="duplicate.pdf",
+                    id="newer",
+                    original_mime_type="application/pdf",
+                    mime_type="application/pdf",
+                    last_modified=datetime.datetime(2021, 6, 1),
+                    created_at=datetime.datetime(2021, 6, 1),
+                    view_link="https://docs.google.com/file/d/newer/view?usp=drivesdk",
+                )
+            ],
+            id="Duplicate URI keeps most recently modified file",
+        ),
     ],
 )
 @patch("source_google_drive.stream_reader.service_account")
