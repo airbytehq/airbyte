@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 3, 2026
+
+Platform
+
+- Your Data Worker usage now reflects only the capacity your syncs are actually using. Previously, if a job reached a failed or cancelled state moments before its capacity reservation was recorded, that capacity stayed reserved indefinitely, overstating your organization's usage and leaving less capacity available for new syncs.
+
 ## July 23, 2026
 
 Connections
