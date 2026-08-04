@@ -172,8 +172,11 @@ data:
     - title: HubSpot API changelog
       url: https://developers.hubspot.com/changelog
       type: api_release_history
+    - title: HubSpot sunsetted and deprecated APIs
+      url: https://developers.hubspot.com/docs/api-reference/deprecated-apis
+      type: api_deprecations
     - title: HubSpot authentication
-      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      url: https://developers.hubspot.com/docs/apps/legacy-apps/authentication/oauth-quickstart-guide
       type: authentication_guide
     - title: HubSpot rate limits
       url: https://developers.hubspot.com/docs/api/usage-details
