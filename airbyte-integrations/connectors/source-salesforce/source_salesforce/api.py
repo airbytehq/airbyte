@@ -17,8 +17,8 @@ from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .exceptions import TypeSalesforceException
-from .rate_limiting import SalesforceErrorHandler, default_backoff_handler
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
+from .rate_limiting import SalesforceErrorHandler
 from .utils import filter_streams_by_criteria
 
 
@@ -248,6 +248,13 @@ _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 
 # genuine expiry.
 _REFRESH_FAILURE_BACKOFF_SECONDS = 300  # 5 minutes
 
+# When a session dies, every concurrent stream thread gets a 401 at once and queues on the login
+# lock; whoever enters first refreshes the token for everyone. A login that completed within this
+# window means the caller's failed request predates that login, so redeeming the grant again would
+# only burn another single-use rotation (under Refresh Token Rotation each redundant login widens
+# the window for stranding a rotated token).
+_LOGIN_DEDUP_SECONDS = 10
+
 logger = logging.getLogger("airbyte")
 
 
@@ -402,6 +409,17 @@ class Salesforce:
 
     def login(self):
         with self._login_lock:
+            if self._login_permanently_failed:
+                # Re-checked under the lock: threads that raced past force_refresh's pre-check must
+                # not redeem a grant another thread just saw rejected (under Refresh Token Rotation,
+                # reusing a rotated-out token revokes the whole grant).
+                raise AirbyteTracedException(
+                    message=AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                    internal_message="Skipping Salesforce login: credentials already failed permanently in this process.",
+                    failure_type=FailureType.config_error,
+                )
+            if self._last_login_time is not None and time.monotonic() - self._last_login_time < _LOGIN_DEDUP_SECONDS:
+                return
             try:
                 self._perform_login()
             except AirbyteTracedException as e:

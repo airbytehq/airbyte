@@ -21,6 +21,8 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
 )
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
+
 
 if TYPE_CHECKING:
     from source_salesforce.api import SalesforceTokenProvider
@@ -56,11 +58,6 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
-_AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
-}
-
-
 logger = logging.getLogger("airbyte")
 
 
@@ -113,7 +110,7 @@ class SalesforceErrorHandler(ErrorHandler):
                             return ErrorResolution(
                                 ResponseAction.FAIL,
                                 FailureType.config_error,
-                                _AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                                AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
                             )
                     return ErrorResolution(
                         ResponseAction.RETRY,
@@ -134,8 +131,8 @@ class SalesforceErrorHandler(ErrorHandler):
                     ResponseAction.FAIL,
                     FailureType.config_error,
                     (
-                        _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
+                        AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
+                        if error_message in AUTHENTICATION_ERROR_MESSAGE_MAPPING
                         else f"An error occurred: {response.content.decode()}"
                     ),
                 )
