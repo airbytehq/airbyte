@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 5, 2026
+
+Other
+
+- Your Context Store now stays on as long as your agents are using a connector for anything, not only searching it. Previously, a connector's Context Store could be turned off after a stretch without searches, even when your agents were still reading and writing data through that connector.
+
 ## July 21, 2026
 
 Web app
