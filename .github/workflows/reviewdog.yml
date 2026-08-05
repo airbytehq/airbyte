@@ -9,6 +9,10 @@ on:
   pull_request:
     paths:
       - "docs/**/*.md"
+      - "!docs/developers/pyairbyte/reference/**"
+      - "!docs/ai-agents/connectors/**"
+      - "!docs/ai-agents/reference/sdk/**"
+      - "!docs/ai-agents/reference/api/**"
 
 jobs:
   markdownlint:

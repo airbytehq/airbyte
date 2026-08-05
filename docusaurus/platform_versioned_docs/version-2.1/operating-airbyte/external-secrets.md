@@ -14,16 +14,12 @@ This guide provides step-by-step instructions for configuring external secrets m
 External secrets management is available for Airbyte Pro and Enterprise Flex customers.
 :::
 
----
-
 ## Prerequisites
 
 - Airbyte organization on a Pro or Enterprise Flex plan
 - Active account with your chosen cloud provider (AWS, Azure, or GCP)
 - Appropriate permissions to create and manage IAM roles/policies or service principals
 - Access to your cloud provider's secrets management service
-
----
 
 ## Step 1: Configure Cloud Provider Permissions
 
@@ -46,8 +42,6 @@ Contact your Airbyte representative for GCP setup guidance and policy documentat
 
 </TabItem>
 </Tabs>
-
----
 
 ## Step 2: Choose Authentication Method
 
@@ -79,8 +73,6 @@ GCP authentication methods will be provided by your Airbyte representative durin
 
 </TabItem>
 </Tabs>
-
----
 
 ## Step 3: Set Up Cloud Provider Authentication
 
@@ -149,8 +141,6 @@ Contact your Airbyte representative for detailed GCP setup instructions.
 </TabItem>
 </Tabs>
 
----
-
 ## Step 4: Provide Configuration to Airbyte
 
 Provide Airbyte with the configuration details using the appropriate JSON format for your cloud provider:
@@ -203,8 +193,6 @@ Configuration format will be provided by your Airbyte representative.
 </TabItem>
 </Tabs>
 
----
-
 ## Verification Steps
 
 After providing your configuration to Airbyte:
@@ -216,8 +204,6 @@ After providing your configuration to Airbyte:
    - **GCP**: Check Google Cloud Secret Manager
 3. Confirm the secret has the appropriate tags or identifiers (e.g., `AirbyteManaged=true` for AWS)
 4. All future connection credentials will be stored as secrets in your external secrets manager
-
----
 
 ## Best Practices
 
@@ -240,8 +226,6 @@ After providing your configuration to Airbyte:
 - **Rotate client secrets regularly** before they expire
 - **Use Azure Key Vault's built-in logging** to monitor access patterns
 - **Consider using managed identities** where possible for additional security
-
----
 
 ## Troubleshooting
 
@@ -289,8 +273,6 @@ After providing your configuration to Airbyte:
 </TabItem>
 </Tabs>
 
----
-
 ## Security Considerations
 
 - **Never commit credentials to version control** - always use secure methods to share configuration details with Airbyte
@@ -299,8 +281,6 @@ After providing your configuration to Airbyte:
 - **Use encryption** - ensure data is encrypted both in transit and at rest (most cloud providers enable this by default)
 - **Implement network restrictions** where possible - limit access to your secrets manager to known IP ranges or VPCs
 - **Set appropriate secret expiration policies** - configure automatic rotation where supported
-
----
 
 ## Additional Resources
 
@@ -320,8 +300,6 @@ After providing your configuration to Airbyte:
 
 - [Google Cloud Secret Manager Documentation](https://cloud.google.com/secret-manager/docs)
 - Contact your Airbyte representative for GCP-specific guidance
-
----
 
 ## Support
 

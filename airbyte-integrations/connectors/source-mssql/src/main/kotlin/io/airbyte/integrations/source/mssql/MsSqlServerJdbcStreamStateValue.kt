@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.mssql
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -43,7 +43,7 @@ data class MsSqlServerJdbcStreamStateValue(
 
         /** Value representing the progress of an ongoing incremental cursor read. */
         fun cursorIncrementalCheckpoint(
-            cursor: Field,
+            cursor: EmittedField,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue {
             return when (cursorCheckpoint.isNull) {
@@ -60,7 +60,7 @@ data class MsSqlServerJdbcStreamStateValue(
 
         /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
         fun snapshotCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
@@ -80,9 +80,9 @@ data class MsSqlServerJdbcStreamStateValue(
 
         /** Value representing the progress of an ongoing snapshot involving cursor columns. */
         fun snapshotWithCursorCheckpoint(
-            primaryKey: List<Field>,
+            primaryKey: List<EmittedField>,
             primaryKeyCheckpoint: List<JsonNode>,
-            cursor: Field,
+            cursor: EmittedField,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
             val pkNode = primaryKeyCheckpoint.first()

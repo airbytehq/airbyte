@@ -165,6 +165,10 @@ The Infor Nexus Data API returns the following status codes during dataset expor
 | 202 | Dataset is not yet ready. | Wait and retry the sync later. |
 | 304 | Dataset is not ready. | Contact Infor member services to investigate. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -172,6 +176,16 @@ The Infor Nexus Data API returns the following status codes during dataset expor
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.14 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.1.13 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.1.11 — 0.1.12 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.1.12 | 2026-07-28 | [83015](https://github.com/airbytehq/airbyte/pull/83015) | Update dependencies |
+| 0.1.11 | 2026-07-21 | [82494](https://github.com/airbytehq/airbyte/pull/82494) | Update dependencies |
+| 0.1.10 | 2026-07-14 | [81139](https://github.com/airbytehq/airbyte/pull/81139) | Update dependencies |
+| 0.1.9 | 2026-06-23 | [80544](https://github.com/airbytehq/airbyte/pull/80544) | Update dependencies |
+| 0.1.8 | 2026-06-16 | [79933](https://github.com/airbytehq/airbyte/pull/79933) | Update dependencies |
+| 0.1.7 | 2026-06-09 | [78847](https://github.com/airbytehq/airbyte/pull/78847) | Update dependencies |
+| 0.1.6 | 2026-04-28 | [77333](https://github.com/airbytehq/airbyte/pull/77333) | Update dependencies |
+| 0.1.5 | 2026-04-21 | [73832](https://github.com/airbytehq/airbyte/pull/73832) | Update dependencies |
 | 0.1.4 | 2026-04-09 | [76138](https://github.com/airbytehq/airbyte/pull/76138) | Add missing imports for AirbyteTracedException and FailureType in components.py |
 | 0.1.3 | 2026-02-17 | [73548](https://github.com/airbytehq/airbyte/pull/73548) | Update dependencies |
 | 0.1.2 | 2026-02-10 | [73030](https://github.com/airbytehq/airbyte/pull/73030) | Update dependencies |

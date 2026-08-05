@@ -14,8 +14,8 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.s3_data_lake.catalog.S3DataLakeUtil
-import io.airbyte.integrations.destination.s3_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
+import io.airbyte.integrations.destination.s3_data_lake.spec.generateStagingBranchName
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
@@ -69,7 +69,7 @@ class S3DataLakeWriter(
             icebergTableSynchronizer,
             s3DataLakeUtil,
             icebergUtil,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
+            stagingBranchName = generateStagingBranchName(stream),
             mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )

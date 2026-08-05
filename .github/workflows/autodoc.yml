@@ -94,14 +94,28 @@ jobs:
           fi
 
           echo "📋 Found connector metadata file: $METADATA_FILE"
-          echo "✅ Connector change detected - documentation update needed"
+
+          # Extract connector name from path (e.g., "source-slack" from
+          # "airbyte-integrations/connectors/source-slack/metadata.yaml").
+          # This is passed to Devin so it can use a deterministic branch name
+          # (docs/auto/{connector-name}) to prevent duplicate PRs when
+          # multiple commits for the same connector merge in quick succession.
+          CONNECTOR_NAME=$(echo "$METADATA_FILE" | sed 's|airbyte-integrations/connectors/||; s|/metadata\.yaml||')
+          echo "connector_name=$CONNECTOR_NAME" >> $GITHUB_OUTPUT
+
+          echo "✅ Connector change detected ($CONNECTOR_NAME) - documentation update needed"
           echo "connector_changed=true" >> $GITHUB_OUTPUT
 
       # Step 4: Trigger AI documentation update for connector changes
       - name: Start AI documentation update session
         if: steps.check-connector.outputs.connector_changed == 'true'
         env:
-          PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
+          CONNECTOR_NAME: ${{ steps.check-connector.outputs.connector_name }}
+          PROMPT_TEXT: >-
+            The commit to review is ${{ github.sha }}.
+            The connector is ${{ steps.check-connector.outputs.connector_name }}.
+            This commit was pushed to master and may contain connector changes
+            that need documentation updates.
         uses: aaronsteers/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
@@ -113,3 +127,4 @@ jobs:
           tags: |
             area/documentation
             team/documentation
+            connector/${{ steps.check-connector.outputs.connector_name }}
