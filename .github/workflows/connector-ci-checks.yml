@@ -186,12 +186,44 @@ jobs:
         run: poe install
 
       - name: Fetch connector secrets
+        id: fetch-secrets
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
           airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
+
+      - name: Resolve connector test policy
+        id: connector-test-policy
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
+        run: |
+          set -euo pipefail
+
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
+          SECRET_COUNT=0
+          if [[ -d secrets ]]; then
+            SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
+          fi
+
+          if [[ "${FETCH_SECRETS_OUTCOME:-skipped}" != "success" ]]; then
+            SECRET_COUNT=unknown
+          fi
+
+          ALLOW_TEST_FAILURES=false
+          # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
+          if [[ "$SUPPORT_LEVEL" == "community" &&
+                "$FETCH_SECRETS_OUTCOME" == "success" &&
+                "$SECRET_COUNT" == "0" ]]; then
+            ALLOW_TEST_FAILURES=true
+          fi
+
+          echo "support-level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
+          echo "secret-count=${SECRET_COUNT}" | tee -a $GITHUB_OUTPUT
+          echo "allow-test-failures=${ALLOW_TEST_FAILURES}" | tee -a $GITHUB_OUTPUT
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
@@ -200,6 +232,7 @@ jobs:
 
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
@@ -288,10 +321,40 @@ jobs:
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
-        continue-on-error: true
         run: |
           airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
+
+      - name: Resolve connector test policy
+        id: connector-test-policy
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        env:
+          FETCH_SECRETS_OUTCOME: ${{ steps.fetch-secrets.outcome }}
+        run: |
+          set -euo pipefail
+
+          SUPPORT_LEVEL=$(yq -r '.data.supportLevel // "unknown"' metadata.yaml 2>/dev/null || echo "unknown")
+          SECRET_COUNT=0
+          if [[ -d secrets ]]; then
+            SECRET_COUNT=$(find secrets -maxdepth 1 -type f -name '*.json' | wc -l | tr -d ' ')
+          fi
+
+          if [[ "${FETCH_SECRETS_OUTCOME:-skipped}" != "success" ]]; then
+            SECRET_COUNT=unknown
+          fi
+
+          ALLOW_TEST_FAILURES=false
+          # Only treat zero secrets as intentional when GSM fetch completed; fetch errors must keep tests blocking.
+          if [[ "$SUPPORT_LEVEL" == "community" &&
+                "$FETCH_SECRETS_OUTCOME" == "success" &&
+                "$SECRET_COUNT" == "0" ]]; then
+            ALLOW_TEST_FAILURES=true
+          fi
+
+          echo "support-level=${SUPPORT_LEVEL}" | tee -a $GITHUB_OUTPUT
+          echo "secret-count=${SECRET_COUNT}" | tee -a $GITHUB_OUTPUT
+          echo "allow-test-failures=${ALLOW_TEST_FAILURES}" | tee -a $GITHUB_OUTPUT
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
@@ -300,11 +363,18 @@ jobs:
 
       - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Build connector image
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: airbyte-cdk image build
+
       - name: Container Tests
         if: matrix.connector
+        continue-on-error: ${{ steps.connector-test-policy.outputs.allow-test-failures == 'true' }}
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test

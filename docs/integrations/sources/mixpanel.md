@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Mixpanel](
 
 To set up the Mixpanel source connector, you need:
 
-- A Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) with access to your project. You need the service account **username** and **secret**.
+- A Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) with access to your project. You need the service account **username** and **secret**. If you need to create a service account, you must have Owner or Admin permissions in Mixpanel.
 - Your [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), found in your Mixpanel project settings.
 - Your [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), found in your Mixpanel project settings.
 - Your project's data residency region (`US` or `EU`).
@@ -55,7 +55,6 @@ Incremental syncs may return duplicate records for the state date because the Mi
 | [Export](https://developer.mixpanel.com/reference/raw-event-export) | Incremental | User-defined (see below) |
 | [Engage](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id` |
 | [Funnels](https://developer.mixpanel.com/reference/funnels-query) | Incremental | `funnel_id`, `date` |
-| [Revenue](https://developer.mixpanel.com/reference/engage-query) | Incremental | `date` |
 | [Annotations](https://developer.mixpanel.com/reference/list-all-annotations-for-project) | Full Refresh | `id` |
 | [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) | Incremental | `id` |
 | [Cohort Members](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id`, `cohort_id` |
@@ -68,21 +67,30 @@ The Export stream has no default primary key. Mixpanel recommends using `insert_
 
 Mixpanel enforces separate rate limits for different API endpoints:
 
-- **Query API** (Cohorts, Engage, Funnels, Revenue, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
+- **Query API** (Cohorts, Engage, Funnels, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
 - **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
 
 Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits.
 
-## CHANGELOG
+## Limitations
+
+The Mixpanel source connector supports `US` and `EU` data residency regions. It doesn't support Mixpanel's India data residency endpoints.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
+## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
+| 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
-| 3.6.2 | 2026-04-02 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 3.6.1 | 2025-08-02 | [64298](https://github.com/airbytehq/airbyte/pull/64298) | Update dependencies |
 | 3.6.0 | 2025-07-30 | [64122](https://github.com/airbytehq/airbyte/pull/64122) | Promoting release candidate 3.6.0-rc.4 to a main version. |
 | 3.6.0-rc.4 | 2025-07-17 | [63351](https://github.com/airbytehq/airbyte/pull/63351) | Reduce default number of concurrent workers |
@@ -177,12 +185,12 @@ Syncing large date windows may take longer due to these rate limits. You can adj
 | 0.1.10 | 2022-03-31 | [11227](https://github.com/airbytehq/airbyte/pull/11227) | Fix cohort id always null in the cohort_members stream |
 | 0.1.9 | 2021-12-07 | [8578](https://github.com/airbytehq/airbyte/pull/8578) | Updated titles and descriptions |
 | 0.1.7 | 2021-12-01 | [8381](https://github.com/airbytehq/airbyte/pull/8381) | Increased performance for `discovery` stage during connector setup |
-| 0.1.6      | 2021-11-25 | [8256](https://github.com/airbytehq/airbyte/issues/8256) | Deleted `date_window_size` and fix schemas date type issue                                                                                                                                                                                                                                                                                                                                                                         |
-| 0.1.5      | 2021-11-10 | [7451](https://github.com/airbytehq/airbyte/issues/7451) | Support `start_date` older than 1 year                                                                                                                                                                                                                                                                                                                                                                                             |
-| 0.1.4      | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0.1.3      | 2021-10-30 | [7505](https://github.com/airbytehq/airbyte/issues/7505) | Guarantee that standard and custom mixpanel properties in the `Engage` stream are written as strings                                                                                                                                                                                                                                                                                                                               |
-| 0.1.2      | 2021-11-02 | [7439](https://github.com/airbytehq/airbyte/issues/7439) | Added delay for all streams to match API limitation of requests rate                                                                                                                                                                                                                                                                                                                                                               |
-| 0.1.1      | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region                                                                                                                                                                                                                                                                                                                                                                                              |
-| 0.1.0      | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | Created CDK native mixpanel connector                                                                                                                                                                                                                                                                                                                                                                                              |
+| 0.1.6 | 2021-11-25 | [8256](https://github.com/airbytehq/airbyte/issues/8256) | Deleted `date_window_size` and fix schemas date type issue |
+| 0.1.5 | 2021-11-10 | [7451](https://github.com/airbytehq/airbyte/issues/7451) | Support `start_date` older than 1 year |
+| 0.1.4 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.3 | 2021-10-30 | [7505](https://github.com/airbytehq/airbyte/issues/7505) | Guarantee that standard and custom mixpanel properties in the `Engage` stream are written as strings |
+| 0.1.2 | 2021-11-02 | [7439](https://github.com/airbytehq/airbyte/issues/7439) | Added delay for all streams to match API limitation of requests rate |
+| 0.1.1 | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region |
+| 0.1.0 | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | Created CDK native mixpanel connector |
 
 </details>

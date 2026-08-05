@@ -190,30 +190,40 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[AbandonedCheckoutsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ArticlesSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BalanceTransactionsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BlogsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CollectsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CountriesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CustomCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[CustomersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DiscountCodesSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DisputesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DraftOrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[FulfillmentOrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[FulfillmentsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[InventoryItemsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[InventoryLevelsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[LocationsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldArticlesSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldBlogsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldCustomersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldDraftOrdersSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldLocationsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldOrdersSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldPagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldProductImagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldProductVariantsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldProductsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldShopsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldSmartCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrderRefundsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrdersSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PriceRulesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductImagesSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductVariantsSearchData]
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ShopSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[SmartCollectionsSearchData]
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[TenderTransactionsSearchData]
@@ -232,6 +242,60 @@ Classes
 <a id="AbandonedCheckoutsSearchResult"></a>
 
 `AbandonedCheckoutsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ArticlesSearchResult"></a>
+
+`ArticlesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BalanceTransactionsSearchResult"></a>
+
+`BalanceTransactionsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="BlogsSearchResult"></a>
+
+`BlogsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -322,6 +386,24 @@ Classes
 <a id="DiscountCodesSearchResult"></a>
 
 `DiscountCodesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="DisputesSearchResult"></a>
+
+`DisputesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -445,6 +527,42 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="MetafieldArticlesSearchResult"></a>
+
+`MetafieldArticlesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MetafieldBlogsSearchResult"></a>
+
+`MetafieldBlogsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="MetafieldCustomersSearchResult"></a>
 
 `MetafieldCustomersSearchResult(**data: Any)`
@@ -502,6 +620,24 @@ Classes
 <a id="MetafieldOrdersSearchResult"></a>
 
 `MetafieldOrdersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="MetafieldPagesSearchResult"></a>
+
+`MetafieldPagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -625,6 +761,42 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="OrdersSearchResult"></a>
+
+`OrdersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="PagesSearchResult"></a>
+
+`PagesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="PriceRulesSearchResult"></a>
 
 `PriceRulesSearchResult(**data: Any)`
@@ -664,6 +836,24 @@ Classes
 <a id="ProductVariantsSearchResult"></a>
 
 `ProductVariantsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ProductsSearchResult"></a>
+
+`ProductsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -732,6 +922,156 @@ Classes
     * airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="ArticlesSearchData"></a>
+
+`ArticlesSearchData(**data: Any)`
+:   Search result data for articles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author: str | None`
+    :   Name of the author of the article
+
+    `blog_id: int | None`
+    :   Identifier of the blog the article belongs to
+
+    `body_html: str | None`
+    :   HTML content of the article body
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the article was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the article
+
+    `id: int | None`
+    :   Unique identifier for the article
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the article was published
+
+    `summary_html: str | None`
+    :   Summary of the article in HTML
+
+    `tags: str | None`
+    :   Comma-separated list of tags for the article
+
+    `title: str | None`
+    :   Title of the article
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the article was last updated
+
+<a id="BalanceTransactionsSearchData"></a>
+
+`BalanceTransactionsSearchData(**data: Any)`
+:   Search result data for balance_transactions entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Gross amount of the transaction
+
+    `currency: str | None`
+    :   ISO 4217 currency code of the transaction
+
+    `fee: str | None`
+    :   Total fees deducted from the transaction
+
+    `id: int | None`
+    :   Unique identifier of the balance transaction
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `net: str | None`
+    :   Net amount of the transaction
+
+    `payout_id: int | None`
+    :   Identifier of the payout the transaction was paid out in
+
+    `payout_status: str | None`
+    :   Status of the associated payout
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the transaction was processed
+
+    `source_order_id: int | None`
+    :   Identifier of the source order, if applicable
+
+    `source_type: str | None`
+    :   Type of the resource that led to this transaction
+
+    `type_: str | None`
+    :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+
+<a id="BlogsSearchData"></a>
+
+`BlogsSearchData(**data: Any)`
+:   Search result data for blogs entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `commentable: str | None`
+    :   Whether readers can post comments (no, moderate, yes)
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the blog was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the blog
+
+    `id: int | None`
+    :   Unique identifier for the blog
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `tags: str | None`
+    :   Comma-separated tags from the blog's articles
+
+    `title: str | None`
+    :   Title of the blog
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the blog was last updated
 
 <a id="CollectsSearchData"></a>
 
@@ -939,6 +1279,60 @@ Classes
 
     `usage_count: int | None`
     :   Number of times the code has been redeemed
+
+<a id="DisputesSearchData"></a>
+
+`DisputesSearchData(**data: Any)`
+:   Search result data for disputes entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `amount: str | None`
+    :   Disputed amount
+
+    `currency: str | None`
+    :   ISO 4217 currency code of the dispute amount
+
+    `evidence_due_by: str | None`
+    :   ISO 8601 deadline for evidence submission
+
+    `finalized_on: str | None`
+    :   ISO 8601 timestamp when the dispute was resolved
+
+    `id: int | None`
+    :   Unique identifier for the dispute
+
+    `initiated_at: str | None`
+    :   ISO 8601 timestamp when the dispute was initiated
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `network_reason_code: str | None`
+    :   Network reason code from the cardholder's bank
+
+    `order_id: int | None`
+    :   Identifier of the order the dispute belongs to
+
+    `reason: str | None`
+    :   Reason for the dispute provided by the cardholder's bank
+
+    `status: str | None`
+    :   Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+
+    `type_: str | None`
+    :   Whether the dispute is an inquiry or chargeback
 
 <a id="DraftOrdersSearchData"></a>
 
@@ -1213,6 +1607,108 @@ Classes
     `updated_at: str | None`
     :   ISO 8601 timestamp when the location was last updated
 
+<a id="MetafieldArticlesSearchData"></a>
+
+`MetafieldArticlesSearchData(**data: Any)`
+:   Search result data for metafield_articles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the article that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `article`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
+<a id="MetafieldBlogsSearchData"></a>
+
+`MetafieldBlogsSearchData(**data: Any)`
+:   Search result data for metafield_blogs entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the blog that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `blog`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
+
 <a id="MetafieldCustomersSearchData"></a>
 
 `MetafieldCustomersSearchData(**data: Any)`
@@ -1416,6 +1912,57 @@ Classes
 
     `value: str | None`
     :   Serialized value stored in the metafield
+
+<a id="MetafieldPagesSearchData"></a>
+
+`MetafieldPagesSearchData(**data: Any)`
+:   Search result data for metafield_pages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the metafield was created
+
+    `description: str | None`
+    :   Human-readable description of the metafield
+
+    `id: int | None`
+    :   Unique identifier for the metafield
+
+    `key: str | None`
+    :   Identifier key for the metafield
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `namespace: str | None`
+    :   Container namespace for the metafield
+
+    `owner_id: int | None`
+    :   Identifier of the page that owns this metafield
+
+    `owner_resource: str | None`
+    :   Resource type that owns this metafield (e.g. `page`)
+
+    `type_: str | None`
+    :   The metafield's information type
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the metafield was last updated
+
+    `value: str | None`
+    :   The metafield value
 
 <a id="MetafieldProductImagesSearchData"></a>
 
@@ -1711,6 +2258,135 @@ Classes
     `user_id: int | None`
     :   Identifier of the staff user who processed the refund
 
+<a id="OrdersSearchData"></a>
+
+`OrdersSearchData(**data: Any)`
+:   Search result data for orders entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cancel_reason: str | None`
+    :   Reason the order was cancelled, if applicable
+
+    `cancelled_at: str | None`
+    :   ISO 8601 timestamp when the order was cancelled, if applicable
+
+    `closed_at: str | None`
+    :   ISO 8601 timestamp when the order was closed, if applicable
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the order was created
+
+    `currency: str | None`
+    :   ISO 4217 currency code for the order totals
+
+    `email: str | None`
+    :   Email address associated with the order
+
+    `financial_status: str | None`
+    :   Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+
+    `fulfillment_status: str | None`
+    :   Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+
+    `id: int | None`
+    :   Unique identifier for the order
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Shopify-assigned display name for the order (e.g. `#1001`)
+
+    `note: str | None`
+    :   Merchant-provided note on the order
+
+    `order_number: int | None`
+    :   Sequential order number displayed in the Shopify admin
+
+    `phone: str | None`
+    :   Phone number associated with the order
+
+    `processed_at: str | None`
+    :   ISO 8601 timestamp when the order was processed
+
+    `subtotal_price: str | None`
+    :   Subtotal of the order before shipping and taxes
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the order
+
+    `total_discounts: str | None`
+    :   Total discount amount applied to the order
+
+    `total_price: str | None`
+    :   Total price of the order including taxes and discounts
+
+    `total_tax: str | None`
+    :   Total tax amount applied to the order
+
+    `total_weight: int | None`
+    :   Total weight of all items in the order, in grams
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the order was last updated
+
+<a id="PagesSearchData"></a>
+
+`PagesSearchData(**data: Any)`
+:   Search result data for pages entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `author: str | None`
+    :   Name of the page author
+
+    `body_html: str | None`
+    :   HTML content of the page
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the page was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the page
+
+    `id: int | None`
+    :   Unique identifier for the page
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the page was published
+
+    `title: str | None`
+    :   Title of the page
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the page was last updated
+
 <a id="PriceRulesSearchData"></a>
 
 `PriceRulesSearchData(**data: Any)`
@@ -1864,6 +2540,63 @@ Classes
     `updated_at: str | None`
     :   ISO 8601 timestamp when the variant was last updated
 
+<a id="ProductsSearchData"></a>
+
+`ProductsSearchData(**data: Any)`
+:   Search result data for products entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `body_html: str | None`
+    :   Product description in HTML
+
+    `created_at: str | None`
+    :   ISO 8601 timestamp when the product was created
+
+    `handle: str | None`
+    :   URL-friendly handle for the product
+
+    `id: int | None`
+    :   Unique identifier for the product
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `product_type: str | None`
+    :   Product type used for categorization
+
+    `published_at: str | None`
+    :   ISO 8601 timestamp when the product was published
+
+    `published_scope: str | None`
+    :   Publishing scope (`web` or `global`)
+
+    `status: str | None`
+    :   Product status (`active`, `archived`, or `draft`)
+
+    `tags: str | None`
+    :   Comma-separated tags attached to the product
+
+    `title: str | None`
+    :   Product title
+
+    `updated_at: str | None`
+    :   ISO 8601 timestamp when the product was last updated
+
+    `vendor: str | None`
+    :   Product vendor or manufacturer
+
 <a id="ShopSearchData"></a>
 
 `ShopSearchData(**data: Any)`
@@ -1918,30 +2651,6 @@ Classes
     `updated_at: str | None`
     :   ISO 8601 timestamp when the shop was last updated
 
-<a id="ShopifyAuthConfig"></a>
-
-`ShopifyAuthConfig(**data: Any)`
-:   Access Token Authentication
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `api_key: str`
-    :   Your Shopify Admin API access token
-
-    `model_config`
-    :   The type of the None singleton.
-
 <a id="ShopifyConnector"></a>
 
 `ShopifyConnector(auth_config: ShopifyAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None, shop: str | None = None)`
@@ -1995,48 +2704,138 @@ Classes
 
     ### Static methods
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @ShopifyConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = ShopifyConnector(...)
         
-            @mcp.tool()
-            @ShopifyConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @ShopifyConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @ShopifyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @ShopifyConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @ShopifyConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = ShopifyConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @ShopifyConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @ShopifyConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @ShopifyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -2081,7 +2880,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -2093,6 +2892,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -2103,6 +2905,17 @@ Classes
                 action="get",
                 params=\{"id": "cus_123"\}
             )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
 
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
@@ -2117,6 +2930,18 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
 
 <a id="SmartCollectionsSearchData"></a>
 
