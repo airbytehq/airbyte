@@ -1390,7 +1390,9 @@ spec:
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated. This field is optional - if not
-          provided, Airbyte will replicate the data for the last year.
+          provided, Airbyte will replicate the data for the last year. The
+          metrics stream is not affected by this field and always syncs all
+          metric definitions.
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
