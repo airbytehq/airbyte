@@ -3,10 +3,11 @@ version: 7.23.8
 type: DeclarativeSource
 
 description: >-
-  Source for AppLovin's advertiser-side reporting APIs. Covers app campaign
-  reporting (/report), web campaign reporting (/webReport), and asset-level
-  reporting (/assetAnalyticsReport). MAX publisher/monetization reporting
-  (/maxReport, /maxCohort) is not included.
+  Source for AppLovin's reporting APIs, all authenticated with the Report Key.
+  Covers advertiser reporting (/report, /webReport, /assetAnalyticsReport) and
+  MAX publisher reporting (/maxReport, /maxCohort and its imp and session
+  variants). The management and Conversions APIs are out of scope: they use
+  different hosts, header auth, different keys, and are write paths.
 
 check:
   type: CheckStream
@@ -127,6 +128,17 @@ definitions:
     $ref: "#/definitions/report_incremental_sync"
     cursor_field: date
 
+  # MAX reporting endpoints all enforce a 45-day request window.
+  max_report_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+
+  # Cohort metrics are indexed by install day and keep changing for up to 45
+  # days as the cohort ages, so `pub_revenue_45` for a given day is not final
+  # until 45 days later. These streams use their own, much larger lookback.
+  max_cohort_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+    lookback_window: P{{ config.get('cohort_lookback_window', 45) }}D
+
   streams:
     advertiser_report_daily:
       type: DeclarativeStream
@@ -223,10 +235,123 @@ definitions:
         schema:
           $ref: "#/schemas/asset_report_daily"
 
+    max_report_daily:
+      type: DeclarativeStream
+      name: max_report_daily
+      primary_key:
+        - day
+        - package_name
+        - max_ad_unit_id
+        - network
+        - network_placement
+        - country
+        - device_type
+        - ad_format
+        - platform
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxReport
+          request_parameters:
+            format: json
+            columns: day,application,package_name,store_id,platform,country,device_type,ad_format,max_ad_unit,max_ad_unit_id,network,network_placement,impressions,estimated_revenue,ecpm,attempts,responses,fill_rate
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_report_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_report_daily"
+    max_cohort_revenue_daily:
+      type: DeclarativeStream
+      name: max_cohort_revenue_daily
+      primary_key:
+        - day
+        - package_name
+        - platform
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxCohort
+          request_parameters:
+            format: json
+            columns: day,application,package_name,platform,country,installs,pub_revenue_0,rpi_0,pub_revenue_1,rpi_1,pub_revenue_3,rpi_3,pub_revenue_7,rpi_7,pub_revenue_14,rpi_14,pub_revenue_30,rpi_30,pub_revenue_45,rpi_45,ads_pub_revenue_7,ads_rpi_7,iap_pub_revenue_7,iap_rpi_7,ads_pub_revenue_30,ads_rpi_30,iap_pub_revenue_30,iap_rpi_30
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_cohort_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_cohort_revenue_daily"
+    max_cohort_impressions_daily:
+      type: DeclarativeStream
+      name: max_cohort_impressions_daily
+      primary_key:
+        - day
+        - package_name
+        - platform
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxCohort/imp
+          request_parameters:
+            format: json
+            columns: day,application,package_name,platform,country,installs,user_count_0,imp_0,imp_per_user_0,user_count_1,imp_1,imp_per_user_1,user_count_7,imp_7,imp_per_user_7,user_count_14,imp_14,imp_per_user_14,user_count_30,imp_30,imp_per_user_30
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_cohort_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_cohort_impressions_daily"
+    max_cohort_sessions_daily:
+      type: DeclarativeStream
+      name: max_cohort_sessions_daily
+      primary_key:
+        - day
+        - package_name
+        - platform
+        - country
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /maxCohort/session
+          request_parameters:
+            format: json
+            columns: day,application,package_name,platform,country,installs,user_count_0,session_count_0,session_length_0,daily_usage_0,retention_0,user_count_1,session_count_1,session_length_1,daily_usage_1,retention_1,user_count_7,session_count_7,session_length_7,daily_usage_7,retention_7,user_count_14,session_count_14,session_length_14,daily_usage_14,retention_14,user_count_30,session_count_30,session_length_30,daily_usage_30,retention_30
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/max_cohort_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/max_cohort_sessions_daily"
 streams:
   - $ref: "#/definitions/streams/advertiser_report_daily"
   - $ref: "#/definitions/streams/web_report_daily"
   - $ref: "#/definitions/streams/asset_report_daily"
+  - $ref: "#/definitions/streams/max_report_daily"
+  - $ref: "#/definitions/streams/max_cohort_revenue_daily"
+  - $ref: "#/definitions/streams/max_cohort_impressions_daily"
+  - $ref: "#/definitions/streams/max_cohort_sessions_daily"
 
 spec:
   type: Spec
@@ -280,6 +405,19 @@ spec:
         minimum: 0
         maximum: 45
         order: 3
+      cohort_lookback_window:
+        type: integer
+        title: Cohort Lookback Window (days)
+        description: >-
+          Number of days before the last synced date to re-request for the MAX
+          cohort streams. Cohort metrics are indexed by install day and keep
+          changing as the cohort ages, so a given day's 45-day figures are not
+          final until 45 days after that day. Lowering this reduces request
+          volume at the cost of leaving older cohorts stale.
+        default: 45
+        minimum: 0
+        maximum: 45
+        order: 4
       attribution_mode:
         type: string
         title: Web Attribution Mode
@@ -291,7 +429,7 @@ spec:
           - click
           - click_and_view
         default: click
-        order: 4
+        order: 5
       num_workers:
         type: integer
         title: Number of Concurrent Workers
@@ -299,7 +437,7 @@ spec:
         default: 2
         minimum: 1
         maximum: 20
-        order: 5
+        order: 6
     additionalProperties: true
 
 metadata:
@@ -307,6 +445,10 @@ metadata:
     advertiser_report_daily: false
     web_report_daily: false
     asset_report_daily: false
+    max_report_daily: false
+    max_cohort_revenue_daily: false
+    max_cohort_impressions_daily: false
+    max_cohort_sessions_daily: false
   yamlComponents:
     global:
       - authenticator
@@ -675,6 +817,422 @@ schemas:
           - number
           - "null"
       cost:
+        type:
+          - number
+          - "null"
+  max_report_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      store_id:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      ad_format:
+        type:
+          - string
+          - "null"
+      max_ad_unit:
+        type:
+          - string
+          - "null"
+      max_ad_unit_id:
+        type:
+          - string
+          - "null"
+      network:
+        type:
+          - string
+          - "null"
+      network_placement:
+        type:
+          - string
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      estimated_revenue:
+        type:
+          - number
+          - "null"
+      ecpm:
+        type:
+          - number
+          - "null"
+      attempts:
+        type:
+          - integer
+          - "null"
+      responses:
+        type:
+          - integer
+          - "null"
+      fill_rate:
+        type:
+          - number
+          - "null"
+  max_cohort_revenue_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      installs:
+        type:
+          - integer
+          - "null"
+      pub_revenue_0:
+        type:
+          - number
+          - "null"
+      rpi_0:
+        type:
+          - number
+          - "null"
+      pub_revenue_1:
+        type:
+          - number
+          - "null"
+      rpi_1:
+        type:
+          - number
+          - "null"
+      pub_revenue_3:
+        type:
+          - number
+          - "null"
+      rpi_3:
+        type:
+          - number
+          - "null"
+      pub_revenue_7:
+        type:
+          - number
+          - "null"
+      rpi_7:
+        type:
+          - number
+          - "null"
+      pub_revenue_14:
+        type:
+          - number
+          - "null"
+      rpi_14:
+        type:
+          - number
+          - "null"
+      pub_revenue_30:
+        type:
+          - number
+          - "null"
+      rpi_30:
+        type:
+          - number
+          - "null"
+      pub_revenue_45:
+        type:
+          - number
+          - "null"
+      rpi_45:
+        type:
+          - number
+          - "null"
+      ads_pub_revenue_7:
+        type:
+          - number
+          - "null"
+      ads_rpi_7:
+        type:
+          - number
+          - "null"
+      iap_pub_revenue_7:
+        type:
+          - number
+          - "null"
+      iap_rpi_7:
+        type:
+          - number
+          - "null"
+      ads_pub_revenue_30:
+        type:
+          - number
+          - "null"
+      ads_rpi_30:
+        type:
+          - number
+          - "null"
+      iap_pub_revenue_30:
+        type:
+          - number
+          - "null"
+      iap_rpi_30:
+        type:
+          - number
+          - "null"
+  max_cohort_impressions_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      installs:
+        type:
+          - integer
+          - "null"
+      user_count_0:
+        type:
+          - integer
+          - "null"
+      imp_0:
+        type:
+          - integer
+          - "null"
+      imp_per_user_0:
+        type:
+          - number
+          - "null"
+      user_count_1:
+        type:
+          - integer
+          - "null"
+      imp_1:
+        type:
+          - integer
+          - "null"
+      imp_per_user_1:
+        type:
+          - number
+          - "null"
+      user_count_7:
+        type:
+          - integer
+          - "null"
+      imp_7:
+        type:
+          - integer
+          - "null"
+      imp_per_user_7:
+        type:
+          - number
+          - "null"
+      user_count_14:
+        type:
+          - integer
+          - "null"
+      imp_14:
+        type:
+          - integer
+          - "null"
+      imp_per_user_14:
+        type:
+          - number
+          - "null"
+      user_count_30:
+        type:
+          - integer
+          - "null"
+      imp_30:
+        type:
+          - integer
+          - "null"
+      imp_per_user_30:
+        type:
+          - number
+          - "null"
+  max_cohort_sessions_daily:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      application:
+        type:
+          - string
+          - "null"
+      package_name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      installs:
+        type:
+          - integer
+          - "null"
+      user_count_0:
+        type:
+          - integer
+          - "null"
+      session_count_0:
+        type:
+          - integer
+          - "null"
+      session_length_0:
+        type:
+          - number
+          - "null"
+      daily_usage_0:
+        type:
+          - number
+          - "null"
+      retention_0:
+        type:
+          - number
+          - "null"
+      user_count_1:
+        type:
+          - integer
+          - "null"
+      session_count_1:
+        type:
+          - integer
+          - "null"
+      session_length_1:
+        type:
+          - number
+          - "null"
+      daily_usage_1:
+        type:
+          - number
+          - "null"
+      retention_1:
+        type:
+          - number
+          - "null"
+      user_count_7:
+        type:
+          - integer
+          - "null"
+      session_count_7:
+        type:
+          - integer
+          - "null"
+      session_length_7:
+        type:
+          - number
+          - "null"
+      daily_usage_7:
+        type:
+          - number
+          - "null"
+      retention_7:
+        type:
+          - number
+          - "null"
+      user_count_14:
+        type:
+          - integer
+          - "null"
+      session_count_14:
+        type:
+          - integer
+          - "null"
+      session_length_14:
+        type:
+          - number
+          - "null"
+      daily_usage_14:
+        type:
+          - number
+          - "null"
+      retention_14:
+        type:
+          - number
+          - "null"
+      user_count_30:
+        type:
+          - integer
+          - "null"
+      session_count_30:
+        type:
+          - integer
+          - "null"
+      session_length_30:
+        type:
+          - number
+          - "null"
+      daily_usage_30:
+        type:
+          - number
+          - "null"
+      retention_30:
         type:
           - number
           - "null"
