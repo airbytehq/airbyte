@@ -158,7 +158,7 @@ definitions:
           request_parameters:
             report_type: advertiser
             format: json
-            columns: day,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_package_name,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales,sales_0d,sales_7d,sales_28d,cpp_0d,cpp_7d,cpp_28d,roas_0d,roas_7d,roas_28d,total_rev_0d,total_rev_7d,total_rev_28d
+            columns: day,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_package_name,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales,sales_0d,sales_7d,sales_30d,cpp_0d,cpp_7d,cpp_30d,roas_0d,roas_7d,roas_30d,total_rev_0d,total_rev_7d,total_rev_30d
         record_selector:
           $ref: "#/definitions/base_record_selector"
         paginator:
@@ -560,7 +560,7 @@ schemas:
         type:
           - integer
           - "null"
-      sales_28d:
+      sales_30d:
         type:
           - integer
           - "null"
@@ -572,7 +572,7 @@ schemas:
         type:
           - number
           - "null"
-      cpp_28d:
+      cpp_30d:
         type:
           - number
           - "null"
@@ -584,7 +584,7 @@ schemas:
         type:
           - number
           - "null"
-      roas_28d:
+      roas_30d:
         type:
           - number
           - "null"
@@ -596,7 +596,7 @@ schemas:
         type:
           - number
           - "null"
-      total_rev_28d:
+      total_rev_30d:
         type:
           - number
           - "null"
