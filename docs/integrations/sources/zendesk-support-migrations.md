@@ -8,8 +8,6 @@ This is not a breaking change. No stream reset is required, and existing state i
 
 Version 5.5.0 reverts the `tickets` stream to Zendesk's [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) endpoint and changes its cursor field back from `updated_at` to `generated_timestamp`.
 
-Version 5.5.0 also changes permission-denied responses on most streams from silently skipping to failing the sync. This is not a formal breaking change: it does not change any schema, cursor, primary key, specification, or state format, so no `breakingChanges` metadata entry is required. If a connection cannot access a selected stream, authenticate with an account that has the required permissions or disable that stream.
-
 ### Why
 
 The 5.2.0 switch to the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint filtered and checkpointed the `tickets` stream on `updated_at`. Per Zendesk's [incremental export docs](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based), `updated_at` is only bumped when an update generates a ticket event, whereas `generated_timestamp` is bumped for **every** ticket change including system updates. Automation-, macro-, and system-driven ticket updates (e.g. auto-solve batches) generate no ticket event, so they left `updated_at` unchanged and were silently dropped from incremental syncs.
