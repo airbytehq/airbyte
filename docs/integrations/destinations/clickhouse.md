@@ -185,7 +185,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.27     | 2026-08-05 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |
+| 2.1.27     | 2026-08-05 | [83747](https://github.com/airbytehq/airbyte/pull/83747)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |
 | 2.1.26     | 2026-07-21 | [82684](https://github.com/airbytehq/airbyte/pull/82684)   | fix(destination-clickhouse): avoid failed count for missing temp tables        |
 | 2.1.25     | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 2.1.24     | 2026-05-20 | [77673](https://github.com/airbytehq/airbyte/pull/77673)   | Upgrade CDK to 1.0.13. Migrate component tests to Testcontainers. |
