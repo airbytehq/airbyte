@@ -119,7 +119,7 @@ class TestTicketFormsErrorHandling(TestCase):
         Per playbook: FAIL error handlers must assert both error code AND error message.
         """
         api_token_authenticator = self._get_authenticator(self._config)
-        error_message = "Forbidden - You do not have access to this resource"
+        error_message = "Forbidden - Access denied"
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
