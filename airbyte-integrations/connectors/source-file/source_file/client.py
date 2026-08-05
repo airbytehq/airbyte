@@ -6,6 +6,7 @@
 import json
 import logging
 import os
+import re
 import sys
 import tempfile
 import traceback
@@ -224,16 +225,55 @@ class URLFile:
         aws_secret_access_key = self._provider.get("aws_secret_access_key")
         use_aws_account = aws_access_key_id and aws_secret_access_key
 
-        if use_aws_account:
-            aws_access_key_id = self._provider.get("aws_access_key_id", "")
-            aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
-            url = f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}"
-            result = smart_open.open(url, **self.args)
-        else:
+        try:
+            if use_aws_account:
+                aws_access_key_id = self._provider.get("aws_access_key_id", "")
+                aws_secret_access_key = self._provider.get("aws_secret_access_key", "")
+                url = f"{self.storage_scheme}{aws_access_key_id}:{aws_secret_access_key}@{self.url}"
+                return smart_open.open(url, **self.args)
+
             config = botocore.client.Config(signature_version=botocore.UNSIGNED)
             params = {"client": boto3.client("s3", config=config)}
-            result = smart_open.open(self.full_url, transport_params=params, **self.args)
-        return result
+            return smart_open.open(self.full_url, transport_params=params, **self.args)
+        except (botocore.exceptions.ClientError, OSError) as err:
+            if isinstance(err, botocore.exceptions.ClientError):
+                error_code = err.response.get("Error", {}).get("Code")
+            else:
+                error_message = str(err)
+                error_match = re.search(r"An error occurred \(([^)]+)\)", error_message)
+                error_code = error_match.group(1) if error_match else None
+                if error_code is None:
+                    status_match = re.search(
+                        r"\b(401|403|404)\s+Client Error\b|"
+                        r"\bHTTP(?:/\S+)?\s+(?:Error\s+)?(401|403|404)\b|"
+                        r"\b(?:status(?:\s+code)?|code)[: ]+(401|403|404)\b",
+                        error_message,
+                    )
+                    error_code = next((group for group in status_match.groups() if group), None) if status_match else None
+
+            permanent_error_codes = {
+                "InvalidAccessKeyId",
+                "SignatureDoesNotMatch",
+                "AccessDenied",
+                "NoSuchBucket",
+                "NoSuchKey",
+                "ExpiredToken",
+                "InvalidToken",
+                "401",
+                "403",
+                "404",
+            }
+            if error_code not in permanent_error_codes:
+                raise
+
+            object_path = self.url.rsplit("@", 1)[-1]
+            error_msg = (
+                f"AWS rejected access to S3 object 's3://{object_path}' with error code {error_code}. "
+                "Verify the AWS access key ID and secret access key in the source configuration and confirm "
+                "the key has s3:GetObject permission on that object."
+            )
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
+            raise AirbyteTracedException(message=error_msg, internal_message=str(err), failure_type=FailureType.config_error) from err
 
     def _open_azblob_url(self):
         storage_account = self._provider.get("storage_account")
