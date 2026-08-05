@@ -5,6 +5,7 @@
 import logging
 import re
 from dataclasses import InitVar, dataclass
+from datetime import timedelta
 from typing import Any, List, Mapping, MutableMapping, Optional, Set, Tuple
 
 import requests
@@ -61,7 +62,7 @@ class RepositoryListResolver(ConfigTransformation):
                 message="No authentication tokens found in config.",
                 failure_type=FailureType.config_error,
             )
-        self._session = self._build_session(tokens)
+        self._session = self._build_session(tokens, max_wait_time=timedelta(minutes=config.get("max_waiting_time", 120)))
 
         config_repositories = set(config.get("repositories") or [])
         if not config_repositories:
@@ -74,10 +75,11 @@ class RepositoryListResolver(ConfigTransformation):
         config["_resolved_repositories"] = sorted(repositories)
         config["_resolved_organizations"] = sorted(organizations)
 
-    def _build_session(self, tokens: List[str]) -> requests.Session:
+    def _build_session(self, tokens: List[str], max_wait_time: timedelta) -> requests.Session:
         session = requests.Session()
         session.auth = RateLimitedMultipleTokenAuthenticator(
             tokens=tokens,
+            max_wait_time=max_wait_time,
             quotas=[
                 TokenQuota(
                     name="rest",

@@ -44,7 +44,7 @@ data:
               - "releases"
               - "review_comments"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - branches

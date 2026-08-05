@@ -97,11 +97,14 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         concurrently, while regular Python `Stream` objects are read through
         `AbstractSource.read()`.
 
-        The config is validated and transformed up front so that manifest streams
-        (e.g. the repositories stream's `ListPartitionRouter`) see the resolved
-        organizations/repositories injected by `RepositoryListResolver`. As streams are
-        migrated from Python to the manifest, they automatically move from the
-        synchronous to the concurrent path.
+        The config is validated and transformed up front so that manifest streams see
+        normalized keys (legacy `repository`/`branch` converted to arrays, `api_url`
+        defaulted) and so the Python streams get the `_resolved_repositories`/
+        `_resolved_organizations` lists injected by `RepositoryListResolver`. The
+        manifest itself does not reference the `_resolved_*` keys — its partition
+        routers resolve repositories from config directly. As streams are migrated
+        from Python to the manifest, they automatically move from the synchronous to
+        the concurrent path.
         """
         effective_config = self._validate_and_transform_config(self._config or config)
         # Manifest stream components interpolate from self._config, not the passed config arg.
@@ -118,7 +121,11 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         synchronous_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name not in concurrent_stream_names])
         if synchronous_catalog.streams:
-            yield from AbstractSource.read(self, logger, config, synchronous_catalog, state)
+            # Pass effective_config (not the raw config) so the `_resolved_repositories`
+            # idempotency guard in _validate_and_transform_config holds when
+            # AbstractSource.read re-enters streams() — otherwise repository
+            # resolution (and its API calls) runs a second time per sync.
+            yield from AbstractSource.read(self, logger, effective_config, synchronous_catalog, state)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Return the union of Python `Stream` objects and manifest-backed streams.
@@ -157,6 +164,13 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]):
+        # Transition state: during the manifest migration one sync holds several
+        # authenticator instances over the same tokens — this legacy one for the
+        # Python streams, the manifest's RateLimitedMultipleTokenAuthenticator for
+        # declarative streams, and the RepositoryListResolver's own instance. Each
+        # tracks token quotas independently, so combined usage can transiently
+        # overcommit near the rate-limit boundary (excess requests are retried).
+        # This resolves itself once all streams are on the manifest authenticator.
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
         return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
