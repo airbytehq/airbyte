@@ -84,4 +84,7 @@ data:
     - title: PostgreSQL authentication
       url: https://www.postgresql.org/docs/current/auth-methods.html
       type: authentication_guide
+    - title: PostgreSQL server source code
+      url: https://github.com/postgres/postgres
+      type: code_repository
 metadataSpecVersion: "1.0"
