@@ -31,7 +31,9 @@ class S3DataLakeAggregateFactory(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
                 importType = stream.tableSchema.importType,
-                schema = state.schema
+                schema = state.schema,
+                positionalDeleteRef = state.positionalDeleteState?.let { state.stagingBranchName },
+                positionalDeleteState = state.positionalDeleteState,
             )
 
         return S3DataLakeAggregate(
@@ -41,6 +43,7 @@ class S3DataLakeAggregateFactory(
             stagingBranchName = state.stagingBranchName,
             writer = writer,
             icebergUtil = icebergUtil,
+            positionalDeletesEnabled = state.positionalDeleteState != null,
         )
     }
 }

@@ -328,6 +328,8 @@ This connector uses a merge-on-read strategy to support deduplication.
 - Airbyte translates the stream's primary keys to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
 - An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files) on that row's primary key, followed by an insertion of the new data.
 
+The `merge_on_read_delete_encoding` option controls the delete encoding for Dedupe streams. `EQUALITY` remains the default; choose `POSITIONAL` when downstream readers reject equality-delete files. Append and Overwrite streams always use their existing behavior.
+
 ### Number-type primary keys
 
 When a primary key field has the Airbyte `Number` type, the connector stores it as an Iceberg `StringType` instead of `DoubleType`. This preserves deduplication correctness (Iceberg identifier fields don't support `DoubleType`), but means that ordering and comparison on these columns is lexicographic, not numeric (e.g., `"9" > "10"`). Downstream queries that assume numeric comparison on these fields may need adjustment.
@@ -409,6 +411,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0 | 2026-07-25 | [82751](https://github.com/airbytehq/airbyte/pull/82751) | Add positional delete encoding for Dedupe streams |
 | 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |
 | 0.3.50 | 2026-06-08 | [79112](https://github.com/airbytehq/airbyte/pull/79112) | Use unique staging branches and clean them up after each sync. |

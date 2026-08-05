@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write
 
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 
@@ -11,4 +12,5 @@ class S3DataLakeStreamState(
     val table: Table,
     val schema: Schema,
     val stagingBranchName: String,
+    val positionalDeleteState: PositionalDeleteResolutionState? = null,
 )

@@ -223,6 +223,15 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "merge_on_read_delete_encoding" : {
+        "type" : "string",
+        "enum" : [ "EQUALITY", "POSITIONAL" ],
+        "description" : "The delete-file encoding used by append deduplication syncs. Equality deletes are the backwards-compatible default; positional deletes are compatible with readers that do not support equality-delete files.",
+        "title" : "Merge-on-Read Delete Encoding",
+        "default" : "EQUALITY",
+        "examples" : [ "EQUALITY", "POSITIONAL" ],
+        "order" : 9
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

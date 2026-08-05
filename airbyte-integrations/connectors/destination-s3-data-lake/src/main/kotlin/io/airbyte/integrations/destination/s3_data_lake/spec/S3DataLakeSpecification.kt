@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
@@ -83,6 +84,23 @@ class S3DataLakeSpecification :
         json = """{"examples":[200], "default": 200, "order": 8, "airbyte_hidden": true}"""
     )
     val flushBatchSizeMb: Long? = null
+
+    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding")
+    @get:JsonPropertyDescription(
+        "The delete-file encoding used by append deduplication syncs. Equality deletes are the " +
+            "backwards-compatible default; positional deletes are compatible with readers that do " +
+            "not support equality-delete files."
+    )
+    @get:JsonProperty("merge_on_read_delete_encoding", required = false)
+    @get:JsonSchemaInject(
+        json = """{"default":"EQUALITY","examples":["EQUALITY","POSITIONAL"],"order":9}"""
+    )
+    val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding? = null
+}
+
+enum class MergeOnReadDeleteEncoding(@get:JsonValue val value: String) {
+    EQUALITY("EQUALITY"),
+    POSITIONAL("POSITIONAL"),
 }
 
 @Singleton
