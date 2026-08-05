@@ -192,11 +192,11 @@ def test_unzip_all_caps_ext(absolute_path, test_files):
 def test_open_aws_url():
     url = "s3://my_bucket/my_key"
     provider = {"storage": "S3"}
-    with pytest.raises(AirbyteTracedException):
+    with pytest.raises((OSError, AirbyteTracedException)):
         assert URLFile(url=url, provider=provider)._open_aws_url()
 
     provider.update({"aws_access_key_id": "aws_access_key_id", "aws_secret_access_key": "aws_secret_access_key"})
-    with pytest.raises(AirbyteTracedException):
+    with pytest.raises((OSError, AirbyteTracedException)):
         assert URLFile(url=url, provider=provider)._open_aws_url()
 
 
@@ -238,6 +238,24 @@ def test_open_aws_url_raises_configuration_error(error, provider):
     assert raised.value.failure_type == FailureType.config_error
     assert raised.value.message == expected_message
     assert raised.value.internal_message == str(error)
+
+
+def test_open_aws_url_raises_not_found_configuration_error():
+    error = OSError(
+        "unable to access bucket: 'my_bucket' key: 'my_key' version: None error: "
+        "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+    )
+    expected_message = (
+        "S3 object 's3://my_bucket/my_key' was not found or is not accessible with the provided AWS credentials "
+        "(error code NoSuchKey). Verify the bucket name and file path, and confirm the credentials have "
+        "s3:GetObject permission on that object."
+    )
+
+    with patch("smart_open.open", side_effect=error), pytest.raises(AirbyteTracedException) as raised:
+        URLFile(url="s3://my_bucket/my_key", provider={"storage": "S3"})._open_aws_url()
+
+    assert raised.value.failure_type == FailureType.config_error
+    assert raised.value.message == expected_message
 
 
 def test_open_aws_url_propagates_transient_os_error():
