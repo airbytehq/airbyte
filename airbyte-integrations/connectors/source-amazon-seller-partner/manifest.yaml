@@ -3090,8 +3090,9 @@ definitions:
             reportType: GET_VENDOR_SALES_REPORT
             # Anchor the report window to the slice's calendar day (see GET_SALES_AND_TRAFFIC_REPORT):
             # override the shared requester's raw slice bounds so an off-midnight window is not
-            # rounded outward and summed by the API. These are omitted on the shared requester on
-            # purpose, since non-daily report streams need their raw multi-day/month windows.
+            # rounded outward and summed by the API. The day-alignment is applied per stream rather
+            # than on the shared requester, since non-daily report streams need their raw
+            # multi-day/month windows.
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
