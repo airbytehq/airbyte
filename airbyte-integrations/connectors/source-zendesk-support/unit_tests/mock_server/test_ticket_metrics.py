@@ -185,9 +185,9 @@ class TestTicketMetricsErrorHandling(TestCase):
         output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state, expecting_exception=True)
 
         assert len(output.records) == 0
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("403" in message for message in error_logs), "Expected 403 error code in logs"
-        assert any(error_message in str(log) for log in output.logs), f"Expected error message '{error_message}' in logs"
+        assert any(error_message in message for message in error_logs), f"Expected error message '{error_message}' in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):
