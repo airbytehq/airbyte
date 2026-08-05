@@ -23,6 +23,6 @@ Syncs cards, transactions, and reimbursements from Ramp&#39;s developer API.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-08-05 | | Initial release by [@MercureTony](https://github.com/MercureTony) via Connector Builder |
+| 0.0.1 | 2026-08-05 | [83706](https://github.com/airbytehq/airbyte/pull/83706) | Initial release by [@MercureTony](https://github.com/MercureTony) via Connector Builder |
 
 </details>
