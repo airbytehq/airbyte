@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Tests that [NumberType] is mapped to FLOAT or NUMERIC(38,9) based on the number_data_type
- * option, and that [IntegerType] maps to NUMBER regardless of it.
+ * Tests that [NumberType] is mapped to FLOAT or NUMERIC(38,9) based on the number_data_type option,
+ * and that [IntegerType] maps to NUMBER regardless of it.
  */
 internal class SnowflakeTableSchemaMapperTest {
 

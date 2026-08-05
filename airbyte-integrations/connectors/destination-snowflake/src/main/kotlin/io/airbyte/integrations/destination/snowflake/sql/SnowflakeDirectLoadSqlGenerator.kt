@@ -418,9 +418,12 @@ class SnowflakeDirectLoadSqlGenerator(
                 )
                 val castExpression =
                     if (typeChange.newType.type == SnowflakeDataType.NUMERIC_38_9.typeName) {
-                        // When changing from FLOAT TO NUMERIC(38,9) CAST aborts the whole migration on values that
-                        // don't fit in 29 integer digits (e.g. large FLOATs, NaN, infinity), so nullify them instead
-                        // (mirroring what SnowflakeValueCoercer does to new values). NaN compares greater than any
+                        // When changing from FLOAT TO NUMERIC(38,9) CAST aborts the whole migration
+                        // on values that
+                        // don't fit in 29 integer digits (e.g. large FLOATs, NaN, infinity), so
+                        // nullify them instead
+                        // (mirroring what SnowflakeValueCoercer does to new values). NaN compares
+                        // greater than any
                         // other value in Snowflake, so the guard catches it too.
                         "IFF(ABS(${name.quote()}) >= 1e29, NULL, CAST(${name.quote()} AS ${typeChange.newType.type}))"
                     } else {

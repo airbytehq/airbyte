@@ -38,8 +38,13 @@ internal class SnowflakeValueCoercerTest {
     // _airbyte_data VARIANT column.
     @BeforeEach
     fun setUp() {
-        coercer = SnowflakeValueCoercer(mockk { every { legacyRawTablesOnly } returns false
-            every { numberDataTypeConversion } returns NumberDataType.FLOAT  })
+        coercer =
+            SnowflakeValueCoercer(
+                mockk {
+                    every { legacyRawTablesOnly } returns false
+                    every { numberDataTypeConversion } returns NumberDataType.FLOAT
+                }
+            )
     }
 
     @Test
