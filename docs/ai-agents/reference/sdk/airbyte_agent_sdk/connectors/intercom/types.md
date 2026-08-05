@@ -2239,7 +2239,7 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="ConversationsDeleteParams"></a>

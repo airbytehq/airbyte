@@ -21,6 +21,11 @@ The Hubspot connector is optimized to handle prompts like these.
 - Create a new company called 'Acme Corp' with domain acme.com
 - Create a support ticket with subject 'Login issue' and priority HIGH
 - Update the contact email for a specific contact
+- Associate contact 123 with deal 456
+- Link a contact to a company in HubSpot
+- Set contact 123 as the Primary contact for company 456
+- List all associations for contact 123 to companies
+- Remove an association between a contact and a deal
 - Add a note to contact 12345 saying 'Discussed pricing options'
 - List recent notes in my CRM
 - Get the details of a specific note
@@ -65,6 +70,7 @@ This connector supports the following entities and actions. For more details, se
 | Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
+| Associations | [List](./REFERENCE.md#associations-list), [Create](./REFERENCE.md#associations-create), [Delete](./REFERENCE.md#associations-delete) |
 
 
 ## Hubspot API docs
@@ -591,4 +597,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.19
+**Connector version:** 0.1.20
