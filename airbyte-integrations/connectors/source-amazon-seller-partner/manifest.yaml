@@ -604,7 +604,9 @@ definitions:
     request_headers:
       Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
 
-  # Deconstruct the reportOptions in the config and set them as request parameters.
+  # Deconstruct the reportOptions in the config and pass them in the report creation request body.
+  # When no options are configured for the stream, the reportOptions key is omitted entirely
+  # (rendering None drops the key), matching the pre-migration Python behavior.
   creation_requester_with_report_options:
     $ref: "#/definitions/basic_async_retriever/creation_requester"
     request_body_json:
@@ -622,7 +624,7 @@ definitions:
             {%- endfor -%}
           {%- endif -%}
         {%- endfor -%}
-        {{ opts if opts else {} }}
+        {{ opts if opts else None }}
 
   orders_authenticator:
     type: CustomAuthenticator
@@ -1555,7 +1557,7 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/creation_requester_with_report_options"
-          parameters:
+          $parameters:
             report_type: GET_LEDGER_DETAIL_VIEW_DATA
         record_selector:
           type: RecordSelector
@@ -1603,7 +1605,7 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/creation_requester_with_report_options"
-          parameters:
+          $parameters:
             report_type: GET_LEDGER_SUMMARY_VIEW_DATA
         record_selector:
           type: RecordSelector

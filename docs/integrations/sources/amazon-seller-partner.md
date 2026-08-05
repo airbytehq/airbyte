@@ -234,6 +234,8 @@ Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor
 Report options can be assigned on a per-stream basis that alter the behavior when generating a report.
 For the full list, refer to Amazon’s report type values [documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 
+Configured report options are currently applied to the `GET_LEDGER_DETAIL_VIEW_DATA` and `GET_LEDGER_SUMMARY_VIEW_DATA` streams (since 5.9.2). If you configured report options for these streams on an earlier version, they take effect after upgrading, which can change report granularity (for example, `aggregatedByTimePeriod` for the summary view) or row filtering (`eventType` for the detailed view).
+
 Certain report types have required parameters that must be defined.
 For the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL`, `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams, the maximum allowable value for `period_in_days` is 30 days, 30 days, and 60 days, respectively.
 If the specified `period_in_days` exceeds these limits, it will be automatically adjusted to the maximum value for the respective stream, or set to 365 days if not provided.

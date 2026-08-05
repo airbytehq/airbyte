@@ -31,11 +31,6 @@ _REPORT_ID = "6789087632"
 _REPORT_DOCUMENT_ID = "report_document_id"
 
 DEFAULT_EXPECTED_NUMBER_OF_RECORDS = 2  # every test file in resource/http/response contains 2 records
-
-# Streams that use creation_requester_with_report_options, which always includes reportOptions in
-# the POST /reports body (even as {} when no options are configured).
-_STREAMS_USING_REPORT_OPTIONS = frozenset({"GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"})
-
 STREAMS = (
     ("GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING", "csv"),
     ("GET_ORDER_REPORT_DATA_SHIPPING", "xml"),
@@ -75,8 +70,7 @@ def _create_report_request(report_name: str) -> RequestBuilder:
     A POST request needed to start generating a report on Amazon SP platform.
     Performed in ReportsAmazonSPStream._create_report method.
     """
-    report_options = {} if report_name in _STREAMS_USING_REPORT_OPTIONS else None
-    return RequestBuilder.create_report_endpoint(report_name, report_options=report_options)
+    return RequestBuilder.create_report_endpoint(report_name)
 
 
 def _check_report_status_request(report_id: str) -> RequestBuilder:
@@ -1456,29 +1450,11 @@ class TestReportOptions:
             sync_mode=SyncMode.full_refresh,
         )
 
-    @HttpMocker()
-    def test_given_report_options_list_when_read_then_options_included_in_request_body(self, http_mocker: HttpMocker) -> None:
-        """When report_options_list is configured for GET_LEDGER_DETAIL_VIEW_DATA, the options
-        must appear as reportOptions in the POST /reports request body."""
-        stream_name = "GET_LEDGER_DETAIL_VIEW_DATA"
-        configured_options = {"option1": "value1", "option2": "value2"}
-
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, create_report_request: RequestBuilder) -> None:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
-
-        create_body = json.dumps(
-            {
-                "reportType": stream_name,
-                "marketplaceIds": [MARKETPLACE_ID],
-                "dataStartTime": CONFIG_START_DATE,
-                "dataEndTime": CONFIG_END_DATE,
-                "reportOptions": configured_options,
-            }
-        )
-        http_mocker.post(
-            _create_report_request(stream_name).with_body(create_body).build(),
-            _create_report_response(_REPORT_ID),
-        )
+        http_mocker.post(create_report_request.build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
             _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
@@ -1492,11 +1468,49 @@ class TestReportOptions:
             _download_document_response(stream_name),
         )
 
+    @pytest.mark.parametrize("stream_name", ("GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"))
+    @pytest.mark.parametrize("matching_key", ("stream_name", "report_name"))
+    @HttpMocker()
+    def test_given_report_options_list_when_read_then_options_included_in_request_body(
+        self, matching_key: str, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """When report_options_list is configured for a ledger stream (matched by either
+        stream_name or report_name - the latter covers legacy configs where stream_name is
+        a custom alias), the options must appear as reportOptions in the POST /reports body."""
+        configured_options = {"option1": "value1", "option2": "value2"}
+
+        self._mock_report_flow(
+            http_mocker,
+            stream_name,
+            RequestBuilder.create_report_endpoint(stream_name, report_options=configured_options),
+        )
+
+        # Both keys are required by the spec; only one of them matches the stream under test.
+        entry = {"stream_name": "custom_stream_alias", "report_name": "GET_SELLER_FEEDBACK_DATA", matching_key: stream_name}
+        entry["options_list"] = [{"option_name": k, "option_value": v} for k, v in configured_options.items()]
+        _config = config().with_report_options_list([entry])
+
+        output = self._read(stream_name, _config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_included_in_request_body(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """Options configured for a different stream must not leak into the ledger stream's
+        POST /reports request body - the reportOptions key must be omitted entirely."""
+        stream_name = "GET_LEDGER_DETAIL_VIEW_DATA"
+
+        # _create_report_request builds the body without a reportOptions key; the byte-exact
+        # body matcher fails if any options leak in.
+        self._mock_report_flow(http_mocker, stream_name, _create_report_request(stream_name))
+
         _config = config().with_report_options_list(
             [
                 {
-                    "stream_name": stream_name,
-                    "options_list": [{"option_name": k, "option_value": v} for k, v in configured_options.items()],
+                    "stream_name": "GET_SELLER_FEEDBACK_DATA",
+                    "report_name": "GET_SELLER_FEEDBACK_DATA",
+                    "options_list": [{"option_name": "leaked", "option_value": "should_not_appear"}],
                 }
             ]
         )
