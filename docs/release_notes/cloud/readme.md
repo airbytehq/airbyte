@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 5, 2026
+
+Platform
+
+- You can now assign two new workspace roles from the Members page: Source editor and Destination editor. A source editor can create and edit a workspace's sources and connections but not its destinations, and a destination editor can do the reverse. Both roles are available on the Pro and Enterprise Flex plans.
+
 ## July 23, 2026
 
 Connections
