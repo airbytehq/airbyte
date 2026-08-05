@@ -1163,6 +1163,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       paginator:
         $ref: "#/definitions/end_of_stream_paginator"
     schema_loader:
@@ -1361,7 +1365,7 @@ definitions:
                 header: Retry-After
             response_filters:
               - http_codes: [403]
-                action: IGNORE
+                action: FAIL
                 failure_type: config_error
                 error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
               - http_codes: [404]

@@ -118,10 +118,11 @@ class TestSlaPoliciesStreamFullRefresh(TestCase):
     def test_given_403_error_when_read_sla_policies_then_fail(self, http_mocker):
         """Test that 403 errors are handled correctly."""
         api_token_authenticator = self.get_authenticator(self._config)
+        error_message = "Forbidden - You do not have access to this resource"
 
         http_mocker.get(
             self._base_sla_policies_request(api_token_authenticator).build(),
-            ErrorResponseBuilder.response_with_status(403).build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(error_message).build(),
         )
 
         output = read_stream("sla_policies", SyncMode.full_refresh, self._config, expecting_exception=True)
@@ -129,7 +130,7 @@ class TestSlaPoliciesStreamFullRefresh(TestCase):
         # Assert error code and message per playbook requirement
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
-        assert any("Error 403" in msg for msg in error_logs), "Expected error message in logs"
+        assert any(error_message in msg for msg in error_logs), f"Expected error message '{error_message}' in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_sla_policies_then_fail(self, http_mocker):
