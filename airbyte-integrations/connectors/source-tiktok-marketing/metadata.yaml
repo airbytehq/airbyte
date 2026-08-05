@@ -23,7 +23,10 @@ data:
       type: api_release_history
     - title: TikTok Business API Documentation
       url: https://business-api.tiktok.com/portal/docs?id=1740302848670722
-      type: api_release_history
+      type: other
+    - title: API version timelines
+      url: https://business-api.tiktok.com/portal/docs/timelines/v1.3
+      type: api_deprecations
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: ELv2
