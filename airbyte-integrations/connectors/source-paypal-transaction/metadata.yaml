@@ -89,4 +89,7 @@ data:
     - title: PayPal Status
       url: https://www.paypal-status.com/
       type: status_page
+    - title: PayPal REST API specifications
+      url: https://github.com/paypal/paypal-rest-api-specifications
+      type: spec_repository
 metadataSpecVersion: "1.0"
