@@ -143,6 +143,15 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
+
+    @get:JsonSchemaTitle("Number Data Type Conversion")
+    @get:JsonPropertyDescription(
+        """Determines how columns with the Airbyte number type are stored in Snowflake. FLOAT (default): binary floating point. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities and model scores, very large magnitudes, and calculations where tiny rounding differences are acceptable. NUMBER(38,9): fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, money, IDs represented numerically, and any value that must be stored exactly.""",
+    )
+    // default FLOAT for backwards compatibility
+    @get:JsonProperty("number_data_type", defaultValue = "FLOAT")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
+    val numberDataTypeConversion: NumberDataType? = null
 }
 
 @JsonTypeInfo(
@@ -199,6 +208,11 @@ class UsernamePasswordAuthSpecification(
 enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
+}
+
+enum class NumberDataType(@get:JsonValue val numberDataType: String) {
+    FLOAT("FLOAT"),
+    NUMBER_38_9("NUMBER(38,9)"),
 }
 
 @Singleton
