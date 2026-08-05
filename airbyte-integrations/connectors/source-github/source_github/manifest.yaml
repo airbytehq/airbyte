@@ -43,8 +43,8 @@ definitions:
     #   limits as 403/429 with an "API rate limit exceeded" message) are waited out
     #   instead of failing the sync;
     # - 404 on an organization or repository is skipped with a warning so one
-    #   deleted repo or renamed org doesn't fail the whole sync (matches the
-    #   Python `RepositoryListResolver` used by `check`);
+    #   deleted repo or renamed org doesn't fail the whole sync (`check` enumerates
+    #   the partition routers below and relies on the same skip semantics);
     # - plain 403 fails with an actionable scopes/SSO message (matches the legacy
     #   mapping so `check` can catch bad token scopes).
     # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
@@ -163,6 +163,10 @@ definitions:
         path: "repos/{{ stream_partition.repository }}"
         http_method: GET
         use_cache: true
+        # Kept for request-shape parity with the legacy resolver (GitHub ignores
+        # per_page on single-repo GETs).
+        request_parameters:
+          per_page: "100"
       record_selector:
         type: RecordSelector
         extractor:

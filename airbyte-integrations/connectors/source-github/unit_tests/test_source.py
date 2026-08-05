@@ -9,7 +9,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import responses
 from source_github import constants
-from source_github.components import RepositoryListResolver
 from source_github.source import SourceGithub
 
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
@@ -97,7 +96,9 @@ def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
 
 
 def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests_mock):
-    repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
+    # A real GitHub listing page holds at most `per_page` (100) records; the paginator
+    # stops on the first page with fewer than that.
+    repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(99)]
     requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
     requests_mock.get("https://api.github.com/orgs/org/repos", json=repos)
 
@@ -112,7 +113,7 @@ def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests
 
 
 def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
-    repos = [{"name": f"name {i}", "full_name": f"airbytehq/full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
+    repos = [{"name": f"name {i}", "full_name": f"airbytehq/full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(99)]
     requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
 
     status = check_source("airbytehq/*")
@@ -123,7 +124,7 @@ def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
 
 
 @responses.activate
-def test_get_resolved_repositories(requests_mock, rate_limit_mock_response):
+def test_resolve_repositories_and_organizations(requests_mock, rate_limit_mock_response):
     requests_mock.get(
         "https://api.github.com/repos/airbytehq/integration-test",
         json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
@@ -137,14 +138,9 @@ def test_get_resolved_repositories(requests_mock, rate_limit_mock_response):
     )
 
     config = {"credentials": {"access_token": "test_token"}, "repositories": ["airbytehq/integration-test", "docker/*"]}
-    source = SourceGithub()
-    config = source._ensure_default_values(config)
-    config = source._validate_repositories(config)
-    resolver = RepositoryListResolver(parameters={})
-    resolver.transform(config)
-
-    organisations = config["_resolved_organizations"]
-    repositories = config["_resolved_repositories"]
+    source = SourceGithub(config=config)
+    config = source._validate_and_transform_config(config)
+    organisations, repositories = source._resolve_repositories_and_organizations(config)
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
     assert set(organisations) == {"airbytehq", "docker"}
@@ -152,8 +148,7 @@ def test_get_resolved_repositories(requests_mock, rate_limit_mock_response):
 
 @responses.activate
 def test_organization_or_repo_available(monkeypatch, rate_limit_mock_response):
-    monkeypatch.setattr(SourceGithub, "_get_resolved_repositories", MagicMock(return_value=([], [])))
-    monkeypatch.setattr(RepositoryListResolver, "transform", MagicMock())
+    monkeypatch.setattr(SourceGithub, "_resolve_repositories_and_organizations", MagicMock(return_value=([], [])))
     source = SourceGithub()
     with pytest.raises(Exception) as exc_info:
         config = {"access_token": "test_token", "repository": ""}
@@ -210,8 +205,7 @@ def test_check_config_repository():
 
 @responses.activate
 def test_streams_no_streams_available_error(monkeypatch, rate_limit_mock_response):
-    monkeypatch.setattr(SourceGithub, "_get_resolved_repositories", MagicMock(return_value=([], [])))
-    monkeypatch.setattr(RepositoryListResolver, "transform", MagicMock())
+    monkeypatch.setattr(SourceGithub, "_resolve_repositories_and_organizations", MagicMock(return_value=([], [])))
     with pytest.raises(AirbyteTracedException) as e:
         SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
     assert str(e.value) == (
