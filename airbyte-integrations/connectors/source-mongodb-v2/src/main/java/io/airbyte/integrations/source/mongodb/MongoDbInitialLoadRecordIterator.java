@@ -94,7 +94,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     if (shouldBuildNextQuery()) {
       LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries,
           currentState.map(MongoDbStreamState::id).orElse("starting"));
-      closeCurrentIterator();
+      closeDiscardedIterator();
       currentIterator = buildNewQueryIteratorOrThrowTransientError();
       numSubqueries++;
       if (!currentIterator.hasNext()) {
@@ -128,7 +128,9 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   @Override
   public void close() throws Exception {
-    closeCurrentIterator();
+    if (currentIterator != null) {
+      currentIterator.close();
+    }
   }
 
   @Override
@@ -136,7 +138,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     return Optional.of(airbyteStream);
   }
 
-  private void closeCurrentIterator() {
+  private void closeDiscardedIterator() {
     if (currentIterator != null) {
       try {
         currentIterator.close();
