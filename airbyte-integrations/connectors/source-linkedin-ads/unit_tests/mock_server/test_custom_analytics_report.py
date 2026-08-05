@@ -71,7 +71,6 @@ def _create_analytics_record(
 
     Note: The 'sponsoredCampaign' and 'pivot' fields are added by transformations
     in the manifest, so they should appear in the output records.
-    The pivot value is 'DYNAMIC_FIELD' for custom_analytics_report.
     """
     return {
         "dateRange": {
@@ -168,11 +167,6 @@ class TestCustomAnalyticsReportStream(TestCase):
         Given: Analytics data from the API with ad_analytics_reports config
         When: Running a full refresh sync
         Then: Records should have 'sponsoredCampaign' and 'pivot' fields added
-
-        Note: 'sponsoredCampaign' is populated from the parent partition. The 'pivot' field is added
-        with the placeholder value 'DYNAMIC_FIELD' - the components mapping that would replace it targets a
-        field_path under retriever/record_selector, but transformations live at the stream level, so the
-        placeholder is not resolved. The actual pivoted dimension is captured in 'string_of_pivot_values'.
         """
         config = ConfigBuilder().with_start_date("2024-06-01").with_ad_analytics_reports(_get_custom_analytics_report_config()).build()
 
@@ -200,7 +194,7 @@ class TestCustomAnalyticsReportStream(TestCase):
 
         assert "sponsoredCampaign" in record_data
         assert record_data["sponsoredCampaign"] == "1001"
-        assert record_data["pivot"] == "DYNAMIC_FIELD"
+        assert record_data["pivot"] == "CAMPAIGN"
 
     @HttpMocker()
     def test_incremental_sync_initial(self, http_mocker: HttpMocker):

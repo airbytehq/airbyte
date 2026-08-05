@@ -15,7 +15,7 @@ You can use a Cloud Provider, such as, AWS, GCP, Azure, or onto a single node, s
 
 We highly recommend deploying Airbyte using Helm and the documented Helm chart values.
 
-Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
+Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes. Use the chart repository at `https://airbytehq.github.io/charts`, as shown in the installation steps below.
 
 The [Infrastructure](./infrastructure/aws.md) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
