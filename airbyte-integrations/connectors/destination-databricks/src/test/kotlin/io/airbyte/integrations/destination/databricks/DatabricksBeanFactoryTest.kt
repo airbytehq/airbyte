@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.databricks
 
+import com.databricks.client.jdbc.DataSource
 import io.airbyte.integrations.destination.databricks.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.databricks.spec.DatabricksAuthConfiguration
 import io.airbyte.integrations.destination.databricks.spec.DatabricksConfiguration
 import io.airbyte.integrations.destination.databricks.spec.OAuthConfiguration
 import io.airbyte.integrations.destination.databricks.spec.PersonalAccessTokenConfiguration
@@ -20,17 +22,11 @@ class DatabricksBeanFactoryTest {
         val dataSource =
             beanFactory.databricksDataSource(
                 config(PersonalAccessTokenConfiguration("test-token")),
-            ) as com.databricks.client.jdbc.DataSource
+            ) as DataSource
 
-        val tokenEntry =
-            dataSource.properties.entries.firstOrNull {
-                it.key.toString().equals("pwd", ignoreCase = true) ||
-                    it.key.toString().equals("password", ignoreCase = true)
-            } ?: error("JDBC token property was not set")
-
-        assertEquals("test-token", tokenEntry.value)
-        assertEquals("token", dataSource.properties.entries.first { it.key.toString().equals("uid", true) }.value)
-        assertEquals("3", dataSource.properties.entries.first { it.key.toString().equals("authmech", true) }.value)
+        assertEquals("test-token", dataSource.property("pwd", "password"))
+        assertEquals("token", dataSource.property("uid"))
+        assertEquals("3", dataSource.property("authmech"))
     }
 
     @Test
@@ -38,21 +34,20 @@ class DatabricksBeanFactoryTest {
         val dataSource =
             beanFactory.databricksDataSource(
                 config(OAuthConfiguration("test-client-id", "test-secret")),
-            ) as com.databricks.client.jdbc.DataSource
+            ) as DataSource
 
-        assertEquals(
-            "test-client-id",
-            dataSource.properties.entries.first { it.key.toString().equals("oauth2clientid", true) }.value,
-        )
-        assertEquals(
-            "test-secret",
-            dataSource.properties.entries.first { it.key.toString().equals("oauth2secret", true) }.value,
-        )
-        assertEquals("11", dataSource.properties.entries.first { it.key.toString().equals("authmech", true) }.value)
-        assertEquals("1", dataSource.properties.entries.first { it.key.toString().equals("auth_flow", true) }.value)
+        assertEquals("test-client-id", dataSource.property("oauth2clientid"))
+        assertEquals("test-secret", dataSource.property("oauth2secret"))
+        assertEquals("11", dataSource.property("authmech"))
+        assertEquals("1", dataSource.property("auth_flow"))
     }
 
-    private fun config(authType: io.airbyte.integrations.destination.databricks.spec.DatabricksAuthConfiguration) =
+    private fun DataSource.property(vararg names: String): Any =
+        properties.entries
+            .first { entry -> names.any { it.equals(entry.key.toString(), ignoreCase = true) } }
+            .value
+
+    private fun config(authType: DatabricksAuthConfiguration) =
         DatabricksConfiguration(
             hostname = "test.cloud.databricks.com",
             httpPath = "/sql/1.0/warehouses/test",
