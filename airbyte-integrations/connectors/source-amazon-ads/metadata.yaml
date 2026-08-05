@@ -74,7 +74,7 @@ data:
               - "sponsored_brands_v3_report_stream"
               - "sponsored_products_report_stream"
       6.0.0:
-        message: "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change, and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. Their V3 replacements are `sponsored_brands_campaigns_report_stream`, `sponsored_brands_adgroups_report_stream`, and `sponsored_brands_ads_report_stream`, which carry the spend, traffic, and video metrics the V2 streams returned at the campaign, ad group, and ad grain; the V2 keyword grain has no V3 replacement in this connector. Amazon ships these three report types in preview and returns no rows for Sponsored Brands campaigns whose `isMultiAdGroupsEnabled` flag is `false`, so those campaigns sync successfully with zero rows - check `isMultiAdGroupsEnabled` on the `sponsored_brands_campaigns` stream and see the connector docs before relying on these streams. Note that `sponsored_brands_v3_report_stream` is a purchased-product attribution report and is not a replacement for either V2 stream."
+        message: "The Report API V2 is being deprecated in favor of V3. Given this change, fields available through the sponsoredDisplayReportStream stream will change, and streams `SponsoredBrandsReportStream` `SponsoredBrandsVideoReportStream` will become unavailable. We recommend using `SponsoredBrandsV3ReportStream` as an alternative stream with the same dataset."
         upgradeDeadline: "2024-11-01"
         deadlineAction: "auto_upgrade"
         scopedImpact:
