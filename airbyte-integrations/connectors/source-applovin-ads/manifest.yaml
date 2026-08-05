@@ -135,9 +135,11 @@ definitions:
         - day
         - campaign_id_external
         - creative_set_id
+        - ad
         - country
         - platform
         - placement_type
+        - device_type
       retriever:
         type: SimpleRetriever
         requester:
@@ -146,7 +148,7 @@ definitions:
           request_parameters:
             report_type: advertiser
             format: json
-            columns: day,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_package_name,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales,sales_0d,sales_7d,sales_28d,cpp_0d,cpp_7d,cpp_28d,roas_0d,roas_7d,roas_28d,total_rev_0d,total_rev_7d,total_rev_28d
+            columns: day,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_bid_goal,campaign_package_name,ad,ad_creative_type,ad_type,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales,sales_0d,sales_7d,sales_30d,cpp_0d,cpp_7d,cpp_30d,roas_0d,roas_7d,roas_28d,total_rev_0d,total_rev_7d,total_rev_28d,unique_purchasers_0d,unique_purchasers_7d,unique_purchasers_28d
         record_selector:
           $ref: "#/definitions/base_record_selector"
         paginator:
@@ -342,7 +344,23 @@ schemas:
         type:
           - string
           - "null"
+      campaign_bid_goal:
+        type:
+          - number
+          - "null"
       campaign_package_name:
+        type:
+          - string
+          - "null"
+      ad:
+        type:
+          - string
+          - "null"
+      ad_creative_type:
+        type:
+          - string
+          - "null"
+      ad_type:
         type:
           - string
           - "null"
@@ -418,7 +436,7 @@ schemas:
         type:
           - integer
           - "null"
-      sales_28d:
+      sales_30d:
         type:
           - integer
           - "null"
@@ -430,7 +448,7 @@ schemas:
         type:
           - number
           - "null"
-      cpp_28d:
+      cpp_30d:
         type:
           - number
           - "null"
@@ -457,6 +475,18 @@ schemas:
       total_rev_28d:
         type:
           - number
+          - "null"
+      unique_purchasers_0d:
+        type:
+          - integer
+          - "null"
+      unique_purchasers_7d:
+        type:
+          - integer
+          - "null"
+      unique_purchasers_28d:
+        type:
+          - integer
           - "null"
   web_report_daily:
     type: object
