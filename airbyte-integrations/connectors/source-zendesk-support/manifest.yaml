@@ -1113,6 +1113,7 @@ definitions:
                   error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
                 - http_codes: [403, 404]
                   action: FAIL # fail as this stream used to define enterprise plan
+                  failure_type: config_error
                   error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
             - type: DefaultErrorHandler
               backoff_strategies:
