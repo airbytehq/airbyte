@@ -96,7 +96,7 @@ class PipelineCompletionHandlerTest {
         every { aggStore.getAll() } returns listOf(aggregateEntry1, aggregateEntry2)
         coEvery { mockAggregate1.flush() } just Runs
         coEvery { mockAggregate2.flush() } just Runs
-        every { stateHistogramStore.acceptFlushedCounts(any()) } returns mockk()
+        every { stateHistogramStore.acceptFlushedCounts(any(), any()) } returns mockk()
         every { statsStore.acceptStats(any(), any(), any()) } returns mockk()
 
         // When
@@ -105,8 +105,12 @@ class PipelineCompletionHandlerTest {
         // Then
         coVerify(exactly = 1) { mockAggregate1.flush() }
         coVerify(exactly = 1) { mockAggregate2.flush() }
-        verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockCountsHistogram1) }
-        verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockCountsHistogram2) }
+        verify(exactly = 1) {
+            stateHistogramStore.acceptFlushedCounts(Fixtures.key, mockCountsHistogram1)
+        }
+        verify(exactly = 1) {
+            stateHistogramStore.acceptFlushedCounts(Fixtures.key, mockCountsHistogram2)
+        }
         verify(exactly = 1) {
             statsStore.acceptStats(Fixtures.key, mockCountsHistogram1, mockBytesHistogram1)
         }
@@ -125,7 +129,7 @@ class PipelineCompletionHandlerTest {
 
         // Then
         verify(exactly = 1) { aggStore.getAll() }
-        verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any()) }
+        verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any(), any()) }
         verify(exactly = 0) { statsStore.acceptStats(any(), any(), any()) }
     }
 
@@ -156,7 +160,7 @@ class PipelineCompletionHandlerTest {
 
         coVerify(exactly = 1) { mockAggregate.flush() }
         // Note: acceptFlushedCounts should not be called if flush fails
-        verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any()) }
+        verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any(), any()) }
         verify(exactly = 0) { statsStore.acceptStats(any(), any(), any()) }
     }
 

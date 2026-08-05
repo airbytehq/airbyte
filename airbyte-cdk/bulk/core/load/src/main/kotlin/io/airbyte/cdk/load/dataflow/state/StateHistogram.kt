@@ -4,8 +4,14 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.DestinationStream
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
+
+sealed interface StateScope {
+    data object Global : StateScope
+    data class Stream(val descriptor: DestinationStream.Descriptor) : StateScope
+}
 
 /** A state generally refers to a single partition but can refer to many (namely, in CDC) */
 data class StateKey(

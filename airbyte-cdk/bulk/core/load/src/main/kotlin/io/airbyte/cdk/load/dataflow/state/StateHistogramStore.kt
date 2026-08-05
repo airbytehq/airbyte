@@ -4,44 +4,72 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.DestinationStream
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 @Singleton
 class StateHistogramStore {
-    // Counts of flushed messages by partition id
-    private val flushed: PartitionHistogram = PartitionHistogram(ConcurrentHashMap())
-    // Counts of expected messages by state id
-    private val expected: StateHistogram = StateHistogram(ConcurrentHashMap())
+    // Counts of flushed messages by mapped stream descriptor and partition id.
+    private val flushed = ConcurrentHashMap<DestinationStream.Descriptor, PartitionHistogram>()
+    // Counts of expected messages by scope and state id.
+    private val expected = ConcurrentHashMap<StateScope, StateHistogram>()
 
-    fun acceptFlushedCounts(value: PartitionHistogram): PartitionHistogram {
-        return flushed.merge(value)
+    fun acceptFlushedCounts(
+        descriptor: DestinationStream.Descriptor,
+        value: PartitionHistogram,
+    ): PartitionHistogram {
+        return flushed
+            .computeIfAbsent(descriptor) { PartitionHistogram(ConcurrentHashMap()) }
+            .merge(value)
     }
 
-    fun acceptExpectedCounts(key: StateKey, count: Long): StateHistogram {
+    fun acceptExpectedCounts(scope: StateScope, key: StateKey, count: Long): StateHistogram {
         val inner = ConcurrentHashMap<StateKey, Double>()
         inner[key] = count.toDouble()
 
-        return expected.merge(StateHistogram(inner))
+        return expected
+            .computeIfAbsent(scope) { StateHistogram(ConcurrentHashMap()) }
+            .merge(StateHistogram(inner))
     }
 
-    fun isComplete(key: StateKey): Boolean {
-        val expectedCount = expected.get(key)
-        val flushedCount = key.partitionKeys.sumOf { flushed.get(it) ?: 0.0 }
+    fun isComplete(scope: StateScope, key: StateKey): Boolean {
+        val expectedCount = expected[scope]?.get(key)
+        val flushedCount = flushedCount(scope, key)
 
         return expectedCount == flushedCount
     }
 
     // mirrors isComplete. Purely for debugging purposes.
-    fun whyIsStateIncomplete(key: StateKey): String {
-        val expectedCount = expected.get(key)
-        val partitionFlushCounts = key.partitionKeys.map { flushed.get(it) ?: 0.0 }
+    fun whyIsStateIncomplete(scope: StateScope, key: StateKey): String {
+        val expectedCount = expected[scope]?.get(key)
+        val partitionFlushCounts = partitionFlushCounts(scope, key)
         val flushedCount = partitionFlushCounts.sum()
-        return "expectedCount $expectedCount does not equal flushedCount $flushedCount (by partition: $partitionFlushCounts)"
+        return "scope $scope: expectedCount $expectedCount does not equal flushedCount $flushedCount (by partition: $partitionFlushCounts)"
     }
 
-    fun remove(key: StateKey): Long? {
-        key.partitionKeys.forEach { flushed.remove(it) }
-        return expected.remove(key)?.toLong()
+    fun remove(scope: StateScope, key: StateKey): Long? {
+        when (scope) {
+            StateScope.Global ->
+                flushed.values.forEach { histogram ->
+                    key.partitionKeys.forEach { histogram.remove(it) }
+                }
+            is StateScope.Stream ->
+                flushed[scope.descriptor]?.let { histogram ->
+                    key.partitionKeys.forEach { histogram.remove(it) }
+                }
+        }
+        return expected[scope]?.remove(key)?.toLong()
     }
+
+    private fun flushedCount(scope: StateScope, key: StateKey): Double =
+        partitionFlushCounts(scope, key).sum()
+
+    private fun partitionFlushCounts(scope: StateScope, key: StateKey): List<Double> =
+        key.partitionKeys.map { partitionKey ->
+            when (scope) {
+                StateScope.Global -> flushed.values.sumOf { it.get(partitionKey) ?: 0.0 }
+                is StateScope.Stream -> flushed[scope.descriptor]?.get(partitionKey) ?: 0.0
+            }
+        }
 }

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -22,6 +23,7 @@ class StateStore(
     private val keyClient: StateKeyClient,
     private val histogramStore: StateHistogramStore,
     private val stateStatsEnricher: StateStatsEnricher,
+    private val catalog: DestinationCatalog,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -41,15 +43,25 @@ class StateStore(
     )
 
     private val streamStates = ConcurrentHashMap<DestinationStream.Descriptor, StreamState>()
+    private val mappedDescriptors by lazy {
+        catalog.streams.associate { it.unmappedDescriptor to it.mappedDescriptor }
+    }
 
     fun accept(msg: CheckpointMessage) {
         val key = keyClient.getStateKey(msg)
+        val scope =
+            when (msg) {
+                is GlobalCheckpoint,
+                is GlobalSnapshotCheckpoint -> StateScope.Global
+                is StreamCheckpoint ->
+                    StateScope.Stream(mappedDescriptor(msg.checkpoint.unmappedDescriptor))
+            }
 
         val stats =
             requireNotNull(msg.sourceStats) {
                 "sourceStats must be set with recordCount for state message id=${key.id}"
             }
-        histogramStore.acceptExpectedCounts(key, stats.recordCount)
+        histogramStore.acceptExpectedCounts(scope, key, stats.recordCount)
 
         when (msg) {
             is GlobalCheckpoint,
@@ -77,13 +89,13 @@ class StateStore(
                 if (head.id != expected) {
                     return null
                 }
-                if (!histogramStore.isComplete(head)) {
+                if (!histogramStore.isComplete(StateScope.Global, head)) {
                     return null
                 }
 
                 val msg = globalStates.remove(head)!!
                 globalNextIndex.incrementAndGet()
-                histogramStore.remove(head)
+                histogramStore.remove(StateScope.Global, head)
                 stateStatsEnricher.enrich(msg, head)
             }
             Mode.STREAM -> {
@@ -94,7 +106,9 @@ class StateStore(
                     if (head.id != expected) {
                         continue
                     }
-                    if (!histogramStore.isComplete(head)) {
+                    if (
+                        !histogramStore.isComplete(StateScope.Stream(mappedDescriptor(desc)), head)
+                    ) {
                         continue
                     }
                     if (stateToEmit == null) {
@@ -109,7 +123,7 @@ class StateStore(
                 val msg = st.queue.remove(head) ?: return null
 
                 st.nextIndex.incrementAndGet()
-                histogramStore.remove(head)
+                histogramStore.remove(StateScope.Stream(mappedDescriptor(desc)), head)
                 stateStatsEnricher.enrich(msg, head)
             }
         }
@@ -145,8 +159,10 @@ class StateStore(
                 when {
                     head.id != expected ->
                         sb.append("\n  • Waiting for index $expected (head is ${head.id})")
-                    !histogramStore.isComplete(head) ->
-                        sb.append("\n  • Incomplete: ${histogramStore.whyIsStateIncomplete(head)}")
+                    !histogramStore.isComplete(StateScope.Global, head) ->
+                        sb.append(
+                            "\n  • Incomplete: ${histogramStore.whyIsStateIncomplete(StateScope.Global, head)}"
+                        )
                     else -> sb.append("\n  • Head is complete and ready to flush")
                 }
                 log.info { sb.toString() }
@@ -170,9 +186,12 @@ class StateStore(
                     when {
                         head.id != expected ->
                             sb.append("\n  • Waiting for index $expected (head is ${head.id})")
-                        !histogramStore.isComplete(head) ->
+                        !histogramStore.isComplete(
+                            StateScope.Stream(mappedDescriptor(desc)),
+                            head
+                        ) ->
                             sb.append(
-                                "\n  • Incomplete: ${histogramStore.whyIsStateIncomplete(head)}"
+                                "\n  • Incomplete: ${histogramStore.whyIsStateIncomplete(StateScope.Stream(mappedDescriptor(desc)), head)}"
                             )
                         else -> sb.append("\n  • Head is complete and ready to flush")
                     }
@@ -199,6 +218,16 @@ class StateStore(
             )
         }
     }
+
+    private fun mappedDescriptor(
+        unmappedDescriptor: DestinationStream.Descriptor
+    ): DestinationStream.Descriptor =
+        mappedDescriptors[unmappedDescriptor]
+            ?: unmappedDescriptor.also {
+                log.warn {
+                    "No mapped descriptor found for unmapped descriptor ${unmappedDescriptor.toPrettyString()}; using it as-is."
+                }
+            }
 
     private fun noGlobalToFlush(): Nothing? {
         return null

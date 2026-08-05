@@ -24,7 +24,7 @@ class StateStage(
         val countUpdates = input.partitionCountsHistogram!!
         val byteUpdates = input.partitionBytesHistogram!!
 
-        stateHistogramStore.acceptFlushedCounts(countUpdates)
+        stateHistogramStore.acceptFlushedCounts(input.mappedDesc!!, countUpdates)
         statsStore.acceptStats(input.mappedDesc!!, countUpdates, byteUpdates)
 
         return input

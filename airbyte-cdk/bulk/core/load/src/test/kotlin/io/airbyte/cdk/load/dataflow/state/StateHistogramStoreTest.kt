@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.DestinationStream
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,14 +27,14 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 5L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey, 1.0) }
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertTrue(result)
@@ -47,16 +48,16 @@ class StateHistogramStoreTest {
         val partitionKey3 = PartitionKey("partition-3")
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2, partitionKey3))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 15L) // 5 + 3 + 7 = 15
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 15L) // 5 + 3 + 7 = 15
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey1, 1.0) }
         repeat(3) { partitionHistogram.increment(partitionKey2, 1.0) }
         repeat(7) { partitionHistogram.increment(partitionKey3, 1.0) }
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertTrue(result)
@@ -68,14 +69,14 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 10L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 10L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(7) { partitionHistogram.increment(partitionKey, 1.0) } // Less than expected
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertFalse(result)
@@ -87,14 +88,14 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 5L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(8) { partitionHistogram.increment(partitionKey, 1.0) } // More than expected
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertFalse(result)
@@ -108,10 +109,10 @@ class StateHistogramStoreTest {
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey, 1.0) }
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertFalse(result) // null != 5
@@ -123,10 +124,10 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 5L)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertFalse(result) // 5 != 0
@@ -139,15 +140,15 @@ class StateHistogramStoreTest {
         val partitionKey2 = PartitionKey("partition-2") // No flushed count for this
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 3L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 3L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(3) { partitionHistogram.increment(partitionKey1, 1.0) }
         // partitionKey2 has no flushed counts, should be treated as 0
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        val result = stateHistogramStore.isComplete(stateKey)
+        val result = stateHistogramStore.isComplete(StateScope.Global, stateKey)
 
         // Then
         assertTrue(result) // 3 + 0 = 3
@@ -163,24 +164,24 @@ class StateHistogramStoreTest {
         val bytes1 = 1000L
         val bytes2 = 2000L
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, expectedCount)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, expectedCount)
 
         val partitionCountsHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionCountsHistogram.increment(partitionKey1, 1.0) }
         repeat(3) { partitionCountsHistogram.increment(partitionKey2, 1.0) }
-        stateHistogramStore.acceptFlushedCounts(partitionCountsHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionCountsHistogram)
 
         val partitionBytesHistogram = PartitionHistogram(ConcurrentHashMap())
         partitionBytesHistogram.increment(partitionKey1, bytes1.toDouble())
         partitionBytesHistogram.increment(partitionKey2, bytes2.toDouble())
 
         // When
-        val count = stateHistogramStore.remove(stateKey)
+        val count = stateHistogramStore.remove(StateScope.Global, stateKey)
 
         // Then
         assertEquals(expectedCount, count)
         assertFalse(
-            stateHistogramStore.isComplete(stateKey)
+            stateHistogramStore.isComplete(StateScope.Global, stateKey)
         ) // Should be false due to missing expected count
     }
 
@@ -194,20 +195,82 @@ class StateHistogramStoreTest {
         val stateKey1 = StateKey(1L, listOf(partitionKey1, partitionKey2))
         val stateKey2 = StateKey(2L, listOf(partitionKey3))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey1, 8L)
-        stateHistogramStore.acceptExpectedCounts(stateKey2, 4L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey1, 8L)
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey2, 4L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey1, 1.0) }
         repeat(3) { partitionHistogram.increment(partitionKey2, 1.0) }
         repeat(4) { partitionHistogram.increment(partitionKey3, 1.0) }
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        stateHistogramStore.acceptFlushedCounts(Fixtures.descriptor1, partitionHistogram)
 
         // When
-        stateHistogramStore.remove(stateKey1)
+        stateHistogramStore.remove(StateScope.Global, stateKey1)
 
         // Then
-        assertFalse(stateHistogramStore.isComplete(stateKey1)) // Should be false after removal
-        assertTrue(stateHistogramStore.isComplete(stateKey2)) // Should still be complete
+        assertFalse(
+            stateHistogramStore.isComplete(StateScope.Global, stateKey1)
+        ) // Should be false after removal
+        assertTrue(
+            stateHistogramStore.isComplete(StateScope.Global, stateKey2)
+        ) // Should still be complete
+    }
+
+    @Test
+    fun `stream scopes should keep identical state and partition keys independent`() {
+        val partitionKey = PartitionKey("abcd")
+        val stateKey = StateKey(1L, listOf(partitionKey))
+        val scopeA = StateScope.Stream(Fixtures.descriptor1)
+        val scopeB = StateScope.Stream(Fixtures.descriptor2)
+
+        stateHistogramStore.acceptExpectedCounts(scopeA, stateKey, 1L)
+        stateHistogramStore.acceptExpectedCounts(scopeB, stateKey, 1L)
+        stateHistogramStore.acceptFlushedCounts(
+            Fixtures.descriptor1,
+            PartitionHistogram().apply { increment(partitionKey, 1.0) },
+        )
+        stateHistogramStore.acceptFlushedCounts(
+            Fixtures.descriptor2,
+            PartitionHistogram().apply { increment(partitionKey, 1.0) },
+        )
+
+        assertTrue(stateHistogramStore.isComplete(scopeA, stateKey))
+        assertTrue(stateHistogramStore.isComplete(scopeB, stateKey))
+
+        stateHistogramStore.remove(scopeA, stateKey)
+
+        assertFalse(stateHistogramStore.isComplete(scopeA, stateKey))
+        assertTrue(stateHistogramStore.isComplete(scopeB, stateKey))
+    }
+
+    @Test
+    fun `global scope should sum flushed counts across descriptors and remove all of them`() {
+        val partitionKey = PartitionKey("global")
+        val stateKey = StateKey(1L, listOf(partitionKey))
+        val streamScope1 = StateScope.Stream(Fixtures.descriptor1)
+        val streamScope2 = StateScope.Stream(Fixtures.descriptor2)
+
+        stateHistogramStore.acceptExpectedCounts(StateScope.Global, stateKey, 2L)
+        stateHistogramStore.acceptExpectedCounts(streamScope1, stateKey, 1L)
+        stateHistogramStore.acceptExpectedCounts(streamScope2, stateKey, 1L)
+        stateHistogramStore.acceptFlushedCounts(
+            Fixtures.descriptor1,
+            PartitionHistogram().apply { increment(partitionKey, 1.0) },
+        )
+        stateHistogramStore.acceptFlushedCounts(
+            Fixtures.descriptor2,
+            PartitionHistogram().apply { increment(partitionKey, 1.0) },
+        )
+
+        assertTrue(stateHistogramStore.isComplete(StateScope.Global, stateKey))
+        stateHistogramStore.remove(StateScope.Global, stateKey)
+        assertFalse(stateHistogramStore.isComplete(StateScope.Global, stateKey))
+        assertFalse(stateHistogramStore.isComplete(streamScope1, stateKey))
+        assertFalse(stateHistogramStore.isComplete(streamScope2, stateKey))
+    }
+
+    private object Fixtures {
+        val descriptor1 = DestinationStream.Descriptor("ns", "stream1")
+        val descriptor2 = DestinationStream.Descriptor("ns", "stream2")
     }
 }
