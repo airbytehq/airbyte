@@ -223,7 +223,7 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 
 Some streams require administrator- or enterprise-level permissions in Zendesk. If the authenticated user does not have access to one of these optional streams, the connector skips it and continues syncing the remaining streams: `organizations`, `users`, `user_identities`, `ticket_metric_events`, `articles`, `audit_logs`, `account_attributes`, `attribute_definitions`, and `ticket_forms`. Skipped streams are logged with a message indicating the permission issue.
 
-Core ticket streams do not use this permission-based skip behavior. Permission-denied responses on `tickets`, `tickets_search`, `ticket_events`, `ticket_comments`, `ticket_audits`, `ticket_metrics`, `ticket_skips`, `satisfaction_ratings`, and `side_conversations` fail loudly so that a misconfigured or under-permissioned connection cannot report success with missing data.
+Most core ticket streams do not use this permission-based skip behavior. Permission-denied responses on `tickets`, `tickets_search`, `ticket_events`, `ticket_comments`, `ticket_audits`, `ticket_skips`, `satisfaction_ratings`, and `side_conversations` fail loudly so that a misconfigured or under-permissioned connection cannot report success with missing data. `deleted_tickets` is an exception because its own handler skips HTTP 403 responses when the user lacks the `view_deleted_tickets` permission. `ticket_metrics` fails permission-denied responses on its full-refresh path, but its stateful incremental path skips HTTP 403 responses for individual tickets when stream state exists.
 
 To sync all available streams, authenticate with a Zendesk account that has an Administrator role.
 
