@@ -61,11 +61,6 @@
 /docs/integrations/destinations/ @airbytehq/destinations
 
 # -----------------------------------------------------------------------------
-# OAUTH
-# -----------------------------------------------------------------------------
-/oss/airbyte-oauth/src/main/kotlin/io/airbyte/oauth/ @airbytehq/dev-api-sources
-
-# -----------------------------------------------------------------------------
 # NO OWNERSHIP - Markdown files
 # -----------------------------------------------------------------------------
 # Documentation changes don't require team review. These rules override the
