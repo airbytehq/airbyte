@@ -32,6 +32,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone: true
 
       - name: Set up uv
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
