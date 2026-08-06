@@ -35,6 +35,19 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 
 **Why this matters:** This stream is distinct from `ticket_comments` — both use the same API endpoint but extract different data. `ticket_comments` uses a custom extractor (`ZendeskSupportExtractorEvents`) to drill into `child_events` and filter for Comment events. `ticket_events` uses the default `DpathExtractor` to return the raw ticket event envelope, giving users access to all event types and metadata.
 
+## 5. Two Permission-Denial Error Handlers: Required vs. Optional Streams
+
+Zendesk returns `403` with a body containing `You do not have access` when the authenticated user's role or the account's plan does not cover an endpoint. The manifest handles that response two different ways, via two named definitions:
+
+- `definitions.required_stream_error_handler` — the default, wired into `definitions.retriever.requester`. A permission denial **fails** the sync with `failure_type: config_error`.
+- `definitions.optional_stream_error_handler` — opted into per stream by overriding `retriever.requester.error_handler`. A permission denial is **ignored**, the stream is skipped, and the rest of the sync continues. Currently used by `account_attributes`, `attribute_definitions`, `audit_logs`, `custom_roles`, and `ticket_skips`, all of which require a Zendesk plan, add-on, or admin role that many accounts do not have.
+
+**Why this matters:** an `IGNORE` filter on the shared requester applies to every stream that does not override it, including `tickets`, `ticket_events`, and `tickets_search`. That turns a permission problem on primary data into a "successful" sync with zero records — silent data loss. Any new `IGNORE` filter for permission denials must be attached to a specific stream, never to the shared requester.
+
+Because `HttpResponseFilter` ORs its status-code and body-substring conditions, and `DefaultErrorHandler` returns on the first matching filter, a body-only `error_message_contains` filter shadows any later `http_codes: [403]` filter. Order matters: put the narrow `IGNORE` filter first and the broad `FAIL` filter last.
+
+Error messages interpolate `{{ parameters.get('name') }}`. Streams that declare `name` as a stream field instead of through `$parameters` (`tickets_search`, `ticket_metrics`) must also set `$parameters.name`, or the message renders `stream 'None'`.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

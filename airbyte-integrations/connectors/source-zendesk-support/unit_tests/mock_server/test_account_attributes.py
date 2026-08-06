@@ -82,6 +82,27 @@ class TestAccountAttributesStreamFullRefresh(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
+    def test_given_403_permission_denied_when_read_account_attributes_then_skip_stream(self, http_mocker):
+        """account_attributes is behind the skills-based routing add-on, so a permission denial skips the stream."""
+        api_token_authenticator = self.get_authenticator(self._config)
+
+        http_mocker.get(
+            self._base_account_attributes_request(api_token_authenticator).build(),
+            ErrorResponseBuilder.response_with_status(403)
+            .with_error_message(
+                "You do not have access to this page. You do not have permission to access this page. "
+                "Please contact the account owner of this help desk for further help."
+            )
+            .build(),
+        )
+
+        output = read_stream("account_attributes", SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert not any("403" in msg for msg in error_logs), "A permission denial on an optional stream must not fail the sync"
+
+    @HttpMocker()
     def test_given_403_error_when_read_account_attributes_then_fail(self, http_mocker):
         api_token_authenticator = self.get_authenticator(self._config)
 

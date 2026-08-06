@@ -152,8 +152,8 @@ class TestOrganizationsStreamIncremental(TestCase):
         assert output.most_recent_state.stream_descriptor.name == "organizations"
 
     @HttpMocker()
-    def test_given_403_permission_denied_when_read_organizations_then_ignore_and_skip_stream(self, http_mocker):
-        """When Zendesk returns 403 with 'You do not have access', the stream should be skipped."""
+    def test_given_403_permission_denied_when_read_organizations_then_fail(self, http_mocker):
+        """organizations carries Zendesk data, so a permission denial must fail rather than produce an empty sync."""
         api_token_authenticator = self._get_authenticator(self._config)
         http_mocker.get(
             ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
@@ -167,11 +167,12 @@ class TestOrganizationsStreamIncremental(TestCase):
             .build(),
         )
 
-        output = read_stream("organizations", SyncMode.incremental, self._config)
+        output = read_stream("organizations", SyncMode.incremental, self._config, expecting_exception=True)
 
         assert len(output.records) == 0
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
-        assert not any("403" in msg for msg in error_logs), "403 permission-denied should not produce ERROR logs"
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any("stream 'organizations'" in msg for msg in error_logs), "Expected the failing stream to be named in logs"
 
     @HttpMocker()
     def test_given_403_other_error_when_read_organizations_then_fail(self, http_mocker):

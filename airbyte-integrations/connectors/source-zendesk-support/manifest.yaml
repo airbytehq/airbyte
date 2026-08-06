@@ -65,6 +65,38 @@ definitions:
         - credentials
         - refresh_token
 
+  # Default error handler. A permission denial on a stream that carries Zendesk data is a
+  # configuration problem, so it fails the sync rather than producing an empty, "successful"
+  # one. Streams behind an optional Zendesk plan or add-on use
+  # `optional_stream_error_handler` instead.
+  required_stream_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - http_codes: [403, 404]
+        action: FAIL
+        failure_type: config_error
+        error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The authenticated Zendesk user does not have access to this endpoint. Grant that user access to the resource, or disable the stream in the connection's schema settings. Error message: {{ response.get('error') }}"
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+
+  # Error handler for endpoints gated behind a Zendesk plan, add-on, or admin-only role.
+  # A permission denial here means the account does not have the feature, so the stream is
+  # skipped and the rest of the sync continues.
+  optional_stream_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - error_message_contains: "You do not have access"
+        action: IGNORE
+        error_message: "Skipping stream '{{ parameters.get('name') }}'. The authenticated Zendesk user does not have access to this endpoint, which requires a Zendesk plan, add-on, or role that this account does not have. Remaining streams continue to sync."
+      - http_codes: [403, 404]
+        action: FAIL
+        failure_type: config_error
+        error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The authenticated Zendesk user does not have access to this endpoint. Grant that user access to the resource, or disable the stream in the connection's schema settings. Error message: {{ response.get('error') }}"
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+
   retriever:
     type: SimpleRetriever
     requester:
@@ -79,18 +111,7 @@ definitions:
           oauth2_refresh: "#/definitions/oauth_refresh_authenticator"
           api_token: "#/definitions/basic_authenticator"
       error_handler:
-        type: DefaultErrorHandler
-        response_filters:
-          - error_message_contains: "You do not have access"
-            action: IGNORE
-            error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
-          - http_codes: [403, 404]
-            action: FAIL
-            failure_type: config_error
-            error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
-        backoff_strategies:
-          - type: WaitTimeFromHeader
-            header: Retry-After
+        $ref: "#/definitions/required_stream_error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -194,8 +215,15 @@ definitions:
       type: RequestPath
 
   # Full-refresh streams
+  # Skills-based routing add-on; skipped when the account does not have it.
   account_attributes_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/optional_stream_error_handler"
     $parameters:
       name: "account_attributes"
       path: "routing/attributes"
@@ -206,10 +234,15 @@ definitions:
       schema:
         $ref: "#/schemas/account_attributes"
 
+  # Skills-based routing add-on; skipped when the account does not have it.
   attribute_definitions_stream:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/optional_stream_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -527,6 +560,7 @@ definitions:
           type: DpathExtractor
           field_path: ["votes"]
 
+  # Enterprise-plan and admin-only endpoint; skipped when the account cannot access it.
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -534,6 +568,8 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/optional_stream_error_handler"
         request_parameters:
           filter[created_at][]: "{{ [ stream_interval['start_time'], stream_interval['end_time'] ] if next_page_token is none else '' }}"
           sort: "created_at"
@@ -559,10 +595,15 @@ definitions:
       cursor_filter: "filter[created_at][]"
       primary_key: "id"
 
+  # Enterprise-plan endpoint; skipped when the account cannot access it.
   custom_roles_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/optional_stream_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -1032,11 +1073,11 @@ definitions:
               error_message: "Skipping side conversations for this ticket because the Zendesk API returned an unprocessable entity error. This typically means the ticket type does not support side conversations. Other tickets will continue to sync normally."
             - error_message_contains: "You do not have access"
               action: IGNORE
-              error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
+              error_message: "Skipping stream '{{ parameters.get('name') }}'. The authenticated Zendesk user does not have access to this endpoint, which requires the Side Conversations add-on. Remaining streams continue to sync."
             - http_codes: [403, 404]
               action: FAIL
               failure_type: config_error
-              error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
+              error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The authenticated Zendesk user does not have access to this endpoint. Grant that user access to the resource, or disable the stream in the connection's schema settings. Error message: {{ response.get('error') }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1143,12 +1184,15 @@ definitions:
       cursor_filter: "start_time"
       primary_key: "id"
 
+  # Admin-only endpoint; skipped when the account cannot access it.
   ticket_skips_stream:
     $ref: "#/definitions/semi_incremental_stream"
     retriever:
       $ref: "#/definitions/semi_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/optional_stream_error_handler"
         request_parameters:
           sort_order: "desc"
       paginator:
@@ -1256,6 +1300,10 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/tickets"
+    # `name` is declared on the stream rather than through `$ref`ed parameters, so it is
+    # repeated here to keep `{{ parameters.get('name') }}` resolvable in error messages.
+    $parameters:
+      name: "tickets_search"
 
   ticket_metrics_stream:
     type: StateDelegatingStream
@@ -1299,6 +1347,8 @@ definitions:
             - path:
                 - "_ab_updated_at"
               value: "{{ format_datetime(record['updated_at'], '%s') }}"
+      $parameters:
+        name: "ticket_metrics"
     incremental_stream:
       $ref: "#/definitions/base_incremental_stream"
       schema_loader:
@@ -1330,7 +1380,7 @@ definitions:
               - http_codes: [403]
                 action: IGNORE
                 failure_type: config_error
-                error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
+                error_message: "Skipping ticket metrics for ticket {{ stream_partition.ticket_id }}. The authenticated Zendesk user does not have access to this ticket."
               - http_codes: [404]
                 action: IGNORE
                 failure_type: config_error

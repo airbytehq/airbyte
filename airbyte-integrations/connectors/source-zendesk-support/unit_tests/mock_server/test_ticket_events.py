@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -13,13 +14,17 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import TicketEventsRecordBuilder, TicketEventsResponseBuilder
-from .utils import read_stream, string_to_datetime
+from .response_builder import ErrorResponseBuilder, TicketEventsRecordBuilder, TicketEventsResponseBuilder
+from .utils import get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
 _A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
+_PERMISSION_DENIED_BODY = (
+    "You do not have access to this page. You do not have permission to access this page. "
+    "Please contact the account owner of this help desk for further help."
+)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -81,6 +86,25 @@ class TestTicketEventsStreamFullRefresh(TestCase):
         record_ids = [r.record.data["id"] for r in output.records]
         assert 1 in record_ids
         assert 2 in record_ids
+
+    @HttpMocker()
+    def test_given_403_permission_denied_when_read_ticket_events_then_fail(self, http_mocker):
+        """ticket_events carries Zendesk's core data, so a permission denial must fail instead of reporting an empty sync."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_any_query_params()
+            .build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(_PERMISSION_DENIED_BODY).build(),
+        )
+
+        output = read_stream("ticket_events", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any("stream 'ticket_events'" in msg for msg in error_logs), "Expected the failing stream to be named in logs"
 
 
 @freezegun.freeze_time(_NOW.isoformat())

@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -13,8 +14,8 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import AuditLogsRecordBuilder, AuditLogsResponseBuilder
-from .utils import datetime_to_string, read_stream, string_to_datetime
+from .response_builder import AuditLogsRecordBuilder, AuditLogsResponseBuilder, ErrorResponseBuilder
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
 _NOW = ab_datetime_now()
@@ -51,6 +52,26 @@ class TestAuditLogsStreamFullRefresh(TestCase):
         output = read_stream("audit_logs", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_403_permission_denied_when_read_audit_logs_then_skip_stream(self, http_mocker):
+        """audit_logs requires an Enterprise plan and an admin role, so a permission denial skips the stream."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.audit_logs_endpoint(api_token_authenticator).with_any_query_params().build(),
+            ErrorResponseBuilder.response_with_status(403)
+            .with_error_message(
+                "You do not have access to this page. You do not have permission to access this page. "
+                "Please contact the account owner of this help desk for further help."
+            )
+            .build(),
+        )
+
+        output = read_stream("audit_logs", SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert not any("403" in msg for msg in error_logs), "A permission denial on an optional stream must not fail the sync"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
