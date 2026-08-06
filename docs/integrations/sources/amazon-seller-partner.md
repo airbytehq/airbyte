@@ -219,6 +219,12 @@ For more information about Amazon SP-API roles and permissions, see the [Amazon 
 
 The Financial Events stream reads the Finances v0 `listFinancialEvents` operation. Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) that operation on July 21, 2025 and plans to remove it on August 27, 2027. Amazon's replacement is the Finances v2024-06-19 [`listTransactions`](https://developer-docs.amazon.com/sp-api/docs/finances-api-v2024-06-19-reference) operation, which this connector doesn't use yet. Amazon's deprecation list doesn't include `listFinancialEventGroups`, so the Financial Event Groups stream isn't affected.
 
+### Daily report windows
+
+The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), and Vendor Sales Report (`GET_VENDOR_SALES_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
+
+Versions before 5.9.2 could send off-midnight windows when a sync ended mid-day, which inflated the metrics for the days those windows overlapped. If you synced these streams with an earlier version and see days whose metrics look doubled, refresh the affected streams (or re-sync the affected date range) after upgrading to 5.9.2 or later.
+
 ### Time zone of vendor retail analytics data
 
 Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting) in Pacific Standard Time, regardless of your location or the marketplace's local time zone. Airbyte requests these reports using UTC date boundaries, so daily records can appear shifted if you compare them against a local-time report from Vendor Central.
@@ -423,6 +429,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.9.2 | 2026-08-05 | [81374](https://github.com/airbytehq/airbyte/pull/81374) | Anchor the report window of the daily `GET_SALES_AND_TRAFFIC_REPORT`, `GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`, and `GET_VENDOR_SALES_REPORT` streams to the slice's calendar day, fixing inflated/mislabeled metrics when a sync ends mid-day |
 | 5.9.1 | 2026-07-28 | [82829](https://github.com/airbytehq/airbyte/pull/82829) | Update dependencies |
 | 5.9.0 | 2026-07-24 | [82254](https://github.com/airbytehq/airbyte/pull/82254) | Add missing fields to GET_VENDOR_SALES_REPORT (customerReturns) and GET_VENDOR_INVENTORY_REPORT (startDate, endDate, unhealthyInventoryUnits, unhealthyInventoryCost, procurableProductOutOfStockRate, receiveFillRate, uft) |
 | 5.8.2 | 2026-07-21 | [82317](https://github.com/airbytehq/airbyte/pull/82317) | Update dependencies |
