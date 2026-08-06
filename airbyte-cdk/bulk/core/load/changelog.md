@@ -9,7 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 ### 1.0.23 — 2026-08-06
 
-[#83766](https://github.com/airbytehq/airbyte/pull/83766) — Fix: lowercase random suffix in `generateRandomNamespace()` to prevent case-sensitive schema name mismatch on destinations like Databricks that normalize identifiers to lowercase.
+[#83766](https://github.com/airbytehq/airbyte/pull/83766) — Fix: lowercase random suffix in `generateRandomNamespace()` to prevent case-sensitive schema name mismatch on destinations.
 
 ### 1.0.22 — 2026-08-05
 
