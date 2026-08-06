@@ -2,8 +2,8 @@
 
 """Regression tests for Zoho Books document-stream incremental cursors."""
 
-import requests_mock
 import pytest
+import requests_mock
 from _helpers import get_source
 
 from airbyte_cdk.models import SyncMode
@@ -58,9 +58,7 @@ def _latest_cursor(output, stream_name: str):
 
 
 @pytest.mark.parametrize("stream_name,response_key,primary_key", _STREAMS)
-def test_incremental_sync_uses_last_modified_time_and_emits_edited_old_documents(
-    stream_name, response_key, primary_key
-):
+def test_incremental_sync_uses_last_modified_time_and_emits_edited_old_documents(stream_name, response_key, primary_key):
     """Requests use last_modified_time and emit records edited after the prior cursor."""
     config = {**_BASE_CONFIG}
     state = StateBuilder().with_stream_state(stream_name, {"last_modified_time": _PRIOR_CURSOR}).build()
