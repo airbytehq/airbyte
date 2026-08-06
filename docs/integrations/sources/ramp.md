@@ -16,6 +16,16 @@ Syncs cards, transactions, and reimbursements from Ramp&#39;s developer API.
 | transactions | id | DefaultPaginator | ✅ |  ✅  |
 | reimbursements | id | DefaultPaginator | ✅ |  ✅  |
 
+## Limitations & troubleshooting
+
+- The transactions stream filters by `updated_at` on the client side: every sync re-reads the full transaction list from the API and emits only new or updated records.
+- Declined transactions are not included (Ramp API default).
+- The reimbursements stream syncs both directions: out-of-pocket reimbursements (BUSINESS_TO_USER) and repayments (USER_TO_BUSINESS).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

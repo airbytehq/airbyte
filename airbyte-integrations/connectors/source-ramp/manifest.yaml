@@ -7,7 +7,7 @@ description: Syncs cards, transactions, and reimbursements from Ramp's developer
 check:
   type: CheckStream
   stream_names:
-    - cards
+    - transactions
 
 definitions:
   linked:
@@ -22,11 +22,11 @@ definitions:
             type: BasicHttpAuthenticator
             username: "{{ config['client_id'] }}"
             password: "{{ config['client_secret'] }}"
-          request_headers:
-            Content-Type: application/x-www-form-urlencoded
-          request_body_data:
-            grant_type: client_credentials
-            scope: transactions:read cards:read reimbursements:read
+          request_body:
+            type: RequestBodyUrlEncodedForm
+            value:
+              grant_type: client_credentials
+              scope: transactions:read cards:read reimbursements:read
           error_handler:
             type: DefaultErrorHandler
             max_retries: 5
@@ -38,15 +38,6 @@ definitions:
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
-        response_filters:
-          - type: HttpResponseFilter
-            action: RETRY
-            http_codes:
-              - 429
-              - 500
-              - 502
-              - 503
-              - 504
         backoff_strategies:
           - type: ExponentialBackoffStrategy
             factor: 2
@@ -65,7 +56,7 @@ definitions:
       pagination_strategy:
         type: CursorPagination
         cursor_value: "{{ last_record['id'] }}"
-        stop_condition: "{{ not response.get('page', {}).get('next') }}"
+        stop_condition: "{{ not (response.get('page') or {}).get('next') }}"
         page_size: 50
 
 streams:
@@ -367,10 +358,7 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_time_option:
-        type: RequestOption
-        field_name: updated_after
-        inject_into: request_parameter
+      is_client_side_incremental: true
   - type: DeclarativeStream
     name: reimbursements
     retriever:
@@ -393,6 +381,16 @@ streams:
           type: DpathExtractor
           field_path:
             - data
+      partition_router:
+        type: ListPartitionRouter
+        cursor_field: direction
+        values:
+          - BUSINESS_TO_USER
+          - USER_TO_BUSINESS
+        request_option:
+          type: RequestOption
+          field_name: direction
+          inject_into: request_parameter
     primary_key:
       - id
     schema_loader:
