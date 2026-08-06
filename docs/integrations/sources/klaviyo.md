@@ -27,11 +27,13 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
-7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
-8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
-9. (Optional) For **Event Stream Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. This can significantly reduce sync volume for accounts with high event traffic. See [Event stream filtering](#event-stream-filtering) below.
-10. Click **Set up source**.
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data. The `metrics` stream is an exception and always syncs all metric definitions (see [Metrics stream](#metrics-stream)).
+7. (Optional) Select **Disable Fetching Predictive Analytics** to stop the connector from requesting predictive analytics data. See [Performance considerations](#performance-considerations).
+8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
+9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
+10. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
+11. (Optional) For **Event Stream Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. This can significantly reduce sync volume for accounts with high event traffic. See [Event stream filtering](#event-stream-filtering) below.
+12. Click **Set up source**.
 
 ### For Airbyte Open Source:
 
@@ -40,10 +42,12 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
-7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
-8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
-9. Click **Set up source**.
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data. The `metrics` stream is an exception and always syncs all metric definitions (see [Metrics stream](#metrics-stream)).
+7. (Optional) Select **Disable Fetching Predictive Analytics** to stop the connector from requesting predictive analytics data. See [Performance considerations](#performance-considerations).
+8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
+9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
+10. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
+11. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -70,6 +74,16 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 - [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
 - [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
 - [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
+
+### Metrics stream
+
+The **Metrics** stream always syncs all metric definitions, regardless of the configured **Start Date**. Metric definitions are reference data needed to interpret other streams (for example, joining `relationships.data.metric.id` in `events` to a metric name), and the Klaviyo API does not support filtering metrics by date. On subsequent incremental syncs, only new and updated metric definitions are emitted. If older metric definitions are missing after upgrading from a previous connector version, clear/reset the `metrics` stream to backfill them.
+
+This stream requires the `metrics:read` scope on your API key.
+
+### Streams that filter incrementally after fetching
+
+The **Metrics**, **Lists**, **Lists Detailed**, and **Segments** streams request every record from Klaviyo on each sync and then discard records older than the cursor position. **Start Date** and incremental sync therefore reduce how many records these streams emit, but not how many API requests they make. Expect sync duration for these streams to scale with the total number of lists, segments, and metrics in your account rather than with the amount of new data.
 
 ### Analytics streams
 
@@ -146,7 +160,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.18.3 | 2026-06-19 | [12421](https://github.com/airbytehq/airbyte/issues/12421) | Add optional metric ID filtering for Events and Events Detailed streams |
+| 2.21.0 | 2026-08-06 | [75301](https://github.com/airbytehq/airbyte/pull/75301) | Add optional metric ID filtering for the `events` and `events_detailed` streams |
+| 2.20.0 | 2026-08-05 | [61338](https://github.com/airbytehq/airbyte/pull/61338) | Sync all metric definitions in the `metrics` stream regardless of the configured start date (existing connections: clear/reset the `metrics` stream to backfill older metric definitions) |
+| 2.19.3 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.19.2 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.19.0 — 2.19.1 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.19.1 | 2026-07-28 | [82475](https://github.com/airbytehq/airbyte/pull/82475) | Update dependencies |
+| 2.19.0 | 2026-07-15 | [81637](https://github.com/airbytehq/airbyte/pull/81637) | Default start date to one year back when not provided |
+| 2.18.6 | 2026-07-14 | [81870](https://github.com/airbytehq/airbyte/pull/81870) | Update dependencies |
+| 2.18.5 | 2026-06-30 | [81120](https://github.com/airbytehq/airbyte/pull/81120) | Update dependencies |
+| 2.18.4 | 2026-06-23 | [80514](https://github.com/airbytehq/airbyte/pull/80514) | Update dependencies |
+| 2.18.3 | 2026-06-18 | [76919](https://github.com/airbytehq/airbyte/pull/76919) | fix(source-klaviyo): Add missing unsubscribe and spam complaint fields to reporting streams |
 | 2.18.2 | 2026-06-16 | [79898](https://github.com/airbytehq/airbyte/pull/79898) | Update dependencies |
 | 2.18.1 | 2026-06-09 | [79342](https://github.com/airbytehq/airbyte/pull/79342) | Update dependencies |
 | 2.18.0 | 2026-06-04 | [76941](https://github.com/airbytehq/airbyte/pull/76941) | Add new `segments` stream |

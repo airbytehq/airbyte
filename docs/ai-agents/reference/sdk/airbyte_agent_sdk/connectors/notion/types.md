@@ -316,7 +316,7 @@ Classes
     `toggle: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemToggle`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `video: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemVideo`
@@ -339,7 +339,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemAudioFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemAudioExternal"></a>
@@ -410,7 +410,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemBookmarkCaptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemBookmarkCaptionItemAnnotations"></a>
@@ -527,7 +527,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemBulletedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemBulletedListItemRichTextItemAnnotations"></a>
@@ -647,7 +647,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemCalloutRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemCalloutRichTextItemAnnotations"></a>
@@ -764,7 +764,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemCodeRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemCodeRichTextItemAnnotations"></a>
@@ -886,7 +886,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemFileFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemFileExternal"></a>
@@ -960,7 +960,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemHeading1RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemHeading1RichTextItemAnnotations"></a>
@@ -1080,7 +1080,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemHeading2RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemHeading2RichTextItemAnnotations"></a>
@@ -1200,7 +1200,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemHeading3RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemHeading3RichTextItemAnnotations"></a>
@@ -1294,7 +1294,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemImageFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemImageExternal"></a>
@@ -1365,7 +1365,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemNumberedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemNumberedListItemRichTextItemAnnotations"></a>
@@ -1482,7 +1482,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemParagraphRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemParagraphRichTextItemAnnotations"></a>
@@ -1576,7 +1576,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemPdfFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemPdfExternal"></a>
@@ -1647,7 +1647,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemQuoteRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemQuoteRichTextItemAnnotations"></a>
@@ -1781,7 +1781,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemToDoRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemToDoRichTextItemAnnotations"></a>
@@ -1898,7 +1898,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemToggleRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemToggleRichTextItemAnnotations"></a>
@@ -1992,7 +1992,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemVideoFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemVideoExternal"></a>
@@ -2908,7 +2908,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsAudioFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsAudioExternal"></a>
@@ -2979,7 +2979,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsBookmarkCaptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsBookmarkCaptionItemAnnotations"></a>
@@ -3096,7 +3096,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsBulletedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsBulletedListItemRichTextItemAnnotations"></a>
@@ -3216,7 +3216,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsCalloutRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsCalloutRichTextItemAnnotations"></a>
@@ -3336,7 +3336,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsCodeCaptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsCodeCaptionItemAnnotations"></a>
@@ -3436,7 +3436,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsCodeRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsCodeRichTextItemAnnotations"></a>
@@ -3558,7 +3558,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsFileFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsFileExternal"></a>
@@ -3632,7 +3632,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsHeading1RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsHeading1RichTextItemAnnotations"></a>
@@ -3752,7 +3752,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsHeading2RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsHeading2RichTextItemAnnotations"></a>
@@ -3872,7 +3872,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsHeading3RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsHeading3RichTextItemAnnotations"></a>
@@ -3966,7 +3966,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsImageFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsImageExternal"></a>
@@ -4037,7 +4037,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsNumberedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsNumberedListItemRichTextItemAnnotations"></a>
@@ -4154,7 +4154,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsParagraphRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsParagraphRichTextItemAnnotations"></a>
@@ -4248,7 +4248,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsPdfFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsPdfExternal"></a>
@@ -4319,7 +4319,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsQuoteRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsQuoteRichTextItemAnnotations"></a>
@@ -4456,7 +4456,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsToDoRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsToDoRichTextItemAnnotations"></a>
@@ -4573,7 +4573,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsToggleRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsToggleRichTextItemAnnotations"></a>
@@ -4667,7 +4667,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsVideoFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsVideoExternal"></a>
@@ -4834,7 +4834,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.CommentsCreateParamsRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="CommentsCreateParamsRichTextItemAnnotations"></a>
@@ -5980,7 +5980,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsCoverFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsCoverExternal"></a>
@@ -6034,7 +6034,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsDescriptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsDescriptionItemAnnotations"></a>
@@ -6137,7 +6137,7 @@ Classes
     `icon: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsIconIcon`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsIconCustomEmoji"></a>
@@ -6222,7 +6222,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsTitleItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsTitleItemAnnotations"></a>
@@ -6453,7 +6453,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.PagesCreateParamsCoverFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesCreateParamsCoverExternal"></a>
@@ -6510,7 +6510,7 @@ Classes
     `icon: airbyte_agent_sdk.connectors.notion.types.PagesCreateParamsIconIcon`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesCreateParamsIconCustomEmoji"></a>
@@ -7110,7 +7110,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.PagesUpdateParamsCoverFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesUpdateParamsCoverExternal"></a>
@@ -7167,7 +7167,7 @@ Classes
     `icon: airbyte_agent_sdk.connectors.notion.types.PagesUpdateParamsIconIcon`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesUpdateParamsIconCustomEmoji"></a>
