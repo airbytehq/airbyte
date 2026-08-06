@@ -16,7 +16,7 @@ check:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  default_concurrency: "{{ config['num_workers'] | default(2, true) }}"
   max_concurrency: 20
 
 definitions:
@@ -93,7 +93,7 @@ definitions:
     datetime_format: "%Y-%m-%d"
     cursor_datetime_formats:
       - "%Y-%m-%d"
-    lookback_window: P{{ config.get('lookback_window', 3) }}D
+    lookback_window: P{{ config['lookback_window'] | default(3, true) }}D
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ config['start_date'] }}"
@@ -137,7 +137,7 @@ definitions:
   # until 45 days later. These streams use their own, much larger lookback.
   max_cohort_incremental_sync:
     $ref: "#/definitions/report_incremental_sync"
-    lookback_window: P{{ config.get('cohort_lookback_window', 45) }}D
+    lookback_window: P{{ config['cohort_lookback_window'] | default(45, true) }}D
 
   streams:
     advertiser_report_daily:
@@ -188,7 +188,7 @@ definitions:
           request_parameters:
             report_type: advertiser
             format: json
-            attribution_mode: "{{ config.get('attribution_mode', 'click') }}"
+            attribution_mode: "{{ config['attribution_mode'] | default('click', true) }}"
             columns: day,campaign,campaign_id_external,campaign_type,country,creative_set,creative_set_id,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,sales,sales_0d,sales_7d,sales_28d,cpp_0d,cpp_7d,cpp_28d,roas_0d,roas_7d,roas_28d,chka_usd_0d,chka_usd_7d,chka_usd_28d,new_visitor_rate,nc_d0_checkouts,nc_d0_checkout_rev,nc_d0_cpp,nc_d0_roas,nc_percent_d0_checkouts,nc_percent_d0_checkout_rev,nc_d7_checkouts,nc_d7_checkout_rev,nc_d7_cpp,nc_d7_roas,nc_percent_d7_checkouts,nc_percent_d7_checkout_rev
         record_selector:
           $ref: "#/definitions/base_record_selector"
@@ -385,7 +385,9 @@ spec:
           - "2026-01-01"
         order: 1
       end_date:
-        type: string
+        type:
+          - string
+          - "null"
         title: End Date
         description: >-
           UTC date to replicate up to, inclusive, in YYYY-MM-DD format. Defaults
@@ -395,7 +397,9 @@ spec:
           - "2026-06-30"
         order: 2
       lookback_window:
-        type: integer
+        type:
+          - integer
+          - "null"
         title: Lookback Window (days)
         description: >-
           Number of days before the last synced date to re-request on every
@@ -406,7 +410,9 @@ spec:
         maximum: 45
         order: 3
       cohort_lookback_window:
-        type: integer
+        type:
+          - integer
+          - "null"
         title: Cohort Lookback Window (days)
         description: >-
           Number of days before the last synced date to re-request for the MAX
@@ -431,7 +437,9 @@ spec:
         default: click
         order: 5
       num_workers:
-        type: integer
+        type:
+          - integer
+          - "null"
         title: Number of Concurrent Workers
         description: Number of streams to sync concurrently.
         default: 2
