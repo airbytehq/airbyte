@@ -99,7 +99,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--body", default="")
     parser.add_argument("--connectors-file")
     parser.add_argument("--connectors-only", action="store_true")
-    parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
@@ -116,13 +115,16 @@ def main() -> None:
         return
 
     detected = detect_connectors(args.title, args.body, connectors)
-    labels = [f"connectors/{name.split('-', 1)[0]}/{name}" for name in detected] if len(detected) <= 3 else []
-    if len(detected) > 3:
+    too_many_connectors = len(detected) > 3
+    if too_many_connectors:
         print(
             f"Detected {len(detected)} connectors; emitting no labels for a listing/meta issue.",
             file=sys.stderr,
         )
-    result = {"connectors": detected if len(detected) <= 3 else [], "labels": labels}
+    result = {
+        "connectors": [] if too_many_connectors else detected,
+        "labels": [] if too_many_connectors else [f"connectors/{name.split('-', 1)[0]}/{name}" for name in detected],
+    }
     print(json.dumps(result, sort_keys=True))
 
 

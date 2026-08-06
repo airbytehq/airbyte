@@ -60,11 +60,11 @@ jobs:
           [[ -n "$SINCE" ]] && [[ "$SINCE" =~ $date_pattern ]] \
             || { echo "since must be YYYY-MM-DD" >&2; exit 1; }
           [[ -n "$UNTIL" ]] && ! [[ "$UNTIL" =~ $date_pattern ]] \
-            && { echo "until must be YYYY-MM-DD" >&2; exit 1; }
+            && { echo "until must be YYYY-MM-DD" >&2; exit 1; } || true
           [[ -n "$LIMIT" ]] && ! [[ "$LIMIT" =~ ^[1-9][0-9]*$ ]] \
-            && { echo "limit must be a positive integer" >&2; exit 1; }
+            && { echo "limit must be a positive integer" >&2; exit 1; } || true
           [[ -n "$UNTIL" ]] && [[ "$SINCE" > "$UNTIL" ]] \
-            && { echo "until must not precede since" >&2; exit 1; }
+            && { echo "until must not precede since" >&2; exit 1; } || true
           printf 'since=%s\n' "$SINCE" | tee -a "$GITHUB_OUTPUT"
           printf 'until=%s\n' "${UNTIL:-9999-12-31}" | tee -a "$GITHUB_OUTPUT"
           printf 'limit=%s\n' "$LIMIT" | tee -a "$GITHUB_OUTPUT"
@@ -84,8 +84,8 @@ jobs:
           gh api --paginate \
             "repos/$GITHUB_REPOSITORY/issues?state=all&since=${SINCE}T00:00:00Z&per_page=100" \
             --jq '.[] | select(.pull_request == null)' > issues.jsonl
-          jq -c --arg until "$UNTIL" \
-            'select(.created_at <= ($until + "T23:59:59Z"))' \
+          jq -c --arg since "$SINCE" --arg until "$UNTIL" \
+            'select(.created_at >= ($since + "T00:00:00Z") and .created_at <= ($until + "T23:59:59Z"))' \
             issues.jsonl > in-range-issues.jsonl
 
       - name: Detect labels
@@ -96,14 +96,14 @@ jobs:
           : > label-plan.tsv
           count=0
           while IFS= read -r issue; do
-            [[ -n "$LIMIT" && "$count" -ge "$LIMIT" ]] && break
-            jq -e 'any(.labels[]?.name; startswith("connectors/"))' <<<"$issue" >/dev/null && continue
+            [[ -n "$LIMIT" && "$count" -ge "$LIMIT" ]] && break || true
+            has_connector_label=$(jq 'any(.labels[]?.name; startswith("connectors/"))' <<<"$issue")
+            [[ "$has_connector_label" == true ]] && continue || true
             labels=$(uv run .github/scripts/detect-issue-connectors.uv \
               --connectors-file connectors.txt \
               --title "$(jq -r '.title' <<<"$issue")" \
-              --body "$(jq -r '.body // ""' <<<"$issue")" \
-              --dry-run | jq -r '.labels | join(",")')
-            [[ -n "$labels" ]] && printf '%s\t%s\n' "$(jq -r '.number' <<<"$issue")" "$labels" | tee -a label-plan.tsv
+              --body "$(jq -r '.body // ""' <<<"$issue")" | jq -r '.labels | join(",")')
+            [[ -z "$labels" ]] || printf '%s\t%s\n' "$(jq -r '.number' <<<"$issue")" "$labels" | tee -a label-plan.tsv
             count=$((count + 1))
           done < in-range-issues.jsonl
           cat label-plan.tsv
@@ -113,10 +113,12 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         if: inputs.dry_run == false
         run: |
+          set -euo pipefail
           cut -f2 label-plan.tsv | tr ',' '\n' | sort -u | while IFS= read -r label; do
             [[ -n "$label" ]] || continue
-            gh label create "$label" --color B5BBE7 --description "" \
-              --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+            existing=$(gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --search "$label" --json name --jq '.[].name')
+            grep -Fxq "$label" <<<"$existing" || \
+              gh label create "$label" --color ededed --repo "$GITHUB_REPOSITORY"
           done
 
       - name: Apply connector labels

@@ -41,25 +41,28 @@ jobs:
         run: |
           uv run .github/scripts/detect-issue-connectors.uv \
             --title "$TITLE" \
-            --body "$BODY" \
-            --dry-run > detection.json
+            --body "$BODY" > detection.json
+          has_labels=$(jq -r '.labels | length > 0' detection.json)
+          echo "has_labels=$has_labels" | tee -a "$GITHUB_OUTPUT"
           cat detection.json
 
       - name: Create missing connector labels
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        if: steps.detect.outcome == 'success'
+        if: steps.detect.outputs.has_labels == 'true'
         run: |
+          set -euo pipefail
           jq -r '.labels[]' detection.json | while IFS= read -r label; do
-            gh label create "$label" --color B5BBE7 --description "" \
-              --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+            existing=$(gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --search "$label" --json name --jq '.[].name')
+            grep -Fxq "$label" <<<"$existing" || \
+              gh label create "$label" --color ededed --repo "$GITHUB_REPOSITORY"
           done
 
       - name: Apply connector labels
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-        if: steps.detect.outcome == 'success'
+        if: steps.detect.outputs.has_labels == 'true'
         run: |
           jq -r '.labels[]' detection.json | while IFS= read -r label; do
             gh issue edit "$ISSUE_NUMBER" --add-label "$label" --repo "$GITHUB_REPOSITORY"
