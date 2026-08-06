@@ -279,6 +279,138 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
+    def test_given_one_page_when_read_ads_then_return_records(self, http_mocker: HttpMocker):
+        """
+        Check ads stream: normal full refresh sync without pagination
+        """
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        stream_name = "sponsored_brands_ads"
+        data_field = "ads"
+        record_id_path = "adId"
+
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
+            .with_request_body(_DEFAULT_REQUEST_BODY)
+            .build(),
+            _a_response(stream_name, data_field, None).with_record(_a_record(stream_name, data_field, record_id_path)).build(),
+        )
+
+        output = read_stream(stream_name, SyncMode.full_refresh, self._config)
+        assert len(output.records) == 1
+        # `creative.type` is the only field that identifies a Sponsored Brands Video ad; V3 reports
+        # dropped the campaign-level creativeType/adFormat columns.
+        assert output.records[0].record.data["creative"]["type"] == "VIDEO"
+
+    @HttpMocker()
+    def test_given_non_breaking_error_when_read_ads_then_stream_is_ignored(self, http_mocker: HttpMocker):
+        """
+        Check ads stream: non-breaking errors are ignored
+        When error of this kind happen, we warn and then keep syncing another streams
+        """
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        non_breaking_error = ErrorRecordBuilder.non_breaking_error()
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
+            .with_request_body(_DEFAULT_REQUEST_BODY)
+            .build(),
+            ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build(),
+        )
+        output = read_stream("sponsored_brands_ads", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 0
+
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any([non_breaking_error.build().get("details") in info for info in info_logs])
+
+    @HttpMocker()
+    def test_given_breaking_error_when_read_ads_then_stream_stop_syncing(self, http_mocker: HttpMocker):
+        """
+        Check ads stream: when unknown error happen we stop syncing with raising the error
+        """
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        breaking_error = ErrorRecordBuilder.breaking_error()
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
+            .with_request_body(_DEFAULT_REQUEST_BODY)
+            .build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
+        )
+        with patch("time.sleep", return_value=None):
+            output = read_stream("sponsored_brands_ads", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 0
+
+        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
+        assert any([breaking_error.build().get("message") in error for error in error_logs])
+
+    @HttpMocker()
+    def test_given_throttled_when_read_ads_then_retry_and_return_records(self, http_mocker: HttpMocker):
+        """
+        Check ads stream: a 429 carries the same `code`/`details` body shape as a non-breaking error,
+        so without an explicit retry filter it would be IGNOREd — pagination would stop and the sync
+        would finish green having delivered only part of the account's ads. Assert it retries instead.
+        """
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        stream_name = "sponsored_brands_ads"
+        data_field = "ads"
+        record_id_path = "adId"
+
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
+            .with_request_body(_DEFAULT_REQUEST_BODY)
+            .build(),
+            [
+                ErrorResponseBuilder.non_breaking_error_response()
+                .with_record(ErrorRecordBuilder.non_breaking_error())
+                .with_status_code(429)
+                .build(),
+                _a_response(stream_name, data_field, None).with_record(_a_record(stream_name, data_field, record_id_path)).build(),
+            ],
+        )
+
+        with patch("time.sleep", return_value=None):
+            output = read_stream(stream_name, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_many_pages_when_read_ads_then_return_records(self, http_mocker: HttpMocker):
+        """
+        Check ads stream: normal full refresh sync with pagination
+        """
+        stream_name = "sponsored_brands_ads"
+        data_field = "ads"
+        record_id_path = "adId"
+        pagination_strategy = SponsoredCursorBasedPaginationStrategy()
+
+        paginated_request_body = json.dumps({"nextToken": "next-page-token", "maxResults": 100})
+
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
+            .with_request_body(_DEFAULT_REQUEST_BODY)
+            .build(),
+            _a_response(stream_name, data_field, pagination_strategy)
+            .with_record(_a_record(stream_name, data_field, record_id_path))
+            .with_pagination()
+            .build(),
+        )
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
+            .with_request_body(paginated_request_body)
+            .build(),
+            _a_response(stream_name, data_field, pagination_strategy)
+            .with_record(_a_record(stream_name, data_field, record_id_path))
+            .build(),
+        )
+
+        output = read_stream(stream_name, SyncMode.full_refresh, self._config)
+        assert len(output.records) == 2
+
+    @HttpMocker()
     def test_given_non_breaking_error_when_read_keywords_then_stream_is_ignored(self, http_mocker: HttpMocker):
         """
         Check keywords stream: non-breaking errors are ignored
