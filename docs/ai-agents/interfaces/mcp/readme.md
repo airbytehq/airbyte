@@ -13,6 +13,15 @@ The Agent MCP connects your AI agent to your data through the [Model Context Pro
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
+## When to use the MCP server
+
+- Your agent already supports the Model Context Protocol (Claude, ChatGPT, Cursor, VS Code, Codex).
+- You want zero-install setup — just add a URL and authenticate.
+- You prefer conversational, prompt-driven access to your connected data.
+- You don't need to run commands offline or in a CI pipeline.
+
+If you need to process large result sets, make many sequential calls in one turn, run long-running operations, or compose output with shell tools, use the [CLI](../cli/readme.md) instead. The CLI also provides fuller, prescriptive guidance through an installable agent skill; see [Use the CLI with AI agents](../cli/using-with-ai-agents.md). If you're building a Python agent with a framework like Pydantic AI or LangChain, see the [SDK](../sdk/readme.md). For non-Python backends or custom admin flows, see the [API](../api/readme.md).
+
 ## Requirements
 
 Before you begin, make sure you have the following:
