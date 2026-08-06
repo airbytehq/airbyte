@@ -4,8 +4,9 @@
 
 import concurrent.futures
 import logging
+import threading
 import time
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Callable, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
 from requests import adapters as request_adapters
@@ -16,8 +17,8 @@ from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .exceptions import TypeSalesforceException
-from .rate_limiting import SalesforceErrorHandler, default_backoff_handler
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
+from .rate_limiting import SalesforceErrorHandler
 from .utils import filter_streams_by_criteria
 
 
@@ -238,6 +239,21 @@ UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
 API_VERSION = "v62.0"
 
 _TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
+# After a failed proactive refresh, wait this long before the next attempt instead of retrying on every
+# request. _perform_login stamps _last_login_time only on success, so without a backoff a failed refresh
+# would leave the staleness check permanently satisfied and turn every subsequent request into a full
+# retrying login under the login lock (a login storm). This is short relative to the ~90-minute margin
+# between the proactive refresh and the default 2-hour session timeout, so retries stay frequent enough
+# to recover from a transient outage; force_refresh on INVALID_SESSION_ID remains the backstop for
+# genuine expiry.
+_REFRESH_FAILURE_BACKOFF_SECONDS = 300  # 5 minutes
+
+# When a session dies, every concurrent stream thread gets a 401 at once and queues on the login
+# lock; whoever enters first refreshes the token for everyone. A login that completed within this
+# window means the caller's failed request predates that login, so redeeming the grant again would
+# only burn another single-use rotation (under Refresh Token Rotation each redundant login widens
+# the window for stranding a rotated token).
+_LOGIN_DEDUP_SECONDS = 10
 
 logger = logging.getLogger("airbyte")
 
@@ -256,31 +272,34 @@ class SalesforceTokenProvider(TokenProvider):
 
     def __init__(self, sf_api: "Salesforce") -> None:
         self._sf_api = sf_api
-        self._last_refresh_time: float = time.monotonic()
 
     def get_token(self) -> str:
-        elapsed = time.monotonic() - self._last_refresh_time
-        if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
-            try:
-                logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
-                self._sf_api.login()
-                self._last_refresh_time = time.monotonic()
-            except Exception:
-                logger.warning("Proactive token refresh failed; will use existing token", exc_info=True)
+        # Timing and locking live on the shared Salesforce object so that, no matter how many
+        # per-stream providers/threads ask, at most one refresh happens per interval and every
+        # rotated refresh token is persisted (see Salesforce.login).
+        self._sf_api.refresh_access_token_if_stale()
         return self._sf_api.access_token
 
-    def force_refresh(self) -> None:
-        """Force an immediate token refresh.
+    @property
+    def credentials_permanently_failed(self) -> bool:
+        return self._sf_api.login_permanently_failed
 
-        Called by SalesforceErrorHandler when an INVALID_SESSION_ID response is
-        detected, so that subsequent requests use a valid access token.
+    def force_refresh(self) -> bool:
+        """Force an immediate token refresh, returning True if a token was obtained.
+
+        Called by SalesforceErrorHandler on INVALID_SESSION_ID. No-op once the
+        credentials have permanently failed, so rejected grants are not retried
+        from every stream.
         """
+        if self._sf_api.login_permanently_failed:
+            return False
         try:
             logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
             self._sf_api.login()
-            self._last_refresh_time = time.monotonic()
+            return True
         except Exception:
             logger.error("Forced token refresh failed; subsequent requests will likely fail", exc_info=True)
+            return False
 
 
 class Salesforce:
@@ -317,6 +336,25 @@ class Salesforce:
         if self.is_sandbox:
             self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
+
+        # Refresh Token Rotation (RTR): every login() may return a new single-use refresh token that
+        # invalidates the previous one. login() is called at startup and again mid-sync (proactive
+        # refresh and on INVALID_SESSION_ID), from multiple concurrent stream threads that share this
+        # instance. The lock serializes those logins so concurrent refreshes cannot race and strand a
+        # rotated token, and the observer lets the source persist every rotation (not just the first).
+        self._login_lock = threading.Lock()
+        self._last_login_time: Optional[float] = None
+        self._login_permanently_failed = False
+        self._refresh_token_observer: Optional[Callable[[str], None]] = None
+
+    @property
+    def login_permanently_failed(self) -> bool:
+        """True once login has failed with a credential error; it cannot recover within this process."""
+        return self._login_permanently_failed
+
+    def set_refresh_token_observer(self, observer: Callable[[str], None]) -> None:
+        """Register a callback invoked with the new refresh token whenever login() rotates it."""
+        self._refresh_token_observer = observer
 
     def _get_standard_headers(self) -> Mapping[str, str]:
         return {"Authorization": "Bearer {}".format(self.access_token)}
@@ -370,6 +408,71 @@ class Salesforce:
         return resp
 
     def login(self):
+        with self._login_lock:
+            if self._login_permanently_failed:
+                # Re-checked under the lock: threads that raced past force_refresh's pre-check must
+                # not redeem a grant another thread just saw rejected (under Refresh Token Rotation,
+                # reusing a rotated-out token revokes the whole grant).
+                raise AirbyteTracedException(
+                    message=AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                    internal_message="Skipping Salesforce login: credentials already failed permanently in this process.",
+                    failure_type=FailureType.config_error,
+                )
+            if self._last_login_time is not None and time.monotonic() - self._last_login_time < _LOGIN_DEDUP_SECONDS:
+                return
+            try:
+                self._perform_login()
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    # A rejected grant cannot recover within this process; stop redeeming.
+                    self._login_permanently_failed = True
+                raise
+
+    def refresh_access_token_if_stale(self) -> None:
+        """Proactively refresh the access token once it is older than the refresh interval.
+
+        Called from every stream/thread that shares this instance; the lock plus the re-check
+        inside it ensure at most one login happens per interval instead of one per caller.
+        """
+        if self._login_permanently_failed:
+            return
+        if self._last_login_time is None or time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
+            return
+        with self._login_lock:
+            if self._last_login_time is not None and time.monotonic() - self._last_login_time < _TOKEN_REFRESH_INTERVAL_SECONDS:
+                return
+            try:
+                logger.info("Refreshing Salesforce OAuth token (%.0fs since last login)", time.monotonic() - self._last_login_time)
+                self._perform_login()
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    self._login_permanently_failed = True
+                    logger.warning(
+                        "Proactive token refresh failed with a credential error; disabling further refresh attempts",
+                        exc_info=True,
+                    )
+                    return
+                self._last_login_time = time.monotonic() - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+                logger.warning(
+                    "Proactive token refresh failed; will use existing token and retry in ~%ds",
+                    _REFRESH_FAILURE_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
+            except Exception:
+                # _perform_login stamps _last_login_time only on success, so on failure we back it off
+                # ourselves. Without this the staleness check would stay True and every following request
+                # would re-run a full retrying login under the lock. Pretend the last login was
+                # (_TOKEN_REFRESH_INTERVAL_SECONDS - _REFRESH_FAILURE_BACKOFF_SECONDS) ago so the next
+                # proactive attempt is allowed only after the backoff window.
+                self._last_login_time = time.monotonic() - _TOKEN_REFRESH_INTERVAL_SECONDS + _REFRESH_FAILURE_BACKOFF_SECONDS
+                logger.warning(
+                    "Proactive token refresh failed; will use existing token and retry in ~%ds",
+                    _REFRESH_FAILURE_BACKOFF_SECONDS,
+                    exc_info=True,
+                )
+
+    def _perform_login(self) -> None:
+        """Perform the refresh_token grant. Must be called while holding ``self._login_lock``."""
         login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
         login_body = {
             "grant_type": "refresh_token",
@@ -381,6 +484,14 @@ class Salesforce:
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
+        self._last_login_time = time.monotonic()
+        # Salesforce returns a new refresh token only when Refresh Token Rotation is enabled on the connected app.
+        # It is single-use and invalidates the previous one, so every rotation must be persisted, not just the first.
+        new_refresh_token = auth.get("refresh_token")
+        if new_refresh_token and new_refresh_token != self.refresh_token:
+            self.refresh_token = new_refresh_token
+            if self._refresh_token_observer:
+                self._refresh_token_observer(new_refresh_token)
 
     def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
         """Describes all objects or a specific object"""

@@ -14,8 +14,8 @@ from source_facebook_marketing.streams import (
     AdsInsights,
     AdsInsightsActionType,
     AdsInsightsAgeAndGender,
+    AdsInsightsComscoreMarket,
     AdsInsightsCountry,
-    AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
 )
@@ -106,8 +106,8 @@ def test_parse_call_rate_header():
             ["action_type", "action_target_id", "action_destination"],
         ],
         [
-            AdsInsightsDma,
-            ["dma"],
+            AdsInsightsComscoreMarket,
+            ["comscore_market"],
             ["action_type", "action_target_id", "action_destination"],
         ],
         [

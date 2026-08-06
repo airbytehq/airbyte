@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger("airbyte")
 
 # Special "incrementality" attribution window (Meta beta). Facebook does not compute incrementality
-# for geographic breakdowns such as `dma`/`region`, and an async report combining it with certain
+# for geographic breakdowns such as `comscore_market`/`region`, and an async report combining it with certain
 # fields (e.g. `conversions`) under those breakdowns cannot be generated at all (oncall #12088).
 # Mirrors `AdsInsights.INCREMENTALITY_WINDOW` in base_insight_streams.py.
 INCREMENTALITY_WINDOW = "incrementality"
