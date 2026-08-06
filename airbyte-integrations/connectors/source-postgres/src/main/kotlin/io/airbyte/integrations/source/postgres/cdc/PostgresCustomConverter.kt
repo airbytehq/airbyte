@@ -464,7 +464,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
             "INTERVAL" -> {
                 return when (x) {
                     is PGInterval -> convertInterval(x)
-                    is Number -> convertInterval(x.toPgInterval())
+                    is Number -> convertInterval(microsecondsToPgInterval(x))
                     else -> {
                         log.warn {
                             "Unexpected interval value type: ${x::class.java.name}. Falling back to string conversion."
@@ -504,9 +504,13 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
         return resultInterval.toString()
     }
 
-    private fun Number.toPgInterval(): PGInterval {
-        val duration = Duration.ofSeconds(toLong() / 1_000_000)
+    private fun microsecondsToPgInterval(value: Number): PGInterval {
+        // Debezium may surface interval defaults as microseconds.
+        // Convert to whole seconds before formatting; sub-second precision is dropped.
+        val duration = Duration.ofSeconds(value.toLong() / 1_000_000)
 
+        // Duration is a fixed-length amount and cannot be losslessly decomposed into calendar-aware
+        // months/years, so those PGInterval fields are intentionally set to zero.
         return PGInterval(
             0,
             0,
