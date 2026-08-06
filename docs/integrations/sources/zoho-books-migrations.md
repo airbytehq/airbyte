@@ -22,6 +22,9 @@ voiding, are synchronized even when the document date is older than the previous
 4. For each affected stream, open the stream menu and select **Clear data** or reset the stream.
 5. Return to the **Schema** tab and select **Sync now**.
 
+The first sync after clearing these streams re-reads their full history from `start_date`, so a
+large one-time sync is expected and is not a runaway sync.
+
 ### Streams not changed
 
 The other document streams continue to use the document date because Zoho Books does not

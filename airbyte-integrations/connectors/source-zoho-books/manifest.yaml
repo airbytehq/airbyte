@@ -2389,7 +2389,6 @@ schemas:
     required:
       - invoice_id
       - date
-      - last_modified_time
   expenses:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2670,7 +2669,6 @@ schemas:
     required:
       - creditnote_id
       - date
-      - last_modified_time
   customer_payments:
     type: object
     $schema: http://json-schema.org/schema#
@@ -2927,7 +2925,6 @@ schemas:
     required:
       - purchaseorder_id
       - date
-      - last_modified_time
   sales_orders:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3088,7 +3085,6 @@ schemas:
     required:
       - salesorder_id
       - date
-      - last_modified_time
   journals:
     type: object
     $schema: http://json-schema.org/schema#
