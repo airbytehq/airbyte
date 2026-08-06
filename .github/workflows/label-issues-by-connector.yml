@@ -1,0 +1,63 @@
+name: Label issues by connector
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  label:
+    if: >-
+      !contains(join(github.event.issue.labels.*.name, ','), 'connectors/')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Authenticate as GitHub App
+        id: get-app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          owner: airbytehq
+          repositories: airbyte
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Detect connector labels
+        id: detect
+        env:
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          uv run .github/scripts/detect-issue-connectors.uv \
+            --title "$TITLE" \
+            --body "$BODY" \
+            --dry-run > detection.json
+          cat detection.json
+
+      - name: Create missing connector labels
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        if: steps.detect.outcome == 'success'
+        run: |
+          jq -r '.labels[]' detection.json | while IFS= read -r label; do
+            gh label create "$label" --color B5BBE7 --description "" \
+              --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+          done
+
+      - name: Apply connector labels
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        if: steps.detect.outcome == 'success'
+        run: |
+          jq -r '.labels[]' detection.json | while IFS= read -r label; do
+            gh issue edit "$ISSUE_NUMBER" --add-label "$label" --repo "$GITHUB_REPOSITORY"
+          done
