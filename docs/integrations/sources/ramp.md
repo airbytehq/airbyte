@@ -50,7 +50,7 @@ Start Date is the earliest `updated_at` the `transactions` and `reimbursements` 
 
 ## Performance considerations
 
-Ramp allows 200 requests per rolling 10-second window per source IP address, and returns `429 Too Many Requests` when you exceed it. The connector retries failed requests up to 5 times with exponential back-off. If you run several Ramp sources or other Ramp integrations from the same IP, they share this budget.
+Ramp allows 200 requests per rolling 10-second window per source IP address, and returns `429 Too Many Requests` when you exceed it. The connector retries failed requests up to 5 times with exponential backoff. If you run several Ramp sources or other Ramp integrations from the same IP, they share this budget.
 
 The connector reads 50 records per page. Requests that take longer than 60 seconds are terminated by Ramp with a `504 Gateway Timeout`.
 
