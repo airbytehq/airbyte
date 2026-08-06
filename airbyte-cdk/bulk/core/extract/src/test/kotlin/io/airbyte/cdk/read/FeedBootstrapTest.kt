@@ -22,10 +22,16 @@ import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.output.sockets.SocketDataChannel
+import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.OutputStream
 import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -194,8 +200,7 @@ class FeedBootstrapTest {
                 |"namespace":"ns",
                 |"stream":"tbl",
                 |"data":{
-                |"k":1,"v":null,
-                |"_ab_cdc_lsn":null,"_ab_cdc_updated_at":null,"_ab_cdc_deleted_at":null},
+                |"k":1,"v":null},
                 |"emitted_at":3133641600000,
                 |"meta":{"changes":[
                 |{"field":"k","change":"TRUNCATED","reason":"SOURCE_RECORD_SIZE_LIMITATION"},
@@ -206,6 +211,128 @@ class FeedBootstrapTest {
             ),
             outputConsumer.records().map(Jsons::writeValueAsString)
         )
+    }
+
+    @Test
+    fun testFullRefreshStreamOutsideGlobalFeedDoesNotGetCdcDecorationInJson() {
+        val fullRefreshStream =
+            Stream(
+                id = StreamIdentifier.from(StreamDescriptor().withName("view").withNamespace("ns")),
+                schema =
+                    setOf(
+                        k,
+                        v,
+                        GlobalCursor,
+                        CommonMetaField.CDC_UPDATED_AT,
+                        CommonMetaField.CDC_DELETED_AT
+                    ),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(k),
+                configuredCursor = null
+            )
+        val stateManager =
+            StateManager(
+                global = global,
+                initialGlobalState = Jsons.objectNode(),
+                initialStreamStates = mapOf(stream to null, fullRefreshStream to null)
+            )
+        val consumer =
+            FeedBootstrap.create(
+                    outputConsumer,
+                    metaFieldDecorator,
+                    stateManager,
+                    fullRefreshStream,
+                    DataChannelFormat.JSONL,
+                    DataChannelMedium.STDIO,
+                    bufferSize,
+                    clock
+                )
+                .streamRecordConsumers()
+                .values
+                .first()
+
+        consumer.accept(
+            mutableMapOf(
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec)
+            ),
+            changes = null
+        )
+
+        val data = outputConsumer.records().first().data
+        Assertions.assertEquals(2, data.size())
+        Assertions.assertEquals(2, data.get("k").intValue())
+        Assertions.assertEquals("bar", data.get("v").textValue())
+        Assertions.assertNull(data.get("_ab_cdc_lsn"))
+        Assertions.assertNull(data.get("_ab_cdc_updated_at"))
+        Assertions.assertNull(data.get("_ab_cdc_deleted_at"))
+    }
+
+    @Test
+    fun testFullRefreshStreamOutsideGlobalFeedExcludesCdcFieldsFromProtobuf() {
+        val fullRefreshStream =
+            Stream(
+                id = StreamIdentifier.from(StreamDescriptor().withName("view").withNamespace("ns")),
+                schema =
+                    setOf(
+                        k,
+                        v,
+                        GlobalCursor,
+                        CommonMetaField.CDC_UPDATED_AT,
+                        CommonMetaField.CDC_DELETED_AT
+                    ),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(k),
+                configuredCursor = null
+            )
+        val stateManager =
+            StateManager(
+                global = global,
+                initialGlobalState = Jsons.objectNode(),
+                initialStreamStates = mapOf(stream to null, fullRefreshStream to null)
+            )
+        val bootstrap =
+            FeedBootstrap.create(
+                outputConsumer,
+                metaFieldDecorator,
+                stateManager,
+                fullRefreshStream,
+                DataChannelFormat.PROTOBUF,
+                DataChannelMedium.SOCKET,
+                bufferSize,
+                clock
+            )
+        val capturedOutput = ByteArrayOutputStream()
+        val socket =
+            object : SocketDataChannel {
+                override suspend fun initialize() {}
+                override fun shutdown() {}
+                override val status = SocketDataChannel.SocketStatus.SOCKET_READY
+                override var isBound = true
+                override fun bind() {}
+                override fun unbind() {}
+                override var outputStream: OutputStream? = capturedOutput
+                override val isAvailable = false
+            }
+        val protobufOutputConsumer =
+            SocketProtobufOutputConsumer(socket, clock, bufferSize, emptyMap())
+        val consumer = bootstrap.streamProtoRecordConsumers(protobufOutputConsumer).values.first()
+
+        consumer.accept(
+            mutableMapOf(
+                "k" to FieldValueEncoder(2, IntCodec),
+                "v" to FieldValueEncoder("bar", TextCodec)
+            ),
+            changes = null
+        )
+        consumer.close()
+
+        val message =
+            AirbyteMessageProtobuf.parseDelimitedFrom(
+                ByteArrayInputStream(capturedOutput.toByteArray())
+            )
+        Assertions.assertNotNull(message)
+        Assertions.assertEquals(2, message!!.record.dataCount)
     }
 
     @Test

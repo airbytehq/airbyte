@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.10 — 2026-08-06
+
+[TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Prevent CDC metadata decoration from shifting fields for full-refresh streams outside the global CDC feed.
+
 ### 1.1.9 — 2026-07-28
 
 [#83201](https://github.com/airbytehq/airbyte/pull/83201) — Bump Testcontainers to 1.21.4 for Docker API v1.44 negotiation.
