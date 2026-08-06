@@ -385,9 +385,7 @@ spec:
           - "2026-01-01"
         order: 1
       end_date:
-        type:
-          - string
-          - "null"
+        type: string
         title: End Date
         description: >-
           UTC date to replicate up to, inclusive, in YYYY-MM-DD format. Defaults
@@ -397,9 +395,7 @@ spec:
           - "2026-06-30"
         order: 2
       lookback_window:
-        type:
-          - integer
-          - "null"
+        type: integer
         title: Lookback Window (days)
         description: >-
           Number of days before the last synced date to re-request on every
@@ -410,9 +406,7 @@ spec:
         maximum: 45
         order: 3
       cohort_lookback_window:
-        type:
-          - integer
-          - "null"
+        type: integer
         title: Cohort Lookback Window (days)
         description: >-
           Number of days before the last synced date to re-request for the MAX
@@ -437,9 +431,7 @@ spec:
         default: click
         order: 5
       num_workers:
-        type:
-          - integer
-          - "null"
+        type: integer
         title: Number of Concurrent Workers
         description: Number of streams to sync concurrently.
         default: 2
