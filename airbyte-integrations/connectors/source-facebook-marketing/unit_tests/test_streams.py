@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -344,6 +344,52 @@ def test_ad_creatives_from_ads_request_params_skip_cursor_on_first_sync_without_
             }
         ],
     }
+
+
+def test_ad_creatives_from_ads_request_params_skip_cursor_on_first_sync_with_start_date(api, some_config):
+    stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=datetime(2021, 2, 1, tzinfo=timezone.utc),
+        end_date=None,
+        filter_statuses=["ACTIVE"],
+    )
+
+    assert stream.request_params(stream_state={}) == {
+        "limit": 100,
+        "filtering": [
+            {
+                "field": "ad.effective_status",
+                "operator": "IN",
+                "value": ["ACTIVE"],
+            }
+        ],
+    }
+
+
+def test_ad_creatives_from_ads_request_params_use_state_cursor_over_start_date(api, some_config):
+    stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=datetime(2021, 2, 1, tzinfo=timezone.utc),
+        end_date=None,
+        filter_statuses=["ACTIVE"],
+    )
+
+    params = stream.request_params(stream_state={"updated_time": "2021-01-23T00:00:00+00:00", "filter_statuses": ["ACTIVE"]})
+
+    assert params["filtering"] == [
+        {
+            "field": "ad.effective_status",
+            "operator": "IN",
+            "value": ["ACTIVE"],
+        },
+        {
+            "field": "ad.updated_time",
+            "operator": "GREATER_THAN",
+            "value": 1611360000,
+        },
+    ]
 
 
 def test_ad_creatives_from_ads_emits_parent_updated_time_and_advances_state(api, some_config, mocker):

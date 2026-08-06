@@ -137,6 +137,12 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         """Return fields to request from the ads endpoint - just id and creative reference"""
         return self._fields
 
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Only apply cursor filtering when an incremental state cursor exists."""
+        if not stream_state.get(self.cursor_field):
+            return {}
+        return super()._state_filter(stream_state)
+
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
 
