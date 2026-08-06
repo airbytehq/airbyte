@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.0.23 — 2026-08-06
+
+Fix: lowercase random suffix in `generateRandomNamespace()` to prevent case-sensitive schema name mismatch on destinations like Databricks that normalize identifiers to lowercase.
+
 ### 1.0.22 — 2026-08-05
 
 [#83201](https://github.com/airbytehq/airbyte/pull/83201) — Bump Testcontainers to 1.21.4 for Docker API v1.44 negotiation.
