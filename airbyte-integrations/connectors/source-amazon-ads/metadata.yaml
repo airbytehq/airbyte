@@ -147,9 +147,9 @@ data:
       url: https://advertising.amazon.com/API/docs/en-us/release-notes/index
       type: api_release_history
     - title: Authorization
-      url: https://advertising.amazon.com/API/docs/en-us/get-started/authorization
+      url: https://advertising.amazon.com/API/docs/en-us/guides/account-management/authorization/overview
       type: authentication_guide
     - title: Rate limits
-      url: https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes#rate-limiting
+      url: https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
       type: rate_limits
 metadataSpecVersion: "1.0"

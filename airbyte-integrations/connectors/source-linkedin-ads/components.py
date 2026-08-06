@@ -20,7 +20,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     RequestInput,
 )
 from airbyte_cdk.sources.streams.http import HttpClient
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
@@ -31,6 +31,24 @@ from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_pars
 # on behalf of https://github.com/airbytehq/airbyte/issues/13018,
 # expand this list, if required.
 DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
+_DATA_VOLUME_RATE_LIMIT_BACKOFF_SECONDS = 330.0
+_DATA_VOLUME_RATE_LIMIT_MESSAGE_PARTS = (
+    "data request limit has been exceeded",
+    "45 million metric values",
+)
+
+
+def _is_data_volume_rate_limit(response_or_exception: Optional[Union[requests.Response, Exception]]) -> bool:
+    if not isinstance(response_or_exception, requests.Response) or response_or_exception.status_code != 429:
+        return False
+
+    try:
+        response_body = response_or_exception.json()
+        message = response_body.get("message", "")
+    except (AttributeError, ValueError):
+        return False
+
+    return isinstance(message, str) and all(part in message.casefold() for part in _DATA_VOLUME_RATE_LIMIT_MESSAGE_PARTS)
 
 
 class SafeHttpClient(HttpClient):
@@ -124,6 +142,8 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
     date-time fields are formatted to RFC3339.
     """
 
+    transform_campaign_statistics_pivots: bool = False
+
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Converts 'lastModified' and 'created' fields in the record to RFC3339 format.
@@ -137,7 +157,10 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         """
         Extracts and transforms records from an HTTP response.
         """
-        for record in transform_data(response.json().get("elements")):
+        for record in transform_data(
+            response.json().get("elements"),
+            transform_campaign_statistics_pivots=self.transform_campaign_statistics_pivots,
+        ):
             yield self._date_time_to_rfc3339(record)
 
 
@@ -159,7 +182,27 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
                 failure_type=FailureType.transient_error,
                 error_message="source-linkedin-ads has faced a temporary DNS resolution issue. Retrying...",
             )
+        if _is_data_volume_rate_limit(response_or_exception):
+            return ErrorResolution(
+                response_action=ResponseAction.RATE_LIMITED,
+                failure_type=FailureType.transient_error,
+                error_message="LinkedIn Ads metric-value rate limit is exceeded.",
+            )
         return super().interpret_response(response_or_exception)
+
+
+@dataclass
+class LinkedInAdsDataVolumeBackoffStrategy(BackoffStrategy):
+    """Waits for the rolling metric-value window to clear after a data-volume throttle."""
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if _is_data_volume_rate_limit(response_or_exception):
+            return _DATA_VOLUME_RATE_LIMIT_BACKOFF_SECONDS
+        return None
 
 
 def transform_change_audit_stamps(
@@ -437,7 +480,15 @@ def transform_pivot_values(record: Dict) -> Mapping[str, Any]:
     return record
 
 
-def transform_data(records: List) -> Iterable[Mapping]:
+def transform_campaign_statistics_pivot_values(record: Dict) -> Mapping[str, Any]:
+    pivot_values = record.get("pivotValues", [])
+    if len(pivot_values) > 1 and pivot_values[0].startswith("urn:li:sponsoredCampaign:"):
+        record["sponsoredCampaign"] = pivot_values[0].split(":")[-1]
+        record["pivotValues"] = pivot_values[1:]
+    return record
+
+
+def transform_data(records: List, transform_campaign_statistics_pivots: bool = False) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
     to be properly normalised in the destination.
@@ -456,6 +507,8 @@ def transform_data(records: List) -> Iterable[Mapping]:
             record = transform_variables(record)
 
         if "pivotValues" in record:
+            if transform_campaign_statistics_pivots:
+                record = transform_campaign_statistics_pivot_values(record)
             record = transform_pivot_values(record)
 
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
