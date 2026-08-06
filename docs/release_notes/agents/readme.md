@@ -1,5 +1,12 @@
 # Airbyte Agents release notes
 
+## August 6, 2026
+
+Web app
+
+- Your connectors list and Context Store now tell you when a connector's latest data update failed. If it failed because your sign-in details are expired or no longer valid, the connector shows "Action Required" and you can select it to reconnect. Other failures show as "Failing," and your already-synced data stays searchable in the meantime.
+- Filtering agent sessions by workspace now clears the connector filter at the same time, so you no longer see an empty list when the connector you had selected isn't used in the workspace you switched to.
+
 ## July 21, 2026
 
 Web app
