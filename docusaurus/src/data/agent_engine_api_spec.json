@@ -3500,7 +3500,7 @@
       "get": {
         "tags": ["Workspaces"],
         "summary": "Get Workspace Stats",
-        "description": "Get workspace statistics for the authenticated organization.\n\nReturns the count of active and inactive workspaces.",
+        "description": "Get workspace statistics for the authenticated organization.\n\nReturns the count of active and inactive workspaces visible to the caller.",
         "operationId": "get_workspaces_stats",
         "security": [
           {

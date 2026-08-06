@@ -402,7 +402,7 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(
             sql.contains(
                 """"ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at""""
-            )
+            ),
         )
         // Should NOT have the 4-way cursor comparison
         assertFalse(sql.contains("IS NULL AND deduped_source."))
@@ -423,6 +423,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("INSERT INTO"))
         assertTrue(sql.contains("NOT EXISTS"))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
+        // PK columns should have IS NOT NULL filter before NOT EXISTS
+        assertTrue(sql.contains("""deduped_source."id" IS NOT NULL"""))
     }
 
     @Test
@@ -438,6 +440,33 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains(""""_ab_cdc_deleted_at" IS NULL"""))
+        // PK columns should have IS NOT NULL filter before NOT EXISTS
+        assertTrue(sql.contains("""deduped_source."id" IS NOT NULL"""))
+    }
+
+    @Test
+    fun `insertNewRows adds IS NOT NULL filter for each composite PK column`() {
+        val target = TableName(namespace = "ns", name = "final")
+        val sql =
+            sqlGenerator.insertNewRows(
+                dedupTableAlias = "deduped_source",
+                targetTableName = target,
+                allTargetColumns =
+                    listOf(""""id"""", """"org_id"""", """"name"""", """"updated_at""""),
+                primaryKeyTargetColumns = listOf(""""id"""", """"org_id""""),
+                cdcHardDeleteEnabled = false,
+            )
+
+        // Each PK column should have an IS NOT NULL filter
+        assertTrue(sql.contains("""deduped_source."id" IS NOT NULL"""))
+        assertTrue(sql.contains("""deduped_source."org_id" IS NOT NULL"""))
+        // IS NOT NULL filters should appear before NOT EXISTS
+        val notNullPos = sql.indexOf("""IS NOT NULL""")
+        val notExistsPos = sql.indexOf("NOT EXISTS")
+        assertTrue(notNullPos < notExistsPos, "IS NOT NULL filter should appear before NOT EXISTS")
+        // Non-PK columns should NOT have IS NOT NULL filter
+        assertFalse(sql.contains("""deduped_source."name" IS NOT NULL"""))
+        assertFalse(sql.contains("""deduped_source."updated_at" IS NOT NULL"""))
     }
 
     // ================================================================
@@ -484,6 +513,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("INSERT INTO \"ns\".\"final\""))
         assertTrue(sql.contains("NOT EXISTS"))
         assertTrue(sql.contains("\"_ab_cdc_deleted_at\" IS NULL"))
+        // PK columns should have IS NOT NULL filter in INSERT
+        assertTrue(sql.contains(""""id" IS NOT NULL"""))
         // Cleanup
         assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
         assertTrue(sql.contains("COMMIT;"))
@@ -516,6 +547,8 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("UPDATE"))
         assertTrue(sql.contains("INSERT INTO"))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
+        // PK columns should have IS NOT NULL filter in INSERT
+        assertTrue(sql.contains(""""id" IS NOT NULL"""))
         assertTrue(sql.contains("COMMIT;"))
     }
 

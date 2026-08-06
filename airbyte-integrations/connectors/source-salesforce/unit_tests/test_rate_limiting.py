@@ -8,11 +8,19 @@ import pytest
 import requests
 import requests_mock
 from requests.exceptions import ChunkedEncodingError
-from source_salesforce.api import _TOKEN_REFRESH_INTERVAL_SECONDS, API_VERSION, SalesforceTokenProvider
+from source_salesforce.api import (
+    _LOGIN_DEDUP_SECONDS,
+    _REFRESH_FAILURE_BACKOFF_SECONDS,
+    _TOKEN_REFRESH_INTERVAL_SECONDS,
+    API_VERSION,
+    Salesforce,
+    SalesforceTokenProvider,
+)
 from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 _ANY = "any"
@@ -23,6 +31,7 @@ class SalesforceTokenProviderTest(TestCase):
     def setUp(self) -> None:
         self._sf_api = MagicMock()
         self._sf_api.access_token = "initial_token"
+        self._sf_api.login_permanently_failed = False
         self._token_provider = SalesforceTokenProvider(self._sf_api)
 
     def test_get_token_returns_token_without_login_when_within_refresh_interval(self) -> None:
@@ -31,24 +40,15 @@ class SalesforceTokenProviderTest(TestCase):
         assert token == "initial_token"
         self._sf_api.login.assert_not_called()
 
-    def test_get_token_calls_login_when_interval_elapsed(self) -> None:
+    def test_get_token_delegates_staleness_refresh_to_api(self) -> None:
         self._sf_api.access_token = "refreshed_token"
-        with patch("source_salesforce.api.time.monotonic", side_effect=[0.0, _TOKEN_REFRESH_INTERVAL_SECONDS + 1, 0.0]):
-            provider = SalesforceTokenProvider(self._sf_api)
-            token = provider.get_token()
 
-        self._sf_api.login.assert_called_once()
+        token = self._token_provider.get_token()
+
+        # Timing and locking now live on the shared Salesforce object (so concurrent streams share a
+        # single refresh instead of one per provider); the provider simply delegates.
+        self._sf_api.refresh_access_token_if_stale.assert_called_once()
         assert token == "refreshed_token"
-
-    def test_get_token_returns_existing_token_when_login_fails(self) -> None:
-        self._sf_api.login.side_effect = Exception("network error")
-        self._sf_api.access_token = "stale_token"
-        with patch("source_salesforce.api.time.monotonic", side_effect=[0.0, _TOKEN_REFRESH_INTERVAL_SECONDS + 1]):
-            provider = SalesforceTokenProvider(self._sf_api)
-            token = provider.get_token()
-
-        self._sf_api.login.assert_called_once()
-        assert token == "stale_token"
 
     def test_force_refresh_calls_login_immediately(self) -> None:
         self._token_provider.force_refresh()
@@ -58,14 +58,222 @@ class SalesforceTokenProviderTest(TestCase):
     def test_force_refresh_does_not_raise_when_login_fails(self) -> None:
         self._sf_api.login.side_effect = Exception("network error")
 
-        self._token_provider.force_refresh()  # should not raise
+        assert self._token_provider.force_refresh() is False
 
         self._sf_api.login.assert_called_once()
+
+    def test_force_refresh_returns_true_on_success(self) -> None:
+        assert self._token_provider.force_refresh() is True
+
+    def test_force_refresh_skips_login_after_permanent_failure(self) -> None:
+        self._sf_api.login_permanently_failed = True
+
+        assert self._token_provider.force_refresh() is False
+
+        self._sf_api.login.assert_not_called()
+
+    def test_credentials_permanently_failed_delegates_to_api(self) -> None:
+        assert self._token_provider.credentials_permanently_failed is False
+        self._sf_api.login_permanently_failed = True
+        assert self._token_provider.credentials_permanently_failed is True
+
+
+class SalesforceRefreshAccessTokenIfStaleTest(TestCase):
+    """Proactive-refresh timing lives on the shared Salesforce object so a single refresh is shared
+    across concurrent streams and every rotation is serialized by the login lock."""
+
+    def _make_sf(self) -> Salesforce:
+        sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+        sf._perform_login = MagicMock()
+        return sf
+
+    def test_does_not_refresh_before_first_login(self) -> None:
+        sf = self._make_sf()
+
+        sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_not_called()
+
+    def test_does_not_refresh_within_interval(self) -> None:
+        sf = self._make_sf()
+        sf._last_login_time = 0.0
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS - 1):
+            sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_not_called()
+
+    def test_refreshes_after_interval(self) -> None:
+        sf = self._make_sf()
+        sf._last_login_time = 0.0
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+
+        sf._perform_login.assert_called_once()
+
+    def test_swallows_login_failure(self) -> None:
+        sf = self._make_sf()
+        sf._perform_login.side_effect = Exception("network error")
+        sf._last_login_time = 0.0
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()  # should not raise
+
+        sf._perform_login.assert_called_once()
+
+    def test_failed_refresh_backs_off_then_retries(self) -> None:
+        """A failed proactive refresh must not turn every subsequent request into a fresh login.
+
+        _perform_login only stamps _last_login_time on success, so refresh_access_token_if_stale backs
+        the timer off by _REFRESH_FAILURE_BACKOFF_SECONDS on failure: further requests within that
+        window are no-ops (no login storm under the lock), and the next attempt fires once the window
+        elapses.
+        """
+        sf = self._make_sf()
+        sf._perform_login.side_effect = Exception("network error")
+        sf._last_login_time = 0.0
+
+        fail_time = float(_TOKEN_REFRESH_INTERVAL_SECONDS + 1)
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # Within the backoff window: no retry (this is the storm guard).
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS - 1):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # After the backoff window elapses: a new attempt fires.
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+        assert sf._perform_login.call_count == 2
+
+    def test_credential_error_disables_proactive_refresh(self) -> None:
+        """A rejected grant cannot recover, so no further refresh attempts should be made."""
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.config_error)
+        sf._last_login_time = 0.0
+
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS + 1):
+            sf.refresh_access_token_if_stale()  # swallowed, flags the failure
+        assert sf.login_permanently_failed is True
+        sf._perform_login.assert_called_once()
+
+        with patch("source_salesforce.api.time.monotonic", return_value=_TOKEN_REFRESH_INTERVAL_SECONDS * 10):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+    def test_login_flags_permanent_failure_on_credential_error(self) -> None:
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.config_error)
+
+        with pytest.raises(AirbyteTracedException):
+            sf.login()
+
+        assert sf.login_permanently_failed is True
+
+    def test_login_does_not_flag_permanent_failure_on_transient_error(self) -> None:
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.transient_error)
+
+        with pytest.raises(AirbyteTracedException):
+            sf.login()
+
+        assert sf.login_permanently_failed is False
+
+    def test_transient_traced_error_backs_off_then_retries(self) -> None:
+        """The AirbyteTracedException branch must behave like the generic one for non-config errors:
+        back off, keep the permanent-failure flag unset, retry once the window elapses."""
+        sf = self._make_sf()
+        sf._perform_login.side_effect = AirbyteTracedException(failure_type=FailureType.transient_error)
+        sf._last_login_time = 0.0
+
+        fail_time = float(_TOKEN_REFRESH_INTERVAL_SECONDS + 1)
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time):
+            sf.refresh_access_token_if_stale()  # swallowed, backs off
+        assert sf.login_permanently_failed is False
+        sf._perform_login.assert_called_once()
+
+        # Within the backoff window: no retry.
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS - 1):
+            sf.refresh_access_token_if_stale()
+        sf._perform_login.assert_called_once()
+
+        # After the backoff window elapses: a new attempt fires.
+        with patch("source_salesforce.api.time.monotonic", return_value=fail_time + _REFRESH_FAILURE_BACKOFF_SECONDS + 1):
+            sf.refresh_access_token_if_stale()
+        assert sf._perform_login.call_count == 2
+
+    def test_login_raises_config_error_without_redeeming_after_permanent_failure(self) -> None:
+        """Threads that raced past force_refresh's pre-check must not redeem a rejected grant again."""
+        sf = self._make_sf()
+        sf._login_permanently_failed = True
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            sf.login()
+
+        assert exc_info.value.failure_type == FailureType.config_error
+        sf._perform_login.assert_not_called()
+
+    def test_login_skips_redemption_right_after_another_login(self) -> None:
+        """Threads queued on the login lock behind a completed refresh must not redeem the
+        (single-use, under RTR) grant again for a 401 that predates that refresh."""
+        sf = self._make_sf()
+        sf._last_login_time = 100.0
+
+        with patch("source_salesforce.api.time.monotonic", return_value=100.0 + _LOGIN_DEDUP_SECONDS - 1):
+            sf.login()
+        sf._perform_login.assert_not_called()
+
+        with patch("source_salesforce.api.time.monotonic", return_value=100.0 + _LOGIN_DEDUP_SECONDS + 1):
+            sf.login()
+        sf._perform_login.assert_called_once()
 
 
 class SalesforceErrorHandlerTest(TestCase):
     def setUp(self) -> None:
         self._error_handler = SalesforceErrorHandler()
+
+    def test_invalid_session_retries_when_token_refresh_succeeds(self) -> None:
+        token_provider = MagicMock()
+        token_provider.force_refresh.return_value = True
+        token_provider.credentials_permanently_failed = False
+        handler = SalesforceErrorHandler(token_provider=token_provider)
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.RETRY
+        token_provider.force_refresh.assert_called_once()
+
+    def test_invalid_session_fails_as_config_error_when_credentials_permanently_failed(self) -> None:
+        token_provider = MagicMock()
+        token_provider.force_refresh.return_value = False
+        token_provider.credentials_permanently_failed = True
+        handler = SalesforceErrorHandler(token_provider=token_provider)
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+
+    def test_first_401_with_dead_grant_fails_as_config_error_with_real_wiring(self) -> None:
+        """End-to-end over the real objects (no mocked flags): the first INVALID_SESSION_ID redeems
+        the grant once, the rejection latches, and the handler fails the sync without redeeming again."""
+        sf = Salesforce(refresh_token="a_refresh_token", client_id="a_client_id", client_secret="a_client_secret")
+        sf._perform_login = MagicMock(side_effect=AirbyteTracedException(failure_type=FailureType.config_error))
+        handler = SalesforceErrorHandler(token_provider=SalesforceTokenProvider(sf))
+        response = self._create_response("GET", self._url_for_job_creation(), 401, [{"errorCode": "INVALID_SESSION_ID", "message": _ANY}])
+
+        resolution = handler.interpret_response(response)
+
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.failure_type == FailureType.config_error
+        assert resolution.error_message == "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+        sf._perform_login.assert_called_once()
+
+        # Subsequent 401s must not redeem the rejected grant again.
+        handler.interpret_response(response)
+        sf._perform_login.assert_called_once()
 
     def test_given_invalid_entity_with_bulk_not_supported_message_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
         self,
@@ -132,6 +340,7 @@ class SalesforceErrorHandlerTest(TestCase):
 
     def test_given_401_invalid_session_id_with_token_provider_when_interpret_response_then_retry_and_refresh(self) -> None:
         token_provider = MagicMock()
+        token_provider.credentials_permanently_failed = False
         error_handler = SalesforceErrorHandler(token_provider=token_provider)
         response = self._create_response(
             "GET",

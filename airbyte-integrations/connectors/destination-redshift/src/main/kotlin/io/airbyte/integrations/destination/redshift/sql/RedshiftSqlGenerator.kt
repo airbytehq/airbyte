@@ -356,6 +356,12 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
                 "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
             }
 
+        // Ignore NULL PK records during INSERT
+        val pkNotNullFilters =
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "$dedupTableAlias.$pk IS NOT NULL"
+            }
+
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
                 "\n  AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NULL"
@@ -371,7 +377,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |  ${allTargetColumns.joinToString(",\n  ")}
             |FROM $dedupTableAlias
             |WHERE
-            |  NOT EXISTS (
+            |  $pkNotNullFilters
+            |  AND NOT EXISTS (
             |    SELECT 1
             |    FROM ${getFullyQualifiedName(targetTableName)}
             |    WHERE $primaryKeysConditions
