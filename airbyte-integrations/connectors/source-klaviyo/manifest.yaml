@@ -1475,7 +1475,7 @@ spec:
           events and events_detailed streams. If left empty, events for ALL
           metrics will be synced. Specify only the metrics you need to
           significantly reduce sync volume and duration. Note: Klaviyo does not
-          support filtering by custom metrics — only built-in metrics can be
+          support filtering by custom metrics - only built-in metrics can be
           filtered. Find metric IDs in your Klaviyo account under Analytics >
           Metrics, or use the metrics stream to list all available metrics and
           their IDs.
