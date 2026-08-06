@@ -1,3 +1,5 @@
+import IamRolePlanAvailability from '@site/static/_iam_role_plan_availability.md';
+
 # S3 Data Lake
 
 This page guides you through setting up the S3 Data Lake destination connector.
@@ -93,9 +95,7 @@ Use an existing or new [Access Key ID and Secret Access Key](https://docs.aws.am
 <details>
 <summary>Authenticate with an IAM role (Cloud with Glue catalog only)</summary>
 
-:::note
-S3 authentication with an IAM role is only available on the Cloud Pro and Enterprise Flex plans. It isn't available on the Standard or Plus plans. An Airbyte team member must enable it for your organization, so [contact the Sales team](https://airbyte.com/company/talk-to-sales) if you'd like to use this feature.
-:::
+<IamRolePlanAvailability/>
 
 1. In the IAM dashboard, click **Roles**, then **Create role**.
 
