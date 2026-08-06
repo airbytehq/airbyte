@@ -24,11 +24,8 @@ voiding, are synchronized even when the document date is older than the previous
 
 ### Streams not changed
 
-- `expenses`: Zoho Books documents `last_modified_time` only as a response attribute, not as a
-  List query parameter, and the response example shows it blank, so it is unsafe as a cursor.
-- `customer_payments`: The Zoho Books customer-payments documentation does not mention
-  `last_modified_time` as either a query parameter or response attribute.
-- `journals` and `transactions`: Their manifest schemas do not define a `last_modified_time` property.
+The other document streams continue to use the document date because Zoho Books does not
+support filtering them by modification time or reliably return a modification timestamp for them.
 
 ## Connector upgrade guide
 

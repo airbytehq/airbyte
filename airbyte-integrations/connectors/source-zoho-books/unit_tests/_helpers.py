@@ -9,7 +9,6 @@ from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-
 def _get_manifest_path() -> Path:
     """Resolve the connector manifest for local and CI test layouts."""
     ci_path = Path("/airbyte/integration_code/source_declarative_manifest")

@@ -29,7 +29,7 @@ _PRIOR_CURSOR = "2023-11-18T02:02:51-0800"
 _NEW_CURSOR = "2023-11-19T02:02:51-0800"
 
 
-def _read(stream_name: str, response_key: str, config: dict, state=None):
+def _read(stream_name: str, config: dict, state=None):
     """Read one stream incrementally from the declarative source."""
     source = get_source(config=config, state=state)
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
@@ -68,10 +68,10 @@ def test_incremental_sync_uses_last_modified_time_and_emits_edited_old_documents
     api_url = f"https://www.zohoapis.com/books/v3/{response_key}"
     token_url = "https://accounts.zoho.com/oauth/v2/token"
 
-    with requests_mock.Mocker() as mocker:
+    with requests_mock.Mocker(case_sensitive=True) as mocker:
         mocker.post(token_url, json={"access_token": "access-token", "expires_in": 3600})
         mocker.get(api_url, json=response)
-        output = _read(stream_name, response_key, config, state)
+        output = _read(stream_name, config, state)
 
     api_requests = [request for request in mocker.request_history if request.path == f"/books/v3/{response_key}"]
     assert len(api_requests) == 1
@@ -79,7 +79,7 @@ def test_incremental_sync_uses_last_modified_time_and_emits_edited_old_documents
     assert request.qs == {
         "page": ["1"],
         "per_page": ["200"],
-        "last_modified_time": [_PRIOR_CURSOR.replace("T", "t")],
+        "last_modified_time": [_PRIOR_CURSOR],
     }
     assert "date_start" not in request.qs
     assert "date_end" not in request.qs
