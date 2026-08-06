@@ -45,27 +45,33 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             )
     }
 
-    fun createNamespace(namespace: String): String =
-        "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};"
+    fun createNamespace(namespace: String): String {
+        val normalized = namespace.toRedshiftCompatibleName()
+        return "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(normalized)};"
+    }
 
     /** Generates a query to check if a schema exists via `information_schema.schemata`. */
-    fun namespaceExists(namespace: String): String =
-        """
+    fun namespaceExists(namespace: String): String {
+        val normalized = namespace.toRedshiftCompatibleName()
+        return """
             |SELECT EXISTS(
             |    SELECT 1 FROM information_schema.schemata
-            |    WHERE schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
+            |    WHERE schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(normalized)}'
             |)
         """.trimMargin()
+    }
 
     /** Generates a query to check if a table exists via `information_schema.tables`. */
-    fun tableExists(tableName: TableName): String =
-        """
+    fun tableExists(tableName: TableName): String {
+        val normalizedTable = tableName.normalize()
+        return """
             |SELECT EXISTS(
             |    SELECT 1 FROM information_schema.tables
-            |    WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.namespace)}'
-            |    AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.name)}'
+            |    WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(normalizedTable.namespace)}'
+            |    AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(normalizedTable.name)}'
             |)
         """.trimMargin()
+    }
 
     fun createTable(
         stream: DestinationStream,
@@ -531,14 +537,16 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     }
 
     /** Generates a query to retrieve column metadata from `information_schema.columns` */
-    fun getTableSchema(tableName: TableName): String =
-        """
+    fun getTableSchema(tableName: TableName): String {
+        val normalizedTable = tableName.normalize()
+        return """
             |SELECT column_name, data_type, is_nullable
             |FROM information_schema.columns
-            |WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.namespace)}'
-            |AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.name)}'
+            |WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(normalizedTable.namespace)}'
+            |AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(normalizedTable.name)}'
             |ORDER BY ordinal_position;
         """.trimMargin()
+    }
 
     /** Generates a Redshift COPY command to load gzip CSV data from S3 */
     fun copyFromS3(
@@ -573,9 +581,15 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun getFullyQualifiedName(tableName: TableName): String =
         "${getNamespace(tableName)}.${getName(tableName)}"
 
-    private fun getNamespace(tableName: TableName): String = quoteIdentifier(tableName.namespace)
+    private fun getNamespace(tableName: TableName): String =
+        quoteIdentifier(tableName.namespace.toRedshiftCompatibleName())
 
-    private fun getName(tableName: TableName): String = quoteIdentifier(tableName.name)
+    private fun getName(tableName: TableName): String =
+        quoteIdentifier(tableName.name.toRedshiftCompatibleName())
+
+    /** Normalizes a [TableName] by applying Redshift naming conventions to both components. */
+    private fun TableName.normalize(): TableName =
+        TableName(namespace.toRedshiftCompatibleName(), name.toRedshiftCompatibleName())
 
     /** Returns all target column names (meta + user) for a stream, quoted. */
     private fun getTargetColumnNamesForStream(stream: DestinationStream): List<String> {
