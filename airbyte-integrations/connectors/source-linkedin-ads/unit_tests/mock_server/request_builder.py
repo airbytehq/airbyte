@@ -68,6 +68,15 @@ class LinkedInAdsRequestBuilder:
         return builder
 
     @classmethod
+    def videos_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
+        # The videos endpoint is filtered by the sponsored account that owns the media library:
+        # videos?q=associatedAccount&associatedAccount=urn:li:sponsoredAccount:{account_id}&count=500
+        builder = cls("/videos")
+        builder._query_params["q"] = "associatedAccount"
+        builder._query_params["associatedAccount"] = f"urn:li:sponsoredAccount:{account_id}"
+        return builder
+
+    @classmethod
     def ad_analytics_endpoint(cls) -> "LinkedInAdsRequestBuilder":
         return cls("/adAnalytics")
 
