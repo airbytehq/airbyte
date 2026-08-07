@@ -49,6 +49,7 @@ data:
           reset the impacted streams after upgrading.
           For more information, see our migration documentation for source TikTok Marketing.
         upgradeDeadline: "2026-08-24"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
