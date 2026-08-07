@@ -1,0 +1,9 @@
+./test-connector-image-build.sh java destination-azure-blob-storage
+
+
+./gradlew :airbyte-integrations:connectors:destination-azure-blob-storage:distTar
+
+./test-connector-image-build.sh java destination-azure-blob-storage
+
+find . -type f -exec grep -l '\.blob\.core\.windows\.net' {} +
+
