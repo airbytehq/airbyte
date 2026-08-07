@@ -6,6 +6,7 @@
 from tempfile import NamedTemporaryFile
 from unittest.mock import patch, sentinel
 
+import botocore
 import pandas as pd
 import pytest
 from pandas import read_csv, read_excel, testing
@@ -14,6 +15,7 @@ from source_file.client import Client, URLFile
 from source_file.utils import backoff_handler
 from urllib3.exceptions import ProtocolError
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -190,12 +192,79 @@ def test_unzip_all_caps_ext(absolute_path, test_files):
 def test_open_aws_url():
     url = "s3://my_bucket/my_key"
     provider = {"storage": "S3"}
-    with pytest.raises(OSError):
+    with pytest.raises((OSError, AirbyteTracedException)):
         assert URLFile(url=url, provider=provider)._open_aws_url()
 
     provider.update({"aws_access_key_id": "aws_access_key_id", "aws_secret_access_key": "aws_secret_access_key"})
-    with pytest.raises(OSError):
+    with pytest.raises((OSError, AirbyteTracedException)):
         assert URLFile(url=url, provider=provider)._open_aws_url()
+
+
+@pytest.mark.parametrize(
+    ("error", "provider"),
+    [
+        (
+            botocore.exceptions.ClientError(
+                {"Error": {"Code": "InvalidAccessKeyId", "Message": "The AWS access key ID is invalid."}},
+                "GetObject",
+            ),
+            {
+                "storage": "S3",
+                "aws_access_key_id": "aws_access_key_id",
+                "aws_secret_access_key": "aws_secret_access_key",
+            },
+        ),
+        (
+            OSError(
+                "unable to access bucket: 'my_bucket' key: 'my_key' version: None error: "
+                "An error occurred (InvalidAccessKeyId) when calling the GetObject operation: "
+                "The AWS access key ID is invalid."
+            ),
+            {"storage": "S3"},
+        ),
+    ],
+)
+def test_open_aws_url_raises_configuration_error(error, provider):
+    url = "s3://my_bucket/my_key"
+
+    with patch("smart_open.open", side_effect=error), pytest.raises(AirbyteTracedException) as raised:
+        URLFile(url=url, provider=provider)._open_aws_url()
+
+    expected_message = (
+        "AWS rejected access to S3 object 's3://my_bucket/my_key' with error code InvalidAccessKeyId. "
+        "Verify the AWS access key ID and secret access key in the source configuration and confirm "
+        "the key has s3:GetObject permission on that object."
+    )
+    assert raised.value.failure_type == FailureType.config_error
+    assert raised.value.message == expected_message
+    assert raised.value.internal_message == str(error)
+
+
+def test_open_aws_url_raises_not_found_configuration_error():
+    error = OSError(
+        "unable to access bucket: 'my_bucket' key: 'my_key' version: None error: "
+        "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+    )
+    expected_message = (
+        "S3 object 's3://my_bucket/my_key' was not found or is not accessible with the provided AWS credentials "
+        "(error code NoSuchKey). Verify the bucket name and file path, and confirm the credentials have "
+        "s3:GetObject permission on that object."
+    )
+
+    with patch("smart_open.open", side_effect=error), pytest.raises(AirbyteTracedException) as raised:
+        URLFile(url="s3://my_bucket/my_key", provider={"storage": "S3"})._open_aws_url()
+
+    assert raised.value.failure_type == FailureType.config_error
+    assert raised.value.message == expected_message
+
+
+def test_open_aws_url_propagates_transient_os_error():
+    error = OSError("Connection reset by peer")
+
+    with patch("smart_open.open", side_effect=error), pytest.raises(OSError) as raised:
+        URLFile(url="s3://my_bucket/my_key", provider={"storage": "S3"})._open_aws_url()
+
+    assert raised.value is error
 
 
 def test_open_azblob_url():
