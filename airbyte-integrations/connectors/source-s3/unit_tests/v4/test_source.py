@@ -7,10 +7,12 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from source_s3.v4 import Config, SourceS3, SourceS3StreamReader
-from source_s3.v4.throttled_stream import ThrottledFileBasedStream
-
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
+from airbyte_cdk.sources.streams.checkpoint import (
+    DEFAULT_STATE_EMISSION_THROTTLE_SECONDS,
+)
 
 
 _V3_FIELDS = ["dataset", "format", "path_pattern", "provider", "schema"]
@@ -61,12 +63,21 @@ class SourceTest(unittest.TestCase):
         spec = self._source.spec()
         assert not spec.connectionSpecification["properties"]["provider"]["required"]
 
-    def test_make_default_stream_returns_throttled_stream(self) -> None:
+    def test_make_default_stream_is_throttled_by_the_cdk(self) -> None:
+        """State-emission throttling now comes from the CDK.
+
+        source-s3 used to carry its own ThrottledFileBasedStream and an override
+        of _make_default_stream to install it. The CDK applies the throttle to
+        every DefaultFileBasedStream, so the connector no longer overrides
+        anything -- but the behaviour must survive the removal, so assert the
+        stream is still throttled rather than just that it is constructed.
+        """
         stream_config = FileBasedStreamConfig(name="s", validation_policy="Emit Record", format=CsvFormat())
         cursor = Mock()
 
         stream = self._source._make_default_stream(stream_config, cursor, _ParsedConfig())
 
-        assert isinstance(stream, ThrottledFileBasedStream)
+        assert isinstance(stream, DefaultFileBasedStream)
+        assert stream.state_emission_throttle_seconds == DEFAULT_STATE_EMISSION_THROTTLE_SECONDS
         assert stream.config is stream_config
         assert stream.cursor is cursor
