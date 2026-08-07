@@ -48,7 +48,7 @@ data:
           across advertiser partitions. Users will need to refresh the source schema and
           reset the impacted streams after upgrading.
           For more information, see our migration documentation for source TikTok Marketing.
-        upgradeDeadline: "2026-08-15"
+        upgradeDeadline: "2026-08-24"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
