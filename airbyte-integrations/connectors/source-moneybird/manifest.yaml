@@ -1,0 +1,1731 @@
+version: 7.10.0
+
+type: DeclarativeSource
+
+description: Airbyte connector for MoneyBird
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+    - sales_invoices
+    - ledger_accounts
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_token'] }}"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+
+streams:
+  - type: DeclarativeStream
+    name: contacts
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          include_archived: "true"
+        url: >-
+          https://moneybird.com/api/v2/{{ config['administration_id']
+          }}/contacts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          id:
+            type: string
+          administration_id:
+            type:
+              - string
+              - "null"
+          company_name:
+            type:
+              - string
+              - "null"
+          firstname:
+            type:
+              - string
+              - "null"
+          lastname:
+            type:
+              - string
+              - "null"
+          address1:
+            type:
+              - string
+              - "null"
+          address2:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          delivery_method:
+            type:
+              - string
+              - "null"
+          customer_id:
+            type:
+              - string
+              - "null"
+          tax_number:
+            type:
+              - string
+              - "null"
+          chamber_of_commerce:
+            type:
+              - string
+              - "null"
+          bank_account:
+            type:
+              - string
+              - "null"
+          is_trusted:
+            type:
+              - boolean
+              - "null"
+          attention:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          email_ubl:
+            type:
+              - boolean
+              - "null"
+          send_invoices_to_attention:
+            type:
+              - string
+              - "null"
+          send_invoices_to_email:
+            type:
+              - string
+              - "null"
+          send_estimates_to_attention:
+            type:
+              - string
+              - "null"
+          send_estimates_to_email:
+            type:
+              - string
+              - "null"
+          direct_debit:
+            type:
+              - boolean
+              - "null"
+          sepa_active:
+            type:
+              - boolean
+              - "null"
+          sepa_iban:
+            type:
+              - string
+              - "null"
+          sepa_iban_account_name:
+            type:
+              - string
+              - "null"
+          sepa_bic:
+            type:
+              - string
+              - "null"
+          sepa_mandate_id:
+            type:
+              - string
+              - "null"
+          sepa_sequence_type:
+            type:
+              - string
+              - "null"
+          credit_card_number:
+            type:
+              - string
+              - "null"
+          credit_card_reference:
+            type:
+              - string
+              - "null"
+          tax_number_validated_at:
+            type:
+              - string
+              - "null"
+          tax_number_valid:
+            type:
+              - boolean
+              - "null"
+          invoice_workflow_id:
+            type:
+              - string
+              - "null"
+          estimate_workflow_id:
+            type:
+              - string
+              - "null"
+          si_identifier:
+            type:
+              - string
+              - "null"
+          si_identifier_type:
+            type:
+              - string
+              - "null"
+          moneybird_payments_mandate:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          sales_invoices_url:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                entity_id:
+                  type:
+                    - string
+                    - "null"
+                entity_type:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                assignee_id:
+                  type:
+                    - string
+                    - "null"
+                todo:
+                  type:
+                    - boolean
+                    - "null"
+                note:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          custom_fields:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          contact_people:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                version:
+                  type:
+                    - number
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                contact_id:
+                  type:
+                    - string
+                    - "null"
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                firstname:
+                  type:
+                    - string
+                    - "null"
+                lastname:
+                  type:
+                    - string
+                    - "null"
+                phone:
+                  type:
+                    - string
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                department:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          archived:
+            type:
+              - boolean
+              - "null"
+          events:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                action:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    changes:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        firstname:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        lastname:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        send_estimates_to_email:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        send_invoices_to_email:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        send_estimates_to_attention:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        send_invoices_to_attention:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        company_name:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        estimate_workflow_id:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        si_identifier:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        tax_number:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        custom_field_ids:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              "383117539032433874":
+                                type:
+                                  - string
+                                  - "null"
+                        address1:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        chamber_of_commerce:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        city:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        country:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        zipcode:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        tax_number_valid:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - boolean
+                              - "null"
+                        invoice_workflow_id:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        email_ubl:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - boolean
+                              - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      is_data_feed: true
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2020-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+  - type: DeclarativeStream
+    name: ledger_accounts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: >-
+          https://moneybird.com/api/v2/{{ config['administration_id']
+          }}/ledger_accounts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: string
+          administration_id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          account_type:
+            type:
+              - string
+              - "null"
+          account_id:
+            type:
+              - string
+              - "null"
+          parent_id:
+            type:
+              - string
+              - "null"
+          active:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          allowed_document_types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          taxonomy_item:
+            type:
+              - object
+              - "null"
+            properties:
+              taxonomy_version:
+                type:
+                  - string
+                  - "null"
+              code:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              name_english:
+                type:
+                  - string
+                  - "null"
+              reference:
+                type:
+                  - string
+                  - "null"
+          financial_account_id:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: sales_invoices
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          filter: >-
+            state:all,period:{{ config.get('start_date',
+            '2020-01-01T00:00:00.000Z')[:10].replace('-', '') }}..{{
+            now_utc().strftime('%Y%m%d') }},updated_after:{{
+            stream_slice['start_time'] }}
+        url: >-
+          https://moneybird.com/api/v2/{{ config['administration_id']
+          }}/sales_invoices
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          id:
+            type: string
+          administration_id:
+            type:
+              - string
+              - "null"
+          contact_id:
+            type:
+              - string
+              - "null"
+          contact:
+            type:
+              - object
+              - "null"
+            properties:
+              version:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              administration_id:
+                type:
+                  - string
+                  - "null"
+              company_name:
+                type:
+                  - string
+                  - "null"
+              firstname:
+                type:
+                  - string
+                  - "null"
+              lastname:
+                type:
+                  - string
+                  - "null"
+              address1:
+                type:
+                  - string
+                  - "null"
+              address2:
+                type:
+                  - string
+                  - "null"
+              zipcode:
+                type:
+                  - string
+                  - "null"
+              city:
+                type:
+                  - string
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              delivery_method:
+                type:
+                  - string
+                  - "null"
+              customer_id:
+                type:
+                  - string
+                  - "null"
+              tax_number:
+                type:
+                  - string
+                  - "null"
+              chamber_of_commerce:
+                type:
+                  - string
+                  - "null"
+              bank_account:
+                type:
+                  - string
+                  - "null"
+              is_trusted:
+                type:
+                  - boolean
+                  - "null"
+              attention:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              email_ubl:
+                type:
+                  - boolean
+                  - "null"
+              send_invoices_to_attention:
+                type:
+                  - string
+                  - "null"
+              send_invoices_to_email:
+                type:
+                  - string
+                  - "null"
+              send_estimates_to_attention:
+                type:
+                  - string
+                  - "null"
+              send_estimates_to_email:
+                type:
+                  - string
+                  - "null"
+              direct_debit:
+                type:
+                  - boolean
+                  - "null"
+              sepa_active:
+                type:
+                  - boolean
+                  - "null"
+              sepa_iban:
+                type:
+                  - string
+                  - "null"
+              sepa_iban_account_name:
+                type:
+                  - string
+                  - "null"
+              sepa_bic:
+                type:
+                  - string
+                  - "null"
+              sepa_mandate_id:
+                type:
+                  - string
+                  - "null"
+              sepa_sequence_type:
+                type:
+                  - string
+                  - "null"
+              credit_card_number:
+                type:
+                  - string
+                  - "null"
+              credit_card_reference:
+                type:
+                  - string
+                  - "null"
+              tax_number_validated_at:
+                type:
+                  - string
+                  - "null"
+              tax_number_valid:
+                type:
+                  - boolean
+                  - "null"
+              invoice_workflow_id:
+                type:
+                  - string
+                  - "null"
+              estimate_workflow_id:
+                type:
+                  - string
+                  - "null"
+              si_identifier:
+                type:
+                  - string
+                  - "null"
+              si_identifier_type:
+                type:
+                  - string
+                  - "null"
+              moneybird_payments_mandate:
+                type:
+                  - boolean
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+              sales_invoices_url:
+                type:
+                  - string
+                  - "null"
+              notes:
+                type:
+                  - array
+                  - "null"
+              custom_fields:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+              contact_people:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    version:
+                      type:
+                        - number
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    contact_id:
+                      type:
+                        - string
+                        - "null"
+                    administration_id:
+                      type:
+                        - string
+                        - "null"
+                    firstname:
+                      type:
+                        - string
+                        - "null"
+                    lastname:
+                      type:
+                        - string
+                        - "null"
+                    created_at:
+                      type:
+                        - string
+                        - "null"
+                    updated_at:
+                      type:
+                        - string
+                        - "null"
+              archived:
+                type:
+                  - boolean
+                  - "null"
+          contact_person_id:
+            type:
+              - string
+              - "null"
+          contact_person:
+            type:
+              - object
+              - "null"
+            properties:
+              version:
+                type:
+                  - number
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              contact_id:
+                type:
+                  - string
+                  - "null"
+              administration_id:
+                type:
+                  - string
+                  - "null"
+              firstname:
+                type:
+                  - string
+                  - "null"
+              lastname:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              department:
+                type:
+                  - string
+                  - "null"
+              created_at:
+                type:
+                  - string
+                  - "null"
+              updated_at:
+                type:
+                  - string
+                  - "null"
+          invoice_id:
+            type:
+              - string
+              - "null"
+          recurring_sales_invoice_id:
+            type:
+              - string
+              - "null"
+          workflow_id:
+            type:
+              - string
+              - "null"
+          document_style_id:
+            type:
+              - string
+              - "null"
+          identity_id:
+            type:
+              - string
+              - "null"
+          draft_id:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          invoice_date:
+            type:
+              - string
+              - "null"
+          due_date:
+            type:
+              - string
+              - "null"
+          payment_conditions:
+            type:
+              - string
+              - "null"
+          payment_reference:
+            type:
+              - string
+              - "null"
+          short_payment_reference:
+            type:
+              - string
+              - "null"
+          reference:
+            type:
+              - string
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          discount:
+            type:
+              - string
+              - "null"
+          original_sales_invoice_id:
+            type:
+              - string
+              - "null"
+          paused:
+            type:
+              - boolean
+              - "null"
+          paid_at:
+            type:
+              - string
+              - "null"
+          sent_at:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          public_view_code:
+            type:
+              - string
+              - "null"
+          public_view_code_expires_at:
+            type:
+              - string
+              - "null"
+          details:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                tax_rate_id:
+                  type:
+                    - string
+                    - "null"
+                ledger_account_id:
+                  type:
+                    - string
+                    - "null"
+                amount:
+                  type:
+                    - string
+                    - "null"
+                amount_decimal:
+                  type:
+                    - string
+                    - "null"
+                price:
+                  type:
+                    - string
+                    - "null"
+                period:
+                  type:
+                    - string
+                    - "null"
+                row_order:
+                  type:
+                    - number
+                    - "null"
+                total_price_excl_tax_with_discount:
+                  type:
+                    - string
+                    - "null"
+                total_price_excl_tax_with_discount_base:
+                  type:
+                    - string
+                    - "null"
+                tax_report_reference:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+                mandatory_tax_text:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          payments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                invoice_type:
+                  type:
+                    - string
+                    - "null"
+                invoice_id:
+                  type:
+                    - string
+                    - "null"
+                financial_account_id:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                price:
+                  type:
+                    - string
+                    - "null"
+                price_base:
+                  type:
+                    - string
+                    - "null"
+                payment_date:
+                  type:
+                    - string
+                    - "null"
+                credit_invoice_id:
+                  type:
+                    - string
+                    - "null"
+                financial_mutation_id:
+                  type:
+                    - string
+                    - "null"
+                ledger_account_id:
+                  type:
+                    - string
+                    - "null"
+                linked_payment_id:
+                  type:
+                    - string
+                    - "null"
+                manual_payment_action:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          total_paid:
+            type:
+              - string
+              - "null"
+          total_unpaid:
+            type:
+              - string
+              - "null"
+          total_unpaid_base:
+            type:
+              - string
+              - "null"
+          prices_are_incl_tax:
+            type:
+              - boolean
+              - "null"
+          total_price_excl_tax:
+            type:
+              - string
+              - "null"
+          total_price_excl_tax_base:
+            type:
+              - string
+              - "null"
+          total_price_incl_tax:
+            type:
+              - string
+              - "null"
+          total_price_incl_tax_base:
+            type:
+              - string
+              - "null"
+          total_discount:
+            type:
+              - string
+              - "null"
+          reminder_count:
+            type:
+              - number
+              - "null"
+          next_reminder:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          payment_url:
+            type:
+              - string
+              - "null"
+          custom_fields:
+            type:
+              - array
+              - "null"
+          notes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                entity_id:
+                  type:
+                    - string
+                    - "null"
+                entity_type:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                todo:
+                  type:
+                    - boolean
+                    - "null"
+                note:
+                  type:
+                    - string
+                    - "null"
+                todo_type:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    sender_domain:
+                      type:
+                        - string
+                        - "null"
+                    recipient:
+                      type:
+                        - string
+                        - "null"
+                    sent_email_id:
+                      type:
+                        - string
+                        - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          attachments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                attachable_id:
+                  type:
+                    - string
+                    - "null"
+                attachable_type:
+                  type:
+                    - string
+                    - "null"
+                filename:
+                  type:
+                    - string
+                    - "null"
+                content_type:
+                  type:
+                    - string
+                    - "null"
+                size:
+                  type:
+                    - number
+                    - "null"
+                rotation:
+                  type:
+                    - number
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          events:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                administration_id:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+                action:
+                  type:
+                    - string
+                    - "null"
+                data:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    original_invoice:
+                      type:
+                        - string
+                        - "null"
+                    email_address:
+                      type:
+                        - string
+                        - "null"
+                    email_message:
+                      type:
+                        - string
+                        - "null"
+                    recurring_invoice:
+                      type:
+                        - string
+                        - "null"
+                    reminder_text:
+                      type:
+                        - string
+                        - "null"
+                    changes:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        reference:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        updated_at:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        contact_person_id:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        discount:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total_price_excl_tax:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total_price_excl_tax_base:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total_price_incl_tax:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        total_price_incl_tax_base:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                        cached_taxes:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                debit:
+                                  type:
+                                    - number
+                                    - "null"
+                                credit:
+                                  type:
+                                    - string
+                                    - "null"
+                                payable:
+                                  type:
+                                    - boolean
+                                    - "null"
+                                tax_rate_id:
+                                  type:
+                                    - string
+                                    - "null"
+                                report_reference:
+                                  type:
+                                    - string
+                                    - "null"
+                        contact_id:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - string
+                              - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          tax_totals:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                tax_rate_id:
+                  type:
+                    - string
+                    - "null"
+                taxable_amount:
+                  type:
+                    - string
+                    - "null"
+                taxable_amount_base:
+                  type:
+                    - string
+                    - "null"
+                tax_amount:
+                  type:
+                    - string
+                    - "null"
+                tax_amount_base:
+                  type:
+                    - string
+                    - "null"
+          time_entries:
+            type:
+              - array
+              - "null"
+        required:
+          - id
+          - updated_at
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2020-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+
+spec:
+  type: Spec
+  documentation_url: https://developer.moneybird.com/api/contacts/
+  connection_specification:
+    type: object
+    title: MoneyBird Connector
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+      - administration_id
+    properties:
+      api_token:
+        type: string
+        description: >
+          A MoneyBird personal access token or OAuth token. Create one at
+          https://moneybird.com/user/applications/new.
+        order: 0
+        title: API Token
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: >
+          ISO-8601 UTC datetime (e.g. 2024-01-01T00:00:00.000Z). Only records
+          updated on or after this date are synced on incremental runs. Defaults
+          to 2020-01-01 if omitted. Must be within 10 years of today due to a
+          MoneyBird API period limit.
+        order: 2
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$
+        examples:
+          - "2024-01-01T00:00:00.000Z"
+      administration_id:
+        type: string
+        description: >
+          The numeric ID of your MoneyBird administration. Visible in the URL
+          after logging in: moneybird.com/<administration_id>.
+        order: 1
+        title: Administration ID
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    contacts:
+      streamHash: a9a613fe20105d576a823ff1b91ab838aeb63379
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    ledger_accounts:
+      streamHash: cb9cb49765a87f78ba9b62d011e53da7e5f1311a
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    sales_invoices:
+      streamHash: 6c2c1a1e51d86d20dd813883159feab446200087
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  autoImportSchema:
+    contacts: true
+    ledger_accounts: true
+    sales_invoices: true
