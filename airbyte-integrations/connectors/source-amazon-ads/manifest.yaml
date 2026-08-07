@@ -3080,6 +3080,7 @@ definitions:
                   "cost",
                   "campaignBudgetCurrencyCode",
                   "advertisedAsin",
+                  "advertisedSku",
                   "purchases1d",
                   "purchases7d",
                   "purchases14d",
@@ -3145,6 +3146,7 @@ definitions:
                 - "cost"
                 - "campaignBudgetCurrencyCode"
                 - "advertisedAsin"
+                - "advertisedSku"
                 - "purchases1d"
                 - "purchases7d"
                 - "purchases14d"
@@ -9642,6 +9644,10 @@ schemas:
         type:
           - "null"
           - string
+      advertisedSku:
+        type:
+          - "null"
+          - string
       purchases1d:
         type:
           - "null"
@@ -9794,6 +9800,10 @@ schemas:
           - "null"
           - string
       advertisedAsin:
+        type:
+          - "null"
+          - string
+      advertisedSku:
         type:
           - "null"
           - string

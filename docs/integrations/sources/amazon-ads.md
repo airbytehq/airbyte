@@ -185,6 +185,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.1.0 | 2026-07-27 | [82762](https://github.com/airbytehq/airbyte/pull/82762) | Add `advertisedSku` column to `sponsored_products_productads_report_stream` and `sponsored_products_productads_report_stream_daily` streams (null for vendor accounts) |
 | 9.0.6 | 2026-07-28 | [82817](https://github.com/airbytehq/airbyte/pull/82817) | Update dependencies |
 | 9.0.5 | 2026-07-21 | [82341](https://github.com/airbytehq/airbyte/pull/82341) | Update dependencies |
 | 9.0.4 | 2026-07-14 | [81732](https://github.com/airbytehq/airbyte/pull/81732) | Update dependencies |
