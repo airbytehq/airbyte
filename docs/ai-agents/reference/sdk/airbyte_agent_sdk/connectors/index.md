@@ -21,6 +21,7 @@ Sub-modules
 * airbyte_agent_sdk.connectors.freshdesk
 * airbyte_agent_sdk.connectors.github
 * airbyte_agent_sdk.connectors.gitlab
+* airbyte_agent_sdk.connectors.gmail
 * airbyte_agent_sdk.connectors.gong
 * airbyte_agent_sdk.connectors.google_ads
 * airbyte_agent_sdk.connectors.google_analytics_data_api
