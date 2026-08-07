@@ -93,6 +93,7 @@ def test_single_stream_per_report_reads_each_property_partition():
         output = read(get_source(config), config, catalog)
 
     report_requests = [request for request in http_mocker.request_history if request.path_url.endswith(":runReport")]
+    report_requests.sort(key=lambda request: request.path_url)
     assert [request.path_url for request in report_requests] == [
         "/v1beta/properties/111:runReport",
         "/v1beta/properties/222:runReport",
