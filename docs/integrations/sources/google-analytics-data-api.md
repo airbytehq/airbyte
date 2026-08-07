@@ -284,6 +284,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.46 | 2026-08-02 | [83318](https://github.com/airbytehq/airbyte/pull/83318) | Fix body-based offset pagination for reports larger than 100,000 rows |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
