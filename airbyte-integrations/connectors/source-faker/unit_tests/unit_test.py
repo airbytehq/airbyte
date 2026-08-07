@@ -106,6 +106,24 @@ def test_read_small_random_data():
     assert state_rows_count == 1
 
 
+def test_read_normalizes_user_emails():
+    source = SourceFaker()
+    config = {"count": 10, "parallelism": 1, "normalize_emails": True}
+    stream_dict = {
+        "stream": {"name": "users", "json_schema": {"type": "object", "properties": {}}, "supported_sync_modes": ["incremental"]},
+        "sync_mode": "incremental",
+        "destination_sync_mode": "overwrite",
+    }
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
+    records = [row for row in source.read(logger, config, catalog, {}) if row.type is Type.RECORD]
+    emails = [row.record.data["email"] for row in records]
+
+    assert len(emails) == 10
+    assert all("+" not in email for email in emails)
+    assert all(email == email.lower() for email in emails)
+    assert all("+" not in row.json()["record"]["data"]["email"] for row in records)
+
+
 def test_read_always_updated():
     source = SourceFaker()
     config = {"count": 10, "parallelism": 1, "always_updated": False}

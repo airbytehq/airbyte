@@ -36,6 +36,13 @@
         "type": "boolean",
         "default": true
       },
+      "normalize_emails": {
+        "title": "Normalize Emails",
+        "description": "Remove generated plus-addressing from user email records and normalize the result to lowercase.",
+        "type": "boolean",
+        "default": false,
+        "order": 3
+      },
       "parallelism": {
         "title": "Parallelism",
         "description": "How many parallel workers should we use to generate fake data?  Choose a value equal to the number of CPUs you will allocate to this source.",

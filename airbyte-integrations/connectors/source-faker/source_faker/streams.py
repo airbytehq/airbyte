@@ -4,9 +4,11 @@
 
 import datetime
 import os
+import re
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
+from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .purchase_generator import PurchaseGenerator
@@ -68,13 +70,23 @@ class Users(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
+    def __init__(
+        self,
+        count: int,
+        seed: int,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        normalize_emails: bool,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
         self.records_per_slice = records_per_slice
         self.parallelism = parallelism
         self.always_updated = always_updated
+        self.normalize_emails = normalize_emails
         self.generator = UserGenerator(self.name, self.seed)
 
     @property
@@ -112,6 +124,10 @@ class Users(Stream, IncrementalMixin):
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
                 users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for user in users:
+                    if self.normalize_emails:
+                        email_pattern = re.compile(r"\+[^@]+(?=@)")
+                        user.record.data["email"] = email_pattern.sub("", user.record.data["email"]).lower()
+                        user._json = AirbyteMessageSerializer.dump(user)
                     updated_at = user.record.data["updated_at"]
                     loop_offset += 1
                     yield user
