@@ -63,6 +63,7 @@ const config: Config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
+  trailingSlash: false,
   onBrokenLinks: "throw",
 
   favicon: "img/favicon.png",
@@ -406,7 +407,7 @@ const config: Config = {
           type: "dropdown",
           position: "left",
           label: "Data Replication",
-          to: "/platform/",
+          to: "/platform",
           items: [
             {
               type: "docSidebar",

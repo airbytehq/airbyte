@@ -16,8 +16,9 @@ The contents below include a 'Quick Start' guide, advanced setup steps, and refe
 Here is an outline of the minimum required steps to configure a MySQL connector:
 
 1. Create a dedicated read-only MySQL user with permissions for replicating data
-2. Create a new MySQL source in the Airbyte UI using CDC logical replication
-3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
+2. Enable binary logging on your MySQL server
+3. Create a new MySQL source in the Airbyte UI using CDC logical replication
+4. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
 Once this is complete, you will be able to select MySQL as a source for replicating data.
 
@@ -106,7 +107,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ### Change Data Capture \(CDC\)
 
-Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
+Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html) to incrementally capture deletes in addition to new and updated records. To learn more about how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We generally recommend configure your MySQL source with CDC whenever possible, as it provides:
 
 - A record of deletions, if needed.
 - Scalable replication to large tables (1 TB and more).
@@ -147,7 +148,7 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 To connect to a MySQL server via an SSH tunnel:
 
 1. While setting up the MySQL source connector, from the SSH tunnel dropdown, select:
-   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - SSH Key Authentication to use a private key as your secret for establishing the SSH tunnel
    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
@@ -231,13 +232,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.53.2      | 2026-07-29 | [83239](https://github.com/airbytehq/airbyte/pull/83239)       | Fix error 1267 (illegal mix of collations) when partitioning text primary keys with utf8mb3 or other legacy charset columns.                     |
 | 3.53.1      | 2026-06-25 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
 | 3.53.0      | 2026-06-29 | [80950](https://github.com/airbytehq/airbyte/pull/80950)   | Promote mysql to the latest CDK                                                                                                                  |
 | 3.52.3      | 2026-05-21 | [78318](https://github.com/airbytehq/airbyte/pull/78318)   | Fix the CDC docs link on the MySQL config page.                                                                                                  |
 | 3.52.2      | 2026-05-11 | [77973](https://github.com/airbytehq/airbyte/pull/77973)   | Improve concurrent initial snapshot partitioning for large MySQL tables with `BIGINT UNSIGNED` primary keys.                                     |
 | 3.52.1      | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787)   | Make the hidden additional properties fields in spec optional. No functional change.                                                             |
 | 3.52.0      | 2026-05-05 | [77772](https://github.com/airbytehq/airbyte/pull/77772)   | Add a `treat_tinyint1_as_integer` connector setting that maps TINYINT(1) columns to integers in both snapshot and CDC reads (default unchanged). |
-| 3.51.6      | 2025-04-02 | [76050](https://github.com/airbytehq/airbyte/pull/76050)   | Handle sentinel values in GUID primary key columns during partition splitting.                                                                   |
+| 3.51.6      | 2026-04-29 | [76050](https://github.com/airbytehq/airbyte/pull/76050)   | Handle sentinel values in GUID primary key columns during partition splitting.                                                                   |
 | 3.51.5      | 2025-11-14 | [69228](https://github.com/airbytehq/airbyte/pull/69228)   | Add table filtering                                                                                                                              |
 | 3.51.4      | 2025-11-12 | [69284](https://github.com/airbytehq/airbyte/pull/69284)   | Improve CDC shutdown to prevent loss of records in high velocity tables                                                                          |
 | 3.51.3      | 2025-11-05 | [69177](https://github.com/airbytehq/airbyte/pull/69177)   | Fix a bug in CDC snapshot queries leading to omission of the first record in some cases.                                                         |
