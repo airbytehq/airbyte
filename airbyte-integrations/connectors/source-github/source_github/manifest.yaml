@@ -39,9 +39,24 @@ definitions:
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
     # Replicates the legacy GithubStreamABC error contract:
-    # - rate limits (secondary limits arrive as 403/429 with `Retry-After`; primary
-    #   limits as 403/429 with an "API rate limit exceeded" message) are waited out
-    #   instead of failing the sync;
+    # - rate limits are waited out instead of failing the sync. GitHub signals them
+    #   three different ways, and the legacy handler retried on any of them
+    #   (errors_handlers.py::GithubStreamABCErrorHandler.interpret_response), so all
+    #   three are matched below, ahead of the 404/403 filters:
+    #     1. a `Retry-After` header (sent on most, but per the docs not all,
+    #        secondary-limit responses);
+    #     2. an "API rate limit exceeded" message (primary limit) or an
+    #        "exceeded a secondary rate limit" message (secondary limit without
+    #        `Retry-After` — note secondary limits are tracked separately from the
+    #        primary quota, so `X-RateLimit-Remaining` may still be non-zero);
+    #     3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback
+    #        the docs prescribe when `Retry-After` is absent. The declarative
+    #        predicate cannot see the status code, so "is an error response" is
+    #        approximated by GitHub's error envelope (a JSON object with a
+    #        `message`); successful payloads are arrays, or objects without a
+    #        top-level `message`, and must not match — the request that spends the
+    #        last quota point returns 200 with `X-RateLimit-Remaining: 0` and its
+    #        records have to be kept (token rotation handles the exhausted token);
     # - 404 on an organization or repository is skipped with a warning so one
     #   deleted repo or renamed org doesn't fail the whole sync (`check` enumerates
     #   the partition routers below and relies on the same skip semantics);
@@ -64,6 +79,18 @@ definitions:
           error_message_contains: "API rate limit exceeded"
           action: RATE_LIMITED
           error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+        - type: HttpResponseFilter
+          error_message_contains: "secondary rate limit"
+          action: RATE_LIMITED
+          error_message: "GitHub secondary rate limit hit. Waiting before retrying."
+        - type: HttpResponseFilter
+          # `is not none` (rather than a bare `response.get('message')`) is required:
+          # InterpolatedBoolean compares the *rendered* string against a fixed
+          # false-values list that does not include "None", so a falsy `.get()` would
+          # evaluate to true and rate-limit successful responses.
+          predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
+          action: RATE_LIMITED
+          error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
         - type: HttpResponseFilter
           http_codes: [404]
           action: IGNORE

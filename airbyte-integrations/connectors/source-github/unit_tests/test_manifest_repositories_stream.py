@@ -115,6 +115,73 @@ def test_secondary_rate_limit_is_retried(rate_limit_mock_response, requests_mock
     assert statuses[-1] == "COMPLETE"
 
 
+def test_secondary_rate_limit_without_retry_after_is_retried(rate_limit_mock_response, requests_mock):
+    """GitHub does not always send `Retry-After` on secondary-limit 403s; the message alone must
+    classify the response as rate limited rather than as a scopes/SSO config error. Secondary limits
+    are tracked separately from the primary quota, so `X-RateLimit-Remaining` is still non-zero."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        [
+            {
+                "status_code": 403,
+                "headers": {"X-RateLimit-Remaining": "4999", "X-RateLimit-Reset": "0"},
+                "json": {"message": "You have exceeded a secondary rate limit. Please wait a few minutes before you try again."},
+            },
+            {"json": [_repo(2, "docker/compose", org="docker")]},
+        ],
+    )
+
+    records, statuses, error = _read(config)
+
+    assert error is None
+    assert records == ["docker/compose"]
+    assert statuses[-1] == "COMPLETE"
+
+
+def test_exhausted_quota_error_without_retry_after_is_retried(rate_limit_mock_response, requests_mock):
+    """Legacy retried any non-200 carrying `X-RateLimit-Remaining: 0` (errors_handlers.py), which is
+    also the fallback GitHub's docs prescribe when `Retry-After` is absent. Such a 403 must be waited
+    out even when its message matches neither documented rate-limit wording."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        [
+            {
+                "status_code": 403,
+                "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "0"},
+                "json": {"message": "Forbidden"},
+            },
+            {"json": [_repo(2, "docker/compose", org="docker")]},
+        ],
+    )
+
+    records, statuses, error = _read(config)
+
+    assert error is None
+    assert records == ["docker/compose"]
+    assert statuses[-1] == "COMPLETE"
+
+
+def test_successful_response_with_exhausted_quota_is_not_rate_limited(rate_limit_mock_response, requests_mock):
+    """The request that spends the last quota point returns 200 with `X-RateLimit-Remaining: 0`.
+    Its records must be kept and the request must not be retried — the response filters run before
+    the CDK's success check, so a header-only rate-limit predicate would discard valid pages."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "0"},
+        json=[_repo(2, "docker/compose", org="docker")],
+    )
+
+    records, statuses, error = _read(config)
+
+    assert error is None
+    assert records == ["docker/compose"]
+    assert statuses[-1] == "COMPLETE"
+    assert listing.call_count == 1
+
+
 def test_plain_403_fails_stream(rate_limit_mock_response, requests_mock):
     """A plain 403 (bad scopes / SAML SSO) must fail the stream so `check` can surface it."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
