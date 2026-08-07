@@ -3,7 +3,9 @@
 #
 
 import pytest as pytest
-from source_posthog.components import EventsCartesianProductStreamSlicer
+from requests import Response
+from source_posthog import SourcePosthog
+from source_posthog.components import EventsCartesianProductStreamSlicer, EventsSimpleRetriever
 
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
@@ -26,6 +28,50 @@ stream_slicers = [
         parameters={},
     ),
 ]
+
+
+def test_events_stream_uses_next_url_for_pagination():
+    streams = SourcePosthog().streams(
+        {
+            "api_key": "test-api-key",
+            "start_date": "2021-01-01T00:00:00+0000",
+            "base_url": "https://app.posthog.com",
+            "events_time_step": 30,
+        }
+    )
+    events_stream = next(stream for stream in streams if stream.name == "events")
+    retriever = events_stream.retriever
+
+    response = Response()
+    response.status_code = 200
+    response.headers["Content-Type"] = "application/json"
+    response._content = (
+        b'{"results": [{"id": "event-1"}], '
+        b'"next": "https://app.posthog.com/api/projects/2331/events/?offset=10000&limit=50000&after=2021-01-01T00%3A00%3A00&before=2021-01-02T00%3A00%3A00"}'
+    )
+
+    stream_slice = {
+        "project_id": 2331,
+        "start_time": "2021-01-01T00:00:00",
+        "end_time": "2021-01-02T00:00:00",
+    }
+    records = list(retriever._parse_response(response, {}, {}, stream_slice))
+    next_page_token = retriever._next_page_token(response)
+
+    assert isinstance(retriever, EventsSimpleRetriever)
+    assert retriever._request_params({}, stream_slice, None) == {
+        "limit": 10000,
+        "after": "2021-01-01T00:00:00",
+        "before": "2021-01-02T00:00:00",
+    }
+    assert [dict(record) for record in records] == [{"id": "event-1"}]
+    assert next_page_token == {
+        "next_page_token": "https://app.posthog.com/api/projects/2331/events/?offset=10000&limit=50000&after=2021-01-01T00%3A00%3A00&before=2021-01-02T00%3A00%3A00"
+    }
+    assert retriever._paginator_path() == (
+        "projects/2331/events/?offset=10000&limit=50000&after=2021-01-01T00%3A00%3A00&before=2021-01-02T00%3A00%3A00"
+    )
+    assert retriever._request_params({}, stream_slice, next_page_token) == {}
 
 
 @pytest.mark.parametrize(
