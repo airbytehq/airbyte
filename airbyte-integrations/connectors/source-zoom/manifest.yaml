@@ -14147,6 +14147,31 @@ check:
   stream_names:
   - "users"
   type: CheckStream
+
+# Zoom's nested substreams fan out into one request per meeting or webinar.
+# Set concurrency explicitly because the CDK default is only 2 workers.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 8) }}"
+  max_concurrency: 20
+
+# Zoom documents tiered per-second limits: Light (Free 4/s, Pro 30/s, Business+ 80/s),
+# Medium (Free 2/s, Pro 20/s, Business+ 60/s), and Heavy (Free 1/s, Pro 10/s,
+# Business+ 40/s). The default targets Pro and Business accounts; Free-plan users
+# should lower both api_rate_limit_per_second and num_workers to 2. 429s are retried
+# with backoff either way.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: "{{ config.get('api_rate_limit_per_second', 10) }}"
+      interval: PT1S
+    matchers: []
+  ratelimit_reset_header: Retry-After
+  status_codes_for_ratelimit_hit:
+  - 429
+
 type: DeclarativeSource
 spec:
   type: Spec
@@ -14182,3 +14207,19 @@ spec:
         type: string
         order: 3
         default: "https://zoom.us/oauth/token"
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: Number of concurrent requests to use for nested meeting and webinar streams. The default of 8 targets Zoom Pro and Business accounts; Free-plan users should lower this to 2.
+        default: 8
+        minimum: 1
+        maximum: 20
+        order: 4
+      api_rate_limit_per_second:
+        type: integer
+        title: API rate limit per second
+        description: Maximum number of Zoom API requests per second. The default of 10 targets Zoom Pro and Business accounts; Free-plan users should lower this to 2. Requests returning 429 are retried with backoff.
+        default: 10
+        minimum: 1
+        maximum: 80
+        order: 5
