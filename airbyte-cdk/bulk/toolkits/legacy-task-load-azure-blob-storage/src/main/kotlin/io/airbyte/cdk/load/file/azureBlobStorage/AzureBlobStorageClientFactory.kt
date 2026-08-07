@@ -25,8 +25,6 @@ class AzureBlobStorageClientFactory(
                 AzureAuthorityHosts.AZURE_GOVERNMENT
             endpointDomainName.endsWith("core.chinacloudapi.cn", ignoreCase = true) ->
                 AzureAuthorityHosts.AZURE_CHINA
-            endpointDomainName.endsWith("core.cloudapi.de", ignoreCase = true) ->
-                AzureAuthorityHosts.AZURE_GERMANY
             else -> AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
         }
     }
