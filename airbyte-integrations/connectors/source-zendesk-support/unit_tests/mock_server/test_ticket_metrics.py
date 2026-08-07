@@ -6,6 +6,7 @@ from unittest import TestCase
 import freezegun
 import pytest
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -16,7 +17,7 @@ from .config import ConfigBuilder
 from .helpers import given_tickets_with_state
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import ErrorResponseBuilder, TicketMetricsRecordBuilder, TicketMetricsResponseBuilder
-from .utils import read_stream
+from .utils import get_log_messages_by_log_level, read_stream
 
 
 _NOW = ab_datetime_now()
@@ -142,10 +143,10 @@ class TestTicketMetricsIncremental(TestCase):
 class TestTicketMetricsErrorHandling(TestCase):
     """Test error handling for ticket_metrics stream.
 
-    The stateful ticket_metrics stream has IGNORE error handlers for 403 and 404 responses.
+    The stateful ticket_metrics stream fails on 403 responses and ignores 404 responses.
     Per the playbook, we must verify:
-    1. The error is gracefully ignored (no records returned for that partition)
-    2. No ERROR logs are produced
+    1. 403 errors fail with the error surfaced in ERROR logs
+    2. 404 errors are gracefully ignored (no records returned for that partition)
     """
 
     @property
@@ -162,9 +163,10 @@ class TestTicketMetricsErrorHandling(TestCase):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
 
     @HttpMocker()
-    def test_given_403_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):
-        """Test that 403 errors are gracefully ignored in stateful mode with no ERROR logs."""
+    def test_given_403_error_when_read_stateful_then_fail_with_error_log(self, http_mocker):
+        """Test that 403 errors fail in stateful mode with error logging."""
         api_token_authenticator = self._get_authenticator(self._config)
+        error_message = "Forbidden - You do not have access to ticket metrics"
 
         state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
         state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
@@ -177,15 +179,15 @@ class TestTicketMetricsErrorHandling(TestCase):
         # Mock 403 error response for the ticket metrics endpoint
         http_mocker.get(
             ZendeskSupportRequestBuilder.stateful_ticket_metrics_endpoint(api_token_authenticator, ticket["id"]).build(),
-            ErrorResponseBuilder.response_with_status(403).build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(error_message).build(),
         )
 
-        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state)
+        output = read_stream("ticket_metrics", SyncMode.incremental, self._config, state, expecting_exception=True)
 
-        # Verify no records returned for this partition (error was ignored)
         assert len(output.records) == 0
-        # Verify no ERROR logs were produced (per playbook requirement for IGNORE handlers)
-        assert not any(log.log.level == "ERROR" for log in output.logs)
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in message for message in error_logs), "Expected 403 error code in logs"
+        assert any(error_message in message for message in error_logs), f"Expected error message '{error_message}' in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_stateful_then_ignore_error_and_no_error_logs(self, http_mocker):

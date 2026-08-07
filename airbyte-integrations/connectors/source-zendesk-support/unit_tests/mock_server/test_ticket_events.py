@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -13,8 +14,8 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import TicketEventsRecordBuilder, TicketEventsResponseBuilder
-from .utils import read_stream, string_to_datetime
+from .response_builder import ErrorResponseBuilder, TicketEventsRecordBuilder, TicketEventsResponseBuilder
+from .utils import get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
 _NOW = ab_datetime_now()
@@ -81,6 +82,25 @@ class TestTicketEventsStreamFullRefresh(TestCase):
         record_ids = [r.record.data["id"] for r in output.records]
         assert 1 in record_ids
         assert 2 in record_ids
+
+    @HttpMocker()
+    def test_given_permission_403_when_read_ticket_events_then_skip_without_error(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+        error_message = "Forbidden - You do not have access to this resource"
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_events_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_any_query_params()
+            .build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(error_message).build(),
+        )
+
+        output = read_stream("ticket_events", SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert not any("403" in msg for msg in error_logs), "Did not expect 403 error code in logs"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
