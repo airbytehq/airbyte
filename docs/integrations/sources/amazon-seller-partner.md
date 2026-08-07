@@ -81,7 +81,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **PARENT** (default): Data aggregated at the parent ASIN level.
     - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
-12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only — see [Report options](#report-options) before you configure them.
+12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only—see [Report options](#report-options) before you configure them.
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
@@ -108,7 +108,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **PARENT** (default): Data aggregated at the parent ASIN level.
     - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
-10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only — see [Report options](#report-options) before you configure them.
+10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only—see [Report options](#report-options) before you configure them.
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
@@ -237,7 +237,7 @@ Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor
 
 ## Report options
 
-Amazon accepts a `reportOptions` object when you request a report, and those options change what the report contains. Each report type accepts its own options — see Amazon's [report type values](https://developer-docs.amazon.com/sp-api/docs/report-type-values) documentation for the list.
+Amazon accepts a `reportOptions` object when you request a report, and those options change what the report contains. Each report type accepts its own options—see Amazon's [report type values](https://developer-docs.amazon.com/sp-api/docs/report-type-values) documentation for the list.
 
 ### Report options you configure
 
