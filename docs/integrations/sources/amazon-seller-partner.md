@@ -240,6 +240,8 @@ Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor
 Report options can be assigned on a per-stream basis that alter the behavior when generating a report.
 For the full list, refer to Amazon’s report type values [documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 
+Configured report options are currently applied to the `GET_LEDGER_DETAIL_VIEW_DATA` and `GET_LEDGER_SUMMARY_VIEW_DATA` streams (since 5.9.3). If you configured report options for these streams on an earlier version, they take effect after upgrading, which can change report granularity (for example, `aggregatedByTimePeriod` for the summary view) or row filtering (`eventType` for the detailed view).
+
 Certain report types have required parameters that must be defined.
 For the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL`, `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams, the maximum allowable value for `period_in_days` is 30 days, 30 days, and 60 days, respectively.
 If the specified `period_in_days` exceeds these limits, it will be automatically adjusted to the maximum value for the respective stream, or set to 365 days if not provided.
@@ -429,6 +431,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.9.3 | 2026-08-05 | [77620](https://github.com/airbytehq/airbyte/pull/77620) | Pass configured Report Options to the report creation request for GET_LEDGER_DETAIL_VIEW_DATA and GET_LEDGER_SUMMARY_VIEW_DATA |
 | 5.9.2 | 2026-08-05 | [81374](https://github.com/airbytehq/airbyte/pull/81374) | Anchor the report window of the daily `GET_SALES_AND_TRAFFIC_REPORT`, `GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`, and `GET_VENDOR_SALES_REPORT` streams to the slice's calendar day, fixing inflated/mislabeled metrics when a sync ends mid-day |
 | 5.9.1 | 2026-07-28 | [82829](https://github.com/airbytehq/airbyte/pull/82829) | Update dependencies |
 | 5.9.0 | 2026-07-24 | [82254](https://github.com/airbytehq/airbyte/pull/82254) | Add missing fields to GET_VENDOR_SALES_REPORT (customerReturns) and GET_VENDOR_INVENTORY_REPORT (startDate, endDate, unhealthyInventoryUnits, unhealthyInventoryCost, procurableProductOutOfStockRate, receiveFillRate, uft) |
