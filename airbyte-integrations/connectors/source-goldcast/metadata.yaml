@@ -19,12 +19,29 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
-  dockerImageTag: 0.2.25
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-goldcast
   githubIssueLabel: source-goldcast
   icon: goldcast.svg
   license: ELv2
   name: Goldcast
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          The `event_members` stream no longer enumerates a fixed list of properties inside
+          `props`. Registration fields are defined per Goldcast workspace, so `props` is now a
+          schemaless object: V2 destinations serialise it to a JSON string, which preserves every
+          field every workspace defines instead of only the eleven that happened to be listed.
+          Users reading `props.<field>` as a nested column will need to refresh the source schema,
+          reset the `event_members` stream, and parse the JSON string instead. Please refer to the
+          [migration guide](https://docs.airbyte.com/integrations/sources/goldcast-migrations) for
+          more information.
+        upgradeDeadline: "2026-10-31"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["event_members"]
   releaseDate: 2024-07-04
   releaseStage: alpha
   supportLevel: community
