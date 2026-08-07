@@ -387,7 +387,54 @@ def test_should_not_migrate(components_module):
     assert not migrator.should_migrate(input_state)
 
 
-def _migrator(components_module):
+def test_migrate_a_valid_legacy_substream_state_to_single_state(components_module):
+    input_state = {
+        "states": [
+            {"partition": {"event_id": "13506132"}, "cursor": {"datetime": "2023-12-27T08:34:39+00:00"}},
+            {"partition": {"event_id": "14351124"}, "cursor": {"datetime": "2022-12-27T08:35:39+00:00"}},
+        ]
+    }
+
+    migrator = _migrator(components_module, cursor_field="datetime")
+
+    assert migrator.should_migrate(input_state)
+
+    expected_state = {"datetime": "2022-12-27T08:35:39+00:00"}
+
+    assert migrator.migrate(input_state) == expected_state
+
+
+def test_should_not_migrate_concurrent_per_partition_state(components_module):
+    input_state = {
+        "use_global_cursor": False,
+        "states": [
+            {"partition": {"event_metric_id": "AAA111"}, "cursor": {"datetime": "2023-12-27T08:34:39+00:00"}},
+            {"partition": {"event_metric_id": "BBB222"}, "cursor": {"datetime": "2022-12-27T08:35:39+00:00"}},
+        ],
+        "state": {"datetime": "2022-12-27T08:35:39+00:00"},
+        "lookback_window": 0,
+    }
+
+    migrator = _migrator(components_module, cursor_field="datetime")
+
+    assert not migrator.should_migrate(input_state)
+    assert migrator.migrate(input_state) == input_state
+
+
+@pytest.mark.parametrize(
+    ("input_state", "should_migrate"),
+    (
+        ({"states": []}, False),
+        ({"states": [{"cursor": {"datetime": "2023-12-27T08:34:39+00:00"}}]}, True),
+        ({"states": [{"partition": None, "cursor": {"datetime": "2023-12-27T08:34:39+00:00"}}]}, True),
+    ),
+)
+def test_should_migrate_states_without_partitions(components_module, input_state, should_migrate):
+    migrator = _migrator(components_module, cursor_field="datetime")
+    assert migrator.should_migrate(input_state) == should_migrate
+
+
+def _migrator(components_module, cursor_field="last_changed"):
     partition_router = SubstreamPartitionRouter(
         type="SubstreamPartitionRouter",
         parent_stream_configs=[
@@ -408,7 +455,7 @@ def _migrator(components_module):
         start_datetime="1970-01-01T00:00:00.0Z",
     )
     config = {}
-    parameters = {"cursor_field": "last_changed", "parent_key_id": "id"}
+    parameters = {"cursor_field": cursor_field, "parent_key_id": "id"}
 
     declarative_stream = MagicMock()
     declarative_stream.retriever.partition_router = partition_router
