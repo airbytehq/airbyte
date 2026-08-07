@@ -326,6 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.28 | 2026-08-04 | [83345](https://github.com/airbytehq/airbyte/pull/83345) | Deduplicate files with colliding paths in file transfer mode |
 | 0.5.27 | 2026-08-04 | [83492](https://github.com/airbytehq/airbyte/pull/83492) | Update dependencies |
 | 0.5.26 | 2026-07-28 | [82943](https://github.com/airbytehq/airbyte/pull/82943) | Update dependencies |
 | 0.5.25 | 2026-07-21 | [82459](https://github.com/airbytehq/airbyte/pull/82459) | Update dependencies |

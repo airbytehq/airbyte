@@ -140,6 +140,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         folder_id_queue = [("", root_folder_id)]
         seen: Set[str] = set()
+        unique_files: Dict[str, GoogleDriveRemoteFile] = {}
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
@@ -189,10 +190,28 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                             view_link=new_file.get("webViewLink"),
                         )
                         if self.file_matches_globs(remote_file, globs):
-                            yield remote_file
+                            existing = unique_files.get(file_name)
+                            if existing is None:
+                                unique_files[file_name] = remote_file
+                            elif remote_file.last_modified > existing.last_modified:
+                                logger.warning(
+                                    "Dropping duplicate Google Drive file id '%s' for colliding path '%s'; keeping newer file id '%s'",
+                                    existing.id,
+                                    file_name,
+                                    remote_file.id,
+                                )
+                                unique_files[file_name] = remote_file
+                            else:
+                                logger.warning(
+                                    "Dropping duplicate Google Drive file id '%s' for colliding path '%s'; keeping file id '%s'",
+                                    remote_file.id,
+                                    file_name,
+                                    existing.id,
+                                )
                 request = service.files().list_next(request, results)
                 if request is None:
                     break
+        yield from unique_files.values()
 
     def _is_exportable_document(self, mime_type: str):
         """
