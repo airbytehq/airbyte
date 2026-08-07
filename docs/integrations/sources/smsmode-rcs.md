@@ -21,6 +21,6 @@ A source connector for the smsmode API dedicated to RCS (Rich Communication Serv
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-06-15 | | Initial release by [@CaladeTechnologies](https://github.com/CaladeTechnologies) via Connector Builder |
+| 0.0.1 | 2026-06-15 | [79710](https://github.com/airbytehq/airbyte/pull/79710) | Initial release by [@CaladeTechnologies](https://github.com/CaladeTechnologies) via Connector Builder |
 
 </details>
