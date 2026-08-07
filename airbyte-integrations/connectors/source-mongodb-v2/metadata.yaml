@@ -53,18 +53,48 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "**Important: This version introduces multiple database support for MongoDB v2 source connector.**\nThis update changes the configuration schema from a single `database` field to a `databases` array field, allowing you to sync data from multiple MongoDB databases in a single connection.\n**What to expect when upgrading:**\n1. You will need to reconfigure your MongoDB source connector to use the new `databases` array field 2. If you're using CDC incremental sync mode, we recommend testing this upgrade in a staging environment first\n**Migration steps:**\n1. After upgrading, edit your MongoDB source configuration 2. Add your existing database to the new `databases` array field 3. Add any additional databases you want to sync 4. Save the configuration and run a sync\nFor more information, please refer to the [MongoDB v2 documentation](https://docs.airbyte.com/integrations/sources/mongodb-v2) and the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations). "
+        message:
+          "**Important: This version introduces multiple database support for MongoDB v2 source connector.**
+
+          This update changes the configuration schema from a single `database` field to a `databases` array field,
+          allowing you to sync data from multiple MongoDB databases in a single connection.
+
+          **What to expect when upgrading:**
+
+          1. You will need to reconfigure your MongoDB source connector to use the new `databases` array field
+          2. If you're using CDC incremental sync mode, we recommend testing this upgrade in a staging environment first
+
+          **Migration steps:**
+
+          1. After upgrading, edit your MongoDB source configuration
+          2. Add your existing database to the new `databases` array field
+          3. Add any additional databases you want to sync
+          4. Save the configuration and run a sync
+
+          For more information, please refer to the [MongoDB v2 documentation](https://docs.airbyte.com/integrations/sources/mongodb-v2) and the [migration guide](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).
+          "
         upgradeDeadline: "2025-08-31"
       1.0.0:
-        message: "**We advise against upgrading until you have run a test upgrade as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This version brings a host of updates to the MongoDB source connector, significantly increasing its scalability and reliability, especially for large collections. As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc) and improved schema discovery, this connector is also now [certified](https://docs.airbyte.com/integrations/). Selecting `Upgrade` will upgrade **all** connections using this source, require you to reconfigure the source, then run a full reset on **all** of your connections.\n"
+        message:
+          "**We advise against upgrading until you have run a test upgrade
+          as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This
+          version brings a host of updates to the MongoDB source connector, significantly
+          increasing its scalability and reliability, especially for large collections.
+          As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc)
+          and improved schema discovery, this connector is also now [certified](https://docs.airbyte.com/integrations/).
+          Selecting `Upgrade` will upgrade **all** connections using this source,
+          require you to reconfigure the source, then run a full reset on **all**
+          of your connections.
+
+          "
         upgradeDeadline: "2023-12-01"
     rolloutConfiguration:
+      enableProgressiveRollout: true
       defaultRolloutMode: autopilot
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
         strategy: slow
-      enableProgressiveRollout: true
   supportLevel: certified
   tags:
     - language:java
