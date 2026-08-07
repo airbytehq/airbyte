@@ -170,22 +170,44 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
+        failed_creative_ids: Set[str] = set()
+        successful_ads = []
+        failed_ad_cursors = []
+        failed_ad_without_cursor = False
 
-        # Bypass incremental read_records because it would advance state from parent ads rather than emitted creatives.
+        # Bypass incremental read_records to checkpoint state after the full slice and creative fetches.
         for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
             updated_time = ad_record.get(self.cursor_field)
-            if updated_time is not None:
-                self.state = self._get_updated_state(self.state, ad_record)
 
             creative_id = ad_record.get("creative", {}).get("id")
-            if not creative_id or creative_id in self._seen_creative_ids:
+            if not creative_id:
+                continue
+
+            if creative_id in failed_creative_ids:
+                if updated_time is not None:
+                    failed_ad_cursors.append(ab_datetime_parse(updated_time))
+                else:
+                    failed_ad_without_cursor = True
+                continue
+
+            if creative_id in self._seen_creative_ids:
+                if updated_time is not None:
+                    successful_ads.append((ab_datetime_parse(updated_time), ad_record))
                 continue
 
             self._seen_creative_ids.add(creative_id)
 
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
+                failed_creative_ids.add(creative_id)
+                if updated_time is not None:
+                    failed_ad_cursors.append(ab_datetime_parse(updated_time))
+                else:
+                    failed_ad_without_cursor = True
                 continue
+
+            if updated_time is not None:
+                successful_ads.append((ab_datetime_parse(updated_time), ad_record))
 
             self.fix_date_time(creative_data)
             creative_data[self.cursor_field] = updated_time
@@ -197,6 +219,17 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
 
             self.add_account_id(creative_data, stream_slice["account_id"])
             yield creative_data
+
+        if successful_ads and not failed_ad_without_cursor:
+            earliest_failed_cursor = min(failed_ad_cursors) if failed_ad_cursors else None
+            eligible_ads = [
+                (cursor, ad_record)
+                for cursor, ad_record in successful_ads
+                if earliest_failed_cursor is None or cursor < earliest_failed_cursor
+            ]
+            if eligible_ads:
+                _, checkpoint_ad = max(eligible_ads, key=lambda item: item[0])
+                self.state = self._get_updated_state(self.state, checkpoint_ad)
 
 
 class CustomConversions(FBMarketingStream):
