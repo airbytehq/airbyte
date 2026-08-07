@@ -191,7 +191,7 @@ class TestSitemapsStream(TestCase):
         assert "contents" in record
 
     @HttpMocker()
-    def test_unverified_site_returns_config_error_with_google_message(self, http_mocker: HttpMocker) -> None:
+    def test_unverified_site_returns_config_error(self, http_mocker: HttpMocker) -> None:
         site_url = "https://unverified.example.com/"
         google_message = f"'{site_url}' is not a verified Search Console site in this account."
         config = ConfigBuilder().with_site_urls([site_url]).build()

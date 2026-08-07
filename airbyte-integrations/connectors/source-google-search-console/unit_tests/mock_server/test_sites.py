@@ -122,7 +122,7 @@ class TestSitesStream(TestCase):
         assert site_urls == {"https://example1.com/", "https://example2.com/"}
 
     @HttpMocker()
-    def test_unverified_site_returns_config_error_with_google_message(self, http_mocker: HttpMocker) -> None:
+    def test_unverified_site_returns_config_error(self, http_mocker: HttpMocker) -> None:
         site_url = "https://unverified.example.com/"
         google_message = f"'{site_url}' is not a verified Search Console site in this account."
         config = ConfigBuilder().with_site_urls([site_url]).build()
@@ -142,7 +142,7 @@ class TestSitesStream(TestCase):
         assert site_url in log_messages
 
     @HttpMocker()
-    def test_insufficient_permissions_returns_config_error_with_google_message(self, http_mocker: HttpMocker) -> None:
+    def test_insufficient_permissions_returns_config_error(self, http_mocker: HttpMocker) -> None:
         site_url = "https://restricted.example.com/"
         google_message = f"User does not have sufficient permission for site '{site_url}'."
         config = ConfigBuilder().with_site_urls([site_url]).build()
