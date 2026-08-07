@@ -866,7 +866,7 @@ dynamic_streams:
                 - totalRevenue
         - type: StreamConfig
           configs_pointer:
-            - property_ids
+            - "{{ 'single_stream_per_report' if config.get('single_stream_per_report') else 'property_ids' }}"
       components_mapping:
         # This mapping configures the base request body with dimensions, metrics, keepEmptyRows and quota settings,
         # conditionally update params for pivots and cohort
@@ -923,15 +923,37 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "path"]
           value: >
+            {% if config.get('single_stream_per_report') %}
             {% if components_values.get("pivots") %}
+            "properties/{% raw %}{{ stream_partition.property_id }}{% endraw %}:runPivotReport"
+            {% else %}
+            "properties/{% raw %}{{ stream_partition.property_id }}{% endraw %}:runReport"
+            {% endif %}
+            {% elif components_values.get("pivots") %}
             "properties/{{ components_values['source_config_1'][1] }}:runPivotReport"
             {% else %}
             "properties/{{ components_values['source_config_1'][1] }}:runReport"
             {% endif %}
-        # This mapping defines path for the schema loader and paste property_id for each stream
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "partition_router"]
+          create_or_update: True
+          value: |
+            {% if config.get('single_stream_per_report') %}
+            type: ListPartitionRouter
+            values: "{{ config['property_ids'] }}"
+            cursor_field: property_id
+            {% endif %}
+        # This mapping defines path for the schema loader and paste property_id for each stream.
+        # Metadata is property-specific; use the first property intentionally to avoid
+        # multiplying discover-time metadata requests in one-stream-per-report mode.
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "retriever", "requester", "path"]
-          value: "properties/{{ components_values['source_config_1'][1] }}/metadata"
+          value: >
+            {% if config.get('single_stream_per_report') %}
+            "properties/{{ config['property_ids'][0] }}/metadata"
+            {% else %}
+            "properties/{{ components_values['source_config_1'][1] }}/metadata"
+            {% endif %}
         # NOTE: Yes, this is weird, but it exists solely for backward-compatibility.
         # When the config contains multiple property IDs, it keeps the
         # first stream as <report_name>, and names each additional stream
@@ -947,11 +969,17 @@ dynamic_streams:
           field_path: ["transformations"]
           create_or_update: True
           value: >
-            {% set property_id = components_values['source_config_1'][1] %}
+            {% if config.get('single_stream_per_report') %}
               - type: AddFields
                 fields:
                   - path: [ "property_id" ]
-                    value: {{ property_id }}
+                    value: "{% raw %}{{ stream_partition.property_id }}{% endraw %}"
+            {% else %}
+              - type: AddFields
+                fields:
+                  - path: [ "property_id" ]
+                    value: "{{ components_values['source_config_1'][1] }}"
+            {% endif %}
                     value_type: string
 
             {% set cohort = components_values.get("cohortSpec") %}
@@ -1194,6 +1222,14 @@ spec:
           - - "1738294"
             - "5729978930"
         uniqueItems: true
+      single_stream_per_report:
+        title: One Stream per Report
+        description:
+          When enabled, each report produces one stream containing data from all configured
+          properties, distinguished by the property_id field.
+        order: 2
+        type: boolean
+        default: false
       date_ranges_start_date:
         type: string
         title: Start Date
@@ -1206,7 +1242,7 @@ spec:
         pattern_descriptor: YYYY-MM-DD
         examples:
           - "2021-01-01"
-        order: 2
+        order: 3
       date_ranges_end_date:
         type: string
         title: End Date
@@ -1220,11 +1256,11 @@ spec:
         pattern_descriptor: YYYY-MM-DD
         examples:
           - "2021-01-31"
-        order: 3
+        order: 4
       custom_reports_array:
         title: Custom Reports
         description: You can add your Custom Analytics report by creating one.
-        order: 4
+        order: 5
         type: array
         items:
           title: Custom Report Config
@@ -2949,7 +2985,7 @@ spec:
         minimum: 1
         maximum: 364
         default: 1
-        order: 5
+        order: 6
       lookback_window:
         type: integer
         title: Lookback window (Days)
@@ -2968,7 +3004,7 @@ spec:
         minimum: 2
         maximum: 60
         default: 2
-        order: 6
+        order: 7
       keep_empty_rows:
         type: boolean
         title: Keep Empty Rows
@@ -2978,7 +3014,7 @@ spec:
           a filter. More information is available in <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body">the
           documentation</a>.
         default: false
-        order: 7
+        order: 8
       convert_conversions_event:
         type: boolean
         title: Convert `conversions:*` Metrics to Float
@@ -2987,7 +3023,7 @@ spec:
           to floats. This is beneficial for preventing data rounding when the API returns
           float values for any `conversions:*` fields.
         default: false
-        order: 8
+        order: 9
       subscription_tier:
         type: string
         title: Subscription Plan/Tier
@@ -3001,7 +3037,7 @@ spec:
           - Standard Property
           - Analytics 360 Property
         default: Standard Property
-        order: 9
+        order: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
