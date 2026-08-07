@@ -10,6 +10,7 @@ from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
+    AdCreatives,
     AdSets,
     AdsInsights,
     AdsInsightsActionType,
@@ -25,6 +26,19 @@ from source_facebook_marketing.streams.streams import AdAccount, AdCreativesFrom
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+
+
+def test_ad_creatives_from_ads_schema_scopes_parent_updated_time(api, some_config):
+    direct_stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
+    ads_stream = AdCreativesFromAds(
+        api=api,
+        account_ids=some_config["account_ids"],
+        start_date=None,
+        end_date=None,
+    )
+
+    assert "updated_time" not in direct_stream.get_json_schema()["properties"]
+    assert "updated_time" in ads_stream.get_json_schema()["properties"]
 
 
 def test_filter_all_statuses(api, mocker, some_config):

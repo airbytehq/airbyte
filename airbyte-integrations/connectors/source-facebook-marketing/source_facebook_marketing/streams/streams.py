@@ -59,7 +59,7 @@ class AdCreatives(FBMarketingStream):
         if self._fields:
             return self._fields
 
-        self._fields = [f for f in super().fields(**kwargs) if f not in ("thumbnail_data_url", "updated_time")]
+        self._fields = [f for f in super().fields(**kwargs) if f != "thumbnail_data_url"]
         return self._fields
 
     def read_records(
@@ -119,9 +119,16 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         return "ad_creatives_from_ads"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Use the same schema as ad_creatives stream"""
+        """Use the ad_creatives schema with the parent ad timestamp."""
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
-        return loader.get_schema("ad_creatives")
+        schema = loader.get_schema("ad_creatives").copy()
+        schema["properties"] = schema["properties"].copy()
+        schema["properties"]["updated_time"] = {
+            "description": "The date and time when the parent ad was last updated.",
+            "type": ["null", "string"],
+            "format": "date-time",
+        }
+        return schema
 
     def _get_creative_fields(self) -> List[str]:
         """Get the list of creative fields to request, excluding computed fields"""
