@@ -516,6 +516,29 @@ def test_stream_organizations_read(requests_mock):
     assert records == [{"id": 1}, {"id": 2}]
 
 
+@patch("time.sleep")
+def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
+    """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
+    the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
+    stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org1/members",
+        status_code=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+    # 1 initial attempt + GithubStreamABC.max_retries (5), matching GITHUB_DEFAULT_ERROR_MAPPING[401] = RETRY.
+    assert requests_mock.call_count == 6
+    assert any(
+        "GitHub authentication failed (HTTP 401) for stream" in message and "Personal Access Token may need to be renewed" in message
+        for message in caplog.messages
+    )
+
+
 def test_stream_teams_read(requests_mock):
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Teams(**organization_args)

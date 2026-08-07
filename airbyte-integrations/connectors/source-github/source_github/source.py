@@ -274,8 +274,16 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
+        # `check` is interactive and must answer in seconds, so it resolves with a zero wait
+        # budget. This replaces the deleted `exit_on_rate_limit = True if is_check_connection
+        # else False`: "PT0M" makes RateLimitedMultipleTokenAuthenticator._acquire_call raise
+        # "Rate limit is exceeded for all provided tokens." on an exhausted quota instead of
+        # sleeping up to `max_waiting_time` (120 minutes by default), which the platform would
+        # surface as an opaque timeout. `streams()` keeps the user-configured value, so
+        # sync-time waiting is unchanged.
+        check_config = {**config, "max_waiting_time": 0}
         try:
-            _, repositories = self._resolve_repositories_and_organizations(config)
+            _, repositories = self._resolve_repositories_and_organizations(check_config)
             if not repositories:
                 return (
                     False,

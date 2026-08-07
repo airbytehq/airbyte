@@ -157,9 +157,17 @@ def test_organization_or_repo_available(monkeypatch, rate_limit_mock_response):
 
 
 def test_check_config_repository():
-    source = SourceGithub()
-    source.check = MagicMock(return_value=True)
     config = {"credentials": {"access_token": "access_token"}, "start_date": "1900-01-01T00:00:00Z"}
+
+    def check_with_fresh_source(check_config):
+        # One SourceGithub per check, mirroring the entrypoint, which builds the source and
+        # calls spec() once per process. The manifest `spec:` block's Spec component is only
+        # safe for a single generate_spec() call: it converts `advanced_auth.auth_flow_type`
+        # from enum to str in place (CDK spec.py:57), so a second call on the same instance
+        # raises AttributeError on the now-plain string.
+        source = SourceGithub()
+        source.check = MagicMock(return_value=True)
+        return command_check(source, check_config)
 
     repos_ok = [
         "airbytehq/airbyte",
@@ -188,19 +196,19 @@ def test_check_config_repository():
 
     config["repositories"] = []
     with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config)
+        assert check_with_fresh_source(config)
     config["repositories"] = []
     with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config)
+        assert check_with_fresh_source(config)
 
     for repos in repos_ok:
         config["repositories"] = [repos]
-        assert command_check(source, config)
+        assert check_with_fresh_source(config)
 
     for repos in repos_fail:
         config["repositories"] = [repos]
         with pytest.raises(AirbyteTracedException):
-            assert command_check(source, config)
+            assert check_with_fresh_source(config)
 
 
 @responses.activate

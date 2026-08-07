@@ -77,6 +77,8 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 9. **Max Waiting Time (in minutes) (Optional)** - Maximum time the connector waits when every configured API token is rate-limited before it fails the sync. The default is 120 minutes, which covers GitHub's 60-minute rate limit reset window plus margin. You can set any value between 1 and 240 minutes. If you provide multiple personal access tokens, the connector rotates through them first, and only waits after every token is exhausted.
 
+10. **Number of Concurrent Threads (Optional)** - How many partitions the connector reads in parallel. The default is 4 and the maximum is 25. While the declarative migration is in progress this setting applies only to the `repositories` stream; all other streams are still read one at a time, so raising it has little effect today and increases the risk of hitting GitHub's secondary rate limits.
+
 ### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.

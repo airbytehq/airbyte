@@ -70,6 +70,26 @@ definitions:
           header: "Retry-After"
         - type: WaitUntilTimeFromHeader
           header: "X-RateLimit-Reset"
+          min_wait: 60
+          # Restores the 60s floor the legacy strategy enforced (backoff_strategies.py:26),
+          # so a reset timestamp that is already in the past (or seconds away) doesn't turn
+          # into a tight retry loop against a quota that hasn't actually refilled.
+          # Trade-off: WaitUntilTimeFromHeaderBackoffStrategy also returns `min_wait` when the
+          # header is absent, and backoff_strategies are shared by every retryable response on
+          # this requester. So a headerless 5xx now waits 60s per attempt instead of the CDK's
+          # exponential backoff. Accepted deliberately: a slower retry on a rare 5xx beats
+          # burning the retry budget against a rate limit that hasn't reset (the legacy
+          # strategy floored that path at 60s too).
+          # NOTE: the legacy strategy also rotated tokens instead of waiting when the
+          # computed backoff exceeded 10 minutes (backoff_strategies.py:39-43). That
+          # *reactive* rotation has no declarative equivalent yet — the manifest
+          # authenticator only rotates *proactively*, when its own local quota counters hit
+          # zero. When GitHub rejects a request whose local counters still look healthy
+          # (token shared across connections, in-flight overcount under concurrency, or a
+          # secondary limit), the sync waits out the reset window instead of rotating.
+          # Follow-up: give RateLimitedMultipleTokenAuthenticator a public
+          # "mark this token exhausted from these response headers and rotate" hook in the
+          # CDK and call it from this error handler.
       response_filters:
         - type: HttpResponseFilter
           predicate: "{{ 'Retry-After' in headers }}"
@@ -95,6 +115,13 @@ definitions:
           http_codes: [404]
           action: IGNORE
           error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
+        # NOTE (Step 3+ migration checklist): 403 -> FAIL matches legacy behavior for
+        # `Repositories` ONLY — streams.py:162 re-raised 403 for that stream. Legacy
+        # SKIPPED 403 with a warning for Organizations/Teams/Users and the repo-scoped
+        # streams (streams.py:168-182), so migrating any of those under this shared
+        # filter would turn "skip the one org/repo you can't read" into a failed sync.
+        # Before migrating them, move this filter onto the per-stream error_handler (or
+        # switch it to IGNORE for those streams).
         - type: HttpResponseFilter
           http_codes: [403]
           action: FAIL
@@ -112,9 +139,20 @@ definitions:
       inject_into: request_parameter
       field_name: "page"
     pagination_strategy:
-      type: PageIncrement
-      page_size: 100
-      start_from_page: 1
+      # GitHub's documented end-of-data signal is the absence of a `rel="next"` link
+      # header — a short page is not guaranteed to be the last page. This mirrors the
+      # legacy GithubStreamABC.next_page_token (streams.py:79-85), which parsed `page`
+      # out of that same link. Inferring the end from `last_page_size < 100` instead
+      # would silently truncate the org repo list that drives every downstream partition.
+      # CursorPaginationStrategy replaces `headers["link"]` with `response.links`, so this
+      # walks that dict. Chained `.get(...)` with defaults is required rather than
+      # `headers.link.next.url`: on the last page there is no `next` link, and attribute
+      # access would raise Jinja's UndefinedError. InterpolatedString defaults `default` to
+      # the template itself, so JinjaInterpolation.eval's UndefinedError guard just
+      # re-evaluates the same failing expression and the error escapes, failing the sync.
+      # Rendering to "" is falsy, so DefaultPaginator stops paginating.
+      type: CursorPagination
+      cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
 
   # Resolver streams: internal parent streams used only to drive the shared
   # partition routers below. They are not exposed in the catalog.
@@ -315,9 +353,30 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
+        # `or` rather than `config.get('start_date', default)`: the default is only
+        # substituted when the key is *absent*, so a present-but-null `start_date`
+        # (reachable via the API, Terraform or embedded use) would reach MinMaxDatetime as
+        # the literal string "None" and abort the stream. Any falsy value falls back to the
+        # epoch, matching the legacy "no start_date means replicate everything" behavior.
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      is_client_side_incremental: true
+      # The listing is served most-recent-first (`sort=updated&direction=desc`), so the
+      # cursor stop condition ends pagination at the first page whose last record is at or
+      # below the partition cursor. This replaces the legacy `Repositories.is_sorted =
+      # "desc"` early break; without it every incremental sync walked the org's entire
+      # repo listing (ceil(repos/100) requests per org per sync instead of ~1).
+      is_data_feed: true
+      # Deliberately NOT `is_client_side_incremental: true`:
+      #  1. ConcurrentPerPartitionCursor seeds a partition that has no state from the
+      #     *global* cursor, so client-side filtering permanently discarded every
+      #     pre-existing repo of an org added to `repositories` after the first sync
+      #     (probe: a newly added org emitted 0 of its 2 repos).
+      #  2. It defeats the stop condition above — StopConditionPaginationStrategyDecorator
+      #     evaluates the cursor against the *post-filter* last record, and a fully
+      #     filtered page yields `last_record=None`, so pagination continues anyway.
+      # Filtering saved no requests either way: /orgs/{org}/repos has no `since` parameter,
+      # so every page fetched was fetched regardless. The boundary page is now emitted
+      # whole and its already-seen repos are deduped downstream on `id`.
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     schema_loader:
