@@ -17,12 +17,32 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d03aa64c-21a9-4edc-97b9-5590600ee3d6
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-chift
   githubIssueLabel: source-chift
   icon: icon.svg
   license: ELv2
   name: Chift
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >-
+          Two objects that carry integration-defined rather than contract-defined keys are now
+          declared schemaless, so V2 destinations stop dropping their contents:
+          `connections.data`, whose payload differs per integration, and
+          `syncs.mappings[].sub_mappings[].target_field.display_condition`, a JSONLogic
+          expression tree whose operator set is open-ended. On a typed destination each becomes a
+          JSON string instead of nested columns, which preserves every key rather than only the
+          handful the schema used to enumerate. Users reading `data.folder_id` or the
+          `display_condition` sub-fields as columns need to refresh the source schema, reset the
+          `connections` and `syncs` streams, and parse the JSON string instead. See the
+          [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations) for
+          the per-warehouse extraction equivalents.
+        upgradeDeadline: "2026-10-31"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["connections", "syncs"]
   releaseDate: 2025-10-13
   releaseStage: alpha
   supportLevel: community
