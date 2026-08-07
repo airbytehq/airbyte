@@ -1537,3 +1537,84 @@ class TestVendorJsonReportsIncremental:
 
         output = self._read(stream_name, config(), state=initial_state)
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestReportOptions:
+    """Tests that report_options_list config entries are reflected in the POST /reports request body."""
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, create_report_request: RequestBuilder) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(create_report_request.build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name),
+        )
+
+    @pytest.mark.parametrize("stream_name", ("GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"))
+    @pytest.mark.parametrize("matching_key", ("stream_name", "report_name"))
+    @HttpMocker()
+    def test_given_report_options_list_when_read_then_options_included_in_request_body(
+        self, matching_key: str, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """When report_options_list is configured for a ledger stream (matched by either
+        stream_name or report_name - the latter covers legacy configs where stream_name is
+        a custom alias), the options must appear as reportOptions in the POST /reports body."""
+        configured_options = {"option1": "value1", "option2": "value2"}
+
+        self._mock_report_flow(
+            http_mocker,
+            stream_name,
+            RequestBuilder.create_report_endpoint(stream_name, report_options=configured_options),
+        )
+
+        # Both keys are required by the spec; only one of them matches the stream under test.
+        entry = {"stream_name": "custom_stream_alias", "report_name": "GET_SELLER_FEEDBACK_DATA", matching_key: stream_name}
+        entry["options_list"] = [{"option_name": k, "option_value": v} for k, v in configured_options.items()]
+        _config = config().with_report_options_list([entry])
+
+        output = self._read(stream_name, _config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_included_in_request_body(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """Options configured for a different stream must not leak into the ledger stream's
+        POST /reports request body - the reportOptions key must be omitted entirely."""
+        stream_name = "GET_LEDGER_DETAIL_VIEW_DATA"
+
+        # _create_report_request builds the body without a reportOptions key; the byte-exact
+        # body matcher fails if any options leak in.
+        self._mock_report_flow(http_mocker, stream_name, _create_report_request(stream_name))
+
+        _config = config().with_report_options_list(
+            [
+                {
+                    "stream_name": "GET_SELLER_FEEDBACK_DATA",
+                    "report_name": "GET_SELLER_FEEDBACK_DATA",
+                    "options_list": [{"option_name": "leaked", "option_value": "should_not_appear"}],
+                }
+            ]
+        )
+
+        output = self._read(stream_name, _config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
