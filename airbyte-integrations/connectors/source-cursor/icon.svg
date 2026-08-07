@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Cursor">
+  <defs>
+    <linearGradient id="cursorBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="52" fill="url(#cursorBg)"/>
+  <g fill="none" stroke="#38BDF8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="112" cy="78" rx="56" ry="22"/>
+    <path d="M56 78v52c0 12 25 22 56 22"/>
+    <path d="M168 78v34"/>
+    <path d="M56 130v52c0 12 25 22 56 22"/>
+  </g>
+  <path d="M150 120l74 30-30 11 21 33-19 12-21-33-25 26z" fill="#F8FAFC" stroke="#0F172A" stroke-width="8" stroke-linejoin="round"/>
+</svg>
