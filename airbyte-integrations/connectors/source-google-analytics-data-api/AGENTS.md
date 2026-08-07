@@ -49,6 +49,12 @@ Every stream in this connector is generated dynamically via `ConfigComponentsRes
 - Stream naming follows a backward-compatible convention: the first property ID uses the plain report name, while additional property IDs get a `Property<id>` suffix (e.g., `devices` vs `devicesProperty5729978930`)
 - The schema is constructed at build time by fetching metadata from the GA4 API and filtering it against the requested metrics, then adding dimension fields via schema transformations
 
+The property dimension is gated by `single_stream_per_report`: when disabled, the resolver creates one stream per report and property; when enabled, it creates one stream per report, partitions requests with a `ListPartitionRouter` over `property_ids`, and adds `property_id` from the partition. The gate produces `(0, True)`, which makes the existing naming mapping retain plain report names.
+
+In enabled mode the `schema_loader` mapping replaces the single loader with a **list** of loaders, one per property, which the CDK turns into a `CompositeSchemaLoader` that merges their fields into a union. This is required rather than cosmetic: a stream has exactly one schema, a field absent from it gets no destination column and is silently dropped, and GA4 custom metrics are property-specific — so building the schema from a single property would drop every custom metric defined only on the others. Conflicts resolve first-wins, so if the same metric is typed differently across properties the earliest entry in `property_ids` decides. The union costs no extra requests because the CDK forces `use_cache=True` on dynamic schema loaders and shares the cache by URL across streams.
+
+Two mappings write the schema loader and are kept mutually exclusive with `condition`. Note that `InterpolatedBoolean.FALSE_VALUES` does not contain `None`, so a `condition` of `{{ config.get('some_flag') }}` evaluates **true** for an absent key — always supply the default, as in `{{ config.get('some_flag', False) }}`.
+
 **Why this matters:** There is no single place in the manifest that shows what a given stream looks like at runtime. To understand the final shape of a stream, you must mentally execute the 12+ component mappings against the user's config. Adding a new feature (e.g., a new report parameter) requires adding a mapping entry and understanding how it interacts with all the conditional branches.
 
 ## 4. DimensionFilter Config Transformation

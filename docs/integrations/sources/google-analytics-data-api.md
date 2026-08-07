@@ -66,6 +66,7 @@ Before you can use the service account to access Google Analytics data, you need
 7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+10. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
 
 :::caution
 
@@ -75,7 +76,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-10. Click **Set up source** and wait for the tests to complete.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -106,6 +107,7 @@ Many analyses and data investigations may require 24-48 hours to process informa
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
 10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run. Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
+11. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
 
 :::caution
 
@@ -115,7 +117,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-11. Click **Set up source** and wait for the tests to complete.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -252,6 +254,22 @@ By specifying a cohort with a 7-day range and pivoting on the city dimension, th
 ]
 ```
 
+### One Stream per Report
+
+By default, the connector creates a separate stream for every combination of report and Property ID. With 57 built-in reports and 70 properties that is roughly 3,990 streams, which makes the catalog slow to load, the stream list hard to manage, and setup error-prone.
+
+Enabling **One Stream per Report** creates one stream per report instead, covering every configured property. Each record carries a `property_id` field, and `property_id` is part of the stream's primary key, so rows from different properties remain distinct in the destination. Each property also keeps its own incremental cursor, so they sync independently.
+
+The stream's schema is the union of the field definitions across all configured properties. This matters if you use custom metrics, which are defined per property in GA4: a custom metric that exists on only some of your properties is still included in the schema, so its data is not dropped. If the same metric name is typed differently across properties, the type from the property listed first in **Property IDs** is used.
+
+:::caution
+
+Enabling or disabling this setting changes stream names, so data is written to new destination tables and incremental state resets. The next sync after changing it is a full re-sync, and any previously synced tables are left in place for you to clean up. This is not a setting to toggle casually on an established connection.
+
+:::
+
+Syncs make the same number of API requests either way, so this setting reduces catalog size and destination table count rather than sync duration.
+
 ### Data Sampling and Data Request Intervals
 
 Data sampling in Google Analytics 4 refers to the process of estimating analytics data when the amount of data in an account exceeds Google's predefined compute thresholds. To mitigate the chances of data sampling being applied to the results, the **Data Request Interval** field allows users to specify the interval used when requesting data from the Google Analytics API.
@@ -284,6 +302,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.0 | 2026-08-07 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report, with schemas merged across properties. Off by default; existing connections are unchanged |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
