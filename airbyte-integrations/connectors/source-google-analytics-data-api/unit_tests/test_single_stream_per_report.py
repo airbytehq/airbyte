@@ -170,9 +170,7 @@ def test_metadata_is_fetched_once_per_property_not_once_per_stream():
         for stream in streams:
             stream.get_json_schema()
 
-        metadata_requests = [
-            request.path_url for request in http_mocker.request_history if request.path_url.endswith("/metadata")
-        ]
+        metadata_requests = [request.path_url for request in http_mocker.request_history if request.path_url.endswith("/metadata")]
 
     assert sorted(set(metadata_requests)) == [
         "/v1beta/properties/111/metadata",
