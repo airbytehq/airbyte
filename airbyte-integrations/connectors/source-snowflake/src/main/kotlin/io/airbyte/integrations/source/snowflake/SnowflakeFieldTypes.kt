@@ -18,20 +18,25 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-// Custom LocalDateTime accessor that truncates to 6 decimal places (microseconds).
 // Snowflake timestamps can have up to 9 decimal places (nanoseconds), but destinations may only
-// support 6 decimal places.
+// support 6 (microseconds). Rounded up, not down: this value is also used as a cursor bound for
+// incremental sync, and flooring it can make it compare as less than the row it should include.
+private fun roundUpToMicros(localDateTime: LocalDateTime): LocalDateTime {
+    val remainderNanos = localDateTime.nano % 1000
+    return if (remainderNanos == 0) {
+        localDateTime
+    } else {
+        localDateTime.plusNanos((1000 - remainderNanos).toLong())
+    }
+}
+
 object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
     ): LocalDateTime? {
         val timestamp = rs.getTimestamp(colIdx)?.takeUnless { rs.wasNull() } ?: return null
-        val localDateTime = timestamp.toLocalDateTime()
-        // Truncate to microseconds (6 decimal places) by zeroing out the nanoseconds beyond
-        // microseconds
-        val truncatedNanos = (localDateTime.nano / 1000) * 1000
-        return localDateTime.withNano(truncatedNanos)
+        return roundUpToMicros(timestamp.toLocalDateTime())
     }
 
     override fun set(
@@ -43,7 +48,7 @@ object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
     }
 }
 
-/** Custom field type for Snowflake TIMESTAMP_NTZ / DATETIME types, truncated to microseconds. */
+/** Custom field type for Snowflake TIMESTAMP_NTZ / DATETIME types, rounded to microseconds. */
 object SnowflakeLocalDateTimeFieldType :
     SymmetricJdbcFieldType<LocalDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
@@ -58,7 +63,7 @@ object SnowflakeLocalDateTimeFieldType :
  * exception. This implementation works around that limitation by retrieving the timestamp as
  * LocalDateTime and converting it to OffsetDateTime with UTC timezone.
  *
- * Nanoseconds are truncated to microsecond precision (6 decimal places).
+ * Nanoseconds are rounded up to microsecond precision (6 decimal places), see [roundUpToMicros].
  *
  * Related Snowflake issue: SNOW-895829
  */
@@ -69,8 +74,7 @@ object SnowflakeOffsetDateTimeFieldType :
         { rs, colIdx ->
             val localDateTime = TimestampAccessor.get(rs, colIdx)
             if (localDateTime != null) {
-                val truncatedNanos = (localDateTime.nano / 1000) * 1000
-                localDateTime.withNano(truncatedNanos).atOffset(ZoneOffset.UTC)
+                roundUpToMicros(localDateTime).atOffset(ZoneOffset.UTC)
             } else {
                 null
             }
