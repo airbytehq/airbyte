@@ -152,4 +152,7 @@ data:
     - title: Rate limits
       url: https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
       type: rate_limits
+    - title: Amazon Ads advanced tools docs repository
+      url: https://github.com/amzn/ads-advanced-tools-docs
+      type: spec_repository
 metadataSpecVersion: "1.0"
