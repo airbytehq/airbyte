@@ -328,13 +328,13 @@ definitions:
         action: FAIL
         http_codes:
           - 404
-        error_message: "Site URL is not a verified Search Console property in this account."
+        error_message: "The configured site URL is not a verified Search Console property in this account. Google response: {{ response['error']['message'] }}"
         failure_type: config_error
       - type: HttpResponseFilter
         action: FAIL
         http_codes:
           - 403
-        error_message: "Insufficient permissions for the configured site URL."
+        error_message: "The account does not have permission to access the configured site URL. Verify the property and grant access. Google response: {{ response['error']['message'] }}"
         failure_type: config_error
 
   search_analytics_error_handler:
