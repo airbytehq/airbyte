@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
 import io.airbyte.integrations.destination.postgres.component.PostgresComponentTestFixtures.allTypesColumnNameMapping
 import io.airbyte.integrations.destination.postgres.component.PostgresComponentTestFixtures.allTypesTableSchema
@@ -23,6 +24,7 @@ class PostgresTableSchemaEvolutionTest(
     override val testClient: PostgresTestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
+    override val columnDropBehavior = ColumnDropBehavior.RETAIN
 
     @Test
     fun `discover recognizes all data types`() {
