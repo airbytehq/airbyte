@@ -7940,7 +7940,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[MajorService]: id,asset,routineserviceleveltype,due,status
+          fields[MajorService]: id,created,updated,asset,routineserviceleveltype,due,status
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7951,6 +7951,16 @@ streams:
           id:
             type:
               - integer
+          created:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated:
+            type:
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           asset_id:
             type:
               - integer
@@ -7973,6 +7983,14 @@ streams:
             path:
               - id
             value: '{{ record["id"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - created
+            value: '{{ record["attributes"]["created"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: '{{ record["attributes"]["updated"] }}'
           - type: AddedFieldDefinition
             path:
               - asset_id
