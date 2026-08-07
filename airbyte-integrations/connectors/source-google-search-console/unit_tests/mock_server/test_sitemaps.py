@@ -210,6 +210,5 @@ class TestSitemapsStream(TestCase):
         error = output.errors[-1].trace.error
         assert error.failure_type == FailureType.config_error
         log_messages = "\n".join(log.log.message for log in output.logs)
-        assert (
-            "The configured site URL is not a verified Search Console property in this account. " f"Google response: {google_message}"
-        ) in log_messages
+        assert "Configured site URL is not a verified Search Console property in this account." in log_messages
+        assert site_url in log_messages

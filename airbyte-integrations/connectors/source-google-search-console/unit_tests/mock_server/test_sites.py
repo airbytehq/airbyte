@@ -138,9 +138,8 @@ class TestSitesStream(TestCase):
         error = output.errors[-1].trace.error
         assert error.failure_type == FailureType.config_error
         log_messages = "\n".join(log.log.message for log in output.logs)
-        assert (
-            "The configured site URL is not a verified Search Console property in this account. " f"Google response: {google_message}"
-        ) in log_messages
+        assert "Configured site URL is not a verified Search Console property in this account." in log_messages
+        assert site_url in log_messages
 
     @HttpMocker()
     def test_insufficient_permissions_returns_config_error_with_google_message(self, http_mocker: HttpMocker) -> None:
@@ -159,8 +158,5 @@ class TestSitesStream(TestCase):
         error = output.errors[-1].trace.error
         assert error.failure_type == FailureType.config_error
         log_messages = "\n".join(log.log.message for log in output.logs)
-        assert (
-            "The account does not have permission to access the configured site URL. "
-            "Verify the property and grant access. "
-            f"Google response: {google_message}"
-        ) in log_messages
+        assert "Configured site URL is not accessible with the account's Search Console permissions." in log_messages
+        assert site_url in log_messages
