@@ -11,6 +11,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 import requests
 from requests_oauthlib import OAuth1
 
+from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
@@ -41,6 +43,8 @@ class NetsuiteStream(HttpStream, ABC):
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
         self.schemas = {}  # store subschemas to reduce API calls
+        self._records_attempted = 0
+        self._user_error_skipped = 0
         super().__init__(authenticator=auth)
 
     primary_key = "id"
@@ -146,11 +150,11 @@ class NetsuiteStream(HttpStream, ABC):
         args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
         prep_req = self._session.prepare_request(requests.Request(**args))
         response = self._send_request(prep_req, request_kwargs)
-        # sometimes response.status_code == 400,
-        # but contains json elements with error description,
-        # to avoid passing it as {TYPE: RECORD}, we filter response by status
+        self._records_attempted += 1
         if response.status_code == requests.codes.ok:
             yield response.json()
+        elif response.status_code == 400:
+            self._track_skipped_record(response)
 
     def parse_response(
         self,
@@ -189,19 +193,59 @@ class NetsuiteStream(HttpStream, ABC):
                             self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
 
                     # handle other known errors
-                    self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
+                    self.logger.error(f"Stream `{self.name}`: {error_code} error occurred, full error message: {detail_message}")
                     return False
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)
 
+    def _track_skipped_record(self, response: requests.Response) -> None:
+        try:
+            error_details = response.json().get("o:errorDetails", [])
+            if isinstance(error_details, list) and error_details:
+                error_code = error_details[0].get("o:errorCode", "")
+                if error_code == "USER_ERROR":
+                    self._user_error_skipped += 1
+        except (ValueError, KeyError, IndexError):
+            self.logger.debug("Could not parse error details from 400 response", exc_info=True)
+
+    def _emit_skipped_records_summary(self) -> None:
+        if self._user_error_skipped == 0:
+            return
+
+        skipped = self._user_error_skipped
+        total = self._records_attempted
+        self.logger.warning(
+            f"Stream `{self.name}`: {skipped} of {total} records skipped due to USER_ERROR "
+            f"(records locked by user-defined workflows). Consider modifying your NetSuite "
+            f"workflow Lock Record action to exclude REST API contexts."
+        )
+
+        if total > 0 and (skipped / total) > 0.5:
+            raise AirbyteTracedException(
+                message=(
+                    f"Stream `{self.name}` has incomplete data: {skipped} of {total} records "
+                    f"inaccessible due to NetSuite workflow locks."
+                ),
+                internal_message=(
+                    f"More than 50% of records ({skipped}/{total}) returned HTTP 400 USER_ERROR "
+                    f"indicating records locked by user-defined workflows. The sync is marked as "
+                    f"failed to prevent silent data loss."
+                ),
+                failure_type=FailureType.system_error,
+            )
+
     def read_records(
         self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
+        skipped_before = self._user_error_skipped
         try:
             yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
         except DateFormatExeption:
             """continue trying other formats, until the list is exhausted"""
+        finally:
+            if self._user_error_skipped > skipped_before:
+                self._emit_skipped_records_summary()
 
 
 class IncrementalNetsuiteStream(NetsuiteStream):
