@@ -19,6 +19,18 @@ data:
     - title: Changelog
       url: https://developer.zendesk.com/api-reference/changelog/changelog/
       type: api_release_history
+    - title: Zendesk Chat API reference
+      url: https://developer.zendesk.com/api-reference/live-chat/introduction/
+      type: api_reference
+    - title: Chat authentication
+      url: https://developer.zendesk.com/documentation/live-chat/getting-started/auth/
+      type: authentication_guide
+    - title: Zendesk feature removal announcements
+      url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
+      type: api_deprecations
+    - title: Zendesk Status
+      url: https://status.zendesk.com/
+      type: status_page
   githubIssueLabel: source-zendesk-chat
   icon: zendesk-chat.svg
   license: ELv2
