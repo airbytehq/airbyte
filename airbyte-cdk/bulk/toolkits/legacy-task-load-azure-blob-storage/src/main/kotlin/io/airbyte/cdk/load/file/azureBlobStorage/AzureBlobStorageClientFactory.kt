@@ -33,7 +33,7 @@ class AzureBlobStorageClientFactory(
     @Secondary
     fun make(): AzureBlobClient {
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
-        val endpointDomainName = 
+        val endpointDomainName =
             config.endpointDomainName?.takeIf { it.isNotBlank() } ?: "blob.core.windows.net"
         val endpoint = "https://${config.accountName}.$endpointDomainName"
 
