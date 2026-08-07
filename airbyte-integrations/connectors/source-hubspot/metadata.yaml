@@ -167,17 +167,20 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: HubSpot API reference
-      url: https://developers.hubspot.com/docs/api/overview
+      url: https://developers.hubspot.com/docs/api-reference/latest/overview
       type: api_reference
     - title: HubSpot API changelog
       url: https://developers.hubspot.com/changelog
       type: api_release_history
     - title: HubSpot authentication
-      url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
+      url: https://developers.hubspot.com/docs/apps/legacy-apps/authentication/oauth-quickstart-guide
       type: authentication_guide
     - title: HubSpot rate limits
-      url: https://developers.hubspot.com/docs/api/usage-details
+      url: https://developers.hubspot.com/docs/developer-tooling/platform/usage-guidelines
       type: rate_limits
+    - title: HubSpot API versioning policy
+      url: https://developers.hubspot.com/docs/getting-started/versioning
+      type: api_deprecations
     - title: HubSpot Status
       url: https://status.hubspot.com/
       type: status_page
