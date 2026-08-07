@@ -8,9 +8,9 @@ import re
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
+from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
 from .utils import format_airbyte_time, generate_estimate, read_json
@@ -127,7 +127,7 @@ class Users(Stream, IncrementalMixin):
                     if self.normalize_emails:
                         email_pattern = re.compile(r"\+[^@]+(?=@)")
                         user.record.data["email"] = email_pattern.sub("", user.record.data["email"]).lower()
-                        user._json = AirbyteMessageSerializer.dump(user)
+                        user = AirbyteMessageWithCachedJSON(type=user.type, record=user.record)
                     updated_at = user.record.data["updated_at"]
                     loop_offset += 1
                     yield user
