@@ -974,13 +974,14 @@ dynamic_streams:
                 fields:
                   - path: [ "property_id" ]
                     value: "{% raw %}{{ stream_partition.property_id }}{% endraw %}"
+                    value_type: string
             {% else %}
               - type: AddFields
                 fields:
                   - path: [ "property_id" ]
                     value: "{{ components_values['source_config_1'][1] }}"
-            {% endif %}
                     value_type: string
+            {% endif %}
 
             {% set cohort = components_values.get("cohortSpec") %}
             {% if not (cohort and cohort.get("enabled") == "true") %}

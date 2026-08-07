@@ -49,6 +49,8 @@ Every stream in this connector is generated dynamically via `ConfigComponentsRes
 - Stream naming follows a backward-compatible convention: the first property ID uses the plain report name, while additional property IDs get a `Property<id>` suffix (e.g., `devices` vs `devicesProperty5729978930`)
 - The schema is constructed at build time by fetching metadata from the GA4 API and filtering it against the requested metrics, then adding dimension fields via schema transformations
 
+The property dimension is gated by `single_stream_per_report`: when disabled, the resolver creates one stream per report and property; when enabled, it creates one stream per report, partitions requests with a `ListPartitionRouter` over `property_ids`, and adds `property_id` from the partition. Enabled-mode schema metadata is fetched from the first configured property only. The gate produces `(0, True)`, which makes the existing naming mapping retain plain report names.
+
 **Why this matters:** There is no single place in the manifest that shows what a given stream looks like at runtime. To understand the final shape of a stream, you must mentally execute the 12+ component mappings against the user's config. Adding a new feature (e.g., a new report parameter) requires adding a mapping entry and understanding how it interacts with all the conditional branches.
 
 ## 4. DimensionFilter Config Transformation

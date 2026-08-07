@@ -286,7 +286,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.10.0 | 2026-08-07 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Add an opt-in mode that combines all configured property IDs into one stream per report |
+| 2.10.0 | 2026-08-07 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in mode that combines all configured property IDs into one stream per report |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |

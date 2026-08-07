@@ -53,13 +53,16 @@ def test_stream_names(single_stream_per_report):
 
     assert len(report_names) == 59
     assert "devices" in report_names
-    assert "devicesProperty222" in stream_names if not single_stream_per_report else "devicesProperty222" not in stream_names
+    if single_stream_per_report:
+        assert "devicesProperty222" not in stream_names
+    else:
+        assert "devicesProperty222" in stream_names
     assert len(stream_names) == len(report_names) * (1 if single_stream_per_report else 2)
     if single_stream_per_report:
         stream = next(stream for stream in streams if stream.name == "first_report")
         partitions = list(stream.generate_partitions())
-        assert [partition._stream_slice["property_id"] for partition in partitions] == ["111", "222"]
-        assert all("start_time" in partition._stream_slice for partition in partitions)
+        assert [partition.to_slice()["property_id"] for partition in partitions] == ["111", "222"]
+        assert all("start_time" in partition.to_slice() for partition in partitions)
 
 
 def test_single_stream_per_report_reads_each_property_partition():
