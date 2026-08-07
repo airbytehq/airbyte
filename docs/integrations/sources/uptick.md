@@ -35,7 +35,9 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `projects` - Project management entities for larger initiatives
 - `clients` - Customer organizations and contact information
 - `clientgroups` - Client organization groupings
+- `clientcontacts` - Contact people associated with clients
 - `properties` - Physical locations where work is performed
+- `propertycontacts` - Contact people associated with properties
 - `contractors` - External service providers and subcontractors
 - `users` - System users including technicians and staff
 - `servicegroups` - Service categorization for organizing work types
@@ -72,10 +74,14 @@ The Uptick connector syncs data from the following streams, organized by functio
 - `routineservicelevels` - Service level definitions for routine services
 - `routineservicetypes` - Types and categories of routine services
 - `routineserviceleveltypes` - Service level type classifications
+- `majorservices` - Major service records for assets
 - `servicetasks` - Individual work activities on tasks
 - `subtasks` - Links programme maintenance routines to tasks
 - `remarks` - Issues, defects, and observations during inspections
 - `remarkevents` - Events and actions taken on remarks
+- `promptquestions` - Prompt questions asked during service report completion
+- `promptanswergroups` - Groupings of prompt answers per service task and section
+- `promptanswers` - Individual answers to prompt questions
 - `appointments` - Scheduled appointments for work and inspections
 
 ### Quality and compliance
@@ -149,6 +155,12 @@ The Uptick connector syncs data from the following streams, organized by functio
 | `servicetasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `subtasks` | `id` | `DefaultPaginator` | ✅ | ✅ |
 | `task_profitability` | `task_id` | `DefaultPaginator` | ✅ | ✅ |
+| `clientcontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `propertycontacts` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `promptquestions` | `id` | `DefaultPaginator` | ✅ | ✅ |
+| `promptanswergroups` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
+| `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 
 ### Incremental sync
 
