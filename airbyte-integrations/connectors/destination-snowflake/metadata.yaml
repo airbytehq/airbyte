@@ -37,7 +37,7 @@ data:
       autopilotConfig:
         autoStart: true
         autoPromoteStages: true
-        strategy: fast
+        strategy: slow
     breakingChanges:
       2.0.0:
         message: Remove GCS/S3 loading method support.

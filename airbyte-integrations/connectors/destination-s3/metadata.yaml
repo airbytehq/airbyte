@@ -32,7 +32,12 @@ data:
           **This release includes breaking changes, including major revisions to the schema of stored data. Do not upgrade without reviewing the migration guide.**
         upgradeDeadline: "2024-10-08"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   resourceRequirements:
     jobSpecific:
       - jobType: sync

@@ -39,6 +39,13 @@ data:
       1.0.0:
         message: "The subdomain configuration field is now required following a Live Chat API update."
         upgradeDeadline: "2024-11-12"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - chats

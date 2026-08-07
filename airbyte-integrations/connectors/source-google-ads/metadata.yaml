@@ -41,7 +41,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       1.0.0:
         message: This release introduces fixes to custom query schema creation. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
@@ -60,20 +65,7 @@ data:
         upgradeDeadline: "2026-05-30"
         scopedImpact:
           - scopeType: stream
-            impactedScopes:
-              [
-                "campaign",
-                "campaign_budget",
-                "account_performance_report",
-                "ad_group_ad",
-                "ad_group_ad_legacy",
-                "display_keyword_view",
-                "geographic_view_with_metrics",
-                "topic_view",
-                "user_location_view",
-                "ad_group_bidding_strategy",
-                "campaign_bidding_strategy",
-              ]
+            impactedScopes: ["campaign", "campaign_budget", "account_performance_report", "ad_group_ad", "ad_group_ad_legacy", "display_keyword_view", "geographic_view_with_metrics", "topic_view", "user_location_view", "ad_group_bidding_strategy", "campaign_bidding_strategy"]
       6.0.0:
         message: This release limits incremental report streams and custom queries that use `segments.date` to the 37-month granular data retention window enforced by the Google Ads API. The affected built-in streams are `account_performance_report`, `ad_group`, `ad_group_ad`, `ad_group_ad_legacy`, `ad_group_bidding_strategy`, `campaign`, `campaign_bidding_strategy`, `campaign_budget`, `click_view`, `customer`, `display_keyword_view`, `geographic_view`, `geographic_view_with_metrics`, `keyword_view`, `shopping_performance_view`, `topic_view`, and `user_location_view`; custom queries using `segments.date` are also affected. Data older than 37 months will be skipped. If you use the Full Refresh | Overwrite sync mode, store historical data older than 37 months before upgrading or that data will be permanently lost. If you use the Incremental | Append or Incremental | Append and Deduped sync modes, historical destination data older than 37 months is preserved, but the connector will not be able to sync it again. See the migration guide for full details.
         upgradeDeadline: "2026-05-31"

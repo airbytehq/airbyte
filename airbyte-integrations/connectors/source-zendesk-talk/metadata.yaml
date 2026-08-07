@@ -51,7 +51,12 @@ data:
           please reset your source  before resuming syncs. For more information, see
           our migration documentation for source Zendesk Talk.
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - calls
