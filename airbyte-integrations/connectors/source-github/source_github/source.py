@@ -16,10 +16,12 @@ from airbyte_cdk.models import (
     Status,
 )
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    UnionPartitionRouter as UnionPartitionRouterModel,
+)
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
@@ -52,8 +54,6 @@ from .streams import (
     PullRequests,
     PullRequestStats,
     Releases,
-    Repositories,
-    RepositoryStats,
     ReviewComments,
     Reviews,
     Stargazers,
@@ -66,7 +66,6 @@ from .streams import (
     WorkflowRuns,
     Workflows,
 )
-from .utils import read_full_refresh
 
 
 class SourceGithub(YamlDeclarativeSource, AbstractSource):
@@ -100,14 +99,19 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         concurrently, while regular Python `Stream` objects are read through
         `AbstractSource.read()`.
 
-        The concurrent streams come from `super().streams()` (the manifest), which is
-        empty today and does no network work. The synchronous streams are resolved by
-        `AbstractSource.read()` itself, so `SourceGithub.streams()` (which performs live
-        org/repo resolution) is only invoked once per sync. As streams are migrated from
-        Python to the manifest, they automatically move from the synchronous to the
-        concurrent path.
+        The config is validated and transformed up front so that manifest streams see
+        normalized keys (legacy `repository`/`branch` converted to arrays, `api_url`
+        defaulted). Repository/organization resolution for the Python streams happens
+        lazily inside `streams()` by enumerating the manifest's shared partition
+        routers, so manifest-only catalogs skip it entirely. As streams are migrated
+        from Python to the manifest, they automatically move from the synchronous to
+        the concurrent path.
         """
-        concurrent_streams = super().streams(config=self._config or config)
+        effective_config = self._validate_and_transform_config(self._config or config)
+        # Manifest stream components interpolate from self._config, not the passed config arg.
+        if isinstance(self._config, dict):
+            self._config.update(effective_config)
+        concurrent_streams = super().streams(config=effective_config)
         concurrent_stream_names = {stream.name for stream in concurrent_streams}
 
         concurrent_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name in concurrent_stream_names])
@@ -118,7 +122,10 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         synchronous_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name not in concurrent_stream_names])
         if synchronous_catalog.streams:
-            yield from AbstractSource.read(self, logger, config, synchronous_catalog, state)
+            # Pass effective_config (not the raw config) so streams() sees the
+            # normalized keys (repositories array, api_url default) when
+            # AbstractSource.read re-enters it.
+            yield from AbstractSource.read(self, logger, effective_config, synchronous_catalog, state)
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Return the union of Python `Stream` objects and manifest-backed streams.
@@ -133,57 +140,52 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         streams += [stream.as_airbyte_stream() for stream in super().streams(config=effective_config)]
         return AirbyteCatalog(streams=streams)
 
-    @staticmethod
-    def _get_org_repositories(
-        config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator, is_check_connection: bool = False
-    ) -> Tuple[List[str], List[str], Optional[str]]:
+    def _resolve_repositories_and_organizations(self, config: Mapping[str, Any]) -> Tuple[List[str], List[str]]:
+        """Resolve wildcard patterns and explicit repos by enumerating the manifest's
+        shared partition routers — the same components manifest streams slice on at
+        read time, so the Python streams are guaranteed to see identical lists.
+
+        Wildcard patterns (`org/*`, `org/prefix*`) expand via `repositories_resolver`;
+        explicit `org/repo` entries validate via `repository_stats`; entries that 404
+        are skipped with a warning (see `requester_base`'s error_handler in the
+        manifest). User-owned repos contribute a repository but no organization.
+        The resolver streams' `use_cache: true` means this enumeration warms the HTTP
+        cache the manifest streams reuse when reading.
+
+        Returns (organizations, repositories), both sorted and deduplicated.
         """
-        Parse config/repositories and produce two lists: organizations, repositories.
-        Args:
-            config (dict): Dict representing connector's config
-            authenticator(MultipleTokenAuthenticator): authenticator object
-        """
-        config_repositories = set(config.get("repositories"))
-
-        repositories = set()
-        organizations = set()
-        unchecked_repos = set()
-        unchecked_orgs = set()
-        pattern = None
-
-        for org_repos in config_repositories:
-            _, _, repos = org_repos.partition("/")
-            if "*" in repos:
-                unchecked_orgs.add(org_repos)
-            else:
-                unchecked_repos.add(org_repos)
-
-        if unchecked_orgs:
-            org_names = [org.split("/")[0] for org in unchecked_orgs]
-            pattern = "|".join([f"({org.replace('*', '.*')})" for org in unchecked_orgs])
-            stream = Repositories(authenticator=authenticator, organizations=org_names, api_url=config.get("api_url"), pattern=pattern)
-            stream.exit_on_rate_limit = True if is_check_connection else False
-            for record in read_full_refresh(stream):
-                repositories.add(record["full_name"])
-                organizations.add(record["organization"])
-
-        unchecked_repos = unchecked_repos - repositories
-        if unchecked_repos:
-            stream = RepositoryStats(
-                authenticator=authenticator,
-                repositories=list(unchecked_repos),
-                api_url=config.get("api_url"),
-                # This parameter is deprecated and in future will be used sane default, page_size: 10
-                page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+        try:
+            _, token = self.get_access_token(config)
+        except Exception:
+            token = ""
+        if not any(t.strip() for t in (token or "").split(constants.TOKEN_SEPARATOR)):
+            raise AirbyteTracedException(
+                message="No authentication tokens found in config.",
+                failure_type=FailureType.config_error,
             )
-            stream.exit_on_rate_limit = True if is_check_connection else False
-            for record in read_full_refresh(stream):
-                repositories.add(record["full_name"])
-                organization = record.get("organization", {}).get("login")
-                if organization:
-                    organizations.add(organization)
 
-        return list(organizations), list(repositories), pattern
+        def enumerate_router(definition_name: str, partition_key: str) -> List[str]:
+            router = self._constructor.create_component(
+                model_type=UnionPartitionRouterModel,
+                component_definition=self.resolved_manifest["definitions"][definition_name],
+                config=config,
+                stream_name=f"{partition_key}_resolution",
+            )
+            return sorted({stream_slice.partition[partition_key] for stream_slice in router.stream_slices()})
+
+        repositories = enumerate_router("repository_partition_router", "repository")
+        # The organization router unions config-derived wildcard orgs with the orgs
+        # owning explicit repos, so a wildcard entry whose org doesn't exist (404) or
+        # matched no repos would still yield a partition. Keep only orgs that own at
+        # least one resolved repository — the legacy resolver derived orgs from
+        # fetched repo metadata, so orgs without any synced repo never surfaced.
+        repository_owners = {repository.split("/", 1)[0] for repository in repositories}
+        organizations = [
+            organization
+            for organization in enumerate_router("organization_partition_router", "organization")
+            if organization in repository_owners
+        ]
+        return organizations, repositories
 
     @staticmethod
     def get_access_token(config: Mapping[str, Any]):
@@ -200,6 +202,14 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]):
+        # Transition state: during the manifest migration one sync holds two
+        # authenticator instances over the same tokens — this legacy one for the
+        # Python streams and the manifest's RateLimitedMultipleTokenAuthenticator
+        # for declarative streams (shared with repository resolution via the
+        # component factory). Each tracks token quotas independently, so combined
+        # usage can transiently overcommit near the rate-limit boundary (excess
+        # requests are retried). This resolves itself once all streams are on the
+        # manifest authenticator.
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
         return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
@@ -264,9 +274,16 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
+        # `check` is interactive and must answer in seconds, so it resolves with a zero wait
+        # budget. This replaces the deleted `exit_on_rate_limit = True if is_check_connection
+        # else False`: "PT0M" makes RateLimitedMultipleTokenAuthenticator._acquire_call raise
+        # "Rate limit is exceeded for all provided tokens." on an exhausted quota instead of
+        # sleeping up to `max_waiting_time` (120 minutes by default), which the platform would
+        # surface as an opaque timeout. `streams()` keeps the user-configured value, so
+        # sync-time waiting is unchanged.
+        check_config = {**config, "max_waiting_time": 0}
         try:
-            authenticator = self._get_authenticator(config)
-            _, repositories, _ = self._get_org_repositories(config=config, authenticator=authenticator, is_check_connection=True)
+            _, repositories = self._resolve_repositories_and_organizations(check_config)
             if not repositories:
                 return (
                     False,
@@ -285,17 +302,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
-        try:
-            organizations, repositories, pattern = self._get_org_repositories(config=config, authenticator=authenticator)
-        except Exception as e:
-            message = repr(e)
-            user_message = self.user_friendly_error_message(message)
-            if user_message:
-                raise AirbyteTracedException(
-                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
-                )
-            else:
-                raise e
+
+        organizations, repositories = self._resolve_repositories_and_organizations(config)
 
         if not any((organizations, repositories)):
             user_message = (
@@ -340,7 +348,12 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
-        return [
+        # Sync full config to CDK internal config so manifest streams can access it.
+        # YamlDeclarativeSource.streams() reads self._config, not the passed config arg.
+        if hasattr(self, "_config") and isinstance(self._config, dict):
+            self._config.update(config)
+
+        python_streams = [
             IssueTimelineEvents(**repository_args),
             Assignees(**repository_args),
             Branches(**repository_args),
@@ -368,7 +381,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args_with_start_date, pattern=pattern),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
@@ -381,3 +393,5 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]
+
+        return python_streams
