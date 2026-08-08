@@ -22,7 +22,12 @@ data:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
     breakingChanges:
       3.0.0:
         message: >

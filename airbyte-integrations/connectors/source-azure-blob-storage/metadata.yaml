@@ -42,7 +42,12 @@ data:
           memory_request: 4096Mi
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   supportLevel: certified
   supportsFileTransfer: true
   tags:
