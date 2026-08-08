@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 7, 2026
+
+Connectors
+
+- Gmail is now available to connect. Your agents can read and organize mail, including messages, threads, drafts, and labels, and setup asks you to sign in with your Google account rather than choosing between sign-in methods.
+
 ## July 21, 2026
 
 Web app
