@@ -681,12 +681,15 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -762,6 +765,7 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "country_code"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_day
       - country_code
@@ -769,6 +773,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -822,12 +828,15 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -878,6 +887,7 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "country_code"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_day
       - country_code
@@ -885,6 +895,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -934,12 +946,15 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day"]
     primary_key:
+      - advertiser_id
       - campaign_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1005,6 +1020,7 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day", "gender", "age"]
     primary_key:
+      - advertiser_id
       - campaign_id
       - stat_time_day
       - gender
@@ -1013,6 +1029,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1056,6 +1074,7 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "gender", "age"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_day
       - gender
@@ -1064,6 +1083,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -1110,6 +1131,7 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "gender", "age"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_day
       - gender
@@ -1118,6 +1140,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1165,6 +1189,7 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day", "country_code"]
     primary_key:
+      - advertiser_id
       - campaign_id
       - stat_time_day
       - country_code
@@ -1172,6 +1197,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1214,6 +1241,7 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "country_code"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_day
       - country_code
@@ -1221,6 +1249,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -1266,6 +1296,7 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "country_code"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_day
       - country_code
@@ -1273,6 +1304,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1317,6 +1350,7 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day", "platform"]
     primary_key:
+      - advertiser_id
       - campaign_id
       - stat_time_day
       - platform
@@ -1324,6 +1358,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1366,6 +1402,7 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "platform"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_day
       - platform
@@ -1373,6 +1410,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -1418,6 +1457,7 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "platform"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_day
       - platform
@@ -1425,6 +1465,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1495,6 +1537,7 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "province_id"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_day
       - province_id
@@ -1502,6 +1545,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1590,12 +1635,15 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_hour"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_hour
     $ref: "#/definitions/base_report_hourly"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["ad_id"]
@@ -1671,6 +1719,7 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_hour", "country_code"]
     primary_key:
+      - advertiser_id
       - ad_id
       - stat_time_hour
       - country_code
@@ -1678,6 +1727,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["ad_id"]
@@ -1726,12 +1777,15 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_hour"]
     primary_key:
+      - advertiser_id
       - campaign_id
       - stat_time_hour
     $ref: "#/definitions/base_report_hourly"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["campaign_id"]
@@ -1782,12 +1836,15 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_hour"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_hour
     $ref: "#/definitions/base_report_hourly"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["adgroup_id"]
@@ -1838,6 +1895,7 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_hour", "country_code"]
     primary_key:
+      - advertiser_id
       - adgroup_id
       - stat_time_hour
       - country_code
@@ -1845,6 +1903,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["adgroup_id"]
@@ -1926,11 +1986,14 @@ definitions:
         ]
       dimensions: ["ad_id"]
     primary_key:
+      - advertiser_id
       - ad_id
     $ref: "#/definitions/base_report_lifetime"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["ad_id"]
             value: "{{ record.dimensions.ad_id }}"
       - type: CustomTransformation
@@ -1963,11 +2026,14 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id"]
     primary_key:
+      - advertiser_id
       - campaign_id
     $ref: "#/definitions/base_report_lifetime"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["campaign_id"]
             value: "{{ record.dimensions.campaign_id }}"
       - type: CustomTransformation
@@ -2008,11 +2074,14 @@ definitions:
         ]
       dimensions: ["adgroup_id"]
     primary_key:
+      - advertiser_id
       - adgroup_id
     $ref: "#/definitions/base_report_lifetime"
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
       - type: CustomTransformation
