@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 7, 2026
+
+Connections
+
+- Some syncs now run faster. Airbyte correctly reads the processing capacity allotted to a sync and opens as many parallel data channels as that capacity allows, instead of falling back to a single channel.
+
 ## July 23, 2026
 
 Connections
