@@ -13,9 +13,9 @@ The Github connector supports the following entities and actions.
 | Branches | [List](#branches-list), [Get](#branches-get), [Context Store Search](#branches-context-store-search) |
 | Commits | [List](#commits-list), [Get](#commits-get), [Context Store Search](#commits-context-store-search) |
 | Releases | [List](#releases-list), [Get](#releases-get), [Context Store Search](#releases-context-store-search) |
-| Issues | [List](#issues-list), [Get](#issues-get), [API Search](#issues-api-search), [Create](#issues-create), [Update](#issues-update), [Context Store Search](#issues-context-store-search) |
-| Comments | [Create](#comments-create), [List](#comments-list), [Get](#comments-get), [Context Store Search](#comments-context-store-search) |
-| Pull Requests | [Create](#pull-requests-create), [List](#pull-requests-list), [Get](#pull-requests-get), [API Search](#pull-requests-api-search), [Context Store Search](#pull-requests-context-store-search) |
+| Issues | [List](#issues-list), [Get](#issues-get), [API Search](#issues-api-search), [Create](#issues-create), [Update](#issues-update), [Context Store Search](#issues-context-store-search), [Semantic Search](#issues-semantic-search) |
+| Comments | [Create](#comments-create), [List](#comments-list), [Get](#comments-get), [Context Store Search](#comments-context-store-search), [Semantic Search](#comments-semantic-search) |
+| Pull Requests | [Create](#pull-requests-create), [List](#pull-requests-list), [Get](#pull-requests-get), [API Search](#pull-requests-api-search), [Context Store Search](#pull-requests-context-store-search), [Semantic Search](#pull-requests-semantic-search) |
 | Reviews | [List](#reviews-list), [Context Store Search](#reviews-context-store-search) |
 | Pr Comments | [List](#pr-comments-list), [Get](#pr-comments-get), [Context Store Search](#pr-comments-context-store-search) |
 | Labels | [List](#labels-list), [Get](#labels-get), [Context Store Search](#labels-context-store-search) |
@@ -38,6 +38,21 @@ The Github connector supports the following entities and actions.
 ### Repositories Get
 
 Gets information about a specific GitHub repository using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "repositories",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -79,6 +94,20 @@ If not provided, uses default fields.
 ### Repositories List
 
 Returns a list of repositories for the specified user using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "repositories",
+  "action": "list",
+  "params": {
+    "username": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -136,6 +165,20 @@ Search for GitHub repositories using GitHub's powerful search syntax.
 Examples: "language:python stars:\>1000", "topic:machine-learning", "org:facebook is:public"
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "repositories",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -190,6 +233,26 @@ If not provided, uses default fields.
 ### Repositories Context Store Search
 
 Search and filter repositories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "repositories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -275,6 +338,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of repositories for the specified organization using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "org_repositories",
+  "action": "list",
+  "params": {
+    "org": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -326,6 +403,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Org Repositories Context Store Search
 
 Search and filter org repositories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "org_repositories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -385,6 +482,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of branches for the specified repository using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "branches",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -440,6 +552,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific branch using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "branches",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "branch": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -482,6 +610,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter branches records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "branches",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "name": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -521,7 +669,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `name` | `string` | Branch name (e.g. `main`, `feature/foo`) |
-| `prefix` | `string` | Git ref prefix for the branch (typically `refs/heads/`) |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -534,7 +681,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].name` | `string` | Branch name (e.g. `main`, `feature/foo`) |
-| `data[].prefix` | `string` | Git ref prefix for the branch (typically `refs/heads/`) |
 
 </details>
 
@@ -543,6 +689,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Commits List
 
 Returns a list of commits for the default branch using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "commits",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -600,6 +761,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific commit by SHA using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "commits",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "sha": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -642,11 +819,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter commits records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "commits",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "sha": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
 await github.commits.context_store_search(
-    query={"filter": {"eq": {"oid": "<str>"}}}
+    query={"filter": {"eq": {"sha": "<str>"}}}
 )
 ```
 
@@ -660,7 +857,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
     "entity": "commits",
     "action": "context_store_search",
     "params": {
-        "query": {"filter": {"eq": {"oid": "<str>"}}}
+        "query": {"filter": {"eq": {"sha": "<str>"}}}
     }
 }'
 ```
@@ -680,16 +877,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `oid` | `string` | Full Git commit SHA |
-| `abbreviatedOid` | `string` | Abbreviated Git commit SHA (typically 7 characters) |
-| `messageHeadline` | `string` | First line of the commit message |
-| `message` | `string` | Full commit message |
-| `committedDate` | `string` | ISO 8601 timestamp when the commit was applied to its tree |
-| `authoredDate` | `string` | ISO 8601 timestamp when the commit was originally authored |
-| `additions` | `integer` | Number of lines added across all files in the commit |
-| `deletions` | `integer` | Number of lines deleted across all files in the commit |
-| `changedFiles` | `integer` | Number of files changed in the commit |
+| `sha` | `string` | Full Git commit SHA |
 | `url` | `string` | Permalink to the commit on GitHub |
+| `createdAt` | `string` | ISO 8601 timestamp of the commit |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -701,16 +891,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.has_more` | `boolean` | Whether additional pages are available |
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
-| `data[].oid` | `string` | Full Git commit SHA |
-| `data[].abbreviatedOid` | `string` | Abbreviated Git commit SHA (typically 7 characters) |
-| `data[].messageHeadline` | `string` | First line of the commit message |
-| `data[].message` | `string` | Full commit message |
-| `data[].committedDate` | `string` | ISO 8601 timestamp when the commit was applied to its tree |
-| `data[].authoredDate` | `string` | ISO 8601 timestamp when the commit was originally authored |
-| `data[].additions` | `integer` | Number of lines added across all files in the commit |
-| `data[].deletions` | `integer` | Number of lines deleted across all files in the commit |
-| `data[].changedFiles` | `integer` | Number of files changed in the commit |
+| `data[].sha` | `string` | Full Git commit SHA |
 | `data[].url` | `string` | Permalink to the commit on GitHub |
+| `data[].createdAt` | `string` | ISO 8601 timestamp of the commit |
 
 </details>
 
@@ -719,6 +902,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Releases List
 
 Returns a list of releases for the specified repository using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "releases",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -775,6 +973,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific release by tag name using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "releases",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "tag": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -816,6 +1030,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Releases Context Store Search
 
 Search and filter releases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "releases",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -895,6 +1129,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of issues for the specified repository using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -951,6 +1200,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific issue using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -992,6 +1257,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues API Search
 
 Search for issues using GitHub's search syntax
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1048,6 +1327,26 @@ Creates a new issue in the specified repository.
 Any user with pull access to a repository can create an issue.
 Labels and assignees are silently dropped if the authenticated user does not have push access.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "body": "<str>",
+    "labels": [],
+    "assignees": [],
+    "milestone": 0,
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1149,6 +1448,29 @@ Updates an existing issue in the specified repository.
 Use this to close/reopen issues, change title/body, add/remove labels, assign users, or set milestones.
 Any user with push access can update an issue.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "update",
+  "params": {
+    "title": "<str>",
+    "body": "<str>",
+    "state": "<str>",
+    "state_reason": "<str>",
+    "labels": [],
+    "assignees": [],
+    "milestone": 0,
+    "owner": "<str>",
+    "repo": "<str>",
+    "issue_number": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1257,6 +1579,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1299,8 +1641,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `databaseId` | `integer` | REST API numeric identifier for the issue |
 | `number` | `integer` | Repository-scoped issue number |
 | `title` | `string` | Issue title |
-| `state` | `string` | Issue state: `OPEN` or `CLOSED` |
-| `stateReason` | `string` | Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`) |
+| `body` | `string` | Markdown body (description) of the issue |
+| `state` | `string` | Issue state in the cache: lowercase `open` or `closed` |
+| `stateReason` | `string` | Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase. |
 | `createdAt` | `string` | ISO 8601 timestamp when the issue was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the issue was last updated |
 | `closedAt` | `string` | ISO 8601 timestamp when the issue was closed, if applicable |
@@ -1321,13 +1664,101 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].databaseId` | `integer` | REST API numeric identifier for the issue |
 | `data[].number` | `integer` | Repository-scoped issue number |
 | `data[].title` | `string` | Issue title |
-| `data[].state` | `string` | Issue state: `OPEN` or `CLOSED` |
-| `data[].stateReason` | `string` | Reason the issue is in its current state (e.g. `COMPLETED`, `NOT_PLANNED`) |
+| `data[].body` | `string` | Markdown body (description) of the issue |
+| `data[].state` | `string` | Issue state in the cache: lowercase `open` or `closed` |
+| `data[].stateReason` | `string` | Reason the issue is in its current state (e.g. `completed`, `not_planned`, `reopened`). Cached values are lowercase. |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the issue was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the issue was last updated |
 | `data[].closedAt` | `string` | ISO 8601 timestamp when the issue was closed, if applicable |
 | `data[].locked` | `boolean` | Whether the conversation on the issue is locked |
 | `data[].url` | `string` | Permalink to the issue on GitHub |
+
+</details>
+
+### Issues Semantic Search
+
+Search issues records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass a `semantic` object to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `issues.context_store_search` helper only accepts `query`.
+
+```python
+await github.execute(
+    "issues",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Markdown body (description) of the issue |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.number` | `string` | Source record field |
+| `data[].entity.state` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.html_url` | `string` | Source record field |
+| `data[].entity.node_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1339,6 +1770,23 @@ Creates a comment on the specified issue.
 This endpoint works for both issues and pull requests, since pull requests are issues.
 Any user with read access can create a comment.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "comments",
+  "action": "create",
+  "params": {
+    "body": "<str>",
+    "owner": "<str>",
+    "repo": "<str>",
+    "issue_number": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1407,6 +1855,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of comments for the specified issue using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1470,6 +1934,20 @@ not a numeric database ID. You can obtain node IDs from the Comments_List respon
 where each comment includes both 'id' (node ID) and 'databaseId' (numeric ID).
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "comments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1505,6 +1983,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Context Store Search
 
 Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1550,7 +2048,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `createdAt` | `string` | ISO 8601 timestamp when the comment was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the comment was last updated |
 | `url` | `string` | Permalink to the comment on GitHub |
-| `isMinimized` | `boolean` | Whether the comment has been hidden/collapsed |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1568,7 +2065,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the comment was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the comment was last updated |
 | `data[].url` | `string` | Permalink to the comment on GitHub |
-| `data[].isMinimized` | `boolean` | Whether the comment has been hidden/collapsed |
+
+</details>
+
+### Comments Semantic Search
+
+Search comments records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass a `semantic` object to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `comments.context_store_search` helper only accepts `query`.
+
+```python
+await github.execute(
+    "comments",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "comments",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Markdown body of the comment |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.html_url` | `string` | Source record field |
+| `data[].entity.node_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1579,6 +2160,27 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Creates a new pull request in the specified repository.
 To open or update a pull request in a public repository, you must have write access to the head or the source branch.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pull_requests",
+  "action": "create",
+  "params": {
+    "title": "<str>",
+    "head": "<str>",
+    "base": "<str>",
+    "body": "<str>",
+    "draft": true,
+    "maintainer_can_modify": true,
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1678,6 +2280,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of pull requests for the specified repository using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pull_requests",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1734,6 +2351,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific pull request using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pull_requests",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1775,6 +2408,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pull Requests API Search
 
 Search for pull requests using GitHub's search syntax
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pull_requests",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1829,6 +2476,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter pull requests records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pull_requests",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1871,15 +2538,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `databaseId` | `integer` | REST API numeric identifier for the pull request |
 | `number` | `integer` | Repository-scoped pull request number |
 | `title` | `string` | Pull request title |
-| `state` | `string` | Pull request state: `OPEN`, `CLOSED`, or `MERGED` |
+| `body` | `string` | Markdown body (description) of the pull request |
+| `state` | `string` | Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs) |
 | `isDraft` | `boolean` | Whether the pull request is still a draft |
-| `merged` | `boolean` | Whether the pull request has been merged |
 | `createdAt` | `string` | ISO 8601 timestamp when the pull request was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the pull request was last updated |
 | `closedAt` | `string` | ISO 8601 timestamp when the pull request was closed, if applicable |
 | `mergedAt` | `string` | ISO 8601 timestamp when the pull request was merged, if applicable |
-| `baseRefName` | `string` | Name of the branch being merged into |
-| `headRefName` | `string` | Name of the branch with the proposed changes |
 | `url` | `string` | Permalink to the pull request on GitHub |
 
 <details>
@@ -1896,16 +2561,101 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].databaseId` | `integer` | REST API numeric identifier for the pull request |
 | `data[].number` | `integer` | Repository-scoped pull request number |
 | `data[].title` | `string` | Pull request title |
-| `data[].state` | `string` | Pull request state: `OPEN`, `CLOSED`, or `MERGED` |
+| `data[].body` | `string` | Markdown body (description) of the pull request |
+| `data[].state` | `string` | Pull request state in the cache: lowercase `open` or `closed` (REST API has no `merged` state; check `mergedAt` to distinguish merged PRs) |
 | `data[].isDraft` | `boolean` | Whether the pull request is still a draft |
-| `data[].merged` | `boolean` | Whether the pull request has been merged |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the pull request was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the pull request was last updated |
 | `data[].closedAt` | `string` | ISO 8601 timestamp when the pull request was closed, if applicable |
 | `data[].mergedAt` | `string` | ISO 8601 timestamp when the pull request was merged, if applicable |
-| `data[].baseRefName` | `string` | Name of the branch being merged into |
-| `data[].headRefName` | `string` | Name of the branch with the proposed changes |
 | `data[].url` | `string` | Permalink to the pull request on GitHub |
+
+</details>
+
+### Pull Requests Semantic Search
+
+Search pull requests records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass a `semantic` object to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pull_requests",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `pull_requests.context_store_search` helper only accepts `query`.
+
+```python
+await github.execute(
+    "pull_requests",
+    "context_store_search",
+    {"semantic": {"field": "body", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "pull_requests",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "body", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `body` | 2048 | Markdown body (description) of the pull request |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.number` | `string` | Source record field |
+| `data[].entity.state` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.html_url` | `string` | Source record field |
+| `data[].entity.node_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1914,6 +2664,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reviews List
 
 Returns a list of reviews for the specified pull request using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "reviews",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1973,6 +2739,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter reviews records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "reviews",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2013,7 +2799,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `id` | `string` | GraphQL node ID of the review |
 | `databaseId` | `integer` | REST API numeric identifier for the review |
-| `state` | `string` | Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
+| `state` | `string` | Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
 | `body` | `string` | Review body text |
 | `submittedAt` | `string` | ISO 8601 timestamp when the review was submitted |
 | `createdAt` | `string` | ISO 8601 timestamp when the review was created |
@@ -2032,7 +2818,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].id` | `string` | GraphQL node ID of the review |
 | `data[].databaseId` | `integer` | REST API numeric identifier for the review |
-| `data[].state` | `string` | Review state: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
+| `data[].state` | `string` | Review state in the cache: `PENDING`, `COMMENTED`, `APPROVED`, `CHANGES_REQUESTED`, or `DISMISSED` |
 | `data[].body` | `string` | Review body text |
 | `data[].submittedAt` | `string` | ISO 8601 timestamp when the review was submitted |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the review was created |
@@ -2046,6 +2832,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pr Comments List
 
 Returns a list of comments for the specified pull request using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pr_comments",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2110,6 +2912,20 @@ not a numeric database ID. You can obtain node IDs from the PRComments_List resp
 where each comment includes both 'id' (node ID) and 'databaseId' (numeric ID).
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pr_comments",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2145,6 +2961,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Pr Comments Context Store Search
 
 Search and filter pr comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "pr_comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2204,6 +3040,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of labels for the specified repository using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "labels",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2259,6 +3110,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific label by name using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "labels",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "name": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2300,6 +3167,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Labels Context Store Search
 
 Search and filter labels records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "labels",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2343,8 +3230,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `name` | `string` | Label name |
 | `color` | `string` | Label color as a 6-character hex string without a leading `#` |
 | `description` | `string` | Short description of what the label is used for |
-| `createdAt` | `string` | ISO 8601 timestamp when the label was created |
-| `url` | `string` | Permalink to the label on GitHub |
+| `url` | `string` | API URL to the label resource |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -2360,8 +3246,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].name` | `string` | Label name |
 | `data[].color` | `string` | Label color as a 6-character hex string without a leading `#` |
 | `data[].description` | `string` | Short description of what the label is used for |
-| `data[].createdAt` | `string` | ISO 8601 timestamp when the label was created |
-| `data[].url` | `string` | Permalink to the label on GitHub |
+| `data[].url` | `string` | API URL to the label resource |
 
 </details>
 
@@ -2370,6 +3255,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Milestones List
 
 Returns a list of milestones for the specified repository using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "milestones",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2427,6 +3327,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific milestone by number using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "milestones",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2468,6 +3384,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Milestones Context Store Search
 
 Search and filter milestones records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "milestones",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2511,12 +3447,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `number` | `integer` | Repository-scoped milestone number |
 | `title` | `string` | Milestone title |
 | `description` | `string` | Milestone description |
-| `state` | `string` | Milestone state: `OPEN` or `CLOSED` |
+| `state` | `string` | Milestone state in the cache: lowercase `open` or `closed` |
 | `dueOn` | `string` | ISO 8601 timestamp for the milestone's due date, if set |
 | `closedAt` | `string` | ISO 8601 timestamp when the milestone was closed, if applicable |
 | `createdAt` | `string` | ISO 8601 timestamp when the milestone was created |
 | `updatedAt` | `string` | ISO 8601 timestamp when the milestone was last updated |
-| `progressPercentage` | `number` | Percentage of associated issues/PRs that are closed |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -2532,12 +3467,11 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].number` | `integer` | Repository-scoped milestone number |
 | `data[].title` | `string` | Milestone title |
 | `data[].description` | `string` | Milestone description |
-| `data[].state` | `string` | Milestone state: `OPEN` or `CLOSED` |
+| `data[].state` | `string` | Milestone state in the cache: lowercase `open` or `closed` |
 | `data[].dueOn` | `string` | ISO 8601 timestamp for the milestone's due date, if set |
 | `data[].closedAt` | `string` | ISO 8601 timestamp when the milestone was closed, if applicable |
 | `data[].createdAt` | `string` | ISO 8601 timestamp when the milestone was created |
 | `data[].updatedAt` | `string` | ISO 8601 timestamp when the milestone was last updated |
-| `data[].progressPercentage` | `number` | Percentage of associated issues/PRs that are closed |
 
 </details>
 
@@ -2546,6 +3480,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Organizations Get
 
 Gets information about a specific organization using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "organizations",
+  "action": "get",
+  "params": {
+    "org": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2582,6 +3530,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Organizations List
 
 Returns a list of organizations the user belongs to using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "organizations",
+  "action": "list",
+  "params": {
+    "username": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2634,6 +3596,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Organizations Context Store Search
 
 Search and filter organizations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "organizations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2711,6 +3693,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific user using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "username": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2746,6 +3742,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users List
 
 Returns a list of members for the specified organization using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "users",
+  "action": "list",
+  "params": {
+    "org": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2798,6 +3808,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users API Search
 
 Search for GitHub users using search syntax
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "users",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2852,6 +3876,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2893,14 +3937,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `string` | GraphQL node ID of the user |
 | `databaseId` | `integer` | REST API numeric identifier for the user |
 | `login` | `string` | User login/handle |
-| `name` | `string` | Public display name of the user, if set |
-| `email` | `string` | Public email address of the user, if set |
-| `company` | `string` | Public company affiliation of the user, if set |
-| `location` | `string` | Public location of the user, if set |
-| `twitterUsername` | `string` | Public Twitter/X username of the user, if set |
 | `url` | `string` | Permalink to the user's profile on GitHub |
-| `createdAt` | `string` | ISO 8601 timestamp when the user account was created |
-| `isHireable` | `boolean` | Whether the user has marked themselves as available for hire |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -2915,14 +3952,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].id` | `string` | GraphQL node ID of the user |
 | `data[].databaseId` | `integer` | REST API numeric identifier for the user |
 | `data[].login` | `string` | User login/handle |
-| `data[].name` | `string` | Public display name of the user, if set |
-| `data[].email` | `string` | Public email address of the user, if set |
-| `data[].company` | `string` | Public company affiliation of the user, if set |
-| `data[].location` | `string` | Public location of the user, if set |
-| `data[].twitterUsername` | `string` | Public Twitter/X username of the user, if set |
 | `data[].url` | `string` | Permalink to the user's profile on GitHub |
-| `data[].createdAt` | `string` | ISO 8601 timestamp when the user account was created |
-| `data[].isHireable` | `boolean` | Whether the user has marked themselves as available for hire |
 
 </details>
 
@@ -2931,6 +3961,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams List
 
 Returns a list of teams for the specified organization using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "teams",
+  "action": "list",
+  "params": {
+    "org": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2984,6 +4028,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific team using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "org": "<str>",
+    "team_slug": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3022,6 +4081,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3066,10 +4145,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `slug` | `string` | URL-friendly slug for the team within its organization |
 | `name` | `string` | Display name of the team |
 | `description` | `string` | Short description of the team |
-| `privacy` | `string` | Team visibility: `SECRET` or `VISIBLE` |
+| `privacy` | `string` | Team visibility: `secret` or `closed` (REST API values) |
 | `url` | `string` | Permalink to the team on GitHub |
-| `createdAt` | `string` | ISO 8601 timestamp when the team was created |
-| `updatedAt` | `string` | ISO 8601 timestamp when the team was last updated |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -3086,10 +4163,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].slug` | `string` | URL-friendly slug for the team within its organization |
 | `data[].name` | `string` | Display name of the team |
 | `data[].description` | `string` | Short description of the team |
-| `data[].privacy` | `string` | Team visibility: `SECRET` or `VISIBLE` |
+| `data[].privacy` | `string` | Team visibility: `secret` or `closed` (REST API values) |
 | `data[].url` | `string` | Permalink to the team on GitHub |
-| `data[].createdAt` | `string` | ISO 8601 timestamp when the team was created |
-| `data[].updatedAt` | `string` | ISO 8601 timestamp when the team was last updated |
 
 </details>
 
@@ -3098,6 +4173,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags List
 
 Returns a list of tags for the specified repository using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "tags",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3154,6 +4244,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific tag by name using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "tags",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "tag": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3196,6 +4302,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "name": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3235,7 +4361,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `name` | `string` | Tag name (e.g. `v1.2.3`) |
-| `prefix` | `string` | Git ref prefix for the tag (typically `refs/tags/`) |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -3248,7 +4373,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `meta.cursor` | `string \| null` | Cursor for next page of results |
 | `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 | `data[].name` | `string` | Tag name (e.g. `v1.2.3`) |
-| `data[].prefix` | `string` | Git ref prefix for the tag (typically `refs/tags/`) |
 
 </details>
 
@@ -3257,6 +4381,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Stargazers List
 
 Returns a list of users who have starred the repository using GraphQL
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "stargazers",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3312,6 +4451,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Stargazers Context Store Search
 
 Search and filter stargazers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "stargazers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "starredAt": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3376,6 +4535,17 @@ This is useful when you don't know the username but need to access
 the current user's profile, permissions, or associated resources.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "viewer",
+  "action": "get"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3405,6 +4575,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Viewer Context Store Search
 
 Search and filter viewer records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "viewer",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3467,6 +4657,17 @@ Unlike Repositories_List which requires a username, this endpoint
 automatically lists repositories for the current authenticated user.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "viewer_repositories",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3512,6 +4713,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Viewer Repositories Context Store Search
 
 Search and filter viewer repositories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "viewer_repositories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3573,6 +4794,20 @@ Returns a list of GitHub Projects V2 for the specified organization.
 Projects V2 are the new project boards that replaced classic projects.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "projects",
+  "action": "list",
+  "params": {
+    "org": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3625,6 +4860,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific GitHub Project V2 by number
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "org": "<str>",
+    "project_number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3663,6 +4913,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3742,6 +5012,21 @@ Returns a list of items (issues, pull requests, draft issues) in a GitHub Projec
 Each item includes its field values like Status, Priority, etc.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "project_items",
+  "action": "list",
+  "params": {
+    "org": "<str>",
+    "project_number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3796,6 +5081,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Project Items Context Store Search
 
 Search and filter project items records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "project_items",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3855,6 +5160,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of discussions for the specified repository using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "discussions",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3912,6 +5232,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Gets information about a specific discussion by number using GraphQL
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "discussions",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "number": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3953,6 +5289,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Discussions API Search
 
 Search for discussions using GitHub's search syntax
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "discussions",
+  "action": "api_search",
+  "params": {
+    "query": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4006,6 +5356,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Discussions Context Store Search
 
 Search and filter discussions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "discussions",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4067,6 +5437,22 @@ Returns the text content of a file at a specific path and git ref (branch, tag, 
 Only works for text files. Binary files will have text as null and isBinary as true.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "file_content",
+  "action": "get",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "path": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4109,6 +5495,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### File Content Context Store Search
 
 Search and filter file content records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "file_content",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -4171,6 +5577,22 @@ Each entry includes the name, type (blob for files, tree for directories), and o
 Use this to explore repository structure before reading specific files.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "directory_content",
+  "action": "list",
+  "params": {
+    "owner": "<str>",
+    "repo": "<str>",
+    "path": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -4213,6 +5635,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Directory Content Context Store Search
 
 Search and filter directory content records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "github",
+  "entity": "directory_content",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

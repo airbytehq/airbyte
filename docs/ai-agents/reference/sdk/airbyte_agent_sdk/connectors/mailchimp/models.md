@@ -62,10 +62,18 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[AutomationsSearchData]
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[CampaignsSearchData]
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[EmailActivitySearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[InterestCategoriesSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[InterestsSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[ListMembersSearchData]
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[ListsSearchData]
     * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[ReportsSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[SegmentMembersSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[SegmentsSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[TagsSearchData]
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[UnsubscribesSearchData]
 
     ### Class variables
 
@@ -77,6 +85,45 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+`AirbyteSearchResult[AutomationsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AutomationsSearchResult"></a>
+
+`AutomationsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
 
 `AirbyteSearchResult[CampaignsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -156,6 +203,123 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+`AirbyteSearchResult[InterestCategoriesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="InterestCategoriesSearchResult"></a>
+
+`InterestCategoriesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[InterestsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="InterestsSearchResult"></a>
+
+`InterestsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[ListMembersSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ListMembersSearchResult"></a>
+
+`ListMembersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 `AirbyteSearchResult[ListsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
@@ -219,6 +383,162 @@ Classes
 <a id="ReportsSearchResult"></a>
 
 `ReportsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[SegmentMembersSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SegmentMembersSearchResult"></a>
+
+`SegmentMembersSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[SegmentsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="SegmentsSearchResult"></a>
+
+`SegmentsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[TagsSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TagsSearchResult"></a>
+
+`TagsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`AirbyteSearchResult[UnsubscribesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="UnsubscribesSearchResult"></a>
+
+`UnsubscribesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -527,6 +847,54 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="AutomationsSearchData"></a>
+
+`AutomationsSearchData(**data: Any)`
+:   Search result data for automations entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `create_time: str | None`
+    :   The date and time the Automation was created
+
+    `emails_sent: int | None`
+    :   The total number of emails sent for the Automation
+
+    `id: str`
+    :   A string that uniquely identifies an Automation workflow
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `recipients: dict[str, typing.Any] | None`
+    :   List settings for the Automation
+
+    `report_summary: dict[str, typing.Any] | None`
+    :   A summary of opens and clicks for sent campaigns
+
+    `settings: dict[str, typing.Any] | None`
+    :   The settings for the Automation workflow
+
+    `start_time: str | None`
+    :   The date and time the Automation was started
+
+    `status: str | None`
+    :   The current status of the Automation
+
+    `tracking: dict[str, typing.Any] | None`
+    :   The tracking options for the Automation
 
 <a id="Campaign"></a>
 
@@ -1278,6 +1646,42 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="InterestCategoriesSearchData"></a>
+
+`InterestCategoriesSearchData(**data: Any)`
+:   Search result data for interest_categories entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `display_order: int | None`
+    :   The order that the categories are displayed in the list
+
+    `id: str`
+    :   The id for the interest category
+
+    `list_id: str | None`
+    :   The unique list id for the category
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `title: str | None`
+    :   The text description of this category
+
+    `type_: str | None`
+    :   Determines how this category's interests appear on signup forms
+
 <a id="InterestCategory"></a>
 
 `InterestCategory(**data: Any)`
@@ -1373,6 +1777,45 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="InterestsSearchData"></a>
+
+`InterestsSearchData(**data: Any)`
+:   Search result data for interests entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `category_id: str | None`
+    :   The id for the interest category
+
+    `display_order: int | None`
+    :   The display order for interests
+
+    `id: str`
+    :   The ID for the interest
+
+    `list_id: str | None`
+    :   The ID for the list that this interest belongs to
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The name of the interest
+
+    `subscriber_count: str | None`
+    :   The number of subscribers associated with this interest
 
 <a id="Link"></a>
 
@@ -1857,6 +2300,108 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="ListMembersSearchData"></a>
+
+`ListMembersSearchData(**data: Any)`
+:   Search result data for list_members entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `consents_to_one_to_one_messaging: bool | None`
+    :   Indicates whether a contact consents to 1:1 messaging
+
+    `contact_id: str | None`
+    :   As Mailchimp evolves beyond email, you may eventually have contacts without email addresses
+
+    `email_address: str | None`
+    :   Email address for a subscriber
+
+    `email_client: str | None`
+    :   The list member's email client
+
+    `email_type: str | None`
+    :   Type of email this member asked to get
+
+    `full_name: str | None`
+    :   The contact's full name
+
+    `id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: dict[str, typing.Any] | None`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: str | None`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: str | None`
+    :   IP address the subscriber signed up from
+
+    `language: str | None`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: str | None`
+    :   The date and time the member's info was last changed
+
+    `list_id: str | None`
+    :   The list id
+
+    `location: dict[str, typing.Any] | None`
+    :   Subscriber location information
+
+    `member_rating: int | None`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: dict[str, typing.Any] | None`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `source: str | None`
+    :   The source from which the subscriber was added to this list
+
+    `stats: dict[str, typing.Any] | None`
+    :   Open and click rates for this subscriber
+
+    `status: str | None`
+    :   Subscriber's current status
+
+    `tags: list[typing.Any] | None`
+    :   Returns up to 50 tags applied to this member
+
+    `tags_count: int | None`
+    :   The number of tags applied to this member
+
+    `timestamp_opt: str | None`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: str | None`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: str | None`
+    :   An identifier for the address across all of Mailchimp
+
+    `unsubscribe_reason: str | None`
+    :   A subscriber's reason for unsubscribing
+
+    `vip: bool | None`
+    :   VIP status for subscriber
+
+    `web_id: int | None`
+    :   The ID used in the Mailchimp web application
+
 <a id="ListStats"></a>
 
 `ListStats(**data: Any)`
@@ -2194,7 +2739,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `MailchimpExecuteResultWithMeta[list[Automation], AutomationsListResultMeta](**data: Any)`
@@ -3508,6 +4053,84 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SegmentMembersSearchData"></a>
+
+`SegmentMembersSearchData(**data: Any)`
+:   Search result data for segment_members entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `email_address: str | None`
+    :   Email address for a subscriber
+
+    `email_client: str | None`
+    :   The list member's email client
+
+    `email_type: str | None`
+    :   Type of email this member asked to get
+
+    `id: str`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `interests: dict[str, typing.Any] | None`
+    :   The key of this object's properties is the ID of the interest in question
+
+    `ip_opt: str | None`
+    :   The IP address the subscriber used to confirm their opt-in status
+
+    `ip_signup: str | None`
+    :   IP address the subscriber signed up from
+
+    `language: str | None`
+    :   If set/detected, the subscriber's language
+
+    `last_changed: str | None`
+    :   The date and time the member's info was last changed
+
+    `list_id: str | None`
+    :   The list id
+
+    `location: dict[str, typing.Any] | None`
+    :   Subscriber location information
+
+    `member_rating: int | None`
+    :   Star rating for this member, between 1 and 5
+
+    `merge_fields: dict[str, typing.Any] | None`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `stats: dict[str, typing.Any] | None`
+    :   Open and click rates for this subscriber
+
+    `status: str | None`
+    :   Subscriber's current status
+
+    `timestamp_opt: str | None`
+    :   The date and time the subscriber confirmed their opt-in status
+
+    `timestamp_signup: str | None`
+    :   The date and time the subscriber signed up for the list
+
+    `unique_email_id: str | None`
+    :   An identifier for the address across all of Mailchimp
+
+    `vip: bool | None`
+    :   VIP status for subscriber
+
 <a id="SegmentOptions"></a>
 
 `SegmentOptions(**data: Any)`
@@ -3592,6 +4215,51 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="SegmentsSearchData"></a>
+
+`SegmentsSearchData(**data: Any)`
+:   Search result data for segments entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   The date and time the segment was created
+
+    `id: int`
+    :   The unique id for the segment
+
+    `list_id: str | None`
+    :   The list id
+
+    `member_count: int | None`
+    :   The number of active subscribers currently included in the segment
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The name of the segment
+
+    `options: dict[str, typing.Any] | None`
+    :   The conditions of the segment
+
+    `type_: str | None`
+    :   The type of segment
+
+    `updated_at: str | None`
+    :   The date and time the segment was last updated
+
 <a id="Tag"></a>
 
 `Tag(**data: Any)`
@@ -3672,6 +4340,33 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="TagsSearchData"></a>
+
+`TagsSearchData(**data: Any)`
+:   Search result data for tags entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: int`
+    :   The unique id for the tag
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The name of the tag
 
 <a id="Unsubscribe"></a>
 
@@ -3777,3 +4472,51 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
+
+<a id="UnsubscribesSearchData"></a>
+
+`UnsubscribesSearchData(**data: Any)`
+:   Search result data for unsubscribes entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `campaign_id: str | None`
+    :   The campaign id
+
+    `email_address: str | None`
+    :   Email address for a subscriber
+
+    `email_id: str | None`
+    :   The MD5 hash of the lowercase version of the list member's email address
+
+    `list_id: str | None`
+    :   The list id
+
+    `list_is_active: bool | None`
+    :   The status of the list used
+
+    `merge_fields: dict[str, typing.Any] | None`
+    :   A dictionary of merge fields where the keys are the merge tags
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `reason: str | None`
+    :   If available, the reason listed by the member for unsubscribing
+
+    `timestamp: str | None`
+    :   The date and time the member opted-out
+
+    `vip: bool | None`
+    :   VIP status for subscriber

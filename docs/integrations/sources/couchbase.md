@@ -81,10 +81,15 @@ The connector is rate limited by the Couchbase server or Couchbase Capella clust
 
 For Capella users, be aware of your cluster's performance limits and pricing tier. You may need to upgrade your cluster if you're replicating large amounts of data or require higher throughput.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.9 | 2026-06-02 | [78669](https://github.com/airbytehq/airbyte/pull/78669) | Update dependencies |
 | 0.1.8 | 2025-05-24 | [60362](https://github.com/airbytehq/airbyte/pull/60362) | Update dependencies |
 | 0.1.7 | 2025-05-10 | [59945](https://github.com/airbytehq/airbyte/pull/59945) | Update dependencies |
 | 0.1.6 | 2025-05-03 | [59406](https://github.com/airbytehq/airbyte/pull/59406) | Update dependencies |

@@ -1,19 +1,40 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'application'
+    id 'airbyte-bulk-connector'
     id "io.airbyte.gradle.docker"
     id 'airbyte-connector-docker-convention'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.20.8'
-    features = ['db-destinations', 'gcs-destinations']
-    useLocalCdk = false
-}
-
-application {
-    mainClass = 'io.airbyte.integrations.destination.gcs.GcsDestination'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+airbyteBulkConnector {
+    core = 'load'
+    // Mirror of destination-s3's ['legacy-task-load-s3','legacy-task-load-avro','load-aws'], with the
+    // AWS/S3 storage pieces swapped for GCS:
+    //  - legacy-task-load-gcs   : GcsClient (GcsS3Client), GcsClientFactory (@Replaces S3Client),
+    //                             GcsClientConfiguration, GCS spec mixins. Transitively api-depends
+    //                             on legacy-task-load-object-storage + legacy-task-load-s3 + load-gcp.
+    //  - legacy-task-load-avro  : Avro writer + snappy CodecFactory (identical to S3).
+    //  - load-aws               : NOT for S3 storage — pulled in ONLY for AwsToolkitConstants
+    //                             ("aws" Micronaut env) + AWSAccessKey/Arn config classes that
+    //                             GcsClientFactory feeds into S3ClientFactory under the hood.
+    toolkits = ['legacy-task-load-gcs', 'legacy-task-load-avro', 'load-aws']
+    useLegacyTaskLoader = true
 }
 
 dependencies {
+    // The integration-test data dumper reuses the CDK's ObjectStorageDataDumper, which lives in the
+    // legacy-task-load-object-storage test fixtures. destination-s3 gets it transitively because
+    // legacy-task-load-s3 re-exports those fixtures; legacy-task-load-gcs does not, so depend on
+    // them directly here (pinned to the same CDK version as the toolkits).
+    integrationTestImplementation testFixtures("io.airbyte.bulk-cdk:bulk-cdk-toolkit-legacy-task-load-object-storage:$cdkVersion")
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.gcs_v2.GcsV2Destination'
+
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+// Exclude conflicting log4j-over-slf4j dependency
+configurations.all {
+    exclude group: "org.slf4j", module: "slf4j-reload4j"
 }

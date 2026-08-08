@@ -56,3 +56,64 @@ enable this setting.
 uses `byPage` or `search_analytics_site_report_by_site` which uses `byProperty`) will fail with a 400
 error for some customers. The error looks like a connector bug but is actually a Google API limitation
 based on the customer's property type. This config option is the escape hatch.
+
+## Incremental Stream Considerations
+
+The Google Search Console API supports date-based filtering via `startDate`/`endDate` parameters. The connector uses Python custom components referenced from the manifest.
+
+**Connector type:** Python custom components (hybrid manifest + Python)
+
+**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review.
+
+### Future incremental stream candidates
+
+- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+
+---
+
+## 4. Two-Step Search Appearance Keyword Reports
+
+The keyword report streams (`search_analytics_keyword_page_report`,
+`search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site`)
+cannot request `searchAppearance` alongside other dimensions directly. They first call Search Analytics
+with `dimensions: ["searchAppearance"]`, then fan out child requests with `dimensionFilterGroups` for
+each valid appearance value.
+
+The parent stream deliberately filters empty/null appearance rows before child partitioning, while concrete
+appearance values such as `FAQ` are passed through as normal discovered partitions. Without the empty/null
+filter, the child stream can query malformed appearance partitions.
+
+**Why this matters:** Do not re-add a child `site_urls` router, remove the parent `RecordFilter`, or
+special-case upstream appearance values when touching keyword streams. The parent slice already carries
+both site and appearance context.
+
+### Retired appearance values require no connector change
+
+Google retires search appearance types over time. FAQ is the current example: rich results stopped
+appearing in Search in May 2026, and Google's
+[FAQ structured data documentation](https://developers.google.com/search/docs/appearance/structured-data/faqpage)
+announced removal of FAQ rich result data from the Search Console API in August 2026. This was audited
+(oncall#12701) and needs no code change. Four properties of the design make a retired value a non-event:
+
+1. **Appearance values are discovered, never hard-coded.** The parent stream enumerates whatever
+   `searchAppearance` rows the API returns, so a retired value drops out on its own.
+2. **The parent is stateless.** It has no `incremental_sync` and re-queries the full configured date
+   range every sync, so no stale value can be replayed from state.
+3. **`search_appearance` is a plain nullable string** in all three schemas, with no enum, so a retired
+   value is not a schema change.
+4. **Appearances are partitions, not dynamic streams.** The catalog is fixed; no stream appears or
+   disappears. (The `dynamic_streams` block is for config-driven custom reports and is unrelated.)
+
+Do not add a filter or special case for a retired value. Because the parent enumerates over the full
+configured date range, a value may legitimately keep returning historical data long after Google stops
+attributing new traffic to it — excluding it by name would discard data the API is still serving.
+
+Two things to know when a value does go away:
+
+- `search_appearance` is part of these streams' primary key and syncs do not delete rows, so records
+  already synced for a retired value stay in the destination and keep contributing to any aggregate.
+- The value on each record is stamped from the partition (`AddFields`), not read from the response — the
+  API cannot return `searchAppearance` alongside other dimensions. So if Google ever silently ignored an
+  unrecognized filter value instead of rejecting it (the behavior documented above for *empty* values),
+  the child would emit whole-site aggregate rows labelled with that value, and no single response would
+  reveal it. Detecting that needs a cross-partition metric comparison, not an error handler.

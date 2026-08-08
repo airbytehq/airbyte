@@ -12,7 +12,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -30,6 +30,8 @@ import io.debezium.annotation.VisibleForTesting
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -62,7 +64,10 @@ class MySqlSourceJdbcPartitionFactory(
             DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
         }
 
-    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    private fun findPkUpperBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<EmittedField>
+    ): JsonNode {
         // find upper bound using maxPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -83,7 +88,10 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    private fun findPkLowerBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<EmittedField>
+    ): JsonNode {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
         jdbcConnectionFactory.get().use { connection ->
@@ -107,7 +115,7 @@ class MySqlSourceJdbcPartitionFactory(
 
     private fun coldStart(streamState: DefaultJdbcStreamState): MySqlSourceJdbcPartition {
         val stream: Stream = streamState.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             if (pkChosenFromCatalog.isEmpty()) {
@@ -146,8 +154,8 @@ class MySqlSourceJdbcPartitionFactory(
             )
         }
 
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
 
         if (pkChosenFromCatalog.isEmpty()) {
             return MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
@@ -206,7 +214,7 @@ class MySqlSourceJdbcPartitionFactory(
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
 
         if (
             pkChosenFromCatalog.isEmpty() &&
@@ -305,8 +313,9 @@ class MySqlSourceJdbcPartitionFactory(
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
 
-                val cursorChosenFromCatalog: Field =
-                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+                val cursorChosenFromCatalog: EmittedField =
+                    stream.configuredCursor as? EmittedField
+                        ?: throw ConfigErrorException("no cursor")
 
                 // in a state where it's still in primary_key read part.
                 return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -319,7 +328,8 @@ class MySqlSourceJdbcPartitionFactory(
                 )
             }
             // resume back to cursor based increment.
-            val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
+            val cursor: EmittedField =
+                stream.fields.find { it.id == sv.cursorField.first() } as EmittedField
             val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursors)
 
             // Compose a jsonnode of cursor label to cursor value to fit in
@@ -344,7 +354,7 @@ class MySqlSourceJdbcPartitionFactory(
     }
 
     // visible for testing
-    fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    fun stateValueToJsonNode(field: EmittedField, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
@@ -427,7 +437,7 @@ class MySqlSourceJdbcPartitionFactory(
     ): List<MySqlSourceJdbcPartition> {
 
         val stream: Stream = unsplitPartition.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: emptyList()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: emptyList()
 
         if (pkChosenFromCatalog.isEmpty()) {
             return listOf(unsplitPartition)
@@ -557,7 +567,8 @@ class MySqlSourceJdbcPartitionFactory(
             }
     }
 
-    private fun <T> calculateBoundaries(
+    @VisibleForTesting
+    internal fun <T> calculateBoundaries(
         opaqueStateValues: List<OpaqueStateValue>,
         lowerBound: T?,
         upperBound: T
@@ -574,6 +585,8 @@ class MySqlSourceJdbcPartitionFactory(
             lowerBound is String? && upperBound is String ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
             lowerBound is Double? && upperBound is Double ->
+                internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
+            lowerBound is BigDecimal? && upperBound is BigDecimal ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
             lowerBound is OffsetDateTime? && upperBound is OffsetDateTime ->
                 internalCalculateBoundaries(opaqueStateValues, lowerBound, upperBound)
@@ -632,6 +645,26 @@ class MySqlSourceJdbcPartitionFactory(
         }
         val lbs: List<Double> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<Double?> = queryPlan + null
+        return lbs.zip(ubs).toMap()
+    }
+
+    @VisibleForTesting
+    internal fun internalCalculateBoundaries(
+        opaqueStateValues: List<OpaqueStateValue>,
+        lowerBound: BigDecimal?,
+        upperBound: BigDecimal,
+    ): Map<BigDecimal, BigDecimal?> {
+        val num = opaqueStateValues.size
+        val queryPlan: MutableList<BigDecimal> = mutableListOf()
+        val effectiveLowerBound = lowerBound ?: Long.MIN_VALUE.toBigDecimal()
+        val eachStep: BigDecimal =
+            upperBound.subtract(effectiveLowerBound).divide(num.toBigDecimal(), RoundingMode.DOWN)
+        for (i in 1..(num - 1)) {
+            queryPlan.add(effectiveLowerBound.add(eachStep.multiply(i.toBigDecimal())))
+        }
+        val lbs: List<BigDecimal> = listOf(effectiveLowerBound) + queryPlan
+        val ubs: List<BigDecimal?> = queryPlan + null
+        log.info { "partitions: ${lbs.zip(ubs)}" }
         return lbs.zip(ubs).toMap()
     }
 
