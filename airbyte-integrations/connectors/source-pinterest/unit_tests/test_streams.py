@@ -5,7 +5,7 @@
 import os
 
 import pytest
-from components import AdAccountRecordExtractor
+from components import AdAccountRecordExtractor, StatusChunkPartitionRouter
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
@@ -89,3 +89,53 @@ def test_extract_records_single_account(test_response_single_account):
     extractor = AdAccountRecordExtractor()
     result = extractor.extract_records(test_response_single_account)
     assert result == [{"id": "1234"}]
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected_partitions"),
+    [
+        pytest.param({}, [{}], id="empty"),
+        pytest.param(
+            {"campaign_statuses": ["RUNNING", "PAUSED"]},
+            [{"campaign_statuses_chunk": ["RUNNING", "PAUSED"]}],
+            id="under-limit",
+        ),
+    ],
+)
+def test_status_chunk_partition_router_empty_and_under_limit(kwargs, expected_partitions):
+    router = StatusChunkPartitionRouter(config={}, parameters={}, **kwargs)
+    stream_slices = list(router.stream_slices())
+
+    assert [stream_slice.partition for stream_slice in stream_slices] == expected_partitions
+    assert all(stream_slice.cursor_slice == {} for stream_slice in stream_slices)
+
+
+def test_status_chunk_partition_router_chunks_status_combinations():
+    campaign_statuses = ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
+    ad_group_statuses = ["G1", "G2"]
+    ad_statuses = ["A1", "A2", "A3", "A4", "A5", "A6", "A7"]
+    router = StatusChunkPartitionRouter(
+        config={},
+        parameters={},
+        campaign_statuses=campaign_statuses,
+        ad_group_statuses=ad_group_statuses,
+        ad_statuses=ad_statuses,
+    )
+
+    stream_slices = list(router.stream_slices())
+    partitions = [stream_slice.partition for stream_slice in stream_slices]
+
+    assert len(partitions) == 4
+    assert all(stream_slice.cursor_slice == {} for stream_slice in stream_slices)
+    assert {tuple(partition["campaign_statuses_chunk"]) for partition in partitions} == {
+        tuple(campaign_statuses[:6]),
+        tuple(campaign_statuses[6:]),
+    }
+    assert {tuple(partition["ad_group_statuses_chunk"]) for partition in partitions} == {tuple(ad_group_statuses)}
+    assert {tuple(partition["ad_statuses_chunk"]) for partition in partitions} == {
+        tuple(ad_statuses[:6]),
+        tuple(ad_statuses[6:]),
+    }
+    assert all(len(partition["campaign_statuses_chunk"]) <= 6 for partition in partitions)
+    assert all(len(partition["ad_group_statuses_chunk"]) <= 6 for partition in partitions)
+    assert all(len(partition["ad_statuses_chunk"]) <= 6 for partition in partitions)

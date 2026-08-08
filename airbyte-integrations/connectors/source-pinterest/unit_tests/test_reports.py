@@ -308,30 +308,128 @@ def test_custom_reports_status_filters(requests_mock, test_config, status_fields
     assert records == [{"spend": 1}]
 
 
+@freeze_time("2026-05-21 12:00:00+00:00")
+def test_custom_reports_status_filters_chunk_over_limit_values(requests_mock, test_config):
+    report_download_url = "https://download.report/custom"
+    report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
+    campaign_statuses = ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"]
+    ad_group_statuses = ["RUNNING", "PAUSED"]
+    ad_statuses = ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"]
+    config = copy.deepcopy(test_config)
+    config["custom_reports"] = [
+        {
+            "name": "ad_performance_report",
+            "level": "PIN_PROMOTION",
+            "granularity": "DAY",
+            "columns": [
+                "ADVERTISER_ID",
+                "AD_ACCOUNT_ID",
+                "AD_ID",
+                "PIN_PROMOTION_ID",
+                "SPEND_IN_DOLLAR",
+            ],
+            "click_window_days": 30,
+            "engagement_window_days": 30,
+            "view_window_days": 30,
+            "conversion_report_time": "TIME_OF_AD_ACTION",
+            "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+            "start_date": "2026-05-19",
+            "campaign_statuses": campaign_statuses,
+            "ad_group_statuses": ad_group_statuses,
+            "ad_statuses": ad_statuses,
+        }
+    ]
+    expected_body_base = {
+        "start_date": "2026-05-20",
+        "end_date": "2026-05-21",
+        "level": "PIN_PROMOTION",
+        "granularity": "DAY",
+        "click_window_days": 30,
+        "engagement_window_days": 30,
+        "view_window_days": 30,
+        "conversion_report_time": "TIME_OF_AD_ACTION",
+        "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+        "columns": [
+            "ADVERTISER_ID",
+            "AD_ACCOUNT_ID",
+            "AD_ID",
+            "PIN_PROMOTION_ID",
+            "SPEND_IN_DOLLAR",
+        ],
+    }
+    actual_bodies = []
+
+    def match_json_body(request):
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        actual_body = json.loads(raw)
+        actual_bodies.append(actual_body)
+        assert {key: value for key, value in actual_body.items() if not key.endswith("_statuses")} == expected_body_base
+        assert 1 <= len(actual_body["campaign_statuses"]) <= 6
+        assert 1 <= len(actual_body["ad_group_statuses"]) <= 6
+        assert 1 <= len(actual_body["ad_statuses"]) <= 6
+        return True
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+    requests_mock.post(
+        report_request_url,
+        json={"report_status": "IN_PROGRESS", "token": "token", "message": ""},
+        additional_matcher=match_json_body,
+    )
+    requests_mock.get(report_request_url, json={"report_status": "FINISHED", "url": report_download_url})
+    requests_mock.get(report_download_url, json={"ad_id": [{"spend": 1}]})
+
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "custom_ad_performance_report",
+            {
+                "DATE": "2026-05-20",
+            },
+        )
+        .build()
+    )
+
+    records = [
+        record.record.data for record in read_from_stream(config, "custom_ad_performance_report", SyncMode.incremental, state=state).records
+    ]
+
+    assert records == [{"spend": 1}, {"spend": 1}, {"spend": 1}, {"spend": 1}]
+    assert len(actual_bodies) == 4
+    assert {tuple(body["campaign_statuses"]) for body in actual_bodies} == {
+        tuple(campaign_statuses[:6]),
+        tuple(campaign_statuses[6:]),
+    }
+    assert {tuple(body["ad_group_statuses"]) for body in actual_bodies} == {tuple(ad_group_statuses)}
+    assert {tuple(body["ad_statuses"]) for body in actual_bodies} == {
+        tuple(ad_statuses[:6]),
+        tuple(ad_statuses[6:]),
+    }
+
+
 @pytest.mark.parametrize(
     "field_name,valid_statuses,invalid_statuses",
     [
         pytest.param(
             "campaign_statuses",
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
             ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            ["RUNNING", "RUNNING"],
             id="campaign_statuses",
         ),
         pytest.param(
             "ad_group_statuses",
-            ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED"],
             ["RUNNING", "PAUSED", "NOT_STARTED", "COMPLETED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            ["RUNNING", "RUNNING"],
             id="ad_group_statuses",
         ),
         pytest.param(
             "ad_statuses",
-            ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED"],
             ["APPROVED", "PAUSED", "PENDING", "REJECTED", "ADVERTISER_DISABLED", "ARCHIVED", "DRAFT"],
+            ["APPROVED", "APPROVED"],
             id="ad_statuses",
         ),
     ],
 )
-def test_custom_report_status_filters_allow_at_most_six_values(test_config, field_name, valid_statuses, invalid_statuses):
+def test_custom_report_status_filters_allow_more_than_six_values(test_config, field_name, valid_statuses, invalid_statuses):
     status_schema = (
         get_source(test_config).spec(None).connectionSpecification["properties"]["custom_reports"]["items"]["properties"][field_name]
     )
