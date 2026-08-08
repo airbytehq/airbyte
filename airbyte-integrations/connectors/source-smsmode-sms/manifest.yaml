@@ -1,0 +1,344 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  A source connector for the smsmode API dedicated to standard SMS services,
+  supporting message logs and general consumption data synchronization.
+
+check:
+  type: CheckStream
+  stream_names:
+    - messages
+
+definitions:
+  linked:
+    HttpRequester:
+      request_headers:
+        Accept: application/json
+
+streams:
+  - type: DeclarativeStream
+    name: messages
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      requester:
+        type: HttpRequester
+        url: https://rest.smsmode.com/sms/v1/messages
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Api-Key
+            inject_into: header
+        request_headers:
+          Accept: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - object
+              - "null"
+            properties:
+              text:
+                type:
+                  - string
+                  - "null"
+              length:
+                type:
+                  - number
+                  - "null"
+              encoding:
+                type:
+                  - string
+                  - "null"
+              messagePartCount:
+                type:
+                  - number
+                  - "null"
+          from:
+            type:
+              - string
+              - "null"
+          href:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+              lookup:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  mcc:
+                    type:
+                      - string
+                      - "null"
+                  mnc:
+                    type:
+                      - string
+                      - "null"
+                  mccMnc:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  network:
+                    type:
+                      - string
+                      - "null"
+                  countryPrefix:
+                    type:
+                      - string
+                      - "null"
+                  isoCountryCode:
+                    type:
+                      - string
+                      - "null"
+              deliveryDate:
+                type:
+                  - string
+                  - "null"
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              flow:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              channelId:
+                type:
+                  - string
+                  - "null"
+          sentDate:
+            type:
+              - string
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          messageId:
+            type:
+              - string
+              - "null"
+          recipient:
+            type:
+              - object
+              - "null"
+            properties:
+              to:
+                type:
+                  - string
+                  - "null"
+          acceptedAt:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: consumptions
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      requester:
+        type: HttpRequester
+        url: https://rest.smsmode.com/commons/v1/consumptions
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: X-Api-Key
+          api_token: "{{ config['api_key'] }}"
+        request_headers:
+          Accept: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    primary_key: consumptionId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          consumptionId:
+            type: string
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              channelId:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              flow:
+                type:
+                  - string
+                  - "null"
+          periodType:
+            type:
+              - string
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+          quantity:
+            type:
+              - number
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          href:
+            type:
+              - string
+              - "null"
+        required:
+          - consumptionId
+        additionalProperties: true
+
+spec:
+  type: Spec
+  documentation_url: >-
+    https://dev.smsmode.com/sms/v1/#tag/Callback/operation/receive-sms-mo-message
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your smsmode API key. You can generate and manage API keys in the
+          smsmode dashboard under the 'Credentials' section:
+          https://dev.smsmode.com/commons/v1/#tag/Credential. Make sure the key
+          is active and has the required permissions for your use case.
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: >-
+      https://dev.smsmode.com/sms/v1/#tag/Callback/operation/receive-sms-mo-message
+  testedStreams:
+    messages:
+      isStale: false
+      hasRecords: true
+      streamHash: 30a9c9f391c89fc951c3d37042637a136c4c94d4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    consumptions:
+      isStale: false
+      hasRecords: true
+      streamHash: 72548912b1356a6b00f8da37b2f7299260a0072f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    messages: true
+    consumptions: true
