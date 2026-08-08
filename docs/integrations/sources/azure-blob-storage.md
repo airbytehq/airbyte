@@ -311,6 +311,7 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.29 | 2026-08-06 | [83754](https://github.com/airbytehq/airbyte/pull/83754) | Bump CDK to throttle per-slice state emission, bounding state volume on large syncs |
 | 0.8.28 | 2026-08-04 | [83347](https://github.com/airbytehq/airbyte/pull/83347) | Update dependencies |
 | 0.8.27 | 2026-07-28 | [82801](https://github.com/airbytehq/airbyte/pull/82801) | Update dependencies |
 | 0.8.26 | 2026-07-22 | [82241](https://github.com/airbytehq/airbyte/pull/82241) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
