@@ -11,13 +11,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.5.0-rc.1
+  dockerImageTag: 5.5.0-rc.2
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
   license: ELv2
-  maxSecondsBetweenMessages: 60
+  # The tickets stream reads Zendesk's Incremental Ticket Export, which is capped at
+  # 10 requests/minute and shared across every /api/v2/incremental/* stream. A single
+  # backfill slice can therefore run for hours while emitting neither a record nor a
+  # state message, and the platform kills the attempt. See oncall #13250.
+  maxSecondsBetweenMessages: 14400
   name: Zendesk Support
   remoteRegistries:
     pypi:
