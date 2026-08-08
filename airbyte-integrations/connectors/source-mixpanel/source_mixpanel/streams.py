@@ -451,7 +451,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             for result in transform_property_names(properties.keys()):
                 # Convert all values to string (this is default property type)
                 # because API does not provide properties type information
-                item[result.transformed_name] = str(properties[result.source_name])
+                value = properties[result.source_name]
+                item[result.transformed_name] = json.dumps(value) if isinstance(value, (dict, list)) else str(value)
 
             # convert timestamp to datetime string
             item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
