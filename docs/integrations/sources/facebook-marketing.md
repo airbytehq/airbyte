@@ -332,6 +332,10 @@ Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 | Ad Insights Platform And Device                   | `publisher_platform`, `platform_position`, `impression_device` |                      `action_type`                      |
 | Ad Insights Region                                |                            `region`                            | `action_type`, `action_target_id`, `action_destination` |
 
+:::info Breakdown opt-in requirement (effective August 6, 2026)
+Beginning August 6, 2026, Meta requires certain ad accounts to opt in to the `impression_device`, `hourly_stats_aggregated_by_audience_time_zone`, and `frequency_value` breakdowns. This affects the `Ad Insights Platform And Device` stream and any Custom Insights stream configured with these breakdowns. The requirement applies to non-sales-supported accounts only. The connector retrieves insights through asynchronous report jobs, which Meta documents as a supported fallback, but if these streams return no data, ask your account administrator to opt in to the breakdown through Ads Manager. See [Meta's 2026 out-of-cycle changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2026) for details.
+:::
+
 You can segment the Ad Insights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
 - Country

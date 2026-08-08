@@ -31,7 +31,7 @@ Each connection you've set up in your Workspace has a **Status** page that displ
 ![Connection Status](./assets/cloud-status-page.png)
 
 :::note
-The Streams status and Records loaded graphs are only available in Airbyte Cloud and Airbyte Self-Managed Enterprise.
+The Streams status and Records loaded graphs are only available in Airbyte Cloud.
 :::
 
 To view the connection status:
@@ -54,7 +54,7 @@ To view the connection status:
 
 ### Queued connections (Cloud Pro and Enterprise Flex)
 
-On capacity-based Cloud plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
+On Cloud Pro and Enterprise Flex plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
 
 A queued job is cancelled when:
 

@@ -4,24 +4,33 @@
 
 import logging
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
 
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import command_check
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
-    source = SourceGithub()
     config = {"access_token": "test_token", "repository": repo_line}
+    source = SourceGithub(config=config)
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
+
+
+def test_source_extends_yaml_declarative_source():
+    source = SourceGithub()
+    assert isinstance(source, YamlDeclarativeSource)
 
 
 def test_source_will_continue_sync_on_stream_failure():
@@ -283,3 +292,97 @@ def test_user_friendly_message(error_message, expected_user_friendly_message):
     source = SourceGithub()
     user_friendly_error_message = source.user_friendly_error_message(error_message)
     assert user_friendly_error_message == expected_user_friendly_message
+
+
+_MANIFEST_WITH_STREAM = {
+    "version": "7.12.0",
+    "type": "DeclarativeSource",
+    "check": {"type": "CheckStream", "stream_names": []},
+    "streams": [
+        {
+            "type": "DeclarativeStream",
+            "name": "dummy_manifest_stream",
+            "retriever": {
+                "type": "SimpleRetriever",
+                "requester": {
+                    "type": "HttpRequester",
+                    "url_base": "https://api.github.com",
+                    "path": "/dummy",
+                    "http_method": "GET",
+                },
+                "record_selector": {
+                    "type": "RecordSelector",
+                    "extractor": {"type": "DpathExtractor", "field_path": []},
+                },
+            },
+            "schema_loader": {
+                "type": "InlineSchemaLoader",
+                "schema": {"type": "object", "properties": {}},
+            },
+        }
+    ],
+}
+
+_CONFIG = {"access_token": "test_token", "repository": "airbyte/test"}
+
+
+def _mock_python_stream(name: str) -> MagicMock:
+    stream = MagicMock()
+    stream.name = name
+    stream.as_airbyte_stream.return_value = AirbyteStream(name=name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
+    return stream
+
+
+def _source_with_manifest_stream() -> SourceGithub:
+    with patch.object(YamlDeclarativeSource, "_read_and_parse_yaml_file", return_value=_MANIFEST_WITH_STREAM):
+        return SourceGithub(config=_CONFIG)
+
+
+def test_discover_returns_union_of_python_and_manifest_streams(monkeypatch):
+    source = _source_with_manifest_stream()
+    monkeypatch.setattr(SourceGithub, "streams", MagicMock(return_value=[_mock_python_stream("teams")]))
+
+    catalog = source.discover(logging.getLogger("airbyte"), _CONFIG)
+
+    stream_names = {stream.name for stream in catalog.streams}
+    assert stream_names == {"teams", "dummy_manifest_stream"}
+
+
+def test_read_routes_manifest_streams_to_concurrent_and_python_streams_to_synchronous(monkeypatch):
+    source = _source_with_manifest_stream()
+    monkeypatch.setattr(SourceGithub, "streams", MagicMock(return_value=[_mock_python_stream("teams")]))
+
+    catalog = (
+        CatalogBuilder()
+        .with_stream(name="dummy_manifest_stream", sync_mode=SyncMode.full_refresh)
+        .with_stream(name="teams", sync_mode=SyncMode.full_refresh)
+        .build()
+    )
+
+    with (
+        patch.object(ConcurrentSource, "read", return_value=iter([])) as concurrent_read,
+        patch.object(AbstractSource, "read", return_value=iter([])) as synchronous_read,
+    ):
+        list(source.read(logging.getLogger("airbyte"), _CONFIG, catalog))
+
+    selected_concurrent_streams = concurrent_read.call_args.args[0]
+    assert [stream.name for stream in selected_concurrent_streams] == ["dummy_manifest_stream"]
+
+    synchronous_catalog = synchronous_read.call_args.args[3]
+    assert [s.stream.name for s in synchronous_catalog.streams] == ["teams"]
+
+
+def test_read_with_empty_manifest_skips_concurrent_read():
+    source = SourceGithub(config=_CONFIG)
+    catalog = CatalogBuilder().with_stream(name="teams", sync_mode=SyncMode.full_refresh).build()
+
+    with (
+        patch.object(ConcurrentSource, "read", return_value=iter([])) as concurrent_read,
+        patch.object(AbstractSource, "read", return_value=iter([])) as synchronous_read,
+    ):
+        list(source.read(logging.getLogger("airbyte"), _CONFIG, catalog))
+
+    concurrent_read.assert_not_called()
+    synchronous_read.assert_called_once()
+    synchronous_catalog = synchronous_read.call_args.args[3]
+    assert [s.stream.name for s in synchronous_catalog.streams] == ["teams"]
