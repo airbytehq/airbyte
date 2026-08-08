@@ -12,6 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetTime
@@ -460,7 +461,18 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 return DateTimeConverter.convertToDate(x)
             }
             "TIME" -> return resolveTime(field, x)
-            "INTERVAL" -> return convertInterval((x as PGInterval?)!!)
+            "INTERVAL" -> {
+                return when (x) {
+                    is PGInterval -> convertInterval(x)
+                    is Number -> convertInterval(microsecondsToPgInterval(x))
+                    else -> {
+                        log.warn {
+                            "Unexpected interval value type: ${x::class.java.name}. Falling back to string conversion."
+                        }
+                        x.toString()
+                    }
+                }
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unknown field type  " + field.typeName().uppercase(),
@@ -490,6 +502,23 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
         formatTimeValues(resultInterval, pgInterval)
         return resultInterval.toString()
+    }
+
+    private fun microsecondsToPgInterval(value: Number): PGInterval {
+        // Debezium may surface interval defaults as microseconds.
+        // Convert to whole seconds before formatting; sub-second precision is dropped.
+        val duration = Duration.ofSeconds(value.toLong() / 1_000_000)
+
+        // Duration is a fixed-length amount and cannot be losslessly decomposed into calendar-aware
+        // months/years, so those PGInterval fields are intentionally set to zero.
+        return PGInterval(
+            0,
+            0,
+            duration.toDays().toInt(),
+            duration.toHoursPart(),
+            duration.toMinutesPart(),
+            duration.toSecondsPart().toDouble(),
+        )
     }
 
     private fun registerMoney(
