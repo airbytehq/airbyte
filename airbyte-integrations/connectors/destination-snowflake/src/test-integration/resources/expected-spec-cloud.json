@@ -157,6 +157,15 @@
         "title" : "Data Retention Period (days)",
         "group" : "advanced",
         "order" : 11
+      },
+      "number_data_type" : {
+        "type" : "string",
+        "default" : "FLOAT",
+        "enum" : [ "FLOAT", "NUMBER(38,9)" ],
+        "description" : "Determines how columns with the Airbyte number type are stored in Snowflake. FLOAT (default): binary floating point. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities and model scores, very large magnitudes, and calculations where tiny rounding differences are acceptable. NUMBER(38,9): fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, money, IDs represented numerically, and any value that must be stored exactly.",
+        "title" : "Number Data Type Conversion",
+        "group" : "advanced",
+        "order" : 12
       }
     },
     "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],

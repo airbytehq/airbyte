@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibl
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -771,5 +772,31 @@ internal class SnowflakeAirbyteClientTest {
             assertTrue(exception.message!!.contains("current role has no privileges on it"))
             assertTrue(exception.cause is SnowflakeSQLException)
         }
+    }
+
+    @Test
+    fun testToCanonicalDataTypeStripsArgumentsFromNonNumericTypes() {
+        assertEquals("VARCHAR", toCanonicalDataType("VARCHAR(16777216)"))
+        assertEquals("TIMESTAMP_TZ", toCanonicalDataType("TIMESTAMP_TZ(9)"))
+        assertEquals("FLOAT", toCanonicalDataType("FLOAT"))
+    }
+
+    @Test
+    fun testToCanonicalDataTypeMapsScaleZeroNumberToIntegerType() {
+        // Integer columns are created as NUMBER and reported by DESCRIBE TABLE as NUMBER(38,0).
+        assertEquals(SnowflakeDataType.NUMBER.typeName, toCanonicalDataType("NUMBER(38,0)"))
+        assertEquals(SnowflakeDataType.NUMBER.typeName, toCanonicalDataType("NUMBER"))
+        assertEquals(SnowflakeDataType.NUMBER.typeName, toCanonicalDataType("NUMBER(38)"))
+    }
+
+    @Test
+    fun testToCanonicalDataTypeMapsPositiveScaleNumberToDecimalType() {
+        // The canonical decimal name must equal what SnowflakeTableSchemaMapper emits for
+        // NumberType in
+        // NUMBER(38,9) mode. NUMBER, NUMERIC and DECIMAL are all synonyms.
+        assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("NUMBER(38,9)"))
+        assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("NUMERIC(38,9)"))
+        assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("DECIMAL(38,9)"))
+        assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("NUMBER(38, 9)"))
     }
 }

@@ -9,8 +9,12 @@ package io.airbyte.integrations.destination.snowflake.sql
  * data types.
  */
 enum class SnowflakeDataType(val typeName: String) {
-    // Numeric types
+    // Number is being used for numbers with scale 0.
     NUMBER("NUMBER"),
+    // NUMERIC - synonym for NUMBER in Snowflake. Used for numbers with scale > 0. A column created
+    // as NUMERIC(38, 9) is
+    // stored as NUMBER(38,9), what DESCRIBE TABLE returns.
+    NUMERIC_38_9("NUMERIC(38,9)"),
     FLOAT("FLOAT"),
 
     // String & binary types
