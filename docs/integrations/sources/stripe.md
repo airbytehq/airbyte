@@ -203,6 +203,7 @@ You can customize which streams have cursor age validation by modifying the **St
 - `External Account Cards`
 - `Invoice Items`
 - `Invoice Line Items`
+- `Invoice Payments`
 - `Invoices`
 - `Payment Intents`
 - `Payment Methods`
@@ -225,6 +226,15 @@ You can customize which streams have cursor age validation by modifying the **St
 :::warning
 **Important**: If a stream is removed from the validation list and its cursor becomes stale (older than 30 days), the connector will continue using the Events API for incremental sync, which only returns the last 30 days of data. This may result in missed updates for records older than 30 days. Only remove streams from the validation list if you are confident that a stale cursor is acceptable for your use case.
 :::
+
+#### Invoice Payments status coverage
+
+The `Invoice Payments` stream returns different `status` values depending on how it is read:
+
+- **Full refresh**, and the first incremental sync before any state exists, read `/v1/invoice_payments` directly and return invoice payments in **all** statuses, including `paid`, `open`, and `canceled`.
+- **Later incremental syncs** read from the Events API, where Stripe publishes only the `invoice_payment.paid` event type. These syncs therefore pick up **only** invoice payments that have reached `paid` status.
+
+This is a Stripe API limitation rather than a connector restriction: `invoice_payment.paid` is the only event type Stripe emits for the InvoicePayment resource, so there is no event to read for `open` or `canceled` invoice payments. If you need ongoing visibility into invoice payments that are not `paid`, use a full refresh sync mode for this stream.
 
 ### Troubleshooting
 
@@ -267,6 +277,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `External Account Cards`
 - `Invoice Items`
 - `Invoice Line Items`
+- `Invoice Payments`
 - `Invoices`
 - `Payment Intents`
 - `Payment Methods`
