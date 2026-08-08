@@ -1,5 +1,5 @@
 ---
-products: oss-enterprise, cloud
+products: cloud
 ---
 
 # Single sign on (SSO)
