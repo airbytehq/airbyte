@@ -629,7 +629,6 @@ internal class RedshiftSqlGeneratorTest {
                         "new_col" to ColumnType("varchar(65535)", true),
                         "another_col" to ColumnType("bigint", false),
                     ),
-                columnsToRemove = emptyMap(),
                 columnsToModify = emptyMap(),
             )
 
@@ -640,27 +639,12 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `matchSchemas removes columns`() {
-        val tableName = TableName(namespace = "ns", name = "tbl")
-        val sql =
-            sqlGenerator.matchSchemas(
-                tableName,
-                columnsToAdd = emptyMap(),
-                columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
-                columnsToModify = emptyMap(),
-            )
-
-        assertTrue(sql.contains("""ALTER TABLE "ns"."tbl" DROP COLUMN "old_col";"""))
-    }
-
-    @Test
     fun `matchSchemas SUPER to VARCHAR uses JSON_SERIALIZE`() {
         val tableName = TableName(namespace = "ns", name = "tbl")
         val sql =
             sqlGenerator.matchSchemas(
                 tableName,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify =
                     mapOf(
                         "json_col" to
@@ -687,7 +671,6 @@ internal class RedshiftSqlGeneratorTest {
             sqlGenerator.matchSchemas(
                 tableName,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify =
                     mapOf(
                         "data_col" to
@@ -716,7 +699,6 @@ internal class RedshiftSqlGeneratorTest {
             sqlGenerator.matchSchemas(
                 tableName,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify =
                     mapOf(
                         "num_col" to
@@ -847,27 +829,12 @@ internal class RedshiftSqlGeneratorTest {
         }
 
         @Test
-        fun `matchSchemas removes columns with CASCADE`() {
-            val tableName = TableName(namespace = "ns", name = "tbl")
-            val sql =
-                cascadeGenerator.matchSchemas(
-                    tableName,
-                    columnsToAdd = emptyMap(),
-                    columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
-                    columnsToModify = emptyMap(),
-                )
-
-            assertTrue(sql.contains("""ALTER TABLE "ns"."tbl" DROP COLUMN "old_col" CASCADE;"""))
-        }
-
-        @Test
         fun `matchSchemas type change drops column with CASCADE`() {
             val tableName = TableName(namespace = "ns", name = "tbl")
             val sql =
                 cascadeGenerator.matchSchemas(
                     tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify =
                         mapOf(
                             "num_col" to

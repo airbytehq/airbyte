@@ -578,9 +578,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         // no column changes - mock stream's pre-computed table schema to return same columns as DB
         every { columnManager.getMetaColumnNames() } returns emptySet()
@@ -605,7 +604,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -658,9 +656,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and col2 (col2 is new)
@@ -684,7 +681,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = mapOf("col2" to ColumnType("integer", true)),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -738,9 +734,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         val finalSchema = mapOf("col1" to ColumnType("text", true))
@@ -763,7 +758,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = true,
                     primaryKeyColumnNames = listOf("new_pk"),
@@ -817,9 +811,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         val finalSchema = mapOf("col1" to ColumnType("text", true))
@@ -842,7 +835,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -897,9 +889,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and new_col but not old_col
@@ -923,7 +914,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = mapOf("new_col" to ColumnType("integer", true)),
-                    columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = true,
                     primaryKeyColumnNames = listOf("new_pk"),
