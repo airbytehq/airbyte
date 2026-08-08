@@ -25,8 +25,8 @@ metadata:
 type: Opaque
 stringData:
   # AWS S3 Secrets
-  s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
-  s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  AWS_ACCESS_KEY_ID: ## e.g. AKIAIOSFODNN7EXAMPLE
+  AWS_SECRET_ACCESS_KEY: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 ```
 
@@ -81,7 +81,7 @@ stringData:
 <Tabs >
 <TabItem value="S3" label="S3" default>
 
-Ensure you've already created a Kubernetes secret containing both your S3 access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `s3-access-key-id` and `s3-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#secrets).
+Ensure you've already created a Kubernetes secret containing both your S3 access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` keys. Steps to configure these are in the above [prerequisites](#secrets).
 
 ```yaml title="values.yaml"
 global:
