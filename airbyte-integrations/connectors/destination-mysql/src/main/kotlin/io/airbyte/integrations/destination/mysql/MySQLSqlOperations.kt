@@ -174,9 +174,48 @@ class MySQLSqlOperations : JdbcSqlOperations() {
     }
 
     @Throws(SQLException::class)
+    private fun getFullVersionString(database: JdbcDatabase): String {
+        val versions =
+            database.queryStrings(
+                { connection: Connection ->
+                    connection.createStatement().executeQuery("select version()")
+                },
+                { resultSet: ResultSet -> resultSet.getString("version()") }
+            )
+        return versions[0]
+    }
+
+    @Throws(SQLException::class)
     fun isCompatibleVersion(database: JdbcDatabase): VersionCompatibility {
-        val version = getVersion(database)
-        return VersionCompatibility(version, version >= 5.7)
+        val fullVersion = getFullVersionString(database)
+        val version = fullVersion.substring(0, 3).toDouble()
+        if (version < 8.0) {
+            return VersionCompatibility(
+                version,
+                false,
+                "MySQL version $fullVersion is not supported. The MySQL destination requires MySQL 8.0.21 or later for typing and deduping (uses JSON_VALUE function)."
+            )
+        }
+        val patchVersion = parsePatchVersion(fullVersion)
+        if (version == 8.0 && patchVersion < 21) {
+            return VersionCompatibility(
+                version,
+                false,
+                "MySQL version $fullVersion is not supported. The MySQL destination requires MySQL 8.0.21 or later for typing and deduping (uses JSON_VALUE function, introduced in 8.0.21)."
+            )
+        }
+        return VersionCompatibility(version, true)
+    }
+
+    companion object {
+        fun parsePatchVersion(fullVersion: String): Int {
+            val versionParts = fullVersion.split(".", "-", limit = 4)
+            return if (versionParts.size >= 3) {
+                versionParts[2].takeWhile { it.isDigit() }.toIntOrNull() ?: 0
+            } else {
+                0
+            }
+        }
     }
 
     override val isSchemaRequired: Boolean
@@ -276,5 +315,9 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         )
     }
 
-    class VersionCompatibility(val version: Double, val isCompatible: Boolean)
+    class VersionCompatibility(
+        val version: Double,
+        val isCompatible: Boolean,
+        val message: String = ""
+    )
 }
