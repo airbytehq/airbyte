@@ -1,0 +1,26 @@
+metadataSpecVersion: "1.0"
+data:
+  connectorBuildOptions:
+    baseImage: "docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844"
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2fa9b46b-98fe-4110-9133-7c8046e9178c
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-tulip
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tulip
+  githubIssueLabel: source-tulip
+  license: ELv2
+  name: Tulip
+  releaseDate: 2026-02-13
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-tulip
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    ql: 100
+    sl: 100

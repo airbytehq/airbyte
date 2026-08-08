@@ -1,0 +1,5 @@
+{
+  "subdomain": "nonexistent-instance-xyz",
+  "api_key": "bad_key",
+  "api_secret": "bad_secret"
+}
