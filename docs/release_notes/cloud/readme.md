@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 6, 2026
+
+API
+
+- Not-found (404) error responses in the API no longer declare a message as required. If you generate a client from Airbyte's API spec, those clients no longer fail to parse a not-found response that comes back without a message.
+
 ## July 23, 2026
 
 Connections
