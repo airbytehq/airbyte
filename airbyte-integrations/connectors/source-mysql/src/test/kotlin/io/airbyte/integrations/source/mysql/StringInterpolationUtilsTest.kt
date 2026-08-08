@@ -13,6 +13,28 @@ import org.junit.jupiter.params.provider.CsvSource
 
 class StringInterpolationUtilsTest {
 
+    // Asserts every result stays within the code point range of the boundaries and contains no
+    // surrogates. Characters outside that range might not align with the server collation, which
+    // can lead to error 1267 (mix of collations).
+    private fun assertWithinObservedCharset(start: String, end: String, steps: Int) {
+        val result = unicodeInterpolatedStrings(start, end, steps)
+        val ceiling = ((start + end).codePoints().max().orElse(0)).coerceAtLeast(0x7F)
+        for (boundary in result) {
+            boundary.codePoints().forEach { cp ->
+                assertTrue(cp <= ceiling) {
+                    "boundary contains U+%04X above observed ceiling U+%04X: %s".format(
+                        cp,
+                        ceiling,
+                        boundary
+                    )
+                }
+                assertTrue(cp !in 0xD800..0xDFFF) {
+                    "boundary contains surrogate U+%04X: %s".format(cp, boundary)
+                }
+            }
+        }
+    }
+
     @Test
     fun `unicodeInterpolatedStrings should generate correct number of steps`() {
         val result = unicodeInterpolatedStrings("a", "z", 5)
@@ -89,6 +111,39 @@ class StringInterpolationUtilsTest {
     ) {
         val result = unicodeInterpolatedStrings(start, end, steps)
         assertEquals(steps + 1, result.size)
+    }
+
+    @Test
+    fun `unicodeInterpolatedStrings should not emit characters above observed range for customer bounds`() {
+        // Case from https://github.com/airbytehq/oncall/issues/13104: the column collation was
+        // utf8mb3 and interpolation produced utf8mb4 characters, causing error 1267. The base
+        // must be derived from the boundaries.
+        assertWithinObservedCharset("0ed90475-9531-985d-5d9d-c9f81818e811", "998386592", 28)
+    }
+
+    @Test
+    fun `unicodeInterpolatedStrings should not escape ascii for same-length ascii bounds`() {
+        assertWithinObservedCharset("1z", "2a", 2)
+    }
+
+    @Test
+    fun `unicodeInterpolatedStrings should stay within observed range under dense steps`() {
+        // Number of steps is higher than the distinct values, we still ensure that the code
+        // points do not extend the range.
+        assertWithinObservedCharset("aa", "ab", 50)
+    }
+
+    @Test
+    fun `unicodeInterpolatedStrings should respect ceiling for non-ascii bmp bounds`() {
+        // Greek bounds. The ceiling is U+03C9 and no output may go above it.
+        assertWithinObservedCharset("α", "ω", 8)
+    }
+
+    @Test
+    fun `unicodeInterpolatedStrings must not emit unpaired surrogates for supplementary-plane bounds`() {
+        // Boundaries above U+FFFF trigger the surrogate guard. The result must not contain
+        // unpaired surrogates.
+        assertWithinObservedCharset("0c👂🐆么🍡", "𠇿亾c📘🏃g🍏w🖢🍫c3丑8", 28)
     }
 
     @Test
@@ -240,9 +295,8 @@ class StringInterpolationUtilsTest {
 
     @Test
     fun `unicodeInterpolatedStrings and guidInterpolatedStrings should produce similar results for simple ASCII`() {
-        // When both functions operate on simple ASCII GUID-compatible strings, they should both
-        // produce
-        // monotonically increasing sequences
+        // For simple ASCII input both functions should produce monotonically increasing
+        // sequences.
         val start = "00000"
         val end = "11111"
         val steps = 5
