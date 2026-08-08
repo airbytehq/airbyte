@@ -4,6 +4,7 @@
 
 import base64
 import logging
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import requests
@@ -80,7 +81,7 @@ class AdCreatives(FBMarketingStream):
         return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
 
 
-class AdCreativesFromAds(FBMarketingStream):
+class AdCreativesFromAds(FBMarketingIncrementalStream):
     """Alternative stream to fetch ad creatives through the ads endpoint.
 
     This stream fetches creatives by first getting ads (which includes creative IDs),
@@ -100,21 +101,34 @@ class AdCreativesFromAds(FBMarketingStream):
     status_field = "effective_status"
     valid_statuses = [status.value for status in ValidAdStatuses]
 
-    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        fetch_thumbnail_images: bool = False,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        **kwargs,
+    ):
+        super().__init__(start_date=start_date, end_date=end_date, **kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
         self._creative_fields: Optional[List[str]] = None
-        self._fields = ["id", "creative"]
+        self._fields = ["id", "creative", "updated_time"]
 
     @property
     def name(self) -> str:
         return "ad_creatives_from_ads"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Use the same schema as ad_creatives stream"""
+        """Use the ad_creatives schema with the parent ad timestamp."""
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
-        return loader.get_schema("ad_creatives")
+        schema = loader.get_schema("ad_creatives").copy()
+        schema["properties"] = schema["properties"].copy()
+        schema["properties"]["updated_time"] = {
+            "description": "The date and time when the parent ad was last updated.",
+            "type": ["null", "string"],
+            "format": "date-time",
+        }
+        return schema
 
     def _get_creative_fields(self) -> List[str]:
         """Get the list of creative fields to request, excluding computed fields"""
@@ -123,12 +137,18 @@ class AdCreativesFromAds(FBMarketingStream):
 
         json_schema = self.get_json_schema()
         creative_fields = list(json_schema.get("properties", {}).keys())
-        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id", "updated_time")]
         return self._creative_fields
 
     def fields(self, **kwargs) -> List[str]:
         """Return fields to request from the ads endpoint - just id and creative reference"""
         return self._fields
+
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Only apply cursor filtering when an incremental state cursor exists."""
+        if not stream_state.get(self.cursor_field):
+            return {}
+        return super()._state_filter(stream_state)
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
@@ -157,19 +177,51 @@ class AdCreativesFromAds(FBMarketingStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
+        failed_creative_ids: Set[str] = set()
+        successful_cursors = {}
+        earliest_failed_cursor = None
+        failed_ad_without_cursor = False
 
-        for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        # Bypass incremental read_records to checkpoint state after the full slice and creative fetches.
+        for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
+            updated_time = ad_record.get(self.cursor_field)
+
             creative_id = ad_record.get("creative", {}).get("id")
-            if not creative_id or creative_id in self._seen_creative_ids:
+            if not creative_id:
+                continue
+
+            if creative_id in failed_creative_ids:
+                if updated_time is not None:
+                    failed_cursor = ab_datetime_parse(updated_time)
+                    earliest_failed_cursor = failed_cursor if earliest_failed_cursor is None else min(earliest_failed_cursor, failed_cursor)
+                else:
+                    failed_ad_without_cursor = True
+                continue
+
+            if creative_id in self._seen_creative_ids:
+                if updated_time is not None:
+                    parsed_updated_time = ab_datetime_parse(updated_time)
+                    successful_cursors[parsed_updated_time] = updated_time
                 continue
 
             self._seen_creative_ids.add(creative_id)
 
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
+                failed_creative_ids.add(creative_id)
+                if updated_time is not None:
+                    failed_cursor = ab_datetime_parse(updated_time)
+                    earliest_failed_cursor = failed_cursor if earliest_failed_cursor is None else min(earliest_failed_cursor, failed_cursor)
+                else:
+                    failed_ad_without_cursor = True
                 continue
 
+            if updated_time is not None:
+                parsed_updated_time = ab_datetime_parse(updated_time)
+                successful_cursors[parsed_updated_time] = updated_time
+
             self.fix_date_time(creative_data)
+            creative_data[self.cursor_field] = updated_time
 
             if self._fetch_thumbnail_images:
                 thumbnail_url = creative_data.get("thumbnail_url")
@@ -178,6 +230,20 @@ class AdCreativesFromAds(FBMarketingStream):
 
             self.add_account_id(creative_data, stream_slice["account_id"])
             yield creative_data
+
+        if successful_cursors and not failed_ad_without_cursor:
+            eligible_cursors = (
+                (cursor, raw_cursor)
+                for cursor, raw_cursor in successful_cursors.items()
+                if earliest_failed_cursor is None or cursor < earliest_failed_cursor
+            )
+            checkpoint_cursor = max(eligible_cursors, default=None)
+            if checkpoint_cursor is not None:
+                _, raw_cursor = checkpoint_cursor
+                self.state = self._get_updated_state(
+                    self.state,
+                    {"account_id": stream_slice["account_id"], self.cursor_field: raw_cursor},
+                )
 
 
 class CustomConversions(FBMarketingStream):
