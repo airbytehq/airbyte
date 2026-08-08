@@ -246,7 +246,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 
 **Metadata keys:**
 
-- `all`: Core, Standard, and Plus - doesn't include Pro, Enterprise Flex, or Embedded
+- `all`: everything except Embedded - Core, Standard, Plus, Pro, and Enterprise Flex
 - `oss-community`: Core only
 - `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
