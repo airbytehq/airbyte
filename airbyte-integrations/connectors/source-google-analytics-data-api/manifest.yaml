@@ -64,12 +64,11 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: offset
+            inject_into: body_json
           pagination_strategy:
-            type: CursorPagination
-            cursor_value: '{{ response.get("offset", {}) }}'
-            stop_condition: '{{ not response.get("offset", {}) }}'
+            type: OffsetIncrement
+            page_size: 100000
       transformations: [] # the dynamic stream will override this value
       schema_loader:
         type: DynamicSchemaLoader
@@ -909,12 +908,11 @@ dynamic_streams:
               type: DefaultPaginator
               page_token_option:
                 type: RequestOption
-                inject_into: request_parameter
                 field_name: offset
+                inject_into: body_json
               pagination_strategy:
-                type: CursorPagination
-                cursor_value: "{% raw %}{{ response.get('offset', {}) }}{% endraw %}"
-                stop_condition: "{% raw %}{{ not response.get('offset', {}) }}{% endraw %}"
+                type: OffsetIncrement
+                page_size: 100000
             {% endif %}
         # This mapping defines the configuration path for the stream.
         # Property sets are stored as a list under the `source_config_1` key,
