@@ -861,7 +861,7 @@ class GitHubGraphQLStream(GithubStream, ABC):
                 message=f"GraphQL response body for stream `{self.name}` is not valid JSON.",
                 failure_type=FailureType.transient_error,
             ) from exc
-        return body.get("data") or {}
+        return (body or {}).get("data") or {}
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         self.page_size = self._configured_page_size
