@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+from copy import deepcopy
 from unittest.mock import MagicMock
 
 import pytest
@@ -30,8 +31,7 @@ def test_join_channels(token_config, requests_mock, joined_channel, components_m
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": joined_channel})
     token = token_config["credentials"]["api_token"]
     authenticator = TokenAuthenticator(token)
-    channel_filter = token_config["channel_filter"]
-    stream = components_module.JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
+    stream = components_module.JoinChannelsStream(authenticator=authenticator)
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"channel": "C061EG9SL", "channel_name": "general"})
     assert not list(records)
     assert mocked_request.called
@@ -51,6 +51,16 @@ def get_channels_retriever_instance(token_config, components_module):
         ),
         parameters={},
     )
+
+
+def test_join_channels_stream_without_optional_channel_filter(token_config, components_module):
+    config = deepcopy(token_config)
+    config.pop("channel_filter")
+    retriever = get_channels_retriever_instance(config, components_module)
+
+    stream = retriever.join_channels_stream(config)
+
+    assert isinstance(stream, components_module.JoinChannelsStream)
 
 
 @pytest.mark.parametrize(
