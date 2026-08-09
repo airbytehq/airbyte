@@ -84,7 +84,8 @@ def test_join_channel_read_success(requests_mock, token_config, joined_channel, 
         json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
     )
 
-    retriever = get_channels_retriever_instance(token_config, components_module)
+    config = {key: value for key, value in token_config.items() if key != "channel_filter"}
+    retriever = get_channels_retriever_instance(config, components_module)
     assert len(list(retriever.read_records(records_schema={}))) == 2
     assert mocked_request.called
     assert mocked_request.last_request._request.body == b'{"channel": "channel 2"}'

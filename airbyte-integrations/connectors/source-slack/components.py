@@ -129,7 +129,7 @@ class ChannelsRetriever(SimpleRetriever):
     def join_channels_stream(self, config) -> JoinChannelsStream:
         token = config["credentials"].get("api_token") or config["credentials"].get("access_token")
         authenticator = TokenAuthenticator(token)
-        channel_filter = config["channel_filter"]
+        channel_filter = config.get("channel_filter", [])
         return JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
 
     def join_channel(self, config: Mapping[str, Any], record: Mapping[str, Any]):
