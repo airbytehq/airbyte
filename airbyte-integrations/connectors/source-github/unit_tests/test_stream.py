@@ -14,7 +14,12 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
-from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
+from source_github.errors_handlers import (
+    GitHubGraphQLErrorHandler,
+    is_conflict_with_empty_repository,
+    is_gone_with_feature_disabled,
+    is_response_body_unparseable,
+)
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -2430,3 +2435,102 @@ def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock)
         "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
         for msg in caplog.messages
     )
+
+
+def test_graphql_error_handler_retries_unparseable_200_body():
+    stream = Releases(repositories=["org/repo"], page_size_for_large_streams=10, start_date="2022-01-01T00:00:00Z")
+    handler = GitHubGraphQLErrorHandler(stream=stream, logger=MagicMock(), error_mapping={})
+    response = MagicMock(spec=requests.Response)
+    response.status_code = requests.codes.OK
+    response.headers = {}
+    response.text = '{"data": {"repository":'
+    response.json = MagicMock(side_effect=ValueError("Unterminated string"))
+
+    resolution = handler.interpret_response(response)
+
+    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.failure_type == FailureType.transient_error
+    assert stream.name in resolution.error_message
+    assert "200" in resolution.error_message
+    assert "not valid JSON" in resolution.error_message
+
+
+def test_abc_error_handler_retries_unparseable_200_body():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    response = MagicMock(spec=requests.Response)
+    response.status_code = requests.codes.OK
+    response.headers = {}
+    response.text = '{"records":'
+    response.json = MagicMock(side_effect=ValueError("Unterminated string"))
+
+    resolution = handler.interpret_response(response)
+
+    assert resolution.response_action == ResponseAction.RETRY
+    assert resolution.failure_type == FailureType.transient_error
+
+
+def test_empty_body_is_not_unparseable():
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    response = MagicMock(spec=requests.Response)
+    response.status_code = requests.codes.OK
+    response.headers = {}
+    response.text = ""
+    response.json = MagicMock(side_effect=ValueError("No JSON"))
+
+    assert is_response_body_unparseable(response) is False
+    assert handler.interpret_response(response).response_action != ResponseAction.RETRY
+
+
+def test_graphql_parse_helper_raises_transient_error_for_unparseable_body():
+    stream = Releases(repositories=["org/repo"], page_size_for_large_streams=10, start_date="2022-01-01T00:00:00Z")
+    response = MagicMock(spec=requests.Response)
+    response.text = '{"data": {"repository":'
+    response.json = MagicMock(side_effect=ValueError("Unterminated string"))
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        stream._parse_graphql_response(response)
+
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert stream.name in exc_info.value.message
+    assert "not valid JSON" in exc_info.value.message
+
+
+@patch("time.sleep")
+def test_read_records_unparseable_graphql_body_is_transient_error(time_mock, requests_mock):
+    stream = Reviews(
+        repositories=["org/repo"],
+        page_size_for_large_streams=10,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.post("https://api.github.com/graphql", status_code=requests.codes.OK, text='{"data": {"repository":')
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+
+    assert exc_info.value.failure_type == FailureType.transient_error
+    assert requests_mock.call_count == stream.max_retries + 1
+
+
+@patch("time.sleep")
+def test_graphql_page_size_reduction_persists_until_next_read(time_mock, requests_mock):
+    stream = Releases(
+        repositories=["org/repo"],
+        page_size_for_large_streams=10,
+        start_date="2022-01-01T00:00:00Z",
+    )
+    requests_mock.post(
+        "https://api.github.com/graphql",
+        [
+            {"status_code": requests.codes.GATEWAY_TIMEOUT, "json": {"message": "Gateway Timeout"}},
+            {"status_code": requests.codes.OK, "json": {"data": {"repository": None}}},
+            {"status_code": requests.codes.OK, "json": {"data": {"repository": None}}},
+        ],
+    )
+
+    list(read_full_refresh(stream))
+    assert stream.page_size == 5
+
+    list(read_full_refresh(stream))
+    assert stream.page_size == 10
