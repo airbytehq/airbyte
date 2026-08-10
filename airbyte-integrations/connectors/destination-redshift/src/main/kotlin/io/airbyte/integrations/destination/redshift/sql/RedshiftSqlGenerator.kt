@@ -232,11 +232,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Step 2: CDC hard-delete (if enabled)
         if (cdcHardDeleteEnabled) {
             val primaryKeysMatchingCondition =
-                buildNullSafePkMatch(
-                    primaryKeyTargetColumns,
-                    getFullyQualifiedName(targetTableName),
-                    dedupRef,
-                )
+                primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupRef.$pk"
+                }
             val cursorComparison =
                 buildCursorComparison(cursorTargetColumn, targetTableName, dedupRef)
             statements.add(
@@ -309,11 +307,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cursorTargetColumn: String?,
         cdcHardDeleteEnabled: Boolean,
     ): String {
-        // Redshift requires UPDATE...FROM to use a pure equijoin predicate (simple =)
-        val target = getFullyQualifiedName(targetTableName)
         val primaryKeysMatches =
             primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                "$target.$pk = $dedupTableAlias.$pk"
+                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
             }
 
         val cursorComparison =
@@ -356,11 +352,15 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         cdcHardDeleteEnabled: Boolean,
     ): String {
         val primaryKeysConditions =
-            buildNullSafePkMatch(
-                primaryKeyTargetColumns,
-                getFullyQualifiedName(targetTableName),
-                dedupTableAlias,
-            )
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+            }
+
+        // Ignore NULL PK records during INSERT
+        val pkNotNullFilters =
+            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                "$dedupTableAlias.$pk IS NOT NULL"
+            }
 
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
@@ -377,7 +377,8 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |  ${allTargetColumns.joinToString(",\n  ")}
             |FROM $dedupTableAlias
             |WHERE
-            |  NOT EXISTS (
+            |  $pkNotNullFilters
+            |  AND NOT EXISTS (
             |    SELECT 1
             |    FROM ${getFullyQualifiedName(targetTableName)}
             |    WHERE $primaryKeysConditions
@@ -408,16 +409,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         }
     }
 
-    private fun buildNullSafePkMatch(
-        primaryKeyColumns: List<String>,
-        targetPrefix: String,
-        sourcePrefix: String,
-    ): String {
-        return primaryKeyColumns.joinToString(" AND ") { pk ->
-            "($targetPrefix.$pk = $sourcePrefix.$pk OR ($targetPrefix.$pk IS NULL AND $sourcePrefix.$pk IS NULL))"
-        }
-    }
-
     /**
      * Generates SQL to evolve a table's schema:
      * 1. ADD COLUMN with the new type (temp name)
@@ -430,7 +421,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
-        columnsToRemove: Map<String, ColumnType>,
         columnsToModify: Map<String, ColumnTypeChange>,
     ): String {
         val clauses = mutableListOf<String>()
@@ -439,11 +429,6 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         // Add new columns (no NOT NULL -- preexisting rows would have no default)
         columnsToAdd.forEach { (name, columnType) ->
             clauses.add(addColumn(tableName, name, columnType.type))
-        }
-
-        // Remove columns
-        columnsToRemove.forEach { (name, _) ->
-            clauses.add("ALTER TABLE $fqn DROP COLUMN ${quoteIdentifier(name)}$cascadeSuffix;")
         }
 
         // Modify column types via 4-step rename pattern
