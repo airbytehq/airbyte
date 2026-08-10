@@ -183,9 +183,9 @@ These settings are optional. Unless you have a specific reason to change them, t
 
 | Setting | Default | What it does |
 | :------ | :------ | :----------- |
-| **CDC deletion mode** | Hard delete | Controls what happens when a CDC source reports a deleted record. **Hard delete** removes the row from the destination table. **Soft delete** keeps the row and populates its `_ab_cdc_deleted_at` column, so you can filter deleted records downstream yourself. Only affects streams that are deduped and carry CDC metadata. |
+| **CDC deletion mode** | Hard delete | Controls what happens when a CDC source reports a deleted record. **Hard delete** removes the row from the destination table. **Soft delete** keeps the row and populates its `_ab_cdc_deleted_at` column, so you can filter deleted records downstream yourself. Only affects streams that are deduplicated and carry CDC metadata. |
 | **Airbyte Internal Schema Name** | `airbyte_internal` | The schema Airbyte uses for internal tables. In legacy raw tables mode, raw tables are written here. |
-| **Disable Final Tables** | Off | Turns on legacy "raw tables only" mode. Airbyte writes a single `_airbyte_data` JSONB column per stream instead of typed columns, and syncs run in append mode even when the connection uses dedup. Only use this if you depend on the pre-3.0.0 raw table format. |
+| **Disable Final Tables** | Off | Turns on legacy "raw tables only" mode. Airbyte writes a single `_airbyte_data` JSONB column per stream instead of typed columns, and syncs run in append mode even when the connection uses a deduplicating sync mode. Only use this if you depend on the pre-3.0.0 raw table format. |
 | **Drop tables with CASCADE** | Off | Adds `CASCADE` to the `DROP TABLE` statements the connector runs. See [Creating dependent objects](#creating-dependent-objects) before you enable it. |
 | **Unconstrained numeric columns** | Off | Has no effect in version 3.0.0 and later. Number columns are always created as unconstrained `DECIMAL`. |
 
@@ -202,9 +202,9 @@ following [sync modes](/platform/using-airbyte/core-concepts/sync-modes/):
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-Deduplication requires a primary key. If a stream is set to a deduping sync mode but has no primary
-key, the sync fails. In legacy "raw tables only" mode, deduplication isn't possible at all, so the
-connector falls back to appending and logs a warning.
+Deduplication requires a primary key. If a stream is set to a deduplicating sync mode but has no
+primary key, the sync fails. In legacy "raw tables only" mode, deduplication isn't possible at all,
+so the connector falls back to appending and logs a warning.
 
 ## Schema map
 
