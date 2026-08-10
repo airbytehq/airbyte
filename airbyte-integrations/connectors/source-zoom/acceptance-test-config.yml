@@ -44,6 +44,16 @@ acceptance_tests:
             bypass_reason: "Need paid Webinar license to populate data"
           - name: "report_webinar_participants"
             bypass_reason: "Need paid Webinar license to populate data"
+          - name: "recordings"
+            bypass_reason: "CI test account may not have cloud recordings with audio transcripts enabled"
+          - name: "recording_transcript_content"
+            bypass_reason: "CI test account may not have cloud recordings with audio transcripts enabled"
+          - name: "phone_call_history"
+            bypass_reason: "CI test account does not have a Zoom Phone license"
+          - name: "phone_recordings"
+            bypass_reason: "CI test account does not have a Zoom Phone license"
+          - name: "phone_recording_transcripts"
+            bypass_reason: "CI test account does not have a Zoom Phone license"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
