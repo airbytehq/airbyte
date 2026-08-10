@@ -434,14 +434,13 @@ class RepositoryStats(GithubStream):
         yield response.json()
 
 
-class Assignees(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees
-    """
-
-
 class Branches(GithubStream):
     """
+    The user-facing `branches` stream is served by the manifest. This class stays behind as a
+    technical stream (like `RepositoryStats` above): `Commits` reads it to discover which
+    branches exist per repository before slicing. It is not returned by
+    `SourceGithub.streams()` and is not part of the catalog.
+
     API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
     """
 
@@ -449,21 +448,6 @@ class Branches(GithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/branches"
-
-
-class Collaborators(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
-    """
-
-
-class IssueLabels(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/labels"
 
 
 class Organizations(GithubStreamABC):
@@ -492,17 +476,6 @@ class Organizations(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
         return record
-
-
-class Tags(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-    """
-
-    primary_key = ["repository", "name"]
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/tags"
 
 
 class Teams(Organizations):
