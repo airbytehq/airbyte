@@ -45,7 +45,7 @@ class PostgresAirbyteClient(
 
     companion object {
         private const val COLUMN_NAME_COLUMN = "column_name"
-        /** SQLSTATEs indicating the relation (or its schema) genuinely does not exist. */
+        /** SQLSTATE 42P01 = undefined_table; 3F000 = invalid_schema_name. */
         private val MISSING_RELATION_SQL_STATES = setOf("42P01", "3F000")
     }
 
@@ -494,14 +494,8 @@ class PostgresAirbyteClient(
         }
     }
 
-    private fun isMissingRelation(exception: Throwable): Boolean {
-        var cause: Throwable? = exception
-        while (cause != null) {
-            if (cause is SQLException && cause.sqlState in MISSING_RELATION_SQL_STATES) {
-                return true
-            }
-            cause = cause.cause
+    private fun isMissingRelation(exception: Throwable): Boolean =
+        generateSequence(exception) { it.cause }.any {
+            it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES
         }
-        return false
-    }
 }
