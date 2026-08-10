@@ -1976,9 +1976,9 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
         status_code=202,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
     config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    source = SourceGithub(config=config, catalog=catalog)
     logger_mock = MagicMock()
 
     with patch("time.sleep", return_value=0):
@@ -2133,9 +2133,9 @@ def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit
         status_code=401,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
     config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    source = SourceGithub(config=config, catalog=catalog)
 
     # The 401 error should be re-raised, not silently swallowed
     with pytest.raises(AirbyteTracedException):

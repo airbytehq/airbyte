@@ -667,7 +667,7 @@ Classes
     `author: airbyte_agent_sdk.connectors.shopify.types.ArticlesCreateParamsArticleAuthor`
     :   The type of the None singleton.
 
-    `blogId: str`
+    `blog_id: str`
     :   The type of the None singleton.
 
     `body: str`
@@ -676,7 +676,7 @@ Classes
     `handle: str`
     :   The type of the None singleton.
 
-    `isPublished: bool`
+    `is_published: bool`
     :   The type of the None singleton.
 
     `tags: list[str]`
@@ -1184,7 +1184,7 @@ Classes
     `handle: str`
     :   The type of the None singleton.
 
-    `isPublished: bool`
+    `is_published: bool`
     :   The type of the None singleton.
 
     `tags: list[str]`
@@ -3214,19 +3214,19 @@ Classes
 
     ### Class variables
 
-    `descriptionHtml: str`
+    `description_html: str`
     :   The type of the None singleton.
 
     `handle: str`
     :   The type of the None singleton.
 
-    `ruleSet: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRuleset`
+    `rule_set: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRuleset`
     :   The type of the None singleton.
 
-    `sortOrder: str`
+    `sort_order: str`
     :   The type of the None singleton.
 
-    `templateSuffix: str`
+    `template_suffix: str`
     :   The type of the None singleton.
 
     `title: str`
@@ -3243,7 +3243,7 @@ Classes
 
     ### Class variables
 
-    `appliedDisjunctively: bool`
+    `applied_disjunctively: bool`
     :   The type of the None singleton.
 
     `rules: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRulesetRulesItem]`
@@ -3702,7 +3702,7 @@ Classes
 
     ### Class variables
 
-    `descriptionHtml: str`
+    `description_html: str`
     :   The type of the None singleton.
 
     `handle: str`
@@ -3711,7 +3711,7 @@ Classes
     `id: str`
     :   The type of the None singleton.
 
-    `sortOrder: str`
+    `sort_order: str`
     :   The type of the None singleton.
 
     `title: str`
@@ -3884,10 +3884,10 @@ Classes
     `email: str`
     :   The type of the None singleton.
 
-    `firstName: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `lastName: str`
+    `last_name: str`
     :   The type of the None singleton.
 
     `note: str`
@@ -3899,7 +3899,7 @@ Classes
     `tags: list[str]`
     :   The type of the None singleton.
 
-    `taxExempt: bool`
+    `tax_exempt: bool`
     :   The type of the None singleton.
 
 <a id="CustomersCreateParamsInputAddressesItem"></a>
@@ -3922,13 +3922,13 @@ Classes
     `city: str`
     :   The type of the None singleton.
 
-    `countryCode: str`
+    `country_code: str`
     :   The type of the None singleton.
 
-    `firstName: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `lastName: str`
+    `last_name: str`
     :   The type of the None singleton.
 
     `phone: str`
@@ -4424,13 +4424,13 @@ Classes
     `email: str`
     :   The type of the None singleton.
 
-    `firstName: str`
+    `first_name: str`
     :   The type of the None singleton.
 
     `id: str`
     :   The type of the None singleton.
 
-    `lastName: str`
+    `last_name: str`
     :   The type of the None singleton.
 
     `note: str`
@@ -4442,7 +4442,7 @@ Classes
     `tags: list[str]`
     :   The type of the None singleton.
 
-    `taxExempt: bool`
+    `tax_exempt: bool`
     :   The type of the None singleton.
 
 <a id="DiscountCodesAndCondition"></a>
@@ -4560,22 +4560,22 @@ Classes
     `code: str`
     :   The type of the None singleton.
 
-    `customerGets: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergets`
+    `customer_gets: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergets`
     :   The type of the None singleton.
 
-    `customerSelection: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomerselection`
+    `customer_selection: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomerselection`
     :   The type of the None singleton.
 
-    `endsAt: str`
+    `ends_at: str`
     :   The type of the None singleton.
 
-    `startsAt: str`
+    `starts_at: str`
     :   The type of the None singleton.
 
     `title: str`
     :   The type of the None singleton.
 
-    `usageLimit: int`
+    `usage_limit: int`
     :   The type of the None singleton.
 
 <a id="DiscountCodesCreateParamsBasiccodediscountCustomergets"></a>
@@ -4622,7 +4622,7 @@ Classes
 
     ### Class variables
 
-    `discountAmount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount`
+    `discount_amount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount`
     :   The type of the None singleton.
 
     `percentage: float`
@@ -4642,7 +4642,7 @@ Classes
     `amount: str`
     :   The type of the None singleton.
 
-    `appliesOnEachItem: bool`
+    `applies_on_each_item: bool`
     :   The type of the None singleton.
 
 <a id="DiscountCodesCreateParamsBasiccodediscountCustomerselection"></a>
@@ -5063,16 +5063,16 @@ Classes
     `code: str`
     :   The type of the None singleton.
 
-    `endsAt: str`
+    `ends_at: str`
     :   The type of the None singleton.
 
-    `startsAt: str`
+    `starts_at: str`
     :   The type of the None singleton.
 
     `title: str`
     :   The type of the None singleton.
 
-    `usageLimit: int`
+    `usage_limit: int`
     :   The type of the None singleton.
 
 <a id="DisputesAndCondition"></a>
@@ -5740,19 +5740,19 @@ Classes
 
     ### Class variables
 
-    `customerId: str`
+    `customer_id: str`
     :   The type of the None singleton.
 
     `email: str`
     :   The type of the None singleton.
 
-    `lineItems: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputLineitemsItem]`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputLineitemsItem]`
     :   The type of the None singleton.
 
     `note: str`
     :   The type of the None singleton.
 
-    `shippingAddress: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputShippingaddress`
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputShippingaddress`
     :   The type of the None singleton.
 
     `tags: list[str]`
@@ -5769,7 +5769,7 @@ Classes
 
     ### Class variables
 
-    `originalUnitPrice: str`
+    `original_unit_price: str`
     :   The type of the None singleton.
 
     `quantity: int`
@@ -5778,7 +5778,7 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
-    `variantId: str`
+    `variant_id: str`
     :   The type of the None singleton.
 
 <a id="DraftOrdersCreateParamsInputShippingaddress"></a>
@@ -5798,10 +5798,10 @@ Classes
     `city: str`
     :   The type of the None singleton.
 
-    `countryCode: str`
+    `country_code: str`
     :   The type of the None singleton.
 
-    `provinceCode: str`
+    `province_code: str`
     :   The type of the None singleton.
 
     `zip: str`
@@ -6279,7 +6279,7 @@ Classes
     `email: str`
     :   The type of the None singleton.
 
-    `lineItems: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersUpdateParamsInputLineitemsItem]`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersUpdateParamsInputLineitemsItem]`
     :   The type of the None singleton.
 
     `note: str`
@@ -6299,7 +6299,7 @@ Classes
 
     ### Class variables
 
-    `originalUnitPrice: str`
+    `original_unit_price: str`
     :   The type of the None singleton.
 
     `quantity: int`
@@ -6308,7 +6308,7 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
-    `variantId: str`
+    `variant_id: str`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrdersAndCondition"></a>
@@ -7321,7 +7321,7 @@ Classes
     `reason: str`
     :   The type of the None singleton.
 
-    `referenceDocumentUri: str`
+    `reference_document_uri: str`
     :   The type of the None singleton.
 
 <a id="InventoryAdjustCreateParamsInputChangesItem"></a>
@@ -7338,10 +7338,10 @@ Classes
     `delta: int`
     :   The type of the None singleton.
 
-    `inventoryItemId: str`
+    `inventory_item_id: str`
     :   The type of the None singleton.
 
-    `locationId: str`
+    `location_id: str`
     :   The type of the None singleton.
 
 <a id="InventoryItemsAndCondition"></a>
@@ -8235,7 +8235,7 @@ Classes
     `reason: str`
     :   The type of the None singleton.
 
-    `referenceDocumentUri: str`
+    `reference_document_uri: str`
     :   The type of the None singleton.
 
 <a id="InventorySetCreateParamsInputQuantitiesItem"></a>
@@ -8249,10 +8249,10 @@ Classes
 
     ### Class variables
 
-    `inventoryItemId: str`
+    `inventory_item_id: str`
     :   The type of the None singleton.
 
-    `locationId: str`
+    `location_id: str`
     :   The type of the None singleton.
 
     `quantity: int`
@@ -14768,10 +14768,10 @@ Classes
     `namespace: str`
     :   The type of the None singleton.
 
-    `ownerId: str`
+    `owner_id: str`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `value: str`
@@ -14808,7 +14808,7 @@ Classes
     `namespace: str`
     :   The type of the None singleton.
 
-    `ownerId: str`
+    `owner_id: str`
     :   The type of the None singleton.
 
 <a id="OrderRefundsAndCondition"></a>
@@ -15417,7 +15417,7 @@ Classes
 
     ### Class variables
 
-    `inventoryBehaviour: str`
+    `inventory_behaviour: str`
     :   The type of the None singleton.
 
 <a id="OrdersCreateParamsOrder"></a>
@@ -15431,19 +15431,19 @@ Classes
 
     ### Class variables
 
-    `customerId: str`
+    `customer_id: str`
     :   The type of the None singleton.
 
     `email: str`
     :   The type of the None singleton.
 
-    `lineItems: list[airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItem]`
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItem]`
     :   The type of the None singleton.
 
     `note: str`
     :   The type of the None singleton.
 
-    `shippingAddress: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderShippingaddress`
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderShippingaddress`
     :   The type of the None singleton.
 
     `tags: list[str]`
@@ -15460,7 +15460,7 @@ Classes
 
     ### Class variables
 
-    `priceSet: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPriceset`
+    `price_set: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPriceset`
     :   The type of the None singleton.
 
     `quantity: int`
@@ -15469,7 +15469,7 @@ Classes
     `title: str`
     :   The type of the None singleton.
 
-    `variantId: str`
+    `variant_id: str`
     :   The type of the None singleton.
 
 <a id="OrdersCreateParamsOrderLineitemsItemPriceset"></a>
@@ -15483,7 +15483,7 @@ Classes
 
     ### Class variables
 
-    `shopMoney: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPricesetShopmoney`
+    `shop_money: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPricesetShopmoney`
     :   The type of the None singleton.
 
 <a id="OrdersCreateParamsOrderLineitemsItemPricesetShopmoney"></a>
@@ -15500,7 +15500,7 @@ Classes
     `amount: str`
     :   The type of the None singleton.
 
-    `currencyCode: str`
+    `currency_code: str`
     :   The type of the None singleton.
 
 <a id="OrdersCreateParamsOrderShippingaddress"></a>
@@ -15520,16 +15520,16 @@ Classes
     `city: str`
     :   The type of the None singleton.
 
-    `countryCode: str`
+    `country_code: str`
     :   The type of the None singleton.
 
-    `firstName: str`
+    `first_name: str`
     :   The type of the None singleton.
 
-    `lastName: str`
+    `last_name: str`
     :   The type of the None singleton.
 
-    `provinceCode: str`
+    `province_code: str`
     :   The type of the None singleton.
 
     `zip: str`
@@ -16155,7 +16155,7 @@ Classes
     `note: str`
     :   The type of the None singleton.
 
-    `shippingAddress: airbyte_agent_sdk.connectors.shopify.types.OrdersUpdateParamsInputShippingaddress`
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.OrdersUpdateParamsInputShippingaddress`
     :   The type of the None singleton.
 
     `tags: list[str]`
@@ -16178,10 +16178,10 @@ Classes
     `city: str`
     :   The type of the None singleton.
 
-    `countryCode: str`
+    `country_code: str`
     :   The type of the None singleton.
 
-    `provinceCode: str`
+    `province_code: str`
     :   The type of the None singleton.
 
     `zip: str`
@@ -16311,7 +16311,7 @@ Classes
     `handle: str`
     :   The type of the None singleton.
 
-    `isPublished: bool`
+    `is_published: bool`
     :   The type of the None singleton.
 
     `title: str`
@@ -16760,7 +16760,7 @@ Classes
     `handle: str`
     :   The type of the None singleton.
 
-    `isPublished: bool`
+    `is_published: bool`
     :   The type of the None singleton.
 
     `title: str`
@@ -17917,13 +17917,13 @@ Classes
     `barcode: str`
     :   The type of the None singleton.
 
-    `compareAtPrice: str`
+    `compare_at_price: str`
     :   The type of the None singleton.
 
-    `inventoryItem: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemInventoryitem`
+    `inventory_item: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemInventoryitem`
     :   The type of the None singleton.
 
-    `optionValues: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemOptionvaluesItem]`
+    `option_values: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemOptionvaluesItem]`
     :   The type of the None singleton.
 
     `price: str`
@@ -17957,7 +17957,7 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
-    `optionName: str`
+    `option_name: str`
     :   The type of the None singleton.
 
 <a id="ProductVariantsDeleteParams"></a>
@@ -18415,13 +18415,13 @@ Classes
     `barcode: str`
     :   The type of the None singleton.
 
-    `compareAtPrice: str`
+    `compare_at_price: str`
     :   The type of the None singleton.
 
     `id: str`
     :   The type of the None singleton.
 
-    `inventoryItem: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsUpdateParamsVariantsItemInventoryitem`
+    `inventory_item: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsUpdateParamsVariantsItemInventoryitem`
     :   The type of the None singleton.
 
     `price: str`
@@ -18574,10 +18574,10 @@ Classes
 
     ### Class variables
 
-    `mediaContentType: str`
+    `media_content_type: str`
     :   The type of the None singleton.
 
-    `originalSource: str`
+    `original_source: str`
     :   The type of the None singleton.
 
 <a id="ProductsCreateParamsProduct"></a>
@@ -18591,10 +18591,10 @@ Classes
 
     ### Class variables
 
-    `descriptionHtml: str`
+    `description_html: str`
     :   The type of the None singleton.
 
-    `productType: str`
+    `product_type: str`
     :   The type of the None singleton.
 
     `status: str`
@@ -19114,13 +19114,13 @@ Classes
 
     ### Class variables
 
-    `descriptionHtml: str`
+    `description_html: str`
     :   The type of the None singleton.
 
     `id: str`
     :   The type of the None singleton.
 
-    `productType: str`
+    `product_type: str`
     :   The type of the None singleton.
 
     `status: str`
