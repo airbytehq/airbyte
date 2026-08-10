@@ -45,8 +45,13 @@ class PostgresAirbyteClient(
 
     companion object {
         private const val COLUMN_NAME_COLUMN = "column_name"
+        private const val UNDEFINED_TABLE_SQL_STATE =
+            "42P01" // undefined_table: relation does not exist.
+        private const val INVALID_SCHEMA_NAME_SQL_STATE =
+            "3F000" // invalid_schema_name: relation's schema does not exist.
         /** SQLSTATEs indicating the relation (or its schema) genuinely does not exist. */
-        private val MISSING_RELATION_SQL_STATES = setOf("42P01", "3F000")
+        private val MISSING_RELATION_SQL_STATES =
+            setOf(UNDEFINED_TABLE_SQL_STATE, INVALID_SCHEMA_NAME_SQL_STATE)
     }
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -495,13 +500,7 @@ class PostgresAirbyteClient(
     }
 
     private fun isMissingRelation(exception: Throwable): Boolean {
-        var cause: Throwable? = exception
-        while (cause != null) {
-            if (cause is SQLException && cause.sqlState in MISSING_RELATION_SQL_STATES) {
-                return true
-            }
-            cause = cause.cause
-        }
-        return false
+        return generateSequence(exception) { it.cause }
+            .any { it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES }
     }
 }
