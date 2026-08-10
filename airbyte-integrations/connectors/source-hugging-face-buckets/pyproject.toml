@@ -1,0 +1,34 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source_hugging_face_buckets"
+description = "Source implementation for Hugging Face Buckets"
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/hugging-face-buckets"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_hugging_face_buckets"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.14"
+airbyte-cdk = "^7"
+huggingface_hub = ">=0.20.0"
+pandas = ">=2.0.0"
+pyarrow = ">=14.0.0"
+
+[tool.poetry.scripts]
+source-hugging-face-buckets = "source_hugging_face_buckets.run:run"
+
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
