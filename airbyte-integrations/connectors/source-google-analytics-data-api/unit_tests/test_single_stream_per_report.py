@@ -49,7 +49,8 @@ def test_stream_names(single_stream_per_report):
     config = _config(single_stream_per_report)
     streams = get_source(config).streams(config=config)
     stream_names = [stream.name for stream in streams]
-    report_names = [name for name in stream_names if "Property" not in name]
+    assert "property_metadata" in stream_names
+    report_names = [name for name in stream_names if name != "property_metadata" and "Property" not in name]
 
     assert len(report_names) == 59
     assert "devices" in report_names
@@ -57,7 +58,7 @@ def test_stream_names(single_stream_per_report):
         assert "devicesProperty222" not in stream_names
     else:
         assert "devicesProperty222" in stream_names
-    assert len(stream_names) == len(report_names) * (1 if single_stream_per_report else 2)
+    assert len(stream_names) == len(report_names) * (1 if single_stream_per_report else 2) + 1
     if single_stream_per_report:
         stream = next(stream for stream in streams if stream.name == "first_report")
         partitions = list(stream.generate_partitions())
