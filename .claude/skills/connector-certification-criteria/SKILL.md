@@ -527,6 +527,9 @@ Search `airbytehq/airbyte`, `airbytehq/alpha-beta-issues`, and `airbytehq/oncall
 
 - **Check:** no unresolved breaking-change entries; changelog has an entry per version; version matches
   across `metadata.yaml` and the docs changelog.
+- **Pass when:** every changelog Subject is a **simple one-liner** — one concise sentence naming the
+  user-visible change. No multi-sentence subjects, no migration instructions crammed into the cell. Where a
+  change needs more explanation, it belongs in the docs page or a migration guide that the entry links to.
 - **Fix:** reconcile. See the `breaking-change-evaluation` skill rather than re-deriving the policy.
 
 ---
