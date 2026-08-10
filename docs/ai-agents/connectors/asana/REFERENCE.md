@@ -42,6 +42,17 @@ The Asana connector supports the following entities and actions.
 
 Returns a paginated list of tasks. Must include either a project OR a section OR a workspace AND assignee parameter.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -103,6 +114,23 @@ Creates a new task. Every task is required to be created in a specific workspace
 and this workspace cannot be changed once set. The workspace need not be set explicitly
 if you specify projects or a parent task instead.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "create",
+  "params": {
+    "data": {
+      "name": "<str>",
+      "workspace": "<str>"
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -171,6 +199,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single task by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "get",
+  "params": {
+    "task_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -220,6 +262,21 @@ Updates an existing task. Only the fields provided in the data block will be upd
 any unspecified fields will remain unchanged. When using this method, it is best to
 specify only those fields you wish to change.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "update",
+  "params": {
+    "data": {},
+    "task_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -282,6 +339,20 @@ making the delete request. Tasks can be recovered from the trash within 30 days;
 afterward they are completely removed from the system.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "delete",
+  "params": {
+    "task_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -316,6 +387,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tasks Context Store Search
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "actual_time_minutes": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -447,6 +538,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all tasks in a project
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "project_tasks",
+  "action": "list",
+  "params": {
+    "project_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -511,6 +616,20 @@ Returns tasks that match the specified search criteria. This endpoint requires a
 
 IMPORTANT: At least one search filter parameter must be provided. Valid filter parameters include: text, completed, assignee.any, projects.any, sections.any, teams.any, followers.any, created_at.after, created_at.before, modified_at.after, modified_at.before, due_on.after, due_on.before, and resource_subtype. The sort_by and sort_ascending parameters are for ordering results and do not count as search filters.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_task_search",
+  "action": "list",
+  "params": {
+    "workspace_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -589,6 +708,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of projects
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -644,6 +774,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Create a new project in a workspace or team. Every project is required to be
 created in a specific workspace or organization, and this cannot be changed once set.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "create",
+  "params": {
+    "data": {
+      "name": "<str>",
+      "workspace": "<str>"
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -738,6 +885,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single project by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "project_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -816,6 +977,21 @@ Updates an existing project. Only the fields provided in the data block will be 
 any unspecified fields will remain unchanged. When using this method, it is best to
 specify only those fields you wish to change.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "update",
+  "params": {
+    "data": {},
+    "project_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -905,6 +1081,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Deletes a specific, existing project. Returns an empty data record.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "delete",
+  "params": {
+    "project_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -939,6 +1129,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1048,6 +1258,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all projects a task is in
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_projects",
+  "action": "list",
+  "params": {
+    "task_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1106,6 +1330,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Team Projects List
 
 Returns all projects for a team
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "team_projects",
+  "action": "list",
+  "params": {
+    "team_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1167,6 +1405,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all projects in a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_projects",
+  "action": "list",
+  "params": {
+    "workspace_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1227,6 +1479,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of workspaces
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspaces",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1278,6 +1541,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single workspace by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspaces",
+  "action": "get",
+  "params": {
+    "workspace_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1328,6 +1605,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Workspaces Context Store Search
 
 Search and filter workspaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspaces",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "email_domains": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1397,6 +1694,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of users
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1450,6 +1758,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single user by their ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "user_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1501,6 +1823,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "email": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1572,6 +1914,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all users in a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_users",
+  "action": "list",
+  "params": {
+    "workspace_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1630,6 +1986,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Team Users List
 
 Returns all users in a team
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "team_users",
+  "action": "list",
+  "params": {
+    "team_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1690,6 +2060,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single team by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "team_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1740,6 +2124,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "description": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1813,6 +2217,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all teams in a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_teams",
+  "action": "list",
+  "params": {
+    "workspace_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1871,6 +2289,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### User Teams List
 
 Returns all teams a user is a member of
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "user_teams",
+  "action": "list",
+  "params": {
+    "user_gid": "<str>",
+    "organization": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1934,6 +2367,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a list of attachments for an object (task, project, etc.)
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "attachments",
+  "action": "list",
+  "params": {
+    "parent": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1991,6 +2438,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Attachments Get
 
 Get details for a single attachment by its GID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "attachments",
+  "action": "get",
+  "params": {
+    "attachment_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2051,6 +2512,20 @@ Downloads the file content of an attachment. This operation first retrieves the 
 metadata to get the download_url, then downloads the file from that URL.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "attachments",
+  "action": "download",
+  "params": {
+    "attachment_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2087,6 +2562,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Attachments Context Store Search
 
 Search and filter attachments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "attachments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "connected_to_app": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2170,6 +2665,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all tags in a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_tags",
+  "action": "list",
+  "params": {
+    "workspace_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2229,6 +2738,23 @@ Creates a new tag in a workspace or organization. Every tag is required to be
 created in a specific workspace or organization, and this cannot be changed once set.
 Returns the full record of the newly created tag.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_tags",
+  "action": "create",
+  "params": {
+    "data": {
+      "name": "<str>"
+    },
+    "workspace_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2297,6 +2823,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single tag by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tags",
+  "action": "get",
+  "params": {
+    "tag_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2354,6 +2894,21 @@ Updates the properties of a tag. Only the fields provided in the data block will
 be updated; any unspecified fields will remain unchanged. Returns the complete
 updated tag record.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tags",
+  "action": "update",
+  "params": {
+    "data": {},
+    "tag_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2418,6 +2973,20 @@ A specific, existing tag can be deleted by making a DELETE request on the URL
 for that tag. Returns an empty data record.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tags",
+  "action": "delete",
+  "params": {
+    "tag_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2452,6 +3021,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Context Store Search
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2527,6 +3116,20 @@ Returns the compact task records for all tasks with the given tag.
 Tasks can have more than one tag at a time.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "tag_tasks",
+  "action": "list",
+  "params": {
+    "tag_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2588,6 +3191,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all sections in a project
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "project_sections",
+  "action": "list",
+  "params": {
+    "project_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2645,6 +3262,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Creates a new section in a project. Returns the full record of the newly created section.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "project_sections",
+  "action": "create",
+  "params": {
+    "data": {
+      "name": "<str>"
+    },
+    "project_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2709,6 +3343,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single section by its ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "sections",
+  "action": "get",
+  "params": {
+    "section_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2762,6 +3410,21 @@ A specific, existing section can be updated by making a PUT request on the URL f
 that section. Only the fields provided in the data block will be updated; any unspecified
 fields will remain unchanged. Currently only the name field can be updated.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "sections",
+  "action": "update",
+  "params": {
+    "data": {},
+    "section_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2821,6 +3484,20 @@ for that section. Note that sections must be empty to be deleted. The last remai
 section in a project cannot be deleted.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "sections",
+  "action": "delete",
+  "params": {
+    "section_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2855,6 +3532,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sections Context Store Search
 
 Search and filter sections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "sections",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2924,6 +3621,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns the compact task records for all tasks within the given section.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "section_tasks",
+  "action": "list",
+  "params": {
+    "section_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2987,6 +3698,23 @@ sections of the project. The task will be inserted at the top of the section unl
 an insert_before or insert_after parameter is declared.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "section_tasks",
+  "action": "create",
+  "params": {
+    "data": {
+      "task": "<str>"
+    },
+    "section_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3033,6 +3761,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Task Subtasks List
 
 Returns all subtasks of a task
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_subtasks",
+  "action": "list",
+  "params": {
+    "task_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3095,6 +3837,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all tasks that this task depends on
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_dependencies",
+  "action": "list",
+  "params": {
+    "task_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3155,6 +3911,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Task Dependents List
 
 Returns all tasks that depend on this task
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_dependents",
+  "action": "list",
+  "params": {
+    "task_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3218,6 +3988,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Adds a comment to a task. The comment will be authored by the currently
 authenticated user, and timestamped when the server receives the request.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_stories",
+  "action": "create",
+  "params": {
+    "data": {
+      "text": "<str>"
+    },
+    "task_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3288,6 +4075,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Adds a tag to a task. Returns an empty data block.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_tags",
+  "action": "create",
+  "params": {
+    "data": {
+      "tag": "<str>"
+    },
+    "task_gid": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -3331,6 +4135,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Removes a tag from a task. Returns an empty data block.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "task_tags",
+  "action": "delete",
+  "params": {
+    "data": {
+      "tag": "<str>"
+    },
+    "task_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -3379,6 +4200,23 @@ Add a user to a workspace or organization. The user can be referenced by their
 globally unique user ID or their email address. Returns the full user record
 for the invited user.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "asana",
+  "entity": "workspace_memberships",
+  "action": "create",
+  "params": {
+    "data": {
+      "user": "<str>"
+    },
+    "workspace_gid": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

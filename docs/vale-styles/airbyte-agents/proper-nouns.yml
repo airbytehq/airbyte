@@ -1,11 +1,11 @@
 extends: existence
-message: "Use the proper noun '%s'. 'Automation Builder' and 'Context Store' are Airbyte product names and must be capitalized consistently."
+message: "Use the proper noun '%s'. 'Agent Operations', 'Automation Builder', and 'Context Store' are Airbyte product names and must be capitalized consistently."
 link: https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs
 level: warning
 ignorecase: false
-# Matches mis-cased variants only. The canonical 'Automation Builder' and
-# 'Context Store' are intentionally excluded so the rule stays silent on
-# correct usage even inside markdown links (where TokenIgnores may not apply).
+# Matches mis-cased variants only. The canonical forms are intentionally
+# excluded so the rule stays silent on correct usage even inside markdown
+# links (where TokenIgnores may not apply).
 tokens:
   - 'automation builder'
   - 'automation Builder'
@@ -15,3 +15,7 @@ tokens:
   - 'context Store'
   - 'Context store'
   - 'CONTEXT STORE'
+  - 'agent operations'
+  - 'agent Operations'
+  - 'Agent operations'
+  - 'AGENT OPERATIONS'

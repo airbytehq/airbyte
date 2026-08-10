@@ -18,12 +18,28 @@ The Sentry connector supports the following entities and actions.
 
 ### Projects List
 
-Return a list of projects available to the authenticated user.
+Return a list of projects the authenticated user has access to within the given organization. Requires the token to have the `org:read` scope. Note: unlike the deprecated `/projects/` endpoint, this only returns projects belonging to the configured organization and omits the `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` fields (use the project_detail action to retrieve those).
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "projects",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await sentry.projects.list()
+await sentry.projects.list(
+    organization_slug="<str>"
+)
 ```
 
 #### API
@@ -34,7 +50,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "organization_slug": "<str>"
+    }
 }'
 ```
 
@@ -43,6 +62,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `organization_slug` | `string` | Yes | The slug of the organization to list projects for. |
 | `cursor` | `string` | No | Pagination cursor for next page of results. |
 
 
@@ -91,6 +111,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `hasTraceMetrics` | `boolean \| null` |  |
 | `avatar` | `object \| null` |  |
 | `organization` | `object \| null` |  |
+| `team` | `object \| null` |  |
+| `teams` | `array \| null` |  |
+| `environments` | `array \| null` |  |
+| `platforms` | `array \| null` |  |
+| `hasUserReports` | `boolean \| null` |  |
+| `latestRelease` | `object \| null` |  |
+| `latestDeploys` | `object \| null` |  |
 
 
 #### Meta
@@ -104,6 +131,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Projects Get
 
 Return details on an individual project.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -233,6 +275,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "access": []
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -343,6 +405,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return a list of issues (groups) bound to a project. A default query of is:unresolved is applied. To return results with other statuses send a new query value (i.e. ?query= for all results).
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -432,6 +509,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return details on an individual issue. This returns the basic stats for the issue (title, last seen, first seen), some overall numbers (number of comments, user reports) as well as the summarized event data.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "issue_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -511,6 +603,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Issues Context Store Search
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "annotations": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -632,6 +744,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return a list of events bound to a project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "events",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -717,6 +844,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return details on an individual event.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "events",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>",
+    "event_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -796,6 +939,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Events Context Store Search
 
 Search and filter events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "events",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "_meta": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -913,6 +1076,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return a list of releases for a given organization.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "releases",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -989,6 +1166,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return a release for a given organization.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "releases",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "version": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1059,6 +1251,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Releases Context Store Search
 
 Search and filter releases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "releases",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "authors": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1161,6 +1373,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Project Detail Get
 
 Return detailed information about a specific project.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "project_detail",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

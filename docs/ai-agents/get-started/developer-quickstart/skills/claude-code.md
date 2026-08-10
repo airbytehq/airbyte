@@ -61,7 +61,7 @@ Once you install the skills, you don't need any special command to invoke them. 
 - _"Add a HubSpot connector to this agent."_
 - _"List the entities available on the Salesforce connector."_
 
-Claude Code matches the prompt against each skill's front matter description, loads the relevant skill, and uses its instructions to generate code that matches the patterns in the Airbyte Agent SDK.
+Claude Code matches the prompt against each skill's front matter description, loads the relevant skill, and uses its instructions to generate code that matches the patterns in the Agent SDK.
 
 ## Credentials
 

@@ -2099,7 +2099,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `HarvestExecuteResultWithMeta[list[Client], ClientsListResultMeta](**data: Any)`
@@ -2945,11 +2945,11 @@ Classes
 
     ### Class variables
 
+    `account_id: str`
+    :   Your Harvest account ID. Required for all API requests.
+
     `model_config`
     :   The type of the None singleton.
-
-    `replication_start_date: str`
-    :   UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.
 
 <a id="Invoice"></a>
 

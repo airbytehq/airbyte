@@ -280,60 +280,6 @@ Classes
     `timezone_name: str | None`
     :   The type of the None singleton.
 
-<a id="AdAccountSearchData"></a>
-
-`AdAccountSearchData(**data: Any)`
-:   Search result data for ad_account entity.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `account_id: str | None`
-    :   Ad account ID (numeric)
-
-    `account_status: int | None`
-    :   Account status
-
-    `amount_spent: str | None`
-    :   Total amount spent
-
-    `balance: str | None`
-    :   Current balance of the ad account
-
-    `business_name: str | None`
-    :   Business name
-
-    `created_time: str | None`
-    :   Account creation time
-
-    `currency: str | None`
-    :   Currency used by the ad account
-
-    `id: str | None`
-    :   Ad account ID
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `name: str | None`
-    :   Ad account name
-
-    `spend_cap: str | None`
-    :   Spend cap
-
-    `timezone_name: str | None`
-    :   Timezone name
-
 <a id="AdAccountsList"></a>
 
 `AdAccountsList(**data: Any)`
@@ -1790,7 +1736,6 @@ Classes
 
     ### Descendants
 
-    * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdAccountSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdAccountsSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdCreativesSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[AdSetsSearchData]
@@ -1811,45 +1756,6 @@ Classes
 
     `model_config`
     :   The type of the None singleton.
-
-`AirbyteSearchResult[AdAccountSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="AdAccountSearchResult"></a>
-
-`AdAccountSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
 
 `AirbyteSearchResult[AdAccountsSearchData](**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
@@ -2935,7 +2841,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `FacebookMarketingExecuteResultWithMeta[list[AdAccountListItem], AdAccountsListResultMeta](**data: Any)`

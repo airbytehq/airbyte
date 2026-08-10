@@ -304,7 +304,8 @@ Classes
 <a id="DraftCreateParams"></a>
 
 `DraftCreateParams(**data: Any)`
-:   Parameters for creating or updating a draft
+:   Parameters for creating or updating a draft. The nested message.raw value must
+    be a base64url-encoded RFC 2822/MIME email, not plain body text.
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -328,7 +329,7 @@ Classes
 <a id="DraftCreateParamsMessage"></a>
 
 `DraftCreateParamsMessage(**data: Any)`
-:   The draft message content
+:   The draft message content encoded in Gmail raw message format
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -347,7 +348,7 @@ Classes
     :   The type of the None singleton.
 
     `raw: str`
-    :   The draft message in RFC 2822 format, base64url encoded
+    :   Base64url-encoded RFC 2822/MIME email; construct headers plus a blank line plus body, then URL-safe-base64 encode the UTF-8 bytes before creating or updating the draft.
 
     `thread_id: str | None`
     :   The thread ID for the draft (for threading in a conversation)
@@ -615,7 +616,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `GmailExecuteResultWithMeta[list[DraftRef], DraftsListResultMeta](**data: Any)`
@@ -1282,7 +1283,8 @@ Classes
 <a id="MessageSendParams"></a>
 
 `MessageSendParams(**data: Any)`
-:   Parameters for sending a message
+:   Parameters for sending a message. The raw value must be a base64url-encoded
+    RFC 2822/MIME email, not plain body text.
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -1381,11 +1383,29 @@ Classes
 
     ### Class variables
 
+    `history_id: str | None`
+    :   Mailbox history record identifier for the message
+
     `id: str`
     :   Unique identifier for the message
 
+    `internal_date: str | None`
+    :   Internal message creation timestamp in epoch milliseconds
+
+    `label_ids: list[typing.Any] | None`
+    :   Labels applied to the message
+
     `model_config`
     :   The type of the None singleton.
+
+    `payload: dict[str, typing.Any] | None`
+    :   Parsed MIME payload including headers, body, nested MIME parts, and attachment metadata. Use payload.headers for sender, recipients, subject, date, and other email headers.
+
+    `size_estimate: int | None`
+    :   Estimated size of the message in bytes
+
+    `snippet: str | None`
+    :   Short snippet of the message text
 
     `thread_id: str | None`
     :   Identifier of the thread this message belongs to

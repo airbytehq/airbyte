@@ -3,11 +3,21 @@
 #
 import logging
 from os import getenv
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    FailureType,
+    Status,
+)
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -59,8 +69,69 @@ from .streams import (
 from .utils import read_full_refresh
 
 
-class SourceGithub(AbstractSource):
+class SourceGithub(YamlDeclarativeSource, AbstractSource):
     continue_sync_on_stream_failure = True
+
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog] = None,
+        config: Optional[Mapping[str, Any]] = None,
+        state: Optional[TState] = None,
+    ) -> None:
+        super().__init__(catalog=catalog, config=config, state=state, path_to_yaml="manifest.yaml")
+
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        check_succeeded, error = self.check_connection(logger, config)
+        if not check_succeeded:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Optional[List[AirbyteStateMessage]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        """Route manifest streams to `ConcurrentDeclarativeSource` and Python streams to `AbstractSource`.
+
+        CDK v7 removed the `_group_streams` mechanism that CDK v6 had. This override
+        replicates that behavior: manifest-backed `AbstractStream` objects are read
+        concurrently, while regular Python `Stream` objects are read through
+        `AbstractSource.read()`.
+
+        The concurrent streams come from `super().streams()` (the manifest), which is
+        empty today and does no network work. The synchronous streams are resolved by
+        `AbstractSource.read()` itself, so `SourceGithub.streams()` (which performs live
+        org/repo resolution) is only invoked once per sync. As streams are migrated from
+        Python to the manifest, they automatically move from the synchronous to the
+        concurrent path.
+        """
+        concurrent_streams = super().streams(config=self._config or config)
+        concurrent_stream_names = {stream.name for stream in concurrent_streams}
+
+        concurrent_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name in concurrent_stream_names])
+        if concurrent_catalog.streams:
+            selected = self._select_streams(streams=concurrent_streams, configured_catalog=concurrent_catalog)
+            if selected:
+                yield from self._concurrent_source.read(selected)
+
+        synchronous_catalog = ConfiguredAirbyteCatalog(streams=[s for s in catalog.streams if s.stream.name not in concurrent_stream_names])
+        if synchronous_catalog.streams:
+            yield from AbstractSource.read(self, logger, config, synchronous_catalog, state)
+
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        """Return the union of Python `Stream` objects and manifest-backed streams.
+
+        `ConcurrentDeclarativeSource.discover()` only reports manifest streams, so this
+        override adds the Python streams from `SourceGithub.streams()`. As streams move
+        into the manifest they leave the Python list and are reported via
+        `super().streams()`, keeping the discovered catalog complete throughout the migration.
+        """
+        effective_config = self._config or config
+        streams = [stream.as_airbyte_stream() for stream in self.streams(config=effective_config)]
+        streams += [stream.as_airbyte_stream() for stream in super().streams(config=effective_config)]
+        return AirbyteCatalog(streams=streams)
 
     @staticmethod
     def _get_org_repositories(

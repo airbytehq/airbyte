@@ -506,7 +506,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `AsanaExecuteResultWithMeta[list[AttachmentCompact], AttachmentsListResultMeta](**data: Any)`
@@ -1454,6 +1454,33 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="AsanaOAuthCredentials"></a>
+
+`AsanaOAuthCredentials(**data: Any)`
+:   Asana OAuth App Credentials - Provide your own Asana OAuth app credentials to override the default Airbyte-managed ones.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `client_id: str`
+    :   Your Asana OAuth app's client ID
+
+    `client_secret: str`
+    :   Your Asana OAuth app's client secret
+
+    `model_config`
+    :   The type of the None singleton.
+
 <a id="AsanaOauth2AuthConfig"></a>
 
 `AsanaOauth2AuthConfig(**data: Any)`
@@ -1476,10 +1503,10 @@ Classes
     :   OAuth access token for API requests
 
     `client_id: str | None`
-    :   Connected App Consumer Key
+    :   Connected App Client ID
 
     `client_secret: str | None`
-    :   Connected App Consumer Secret
+    :   Connected App Client Secret
 
     `model_config`
     :   The type of the None singleton.
