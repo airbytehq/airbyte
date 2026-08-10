@@ -2440,6 +2440,9 @@ Classes
 
     ### Class variables
 
+    `body: Any`
+    :   Markdown body (description) of the issue
+
     `closed_at: Any`
     :   ISO 8601 timestamp when the issue was closed, if applicable
 
@@ -2654,6 +2657,9 @@ Classes
 
     ### Class variables
 
+    `body: list[str]`
+    :   Markdown body (description) of the issue
+
     `closed_at: list[str]`
     :   ISO 8601 timestamp when the issue was closed, if applicable
 
@@ -2841,6 +2847,9 @@ Classes
 
     ### Class variables
 
+    `body: str | None`
+    :   Markdown body (description) of the issue
+
     `closed_at: str | None`
     :   ISO 8601 timestamp when the issue was closed, if applicable
 
@@ -2902,6 +2911,9 @@ Classes
 
     ### Class variables
 
+    `body: Literal['asc', 'desc']`
+    :   Markdown body (description) of the issue
+
     `closed_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the issue was closed, if applicable
 
@@ -2945,6 +2957,9 @@ Classes
     * builtins.dict
 
     ### Class variables
+
+    `body: str`
+    :   Markdown body (description) of the issue
 
     `closed_at: str`
     :   ISO 8601 timestamp when the issue was closed, if applicable
@@ -6058,6 +6073,9 @@ Classes
 
     ### Class variables
 
+    `body: Any`
+    :   Markdown body (description) of the pull request
+
     `closed_at: Any`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6275,6 +6293,9 @@ Classes
 
     ### Class variables
 
+    `body: list[str]`
+    :   Markdown body (description) of the pull request
+
     `closed_at: list[str]`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6462,6 +6483,9 @@ Classes
 
     ### Class variables
 
+    `body: str | None`
+    :   Markdown body (description) of the pull request
+
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6523,6 +6547,9 @@ Classes
 
     ### Class variables
 
+    `body: Literal['asc', 'desc']`
+    :   Markdown body (description) of the pull request
+
     `closed_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
 
@@ -6566,6 +6593,9 @@ Classes
     * builtins.dict
 
     ### Class variables
+
+    `body: str`
+    :   Markdown body (description) of the pull request
 
     `closed_at: str`
     :   ISO 8601 timestamp when the pull request was closed, if applicable
