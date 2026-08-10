@@ -48,6 +48,13 @@ Most of the endpoints this connector access is restricted by standard Zoom [requ
 
 Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+Most streams fetch one record at a time from nested endpoints (for example, one request per meeting), so sync duration is dominated by request latency. Two optional settings control how aggressively the connector issues those requests:
+
+- **Number of concurrent workers** (`num_workers`, default `8`, max `20`): how many requests run in parallel.
+- **API rate limit per second** (`api_rate_limit_per_second`, default `10`, max `80`): the request budget the connector stays within.
+
+The defaults target Zoom Pro and Business accounts. Free-plan users should lower both settings to `2`, because Free limits range from 1–4 requests per second depending on endpoint tier. If your Zoom plan allows higher [rate limits](https://developers.zoom.us/docs/api/rate-limits/), raising both values shortens sync times; requests returning 429 are retried with backoff either way.
+
 ## Getting started
 
 ### Requirements
@@ -75,6 +82,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.60 | 2026-07-30 | [83260](https://github.com/airbytehq/airbyte/pull/83260) | Parallelize per-meeting and substream requests with a configurable worker count and request-rate budget |
 | 1.2.59 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 1.2.58 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.2.56 — 1.2.57 is built on SDM 7.23.7, which breaks bundled custom components |
 | 1.2.57 | 2026-07-28 | [83156](https://github.com/airbytehq/airbyte/pull/83156) | Update dependencies |
