@@ -68,7 +68,7 @@ const getRegistryEntry = async (vfile) => {
   const registry = await fetchRegistry();
 
   let registryEntry = registry.find(
-    (r) => r.dockerRepository_oss === dockerRepository,
+    (r) => r.dockerRepository === dockerRepository,
   );
 
   if (!registryEntry) {
@@ -90,13 +90,13 @@ const buildArchivedRegistryEntry = (
   const dockerName = dockerRepository.split("/")[1];
   const registryEntry = {
     connectorName,
-    name_oss: dockerName,
-    dockerRepository_oss: dockerRepository,
+    name: dockerName,
+    dockerRepository,
     is_oss: false,
     is_cloud: false,
-    iconUrl_oss: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
-    supportLevel_oss: "archived",
-    documentationUrl_oss: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
+    iconUrl: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
+    supportLevel: "archived",
+    documentationUrl: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
   };
 
   return registryEntry;

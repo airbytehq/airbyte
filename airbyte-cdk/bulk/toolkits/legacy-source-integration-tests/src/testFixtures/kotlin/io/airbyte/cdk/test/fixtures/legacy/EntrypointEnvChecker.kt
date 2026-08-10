@@ -47,8 +47,7 @@ object EntrypointEnvChecker {
                 emptyMap()
             )
 
-        val stdout =
-            BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
+        val stdout = BufferedReader(InputStreamReader(process.inputStream, StandardCharsets.UTF_8))
 
         var outputLine: String? = null
 

@@ -94,8 +94,8 @@ abstract class AbstractMysqlTypingDedupingTest : JdbcTypingDedupingTest(SQLDiale
         private lateinit var containerizedConfig: ObjectNode
         /**
          * The config with host/port accessible from the host's network. (technically, this is still
-         * within the airbyte-ci container, but `containerizedConfig` is intended for containers in
-         * the docker-in-docker matryoshka doll)
+         * within the CI container, but `containerizedConfig` is intended for containers in the
+         * docker-in-docker matryoshka doll)
          */
         private lateinit var bareMetalConfig: ObjectNode
 
