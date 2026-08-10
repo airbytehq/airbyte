@@ -497,9 +497,29 @@ class Organizations(GithubStreamABC):
         return record
 
 
+class RepositoryOwners(Organizations):
+    """Resolve wildcard repository owners through the GitHub user endpoint."""
+
+    def __init__(self, owners: List[str], **kwargs):
+        super().__init__(organizations=owners, **kwargs)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"users/{stream_slice['organization']}"
+
+
 class Repositories(SemiIncrementalMixin, Organizations):
     """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
+    API docs:
+    - https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
+    - https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repositories-for-a-user
     """
 
     is_sorted = "desc"
@@ -508,12 +528,27 @@ class Repositories(SemiIncrementalMixin, Organizations):
         "direction": "desc",
     }
 
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
+    def __init__(self, *args, pattern: Optional[str] = None, users: Optional[List[str]] = None, **kwargs):
         self._pattern = re.compile(pattern) if pattern else pattern
+        self.users = users or []
         super().__init__(*args, **kwargs)
 
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from super().stream_slices(**kwargs)
+        for user in self.users:
+            yield {"organization": user, "owner_type": "user"}
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
+        owner_type = stream_slice.get("owner_type", "organization")
+        endpoint = "users" if owner_type == "user" else "orgs"
+        return f"{endpoint}/{stream_slice['organization']}/repos"
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        if stream_slice.get("owner_type") == "user":
+            # The repository stream uses this synthetic field for checkpoint partitioning for both owner types.
+            record["organization"] = stream_slice["organization"]
+            return record
+        return super().transform(record=record, stream_slice=stream_slice)
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
