@@ -53,12 +53,12 @@ add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your a
 
 You need a Postgres user with the following permissions:
 
-- can create tables and write rows.
-- can create schemas e.g:
+- Can create schemas.
+- Can create tables and write rows.
 
 You can create such a user by running:
 
-```
+```sql
 CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
@@ -75,7 +75,7 @@ synced data from Airbyte.
 ## Naming Conventions
 
 From
-[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
+[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
 - SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
   marks and non-Latin letters\) or an underscore \(\_\).
@@ -281,8 +281,13 @@ when Postgres rejects the duplicate.
 
 The connector adapts some values to what Postgres accepts:
 
-- Null bytes (`\u0000`) are removed from string values and from raw JSON data. Postgres text types
-  can't store them, and a record containing one would otherwise fail the whole batch.
+- Null bytes (`\u0000`) are removed before the record is written. Postgres rejects them in `text`,
+  `varchar`, and `jsonb` values, and a record containing one would otherwise fail the whole batch.
+  Starting with version 3.0.17, the connector removes them everywhere they can appear: in top-level
+  string values, in strings nested inside objects and arrays, and in the keys of JSON objects. If
+  removing a null byte makes two keys in the same object identical, the last value wins. This edit
+  isn't recorded in `_airbyte_meta`, so compare against your source if you need to know which
+  records were affected.
 - Values that exceed a Postgres type's range are written as `NULL`, and the record's
   `_airbyte_meta` column records a `DESTINATION_FIELD_SIZE_LIMITATION` change. This applies to
   integers outside the `BIGINT` range, numbers with more than 131,072 digits before the decimal
@@ -333,10 +338,10 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                               |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.17  | 2026-08-18 | [84853](https://github.com/airbytehq/airbyte/pull/84853)   | Strip null bytes nested inside objects and arrays, which PostgreSQL rejects in `jsonb` columns                                                                                                                                                                                                        |
-| 3.0.16  | 2026-03-31 | [75902](https://github.com/airbytehq/airbyte/pull/75902)   | Fix silent error swallowing in COPY flush and sanitize null bytes in raw JSON data                                                                                                                                                                                                                    |
-| 3.0.15  | 2026-08-07 | [83235](https://github.com/airbytehq/airbyte/pull/83235)   | Fail sync on transient DB errors.                                                                                                                                                                                                                                                                     |
-| 3.0.14  | 2026-07-30 | [82273](https://github.com/airbytehq/airbyte/pull/82273)   | Remove column DROP logic during schema evolution; upgrade CDK to 1.0.20                                                                                                                                                                                                                               |
+| 3.0.17  | 2026-08-20 | [84853](https://github.com/airbytehq/airbyte/pull/84853)   | Strip null bytes nested inside objects and arrays, which PostgreSQL rejects in `jsonb` columns                                                                                                                                                                                                        |
+| 3.0.16  | 2026-08-10 | [75902](https://github.com/airbytehq/airbyte/pull/75902)   | Fail the sync when a batch of records can't be loaded, instead of logging the error and continuing; strip null bytes from raw JSON data                                                                                                                                                               |
+| 3.0.15  | 2026-08-10 | [83235](https://github.com/airbytehq/airbyte/pull/83235)   | Fail the sync when a database error prevents reading an existing table, instead of treating that table as missing.                                                                                                                                                                                    |
+| 3.0.14  | 2026-08-05 | [82273](https://github.com/airbytehq/airbyte/pull/82273)   | Remove column DROP logic during schema evolution; upgrade CDK to 1.0.20                                                                                                                                                                                                                               |
 | 3.0.13  | 2026-04-17 | [76409](https://github.com/airbytehq/airbyte/pull/76409)   | Upgrade CDK to 1.0.9.                                                                                                                                                                                                                                                                                 |
 | 3.0.12  | 2026-03-26 | [75481](https://github.com/airbytehq/airbyte/pull/75481)   | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert.                                                                                                                                                                                   |
 | 3.0.11  | 2026-02-25 | [74040](https://github.com/airbytehq/airbyte/pull/74040)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches.                                                                                                                                                                                                                                         |
@@ -401,7 +406,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.3.21  | 2022-07-06 | [\#14479](https://github.com/airbytehq/airbyte/pull/14479) | Publish amd64 and arm64 versions of the connector                                                                                                                                                                                                                                                     |
 | 0.3.20  | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                                                                                                                                                                                                                                |
 | 0.3.19  | 2022-04-25 | [\#12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                                                                                                                                                                                                                      |
-| 0.3.18  | 2022-04-12 | [\#11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                                                                                                                                                                                                                    |
+| 0.3.18  | 2022-04-12 | [\#11514](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                                                                                                                                                                                                                    |
 | 0.3.17  | 2022-04-05 | [\#11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                                                                                                                                                                                                                  |
 | 0.3.15  | 2022-02-25 | [\#10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                                                                                                                                                                                                                     |
 | 0.3.14  | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                                                                                                                                            |
