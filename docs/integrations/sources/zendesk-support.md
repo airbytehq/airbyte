@@ -221,9 +221,11 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 
 #### Permissions and stream skipping
 
-Some streams require administrator-level permissions in Zendesk (for example, `account_attributes`, `attribute_definitions`, `audit_logs`, and `ticket_forms`). If the authenticated user does not have access to a stream's endpoint, the connector skips that stream and continues syncing the remaining streams. Skipped streams are logged with a message indicating the permission issue.
+If the authenticated user does not have access to one of these streams, the connector skips it and continues syncing the remaining streams: `organizations`, `users`, `user_identities`, `ticket_metric_events`, `articles`, `audit_logs`, `account_attributes`, `attribute_definitions`, `ticket_forms`, and `ticket_events`. Skipped streams are logged with a message indicating the permission issue. `deleted_tickets` also skips HTTP 403 responses; its handler explains that the user may need the `view_deleted_tickets` permission or can disable the stream.
 
-To sync all available streams, authenticate with a Zendesk account that has an Administrator role.
+Permission-denied responses on core ticket streams — `tickets`, `tickets_search`, `ticket_comments`, `ticket_audits`, `ticket_metrics`, `ticket_skips`, and `satisfaction_ratings` — fail loudly so that a misconfigured or under-permissioned connection cannot report success with missing data. `side_conversations` also fails on permission-denied responses.
+
+To sync all available streams, authenticate with a Zendesk account that has the permissions required by the selected streams.
 
 #### Search index delay in the `tickets_search` stream
 
@@ -246,6 +248,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.0-rc.2 | 2026-08-05 | [83738](https://github.com/airbytehq/airbyte/pull/83738) | Narrow permission-based stream skipping to selected optional streams; core ticket streams now fail loudly on permission errors |
 | 5.5.0-rc.1 | 2026-08-03 | [81640](https://github.com/airbytehq/airbyte/pull/81640) | Revert `tickets` stream to the Incremental Ticket Export endpoint (cursor back to `generated_timestamp`) to fix silent data loss on system-driven updates introduced in 5.2.0; add the opt-in `tickets_search` stream. See the migration guide. |
 | 5.4.6 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 5.4.5 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 5.4.3 — 5.4.4 is built on SDM 7.23.7, which breaks bundled custom components |

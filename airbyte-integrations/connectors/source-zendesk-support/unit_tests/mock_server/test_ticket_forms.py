@@ -94,9 +94,8 @@ class TestTicketFormsStreamIncremental(TestCase):
 class TestTicketFormsErrorHandling(TestCase):
     """Test error handling for ticket_forms stream.
 
-    Per manifest.yaml, ticket_forms has FAIL error handlers for 403 and 404.
-    This stream used to define enterprise plan, so permission errors should fail.
-    Per playbook: FAIL error handlers must assert both error code AND error message.
+    Per manifest.yaml, ticket_forms skips permission errors but fails other 403
+    and 404 responses.
     """
 
     @property
@@ -119,7 +118,7 @@ class TestTicketFormsErrorHandling(TestCase):
         Per playbook: FAIL error handlers must assert both error code AND error message.
         """
         api_token_authenticator = self._get_authenticator(self._config)
-        error_message = "Forbidden - You do not have access to this resource"
+        error_message = "Forbidden - Access denied"
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
@@ -132,6 +131,22 @@ class TestTicketFormsErrorHandling(TestCase):
         error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
         assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
         assert any(error_message in msg for msg in error_logs), f"Expected error message '{error_message}' in logs"
+
+    @HttpMocker()
+    def test_given_permission_403_when_read_ticket_forms_then_skip_without_error(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+        error_message = "Forbidden - You do not have access to this resource"
+
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.ticket_forms_endpoint(api_token_authenticator).build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(error_message).build(),
+        )
+
+        output = read_stream("ticket_forms", SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert not any("403" in msg for msg in error_logs), "Did not expect 403 error code in logs"
 
     @HttpMocker()
     def test_given_404_error_when_read_ticket_forms_then_fail_with_error_log(self, http_mocker):

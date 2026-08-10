@@ -81,9 +81,6 @@ definitions:
       error_handler:
         type: DefaultErrorHandler
         response_filters:
-          - error_message_contains: "You do not have access"
-            action: IGNORE
-            error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
           - http_codes: [403, 404]
             action: FAIL
             failure_type: config_error
@@ -193,9 +190,29 @@ definitions:
     page_token_option:
       type: RequestPath
 
+  permission_optional_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - error_message_contains: "You do not have access"
+        action: IGNORE
+        error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
+      - http_codes: [403, 404]
+        action: FAIL
+        failure_type: config_error
+        error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+
   # Full-refresh streams
   account_attributes_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
     $parameters:
       name: "account_attributes"
       path: "routing/attributes"
@@ -210,6 +227,10 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -358,6 +379,8 @@ definitions:
       requester:
         $ref: "#/definitions/retriever/requester"
         path: "help_center/incremental/articles"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -534,6 +557,8 @@ definitions:
       ignore_stream_slicer_parameters_on_paginated_requests: true
       requester:
         $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
         request_parameters:
           filter[created_at][]: "{{ [ stream_interval['start_time'], stream_interval['end_time'] ] if next_page_token is none else '' }}"
           sort: "created_at"
@@ -666,6 +691,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       paginator:
         $ref: "#/definitions/end_of_stream_paginator"
     schema_loader:
@@ -1030,9 +1059,6 @@ definitions:
             - http_codes: [422]
               action: IGNORE
               error_message: "Skipping side conversations for this ticket because the Zendesk API returned an unprocessable entity error. This typically means the ticket type does not support side conversations. Other tickets will continue to sync normally."
-            - error_message_contains: "You do not have access"
-              action: IGNORE
-              error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
             - http_codes: [403, 404]
               action: FAIL
               failure_type: config_error
@@ -1082,8 +1108,12 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
+                - error_message_contains: "You do not have access"
+                  action: IGNORE
+                  error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
                 - http_codes: [403, 404]
                   action: FAIL # fail as this stream used to define enterprise plan
+                  failure_type: config_error
                   error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
             - type: DefaultErrorHandler
               backoff_strategies:
@@ -1112,6 +1142,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       paginator:
         $ref: "#/definitions/end_of_stream_paginator"
     schema_loader:
@@ -1130,6 +1164,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       paginator:
         $ref: "#/definitions/end_of_stream_paginator"
     schema_loader:
@@ -1328,9 +1366,9 @@ definitions:
                 header: Retry-After
             response_filters:
               - http_codes: [403]
-                action: IGNORE
+                action: FAIL
                 failure_type: config_error
-                error_message: "Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support."
+                error_message: "Unable to read data for stream '{{ parameters.get('name') }}'; please ensure the authenticated user has access and review the endpoint error: {{ response.get('error') }}."
               - http_codes: [404]
                 action: IGNORE
                 failure_type: config_error
@@ -1394,6 +1432,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
       paginator:
         $ref: "#/definitions/after_url_paginator"
     schema_loader:
@@ -1416,6 +1458,8 @@ definitions:
         $ref: "#/definitions/after_url_paginator"
       requester:
         $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/permission_optional_error_handler"
         request_parameters:
           include: "identities"
     schema_loader:
