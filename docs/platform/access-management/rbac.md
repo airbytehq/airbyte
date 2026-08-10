@@ -31,7 +31,7 @@ In a workspace role, Airbyte scopes permissions to that specific workspace. You 
 
 ### Source editor and destination editor
 
-Source editor and destination editor are narrower versions of the editor role. Use them when someone needs to manage one side of a pipeline without touching the other. A source editor can create and configure sources, but must ask someone else to set up the destinations they sync to. A destination editor is the mirror image.
+Destinations are usually the more critical half of a pipeline. They're shared warehouses and lakes that a central platform team owns, and a careless configuration change there affects everyone using them. Source editor exists so that the teams who know their own source systems can connect them and start syncing without waiting on the platform team, and without being able to reconfigure the destinations they write to. Give destination editor to the people who do own those destinations.
 
 Both roles can create and modify connections, and both can run syncs. Neither role can change workspace settings, and neither one implies the other. If someone needs to manage both sources and destinations, give them the editor role instead.
 
