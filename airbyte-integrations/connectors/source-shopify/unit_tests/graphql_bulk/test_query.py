@@ -42,6 +42,7 @@ def test_bulk_query_prepare() -> None:
                     query: """
                     {some_query}
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
@@ -59,6 +60,12 @@ def test_bulk_query_prepare() -> None:
     input_query_from_slice = "{some_query}"
     template = ShopifyBulkTemplates.prepare(input_query_from_slice)
     assert repr(template) == repr(expected)
+
+
+def test_bulk_query_prepare_preserves_grouped_jsonl_output() -> None:
+    template = ShopifyBulkTemplates.prepare("{ codeDiscountNodes { edges { node { id } } } }")
+
+    assert "groupObjects: true" in template
 
 
 def test_bulk_query_cancel() -> None:
