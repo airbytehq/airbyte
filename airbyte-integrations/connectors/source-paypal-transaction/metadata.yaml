@@ -40,6 +40,13 @@ data:
           and the key for the balances stream change to "as_of_time". The upgrade
           is safe, but rolling back is not.'
         upgradeDeadline: "2023-09-18"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - transactions

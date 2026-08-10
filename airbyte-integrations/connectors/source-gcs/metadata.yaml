@@ -21,7 +21,12 @@ data:
   name: Google Cloud Storage (GCS)
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   remoteRegistries:
     pypi:
       enabled: true

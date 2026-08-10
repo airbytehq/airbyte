@@ -56,7 +56,12 @@ data:
               - "search_analytics_keyword_site_report_by_page"
               - "search_analytics_keyword_site_report_by_site"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   releaseStage: generally_available
   suggestedStreams:
     streams:
