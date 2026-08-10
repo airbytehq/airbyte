@@ -144,11 +144,12 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
 
-    @get:JsonSchemaTitle("Number Data Type Conversion")
+    @get:JsonSchemaTitle("Decimal Data Type")
     @get:JsonPropertyDescription(
-        """Determines how columns with the Airbyte number type are stored in Snowflake. FLOAT (default): binary floating point. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities and model scores, very large magnitudes, and calculations where tiny rounding differences are acceptable. NUMBER(38,9): fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, money, IDs represented numerically, and any value that must be stored exactly.""",
+        """Datatype choice for columns using the Airbyte number type. NUMBER(38,9) (RECOMMENDED): Fixed-point decimal with 9 decimal places. Stores values exactly. Best for financial data, monetary values, numeric IDs, and values that require exact decimal representation. FLOAT: Binary floating-point number. Stores decimal values approximately. Best for scientific calculations, statistical models, probabilities, model scores, very large magnitudes, and calculations where small rounding differences are acceptable.""",
     )
-    // default FLOAT for backwards compatibility
+    // Default FLOAT for backwards compatibility.
+    // TODO: flip the default to NUMBER(38,9), see https://github.com/airbytehq/oncall/issues/13254
     @get:JsonProperty("number_data_type", defaultValue = "FLOAT")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 12}""")
     val numberDataTypeConversion: NumberDataType? = null
@@ -211,8 +212,8 @@ enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMod
 }
 
 enum class NumberDataType(@get:JsonValue val numberDataType: String) {
-    FLOAT("FLOAT"),
     NUMBER_38_9("NUMBER(38,9)"),
+    FLOAT("FLOAT")
 }
 
 @Singleton

@@ -153,7 +153,7 @@ username/password or key pair authentication:
 | Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
 | Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
-| Number Data Type Conversion (Optional) | Determines how columns with the Airbyte `number` type are stored in Snowflake: `FLOAT` (default) or `NUMBER(38,9)`. See [Data type map](#data-type-map) for guidance on choosing between them. |
+| Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
 
 ### Key pair authentication
 
@@ -218,12 +218,14 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 | UNION                               | VARIANT        |
 | UNKNOWN                             | VARIANT        |
 
-The **Number Data Type Conversion** setting determines which Snowflake data type Airbyte uses for columns with the Airbyte type `NUMBER`:
+The **Decimal Data Type** setting determines which Snowflake data type Airbyte uses for columns with the Airbyte type `NUMBER` (decimal):
 
+- **NUMBER(38,9)** (recommended): An exact fixed-point decimal type that supports up to 38 total digits, with up to 29 digits before the decimal point and 9 digits after it. It is suitable for financial data and other values that require exact decimal representation within this precision and scale.
 - **FLOAT** (default): An approximate binary floating-point type with approximately 15 digits of precision. It supports magnitudes up to approximately 10^308, making it suitable for scientific calculations, statistical models, probabilities, model scores, and other use cases where a wide numeric range is more important than exact decimal representation and small rounding differences are acceptable.
-- **NUMBER(38,9)**: An exact fixed-point decimal type that supports up to 38 total digits, with up to 29 digits before the decimal point and 9 digits after it. It is suitable for financial data and other values that require exact decimal representation within this precision and scale.
 
-In legacy raw tables mode, this setting has no effect because there are no typed columns. All values are stored in the `_airbyte_data` VARIANT column.
+**Unaffected cases:**
+- Legacy raw tables mode: the setting has no effect because there are no typed columns. All values are stored in the `_airbyte_data` VARIANT column.
+- Scale-0 database types (for example `NUMERIC(10,0)`): source connectors map these to the Airbyte `INTEGER` type, which is always stored as Snowflake NUMBER and is not affected by this setting.
 
 :::warning
 We recommend running a full refresh after changing this setting on an existing connection. Otherwise, on the next sync, Airbyte attempts to convert existing number columns in place. Because FLOAT and NUMBER(38,9) have different range and precision characteristics, this conversion can result in data loss, including reduced precision, truncated values, or values being set to NULL:
@@ -305,7 +307,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Number Data Type" option. |
+| 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
 | 4.0.49          | 2026-08-05 | [83740](https://github.com/airbytehq/airbyte/pull/83740)   | Upgrade CDK to 1.0.21                                                                                                                                                                  |
 | 4.0.48          | 2026-07-23 | [82272](https://github.com/airbytehq/airbyte/pull/82272)   | Columns removed from the source schema are now preserved in the destination table instead of being dropped to prevent unintentional data loss due to source schema changes. |
 | 4.0.47          | 2026-07-23 | [82294](https://github.com/airbytehq/airbyte/pull/82294)   | Replace ALTER TABLE SWAP WITH with CREATE OR REPLACE TABLE CLONE COPY GRANTS to preserve table grants |

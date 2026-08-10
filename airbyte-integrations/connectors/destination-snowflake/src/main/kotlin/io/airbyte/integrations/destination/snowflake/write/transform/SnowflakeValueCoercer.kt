@@ -102,7 +102,7 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
         return when (val abValue = value.abValue) {
             is NumberValue -> {
                 if (useDecimalNumbers) {
-                    validateDecimalNumber(value, abValue)
+                    validateDecimalNumber(abValue)
                 } else {
                     validateFloatNumber(abValue)
                 }
@@ -158,10 +158,7 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
             )
         }
 
-    private fun validateDecimalNumber(
-        value: EnrichedAirbyteValue,
-        abValue: NumberValue
-    ): ValidationResult {
+    private fun validateDecimalNumber(abValue: NumberValue): ValidationResult {
         // HALF_UP = round half away from zero, the same rule Snowflake applies when casting.
         val targetValue =
             if (abValue.value.scale() > NUMERIC_38_9_SCALE) {
@@ -171,11 +168,6 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
             }
         // Range-check after rounding: rounding can carry into a 30th integer digit.
         return if (targetValue.abs() >= NUMERIC_38_9_ABS_LIMIT) {
-            logger.warn {
-                "Nulling value in column '${value.name}': it has more than 29 digits before the " +
-                    "decimal point, which does not fit in NUMBER(38,9). If your data contains " +
-                    "values this large, use the FLOAT number data type option instead."
-            }
             ValidationResult.ShouldNullify(
                 AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
             )

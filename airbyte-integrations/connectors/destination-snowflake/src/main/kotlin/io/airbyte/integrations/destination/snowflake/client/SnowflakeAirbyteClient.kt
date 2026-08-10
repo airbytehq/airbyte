@@ -380,12 +380,11 @@ fun DataSource.execute(query: String): ResultSet =
 // NUMBER, NUMERIC and DECIMAL are synonyms in Snowflake. DESCRIBE TABLE reports all of them as
 // NUMBER(precision, scale).
 private val NUMBER_TYPE_SYNONYMS = setOf("NUMBER", "NUMERIC", "DECIMAL")
+private val SCALE_REGEX = Regex("""\(\s*\d+\s*,\s*(\d+)\s*\)""")
 
 /**
  * Reduces a data type string reported by DESCRIBE TABLE (e.g. `VARCHAR(16777216)`) to the canonical
- * type name emitted by
- * [io.airbyte.integrations.destination.snowflake.schema.SnowflakeTableSchemaMapper], so that
- * expected and actual schemas compare equal. For most types this just strips the parenthesized
+ * type name emitted by SnowflakeTableSchemaMapper. For most types this just strips the parenthesized
  * arguments, but for numeric types the scale is significant. A NUMBER with scale 0 is a
  * NUMBER(38,0), which is what the connector creates for integer columns, so it maps to the integer
  * type ([SnowflakeDataType.NUMBER]). A scale greater than 0 maps to the decimal type (
@@ -396,14 +395,7 @@ internal fun toCanonicalDataType(dataType: String): String {
     if (baseName.uppercase() !in NUMBER_TYPE_SYNONYMS) {
         return baseName
     }
-    val scale =
-        dataType
-            .substringAfter('(', missingDelimiterValue = "")
-            .substringBefore(')')
-            .split(',')
-            .getOrNull(1)
-            ?.trim()
-            ?.toIntOrNull()
+    val scale = SCALE_REGEX.find(dataType)?.groupValues?.get(1)?.toIntOrNull()
     return if (scale != null && scale > 0) {
         SnowflakeDataType.NUMERIC_38_9.typeName
     } else {
