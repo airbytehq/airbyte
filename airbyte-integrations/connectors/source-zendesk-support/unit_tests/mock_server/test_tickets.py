@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -14,17 +15,22 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
 from .response_builder import (
+    ErrorResponseBuilder,
     TicketsRecordBuilder,
     TicketsResponseBuilder,
     TicketsSearchRecordBuilder,
     TicketsSearchResponseBuilder,
 )
-from .utils import read_stream
+from .utils import get_log_messages_by_log_level, read_stream
 
 
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
 _A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
+_PERMISSION_DENIED_BODY = (
+    "You do not have access to this page. You do not have permission to access this page. "
+    "Please contact the account owner of this help desk for further help."
+)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -53,6 +59,22 @@ class TestTicketsStreamFullRefresh(TestCase):
         output = read_stream("tickets", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_403_permission_denied_when_read_tickets_then_fail(self, http_mocker):
+        """tickets carries Zendesk's core data, so a permission denial must fail instead of reporting an empty sync."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(_PERMISSION_DENIED_BODY).build(),
+        )
+
+        output = read_stream("tickets", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any("stream 'tickets'" in msg for msg in error_logs), "Expected the failing stream to be named in logs"
 
     @HttpMocker()
     def test_given_two_pages_when_read_tickets_then_return_all_records(self, http_mocker):
@@ -174,6 +196,23 @@ class TestTicketsSearchStream(TestCase):
         output = read_stream("tickets_search", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_given_403_permission_denied_when_read_tickets_search_then_fail_naming_the_stream(self, http_mocker):
+        """tickets_search declares `name` on the stream, so the error message must still resolve the stream name."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tickets_search_endpoint(api_token_authenticator).with_any_query_params().build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message(_PERMISSION_DENIED_BODY).build(),
+        )
+
+        output = read_stream("tickets_search", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any("stream 'tickets_search'" in msg for msg in error_logs), "Expected the failing stream to be named in logs"
+        assert not any("stream 'None'" in msg for msg in error_logs), "Stream name must not interpolate to None"
 
     @HttpMocker()
     def test_given_lookback_window_when_read_tickets_search_then_rescan_from_before_the_cursor(self, http_mocker):
