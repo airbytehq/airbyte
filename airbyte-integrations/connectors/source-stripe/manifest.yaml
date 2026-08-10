@@ -418,6 +418,8 @@ definitions:
           $parameters:
             path: invoice_payments
           requester:
+            # InvoicePayment only exists from 2025-03-31.basil onward, so this path must
+            # override the connector-wide 2022-11-15 pin or the endpoint is unavailable.
             $ref: "#/definitions/base_requester"
             request_headers:
               Stripe-Version: "2025-03-31.basil"
@@ -433,6 +435,12 @@ definitions:
           requester:
             $ref: "#/definitions/base_requester"
             path: events
+            # This header does NOT pin the shape of the returned records: event `data` is
+            # rendered at the API version in effect when the event was created, not at the
+            # version requested here (see AGENTS.md section 5). It is set so that the
+            # `type=invoice_payment.paid` filter below is interpreted by a version that
+            # knows the event type -- `base_requester` ignores 400s, so a filter rejected
+            # as unknown would yield a silently empty stream rather than an error.
             request_headers:
               Stripe-Version: "2025-03-31.basil"
               Stripe-Account: '{{ config.get("account_id") }}'
@@ -1861,7 +1869,6 @@ streams:
   - $ref: "#/definitions/streams/balance_transactions"
   - $ref: "#/definitions/streams/files"
   - $ref: "#/definitions/streams/file_links"
-  - $ref: "#/definitions/streams/invoice_payments"
 
   ## These streams are state condition streams and have two behaviors depending on whether the state is set:
   # - No State: Runs the base stream.
@@ -1875,6 +1882,7 @@ streams:
   - $ref: "#/definitions/streams/customers"
   - $ref: "#/definitions/streams/disputes"
   - $ref: "#/definitions/streams/invoice_items"
+  - $ref: "#/definitions/streams/invoice_payments"
   - $ref: "#/definitions/streams/invoices"
   - $ref: "#/definitions/streams/payment_intents"
   - $ref: "#/definitions/streams/payouts"

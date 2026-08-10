@@ -34,6 +34,17 @@ The data returned in event payloads depends on the Stripe API version the object
 
 **Why this matters:** When debugging unexpected fields appearing (or missing) in event payloads, the root cause may be the API version the data was originally created with, not the connector's behavior. This is especially confusing in sandbox environments where the API version may be much older than production.
 
+## 6. Per-Stream `Stripe-Version` Override (`invoice_payments`)
+
+Every stream inherits `Stripe-Version: 2022-11-15` from `base_requester`. `invoice_payments` is the sole exception: both of its requesters set `Stripe-Version: 2025-03-31.basil`, because the InvoicePayment resource does not exist before [Basil](https://docs.stripe.com/changelog/basil/2025-03-31/add-support-for-multiple-partial-payments-on-invoices). The override is written inside that stream's own `requester` blocks, so it cannot leak into any other stream's requests.
+
+Read this together with section 5, which says the `Stripe-Version` header does not control the shape of event payloads. Both are true, and they are not in conflict:
+
+- **Full refresh path** (`/v1/invoice_payments`): the header is what makes the request work at all. Without it the endpoint is not available on the pinned 2022-11-15 version.
+- **Incremental path** (`/v1/events`): the header does **not** re-render event payloads — section 5 still applies, and records come back shaped as of the API version in effect when the event was created. It is set so the `type=invoice_payment.paid` filter is interpreted by a version that knows that event type. This matters because of section 2: the base error handler ignores 400s, so a filter rejected as unknown would produce a silently empty stream instead of a visible failure.
+
+**Why this matters:** if you add another Basil-era (or later) resource, copy this pattern — override `request_headers` on the new stream's requesters only, and do not raise the connector-wide pin. Changing `base_requester` would re-shape every existing stream's records at once. Note also that overriding `request_headers` replaces the mapping wholesale, so the override must re-declare `Stripe-Account` or the connected-account header is dropped.
+
 ## Incremental Stream Considerations
 
 The Stripe API supports `created` parameter filtering (e.g., `created[gte]`) on most list endpoints. However, Stripe does NOT support `updated_at` filtering. Since most Stripe resources are mutable (customers, subscriptions, invoices, etc.), `created`-only filtering is insufficient for true incremental sync. The `events` stream is an exception — events are immutable point-in-time records where `created[gte]` is semantically correct. The connector currently has all streams as full-refresh.

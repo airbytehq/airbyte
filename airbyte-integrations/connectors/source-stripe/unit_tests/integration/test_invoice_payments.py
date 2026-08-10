@@ -123,6 +123,55 @@ class FullRefreshTest(TestCase):
         assert output.records[0].record.data["id"] == "last_record_id_from_first_page"
         assert output.records[0].record.data["payment"]["payment_intent"] == "pi_3Q8e9rP2ZVFp9y3S1pmt4i3M"
 
+    @HttpMocker()
+    def test_given_no_updated_field_when_read_then_synthesize_cursor_from_created(self, http_mocker: HttpMocker) -> None:
+        """The InvoicePayment endpoint returns no `updated` field, so the full refresh path must derive the
+        `updated` cursor from `created`. Without this the two halves of the StateDelegatingStream would
+        disagree on the cursor and incremental handover would silently break."""
+        created_value = int(_A_START_DATE.timestamp()) + 42
+        http_mocker.get(
+            _invoice_payments_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _invoice_payments_response().with_record(_an_invoice_payment().with_cursor(created_value)).build(),
+        )
+
+        output = _read(_config().with_start_date(_A_START_DATE), SyncMode.full_refresh)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["created"] == created_value
+        assert record["updated"] == created_value
+
+    @HttpMocker()
+    def test_given_non_paid_statuses_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+        """Full refresh reads the InvoicePayment endpoint directly, so it must pass through statuses other
+        than `paid` and payment shapes other than `payment_intent` -- neither of which the Events API emits."""
+        http_mocker.get(
+            _invoice_payments_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
+            _invoice_payments_response()
+            .with_record(
+                _an_invoice_payment()
+                .with_id("a_canceled_invoice_payment")
+                .with_field(FieldPath("status"), "canceled")
+                .with_field(FieldPath("payment"), {"type": "charge", "charge": "ch_3Q8e9rP2ZVFp9y3S1pmt4i3M"})
+            )
+            .with_record(
+                _an_invoice_payment()
+                .with_id("an_open_invoice_payment")
+                .with_field(FieldPath("status"), "open")
+                .with_field(FieldPath("payment"), {"type": "payment_record", "payment_record": "pyr_3Q8e9rP2ZVFp9y3S1pmt4i3M"})
+            )
+            .build(),
+        )
+
+        output = _read(_config().with_start_date(_A_START_DATE), SyncMode.full_refresh)
+
+        assert len(output.records) == 2
+        canceled, opened = output.records[0].record.data, output.records[1].record.data
+        assert canceled["status"] == "canceled"
+        assert canceled["payment"] == {"type": "charge", "charge": "ch_3Q8e9rP2ZVFp9y3S1pmt4i3M"}
+        assert opened["status"] == "open"
+        assert opened["payment"] == {"type": "payment_record", "payment_record": "pyr_3Q8e9rP2ZVFp9y3S1pmt4i3M"}
+
 
 @freezegun.freeze_time(_NOW.isoformat())
 class IncrementalTest(TestCase):

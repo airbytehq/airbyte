@@ -185,5 +185,5 @@ class StripeRequestBuilder:
         return HttpRequest(
             url=f"https://api.stripe.com/v1/{self._resource}",
             query_params=query_params,
-            headers=self._headers,
+            headers=dict(self._headers),
         )
