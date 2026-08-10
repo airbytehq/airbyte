@@ -168,9 +168,41 @@ def test_build_items_incremental_query(monday_requester):
     built_query = monday_requester._build_items_incremental_query(object_name, field_schema, stream_slice)
 
     assert (
-        built_query == "items(limit:100,ids:[1, 2, 3]){id,name,column_values{id,text,type,value,... on MirrorValue{display_value},"
+        built_query
+        == "items(limit:100,ids:[1, 2, 3]){id,name,column_values(capabilities:[CALCULATED]){id,text,type,value,... on MirrorValue{display_value},"
         "... on BoardRelationValue{display_value,linked_item_ids},... on DependencyValue{display_value,linked_item_ids}}}"
     )
+
+
+@pytest.mark.parametrize(
+    "column_value_properties, expected_query",
+    [
+        pytest.param(
+            ["id", "text", "type", "value", "display_value"],
+            "column_values(capabilities:[CALCULATED]){id,text,type,value,... on MirrorValue{display_value},"
+            "... on BoardRelationValue{display_value,linked_item_ids},... on DependencyValue{display_value,linked_item_ids}}",
+            id="no_timeline_fields_requested",
+        ),
+        pytest.param(
+            ["id", "text", "type", "value", "from", "to", "visualization_type", "updated_at", "is_leaf", "display_value"],
+            "column_values(capabilities:[CALCULATED]){id,text,type,value,is_leaf,... on MirrorValue{display_value},"
+            "... on BoardRelationValue{display_value,linked_item_ids},... on DependencyValue{display_value,linked_item_ids},"
+            "... on TimelineValue{from,to,visualization_type,updated_at}}",
+            id="timeline_fields_moved_into_inline_fragment",
+        ),
+        pytest.param(
+            ["id", "text", "type", "value", "from", "to", "display_value"],
+            "column_values(capabilities:[CALCULATED]){id,text,type,value,... on MirrorValue{display_value},"
+            "... on BoardRelationValue{display_value,linked_item_ids},... on DependencyValue{display_value,linked_item_ids},"
+            "... on TimelineValue{from,to}}",
+            id="partial_timeline_fields",
+        ),
+    ],
+)
+def test_build_column_values_query(monday_requester, column_value_properties, expected_query):
+    field_schema = {field: {"type": ["null", "string"]} for field in column_value_properties}
+
+    assert monday_requester._build_query("column_values", field_schema) == expected_query
 
 
 def test_get_request_headers(monday_requester):
