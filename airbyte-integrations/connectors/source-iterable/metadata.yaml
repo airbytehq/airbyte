@@ -32,7 +32,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "The `users` stream schema has changed. Tenant-specific custom fields (e.g. Shopify fields like `addresses`, `default_address`, `aov`, `totalOrders`) are now nested inside a generic `data` object instead of being top-level properties. The `itblInternal` field changed from a nested object to flat dotted-key fields (e.g. `itblInternal.emailDomain`). Users must refresh the schema and reset data for the `users` stream after upgrading."
-        upgradeDeadline: "2026-07-17"
+        upgradeDeadline: "2026-08-24"
         deadlineAction: auto_upgrade
         scopedImpact:
           - scopeType: stream
