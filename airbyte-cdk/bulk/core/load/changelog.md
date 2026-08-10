@@ -9,7 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 ### 1.0.24 — 2026-08-10
 
-[#83806](https://github.com/airbytehq/airbyte/pull/83806) — Fix: honor the configured Azure Blob `endpointDomainName` and target the matching Entra authority host, so US Gov and China sovereign-cloud storage accounts work.
+[#83806](https://github.com/airbytehq/airbyte/pull/83806) — Fix: honor the configured Azure Blob `endpointDomainName` and target the matching Entra authority host.
 
 ### 1.0.23 — 2026-08-06
 
