@@ -29,8 +29,9 @@ definitions:
         header: "X-RateLimit-Reset"
     response_filters:
       - type: HttpResponseFilter
-        action: IGNORE
-        error_message: "Max rate limit exceeded"
+        action: RATE_LIMITED
+        failure_type: transient_error
+        error_message: "Rate limit exceeded for Pinterest API."
         predicate: "{{ response.get('code') == 8 }}"
       - type: HttpResponseFilter
         action: IGNORE
@@ -304,10 +305,22 @@ definitions:
       path: ad_accounts/{{ stream_partition['id'] }}/reports
       request_parameters:
         token: "'{{ creation_response['token'] }}'"
+    download_target_requester:
+      $ref: "#/definitions/requester"
+      path: "ad_accounts/{{ polling_response['request'].url | regex_search('ad_accounts/([^/]+)/reports') }}/reports?token={{ polling_response['request'].url | regex_search('[?&]token=([^&]+)') }}"
     download_requester:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: transient_error
+            http_codes: [403]
+            error_message_contains: "Request has expired"
+            error_message: "Pinterest report download URL is expired."
     download_decoder:
       type: JsonDecoder
 
@@ -5070,10 +5083,10 @@ spec:
         title: Number of concurrent workers
         minimum: 1
         maximum: 40
-        default: 4
+        default: 2
         examples:
           - 1
-          - 4
+          - 2
           - 5
         description: The number of worker threads to use for the sync. Higher values can speed up syncs but may increase rate-limit pressure against Pinterest.
         order: 10
@@ -5189,5 +5202,5 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 4 }}"
+  default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 2 }}"
   max_concurrency: 50

@@ -30,6 +30,11 @@ base_breakdowns = dict(AdsInsights.Breakdowns.__dict__)
 
 # Add the missing one: https://github.com/airbytehq/oncall/issues/9525
 base_breakdowns["user_segment_key"] = "user_segment_key"
+
+# Meta deprecated breakdowns=dma on June 22, 2026, replacing it with comscore_market.
+# Remove dma so it can't be selected for Custom Insights; configs still using it are rejected
+# by the CDK's config-vs-spec validation with a config_error that lists comscore_market.
+base_breakdowns.pop("dma", None)
 ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
@@ -250,6 +255,7 @@ class ConnectorConfig(BaseConfig):
             'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),
         airbyte_secret=True,
+        airbyte_hidden=True,
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(

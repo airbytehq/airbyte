@@ -41,7 +41,7 @@ def logger():
 @pytest.fixture
 def basic_config():
     return {
-        "shop": "test_shop",
+        "shop": "test-shop",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "shop_id": 0,
     }
@@ -50,7 +50,7 @@ def basic_config():
 @pytest.fixture
 def auth_config():
     return {
-        "shop": "test_shop",
+        "shop": "test-shop",
         "start_date": "2023-01-01",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "authenticator": None,
@@ -759,7 +759,7 @@ def metafield_parse_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/Metafield/123",
         "owner_id": 1234567,
         "owner_resource": "order",
-        "shop_url": "test_shop",
+        "shop_url": "test-shop",
         "created_at": "2023-01-01T01:01:01+00:00",
         "updated_at": "2023-01-01T01:01:01+00:00",
     }
@@ -809,7 +809,7 @@ def fulfillment_orders_response_expected_result():
             }
         ],
         "merchant_requests": [{"id": 333, "message": None, "kind": "FULFILLMENT_REQUEST", "request_options": {"notify_customer": True}}],
-        "shop_url": "test_shop",
+        "shop_url": "test-shop",
     }
 
 
@@ -881,7 +881,7 @@ def order_risks_response_expected_result():
                     },
                 },
             ],
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         }
     ]
 
@@ -940,7 +940,7 @@ def products_response_expected_result():
         "admin_graphql_api_id": "gid://shopify/Product/123",
         "images": [{"id": 111}],
         "variants": [{"id": 111}, {"id": 222}],
-        "shop_url": "test_shop",
+        "shop_url": "test-shop",
     }
 
 
@@ -957,7 +957,7 @@ def product_images_response_expected_result():
             "width": 265,
             "admin_graphql_api_id": "gid://shopify/ProductImage/111",
             "product_id": 123,
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "created_at": "2021-06-23T01:09:47+00:00",
@@ -969,7 +969,7 @@ def product_images_response_expected_result():
             "width": 2200,
             "admin_graphql_api_id": "gid://shopify/ProductImage/222",
             "product_id": 456,
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1006,7 +1006,7 @@ def product_variants_response_expected_result():
             "image_id": None,
             "image_src": None,
             "image_url": None,
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
             "tracked": True,
         },
         {
@@ -1037,7 +1037,7 @@ def product_variants_response_expected_result():
             "image_id": None,
             "image_src": None,
             "image_url": None,
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
             "tracked": False,
         },
     ]
@@ -1061,7 +1061,7 @@ def inventory_items_response_expected_result():
             "cost": 60.0,
             "currency_code": "USD",
             "country_harmonized_system_codes": [],
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "id": 45419395743933,
@@ -1078,7 +1078,7 @@ def inventory_items_response_expected_result():
             "cost": 29.0,
             "currency_code": "USD",
             "country_harmonized_system_codes": [],
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1105,7 +1105,7 @@ def customer_address_parse_response_expected_result():
             "country_name": "United States",
             "default": True,
             "updated_at": "2023-04-24T13:53:48+00:00",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "address1": None,
@@ -1126,7 +1126,7 @@ def customer_address_parse_response_expected_result():
             "country_name": None,
             "default": True,
             "updated_at": "2023-07-11T20:07:45+00:00",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1267,7 +1267,7 @@ def customer_journey_parse_response_expected_result():
                 ]
             },
             "admin_graphql_api_id": "gid://shopify/Order/4563761987773",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         }
     ]
 
@@ -1344,7 +1344,7 @@ def inventory_levels_response_expected_result():
             "inventory_history_url": "https://airbyte-integration-test.myshopify.com/admin/products/inventory/42185200631997/inventory_history",
             "locations_count": {"count": 1},
             "location_id": 63590301885,
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "id": "63590301885|42185218719933",
@@ -1415,7 +1415,7 @@ def inventory_levels_response_expected_result():
             "inventory_history_url": "https://airbyte-integration-test.myshopify.com/admin/products/inventory/42185218719933/inventory_history",
             "locations_count": {"count": 1},
             "location_id": 63590301885,
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1444,7 +1444,7 @@ def discount_codes_response_expected_result():
             "codes_count": {"count": 2},
             "total_sales": None,
             "summary": "Free shipping on all products \u2022 Minimum purchase of $1.00 \u2022 For all countries",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "usage_count": 0,
@@ -1467,7 +1467,7 @@ def discount_codes_response_expected_result():
             "codes_count": {"count": 2},
             "total_sales": None,
             "summary": "Free shipping on all products \u2022 Minimum purchase of $1.00 \u2022 For all countries",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1486,7 +1486,7 @@ def collections_response_expected_result():
             "products_count": 1,
             "admin_graphql_api_id": "gid://shopify/Collection/270889287869",
             "published_at": "2021-06-23T01:00:25+00:00",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "id": 273278566589,
@@ -1499,7 +1499,7 @@ def collections_response_expected_result():
             "products_count": 26,
             "admin_graphql_api_id": "gid://shopify/Collection/273278566589",
             "published_at": "2021-07-19T14:02:54+00:00",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1514,7 +1514,7 @@ def collection_products_response_expected_result():
             "collection_updated_at": "2023-09-05T14:06:59+00:00",
             "product_id": 6796220989629,
             "product_admin_graphql_api_id": "gid://shopify/Product/6796220989629",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "collection_id": 270889287869,
@@ -1523,7 +1523,7 @@ def collection_products_response_expected_result():
             "collection_updated_at": "2023-09-05T14:06:59+00:00",
             "product_id": 6796825198781,
             "product_admin_graphql_api_id": "gid://shopify/Product/6796825198781",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
         {
             "collection_id": 273278566589,
@@ -1532,7 +1532,7 @@ def collection_products_response_expected_result():
             "collection_updated_at": "2023-09-05T14:12:04+00:00",
             "product_id": 7654321098765,
             "product_admin_graphql_api_id": "gid://shopify/Product/7654321098765",
-            "shop_url": "test_shop",
+            "shop_url": "test-shop",
         },
     ]
 
@@ -1576,7 +1576,7 @@ def transactions_response_expected_result():
         "currency": "USD",
         "admin_graphql_api_id": "gid://shopify/OrderTransaction/5721110872253",
         "parent_id": None,
-        "shop_url": "test_shop",
+        "shop_url": "test-shop",
     }
 
 

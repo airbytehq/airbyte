@@ -20,6 +20,7 @@ The Incident-Io connector supports the following entities and actions.
 | Custom Fields | [List](#custom-fields-list), [Get](#custom-fields-get), [Context Store Search](#custom-fields-context-store-search) |
 | Catalog Types | [List](#catalog-types-list), [Get](#catalog-types-get), [Context Store Search](#catalog-types-context-store-search) |
 | Schedules | [List](#schedules-list), [Get](#schedules-get), [Context Store Search](#schedules-context-store-search) |
+| Teams | [List](#teams-list), [Get](#teams-get) |
 
 ## Incidents
 
@@ -2713,6 +2714,135 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].name` | `string` | Name of the schedule |
 | `data[].timezone` | `string` | Timezone for the schedule |
 | `data[].updated_at` | `string` | When the schedule was last updated |
+
+</details>
+
+## Teams
+
+### Teams List
+
+List all teams in the organisation with cursor-based pagination.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
+#### Python SDK
+
+```python
+await incident_io.teams.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `page_size` | `integer` | No | Number of teams per page |
+| `after` | `string` | No | Cursor for the next page of results |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `null \| string` |  |
+| `catalog_entry` | `null \| object` |  |
+| `members` | `null \| array` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_cursor` | `null \| string` |  |
+
+</details>
+
+### Teams Get
+
+Get a single team by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await incident_io.teams.get(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "teams",
+    "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | Team ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `name` | `null \| string` |  |
+| `catalog_entry` | `null \| object` |  |
+| `members` | `null \| array` |  |
+
 
 </details>
 

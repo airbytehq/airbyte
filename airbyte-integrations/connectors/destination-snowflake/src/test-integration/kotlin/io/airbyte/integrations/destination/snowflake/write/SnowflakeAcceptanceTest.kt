@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -265,6 +266,7 @@ abstract class SnowflakeAcceptanceTest(
         unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         dedupChangeUsesDefault = false,
+        columnDropBehavior = ColumnDropBehavior.RETAIN,
         testSpeedModeStatsEmission = true,
         configUpdater = SnowflakeMigrationConfigurationUpdater(),
         dataChannelMedium = dataChannelMedium,
