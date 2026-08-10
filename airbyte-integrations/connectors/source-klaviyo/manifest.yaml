@@ -1140,12 +1140,9 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - attributes
-              - results
-              - "*"
+            type: CustomRecordExtractor
+            class_name: >-
+              source_declarative_manifest.components.FlowSeriesPerDayExtractor
           schema_normalization: Default
         paginator:
           type: DefaultPaginator
@@ -1170,19 +1167,22 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # The start date is floored to midnight UTC so every report window covers whole calendar
+        # days. Klaviyo report timeframes are inclusive on both ends and round the end up to
+        # :59:59 of its hour, so a start date carrying a time-of-day makes each 30-day window
+        # overlap the next one on a shared day.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
         lookback_window: "P{{ config.get('reporting_lookback_window', 0) }}D"
       transformations:
+        # `date` is not added here: FlowSeriesPerDayExtractor already sets it to the calendar day
+        # the row reports on, taken from the report's own date_times array.
         - type: AddFields
           fields:
-            - path:
-                - date
-              value: "{{ stream_interval.end_time }}"
             - path:
                 - flow_id
               value: "{{ record.get('groupings', {}).get('flow_id') }}"
@@ -1321,13 +1321,18 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # Floored to midnight UTC for the same reason as flow_series_reports: whole calendar day
+        # windows stop consecutive 30-day timeframes from sharing - and so double-counting - a day.
+        # This endpoint takes no `interval`, so each record is one aggregate over the whole window
+        # keyed by the window end. A lookback window is deliberately not offered here: re-reading a
+        # period would return a fresh aggregate under a new `date`, adding to the previous rows
+        # instead of replacing them. See the reporting_lookback_window spec field.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
-        lookback_window: "P{{ config.get('reporting_lookback_window', 0) }}D"
       transformations:
         - type: AddFields
           fields:
@@ -1443,8 +1448,8 @@ spec:
         description: >-
           The number of days to look back when syncing data in incremental mode.
           This helps capture any late-arriving data. Only applies to the
-          events_detailed stream. For reporting streams (flow_series_reports,
-          campaign_values_reports), use Reporting Lookback Window instead.
+          events_detailed stream. For the flow_series_reports stream, use
+          Reporting Lookback Window instead.
         title: Lookback Window (Days)
         minimum: 0
         default: 0
@@ -1456,10 +1461,18 @@ spec:
         type: integer
         title: Reporting Lookback Window (Days)
         description: >-
-          The number of days to look back when syncing reporting data
-          (flow_series_reports and campaign_values_reports) in incremental
-          mode. This helps capture late-arriving attribution data that
-          Klaviyo may update after the initial sync. Defaults to 0.
+          Re-syncs the last N days of the flow_series_reports stream on every
+          incremental run. Klaviyo keeps updating conversion attribution after a
+          send - by default for up to 5 days, and up to 90 days if you raise the
+          attribution window in your account settings - so the numbers first
+          reported for a day keep changing for a while. Set this to at least your
+          attribution window to pick those revisions up. Each re-synced day
+          replaces the row previously written for it rather than adding a second
+          one, because flow_series_reports rows are keyed by the calendar day they
+          report on. This does not apply to campaign_values_reports: that endpoint
+          returns a single aggregate for the whole requested period instead of a
+          per-day breakdown, so a re-read cannot replace anything and would only
+          add double-counted rows. Defaults to 0 (no re-sync).
         minimum: 0
         default: 0
         examples:
@@ -4040,7 +4053,9 @@ schemas:
           - "null"
           - string
         format: date-time
-        description: End date of the reporting period (used as cursor field)
+        description: >-
+          The calendar day this row reports on, taken from the report date_times array.
+          This is the cursor field.
       flow_id:
         type:
           - "null"
@@ -4088,197 +4103,143 @@ schemas:
           - "null"
           - object
         additionalProperties: true
-        description: Time-series statistics (arrays of values, one per day in the reporting period)
+        description: Report statistics for this calendar day, one scalar value per statistic
         properties:
           opens:
             type:
               - "null"
-              - array
-            description: Number of opens per day
-            items:
-              type: number
+              - number
+            description: Number of opens for this day
           opens_unique:
             type:
               - "null"
-              - array
-            description: Number of unique opens per day
-            items:
-              type: number
+              - number
+            description: Number of unique opens for this day
           clicks:
             type:
               - "null"
-              - array
-            description: Number of clicks per day
-            items:
-              type: number
+              - number
+            description: Number of clicks for this day
           clicks_unique:
             type:
               - "null"
-              - array
-            description: Number of unique clicks per day
-            items:
-              type: number
+              - number
+            description: Number of unique clicks for this day
           delivered:
             type:
               - "null"
-              - array
-            description: Number of delivered messages per day
-            items:
-              type: number
+              - number
+            description: Number of delivered messages for this day
           bounced:
             type:
               - "null"
-              - array
-            description: Number of bounces per day
-            items:
-              type: number
+              - number
+            description: Number of bounces for this day
           bounced_or_failed:
             type:
               - "null"
-              - array
-            description: Number of bounced or failed messages per day
-            items:
-              type: number
+              - number
+            description: Number of bounced or failed messages for this day
           bounced_or_failed_rate:
             type:
               - "null"
-              - array
-            description: Bounce or failure rate per day
-            items:
-              type: number
+              - number
+            description: Bounce or failure rate for this day
           failed:
             type:
               - "null"
-              - array
-            description: Number of failed messages per day
-            items:
-              type: number
+              - number
+            description: Number of failed messages for this day
           failed_rate:
             type:
               - "null"
-              - array
-            description: Failure rate per day
-            items:
-              type: number
+              - number
+            description: Failure rate for this day
           conversions:
             type:
               - "null"
-              - array
-            description: Number of conversions per day
-            items:
-              type: number
+              - number
+            description: Number of conversions for this day
           conversion_value:
             type:
               - "null"
-              - array
-            description: Conversion value per day
-            items:
-              type: number
+              - number
+            description: Conversion value for this day
           conversion_rate:
             type:
               - "null"
-              - array
-            description: Conversion rate per day
-            items:
-              type: number
+              - number
+            description: Conversion rate for this day
           conversion_uniques:
             type:
               - "null"
-              - array
-            description: Unique conversions per day
-            items:
-              type: number
+              - number
+            description: Unique conversions for this day
           click_rate:
             type:
               - "null"
-              - array
-            description: Click rate per day
-            items:
-              type: number
+              - number
+            description: Click rate for this day
           open_rate:
             type:
               - "null"
-              - array
-            description: Open rate per day
-            items:
-              type: number
+              - number
+            description: Open rate for this day
           click_to_open_rate:
             type:
               - "null"
-              - array
-            description: Click-to-open rate per day
-            items:
-              type: number
+              - number
+            description: Click-to-open rate for this day
           delivery_rate:
             type:
               - "null"
-              - array
-            description: Delivery rate per day
-            items:
-              type: number
+              - number
+            description: Delivery rate for this day
           bounce_rate:
             type:
               - "null"
-              - array
-            description: Bounce rate per day
-            items:
-              type: number
+              - number
+            description: Bounce rate for this day
           recipients:
             type:
               - "null"
-              - array
-            description: Number of recipients per day
-            items:
-              type: number
+              - number
+            description: Number of recipients for this day
           revenue_per_recipient:
             type:
               - "null"
-              - array
-            description: Revenue per recipient per day
-            items:
-              type: number
+              - number
+            description: Revenue per recipient for this day
           average_order_value:
             type:
               - "null"
-              - array
-            description: Average order value per day
-            items:
-              type: number
+              - number
+            description: Average order value for this day
           unsubscribes:
             type:
               - "null"
-              - array
-            description: Number of unsubscribes per day
-            items:
-              type: number
+              - number
+            description: Number of unsubscribes for this day
           unsubscribe_uniques:
             type:
               - "null"
-              - array
-            description: Number of unique unsubscribes per day
-            items:
-              type: number
+              - number
+            description: Number of unique unsubscribes for this day
           unsubscribe_rate:
             type:
               - "null"
-              - array
-            description: Unsubscribe rate per day
-            items:
-              type: number
+              - number
+            description: Unsubscribe rate for this day
           spam_complaints:
             type:
               - "null"
-              - array
-            description: Number of spam complaints per day
-            items:
-              type: number
+              - number
+            description: Number of spam complaints for this day
           spam_complaint_rate:
             type:
               - "null"
-              - array
-            description: Spam complaint rate per day
-            items:
-              type: number
+              - number
+            description: Spam complaint rate for this day
   campaign_values_reports:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

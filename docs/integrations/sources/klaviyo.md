@@ -31,9 +31,10 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 7. (Optional) Select **Disable Fetching Predictive Analytics** to stop the connector from requesting predictive analytics data. See [Performance considerations](#performance-considerations).
 8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
 9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
-10. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
-11. (Optional) For **Event Stream Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. This can significantly reduce sync volume for accounts with high event traffic. See [Event stream filtering](#event-stream-filtering) below.
-12. Click **Set up source**.
+10. (Optional) For **Reporting Lookback Window (Days)**, enter the number of days of Flow Series Reports data to re-sync on every incremental run. Klaviyo revises conversion attribution after a send, so set this to at least your attribution window to pick up those revisions. Re-synced days replace the rows already written for them. Defaults to 0. See [Analytics streams](#analytics-streams) for details.
+11. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
+12. (Optional) For **Event Stream Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. This can significantly reduce sync volume for accounts with high event traffic. See [Event stream filtering](#event-stream-filtering) below.
+13. Click **Set up source**.
 
 ### For Airbyte Open Source
 
@@ -46,8 +47,9 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 7. (Optional) Select **Disable Fetching Predictive Analytics** to stop the connector from requesting predictive analytics data. See [Performance considerations](#performance-considerations).
 8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
 9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
-10. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
-11. Click **Set up source**.
+10. (Optional) For **Reporting Lookback Window (Days)**, enter the number of days of Flow Series Reports data to re-sync on every incremental run. Klaviyo revises conversion attribution after a send, so set this to at least your attribution window to pick up those revisions. Re-synced days replace the rows already written for them. Defaults to 0. See [Analytics streams](#analytics-streams) for details.
+11. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
+12. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -87,7 +89,15 @@ The **Metrics**, **Lists**, **Lists Detailed**, and **Segments** streams request
 
 ### Analytics streams
 
-The **Campaign Values Reports** and **Flow Series Reports** streams provide performance analytics from Klaviyo's [Reporting API](https://developers.klaviyo.com/en/reference/reporting_api_overview). Campaign Values Reports returns aggregated campaign performance metrics, while Flow Series Reports returns daily time-series data for automated flow performance.
+The **Campaign Values Reports** and **Flow Series Reports** streams provide performance analytics from Klaviyo's [Reporting API](https://developers.klaviyo.com/en/reference/reporting_api_overview).
+
+Flow Series Reports emits one record per calendar day per flow message, with each `statistics` field holding that day's value. Its `date` field is the day the row reports on, and it forms part of the primary key, so re-reading a day updates the existing row.
+
+Campaign Values Reports has no per-day breakdown: the endpoint returns a single aggregate for the whole period the connector requests, and `date` is the end of that period.
+
+Report periods always cover whole calendar days, starting at midnight UTC. If your start date includes a time of day, the first period is extended back to the midnight before it.
+
+Klaviyo keeps revising conversion attribution after a send, by default for up to 5 days and up to 90 days if you have raised the attribution window in your account settings. Numbers first reported for a day therefore keep changing for a while. Use **Reporting Lookback Window (Days)** to re-sync the last few days of Flow Series Reports on every incremental run and pick those revisions up; set it to at least your attribution window. Each re-synced day replaces the row already written for it. This setting does not apply to Campaign Values Reports, because that endpoint reports a single aggregate per requested period rather than per-day values, so a re-read there could only add a second row covering the same days.
 
 These streams require the following API key scopes:
 
@@ -162,7 +172,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.22.0 | 2026-08-10 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Add configurable lookback window for the `flow_series_reports` and `campaign_values_reports` streams |
+| 3.0.0 | 2026-08-10 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
 | 2.21.0 | 2026-08-06 | [75301](https://github.com/airbytehq/airbyte/pull/75301) | Add optional metric ID filtering for the `events` and `events_detailed` streams |
 | 2.20.0 | 2026-08-05 | [61338](https://github.com/airbytehq/airbyte/pull/61338) | Sync all metric definitions in the `metrics` stream regardless of the configured start date (existing connections: clear/reset the `metrics` stream to backfill older metric definitions) |
 | 2.19.3 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |

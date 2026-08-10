@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import datetime as datetime_module
 import json
 import os
 from unittest.mock import MagicMock, Mock, patch
@@ -463,3 +464,198 @@ def _migrator(components_module, cursor_field="last_changed"):
     declarative_stream.parameters = parameters
 
     return components_module.PerPartitionToSingleStateMigration(config=config, declarative_stream=declarative_stream)
+
+
+def _flow_series_response(body):
+    response = Mock(spec=Response)
+    response.json.return_value = body
+    return response
+
+
+def _per_day_extractor(components_module):
+    return components_module.FlowSeriesPerDayExtractor()
+
+
+def test_flow_series_per_day_extractor_splits_response_into_one_record_per_day(components_module):
+    """
+    Two groupings over three days must produce six records, each carrying the calendar day it
+    reports on and the statistics value sitting at that day's index.
+    """
+    body = {
+        "data": {
+            "type": "flow-series-report",
+            "attributes": {
+                "date_times": [
+                    "2024-01-05T00:00:00+00:00",
+                    "2024-01-06T00:00:00+00:00",
+                    "2024-01-07T00:00:00+00:00",
+                ],
+                "results": [
+                    {
+                        "groupings": {"flow_id": "XVTP5Q", "send_channel": "email", "flow_message_id": "msg_a"},
+                        "statistics": {"opens": [123, 156, 144], "open_rate": [0.8253, 0.8722, 0.8398]},
+                    },
+                    {
+                        "groupings": {"flow_id": "XVTP5Q", "send_channel": "email", "flow_message_id": "msg_b"},
+                        "statistics": {"opens": [97, 98, 65], "open_rate": [0.7562, 0.761, 0.688]},
+                    },
+                ],
+            },
+        }
+    }
+
+    records = list(_per_day_extractor(components_module).extract_records(_flow_series_response(body)))
+
+    assert len(records) == 6
+    assert [record["date"] for record in records] == [
+        "2024-01-05T00:00:00+00:00",
+        "2024-01-06T00:00:00+00:00",
+        "2024-01-07T00:00:00+00:00",
+    ] * 2
+    assert [record["statistics"]["opens"] for record in records] == [123, 156, 144, 97, 98, 65]
+    assert [record["statistics"]["open_rate"] for record in records] == [0.8253, 0.8722, 0.8398, 0.7562, 0.761, 0.688]
+    assert records[0]["groupings"] == {"flow_id": "XVTP5Q", "send_channel": "email", "flow_message_id": "msg_a"}
+    assert records[3]["groupings"]["flow_message_id"] == "msg_b"
+
+
+@pytest.mark.parametrize(
+    "attributes",
+    [
+        pytest.param({"results": [{"groupings": {}, "statistics": {"opens": [1, 2]}}]}, id="no_date_times"),
+        pytest.param({"date_times": [], "results": [{"groupings": {}, "statistics": {"opens": []}}]}, id="empty_date_times"),
+        pytest.param({"date_times": ["2024-01-05T00:00:00+00:00"]}, id="no_results"),
+        pytest.param({}, id="empty_attributes"),
+    ],
+)
+def test_flow_series_per_day_extractor_yields_nothing_without_days_or_results(components_module, attributes):
+    """A response missing either side of the alignment produces no records instead of raising."""
+    body = {"data": {"attributes": attributes}}
+
+    assert list(_per_day_extractor(components_module).extract_records(_flow_series_response(body))) == []
+
+
+def test_flow_series_per_day_extractor_fills_missing_statistics_with_none(components_module):
+    """
+    A statistics array shorter than date_times must report null for the days it does not cover.
+    Reusing the last known value or shifting values onto earlier days would silently misdate data.
+    """
+    body = {
+        "data": {
+            "attributes": {
+                "date_times": [
+                    "2024-01-05T00:00:00+00:00",
+                    "2024-01-06T00:00:00+00:00",
+                    "2024-01-07T00:00:00+00:00",
+                ],
+                "results": [
+                    {
+                        "groupings": {"flow_id": "XVTP5Q"},
+                        "statistics": {"opens": [123], "clicks": None, "conversions": [1, 2, 3]},
+                    }
+                ],
+            }
+        }
+    }
+
+    records = list(_per_day_extractor(components_module).extract_records(_flow_series_response(body)))
+
+    assert [record["statistics"]["opens"] for record in records] == [123, None, None]
+    assert [record["statistics"]["clicks"] for record in records] == [None, None, None]
+    assert [record["statistics"]["conversions"] for record in records] == [1, 2, 3]
+
+
+def test_flow_series_reports_schema_matches_requested_statistics():
+    """
+    Guard against the request body and the declared schema drifting apart: every statistic the
+    connector asks Klaviyo for needs a scalar property in the schema, and nothing else.
+    """
+    import yaml
+
+    manifest_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "manifest.yaml")
+    with open(manifest_path) as manifest_file:
+        manifest = yaml.safe_load(manifest_file)
+
+    stream = manifest["definitions"]["streams"]["flow_series_reports"]
+    requested = stream["retriever"]["requester"]["request_body_json"]["data"]["attributes"]["statistics"]
+    declared = manifest["schemas"]["flow_series_reports"]["properties"]["statistics"]["properties"]
+
+    assert sorted(requested) == sorted(declared)
+    for name, definition in declared.items():
+        assert definition["type"] == ["null", "number"], f"{name} must be a scalar number, one value per day"
+        assert "items" not in definition, f"{name} still declares array items"
+
+
+def _manifest():
+    import yaml
+
+    manifest_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "manifest.yaml")
+    with open(manifest_path) as manifest_file:
+        return yaml.safe_load(manifest_file)
+
+
+def _report_windows(stream_name, config, now):
+    """
+    Build the stream's real cursor straight from the manifest and return the report windows it
+    would request, as (start, end) datetimes.
+    """
+    import freezegun
+
+    from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+
+    definition = _manifest()["definitions"]["streams"][stream_name]["incremental_sync"]
+    local_factory = ModelToComponentFactory()
+    local_factory._connector_state_manager = ConnectorStateManager()
+    with freezegun.freeze_time(now):
+        cursor = local_factory.create_concurrent_cursor_from_datetime_based_cursor(
+            model_type=DatetimeBasedCursor,
+            component_definition=definition,
+            stream_name=stream_name,
+            stream_namespace=None,
+            stream_state={},
+            config=config,
+        )
+        return [
+            (
+                datetime_module.datetime.strptime(slice_.cursor_slice["start_time"], "%Y-%m-%dT%H:%M:%S%z"),
+                datetime_module.datetime.strptime(slice_.cursor_slice["end_time"], "%Y-%m-%dT%H:%M:%S%z"),
+            )
+            for slice_ in cursor.stream_slices()
+        ]
+
+
+@pytest.mark.parametrize("stream_name", ["flow_series_reports", "campaign_values_reports"])
+@pytest.mark.parametrize("start_date", ["2024-01-01T00:00:00Z", "2024-01-01T05:30:00Z", "2024-01-01T23:59:59Z"])
+def test_report_windows_are_whole_calendar_days(stream_name, start_date):
+    """
+    Klaviyo report timeframes are inclusive on both ends and round the end up to :59:59 of its
+    hour, so a window that stops mid-day reports that day and so does the next window, which
+    double-counts it. Every window must therefore begin at midnight, and consecutive windows
+    must neither share nor skip a calendar day whatever time of day the configured start date
+    carries.
+    """
+    windows = _report_windows(stream_name, {"start_date": start_date}, "2024-06-15T12:34:56+00:00")
+
+    assert len(windows) > 1, f"expected several 30-day windows, got {windows}"
+    for start, _ in windows:
+        assert (start.hour, start.minute, start.second) == (0, 0, 0), f"window starts mid-day: {start.isoformat()}"
+    for (_, earlier_end), (later_start, _) in zip(windows, windows[1:]):
+        assert (
+            earlier_end.date() < later_start.date()
+        ), f"windows share the day {earlier_end.date()}: {earlier_end.isoformat()} then {later_start.isoformat()}"
+        assert (later_start.date() - earlier_end.date()).days == 1, (
+            f"the day after {earlier_end.date()} is in no window at all, so a day of data is lost " f"before {later_start.isoformat()}"
+        )
+
+
+def test_only_flow_series_reports_offers_a_reporting_lookback_window():
+    """
+    campaign_values_reports takes no `interval`, so one request yields a single aggregate over
+    the whole window keyed by the window end. Re-reading a period there cannot replace anything,
+    it can only add a second differently-keyed row covering the same days.
+    """
+    streams = _manifest()["definitions"]["streams"]
+
+    assert "lookback_window" in streams["flow_series_reports"]["incremental_sync"]
+    assert "lookback_window" not in streams["campaign_values_reports"]["incremental_sync"]
+    assert "interval" in streams["flow_series_reports"]["retriever"]["requester"]["request_body_json"]["data"]["attributes"]
+    assert "interval" not in streams["campaign_values_reports"]["retriever"]["requester"]["request_body_json"]["data"]["attributes"]
