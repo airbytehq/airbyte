@@ -32,13 +32,11 @@ You'll need the following information to configure the Postgres destination:
 - **Host** - The host name of the server.
 - **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port
   number (5432).
+- **Database Name** - The name of the database to write to.
+- **Default Schema** - The schema Airbyte writes a stream to when the source doesn't specify a
+  namespace. Defaults to `public`.
 - **Username**
 - **Password**
-- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in
-  the search-path. These schemas will be used to resolve unqualified object names used in statements
-  executed over this connection.
-- **Database** - The database name. The default is to connect to a database with the same name as
-  the user name.
 - **JDBC URL Params** (optional)
 
 [Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
@@ -105,7 +103,7 @@ From
 
 Airbyte Postgres destination creates final tables and their corresponding columns using Quoted identifiers, preserving the case sensitivity. Special characters in table and column names are replaced with underscores.
 
-When using the legacy "Raw tables only" mode, raw tables and schemas are created using Unquoted identifiers by replacing any special characters with an underscore.
+When using the legacy "Raw tables only" mode, raw table and schema names are lowercased, and column names are left exactly as the source sent them.
 
 :::
 
@@ -119,12 +117,12 @@ When using the legacy "Raw tables only" mode, raw tables and schemas are created
 4. Enter a name for your destination.
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
    Postgres database.
-6. List the **Default Schemas**.
+6. For **Default Schema**, enter the schema Airbyte writes to when a stream has no namespace.
 
    :::note
 
-   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-   used at one time. No schemas set explicitly - will sync all of existing.
+   Schema names are case sensitive. The `public` schema is used by default. Streams that carry a
+   namespace are written to a schema named after that namespace, not to the default schema.
 
    :::
 
@@ -179,10 +177,22 @@ Mode**; otherwise, the connection will fail.
 
 12. Click **Set up destination**.
 
+## Optional settings
+
+These settings are optional. Unless you have a specific reason to change them, the defaults are fine.
+
+| Setting | Default | What it does |
+| :------ | :------ | :----------- |
+| **CDC deletion mode** | Hard delete | Controls what happens when a CDC source reports a deleted record. **Hard delete** removes the row from the destination table. **Soft delete** keeps the row and populates its `_ab_cdc_deleted_at` column, so you can filter deleted records downstream yourself. Only affects streams that are deduped and carry CDC metadata. |
+| **Airbyte Internal Schema Name** | `airbyte_internal` | The schema Airbyte uses for internal tables. In legacy raw tables mode, raw tables are written here. |
+| **Disable Final Tables** | Off | Turns on legacy "raw tables only" mode. Airbyte writes a single `_airbyte_data` JSONB column per stream instead of typed columns, and syncs run in append mode even when the connection uses dedup. Only use this if you depend on the pre-3.0.0 raw table format. |
+| **Drop tables with CASCADE** | Off | Adds `CASCADE` to the `DROP TABLE` statements the connector runs. See [Creating dependent objects](#creating-dependent-objects) before you enable it. |
+| **Unconstrained numeric columns** | Off | Has no effect in version 3.0.0 and later. Number columns are always created as unconstrained `DECIMAL`. |
+
 ## Supported sync modes
 
 The Postgres destination connector supports the
-following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following [sync modes](/platform/using-airbyte/core-concepts/sync-modes/):
 
 | Sync mode | Supported? |
 | :--- | :--- |
@@ -191,6 +201,10 @@ following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
+Deduplication requires a primary key. If a stream is set to a deduping sync mode but has no primary
+key, the sync fails. In legacy "raw tables only" mode, deduplication isn't possible at all, so the
+connector falls back to appending and logs a warning.
 
 ## Schema map
 
@@ -243,6 +257,8 @@ will contain 4 columns:
 | boolean                    | BOOLEAN                  |
 | object                     | JSONB                    |
 | array                      | JSONB                    |
+| union                      | JSONB                    |
+| unknown                    | JSONB                    |
 | timestamp_with_timezone    | TIMESTAMP WITH TIME ZONE |
 | timestamp_without_timezone | TIMESTAMP                |
 | time_with_timezone         | TIME WITH TIME ZONE      |
@@ -251,9 +267,27 @@ will contain 4 columns:
 
 ### Naming limitations
 
-Postgres restricts all identifiers to 63 characters or less. If your stream includes column names
-longer than 63 characters, they will be truncated to this length. If this results in two columns
-having the same name, Airbyte may modify these column names to avoid the collision.
+Postgres restricts identifiers to 63 characters. If a stream or column name is longer than that, the
+connector shortens it to the first 54 characters, an underscore, and an 8-character hash of the
+original name. Two long names that share the same first 54 characters therefore still produce
+distinct tables and columns, but the resulting names aren't the ones your source used.
+
+The connector also replaces each character that isn't a letter, digit, or underscore with an
+underscore, and prefixes a name that begins with a digit with an underscore. Names that only differ
+by those replaced characters (`my.field` and `my-field`, for example) collide, and the sync fails
+when Postgres rejects the duplicate.
+
+### Value limitations
+
+The connector adapts some values to what Postgres accepts:
+
+- Null bytes (`\u0000`) are removed from string values and from raw JSON data. Postgres text types
+  can't store them, and a record containing one would otherwise fail the whole batch.
+- Values that exceed a Postgres type's range are written as `NULL`, and the record's
+  `_airbyte_meta` column records a `DESTINATION_FIELD_SIZE_LIMITATION` change. This applies to
+  integers outside the `BIGINT` range, numbers with more than 131,072 digits before the decimal
+  point, strings larger than the 1 GB field limit, and timestamps outside the range Postgres
+  supports (4713 BC to 294276 AD).
 
 ## Creating dependent objects
 
