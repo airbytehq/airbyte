@@ -124,4 +124,7 @@ data:
     - title: Zendesk Status
       url: https://status.zendesk.com/
       type: status_page
+    - title: Zendesk feature removal announcements
+      url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
+      type: api_deprecations
 metadataSpecVersion: "1.0"

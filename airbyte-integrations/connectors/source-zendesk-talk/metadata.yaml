@@ -20,6 +20,21 @@ data:
     - title: Changelog
       url: https://developer.zendesk.com/api-reference/changelog/changelog/
       type: api_release_history
+    - title: Zendesk Talk API reference
+      url: https://developer.zendesk.com/api-reference/voice/talk-api/introduction/
+      type: api_reference
+    - title: Zendesk authentication
+      url: https://developer.zendesk.com/api-reference/introduction/security-and-auth/
+      type: authentication_guide
+    - title: Zendesk feature removal announcements
+      url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
+      type: api_deprecations
+    - title: Zendesk rate limits
+      url: https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
+      type: rate_limits
+    - title: Zendesk Status
+      url: https://status.zendesk.com/
+      type: status_page
   githubIssueLabel: source-zendesk-talk
   icon: zendesk-talk.svg
   license: ELv2
