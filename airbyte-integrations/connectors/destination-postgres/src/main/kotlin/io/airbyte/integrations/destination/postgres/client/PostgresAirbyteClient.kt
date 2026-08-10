@@ -495,7 +495,6 @@ class PostgresAirbyteClient(
     }
 
     private fun isMissingRelation(exception: Throwable): Boolean =
-        generateSequence(exception) { it.cause }.any {
-            it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES
-        }
+        generateSequence(exception) { it.cause }
+            .any { it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES }
 }
