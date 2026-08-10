@@ -384,10 +384,10 @@ private val SCALE_REGEX = Regex("""\(\s*\d+\s*,\s*(\d+)\s*\)""")
 
 /**
  * Reduces a data type string reported by DESCRIBE TABLE (e.g. `VARCHAR(16777216)`) to the canonical
- * type name emitted by SnowflakeTableSchemaMapper. For most types this just strips the parenthesized
- * arguments, but for numeric types the scale is significant. A NUMBER with scale 0 is a
- * NUMBER(38,0), which is what the connector creates for integer columns, so it maps to the integer
- * type ([SnowflakeDataType.NUMBER]). A scale greater than 0 maps to the decimal type (
+ * type name emitted by SnowflakeTableSchemaMapper. For most types this just strips the
+ * parenthesized arguments, but for numeric types the scale is significant. A NUMBER with scale 0 is
+ * a NUMBER(38,0), which is what the connector creates for integer columns, so it maps to the
+ * integer type ([SnowflakeDataType.NUMBER]). A scale greater than 0 maps to the decimal type (
  * [SnowflakeDataType.NUMERIC_38_9]).
  */
 internal fun toCanonicalDataType(dataType: String): String {
