@@ -224,6 +224,7 @@ The **Decimal Data Type** setting determines which Snowflake data type Airbyte u
 - **FLOAT** (default): An approximate binary floating-point type with approximately 15 digits of precision. It supports magnitudes up to approximately 10^308, making it suitable for scientific calculations, statistical models, probabilities, model scores, and other use cases where a wide numeric range is more important than exact decimal representation and small rounding differences are acceptable.
 
 **Unaffected cases:**
+
 - Legacy raw tables mode: the setting has no effect because there are no typed columns. All values are stored in the `_airbyte_data` VARIANT column.
 - Scale-0 database types (for example `NUMERIC(10,0)`): source connectors map these to the Airbyte `INTEGER` type, which is always stored as Snowflake NUMBER and is not affected by this setting.
 
