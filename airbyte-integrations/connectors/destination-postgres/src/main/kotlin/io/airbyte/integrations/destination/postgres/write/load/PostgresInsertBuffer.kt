@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.postgres.write.load
 
-import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
