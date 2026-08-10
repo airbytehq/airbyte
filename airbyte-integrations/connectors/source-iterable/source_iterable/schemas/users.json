@@ -75,6 +75,14 @@
       "description": "User's country.",
       "type": ["null", "string"]
     },
+    "city": {
+      "description": "User's city, populated by Iterable from the user's IP address when the Overwrite Location Fields project setting is on.",
+      "type": ["null", "string"]
+    },
+    "region": {
+      "description": "User's region, populated by Iterable from the user's IP address when the Overwrite Location Fields project setting is on.",
+      "type": ["null", "string"]
+    },
     "devices": {
       "description": "Devices registered for push notifications.",
       "type": ["null", "array"],
@@ -92,6 +100,10 @@
     },
     "phoneNumber": {
       "description": "User's phone number used for SMS.",
+      "type": ["null", "string"]
+    },
+    "whatsAppPhoneNumber": {
+      "description": "User's phone number used as the recipient identifier for WhatsApp campaigns.",
       "type": ["null", "string"]
     },
     "profile": {

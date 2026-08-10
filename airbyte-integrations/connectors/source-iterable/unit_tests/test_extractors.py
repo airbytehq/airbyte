@@ -3,6 +3,7 @@
 #
 import io
 import json
+from pathlib import Path
 
 import pytest
 import requests
@@ -50,20 +51,23 @@ def test_events_extraction():
                 "email": "user@example.com",
                 "userId": "u123",
                 "itblUserId": "98765",
-                "signupDate": "2024-01-15 10:30:00 +0000",
+                "signupDate": "2024-01-15 10:30:00 +00:00",
                 "signupSource": "API",
-                "profileUpdatedAt": "2024-06-01 08:00:00 +0000",
+                "profileUpdatedAt": "2024-06-01 08:00:00 +00:00",
                 "emailListIds": [1, 2, 3],
                 "subscribedMessageTypeIds": [10],
                 "unsubscribedMessageTypeIds": [20],
                 "unsubscribedChannelIds": [30],
                 "phoneNumber": "+15551234567",
+                "whatsAppPhoneNumber": "+15551234567",
                 "country": "US",
+                "city": "New York",
+                "region": "NY",
                 "locale": "en_US",
                 "timeZone": "America/New_York",
                 "itblInternal.emailDomain": "example.com",
-                "itblInternal.documentCreatedAt": "2024-01-15 10:30:00 +0000",
-                "itblInternal.documentUpdatedAt": "2024-06-01 08:00:00 +0000",
+                "itblInternal.documentCreatedAt": "2024-01-15 10:30:00 +00:00",
+                "itblInternal.documentUpdatedAt": "2024-06-01 08:00:00 +00:00",
                 "itblInternal.isUnknownUser": False,
                 "itblDS.brandAffinityLabel": "loyal",
                 "firstName": "Jane",
@@ -78,20 +82,23 @@ def test_events_extraction():
                 "email": "user@example.com",
                 "userId": "u123",
                 "itblUserId": "98765",
-                "signupDate": "2024-01-15 10:30:00 +0000",
+                "signupDate": "2024-01-15 10:30:00 +00:00",
                 "signupSource": "API",
-                "profileUpdatedAt": "2024-06-01 08:00:00 +0000",
+                "profileUpdatedAt": "2024-06-01 08:00:00 +00:00",
                 "emailListIds": [1, 2, 3],
                 "subscribedMessageTypeIds": [10],
                 "unsubscribedMessageTypeIds": [20],
                 "unsubscribedChannelIds": [30],
                 "phoneNumber": "+15551234567",
+                "whatsAppPhoneNumber": "+15551234567",
                 "country": "US",
+                "city": "New York",
+                "region": "NY",
                 "locale": "en_US",
                 "timeZone": "America/New_York",
                 "itblInternal.emailDomain": "example.com",
-                "itblInternal.documentCreatedAt": "2024-01-15 10:30:00 +0000",
-                "itblInternal.documentUpdatedAt": "2024-06-01 08:00:00 +0000",
+                "itblInternal.documentCreatedAt": "2024-01-15 10:30:00 +00:00",
+                "itblInternal.documentUpdatedAt": "2024-06-01 08:00:00 +00:00",
                 "itblInternal.isUnknownUser": False,
                 "itblDS.brandAffinityLabel": "loyal",
                 "data": {
@@ -142,14 +149,17 @@ def test_events_extraction():
                 "itblInternal.emailDomain": "test.io",
                 "itblInternal.isUnknownUser": True,
                 "itblInternal.newFutureField": "surprise",
+                "itblDS.predictiveGoals.purchase": 0.42,
             },
             {
                 "itblInternal.emailDomain": "test.io",
                 "itblInternal.isUnknownUser": True,
-                "itblInternal.newFutureField": "surprise",
-                "data": {},
+                "data": {
+                    "itblInternal.newFutureField": "surprise",
+                    "itblDS.predictiveGoals.purchase": 0.42,
+                },
             },
-            id="all_itblInternal_dotted_keys_preserved",
+            id="declared_itbl_keys_top_level_undeclared_ones_captured_in_data",
         ),
     ],
 )
@@ -167,3 +177,12 @@ def test_users_extraction(input_record, expected_output):
 
     assert len(records) == 1
     assert records[0] == expected_output
+
+
+def test_standard_fields_match_declared_schema():
+    """Guards against drift between the extractor's field routing and the declared schema:
+    a field kept top-level by the extractor but missing from the schema would be silently
+    dropped by destinations that materialize only declared fields."""
+    schema_path = Path(__file__).parent.parent / "source_iterable" / "schemas" / "users.json"
+    declared = set(json.loads(schema_path.read_text())["properties"]) - {"data"}
+    assert declared == set(UsersRecordExtractor.STANDARD_FIELDS)

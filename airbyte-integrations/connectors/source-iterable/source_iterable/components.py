@@ -31,8 +31,11 @@ class UsersRecordExtractor(DpathExtractor):
     Standard fields are those documented at:
     https://support.iterable.com/hc/en-us/articles/217744303-User-Profile-Fields-Used-by-Iterable
 
-    The Iterable export API returns `itblInternal.*` and `itblDS.*` as flat dotted
-    keys rather than nested objects, so those are preserved as-is at the top level.
+    The Iterable export API flattens nested objects into dotted keys (e.g.
+    `itblInternal.emailDomain`), so Iterable-internal fields are listed in their flat
+    dotted form. Keys not listed here - including Iterable-internal dotted keys that
+    are not declared in the stream schema - are routed into `data` so destinations
+    that materialize only declared fields never drop them.
     """
 
     # Fields documented by Iterable as managed or used for sending messages.
@@ -54,6 +57,9 @@ class UsersRecordExtractor(DpathExtractor):
             "unsubscribedChannelIds",
             "unsubscribedMessageTypeIds",
             "userListIds",
+            # Geolocation fields populated by Iterable from the user's IP
+            "city",
+            "region",
             # Fields used for sending messages
             "country",
             "devices",
@@ -62,11 +68,18 @@ class UsersRecordExtractor(DpathExtractor):
             "phoneNumber",
             "profile",
             "timeZone",
+            "whatsAppPhoneNumber",
+            # Iterable-internal fields (the export returns them as flat dotted keys)
+            "itblInternal.emailDomain",
+            "itblInternal.phoneCountry",
+            "itblInternal.phoneType",
+            "itblInternal.documentCreatedAt",
+            "itblInternal.documentUpdatedAt",
+            "itblInternal.isUnknownUser",
+            "itblDS.brandAffinityLabel",
+            "itblDS.predictiveGoals",
         }
     )
-
-    # itblInternal.* and itblDS.* come as flat dotted keys from the export API.
-    ITBL_PREFIXES = ("itblInternal.", "itblDS.")
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         jsonl_records = super().extract_records(response=response)
@@ -74,7 +87,7 @@ class UsersRecordExtractor(DpathExtractor):
             standard: dict[str, Any] = {}
             data: dict[str, Any] = {}
             for key, value in record_dict.items():
-                if key in self.STANDARD_FIELDS or key.startswith(self.ITBL_PREFIXES):
+                if key in self.STANDARD_FIELDS:
                     standard[key] = value
                 else:
                     data[key] = value
