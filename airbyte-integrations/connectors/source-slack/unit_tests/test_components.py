@@ -30,8 +30,7 @@ def test_join_channels(token_config, requests_mock, joined_channel, components_m
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": joined_channel})
     token = token_config["credentials"]["api_token"]
     authenticator = TokenAuthenticator(token)
-    channel_filter = token_config["channel_filter"]
-    stream = components_module.JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
+    stream = components_module.JoinChannelsStream(authenticator=authenticator)
     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"channel": "C061EG9SL", "channel_name": "general"})
     assert not list(records)
     assert mocked_request.called
@@ -76,7 +75,7 @@ def test_join_channels_make_join_channel_slice(token_config, components_module):
     assert retriever.make_join_channel_slice({"id": "C061EG9SL", "name": "general"}) == expected_slice
 
 
-def test_join_channel_read_success(requests_mock, token_config, joined_channel, caplog, components_module):
+def test_join_channel_read_success(requests_mock, token_config_without_channel_filter, joined_channel, caplog, components_module):
     join_response = {"ok": True, "channel": {"is_member": True, "id": "channel 2", "name": "test channel"}}
     mocked_request = requests_mock.post(url="https://slack.com/api/conversations.join", json=join_response)
     requests_mock.get(
@@ -84,7 +83,7 @@ def test_join_channel_read_success(requests_mock, token_config, joined_channel, 
         json={"channels": [{"is_member": True, "id": "channel 1"}, {"is_member": False, "id": "channel 2", "name": "test channel"}]},
     )
 
-    retriever = get_channels_retriever_instance(token_config, components_module)
+    retriever = get_channels_retriever_instance(token_config_without_channel_filter, components_module)
     assert len(list(retriever.read_records(records_schema={}))) == 2
     assert mocked_request.called
     assert mocked_request.last_request._request.body == b'{"channel": "channel 2"}'

@@ -90,6 +90,13 @@ def token_config() -> MutableMapping:
     return _token_config()
 
 
+@pytest.fixture
+def token_config_without_channel_filter() -> MutableMapping:
+    config = _token_config()
+    del config["channel_filter"]
+    return config
+
+
 def _oauth_config() -> MutableMapping:
     config = base_config()
     config.update(
