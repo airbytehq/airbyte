@@ -1,5 +1,21 @@
 # Airbyte Agents release notes
 
+## August 10, 2026
+
+Web app
+
+- Context Store status now warns you when your cached data is getting old, so you can tell at a glance whether your agents are searching fresh data or data that hasn't been updated in a while.
+- When setting up a connector's cached data fails, the credentials page now tells you whether it's something you can fix yourself, such as a configuration or sign-in problem, and lets you edit the connector right away instead of showing a generic failure.
+- Pages that check which features are available to your organization no longer stay stuck loading when that check is slow or unavailable. They now fall back to standard behavior and recover on their own.
+
+SDK
+
+- Downloading a document through a connector now returns readable text in manageable pages instead of one oversized response. Each page tells your agent how much text came back and whether more is available, so large files no longer overwhelm your agent.
+
+Connectors
+
+- You can now search GitHub by meaning, including issue descriptions, pull request descriptions, and comments, so your agents can find relevant discussions without matching exact keywords.
+
 ## July 21, 2026
 
 Web app
