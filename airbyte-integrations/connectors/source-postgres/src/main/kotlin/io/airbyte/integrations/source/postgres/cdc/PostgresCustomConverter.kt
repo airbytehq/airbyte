@@ -505,8 +505,8 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     }
 
     internal fun microsecondsToPgInterval(value: Number): PGInterval {
-        // Debezium may surface interval defaults as microseconds.
-        // The incoming value is microseconds; integer division discards any sub-second remainder.
+        // Debezium may surface interval defaults as microseconds; integer division below discards
+        // any sub-second remainder.
         val duration = Duration.ofSeconds(value.toLong() / 1_000_000)
 
         // Duration is a fixed-length amount and cannot be losslessly decomposed into calendar-aware
