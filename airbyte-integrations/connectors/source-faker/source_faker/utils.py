@@ -14,11 +14,8 @@ def read_json(filepath):
 
 
 def format_airbyte_time(d: datetime):
-    s = f"{d}"
-    s = s.split(".")[0]
-    s = s.replace(" ", "T")
-    s += "+00:00"
-    return s
+    s = f"{d}".split(".")[0].replace(" ", "T")
+    return f"{s}+00:00"
 
 
 def now_millis():
