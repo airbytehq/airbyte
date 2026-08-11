@@ -81,9 +81,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
 | 0.3.8 | 2026-08-11 | [84215](https://github.com/airbytehq/airbyte/pull/84215) | Promoted release candidate to GA |
-| 0.3.8-rc.5 | 2026-08-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Revert the concurrency work from 0.3.8-rc.1 through 0.3.8-rc.3: remove the API budget, concurrency level, and `num_workers` option. |
+| 0.3.8-rc.5 | 2026-08-11 | [84214](https://github.com/airbytehq/airbyte/pull/84214) | Revert the concurrency work from 0.3.8-rc.1 through 0.3.8-rc.3: remove the API budget, concurrency level, and `num_workers` option. |
 | 0.3.8-rc.4 | 2026-08-11 | [83816](https://github.com/airbytehq/airbyte/pull/83816) | Add missing application, candidate, and source fields to the declared schemas, and remove duplicated unreferenced manifest blocks. |
-| 0.3.8-rc.3 | 2026-05-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Decrease default concurrency to 2 and add explicit worker count plus API request budget for the next rollout. |
+| 0.3.8-rc.3 | 2026-05-26 | [78434](https://github.com/airbytehq/airbyte/pull/78434) | Decrease default concurrency to 2 and add explicit worker count plus API request budget for the next rollout. |
 | 0.3.8-rc.2 | 2026-05-21 | [78307](https://github.com/airbytehq/airbyte/pull/78307) | Decrease default concurrency to 3 after Phase 1 rollout monitoring found source-read regressions and a 429 retry warning. |
 | 0.3.8-rc.1 | 2026-05-18 | [77048](https://github.com/airbytehq/airbyte/pull/77048) | Add concurrency support with default_concurrency=4 for concurrent stream reads |
 | 0.3.7 | 2026-04-28 | [77144](https://github.com/airbytehq/airbyte/pull/77144) | Update dependencies |
