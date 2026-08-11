@@ -81,9 +81,7 @@ def test_resolution_user_owned_repo_registers_no_organization(requests_mock):
         json={"full_name": "someuser/repo", "owner": {"login": "someuser", "type": "User"}},
     )
 
-    organizations, repositories = _resolve(
-        {"credentials": {"personal_access_token": "test_token"}, "repositories": ["someuser/repo"]}
-    )
+    organizations, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["someuser/repo"]})
 
     assert repositories == ["someuser/repo"]
     assert organizations == []
@@ -153,9 +151,7 @@ def test_resolution_skip_404_repo(requests_mock):
         status_code=404,
     )
 
-    organizations, repositories = _resolve(
-        {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/missing-repo"]}
-    )
+    organizations, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/missing-repo"]})
 
     assert repositories == []
     assert organizations == []
@@ -201,9 +197,7 @@ def test_resolution_legacy_repository_field(requests_mock):
             json={"full_name": repo, "organization": {"login": "org"}},
         )
 
-    organizations, repositories = _resolve(
-        {"credentials": {"personal_access_token": "test_token"}, "repository": "org/repo1 org/repo2"}
-    )
+    organizations, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repository": "org/repo1 org/repo2"})
 
     assert repositories == ["org/repo1", "org/repo2"]
     assert organizations == ["org"]
@@ -247,9 +241,7 @@ def test_resolution_pagination_with_pattern_filter(requests_mock):
         [{"json": page1, "headers": _next_link(2)}, {"json": page2}],
     )
 
-    organizations, repositories = _resolve(
-        {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/source-*"]}
-    )
+    organizations, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/source-*"]})
 
     assert repositories == ["org/source-github", "org/source-mysql"]
     assert organizations == ["org"]
