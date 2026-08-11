@@ -32,7 +32,7 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 2. Generate an API key following the [Ashby authentication guide](https://developers.ashbyhq.com/reference/authentication). Grant the API key read permissions for the modules listed in the prerequisites. At minimum, you must enable the **Organization** read permission (required for the connection check) plus read permissions for any additional modules whose streams you want to sync.
 3. In Airbyte, create a new Ashby source.
 4. Enter your **API key**.
-5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector only replicates data created on or after this date for the `applications` and `interview_schedules` streams.
+5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `applications` and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations`, because that stream reads the same filtered application list to decide which applications to request evaluations for. All other streams ignore the start date and always return everything the API exposes.
 
 ## Supported sync modes
 
@@ -40,6 +40,8 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 | :--- | :--- |
 | Full Refresh | Yes |
 | Incremental - Append | No |
+
+Every sync re-reads each selected stream in full, subject to the start date where it applies. The Ashby `.list` endpoints support incremental sync through a `syncToken`, but this connector doesn't use it.
 
 ## Supported streams
 
@@ -63,11 +65,13 @@ This source syncs the following streams:
 - [sources](https://developers.ashbyhq.com/reference/sourcelist)
 - [users](https://developers.ashbyhq.com/reference/userlist)
 
-The `application_criteria_evaluations` stream fetches AI-generated criteria evaluations for applications that are in the Application Review interview stage and have an active status. It uses the `applicationId` from the parent `applications` stream.
+The `application_criteria_evaluations` stream is a substream of `applications`. The connector requests evaluations only for applications whose current interview stage has the type `PreInterviewScreen` and whose status is neither `Archived` nor `Hired`, so it doesn't cover every application in your account. Each record carries an `application_id` field copied from the parent application, which is how you join evaluations back to `applications`. This stream has no primary key.
 
 ## Performance considerations
 
-The Ashby connector should not run into Ashby API limitations under normal usage.
+Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time. If Ashby does throttle your API key, the connector retries `429` responses.
+
+All requests count against your Ashby organization, not just Airbyte. If you share an API key with other integrations, sync large streams like `candidates` and `applications` on a schedule that leaves room for them.
 
 ## IP allow list
 
