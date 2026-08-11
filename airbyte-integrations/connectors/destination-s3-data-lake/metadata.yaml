@@ -47,7 +47,12 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   supportLevel: certified
   supportsRefreshes: true
   tags:

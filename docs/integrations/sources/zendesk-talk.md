@@ -95,6 +95,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |:--|:--|:--|:--|
+| 2.0.23 | 2026-08-11 | [84187](https://github.com/airbytehq/airbyte/pull/84187) | Update dependencies |
 | 2.0.22 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 2.0.21 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.0.19 — 2.0.20 is built on SDM 7.23.7, which breaks bundled custom components |
 | 2.0.20 | 2026-07-28 | [83181](https://github.com/airbytehq/airbyte/pull/83181) | Update dependencies |
