@@ -16,8 +16,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
-import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
+import io.airbyte.integrations.destination.bigquery.toConfigExceptionIfNeeded
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import kotlin.math.min
@@ -158,13 +158,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                     try {
                         BigQueryUtils.getOrCreateDataset(bq, dataset, datasetLocation)
                     } catch (e: BigQueryException) {
-                        if (
-                            ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES.contains(e.code)
-                        ) {
-                            throw ConfigErrorException(e.message!!, e)
-                        } else {
-                            throw e
-                        }
+                        throw e.toConfigExceptionIfNeeded()
                     }
                 }
             }
