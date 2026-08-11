@@ -25,7 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
 # (stream name, endpoint segment under repos/{repository}/, primary key)
@@ -44,7 +43,7 @@ def _config(*repositories):
     return {**_TOKEN_CONFIG, "repositories": list(repositories)}
 
 
-def _catalog(stream_name):
+def _catalog(*stream_names):
     return ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -52,22 +51,31 @@ def _catalog(stream_name):
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             )
+            for stream_name in stream_names
         ]
     )
 
 
-def _read(config, stream_name):
-    catalog = _catalog(stream_name)
+def _read_messages(config, *stream_names):
+    """Return (messages, error); the caller decides what to assert on."""
+    catalog = _catalog(*stream_names)
     source = SourceGithub(config=dict(config), catalog=catalog, state=[])
-    records, statuses, error = [], [], None
+    messages, error = [], None
     try:
+        # Appended one at a time so the messages emitted before a failure are still available.
         for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []):
-            if message.type == Type.RECORD:
-                records.append(message.record.data)
-            if message.type == Type.TRACE and message.trace.stream_status:
-                statuses.append(message.trace.stream_status.status.value)
+            messages.append(message)
     except Exception as exc:  # noqa: BLE001 - the assertions inspect the failure
         error = exc
+    return messages, error
+
+
+def _read(config, stream_name):
+    messages, error = _read_messages(config, stream_name)
+    records = [message.record.data for message in messages if message.type == Type.RECORD]
+    statuses = [
+        message.trace.stream_status.status.value for message in messages if message.type == Type.TRACE and message.trace.stream_status
+    ]
     return records, statuses, error
 
 
@@ -112,11 +120,13 @@ def test_stream_reads_every_repository_and_injects_repository(stream_name, endpo
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint", "primary_key"), MIGRATED_STREAMS)
-def test_stream_primary_key_matches_legacy(stream_name, endpoint, primary_key, rate_limit_mock_response, requests_mock):
+def test_stream_primary_key_matches_legacy(stream_name, endpoint, primary_key):
     """The primary keys the Python classes declared must survive the migration, otherwise
     existing destinations would start deduplicating on a different key."""
-    source = SourceGithub(config=_config("airbytehq/airbyte"))
-    manifest_streams = {stream.name: stream for stream in YamlDeclarativeSource.streams(source, config=_config("airbytehq/airbyte"))}
+    config = _config("airbytehq/airbyte")
+    source = SourceGithub(config=config)
+    # `super()` skips `SourceGithub.streams()`, which returns the Python streams only.
+    manifest_streams = {stream.name: stream for stream in super(SourceGithub, source).streams(config=config)}
 
     airbyte_stream = manifest_streams[stream_name].as_airbyte_stream()
     assert airbyte_stream.source_defined_primary_key == [[field] for field in primary_key]
@@ -162,28 +172,60 @@ def test_pagination_follows_link_header(rate_limit_mock_response, requests_mock)
 
 
 @pytest.mark.parametrize(
-    ("status_code", "body"),
+    ("status_code", "body", "expected_log"),
     [
-        (404, {"message": "Not Found"}),
-        (403, {"message": "Resource not accessible by personal access token"}),
-        (409, {"message": "Git Repository is empty."}),
+        (404, {"message": "Not Found"}, "Syncing this stream isn't available"),
+        (403, {"message": "Resource not accessible by personal access token"}, "GitHub denied access to this repository"),
+        (409, {"message": "Git Repository is empty."}, "The repository is likely empty"),
     ],
 )
 @patch("time.sleep")
-def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, rate_limit_mock_response, requests_mock):
+def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, expected_log, rate_limit_mock_response, requests_mock, caplog):
     """Legacy warned and continued on 404/403/409 for a single repository (streams.py
     `GithubStreamABC.read_records`). One unreadable repository must not fail the stream or
-    drop the repositories that follow it."""
+    drop the repositories that follow it, and the skip must leave a trace in the log."""
     config = _config("ghost/deleted-repo", "docker/compose")
     _mock_repository_resolution(requests_mock, *config["repositories"])
     requests_mock.get("https://api.github.com/repos/ghost/deleted-repo/tags", status_code=status_code, json=body)
     requests_mock.get("https://api.github.com/repos/docker/compose/tags", json=[{"name": "v1"}])
 
-    records, statuses, error = _read(config, "tags")
+    with caplog.at_level(logging.INFO):
+        records, statuses, error = _read(config, "tags")
 
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert [record["repository"] for record in records] == ["docker/compose"]
+    # The declarative IGNORE path logs the filter's `error_message` at INFO. It carries no slice
+    # context, so this cannot assert *which* repository was skipped — see the "KNOWN GAP" note in
+    # the manifest's error-handling block.
+    assert any(expected_log in message for message in caplog.messages)
+
+
+@patch("time.sleep")
+def test_repeated_502_fails_the_stream(sleep_mock, rate_limit_mock_response, requests_mock):
+    """Deliberate divergence from legacy, pinned here so it cannot change silently.
+
+    5xx is left to the CDK default mapping (RETRY), so a repository that keeps returning 502
+    fails the stream once the retries are exhausted. Legacy retried the same way but
+    `GithubStreamABC.read_records` caught the exhausted-retries exception for 502/504, warned and
+    moved on — reporting a COMPLETE sync with that repository's records missing. See the
+    "DELIBERATE DIVERGENCE" note in the manifest's error-handling block.
+    """
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    listing = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/tags",
+        status_code=502,
+        json={"message": "Server Error"},
+    )
+
+    records, statuses, error = _read(config, "tags")
+
+    assert records == []
+    assert statuses[-1] == "INCOMPLETE"
+    assert error is not None
+    # Retried before giving up rather than skipping the repository on the first blip.
+    assert listing.call_count > 1
 
 
 @patch("time.sleep")
@@ -211,6 +253,32 @@ def test_secondary_rate_limit_403_is_retried_not_skipped(sleep_mock, rate_limit_
     assert statuses[-1] == "COMPLETE"
     assert [record["name"] for record in records] == ["v1"]
     assert max(call.args[0] for call in sleep_mock.call_args_list) > 100
+
+
+def test_repository_resolution_is_shared_across_streams(rate_limit_mock_response, requests_mock):
+    """Every migrated stream builds its own copy of the partition router, so without the
+    resolver's `use_cache: true` a five-stream catalog would resolve each repository five times.
+
+    `num_workers: 1` pins the count: concurrent streams can race on a cold cache and duplicate a
+    few resolutions, so at the default concurrency this is "roughly one request per repository",
+    not exactly one.
+    """
+    config = {**_config("airbytehq/airbyte", "docker/compose"), "num_workers": 1}
+    _mock_repository_resolution(requests_mock, *config["repositories"])
+    for _, endpoint, _ in MIGRATED_STREAMS:
+        for repository in config["repositories"]:
+            requests_mock.get(f"https://api.github.com/repos/{repository}/{endpoint}", json=[{"id": 1, "name": "first"}])
+
+    stream_names = [name for name, _, _ in MIGRATED_STREAMS]
+    messages, error = _read_messages(config, *stream_names)
+
+    assert error is None
+    records = [message.record for message in messages if message.type == Type.RECORD]
+    assert {record.stream for record in records} == set(stream_names)
+
+    resolution_paths = [f"/repos/{repository}" for repository in config["repositories"]]
+    resolutions = [request.path for request in requests_mock.request_history if request.path in resolution_paths]
+    assert sorted(resolutions) == sorted(resolution_paths)
 
 
 def test_repository_404_during_resolution_does_not_fail_the_stream(rate_limit_mock_response, requests_mock):

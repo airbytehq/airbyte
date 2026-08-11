@@ -80,6 +80,24 @@ definitions:
   # separate definitions composed into the two handlers at the end of this block.
   # `DefaultErrorHandler` returns the first matching filter, which is why order matters
   # and why every handler lists the rate-limit filters first.
+  #
+  # DELIBERATE DIVERGENCE — 502/504 after retries. Both handlers leave 5xx to the CDK default
+  # mapping, so a repository that keeps returning 502/504 is retried and then fails the stream.
+  # Legacy retried the same way but `GithubStreamABC.read_records` caught the exhausted-retries
+  # `AirbyteTracedException` for 502/504, logged a warning and moved on to the next repository
+  # (streams.py:196-207), i.e. it reported a COMPLETE sync with that repository's records
+  # silently missing. Failing the stream is the better contract, and
+  # `SourceGithub.continue_sync_on_stream_failure` keeps the other streams going. Parity is not
+  # reachable declaratively anyway: `DefaultErrorHandler` has no "retry N times, then ignore",
+  # and a `502/504 -> IGNORE` filter would drop the repository on the *first* blip instead of
+  # retrying it. Pinned by `test_repeated_502_fails_the_stream`.
+  #
+  # KNOWN GAP — skip logging. The `IGNORE` path logs the filter's `error_message` at INFO with
+  # no slice context, whereas legacy logged `Skipping <stream> for repository <repo>` at
+  # WARNING. `HttpResponseFilter.error_message` only interpolates `response` and `headers`, so
+  # neither the stream name nor `stream_partition` is reachable from here. Follow-up: give
+  # `HttpResponseFilter` access to the stream slice in the CDK (same bucket as the token
+  # rotation follow-up noted below).
   rate_limit_backoff_strategies:
     - type: WaitTimeFromHeader
       header: "Retry-After"

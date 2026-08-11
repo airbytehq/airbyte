@@ -441,6 +441,10 @@ class Branches(GithubStream):
     branches exist per repository before slicing. It is not returned by
     `SourceGithub.streams()` and is not part of the catalog.
 
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
+    `schemas/branches.json`; `get_json_schema` is overridden below so the class stays usable
+    (the base implementation would raise `FileNotFoundError`).
+
     API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
     """
 
@@ -448,6 +452,19 @@ class Branches(GithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/branches"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `Commits` only reads `repository` and `name` off these records, and this stream is
+        # never discovered or validated against a schema. The user-facing schema is the inline
+        # one in `manifest.yaml`, so duplicating it here would only give it a chance to drift.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "name": {"type": ["null", "string"]},
+            },
+        }
 
 
 class Organizations(GithubStreamABC):

@@ -1111,6 +1111,18 @@ def test_stream_comments(requests_mock):
     }
 
 
+def test_branches_technical_stream_still_answers_get_json_schema():
+    """`Branches` is kept only so `Commits` can discover branches, and its schema file was
+    deleted when the user-facing `branches` stream moved to the manifest. The class overrides
+    `get_json_schema` so it does not fall back to the now-missing `schemas/branches.json`."""
+    stream = Branches(repositories=["organization/repository"], page_size_for_large_streams=100)
+
+    schema = stream.get_json_schema()
+
+    assert schema["type"] == "object"
+    assert set(stream.primary_key) <= set(schema["properties"])
+
+
 def test_streams_read_full_refresh(requests_mock):
     repository_args = {
         "repositories": ["organization/repository"],

@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from source_github import SourceGithub
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -99,7 +99,7 @@ class AssigneesTest(TestCase):
 
         # A full-refresh declarative stream checkpoints once, at the end, with no cursor value.
         assert len(actual_messages.state_messages) == 1
-        assert vars(actual_messages.state_messages[0].state.stream.stream_state) == {"__ab_no_cursor_state_message": True}
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob({"__ab_no_cursor_state_message": True})
 
     def test_read_ignores_legacy_resumable_full_refresh_state(self):
         """State written by the Python implementation carried a per-repository
