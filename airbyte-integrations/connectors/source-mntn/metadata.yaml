@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a3a24742-a9f3-44f5-90b6-82a888063466
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-mntn
   githubIssueLabel: source-mntn
   icon: icon.svg
