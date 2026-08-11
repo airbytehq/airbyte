@@ -305,9 +305,9 @@ The `rule` field in the `Custom Audiences` stream may not be synced for all reco
 :::
 
 :::info Ad Creatives From Ads
-The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema is identical to `ad_creatives`, but this stream only returns creatives associated with ads — orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
+The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema matches `ad_creatives` with one addition - an `updated_time` field carrying the parent ad's timestamp - but this stream only returns creatives associated with ads; orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
 
-When using incremental sync, the cursor is the parent ad's `updated_time` because AdCreative does not expose a timestamp of its own. As a result, in-place creative changes or edits to the page post behind `effective_object_story_id` may not be captured; use full refresh to capture those changes.
+When using incremental sync, the cursor is the parent ad's `updated_time` because AdCreative does not expose a timestamp of its own. Content changes always create a new creative and are picked up, but in-place renames, status or ad-label changes on a creative, and edits to the page post behind `effective_object_story_id` may not move the parent ad's timestamp and can be missed; use full refresh to capture those changes. The first incremental sync always reads the full ads history to seed the cursor (the `start_date` setting is not applied to this stream), so the time savings begin with the second sync.
 :::
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:

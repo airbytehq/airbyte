@@ -4,8 +4,8 @@
 
 import base64
 import logging
-from datetime import datetime
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from datetime import datetime, timedelta
+from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple
 
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
@@ -178,30 +178,37 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
         failed_creative_ids: Set[str] = set()
-        successful_cursors = {}
-        earliest_failed_cursor = None
+        max_successful_cursor: Optional[Tuple[AirbyteDateTime, str]] = None
+        earliest_failed_cursor: Optional[AirbyteDateTime] = None
         failed_ad_without_cursor = False
 
         # Bypass incremental read_records to checkpoint state after the full slice and creative fetches.
         for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
             updated_time = ad_record.get(self.cursor_field)
+            try:
+                parsed_updated_time = ab_datetime_parse(updated_time) if updated_time is not None else None
+            except (ValueError, TypeError):
+                # A malformed timestamp must not abort the whole account slice; treat it as a missing cursor.
+                logger.warning(
+                    f"Stream {self.name}: ad {ad_record.get('id')} has an unparsable {self.cursor_field} "
+                    f"{updated_time!r}; treating it as missing so the cursor cannot advance past this ad."
+                )
+                parsed_updated_time = None
 
             creative_id = ad_record.get("creative", {}).get("id")
             if not creative_id:
                 continue
 
             if creative_id in failed_creative_ids:
-                if updated_time is not None:
-                    failed_cursor = ab_datetime_parse(updated_time)
-                    earliest_failed_cursor = failed_cursor if earliest_failed_cursor is None else min(earliest_failed_cursor, failed_cursor)
-                else:
+                if parsed_updated_time is None:
                     failed_ad_without_cursor = True
+                elif earliest_failed_cursor is None or parsed_updated_time < earliest_failed_cursor:
+                    earliest_failed_cursor = parsed_updated_time
                 continue
 
             if creative_id in self._seen_creative_ids:
-                if updated_time is not None:
-                    parsed_updated_time = ab_datetime_parse(updated_time)
-                    successful_cursors[parsed_updated_time] = updated_time
+                if parsed_updated_time is not None and (max_successful_cursor is None or parsed_updated_time > max_successful_cursor[0]):
+                    max_successful_cursor = (parsed_updated_time, updated_time)
                 continue
 
             self._seen_creative_ids.add(creative_id)
@@ -209,16 +216,14 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
                 failed_creative_ids.add(creative_id)
-                if updated_time is not None:
-                    failed_cursor = ab_datetime_parse(updated_time)
-                    earliest_failed_cursor = failed_cursor if earliest_failed_cursor is None else min(earliest_failed_cursor, failed_cursor)
-                else:
+                if parsed_updated_time is None:
                     failed_ad_without_cursor = True
+                elif earliest_failed_cursor is None or parsed_updated_time < earliest_failed_cursor:
+                    earliest_failed_cursor = parsed_updated_time
                 continue
 
-            if updated_time is not None:
-                parsed_updated_time = ab_datetime_parse(updated_time)
-                successful_cursors[parsed_updated_time] = updated_time
+            if parsed_updated_time is not None and (max_successful_cursor is None or parsed_updated_time > max_successful_cursor[0]):
+                max_successful_cursor = (parsed_updated_time, updated_time)
 
             self.fix_date_time(creative_data)
             creative_data[self.cursor_field] = updated_time
@@ -231,19 +236,34 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
             self.add_account_id(creative_data, stream_slice["account_id"])
             yield creative_data
 
-        if successful_cursors and not failed_ad_without_cursor:
-            eligible_cursors = (
-                (cursor, raw_cursor)
-                for cursor, raw_cursor in successful_cursors.items()
-                if earliest_failed_cursor is None or cursor < earliest_failed_cursor
+        if failed_creative_ids:
+            logger.warning(
+                f"Stream {self.name}: {len(failed_creative_ids)} creative fetch(es) failed for account "
+                f"{stream_slice['account_id']}; the incremental cursor will not advance past the earliest failed ad, "
+                f"so the failed creatives are retried on the next sync. If the same creative fails on every sync, "
+                f"the cursor stays pinned and the stream keeps re-reading from that point."
             )
-            checkpoint_cursor = max(eligible_cursors, default=None)
-            if checkpoint_cursor is not None:
-                _, raw_cursor = checkpoint_cursor
-                self.state = self._get_updated_state(
-                    self.state,
-                    {"account_id": stream_slice["account_id"], self.cursor_field: raw_cursor},
-                )
+
+        # The CDK assigns persisted state and picks a checkpoint reader from the catalog's cursor_field alone, so a
+        # full refresh would otherwise emit a real cursor and let a retried attempt resume filtered and partial.
+        if sync_mode != SyncMode.incremental:
+            return
+
+        if max_successful_cursor is None or failed_ad_without_cursor:
+            return
+
+        max_parsed, max_raw = max_successful_cursor
+        if earliest_failed_cursor is not None and max_parsed >= earliest_failed_cursor:
+            # Facebook cursors are second-precision and the filter is a strict GREATER_THAN, so rewinding one second
+            # before the earliest failure re-reads every ad at that timestamp without ever skipping a success.
+            checkpoint_value = str(earliest_failed_cursor - timedelta(seconds=1))
+        else:
+            checkpoint_value = max_raw
+
+        self.state = self._get_updated_state(
+            self.state,
+            {"account_id": stream_slice["account_id"], self.cursor_field: checkpoint_value},
+        )
 
 
 class CustomConversions(FBMarketingStream):

@@ -23,7 +23,7 @@ from source_facebook_marketing.streams import (
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
 from source_facebook_marketing.streams.streams import AdAccount, AdCreativesFromAds, fetch_thumbnail_data_url
 
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
@@ -442,7 +442,7 @@ def test_ad_creatives_from_ads_emits_parent_updated_time_and_advances_state(api,
 
     records = list(
         stream.read_records(
-            sync_mode="full_refresh",
+            sync_mode=SyncMode.incremental,
             stream_slice={"account_id": some_config["account_ids"][0], "stream_state": {}},
             stream_state={},
         )
@@ -468,7 +468,7 @@ def test_ad_creatives_from_ads_parent_without_updated_time_does_not_crash(api, s
 
     records = list(
         stream.read_records(
-            sync_mode="full_refresh",
+            sync_mode=SyncMode.incremental,
             stream_slice={"account_id": some_config["account_ids"][0], "stream_state": {}},
             stream_state={},
         )
@@ -514,13 +514,14 @@ def test_ad_creatives_from_ads_failed_fetch_does_not_advance_past_failed_cursor(
 
     list(
         stream.read_records(
-            sync_mode="full_refresh",
+            sync_mode=SyncMode.incremental,
             stream_slice={"account_id": account_id, "stream_state": {}},
             stream_state={},
         )
     )
 
-    assert stream.state[account_id]["updated_time"] == "2021-01-22T00:00:00+00:00"
+    # The latest success (01-25) sits after the failure, so the cursor rewinds to one second before it.
+    assert stream.state[account_id]["updated_time"] == "2021-01-22T23:59:59+00:00"
 
 
 def test_ad_creatives_from_ads_all_failed_fetches_leave_state_untouched(api, some_config, mocker):
@@ -545,7 +546,7 @@ def test_ad_creatives_from_ads_all_failed_fetches_leave_state_untouched(api, som
 
     list(
         stream.read_records(
-            sync_mode="full_refresh",
+            sync_mode=SyncMode.incremental,
             stream_slice={"account_id": account_id, "stream_state": {}},
             stream_state={},
         )
@@ -586,7 +587,7 @@ def test_ad_creatives_from_ads_repeated_failed_creative_remains_a_failure(api, s
 
     list(
         stream.read_records(
-            sync_mode="full_refresh",
+            sync_mode=SyncMode.incremental,
             stream_slice={"account_id": account_id, "stream_state": {}},
             stream_state={},
         )
@@ -618,13 +619,179 @@ def test_ad_creatives_from_ads_ad_without_creative_does_not_hold_cursor_back(api
 
     list(
         stream.read_records(
-            sync_mode="full_refresh",
+            sync_mode=SyncMode.incremental,
             stream_slice={"account_id": account_id, "stream_state": {}},
             stream_state={},
         )
     )
 
     assert stream.state[account_id]["updated_time"] == "2021-01-23T00:00:00+00:00"
+
+
+def test_ad_creatives_from_ads_success_equal_to_failed_cursor_rewinds_before_failure(api, some_config, mocker):
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    account_id = some_config["account_ids"][0]
+    parent_ads = [
+        {
+            "id": "ad-success",
+            "creative": {"id": "creative-success"},
+            "updated_time": "2021-01-23T00:00:00+00:00",
+            "account_id": account_id,
+        },
+        {
+            "id": "ad-failure",
+            "creative": {"id": "creative-failure"},
+            "updated_time": "2021-01-23T00:00:00+00:00",
+            "account_id": account_id,
+        },
+    ]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(stream, "_fetch_creative_details", side_effect=[{"id": "creative-success"}, None])
+
+    list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"account_id": account_id, "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    # Checkpointing the shared timestamp would filter the failed creative out of the next sync forever, so the
+    # cursor must land strictly before it. The GREATER_THAN filter then re-reads both ads at 2021-01-23.
+    assert stream.state[account_id]["updated_time"] == "2021-01-22T23:59:59+00:00"
+
+
+def test_ad_creatives_from_ads_failed_ad_without_cursor_blocks_checkpointing(api, some_config, mocker):
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    account_id = some_config["account_ids"][0]
+    parent_ads = [
+        {
+            "id": "ad-success",
+            "creative": {"id": "creative-success"},
+            "updated_time": "2021-01-25T00:00:00+00:00",
+            "account_id": account_id,
+        },
+        {
+            "id": "ad-failure-without-updated-time",
+            "creative": {"id": "creative-failure"},
+            "account_id": account_id,
+        },
+    ]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(stream, "_fetch_creative_details", side_effect=[{"id": "creative-success"}, None])
+
+    list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"account_id": account_id, "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    # A failed creative with no cursor cannot be placed on the timeline, so no cursor is safe to checkpoint.
+    assert stream.state == {}
+
+
+def test_ad_creatives_from_ads_re_referenced_successful_creative_advances_cursor(api, some_config, mocker):
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    account_id = some_config["account_ids"][0]
+    parent_ads = [
+        {
+            "id": "ad-1",
+            "creative": {"id": "creative-1"},
+            "updated_time": "2021-01-20T00:00:00+00:00",
+            "account_id": account_id,
+        },
+        {
+            "id": "ad-2",
+            "creative": {"id": "creative-2"},
+            "updated_time": "2021-01-24T00:00:00+00:00",
+            "account_id": account_id,
+        },
+        {
+            "id": "ad-3",
+            "creative": {"id": "creative-1"},
+            "updated_time": "2021-01-28T00:00:00+00:00",
+            "account_id": account_id,
+        },
+    ]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(stream, "_fetch_creative_details", side_effect=lambda creative_id: {"id": creative_id})
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"account_id": account_id, "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    # ad-3 is deduplicated away, but it is the only source of the slice's latest cursor.
+    assert [record["id"] for record in records] == ["creative-1", "creative-2"]
+    assert stream.state[account_id]["updated_time"] == "2021-01-28T00:00:00+00:00"
+
+
+@pytest.mark.parametrize("sync_mode", ["full_refresh", SyncMode.full_refresh], ids=["string", "enum"])
+def test_ad_creatives_from_ads_full_refresh_does_not_advance_state(api, some_config, mocker, sync_mode):
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    account_id = some_config["account_ids"][0]
+    parent_ads = [
+        {
+            "id": "ad-1",
+            "creative": {"id": "creative-1"},
+            "updated_time": "2021-01-23T00:00:00+00:00",
+            "account_id": account_id,
+        },
+        {
+            "id": "ad-2",
+            "creative": {"id": "creative-2"},
+            "updated_time": "2021-01-25T00:00:00+00:00",
+            "account_id": account_id,
+        },
+    ]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(stream, "_fetch_creative_details", side_effect=lambda creative_id: {"id": creative_id})
+
+    records = list(
+        stream.read_records(
+            sync_mode=sync_mode,
+            stream_slice={"account_id": account_id, "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    # The CDK checkpoints whatever state the stream exposes, so a full refresh must not publish a cursor:
+    # a retried attempt would otherwise resume filtered and silently return a partial full refresh.
+    assert len(records) == 2
+    assert stream.state == {}
+
+
+def test_ad_creatives_from_ads_unparsable_updated_time_is_treated_as_missing(api, some_config, mocker):
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"], start_date=None, end_date=None)
+    account_id = some_config["account_ids"][0]
+    parent_ads = [
+        {
+            "id": "ad-malformed",
+            "creative": {"id": "creative-1"},
+            "updated_time": "not-a-date",
+            "account_id": account_id,
+        },
+    ]
+    mocker.patch("source_facebook_marketing.streams.base_streams.FBMarketingStream.read_records", return_value=iter(parent_ads))
+    mocker.patch.object(stream, "_fetch_creative_details", return_value={"id": "creative-1"})
+
+    records = list(
+        stream.read_records(
+            sync_mode=SyncMode.incremental,
+            stream_slice={"account_id": account_id, "stream_state": {}},
+            stream_state={},
+        )
+    )
+
+    # A malformed timestamp from the API must not abort the account slice; the record is still emitted and the
+    # unusable cursor is simply never checkpointed.
+    assert [record["id"] for record in records] == ["creative-1"]
+    assert stream.state == {}
 
 
 @pytest.mark.parametrize(
