@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 57e906dd-03c3-4d2a-8b4c-e3334acaf8b4
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-ramp
   githubIssueLabel: source-ramp
   icon: icon.svg
