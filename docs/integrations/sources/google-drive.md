@@ -326,6 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.29 | 2026-08-11 | [PRNUM](https://github.com/airbytehq/airbyte/pull/PRNUM) | Resolve Google-native export extensions before computing file-transfer paths |
 | 0.5.27 | 2026-08-04 | [83492](https://github.com/airbytehq/airbyte/pull/83492) | Update dependencies |
 | 0.5.26 | 2026-07-28 | [82943](https://github.com/airbytehq/airbyte/pull/82943) | Update dependencies |
 | 0.5.25 | 2026-07-21 | [82459](https://github.com/airbytehq/airbyte/pull/82459) | Update dependencies |

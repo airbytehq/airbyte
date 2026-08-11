@@ -12,6 +12,7 @@ import pytest
 from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
 from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
 
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
@@ -959,6 +960,7 @@ def test_open_file(
         pytest.param(
             GoogleDriveRemoteFile(
                 uri="testdoc_google",
+                export_extension=".docx",
                 last_modified=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
                 created_at=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -976,6 +978,7 @@ def test_open_file(
         pytest.param(
             GoogleDriveRemoteFile(
                 uri="testdoc_presentation",
+                export_extension=".pptx",
                 last_modified=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
                 created_at=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
                 mime_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -1135,3 +1138,173 @@ def test_source_uri_format(
 
     file_record_data, _ = create_reader().upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
     assert file_record_data.source_uri == expected_source_uri
+
+
+def _mock_listing_service(files):
+    mock_request = MagicMock()
+    mock_request.execute.return_value = {"files": files}
+    files_service = MagicMock()
+    files_service.list.return_value = mock_request
+    files_service.list_next.return_value = None
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    return drive_service
+
+
+def create_file_transfer_reader():
+    return create_reader(
+        SourceGoogleDriveSpec(
+            folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+            streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+            credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+            delivery_method=DeliverRawFiles(),
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "mime_type, extension",
+    [
+        ("application/vnd.google-apps.document", ".docx"),
+        ("application/vnd.google-apps.spreadsheet", ".xlsx"),
+        ("application/vnd.google-apps.presentation", ".pptx"),
+        ("application/vnd.google-apps.drawing", ".pdf"),
+    ],
+)
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_source_file_relative_path_appends_export_extension(mock_build_service, mock_service_account, mime_type, extension):
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "file-id",
+                "mimeType": mime_type,
+                "name": "Document",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            }
+        ]
+    )
+
+    file = next(iter(create_file_transfer_reader().get_matching_files(["*"], None, MagicMock())))
+
+    assert file.uri == "Document"
+    assert file.source_file_relative_path == f"Document{extension}"
+    assert file.export_extension == extension
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_source_file_relative_path_is_uri_for_binary_files(mock_build_service, mock_service_account):
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "file-id",
+                "mimeType": "text/csv",
+                "name": "notes.csv",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            }
+        ]
+    )
+
+    file = next(iter(create_file_transfer_reader().get_matching_files(["*"], None, MagicMock())))
+
+    assert file.uri == "notes.csv"
+    assert file.export_extension is None
+    assert file.source_file_relative_path == file.uri
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_records_mode_does_not_append_extension(mock_build_service, mock_service_account):
+    config = SourceGoogleDriveSpec(
+        folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+        streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+        credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+        delivery_method=DeliverRecords(),
+    )
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "file-id",
+                "mimeType": "application/vnd.google-apps.document",
+                "name": "Report",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            }
+        ]
+    )
+
+    file = next(iter(create_reader(config).get_matching_files(["*"], None, MagicMock())))
+
+    assert file.uri == "Report"
+    assert file.export_extension is None
+    assert file.source_file_relative_path == file.uri
+
+
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_upload_paths_unchanged_for_exportable_documents(mock_build_service, mock_service_account, mock_basedownload, tmp_path):
+    file = GoogleDriveRemoteFile(
+        uri="docs/Report",
+        export_extension=".docx",
+        last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+        created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
+        mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        id="report",
+        original_mime_type="application/vnd.google-apps.document",
+        view_link="https://docs.google.com/document/d/report/edit",
+    )
+    mock_request = MagicMock()
+    mock_downloader = MagicMock()
+    mock_downloader.next_chunk.side_effect = [
+        (MagicMock(resumable_progress=0, total_size=4), False),
+        (MagicMock(resumable_progress=4, total_size=4), True),
+    ]
+    mock_basedownload.return_value = mock_downloader
+    files_service = MagicMock()
+    files_service.get.return_value.execute.return_value = {"size": 4}
+    files_service.export_media.return_value = mock_request
+    mock_build_service.return_value.files.return_value = files_service
+
+    file_record_data, file_reference = create_reader().upload(file, str(tmp_path), MagicMock())
+
+    assert file_reference.staging_file_url == f"{tmp_path}/docs/Report.docx"
+    assert file_reference.source_file_relative_path == "docs/Report.docx"
+    assert file_record_data.file_name == "Report.docx"
+    assert file_record_data.folder == "docs"
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_google_native_and_binary_with_same_final_name_collide(mock_build_service, mock_service_account):
+    mock_build_service.return_value = _mock_listing_service(
+        [
+            {
+                "id": "google-doc",
+                "mimeType": "application/vnd.google-apps.document",
+                "name": "Report",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/file-id",
+            },
+            {
+                "id": "binary-docx",
+                "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "name": "Report.docx",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/binary-docx",
+            },
+        ]
+    )
+
+    files = list(create_file_transfer_reader().get_matching_files(["*"], None, MagicMock()))
+
+    assert [file.uri for file in files] == ["Report", "Report.docx"]
+    assert [file.source_file_relative_path for file in files] == ["Report.docx", "Report.docx"]
