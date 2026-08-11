@@ -80,7 +80,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.4.17 | 2026-08-11 | [83815](https://github.com/airbytehq/airbyte/pull/83815) | Persist OAuth token expiry on initial authentication so the first sync no longer refreshes and rotates away the single-use refresh token |
+| 0.4.18 | 2026-08-11 | [83815](https://github.com/airbytehq/airbyte/pull/83815) | Persist OAuth token expiry on initial authentication so the first sync no longer refreshes and rotates away the single-use refresh token |
+| 0.4.17 | 2026-08-11 | [84171](https://github.com/airbytehq/airbyte/pull/84171) | Update dependencies |
 | 0.4.16 | 2026-08-04 | [83672](https://github.com/airbytehq/airbyte/pull/83672) | Update dependencies |
 | 0.4.15 | 2026-07-28 | [83184](https://github.com/airbytehq/airbyte/pull/83184) | Update dependencies |
 | 0.4.14 | 2026-07-21 | [82657](https://github.com/airbytehq/airbyte/pull/82657) | Update dependencies |
