@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 897ba953-4c86-4e5e-a7a6-e7a006087233
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-dust
   githubIssueLabel: source-dust
   icon: icon.svg
