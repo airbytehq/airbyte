@@ -177,16 +177,19 @@ def test_pagination_follows_link_header(rate_limit_mock_response, requests_mock)
         (404, {"message": "Not Found"}, "Syncing this stream isn't available"),
         (403, {"message": "Resource not accessible by personal access token"}, "GitHub denied access to this repository"),
         (409, {"message": "Git Repository is empty."}, "The repository is likely empty"),
+        (410, {"message": "Issues are disabled for this repo."}, "the feature backing this stream is disabled"),
     ],
 )
 @patch("time.sleep")
 def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, expected_log, rate_limit_mock_response, requests_mock, caplog):
-    """Legacy warned and continued on 404/403/409 for a single repository (streams.py
-    `GithubStreamABC.read_records`). One unreadable repository must not fail the stream or
-    drop the repositories that follow it, and the skip must leave a trace in the log."""
+    """Legacy warned and continued on 404/403/409, and on a 410 naming a disabled feature, for a
+    single repository (streams.py `GithubStreamABC.read_records` and
+    `errors_handlers.py::is_gone_with_feature_disabled`). One unreadable repository must not fail
+    the stream or drop the repositories that follow it, and the skip must leave a trace in the log.
+    """
     config = _config("ghost/deleted-repo", "docker/compose")
     _mock_repository_resolution(requests_mock, *config["repositories"])
-    requests_mock.get("https://api.github.com/repos/ghost/deleted-repo/tags", status_code=status_code, json=body)
+    endpoint = requests_mock.get("https://api.github.com/repos/ghost/deleted-repo/tags", status_code=status_code, json=body)
     requests_mock.get("https://api.github.com/repos/docker/compose/tags", json=[{"name": "v1"}])
 
     with caplog.at_level(logging.INFO):
@@ -195,10 +198,53 @@ def test_inaccessible_repository_is_skipped(sleep_mock, status_code, body, expec
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert [record["repository"] for record in records] == ["docker/compose"]
+    # Skipped on the first response: none of these is worth retrying, and 410 in particular is
+    # absent from the CDK default mapping, so without its filter it would burn five retries
+    # behind the 60s backoff floor before failing the stream.
+    assert endpoint.call_count == 1
     # The declarative IGNORE path logs the filter's `error_message` at INFO. It carries no slice
     # context, so this cannot assert *which* repository was skipped — see the "KNOWN GAP" note in
     # the manifest's error-handling block.
     assert any(expected_log in message for message in caplog.messages)
+
+
+@patch("time.sleep")
+def test_unexpected_410_fails_fast(sleep_mock, rate_limit_mock_response, requests_mock):
+    """Only a 410 that names a disabled feature is a skip. Any other 410 keeps the legacy
+    `GITHUB_DEFAULT_ERROR_MAPPING` contract: fail immediately with an actionable message rather
+    than retry a permanently gone endpoint."""
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    endpoint = requests_mock.get(
+        "https://api.github.com/repos/docker/compose/tags",
+        status_code=410,
+        json={"message": "Gone for an unrelated reason"},
+    )
+
+    records, statuses, error = _read(config, "tags")
+
+    assert records == []
+    assert statuses[-1] == "INCOMPLETE"
+    assert error is not None
+    assert endpoint.call_count == 1
+
+
+def test_success_response_mentioning_disabled_is_not_skipped(rate_limit_mock_response, requests_mock):
+    """The disabled-feature filter has to key off GitHub's error envelope because a predicate
+    cannot see the status code. A successful response must not match: list payloads are arrays,
+    and the single-repo payload the resolver reads is an object with no top-level `message`."""
+    config = _config("docker/compose")
+    requests_mock.get(
+        "https://api.github.com/repos/docker/compose",
+        json={"id": 1, "full_name": "docker/compose", "description": "issues are disabled here"},
+    )
+    requests_mock.get("https://api.github.com/repos/docker/compose/tags", json=[{"name": "v1"}])
+
+    records, statuses, error = _read(config, "tags")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert [record["name"] for record in records] == ["v1"]
 
 
 @patch("time.sleep")

@@ -152,6 +152,39 @@ definitions:
     action: RATE_LIMITED
     error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
 
+  # GitHub answers 410 Gone when the feature backing an endpoint is turned off for the
+  # repository ("Issues are disabled for this repo.", "Projects are disabled for this repo."),
+  # and the legacy handler skipped exactly those (errors_handlers.py::is_gone_with_feature_disabled,
+  # matching "is disabled"/"are disabled"). 410 is absent from the CDK default mapping, so without
+  # this filter such a response would be retried five times behind the 60s backoff floor and then
+  # fail the stream.
+  # This has to be a predicate rather than `http_codes: [410] + error_message_contains`:
+  # HttpResponseFilter ORs its conditions, so combining them would skip *every* 410. The predicate
+  # cannot see the status code, so it keys off GitHub's error envelope instead — the same
+  # `response is mapping` guard the quota filter above uses, since a successful list response is a
+  # JSON array and a successful single-repo response has no top-level `message`. `| string` keeps a
+  # non-string `message` from raising inside the template.
+  disabled_feature_skip_filter:
+    type: HttpResponseFilter
+    predicate: >-
+      {{ response is mapping
+         and ('are disabled' in (response.get('message') or '') | string | lower
+              or 'is disabled' in (response.get('message') or '') | string | lower) }}
+    action: IGNORE
+    error_message: "Skipping this repository: GitHub reports the feature backing this stream is disabled for it (HTTP 410 Gone)."
+
+  # Any other 410 is unexpected and fails fast with the legacy message
+  # (errors_handlers.py::GITHUB_DEFAULT_ERROR_MAPPING). Must come after
+  # `disabled_feature_skip_filter`, which is the expected case.
+  gone_fail_filter:
+    type: HttpResponseFilter
+    http_codes: [410]
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      GitHub returned 410 Gone for an unexpected reason. The endpoint or API version may be
+      deprecated. Verify the connector version is current and the endpoint is still supported.
+
   # 404 on an organization or repository is skipped with a warning so one deleted repo or
   # renamed org doesn't fail the whole sync (`check` enumerates the partition routers below
   # and relies on the same skip semantics).
@@ -207,8 +240,10 @@ definitions:
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/disabled_feature_skip_filter"
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_fail_filter"
+      - $ref: "#/definitions/gone_fail_filter"
 
   skip_inaccessible_error_handler:
     type: DefaultErrorHandler
@@ -219,9 +254,11 @@ definitions:
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/disabled_feature_skip_filter"
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_skip_filter"
       - $ref: "#/definitions/empty_repository_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
 
   page_link_paginator:
     type: DefaultPaginator

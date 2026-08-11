@@ -34,8 +34,12 @@ Things worth knowing before touching either half:
 - Error contract differs per stream group and is expressed by two composed error handlers in
   the manifest: `strict_access_error_handler` (403 fails — repo listing and resolution, which
   is what makes `check` surface bad token scopes) and `skip_inaccessible_error_handler`
-  (403/404/409 skip the repository — the repo-scoped child streams). When migrating a stream,
-  pick the handler that matches what `GithubStreamABC.read_records` did for it.
+  (403/404/409 skip the repository — the repo-scoped child streams). Both also skip a 410 that
+  names a disabled feature and fail any other 410, mirroring
+  `errors_handlers.py::is_gone_with_feature_disabled` and `GITHUB_DEFAULT_ERROR_MAPPING`. When
+  migrating a stream, pick the handler that matches what `GithubStreamABC.read_records` did for
+  it, and remember that 410 is absent from the CDK default mapping — an endpoint GitHub answers
+  410 on needs a filter or it burns five retries behind the 60s backoff floor before failing.
 - Two known differences from the Python error contract apply to **every** stream migrated from
   here on. Both are spelled out in the error-handling comment block in `manifest.yaml`; do not
   re-litigate them per stream.
