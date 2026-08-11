@@ -207,14 +207,12 @@ class RedshiftAirbyteClient(
 
         log.info { "Summary of table alterations for ${tableName.namespace}.${tableName.name}:" }
         log.info { "  Added columns: ${columnChangeset.columnsToAdd}" }
-        log.info { "  Dropped columns: ${columnChangeset.columnsToDrop}" }
         log.info { "  Modified columns: ${columnChangeset.columnsToChange}" }
 
         execute(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = columnChangeset.columnsToAdd,
-                columnsToRemove = columnChangeset.columnsToDrop,
                 columnsToModify = columnChangeset.columnsToChange
             )
         )

@@ -147,6 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.12 | 2026-08-11 | [83951](https://github.com/airbytehq/airbyte/pull/83951) | Update dependencies |
 | 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
 | 0.1.10 | 2026-08-04 | [83463](https://github.com/airbytehq/airbyte/pull/83463) | Update dependencies |
 | 0.1.9 | 2026-07-28 | [82922](https://github.com/airbytehq/airbyte/pull/82922) | Update dependencies |
