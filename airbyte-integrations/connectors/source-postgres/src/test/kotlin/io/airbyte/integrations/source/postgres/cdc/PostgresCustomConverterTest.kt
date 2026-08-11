@@ -37,6 +37,13 @@ class PostgresCustomConverterTest {
         assertEquals("-1 days -01:01:01", converter.convert(null))
     }
 
+    @Test
+    fun `microsecondsToPgInterval decomposes microseconds into days hours minutes seconds`() {
+        val result = PostgresCustomConverter().microsecondsToPgInterval(90_061_000_000L)
+
+        assertEquals(PGInterval(0, 0, 1, 1, 1, 1.0), result)
+    }
+
     private fun converterFor(defaultValue: Long): CustomConverter.Converter {
         val field = mockk<RelationalColumn>()
         every { field.typeName() } returns "interval"
