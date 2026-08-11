@@ -69,9 +69,7 @@ The `application_criteria_evaluations` stream is a substream of `applications`. 
 
 ## Performance considerations
 
-Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time. If Ashby does throttle your API key, the connector retries `429` responses.
-
-All requests count against your Ashby organization, not just Airbyte. If you share an API key with other integrations, sync large streams like `candidates` and `applications` on a schedule that leaves room for them.
+Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom.
 
 ## IP allow list
 
