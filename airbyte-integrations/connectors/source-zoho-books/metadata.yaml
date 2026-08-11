@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b67f9de8-177d-4d48-9c5c-8a767d845885
-  dockerImageTag: 0.0.63
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-zoho-books
   githubIssueLabel: source-zoho-books
   icon: icon.svg
@@ -25,6 +25,19 @@ data:
   name: Zoho Books
   releaseDate: 2024-10-19
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: "This release changes the incremental cursor for the `invoices`, `creditnotes`, `purchase_orders`, and `sales_orders` streams from the document date to `last_modified_time`. Refresh the source schema and clear or reset the affected streams after upgrading so edits to existing documents are synchronized correctly. See the migration guide for details."
+        upgradeDeadline: "2026-08-20"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - invoices
+              - creditnotes
+              - purchase_orders
+              - sales_orders
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-books
   tags:
