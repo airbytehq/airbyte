@@ -58,6 +58,13 @@ data:
       2.0.0:
         message: "Add default cursor for cdc"
         upgradeDeadline: "2023-08-23"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
