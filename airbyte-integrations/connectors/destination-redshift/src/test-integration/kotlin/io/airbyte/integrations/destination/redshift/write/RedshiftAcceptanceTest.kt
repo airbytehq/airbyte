@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift.write
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
@@ -59,6 +60,7 @@ abstract class RedshiftBaseAcceptanceTest(
                 numberIsFixedPointPrecision38Scale9 = true,
                 truncatedNumbersPopulateAirbyteMeta = false,
             ),
+        columnDropBehavior = ColumnDropBehavior.RETAIN,
         unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = true,
         dataChannelFormat = dataChannelFormat,

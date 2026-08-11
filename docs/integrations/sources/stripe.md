@@ -333,7 +333,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.0 | 2026-08-10 | [81375](https://github.com/airbytehq/airbyte/pull/81375) | Added `invoice_payments` stream for Stripe Basil invoice-payment relationship data |
+| 6.1.0-rc.1 | 2026-08-11 | [81375](https://github.com/airbytehq/airbyte/pull/81375) | Added `invoice_payments` stream for Stripe Basil invoice-payment relationship data |
+| 6.0.13 | 2026-08-11 | [84134](https://github.com/airbytehq/airbyte/pull/84134) | Update dependencies |
 | 6.0.12 | 2026-08-04 | [83634](https://github.com/airbytehq/airbyte/pull/83634) | Update dependencies |
 | 6.0.11 | 2026-07-28 | [83119](https://github.com/airbytehq/airbyte/pull/83119) | Update dependencies |
 | 6.0.10 | 2026-07-21 | [82611](https://github.com/airbytehq/airbyte/pull/82611) | Update dependencies |
