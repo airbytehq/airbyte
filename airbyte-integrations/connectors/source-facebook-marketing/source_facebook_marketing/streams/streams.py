@@ -182,6 +182,11 @@ class AdCreativesFromAds(FBMarketingIncrementalStream):
         earliest_failed_cursor: Optional[AirbyteDateTime] = None
         failed_ad_without_cursor = False
 
+        # The CDK passes persisted state to read_records whatever the configured sync mode, so a cursor left behind by
+        # an earlier incremental sync would otherwise filter a full refresh and make it silently partial.
+        if sync_mode != SyncMode.incremental:
+            stream_slice = {**stream_slice, "stream_state": {}}
+
         # Bypass incremental read_records to checkpoint state after the full slice and creative fetches.
         for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
             updated_time = ad_record.get(self.cursor_field)
