@@ -25,6 +25,15 @@ def now_millis():
     return int(datetime.datetime.now().timestamp() * 1000)
 
 
+def human_readable_bytes(num_bytes: int) -> str:
+    value = float(num_bytes)
+    for unit in ("B", "KB", "MB", "GB"):
+        if abs(value) < 1024.0:
+            return f"{value:3.1f}{unit}"
+        value /= 1024.0
+    return f"{value:.1f}TB"
+
+
 def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
     emitted_at = int(datetime.datetime.now().timestamp() * 1000)
     estimate_message = AirbyteEstimateTraceMessage(
