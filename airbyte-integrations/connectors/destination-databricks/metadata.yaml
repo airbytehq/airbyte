@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 4.0.0
+  dockerImageTag: 4.0.2
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
@@ -49,6 +49,13 @@ data:
           dbt models or SQL queries to reference the final tables instead, then drop old raw tables after verifying.
         upgradeDeadline: "2026-10-01"
         deadlineAction: "auto_upgrade"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   resourceRequirements:
     jobSpecific:

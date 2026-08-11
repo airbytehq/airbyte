@@ -1179,9 +1179,46 @@ definitions:
       field_name: "page[size]"
       inject_into: request_parameter
 
+  # Default `tickets` stream: uses Zendesk's Incremental Ticket Export endpoint, keyed on
+  # `generated_timestamp`. Unlike `updated_at`, `generated_timestamp` is bumped for *every*
+  # ticket change including automation/macro/system updates, so this endpoint reliably
+  # re-surfaces tickets whose only recent change was system-driven. See CONTRIBUTING.md §1.
   tickets_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/after_url_paginator"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketsStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/tickets"
+    $parameters:
+      name: "tickets"
+      path: "incremental/tickets/cursor.json"
+      cursor_field: "generated_timestamp"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  # Opt-in fast `tickets_search` stream: uses the Export Search Results endpoint (100 req/min vs
+  # 10 req/min for incremental export, plus concurrent time-range partitioning) but filters/
+  # checkpoints on `updated_at`. WARNING: this endpoint is served from Zendesk's search index,
+  # which Zendesk does not recommend for data export. Because Zendesk only bumps `updated_at`
+  # (and re-indexes the ticket) when an update generates a ticket event, this stream can (a) MISS
+  # automation/macro/system-driven updates in incremental mode and (b) return STALE indexed field
+  # values (e.g. status) even on a full/historical read. Use the default `tickets` stream when
+  # completeness/accuracy matter. Since Export Search excludes deleted tickets, pair this stream
+  # with `deleted_tickets`.
+  # `lookback_window` (config: `ticket_search_lookback_days`) re-scans a trailing window on each
+  # sync; it mitigates late/out-of-order `updated_at` changes only and does NOT recover
+  # system-driven updates (those never bump `updated_at`).
+  tickets_search_stream:
     type: DeclarativeStream
-    name: "tickets"
+    name: "tickets_search"
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
@@ -1208,15 +1245,13 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S%z"
       datetime_format: "%s"
       cursor_field: "updated_at"
+      lookback_window: "P{{ config.get('ticket_search_lookback_days', 0) }}D"
       start_datetime:
         datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
       end_datetime:
         datetime: "{{ now_utc().strftime('%s') }}"
       step: "P30D"
       cursor_granularity: "PT1S"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: source_declarative_manifest.components.TicketsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1314,7 +1349,7 @@ definitions:
               parent_key: "id"
               partition_field: "ticket_id"
               extra_fields:
-                - ["updated_at"]
+                - ["generated_timestamp"]
               stream:
                 $ref: "#/definitions/tickets_stream"
               incremental_dependency: true
@@ -1323,7 +1358,7 @@ definitions:
           fields:
             - path:
                 - "_ab_updated_at"
-              value: "{{ format_datetime(record['updated_at'], '%s') if 'updated_at' in record else format_datetime(stream_slice.extra_fields['updated_at'], '%s') }}"
+              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
               value_type: "integer"
 
   topics_stream:
@@ -1438,6 +1473,7 @@ streams:
   - $ref: "#/definitions/ticket_events_stream"
   - $ref: "#/definitions/ticket_skips_stream"
   - $ref: "#/definitions/tickets_stream"
+  - $ref: "#/definitions/tickets_search_stream"
   - $ref: "#/definitions/ticket_metrics_stream"
   - $ref: "#/definitions/triggers_stream"
   - $ref: "#/definitions/users_stream"
@@ -1651,6 +1687,22 @@ spec:
           The number of records per page for the ticket_comments stream API requests.
           Lower values may help prevent timeouts on large datasets. The maximum value is 1000.
         order: 4
+      ticket_search_lookback_days:
+        type: integer
+        title: Tickets Search Lookback Window (days)
+        minimum: 0
+        default: 0
+        examples:
+          - 0
+          - 7
+          - 30
+        description: >-
+          Only applies to the optional `tickets_search` stream. Number of days to re-scan
+          before the last saved cursor on each incremental sync. This helps catch late or
+          out-of-order `updated_at` changes. Note: it does NOT recover automation/macro/system
+          updates (those never change `updated_at`) — use the default `tickets` stream if you
+          need complete change tracking.
+        order: 5
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
