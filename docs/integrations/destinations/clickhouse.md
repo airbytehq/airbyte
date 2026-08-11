@@ -25,6 +25,37 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 
 Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
 
+## Self-managed clusters
+
+By default the connector creates tables with non-replicated engines (`MergeTree` /
+`ReplacingMergeTree`). On a self-managed multi-replica ClickHouse cluster, a
+non-replicated table stores its data only on the replica that receives the insert,
+so reads through a load balancer return incomplete data. Two advanced options make
+the connector cluster-aware (ClickHouse Cloud needs neither — it substitutes
+`SharedMergeTree` automatically):
+
+- **Use Replicated Table Engines** (`use_replicated_engines`): prefixes the engine
+  the connector selects with `Replicated`. Emitted without explicit Keeper path
+  arguments, so the server must be able to derive them — which is the case inside a
+  database using the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated),
+  or with `default_replica_path`/`default_replica_name` plus `{shard}`/`{replica}`
+  macros configured. Requires ClickHouse Keeper (or ZooKeeper).
+- **Cluster Name** (`cluster_name`): adds `ON CLUSTER <name>` to every DDL
+  statement (create/alter/drop/exchange), for clusters whose databases use the
+  default Atomic engine. Leave empty when the target database uses the `Replicated`
+  database engine — there, DDL replicates through the database itself and
+  `ON CLUSTER` is unnecessary. The name is validated against the identifier
+  charset `[A-Za-z0-9_.-]` (matching `remote_servers` cluster names, which are
+  XML element names) and the connection is rejected otherwise.
+
+Typical combinations:
+
+| Topology | `use_replicated_engines` | `cluster_name` |
+| :--- | :--- | :--- |
+| Single node / ClickHouse Cloud | off | empty |
+| Cluster, target database uses `Replicated` database engine | on | empty |
+| Cluster, Atomic databases + `remote_servers` cluster | on | set |
+
 ## Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
@@ -185,7 +216,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.28 | 2026-08-24 | [84983](https://github.com/airbytehq/airbyte/pull/84983) | Upgrade to Bulk CDK 1.0.25. |
+| 2.1.29     | 2026-08-25 | [85033](https://github.com/airbytehq/airbyte/pull/85033)   | Support self-managed clusters: optional replicated table engines and ON CLUSTER DDL |
+| 2.1.28     | 2026-08-24 | [84983](https://github.com/airbytehq/airbyte/pull/84983)   | Upgrade to Bulk CDK 1.0.25. |
 | 2.1.27     | 2026-08-05 | [83747](https://github.com/airbytehq/airbyte/pull/83747)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |
 | 2.1.26     | 2026-07-21 | [82684](https://github.com/airbytehq/airbyte/pull/82684)   | fix(destination-clickhouse): avoid failed count for missing temp tables        |
 | 2.1.25     | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |

@@ -33,6 +33,8 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val enableJson: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
     abstract val recordWindowSize: Long?
+    abstract val useReplicatedEngines: Boolean?
+    abstract val clusterName: String?
 }
 
 @Singleton
@@ -110,6 +112,28 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
+
+    @get:JsonSchemaTitle("Use Replicated Table Engines")
+    @get:JsonPropertyDescription(
+        "Create tables with the Replicated* variant of the table engine the connector selects" +
+            " (ReplicatedMergeTree / ReplicatedReplacingMergeTree). Required on multi-replica" +
+            " ClickHouse clusters."
+    )
+    @get:JsonProperty("use_replicated_engines")
+    @get:JsonSchemaInject(json = """{"order": 9, "default": false, "group": "advanced"}""")
+    override val useReplicatedEngines: Boolean? = false
+
+    @get:JsonSchemaTitle("Cluster Name")
+    @get:JsonPropertyDescription(
+        "If set, every DDL statement is executed ON CLUSTER <name>, so tables are" +
+            " created/altered/dropped on all cluster nodes."
+    )
+    @get:JsonProperty("cluster_name")
+    @get:JsonSchemaInject(
+        json =
+            """{"order": 10, "default": "", "group": "advanced", "pattern": "^[A-Za-z0-9_.-]*$"}"""
+    )
+    override val clusterName: String? = ""
 }
 
 @Singleton
@@ -187,6 +211,12 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
+
+    // ClickHouse Cloud substitutes SharedMergeTree engines and needs neither
+    // replicated engine variants nor ON CLUSTER DDL — hidden from the Cloud spec.
+    @get:JsonIgnore override val useReplicatedEngines: Boolean? = false
+
+    @get:JsonIgnore override val clusterName: String? = ""
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {
