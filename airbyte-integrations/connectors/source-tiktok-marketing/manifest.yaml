@@ -397,10 +397,38 @@ definitions:
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
+  # Error handler for daily report streams. Surfaces error 40067 ("query too large")
+  # as a config_error so users are directed to reduce the Daily Reports Date Step setting.
+  # Only used by base_report_retriever and audience_base_report_retriever;
+  # non-report streams keep the generic handler from the global requester.
+  report_daily_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ response.get('code') == 40100 }}"
+        action: RATE_LIMITED
+        error_message: "TikTok Marketing API rate limit exceeded. Please verify that only one Airbyte connection with the same credentials is running at a time. If the problem persists, even after ensuring that only one connection is running, please contact Airbyte support. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 60001 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40002 }}"
+        action: IGNORE
+        error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 40067 }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Daily Reports Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
+      - predicate: "{{ response.get('code') != 0 }}"
+        action: FAIL
+        error_message: "{{ response['message'] }}"
+
   base_report_retriever:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      # Override error handler to surface error 40067 as a config_error
+      # with guidance to reduce the Daily Reports Date Step setting.
+      error_handler:
+        $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
         service_type: "AUCTION"
         report_type: "BASIC"
@@ -429,7 +457,7 @@ definitions:
     cursor_field: "stat_time_day"
     lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "P1D"
-    step: P30D
+    step: "P{{ config.get('report_granularity', 30) }}D"
     cursor_datetime_formats:
       - "%Y-%m-%d %H:%M:%S"
       - "%Y-%m-%dT%H:%M:%SZ"
@@ -442,6 +470,7 @@ definitions:
       type: MinMaxDatetime
       datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
+
 
   report_hourly_incremental_sync:
     type: DatetimeBasedCursor
@@ -922,6 +951,10 @@ definitions:
     type: SimpleRetriever
     requester:
       $ref: "#/definitions/requester"
+      # Override error handler to surface error 40067 as a config_error
+      # with guidance to reduce the Daily Reports Date Step setting.
+      error_handler:
+        $ref: "#/definitions/report_daily_error_handler"
       request_parameters:
         service_type: "AUCTION"
         report_type: "AUDIENCE"
@@ -3370,6 +3403,11 @@ definitions:
         ad_name:
           description: The name of the ad
           type: string
+        smart_plus_ad_id:
+          description: The unique identifier of the Smart+ ad. Only present for Smart+ ads.
+          type:
+            - "null"
+            - integer
         tracking_app_id:
           description: The unique identifier of the tracking app
           type:
@@ -5992,11 +6030,25 @@ spec:
         default: 3
         order: 3
         type: integer
+      report_granularity:
+        title: Daily Reports Date Step
+        description: >-
+          The number of days per API request for daily report streams.
+          Use the default 30 for most accounts. If syncs fail with
+          TikTok API error 40067 ("query too large"), reduce this value
+          (e.g., 7 or 1). Smaller values make more API requests but avoid
+          query size limits for accounts with many ads.
+        default: 30
+        examples: [30, 7, 1]
+        minimum: 1
+        maximum: 30
+        order: 4
+        type: integer
       include_deleted:
         title: Include Deleted Data in Reports and Ads, Ad Groups and Campaign streams.
         description: Set to active if you want to include deleted data in report based streams and Ads, Ad Groups and Campaign streams.
         default: false
-        order: 4
+        order: 5
         type: boolean
   advanced_auth:
     auth_flow_type: oauth2.0

@@ -235,7 +235,7 @@ Values that exceed these size limits are nulled out, and the `_airbyte_meta` col
 
 ### Schema evolution
 
-This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables, drops removed columns, and modifies column types as needed. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
+This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables and modifies column types as needed. When a column is removed from the source, the connector retains the existing column and its historical data in the destination; subsequent rows are written with `NULL` for that column. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
 
 ## Supported sync modes
 
@@ -288,9 +288,15 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.43          | 2026-05-19 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
-| 4.0.42          | 2026-05-11 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
-| 4.0.41          | 2026-05-06 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
+| 4.0.49          | 2026-08-05 | [83740](https://github.com/airbytehq/airbyte/pull/83740)   | Upgrade CDK to 1.0.21                                                                                                                                                                  |
+| 4.0.48          | 2026-07-23 | [82272](https://github.com/airbytehq/airbyte/pull/82272)   | Columns removed from the source schema are now preserved in the destination table instead of being dropped to prevent unintentional data loss due to source schema changes. |
+| 4.0.47          | 2026-07-23 | [82294](https://github.com/airbytehq/airbyte/pull/82294)   | Replace ALTER TABLE SWAP WITH with CREATE OR REPLACE TABLE CLONE COPY GRANTS to preserve table grants |
+| 4.0.46          | 2026-07-15 | [82104](https://github.com/airbytehq/airbyte/pull/82104)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 4.0.45          | 2026-07-10 | [81530](https://github.com/airbytehq/airbyte/pull/81530)   | Restore NULL-safe primary-key matching in dedup MERGE to fix duplicate rows when composite PKs contain NULLs |
+| 4.0.44          | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346)   | Remove unnecessary NULL PK equality checks from merge SQL |
+| 4.0.43          | 2026-05-20 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
+| 4.0.42          | 2026-05-14 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
+| 4.0.41          | 2026-05-07 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
 | 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
 | 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |
 | 4.0.38          | 2026-02-25 | [74041](https://github.com/airbytehq/airbyte/pull/74041)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches                                                                                                                           |

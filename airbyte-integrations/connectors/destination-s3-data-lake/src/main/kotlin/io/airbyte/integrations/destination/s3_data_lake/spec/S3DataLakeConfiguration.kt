@@ -6,16 +6,35 @@ package io.airbyte.integrations.destination.s3_data_lake.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfiguration
 import io.airbyte.cdk.load.command.aws.AWSAccessKeyConfigurationProvider
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfiguration
 import io.airbyte.cdk.load.command.iceberg.parquet.IcebergCatalogConfigurationProvider
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 const val DEFAULT_CATALOG_NAME = "airbyte"
 const val DEFAULT_STAGING_BRANCH = "airbyte_staging"
 const val TEST_TABLE = "airbyte_test_table"
+
+fun generateStagingBranchName(stream: DestinationStream): String {
+    val branchKey =
+        listOf(
+                stream.mappedDescriptor.namespace.orEmpty(),
+                stream.mappedDescriptor.name,
+                stream.generationId.toString(),
+                stream.minimumGenerationId.toString(),
+            )
+            .joinToString(":")
+    val suffix =
+        UUID.nameUUIDFromBytes(branchKey.toByteArray(StandardCharsets.UTF_8))
+            .toString()
+            .replace("-", "_")
+    return "${DEFAULT_STAGING_BRANCH}_$suffix"
+}
 
 data class S3DataLakeConfiguration(
     override val awsAccessKeyConfiguration: AWSAccessKeyConfiguration,

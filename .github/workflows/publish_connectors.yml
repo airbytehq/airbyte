@@ -38,6 +38,7 @@ on:
       pr:
         description: "Pull request number that triggered this workflow (used for Slack notifications and run URL linking)."
         required: false
+        default: ""
         type: string
     outputs:
       docker-image-tag:
@@ -477,10 +478,25 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          PR_NUMBER: ${{ inputs.pr }}
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
           DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          PR_NUMBER_ARGS=()
+          PR_NUMBER="${PR_NUMBER//[[:space:]]/}"
+          if [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+            # The installed Ops CLI release may predate `--pr-number`; passing an
+            # unrecognized flag would fail the publish, so probe before using it.
+            if COLUMNS=200 airbyte-ops registry connector-version artifacts generate --help 2>/dev/null \
+              | grep -q -- '--pr-number'; then
+              PR_NUMBER_ARGS+=(--pr-number "$PR_NUMBER")
+            else
+              echo "::warning::Installed airbyte-ops does not support --pr-number; publishing without release attribution."
+            fi
+          elif [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            echo "::warning::Ignoring non-numeric PR number '$PR_NUMBER' for release attribution."
+          fi
           airbyte-ops \
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
@@ -488,7 +504,8 @@ jobs:
             --output-dir ./registry-artifacts/${{ matrix.connector }} \
             --with-validate \
             --with-sbom \
-            --with-dependency-dump
+            --with-dependency-dump \
+            "${PR_NUMBER_ARGS[@]}"
 
       - name: Upload Registry CI Artifacts
         if: always()
@@ -517,31 +534,6 @@ jobs:
             --artifacts-dir ./registry-artifacts/${{ matrix.connector }} \
             --store "${REGISTRY_STORE}" \
             --with-validate
-
-      # Create the release_candidate/ metadata marker in GCS so the
-      # platform knows an RC is active for this connector.  The marker
-      # is read by the compile step and injected into the compiled
-      # registry JSON as `releases.releaseCandidates`.
-      #
-      # Condition: the on-disk metadata.yaml version must contain
-      # "-rc." (path 1: RC version committed to master).  The
-      # `--with-semver-suffix rc` path (path 2) uses a different
-      # suffix format and is handled separately (used for -preview).
-      - name: Create RC metadata marker
-        if: >-
-          needs.publish_options.outputs.dry-run != 'true'
-          && steps.publish-registry-artifacts.outcome == 'success'
-          && contains(steps.resolve-docker-image-tag.outputs.docker-image-tag, '-rc.')
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          REGISTRY_STORE: "coral:prod"
-        run: |
-          echo "Creating RC metadata marker for ${{ matrix.connector }}"
-          airbyte-ops \
-            registry progressive-rollout create \
-            --name "${{ matrix.connector }}" \
-            --store "${REGISTRY_STORE}"
 
       - name: Build success notification context
         id: success-context

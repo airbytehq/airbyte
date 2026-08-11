@@ -131,7 +131,7 @@
         "filter_statuses": []
       },
       "stream_descriptor": {
-        "name": "ads_insights_dma"
+        "name": "ads_insights_comscore_market"
       }
     }
   },
@@ -323,7 +323,7 @@
         "filter_statuses": []
       },
       "stream_descriptor": {
-        "name": "ads_insights_demographics_dma_region"
+        "name": "ads_insights_demographics_comscore_market_region"
       }
     }
   },
