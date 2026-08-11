@@ -51,7 +51,16 @@ definitions:
           $schema: http://json-schema.org/draft-07/schema#
           additionalProperties: true
           properties:
+            archivedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
             archiveReason:
+              type:
+                - "null"
+                - string
+            appliedViaJobPostingId:
               type:
                 - "null"
                 - string
@@ -89,6 +98,48 @@ definitions:
                 - "null"
                 - object
             status:
+              type:
+                - "null"
+                - string
+            source:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                isArchived:
+                  type:
+                    - "null"
+                    - boolean
+                sourceType:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    isArchived:
+                      type:
+                        - "null"
+                        - boolean
+                    title:
+                      type:
+                        - "null"
+                        - string
+                title:
+                  type:
+                    - "null"
+                    - string
+            submitterClientIp:
+              type:
+                - "null"
+                - string
+            submitterUserAgent:
               type:
                 - "null"
                 - string
@@ -258,6 +309,11 @@ definitions:
               type:
                 - "null"
                 - array
+            createdAt:
+              type:
+                - "null"
+                - string
+              format: date-time
             company:
               type:
                 - "null"
@@ -286,6 +342,10 @@ definitions:
               type:
                 - "null"
                 - array
+            primaryPhoneNumber:
+              type:
+                - "null"
+                - object
             position:
               type:
                 - "null"
@@ -302,14 +362,69 @@ definitions:
               type:
                 - "null"
                 - string
+            profileUrl:
+              type:
+                - "null"
+                - string
             socialLinks:
               type:
                 - "null"
                 - array
+            source:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                isArchived:
+                  type:
+                    - "null"
+                    - boolean
+                sourceType:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - string
+                    isArchived:
+                      type:
+                        - "null"
+                        - boolean
+                    title:
+                      type:
+                        - "null"
+                        - string
+                title:
+                  type:
+                    - "null"
+                    - string
             tags:
               type:
                 - "null"
                 - array
+            timezone:
+              type:
+                - "null"
+                - string
+            updatedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            fraudStatus:
+              type:
+                - "null"
+                - string
+            creditedToUser:
+              type:
+                - "null"
+                - object
     custom_fields:
       type: DeclarativeStream
       name: custom_fields
@@ -925,6 +1040,23 @@ definitions:
               type:
                 - "null"
                 - boolean
+            sourceType:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                isArchived:
+                  type:
+                    - "null"
+                    - boolean
+                title:
+                  type:
+                    - "null"
+                    - string
             title:
               type:
                 - "null"
@@ -2333,7 +2465,16 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       archiveReason:
+        type:
+          - "null"
+          - string
+      appliedViaJobPostingId:
         type:
           - "null"
           - string
@@ -2371,6 +2512,48 @@ schemas:
           - "null"
           - object
       status:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          sourceType:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              isArchived:
+                type:
+                  - "null"
+                  - boolean
+              title:
+                type:
+                  - "null"
+                  - string
+          title:
+            type:
+              - "null"
+              - string
+      submitterClientIp:
+        type:
+          - "null"
+          - string
+      submitterUserAgent:
         type:
           - "null"
           - string
@@ -2426,6 +2609,11 @@ schemas:
         type:
           - "null"
           - array
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       company:
         type:
           - "null"
@@ -2454,6 +2642,10 @@ schemas:
         type:
           - "null"
           - array
+      primaryPhoneNumber:
+        type:
+          - "null"
+          - object
       position:
         type:
           - "null"
@@ -2470,14 +2662,69 @@ schemas:
         type:
           - "null"
           - string
+      profileUrl:
+        type:
+          - "null"
+          - string
       socialLinks:
         type:
           - "null"
           - array
+      source:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          sourceType:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              isArchived:
+                type:
+                  - "null"
+                  - boolean
+              title:
+                type:
+                  - "null"
+                  - string
+          title:
+            type:
+              - "null"
+              - string
       tags:
         type:
           - "null"
           - array
+      timezone:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      fraudStatus:
+        type:
+          - "null"
+          - string
+      creditedToUser:
+        type:
+          - "null"
+          - object
   custom_fields:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2749,6 +2996,23 @@ schemas:
         type:
           - "null"
           - boolean
+      sourceType:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          title:
+            type:
+              - "null"
+              - string
       title:
         type:
           - "null"
