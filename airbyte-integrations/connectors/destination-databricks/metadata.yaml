@@ -49,6 +49,13 @@ data:
           dbt models or SQL queries to reference the final tables instead, then drop old raw tables after verifying.
         upgradeDeadline: "2026-10-01"
         deadlineAction: "auto_upgrade"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databricks
   resourceRequirements:
     jobSpecific:
