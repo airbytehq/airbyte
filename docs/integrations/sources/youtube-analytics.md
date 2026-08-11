@@ -51,7 +51,7 @@ YouTube doesn't generate a bulk report until a [reporting job](https://developer
 - **Recent days lag by about 48 hours.** The report for a given day is ready roughly two days later. If a job is created on September 1, the report for September 1 arrives on September 3, and the report for September 2 arrives on September 4.
 - **Historical data goes back 30 days.** When YouTube creates a job, it also generates reports covering the 30 days before that date, and the connector syncs them. There's no way to backfill further, so a stream you enable today can't return data from before last month.
 - **Reports expire.** YouTube keeps generated reports for 60 days, and historical reports for 30 days. If a connection is disabled or failing for longer than that, the missed days are gone permanently; only newly generated reports are synced when the connection resumes.
-- **Each report covers one day** in Pacific time (UTC-8), and the connector stores that day in the `date` field as an integer such as `20260730`. `date` is also the cursor for incremental syncs.
+- **Each report covers one day** in Pacific time, and the connector stores that day in the `date` field as an integer such as `20260730`. `date` is also the cursor for incremental syncs.
 - **Some rows are anonymized.** YouTube replaces dimension values with aggregated or null values when the underlying metrics don't meet its privacy threshold, so expect rows with empty `video_id` or `country_code` values.
 
 ## Supported sync modes
