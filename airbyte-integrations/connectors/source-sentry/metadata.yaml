@@ -95,5 +95,10 @@ data:
           - scopeType: stream
             impactedScopes: ["projects"]
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
 metadataSpecVersion: "1.0"
