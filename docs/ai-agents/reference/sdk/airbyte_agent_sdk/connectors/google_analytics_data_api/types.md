@@ -292,10 +292,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="DailyActiveUsersListParamsDimensionsItem"></a>
@@ -826,10 +826,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="DevicesListParamsDimensionsItem"></a>
@@ -1390,10 +1390,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="FourWeeklyActiveUsersListParamsDimensionsItem"></a>
@@ -1924,10 +1924,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="LocationsListParamsDimensionsItem"></a>
@@ -2506,10 +2506,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="PagesListParamsDimensionsItem"></a>
@@ -3061,10 +3061,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="TrafficSourcesListParamsDimensionsItem"></a>
@@ -3658,10 +3658,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="WebsiteOverviewListParamsDimensionsItem"></a>
@@ -4195,10 +4195,10 @@ Classes
 
     ### Class variables
 
-    `endDate: str`
+    `end_date: str`
     :   The type of the None singleton.
 
-    `startDate: str`
+    `start_date: str`
     :   The type of the None singleton.
 
 <a id="WeeklyActiveUsersListParamsDimensionsItem"></a>

@@ -218,9 +218,13 @@ const MetricIcon = ({ iconComponent, level }) => {
 
   if (!Object.keys(iconComponent).includes(level.toLowerCase())) return null;
 
+  const displayLabel =
+    level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+
   return (
     <div className={styles.metricIcon} title={level}>
       {iconComponent[level?.toLowerCase()]}
+      <span className={styles.metricLabel}>{displayLabel}</span>
     </div>
   );
 };

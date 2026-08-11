@@ -36,6 +36,8 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
     private val MONEY_ITEM_TYPE = "MONEY"
     private val GEOMETRICS_TYPES =
         setOf("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH")
+    // PostGIS-extension types; plugin-specific.
+    private val GIS_TYPES = setOf("GEOMETRY", "GEOGRAPHY")
     private val TEXT_TYPES =
         setOf(
             "VARCHAR",
@@ -84,6 +86,7 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
         } else if (
             TEXT_TYPES.contains(upperType) ||
                 GEOMETRICS_TYPES.contains(upperType) ||
+                GIS_TYPES.contains(upperType) ||
                 BIT_TYPES.contains(upperType)
         ) {
             registerText(field, registration)

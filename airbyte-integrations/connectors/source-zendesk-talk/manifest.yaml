@@ -254,7 +254,13 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page\", {}) }}"
-            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+            # Zendesk Talk incremental exports always return a `next_page` URL and filter
+            # `start_time` inclusively, so once caught up the paginator keeps re-requesting
+            # `start_time=end_time` and receiving the same boundary record(s). Stop when a page
+            # is not full (fewer than the 1000-record page size) — Zendesk's documented signal
+            # that no more items are available. A count-based "caught up" check is unsafe here
+            # because a single call can have several legs sharing the same `updated_at` second.
+            stop_condition: "{{ response.get(\"count\", 0) < 1000 }}"
       name: call_legs
       primary_key:
         - id
@@ -306,7 +312,13 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page\", {}) }}"
-            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+            # Zendesk Talk incremental exports always return a `next_page` URL and filter
+            # `start_time` inclusively, so once caught up the paginator keeps re-requesting
+            # `start_time=end_time` and receiving the same boundary record(s). Stop when a page
+            # is not full (fewer than the 1000-record page size) — Zendesk's documented signal
+            # that no more items are available. A count-based "caught up" check is unsafe here
+            # because a single call can have several legs sharing the same `updated_at` second.
+            stop_condition: "{{ response.get(\"count\", 0) < 1000 }}"
       name: calls
       primary_key:
         - id

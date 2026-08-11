@@ -241,6 +241,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.11 | 2026-08-11 | [83997](https://github.com/airbytehq/airbyte/pull/83997) | Update dependencies |
+| 2.2.10 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.2.9 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.2.7 — 2.2.8 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.2.8 | 2026-07-28 | [83033](https://github.com/airbytehq/airbyte/pull/83033) | Update dependencies |
+| 2.2.7 | 2026-07-21 | [82553](https://github.com/airbytehq/airbyte/pull/82553) | Update dependencies |
+| 2.2.6 | 2026-07-14 | [81972](https://github.com/airbytehq/airbyte/pull/81972) | Update dependencies |
+| 2.2.5 | 2026-06-30 | [81182](https://github.com/airbytehq/airbyte/pull/81182) | Update dependencies |
+| 2.2.4 | 2026-06-23 | [80579](https://github.com/airbytehq/airbyte/pull/80579) | Update dependencies |
 | 2.2.3 | 2026-06-16 | [79987](https://github.com/airbytehq/airbyte/pull/79987) | Update dependencies |
 | 2.2.2 | 2026-06-15 | [79693](https://github.com/airbytehq/airbyte/pull/79693) | Handle Pinterest rate limits during report download target refresh and reduce default concurrency. |
 | 2.2.1 | 2026-06-10 | [78496](https://github.com/airbytehq/airbyte/pull/78496) | Refresh Pinterest async report download URLs immediately before fetching reports. |

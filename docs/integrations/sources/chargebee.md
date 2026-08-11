@@ -111,6 +111,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.44 | 2026-08-11 | [83885](https://github.com/airbytehq/airbyte/pull/83885) | Update dependencies |
+| 0.10.43 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.10.42 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.10.40 — 0.10.41 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.10.41 | 2026-07-28 | [82863](https://github.com/airbytehq/airbyte/pull/82863) | Update dependencies |
+| 0.10.40 | 2026-07-21 | [81761](https://github.com/airbytehq/airbyte/pull/81761) | Update dependencies |
+| 0.10.39 | 2026-06-30 | [81013](https://github.com/airbytehq/airbyte/pull/81013) | Update dependencies |
+| 0.10.38 | 2026-06-23 | [80404](https://github.com/airbytehq/airbyte/pull/80404) | Update dependencies |
 | 0.10.37 | 2026-06-16 | [78619](https://github.com/airbytehq/airbyte/pull/78619) | Update dependencies |
 | 0.10.36 | 2026-06-09 | [79604](https://github.com/airbytehq/airbyte/pull/79604) | Clean up cancelled RC; revert source to previous stable |
 | 0.10.36-rc.5 | 2026-05-27 | [78469](https://github.com/airbytehq/airbyte/pull/78469) | Remove the local API budget limiter while keeping the default worker count at 5. |

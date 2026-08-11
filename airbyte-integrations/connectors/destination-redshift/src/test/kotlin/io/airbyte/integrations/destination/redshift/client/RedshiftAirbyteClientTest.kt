@@ -253,9 +253,17 @@ internal class RedshiftAirbyteClientTest {
     fun `countTable returns null on missing table`() = runTest {
         every { sqlGenerator.countTable(testTable) } returns "COUNT SQL"
         every { mockStatement.executeQuery("COUNT SQL") } throws
-            SQLException("relation does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist", "42P01")
 
         assertNull(client.countTable(testTable))
+    }
+
+    @Test
+    fun `countTable rethrows non-table-not-found SQLException`() = runTest {
+        every { sqlGenerator.countTable(testTable) } returns "COUNT SQL"
+        every { mockStatement.executeQuery("COUNT SQL") } throws SQLException("Connection reset")
+
+        assertThrows<SQLException> { client.countTable(testTable) }
     }
 
     @Test
@@ -295,9 +303,18 @@ internal class RedshiftAirbyteClientTest {
     fun `isTableNotEmpty returns null on missing table`() = runTest {
         every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
         every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
-            SQLException("relation does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist", "42P01")
 
         assertNull(client.isTableNotEmpty(testTable))
+    }
+
+    @Test
+    fun `isTableNotEmpty rethrows non-table-not-found SQLException`() = runTest {
+        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
+        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
+            SQLException("Connection reset")
+
+        assertThrows<SQLException> { client.isTableNotEmpty(testTable) }
     }
 
     @Test
@@ -333,12 +350,20 @@ internal class RedshiftAirbyteClientTest {
     }
 
     @Test
-    fun `getGenerationId returns 0 on exception`() = runTest {
+    fun `getGenerationId returns 0 on missing table`() = runTest {
         every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
         every { mockStatement.executeQuery("GEN ID SQL") } throws
-            SQLException("table does not exist")
+            SQLException("relation \"test_schema.test_table\" does not exist", "42P01")
 
         assertEquals(0L, client.getGenerationId(testTable))
+    }
+
+    @Test
+    fun `getGenerationId rethrows non-table-not-found SQLException`() = runTest {
+        every { sqlGenerator.getGenerationId(testTable) } returns "GEN ID SQL"
+        every { mockStatement.executeQuery("GEN ID SQL") } throws SQLException("Connection reset")
+
+        assertThrows<SQLException> { client.getGenerationId(testTable) }
     }
 
     // ================================================================
@@ -476,7 +501,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = columnsToAdd,
-                columnsToRemove = emptyMap(),
                 columnsToModify = emptyMap(),
             )
         } returns "ALTER TABLE SQL"
@@ -488,7 +512,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = columnsToAdd,
-                columnsToRemove = emptyMap(),
                 columnsToModify = emptyMap(),
             )
         }
@@ -509,7 +532,7 @@ internal class RedshiftAirbyteClientTest {
         client.applyChangeset(stream, columnNameMapping, testTable, emptyMap(), changeset)
 
         // Should not call sqlGenerator.matchSchemas or execute anything
-        verify(exactly = 0) { sqlGenerator.matchSchemas(any(), any(), any(), any()) }
+        verify(exactly = 0) { sqlGenerator.matchSchemas(any(), any(), any()) }
         verify(exactly = 0) { mockStatement.execute(any<String>()) }
     }
 
@@ -537,7 +560,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify = typeChanges,
             )
         } returns "ALTER TABLE TYPE CHANGE SQL"
@@ -549,7 +571,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify = typeChanges,
             )
         }

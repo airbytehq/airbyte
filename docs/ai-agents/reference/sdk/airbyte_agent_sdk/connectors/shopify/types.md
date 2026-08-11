@@ -639,6 +639,80 @@ Classes
     `contains: airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ArticlesCreateParams"></a>
+
+`ArticlesCreateParams(*args, **kwargs)`
+:   Parameters for articles.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `article: airbyte_agent_sdk.connectors.shopify.types.ArticlesCreateParamsArticle`
+    :   The type of the None singleton.
+
+<a id="ArticlesCreateParamsArticle"></a>
+
+`ArticlesCreateParamsArticle(*args, **kwargs)`
+:   Nested schema for ArticlesCreateParams.article
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: airbyte_agent_sdk.connectors.shopify.types.ArticlesCreateParamsArticleAuthor`
+    :   The type of the None singleton.
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesCreateParamsArticleAuthor"></a>
+
+`ArticlesCreateParamsArticleAuthor(*args, **kwargs)`
+:   Author of the article. Required by Shopify's articleCreate mutation (ArticleCreateInput.author is non-null).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesDeleteParams"></a>
+
+`ArticlesDeleteParams(*args, **kwargs)`
+:   Parameters for articles.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="ArticlesEqCondition"></a>
 
 `ArticlesEqCondition(*args, **kwargs)`
@@ -1075,6 +1149,49 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the article was last updated
+
+<a id="ArticlesUpdateParams"></a>
+
+`ArticlesUpdateParams(*args, **kwargs)`
+:   Parameters for articles.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `article: airbyte_agent_sdk.connectors.shopify.types.ArticlesUpdateParamsArticle`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesUpdateParamsArticle"></a>
+
+`ArticlesUpdateParamsArticle(*args, **kwargs)`
+:   Nested schema for ArticlesUpdateParams.article
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
 
 <a id="BalanceTransactionsAndCondition"></a>
 
@@ -1676,6 +1793,51 @@ Classes
     `contains: airbyte_agent_sdk.connectors.shopify.types.BlogsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="BlogsCreateParams"></a>
+
+`BlogsCreateParams(*args, **kwargs)`
+:   Parameters for blogs.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog: airbyte_agent_sdk.connectors.shopify.types.BlogsCreateParamsBlog`
+    :   The type of the None singleton.
+
+<a id="BlogsCreateParamsBlog"></a>
+
+`BlogsCreateParamsBlog(*args, **kwargs)`
+:   Nested schema for BlogsCreateParams.blog
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="BlogsDeleteParams"></a>
+
+`BlogsDeleteParams(*args, **kwargs)`
+:   Parameters for blogs.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="BlogsEqCondition"></a>
 
 `BlogsEqCondition(*args, **kwargs)`
@@ -2043,6 +2205,40 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the blog was last updated
+
+<a id="BlogsUpdateParams"></a>
+
+`BlogsUpdateParams(*args, **kwargs)`
+:   Parameters for blogs.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog: airbyte_agent_sdk.connectors.shopify.types.BlogsUpdateParamsBlog`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="BlogsUpdateParamsBlog"></a>
+
+`BlogsUpdateParamsBlog(*args, **kwargs)`
+:   Nested schema for BlogsUpdateParams.blog
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
 
 <a id="CollectsAndCondition"></a>
 
@@ -2993,6 +3189,114 @@ Classes
     `contains: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="CustomCollectionsCreateParams"></a>
+
+`CustomCollectionsCreateParams(*args, **kwargs)`
+:   Parameters for custom_collections.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParamsInput"></a>
+
+`CustomCollectionsCreateParamsInput(*args, **kwargs)`
+:   Nested schema for CustomCollectionsCreateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `rule_set: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRuleset`
+    :   The type of the None singleton.
+
+    `sort_order: str`
+    :   The type of the None singleton.
+
+    `template_suffix: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParamsInputRuleset"></a>
+
+`CustomCollectionsCreateParamsInputRuleset(*args, **kwargs)`
+:   Rule set for smart collections
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `applied_disjunctively: bool`
+    :   The type of the None singleton.
+
+    `rules: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRulesetRulesItem]`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParamsInputRulesetRulesItem"></a>
+
+`CustomCollectionsCreateParamsInputRulesetRulesItem(*args, **kwargs)`
+:   Nested schema for CustomCollectionsCreateParamsInputRuleset.rules_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `column: str`
+    :   The type of the None singleton.
+
+    `condition: str`
+    :   The type of the None singleton.
+
+    `relation: str`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsDeleteParams"></a>
+
+`CustomCollectionsDeleteParams(*args, **kwargs)`
+:   Parameters for custom_collections.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsDeleteParamsInput"></a>
+
+`CustomCollectionsDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for CustomCollectionsDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
 <a id="CustomCollectionsEqCondition"></a>
 
 `CustomCollectionsEqCondition(*args, **kwargs)`
@@ -3373,6 +3677,46 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the collection was last updated
 
+<a id="CustomCollectionsUpdateParams"></a>
+
+`CustomCollectionsUpdateParams(*args, **kwargs)`
+:   Parameters for custom_collections.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsUpdateParamsInput"></a>
+
+`CustomCollectionsUpdateParamsInput(*args, **kwargs)`
+:   Nested schema for CustomCollectionsUpdateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `sort_order: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
 <a id="CustomerAddressGetParams"></a>
 
 `CustomerAddressGetParams(*args, **kwargs)`
@@ -3507,6 +3851,121 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.CustomersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomersCreateParams"></a>
+
+`CustomersCreateParams(*args, **kwargs)`
+:   Parameters for customers.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomersCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomersCreateParamsInput"></a>
+
+`CustomersCreateParamsInput(*args, **kwargs)`
+:   CustomerInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `addresses: list[airbyte_agent_sdk.connectors.shopify.types.CustomersCreateParamsInputAddressesItem]`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `tax_exempt: bool`
+    :   The type of the None singleton.
+
+<a id="CustomersCreateParamsInputAddressesItem"></a>
+
+`CustomersCreateParamsInputAddressesItem(*args, **kwargs)`
+:   Nested schema for CustomersCreateParamsInput.addresses_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `address2: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `province: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
+<a id="CustomersDeleteParams"></a>
+
+`CustomersDeleteParams(*args, **kwargs)`
+:   Parameters for customers.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomersDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomersDeleteParamsInput"></a>
+
+`CustomersDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for CustomersDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="CustomersEqCondition"></a>
@@ -3937,6 +4396,55 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the customer record was last updated
 
+<a id="CustomersUpdateParams"></a>
+
+`CustomersUpdateParams(*args, **kwargs)`
+:   Parameters for customers.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomersUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomersUpdateParamsInput"></a>
+
+`CustomersUpdateParamsInput(*args, **kwargs)`
+:   CustomerInput object with id
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `tax_exempt: bool`
+    :   The type of the None singleton.
+
 <a id="DiscountCodesAndCondition"></a>
 
 `DiscountCodesAndCondition(*args, **kwargs)`
@@ -4022,6 +4530,147 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParams"></a>
+
+`DiscountCodesCreateParams(*args, **kwargs)`
+:   Parameters for discount_codes.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `basic_code_discount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscount`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscount"></a>
+
+`DiscountCodesCreateParamsBasiccodediscount(*args, **kwargs)`
+:   Nested schema for DiscountCodesCreateParams.basicCodeDiscount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `code: str`
+    :   The type of the None singleton.
+
+    `customer_gets: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergets`
+    :   The type of the None singleton.
+
+    `customer_selection: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomerselection`
+    :   The type of the None singleton.
+
+    `ends_at: str`
+    :   The type of the None singleton.
+
+    `starts_at: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `usage_limit: int`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergets"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergets(*args, **kwargs)`
+:   What the customer gets from this discount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `value: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsValue`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `items(self, /) ‑> airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsItems`
+    :   Return a set-like object providing a view on the dict's items.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergetsItems"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergetsItems(*args, **kwargs)`
+:   Which items the discount applies to
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `all: bool`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergetsValue"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergetsValue(*args, **kwargs)`
+:   The discount value
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `discount_amount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount`
+    :   The type of the None singleton.
+
+    `percentage: float`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount(*args, **kwargs)`
+:   Nested schema for DiscountCodesCreateParamsBasiccodediscountCustomergetsValue.discountAmount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   The type of the None singleton.
+
+    `applies_on_each_item: bool`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomerselection"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomerselection(*args, **kwargs)`
+:   Which customers can use this discount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `all: bool`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesDeleteParams"></a>
+
+`DiscountCodesDeleteParams(*args, **kwargs)`
+:   Parameters for discount_codes.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="DiscountCodesEqCondition"></a>
@@ -4382,6 +5031,49 @@ Classes
 
     `usage_count: str`
     :   Number of times the code has been redeemed
+
+<a id="DiscountCodesUpdateParams"></a>
+
+`DiscountCodesUpdateParams(*args, **kwargs)`
+:   Parameters for discount_codes.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `basic_code_discount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesUpdateParamsBasiccodediscount`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesUpdateParamsBasiccodediscount"></a>
+
+`DiscountCodesUpdateParamsBasiccodediscount(*args, **kwargs)`
+:   Nested schema for DiscountCodesUpdateParams.basicCodeDiscount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `code: str`
+    :   The type of the None singleton.
+
+    `ends_at: str`
+    :   The type of the None singleton.
+
+    `starts_at: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `usage_limit: int`
+    :   The type of the None singleton.
 
 <a id="DisputesAndCondition"></a>
 
@@ -4907,6 +5599,23 @@ Classes
     `type_: str`
     :   Whether the dispute is an inquiry or chargeback
 
+<a id="DraftOrderCompleteUpdateParams"></a>
+
+`DraftOrderCompleteUpdateParams(*args, **kwargs)`
+:   Parameters for draft_order_complete.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `payment_pending: bool`
+    :   The type of the None singleton.
+
 <a id="DraftOrdersAndCondition"></a>
 
 `DraftOrdersAndCondition(*args, **kwargs)`
@@ -5004,6 +5713,126 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParams"></a>
+
+`DraftOrdersCreateParams(*args, **kwargs)`
+:   Parameters for draft_orders.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParamsInput"></a>
+
+`DraftOrdersCreateParamsInput(*args, **kwargs)`
+:   DraftOrderInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `customer_id: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputLineitemsItem]`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputShippingaddress`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParamsInputLineitemsItem"></a>
+
+`DraftOrdersCreateParamsInputLineitemsItem(*args, **kwargs)`
+:   Nested schema for DraftOrdersCreateParamsInput.lineItems_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `original_unit_price: str`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `variant_id: str`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParamsInputShippingaddress"></a>
+
+`DraftOrdersCreateParamsInputShippingaddress(*args, **kwargs)`
+:   Nested schema for DraftOrdersCreateParamsInput.shippingAddress
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `province_code: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersDeleteParams"></a>
+
+`DraftOrdersDeleteParams(*args, **kwargs)`
+:   Parameters for draft_orders.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersDeleteParamsInput"></a>
+
+`DraftOrdersDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for DraftOrdersDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="DraftOrdersEqCondition"></a>
@@ -5418,6 +6247,69 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the draft order was last updated
+
+<a id="DraftOrdersUpdateParams"></a>
+
+`DraftOrdersUpdateParams(*args, **kwargs)`
+:   Parameters for draft_orders.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersUpdateParamsInput"></a>
+
+`DraftOrdersUpdateParamsInput(*args, **kwargs)`
+:   DraftOrderInput object with updated fields
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersUpdateParamsInputLineitemsItem]`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersUpdateParamsInputLineitemsItem"></a>
+
+`DraftOrdersUpdateParamsInputLineitemsItem(*args, **kwargs)`
+:   Nested schema for DraftOrdersUpdateParamsInput.lineItems_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `original_unit_price: str`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `variant_id: str`
+    :   The type of the None singleton.
 
 <a id="FulfillmentOrdersAndCondition"></a>
 
@@ -6395,6 +7287,63 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the fulfillment was last updated
 
+<a id="InventoryAdjustCreateParams"></a>
+
+`InventoryAdjustCreateParams(*args, **kwargs)`
+:   Parameters for inventory_adjust.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.InventoryAdjustCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="InventoryAdjustCreateParamsInput"></a>
+
+`InventoryAdjustCreateParamsInput(*args, **kwargs)`
+:   Nested schema for InventoryAdjustCreateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `changes: list[airbyte_agent_sdk.connectors.shopify.types.InventoryAdjustCreateParamsInputChangesItem]`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `reference_document_uri: str`
+    :   The type of the None singleton.
+
+<a id="InventoryAdjustCreateParamsInputChangesItem"></a>
+
+`InventoryAdjustCreateParamsInputChangesItem(*args, **kwargs)`
+:   Nested schema for InventoryAdjustCreateParamsInput.changes_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `delta: int`
+    :   The type of the None singleton.
+
+    `inventory_item_id: str`
+    :   The type of the None singleton.
+
+    `location_id: str`
+    :   The type of the None singleton.
+
 <a id="InventoryItemsAndCondition"></a>
 
 `InventoryItemsAndCondition(*args, **kwargs)`
@@ -7251,6 +8200,63 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the inventory level was last updated
+
+<a id="InventorySetCreateParams"></a>
+
+`InventorySetCreateParams(*args, **kwargs)`
+:   Parameters for inventory_set.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.InventorySetCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="InventorySetCreateParamsInput"></a>
+
+`InventorySetCreateParamsInput(*args, **kwargs)`
+:   Nested schema for InventorySetCreateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `quantities: list[airbyte_agent_sdk.connectors.shopify.types.InventorySetCreateParamsInputQuantitiesItem]`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `reference_document_uri: str`
+    :   The type of the None singleton.
+
+<a id="InventorySetCreateParamsInputQuantitiesItem"></a>
+
+`InventorySetCreateParamsInputQuantitiesItem(*args, **kwargs)`
+:   Nested schema for InventorySetCreateParamsInput.quantities_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `inventory_item_id: str`
+    :   The type of the None singleton.
+
+    `location_id: str`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
 
 <a id="LocationsAndCondition"></a>
 
@@ -13731,6 +14737,80 @@ Classes
     `value: str`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldsCreateParams"></a>
+
+`MetafieldsCreateParams(*args, **kwargs)`
+:   Parameters for metafields.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `metafields: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldsCreateParamsMetafieldsItem]`
+    :   The type of the None singleton.
+
+<a id="MetafieldsCreateParamsMetafieldsItem"></a>
+
+`MetafieldsCreateParamsMetafieldsItem(*args, **kwargs)`
+:   Nested schema for MetafieldsCreateParams.metafields_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `key: str`
+    :   The type of the None singleton.
+
+    `namespace: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `type_: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+<a id="MetafieldsDeleteParams"></a>
+
+`MetafieldsDeleteParams(*args, **kwargs)`
+:   Parameters for metafields.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `metafields: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldsDeleteParamsMetafieldsItem]`
+    :   The type of the None singleton.
+
+<a id="MetafieldsDeleteParamsMetafieldsItem"></a>
+
+`MetafieldsDeleteParamsMetafieldsItem(*args, **kwargs)`
+:   Nested schema for MetafieldsDeleteParams.metafields_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `key: str`
+    :   The type of the None singleton.
+
+    `namespace: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
 <a id="OrderRefundsAndCondition"></a>
 
 `OrderRefundsAndCondition(*args, **kwargs)`
@@ -14309,6 +15389,181 @@ Classes
     `contains: airbyte_agent_sdk.connectors.shopify.types.OrdersAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="OrdersCreateParams"></a>
+
+`OrdersCreateParams(*args, **kwargs)`
+:   Parameters for orders.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `options: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOptions`
+    :   The type of the None singleton.
+
+    `order: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrder`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOptions"></a>
+
+`OrdersCreateParamsOptions(*args, **kwargs)`
+:   OrderCreateOptionsInput
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `inventory_behaviour: str`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrder"></a>
+
+`OrdersCreateParamsOrder(*args, **kwargs)`
+:   OrderCreateOrderInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `customer_id: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItem]`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderShippingaddress`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderLineitemsItem"></a>
+
+`OrdersCreateParamsOrderLineitemsItem(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrder.lineItems_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `price_set: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPriceset`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `variant_id: str`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderLineitemsItemPriceset"></a>
+
+`OrdersCreateParamsOrderLineitemsItemPriceset(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrderLineitemsItem.priceSet
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `shop_money: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPricesetShopmoney`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderLineitemsItemPricesetShopmoney"></a>
+
+`OrdersCreateParamsOrderLineitemsItemPricesetShopmoney(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrderLineitemsItemPriceset.shopMoney
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   The type of the None singleton.
+
+    `currency_code: str`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderShippingaddress"></a>
+
+`OrdersCreateParamsOrderShippingaddress(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrder.shippingAddress
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `province_code: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
+<a id="OrdersDeleteParams"></a>
+
+`OrdersDeleteParams(*args, **kwargs)`
+:   Parameters for orders.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `notify_customer: bool`
+    :   The type of the None singleton.
+
+    `order_id: str`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `refund: bool`
+    :   The type of the None singleton.
+
+    `restock: bool`
+    :   The type of the None singleton.
+
+    `staff_note: str`
+    :   The type of the None singleton.
+
 <a id="OrdersEqCondition"></a>
 
 `OrdersEqCondition(*args, **kwargs)`
@@ -14866,6 +16121,72 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the order was last updated
 
+<a id="OrdersUpdateParams"></a>
+
+`OrdersUpdateParams(*args, **kwargs)`
+:   Parameters for orders.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.OrdersUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="OrdersUpdateParamsInput"></a>
+
+`OrdersUpdateParamsInput(*args, **kwargs)`
+:   Nested schema for OrdersUpdateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.OrdersUpdateParamsInputShippingaddress`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="OrdersUpdateParamsInputShippingaddress"></a>
+
+`OrdersUpdateParamsInputShippingaddress(*args, **kwargs)`
+:   Nested schema for OrdersUpdateParamsInput.shippingAddress
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `province_code: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
 <a id="PagesAndCondition"></a>
 
 `PagesAndCondition(*args, **kwargs)`
@@ -14957,6 +16278,57 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PagesCreateParams"></a>
+
+`PagesCreateParams(*args, **kwargs)`
+:   Parameters for pages.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `page: airbyte_agent_sdk.connectors.shopify.types.PagesCreateParamsPage`
+    :   The type of the None singleton.
+
+<a id="PagesCreateParamsPage"></a>
+
+`PagesCreateParamsPage(*args, **kwargs)`
+:   Nested schema for PagesCreateParams.page
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="PagesDeleteParams"></a>
+
+`PagesDeleteParams(*args, **kwargs)`
+:   Parameters for pages.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="PagesEqCondition"></a>
@@ -15353,6 +16725,46 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the page was last updated
+
+<a id="PagesUpdateParams"></a>
+
+`PagesUpdateParams(*args, **kwargs)`
+:   Parameters for pages.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `page: airbyte_agent_sdk.connectors.shopify.types.PagesUpdateParamsPage`
+    :   The type of the None singleton.
+
+<a id="PagesUpdateParamsPage"></a>
+
+`PagesUpdateParamsPage(*args, **kwargs)`
+:   Nested schema for PagesUpdateParams.page
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
 
 <a id="PriceRulesAndCondition"></a>
 
@@ -16474,6 +17886,97 @@ Classes
     `contains: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyValueFilter`
     :   The type of the None singleton.
 
+<a id="ProductVariantsCreateParams"></a>
+
+`ProductVariantsCreateParams(*args, **kwargs)`
+:   Parameters for product_variants.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product_id: str`
+    :   The type of the None singleton.
+
+    `variants: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItem]`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParamsVariantsItem"></a>
+
+`ProductVariantsCreateParamsVariantsItem(*args, **kwargs)`
+:   Nested schema for ProductVariantsCreateParams.variants_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `barcode: str`
+    :   The type of the None singleton.
+
+    `compare_at_price: str`
+    :   The type of the None singleton.
+
+    `inventory_item: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemInventoryitem`
+    :   The type of the None singleton.
+
+    `option_values: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemOptionvaluesItem]`
+    :   The type of the None singleton.
+
+    `price: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParamsVariantsItemInventoryitem"></a>
+
+`ProductVariantsCreateParamsVariantsItemInventoryitem(*args, **kwargs)`
+:   Inventory-item attributes for the variant. As of Admin API 2024-07+ the SKU is no longer a variant-level field and must be set here (a top-level sku is ignored/rejected by productVariantsBulkCreate).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `sku: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParamsVariantsItemOptionvaluesItem"></a>
+
+`ProductVariantsCreateParamsVariantsItemOptionvaluesItem(*args, **kwargs)`
+:   Nested schema for ProductVariantsCreateParamsVariantsItem.optionValues_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `option_name: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsDeleteParams"></a>
+
+`ProductVariantsDeleteParams(*args, **kwargs)`
+:   Parameters for product_variants.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product_id: str`
+    :   The type of the None singleton.
+
+    `variants_ids: list[str]`
+    :   The type of the None singleton.
+
 <a id="ProductVariantsEqCondition"></a>
 
 `ProductVariantsEqCondition(*args, **kwargs)`
@@ -16881,6 +18384,63 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the variant was last updated
 
+<a id="ProductVariantsUpdateParams"></a>
+
+`ProductVariantsUpdateParams(*args, **kwargs)`
+:   Parameters for product_variants.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product_id: str`
+    :   The type of the None singleton.
+
+    `variants: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsUpdateParamsVariantsItem]`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsUpdateParamsVariantsItem"></a>
+
+`ProductVariantsUpdateParamsVariantsItem(*args, **kwargs)`
+:   Nested schema for ProductVariantsUpdateParams.variants_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `barcode: str`
+    :   The type of the None singleton.
+
+    `compare_at_price: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `inventory_item: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsUpdateParamsVariantsItemInventoryitem`
+    :   The type of the None singleton.
+
+    `price: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsUpdateParamsVariantsItemInventoryitem"></a>
+
+`ProductVariantsUpdateParamsVariantsItemInventoryitem(*args, **kwargs)`
+:   Inventory-item attributes for the variant. As of Admin API 2024-07+ the SKU is no longer a variant-level field and must be set here (a top-level sku is ignored/rejected by productVariantsBulkUpdate, which silently returns null instead of updating).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `sku: str`
+    :   The type of the None singleton.
+
 <a id="ProductsAndCondition"></a>
 
 `ProductsAndCondition(*args, **kwargs)`
@@ -16984,6 +18544,97 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsCreateParams"></a>
+
+`ProductsCreateParams(*args, **kwargs)`
+:   Parameters for products.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `media: list[airbyte_agent_sdk.connectors.shopify.types.ProductsCreateParamsMediaItem]`
+    :   The type of the None singleton.
+
+    `product: airbyte_agent_sdk.connectors.shopify.types.ProductsCreateParamsProduct`
+    :   The type of the None singleton.
+
+<a id="ProductsCreateParamsMediaItem"></a>
+
+`ProductsCreateParamsMediaItem(*args, **kwargs)`
+:   Nested schema for ProductsCreateParams.media_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `media_content_type: str`
+    :   The type of the None singleton.
+
+    `original_source: str`
+    :   The type of the None singleton.
+
+<a id="ProductsCreateParamsProduct"></a>
+
+`ProductsCreateParamsProduct(*args, **kwargs)`
+:   ProductCreateInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `product_type: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `vendor: str`
+    :   The type of the None singleton.
+
+<a id="ProductsDeleteParams"></a>
+
+`ProductsDeleteParams(*args, **kwargs)`
+:   Parameters for products.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.ProductsDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="ProductsDeleteParamsInput"></a>
+
+`ProductsDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for ProductsDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
     :   The type of the None singleton.
 
 <a id="ProductsEqCondition"></a>
@@ -17437,6 +19088,52 @@ Classes
 
     `vendor: str`
     :   Product vendor or manufacturer
+
+<a id="ProductsUpdateParams"></a>
+
+`ProductsUpdateParams(*args, **kwargs)`
+:   Parameters for products.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product: airbyte_agent_sdk.connectors.shopify.types.ProductsUpdateParamsProduct`
+    :   The type of the None singleton.
+
+<a id="ProductsUpdateParamsProduct"></a>
+
+`ProductsUpdateParamsProduct(*args, **kwargs)`
+:   ProductUpdateInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `product_type: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `vendor: str`
+    :   The type of the None singleton.
 
 <a id="ShopAndCondition"></a>
 
