@@ -21,6 +21,7 @@ CJ Affiliate (formerly known as Commission Junction) is one of the world&#39;s l
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.4 | 2026-08-11 | [83873](https://github.com/airbytehq/airbyte/pull/83873) | Update dependencies |
 | 0.0.3 | 2026-08-04 | [83420](https://github.com/airbytehq/airbyte/pull/83420) | Update dependencies |
 | 0.0.2 | 2026-07-28 | [82883](https://github.com/airbytehq/airbyte/pull/82883) | Update dependencies |
 | 0.0.1 | 2026-06-30 | [81336](https://github.com/airbytehq/airbyte/pull/81336) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
