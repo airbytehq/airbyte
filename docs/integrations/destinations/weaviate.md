@@ -94,6 +94,8 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                      |
 |:--------| :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.63 | 2026-07-02 | [81386](https://github.com/airbytehq/airbyte/pull/81386) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
+| 0.2.62 | 2026-07-01 | [81364](https://github.com/airbytehq/airbyte/pull/81364) | Bump authlib 1.6.3 to 1.6.12 to resolve security vulnerabilities |
 | 0.2.61 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
 | 0.2.60 | 2025-09-16 | [61103](https://github.com/airbytehq/airbyte/pull/61103) | Update dependencies |
 | 0.2.59 | 2025-05-17 | [57180](https://github.com/airbytehq/airbyte/pull/57180) | Update dependencies |

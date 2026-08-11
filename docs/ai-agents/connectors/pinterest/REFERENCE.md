@@ -29,6 +29,17 @@ The Pinterest connector supports the following entities and actions.
 
 Get a list of the ad accounts that the authenticated user has access to.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_accounts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -86,6 +97,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get an ad account by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_accounts",
+  "action": "get",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -139,6 +164,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Accounts Context Store Search
 
 Search and filter ad accounts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_accounts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "country": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -214,6 +259,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of the boards owned by the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "boards",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -275,6 +331,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a board by ID.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "boards",
+  "action": "get",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -332,6 +402,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Boards Context Store Search
 
 Search and filter boards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "boards",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "board_pins_modified_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -413,6 +503,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of campaigns in the specified ad account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "campaigns",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -489,6 +593,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -582,6 +706,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of ad groups in the specified ad account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_groups",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -669,6 +807,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ad Groups Context Store Search
 
 Search and filter ad groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ad_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -778,6 +936,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of ads in the specified ad account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ads",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -866,6 +1038,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ads Context Store Search
 
 Search and filter ads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "ads",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -981,6 +1173,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of sections for a specific board.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_sections",
+  "action": "list",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1036,6 +1242,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Board Sections Context Store Search
 
 Search and filter board sections records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_sections",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1098,6 +1324,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Board Pins List
 
 Get a list of pins on a specific board.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_pins",
+  "action": "list",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1171,6 +1411,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Board Pins Context Store Search
 
 Search and filter board pins records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "board_pins",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "alt_text": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1264,6 +1524,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of catalogs for the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1316,6 +1587,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Catalogs Context Store Search
 
 Search and filter catalogs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "catalog_type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1385,6 +1676,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of catalog feeds for the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_feeds",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1445,6 +1747,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Catalogs Feeds Context Store Search
 
 Search and filter catalogs feeds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_feeds",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "catalog_type": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1530,6 +1852,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of catalog product groups for the authenticated user.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_product_groups",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1586,6 +1919,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Catalogs Product Groups Context Store Search
 
 Search and filter catalogs product groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "catalogs_product_groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1663,6 +2016,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of audiences for the specified ad account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "audiences",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1728,6 +2095,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Audiences Context Store Search
 
 Search and filter audiences records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "audiences",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1809,6 +2196,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of conversion tags for the specified ad account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "conversion_tags",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1871,6 +2272,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Conversion Tags Context Store Search
 
 Search and filter conversion tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "conversion_tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1948,6 +2369,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of customer lists for the specified ad account.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "customer_lists",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2011,6 +2446,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Customer Lists Context Store Search
 
 Search and filter customer lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "customer_lists",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ad_account_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2090,6 +2545,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of keywords for the specified ad account. Requires an ad_group_id filter.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "keywords",
+  "action": "list",
+  "params": {
+    "ad_account_id": "<str>",
+    "ad_group_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2154,6 +2624,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Keywords Context Store Search
 
 Search and filter keywords records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "pinterest",
+  "entity": "keywords",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "archived": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

@@ -3,9 +3,9 @@
 The Incident-Io agent connector is a Python package that equips AI agents to interact with Incident-Io through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Connect to the incident.io API to access incident management data including
-incidents, alerts, escalations, users, schedules, and more. incident.io is an
+incidents, alerts, escalations, users, teams, schedules, and more. incident.io is an
 on-call, status pages, and incident response platform. This connector provides
-read-only access to core incident management entities via the v1 and v2 APIs.
+read-only access to core incident management entities via the v1, v2, and v3 APIs.
 Requires an API key from your incident.io dashboard (Pro plan or above).
 
 
@@ -22,6 +22,7 @@ The Incident-Io connector is optimized to handle prompts like these.
 - List all severities
 - Show all incident statuses
 - List all custom fields
+- List all teams
 - Which incidents were created this week?
 - What are the most recent high-severity incidents?
 - Who is currently on-call?
@@ -55,23 +56,73 @@ This connector supports the following entities and actions. For more details, se
 | Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search) |
 | Catalog Types | [List](./REFERENCE.md#catalog-types-list), [Get](./REFERENCE.md#catalog-types-get), [Context Store Search](./REFERENCE.md#catalog-types-context-store-search) |
 | Schedules | [List](./REFERENCE.md#schedules-list), [Get](./REFERENCE.md#schedules-get), [Context Store Search](./REFERENCE.md#schedules-context-store-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 
 
 ## Incident-Io API docs
 
 See the official [Incident-Io API reference](https://api-docs.incident.io/).
 
-## SDK installation
+## Interfaces
+
+Use the Incident-Io connector through the Airbyte Agent CLI, the Python SDK, or the API.
+
+### CLI
+
+Install the CLI:
+
+```bash
+curl -fsSL https://airbyte.ai/install.sh | bash
+```
+
+Authenticate with Airbyte:
+
+```bash
+airbyte-agent login
+```
+
+Create the connector. The CLI opens the hosted setup flow:
+
+```bash
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io"
+}'
+```
+
+Describe the connector to see its supported entities and actions:
+
+```bash
+airbyte-agent connectors describe --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io"
+}'
+```
+
+Execute an action:
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "incident-io",
+  "entity": "incidents",
+  "action": "list"
+}'
+```
+
+### Python SDK
+
+#### Installation
 
 ```bash
 uv pip install airbyte-agent-sdk
 ```
 
-## SDK usage
+#### Usage
 
 Connectors can run in hosted or open source mode.
 
-### Hosted
+##### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Agents. You provide your Airbyte credentials instead.
 If your Airbyte client can access multiple organizations, also set `organization_id`.
@@ -81,6 +132,83 @@ This example assumes you've already authenticated your connector with Airbyte. S
 The `connect()` factory returns a fully typed `IncidentIoConnector` and reads `AIRBYTE_CLIENT_ID` / `AIRBYTE_CLIENT_SECRET` from the environment:
 
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+
+connector = connect("incident-io", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+
+connector = connect("incident-io", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+
+connector = connect("incident-io", workspace_name="<your_workspace_name>")
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Incident-Io Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+
+connector = connect("incident-io", workspace_name="<your_workspace_name>")
+
+mcp = FastMCP("Incident-Io Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `IncidentIoConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -155,12 +283,15 @@ async def incident_io_execute(entity: str, action: str, params: dict | None = No
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 Or pass credentials explicitly (equivalent, useful when you're not loading them from the environment):
 
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
 from pydantic_ai import Agent
 from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -174,18 +305,15 @@ connector = IncidentIoConnector(
     )
 )
 
-agent = Agent("openai:gpt-4o")
-
-@agent.tool_plain
-@IncidentIoConnector.tool_utils
-async def incident_io_execute(entity: str, action: str, params: dict | None = None):
-    return await connector.execute(entity, action, params or {})
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
 ```
 
 **LangChain**
 
 ```python title="LangChain"
-from langchain_core.tools import tool
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
 from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
 
@@ -198,18 +326,21 @@ connector = IncidentIoConnector(
     )
 )
 
-@tool
-@IncidentIoConnector.tool_utils
-async def incident_io_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Incident-Io connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    # connector.execute returns a Pydantic envelope for typed actions; fall back to raw data otherwise.
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
 ```
 
 **OpenAI Agents**
 
 ```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
 from agents import Agent, function_tool
 from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -223,21 +354,16 @@ connector = IncidentIoConnector(
     )
 )
 
-# strict_mode=False because `params: dict` is permissive and the default strict
-# JSON schema rejects objects with additionalProperties.
-@function_tool(strict_mode=False)
-@IncidentIoConnector.tool_utils(framework="openai_agents")
-async def incident_io_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Incident-Io connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
 
-agent = Agent(name="Incident-Io Assistant", tools=[incident_io_execute])
+agent = Agent(name="Incident-Io Assistant", tools=openai_tools)
 ```
 
 **FastMCP**
 
 ```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
 from fastmcp import FastMCP
 from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
 from airbyte_agent_sdk.types import AirbyteAuthConfig
@@ -253,18 +379,108 @@ connector = IncidentIoConnector(
 
 mcp = FastMCP("Incident-Io Agent")
 
-@mcp.tool
-@IncidentIoConnector.tool_utils
-async def incident_io_execute(entity: str, action: str, params: dict | None = None):
-    """Execute Incident-Io connector operations."""
-    result = await connector.execute(entity, action, params or {})
-    return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
 ```
 
-### Open source
+
+##### Open source
 
 In open source mode, you provide API credentials directly to the connector.
 
+The recommended pattern is `build_connector_tools`, which gives the agent three tools bound to this connector: `inspect_connector`, `read_skill_docs`, and `execute`. The agent can inspect the connector, read only the skill-doc section it needs, and then execute:
+
+```text
+inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> execute(entity, action, params)
+```
+
+**Pydantic AI**
+
+```python title="Pydantic AI"
+from airbyte_agent_sdk import build_connector_tools
+from pydantic_ai import Agent
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.connectors.incident_io.models import IncidentIoAuthConfig
+
+connector = IncidentIoConnector(
+    auth_config=IncidentIoAuthConfig(
+        api_key="<Your incident.io API key. Create one at https://app.incident.io/settings/api-keys>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="pydantic_ai")
+agent = Agent("openai:gpt-4o", tools=tools.as_list())
+```
+
+**LangChain**
+
+```python title="LangChain"
+from airbyte_agent_sdk import build_connector_tools
+from langchain_core.tools import StructuredTool
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.connectors.incident_io.models import IncidentIoAuthConfig
+
+connector = IncidentIoConnector(
+    auth_config=IncidentIoAuthConfig(
+        api_key="<Your incident.io API key. Create one at https://app.incident.io/settings/api-keys>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="langchain")
+langchain_tools = [
+    StructuredTool.from_function(
+        coroutine=tool,
+        name=tool.__name__,
+        description=tool.__doc__,
+    )
+    for tool in tools.as_list()
+]
+```
+
+**OpenAI Agents**
+
+```python title="OpenAI Agents"
+from airbyte_agent_sdk import build_connector_tools
+from agents import Agent, function_tool
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.connectors.incident_io.models import IncidentIoAuthConfig
+
+connector = IncidentIoConnector(
+    auth_config=IncidentIoAuthConfig(
+        api_key="<Your incident.io API key. Create one at https://app.incident.io/settings/api-keys>"
+    )
+)
+
+tools = build_connector_tools(connector, framework="openai_agents")
+openai_tools = [function_tool(tool, strict_mode=False) for tool in tools.as_list()]
+
+agent = Agent(name="Incident-Io Assistant", tools=openai_tools)
+```
+
+**FastMCP**
+
+```python title="FastMCP"
+from airbyte_agent_sdk import build_connector_tools
+from fastmcp import FastMCP
+from airbyte_agent_sdk.connectors.incident_io import IncidentIoConnector
+from airbyte_agent_sdk.connectors.incident_io.models import IncidentIoAuthConfig
+
+connector = IncidentIoConnector(
+    auth_config=IncidentIoAuthConfig(
+        api_key="<Your incident.io API key. Create one at https://app.incident.io/settings/api-keys>"
+    )
+)
+
+mcp = FastMCP("Incident-Io Agent")
+
+for tool in build_connector_tools(connector, framework="mcp").as_list():
+    mcp.tool(tool)
+```
+
+###### Legacy alternatives
+
+These examples are kept for existing integrations. For new agents, use `build_connector_tools` above. The legacy `IncidentIoConnector.tool_utils` pattern loads the connector's full generated catalog into one broad `execute` tool description instead of letting the agent read skill docs on demand.
+
 **Pydantic AI**
 
 ```python title="Pydantic AI"
@@ -355,6 +571,7 @@ async def incident_io_execute(entity: str, action: str, params: dict | None = No
     result = await connector.execute(entity, action, params or {})
     return result.model_dump(mode="json") if hasattr(result, "model_dump") else result
 ```
+
 
 ## Authentication
 

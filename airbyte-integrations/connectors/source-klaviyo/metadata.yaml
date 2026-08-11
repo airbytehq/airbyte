@@ -7,8 +7,8 @@ data:
   connectorType: source
   definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.4@sha256:f85ae668c118cc9a42dae007325b916d63c2df72d6809677582b4fa8a1c65bbb
-  dockerImageTag: 2.17.8
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.24.0@sha256:e34fb609bccdeb77474763c77e3621ea9d5adf9f65f2d9851102cc14a1caa281
+  dockerImageTag: 2.21.1
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
@@ -40,19 +40,23 @@ data:
       1.0.0:
         message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
         upgradeDeadline: "2023-11-30"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   externalDocumentationUrls:
-    - title: Versioning docs
+    - title: API versioning and deprecation policy
       url: https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy
-      type: api_reference
+      type: api_deprecations
     - title: Changelog
       url: https://developers.klaviyo.com/en/docs/changelog_
       type: api_release_history
     - title: Developer Group
       url: https://community.klaviyo.com/groups/developer-group-64
-    - title: Changelog
-      url: https://developers.klaviyo.com/en/docs/changelog
-      type: api_release_history
   tags:
     - cdk:low-code
     - language:manifest-only
