@@ -7,9 +7,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 
-# Ancre le chemin du manifest au fichier de test lui-même, au lieu d'un
-# chemin relatif "manifest.yaml" qui casse si pytest est lancé depuis un
-# autre répertoire de travail (c'était le bug n°3 relevé par le bot).
+
 MANIFEST_PATH = str(Path(__file__).parent.parent / "manifest.yaml")
 
 TEST_CONFIG = {"api_key": "fake-key", "start_date": "2025-01-01"}
