@@ -29,23 +29,24 @@ import org.junit.jupiter.api.assertThrows
 
 class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
     private val realTableName = TableName("namespace", "table")
+
     @Test
-    fun `403 access denied is wrapped as ConfigErrorException`() = runBlocking {
+    fun `403 access denied is wrapped as ConfigErrorException`() {
         assertConvertedToConfigError(403, "Access Denied: permission denied")
     }
 
     @Test
-    fun `401 unauthorized is wrapped as ConfigErrorException`() = runBlocking {
+    fun `401 unauthorized is wrapped as ConfigErrorException`() {
         assertConvertedToConfigError(401, "Unauthorized")
     }
 
     @Test
-    fun `403 rate limit is not wrapped as ConfigErrorException`() = runBlocking {
+    fun `403 rate limit is not wrapped as ConfigErrorException`() {
         assertNotConverted(403, "Rate limit exceeded", "rateLimitExceeded")
     }
 
     @Test
-    fun `500 internal error is not wrapped as ConfigErrorException`() = runBlocking {
+    fun `500 internal error is not wrapped as ConfigErrorException`() {
         assertNotConverted(500, "Internal error", "internalError")
     }
 
@@ -78,21 +79,21 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
         assertNull(result.values.single().tempTable)
     }
 
-    private suspend fun assertConvertedToConfigError(code: Int, message: String) {
+    private fun assertConvertedToConfigError(code: Int, message: String) {
         val exception = bigQueryException(code, message, "accessDenied")
         val bigquery = mockk<BigQuery> { every { getTable(any()) } throws exception }
 
         assertThrows<ConfigErrorException> {
-            gatherer(bigquery).gatherInitialStatus(catalog())
+            runBlocking { gatherer(bigquery).gatherInitialStatus(catalog()) }
         }
     }
 
-    private suspend fun assertNotConverted(code: Int, message: String, reason: String) {
+    private fun assertNotConverted(code: Int, message: String, reason: String) {
         val exception = bigQueryException(code, message, reason)
         val bigquery = mockk<BigQuery> { every { getTable(any()) } throws exception }
 
         assertThrows<BigQueryException> {
-            gatherer(bigquery).gatherInitialStatus(catalog())
+            runBlocking { gatherer(bigquery).gatherInitialStatus(catalog()) }
         }
     }
 
