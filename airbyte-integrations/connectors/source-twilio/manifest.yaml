@@ -193,7 +193,7 @@ definitions:
       $ref: "#/definitions/base_stream/retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url: "{{ parameters['detail_url'] }}/{{ stream_partition['iso_country'] }}"
+        url: "{{ parameters['pricing_url'] }}/{{ stream_partition['iso_country'] }}"
       paginator:
         type: NoPagination
       record_selector:
@@ -211,7 +211,7 @@ definitions:
             stream:
               $ref: "#/definitions/base_stream"
               $parameters:
-                url: "{{ parameters['list_url'] }}"
+                url: "{{ parameters['pricing_url'] }}"
                 name: "{{ parameters['name'] }}_parent"
                 data_field: countries
             parent_key: iso_country
@@ -878,8 +878,7 @@ definitions:
         $ref: "#/schemas/voice_pricing_countries"
     $parameters:
       name: voice_pricing_countries
-      list_url: https://pricing.twilio.com/v2/Voice/Countries
-      detail_url: https://pricing.twilio.com/v2/Voice/Countries
+      pricing_url: https://pricing.twilio.com/v2/Voice/Countries
 
   messaging_pricing_countries_stream:
     $ref: "#/definitions/base_pricing_country_stream"
@@ -889,8 +888,7 @@ definitions:
         $ref: "#/schemas/messaging_pricing_countries"
     $parameters:
       name: messaging_pricing_countries
-      list_url: https://pricing.twilio.com/v1/Messaging/Countries
-      detail_url: https://pricing.twilio.com/v1/Messaging/Countries
+      pricing_url: https://pricing.twilio.com/v1/Messaging/Countries
 
   phone_number_pricing_countries_stream:
     $ref: "#/definitions/base_pricing_country_stream"
@@ -900,8 +898,7 @@ definitions:
         $ref: "#/schemas/phone_number_pricing_countries"
     $parameters:
       name: phone_number_pricing_countries
-      list_url: https://pricing.twilio.com/v1/PhoneNumbers/Countries
-      detail_url: https://pricing.twilio.com/v1/PhoneNumbers/Countries
+      pricing_url: https://pricing.twilio.com/v1/PhoneNumbers/Countries
 
 streams:
   - $ref: "#/definitions/accounts_stream"
