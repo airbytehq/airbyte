@@ -94,6 +94,17 @@ airbyte:
               Please verify your database name and user permissions.
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles
 
+          - pattern: (?i).*cannot open server.*requested by the login.*
+            input-example: >-
+              com.microsoft.sqlserver.jdbc.SQLServerException: Cannot open server "localhost" requested by the login. The login failed.
+            error: config
+            group: SQL Server Azure Gateway Routing Error
+            output: >-
+              The sync failed because Azure SQL Database and Azure SQL Managed Instance resolve the
+              target instance from the server name in the login. An SSH tunnel replaces that name
+              with localhost; use <user>@<short-instance-name> as the username.
+            reference-links: https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/connectivity-architecture-overview
+
           - pattern: (?i).*invalid object name.*
             input-example: >-
               com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'dbo.test_table'.
@@ -154,6 +165,15 @@ airbyte:
               Please verify your database name and connection configuration.
             group: SQL Server Database Access Error
             reference-links: https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-4060-database-engine-error
+
+          - code: 40532
+            error: config
+            output: >-
+              The sync failed because Azure SQL Database and Azure SQL Managed Instance resolve the
+              target instance from the server name in the login. An SSH tunnel replaces that name
+              with localhost; use <user>@<short-instance-name> as the username.
+            group: SQL Server Azure Gateway Routing Error
+            reference-links: https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/connectivity-architecture-overview
 
           - code: 208
             error: config

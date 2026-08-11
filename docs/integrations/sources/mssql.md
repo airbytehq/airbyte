@@ -420,6 +420,18 @@ what each piece of configuration means.
 
    with `-----END RSA PRIVATE KEY-----`.
 
+### Azure SQL Database and SQL Managed Instance
+
+For Azure SQL Database and SQL Managed Instance connections through an SSH tunnel, the gateway
+routes the connection using the server name in the login packet. Because the tunnel changes that
+name to `localhost`, the connection may fail with error 40532, `Cannot open server "localhost"
+requested by the login`. Set the database username to `<user>@<short-instance-name>`, using only
+the short instance name rather than the FQDN. A matching login may also need to exist on the
+instance. See the [Azure SQL connectivity architecture overview](https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/connectivity-architecture-overview).
+
+When using `encrypted_verify_certificate`, the connector defaults **Host Name In Certificate** to
+the configured host when an SSH tunnel is enabled. You can override this value explicitly.
+
 ### Generating an SSH Key Pair
 
 The connector expects an RSA key in PEM format. To generate this key:
@@ -540,6 +552,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.1-rc.1  | 2026-08-11 | [84XXX](https://github.com/airbytehq/airbyte/pull/84XXX)                                                          | Classify Azure SSH tunnel login-routing errors and default certificate hostname validation to the configured host. |
 | 5.0.0       | 2026-05-01 | [10595](https://github.com/airbytehq/oncall/issues/10595)                                                         | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics. |
 | 4.4.12      | 2026-06-16 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
 | 4.4.11      | 2026-06-11 | [79128](https://github.com/airbytehq/airbyte/pull/79128)                                                          | Fix incremental sync failure when the saved state has a null cursor (table was empty on prior CDK version).                                     |

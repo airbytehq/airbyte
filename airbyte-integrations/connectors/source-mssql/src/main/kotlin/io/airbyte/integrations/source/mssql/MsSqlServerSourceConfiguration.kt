@@ -309,7 +309,17 @@ constructor(
                                 "trustStorePassword" to password
                             )
                         }
-                    val hostNameInCertificate = encryptionSpec.hostNameInCertificate
+                    val hostNameInCertificate =
+                        encryptionSpec.hostNameInCertificate
+                            ?: if (sshTunnel != null && sshTunnel !is SshNoTunnelMethod) {
+                                log.info {
+                                    "Using configured host for certificate hostname validation " +
+                                        "because an SSH tunnel is enabled."
+                                }
+                                pojo.host
+                            } else {
+                                null
+                            }
                     val hostNameProperties =
                         if (hostNameInCertificate == null) {
                             emptyMap()
