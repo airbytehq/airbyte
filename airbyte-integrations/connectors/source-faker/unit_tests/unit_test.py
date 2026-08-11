@@ -5,7 +5,9 @@
 import jsonschema
 import pytest
 from source_faker import SourceFaker
+from source_faker.utils import read_json
 
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
 
@@ -36,6 +38,16 @@ def schemas_are_valid():
 
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
+
+
+def test_json_file_raises_for_malformed_content(tmp_path):
+    dataset_file = tmp_path / "malformed.json"
+    dataset_file.write_text("not json")
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        read_json(dataset_file)
+
+    assert exc_info.value.failure_type == FailureType.system_error
 
 
 def test_source_streams():
