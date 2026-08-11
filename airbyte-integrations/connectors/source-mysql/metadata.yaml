@@ -77,7 +77,12 @@ data:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   externalDocumentationUrls:
     - title: MySQL documentation
       url: https://dev.mysql.com/doc/
