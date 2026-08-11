@@ -17,7 +17,9 @@ EXEMPT = {
     # `compare_at` is a price, not a timestamp.
     "abandoned_checkouts.json::tax_lines[].compare_at",
     "abandoned_checkouts.json::shipping_lines[].tax_lines[].compare_at",
-    # Removed from Admin API customer resources in 2024-01; never populated at api_version 2025-10.
+    # Nested inside the `customer` object, which typed destinations store as a single JSON column,
+    # so annotating it would change no destination column type. The top-level copy on `customers`
+    # is annotated.
     "orders.json::customer.accepts_marketing_updated_at",
     "draft_orders.json::customer.accepts_marketing_updated_at",
 }

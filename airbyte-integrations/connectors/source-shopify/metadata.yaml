@@ -94,7 +94,7 @@ data:
               ["countries", "product_variants", "articles", "blogs", "pages"]
       4.0.0:
         message: "The `orders.processed_at` and `order_refunds.processed_at` fields are now declared as `format: date-time`. Typed destinations will change these columns from string/VARCHAR to timestamp-with-timezone. Refresh the source schema and resync the `orders` and `order_refunds` streams, and update any downstream SQL, dbt models, or BI logic that treats these columns as text. See https://docs.airbyte.com/integrations/sources/shopify-migrations."
-        upgradeDeadline: "2026-09-05"
+        upgradeDeadline: "2026-09-09"
         deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream

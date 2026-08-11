@@ -9,7 +9,7 @@ Two of these are top-level stream fields, so typed destinations will change the 
 - `orders.processed_at`
 - `order_refunds.processed_at`
 
-The remaining annotated fields are nested inside the `customer` object and the `refunds[]` / `transactions[]` arrays, which typed destinations already store as a single JSON column. Those cause no column type change.
+The remaining annotated fields are nested inside the `orders.refunds[].transactions[]` and `order_refunds.transactions[]` arrays, which typed destinations already store as a single JSON column. Those cause no column type change.
 
 **Required action:** Refresh the source schema, then clear and resync the `orders` and `order_refunds` streams.
 
