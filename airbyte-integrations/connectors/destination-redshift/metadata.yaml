@@ -106,6 +106,13 @@ data:
           "
         upgradeDeadline: "2026-08-31"
         deadlineAction: "auto_upgrade"
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   resourceRequirements:
     jobSpecific:
       - jobType: sync
