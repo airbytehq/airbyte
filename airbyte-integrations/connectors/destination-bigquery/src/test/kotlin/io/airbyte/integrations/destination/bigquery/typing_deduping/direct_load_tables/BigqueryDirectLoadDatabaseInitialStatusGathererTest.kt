@@ -21,7 +21,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigInteger
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -29,30 +29,28 @@ import org.junit.jupiter.api.assertThrows
 
 class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
     private val realTableName = TableName("namespace", "table")
-    private val tempTableName = TableName("namespace", "table_temp")
-
     @Test
-    fun `403 access denied is wrapped as ConfigErrorException`() = runTest {
+    fun `403 access denied is wrapped as ConfigErrorException`() = runBlocking {
         assertConvertedToConfigError(403, "Access Denied: permission denied")
     }
 
     @Test
-    fun `401 unauthorized is wrapped as ConfigErrorException`() = runTest {
+    fun `401 unauthorized is wrapped as ConfigErrorException`() = runBlocking {
         assertConvertedToConfigError(401, "Unauthorized")
     }
 
     @Test
-    fun `403 rate limit is not wrapped as ConfigErrorException`() = runTest {
+    fun `403 rate limit is not wrapped as ConfigErrorException`() = runBlocking {
         assertNotConverted(403, "Rate limit exceeded", "rateLimitExceeded")
     }
 
     @Test
-    fun `500 internal error is not wrapped as ConfigErrorException`() = runTest {
+    fun `500 internal error is not wrapped as ConfigErrorException`() = runBlocking {
         assertNotConverted(500, "Internal error", "internalError")
     }
 
     @Test
-    fun `existing and empty tables return their statuses`() = runTest {
+    fun `existing and empty tables return their statuses`() = runBlocking {
         val bigquery = mockk<BigQuery>()
         val existingTable = mockk<Table> { every { numRows } returns BigInteger.ONE }
         val emptyTable = mockk<Table> { every { numRows } returns BigInteger.ZERO }
@@ -70,7 +68,7 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
     }
 
     @Test
-    fun `absent tables return null statuses`() = runTest {
+    fun `absent tables return null statuses`() = runBlocking {
         val bigquery = mockk<BigQuery>()
         every { bigquery.getTable(any()) } returns null
 
@@ -113,7 +111,11 @@ class BigqueryDirectLoadDatabaseInitialStatusGathererTest {
             mapOf(
                 stream to
                     TableNameInfo(
-                        tableNames = TableNames(realTableName, tempTableName),
+                        tableNames =
+                            TableNames(
+                                rawTableName = null,
+                                finalTableName = realTableName,
+                            ),
                         columnNameMapping = ColumnNameMapping(emptyMap()),
                     )
             )
