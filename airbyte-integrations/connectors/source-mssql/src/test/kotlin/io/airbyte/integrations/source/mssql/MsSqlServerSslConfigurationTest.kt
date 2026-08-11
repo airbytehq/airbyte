@@ -13,8 +13,7 @@ class MsSqlServerSslConfigurationTest {
     @Test
     fun verifyCertificateUsesConfiguredHostWhenTunnelIsEnabled() {
         val pojo = baseVerifyCertificatePojo()
-        pojo.tunnelMethodJson =
-            SshPasswordAuthTunnelMethod("localhost", 2222, "sshuser", "sshpass")
+        pojo.tunnelMethodJson = SshPasswordAuthTunnelMethod("localhost", 2222, "sshuser", "sshpass")
 
         val config = MsSqlServerSourceConfigurationFactory().make(pojo)
 
@@ -34,8 +33,7 @@ class MsSqlServerSslConfigurationTest {
     @Test
     fun verifyCertificatePreservesExplicitHostNameWhenTunnelIsEnabled() {
         val pojo = baseVerifyCertificatePojo()
-        pojo.tunnelMethodJson =
-            SshPasswordAuthTunnelMethod("localhost", 2222, "sshuser", "sshpass")
+        pojo.tunnelMethodJson = SshPasswordAuthTunnelMethod("localhost", 2222, "sshuser", "sshpass")
         (pojo.encryptionJson as SslVerifyCertificate).hostNameInCertificate =
             "custom.database.windows.net"
 
