@@ -80,6 +80,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.3.8 | 2026-08-11 | [84215](https://github.com/airbytehq/airbyte/pull/84215) | Promoted release candidate to GA |
 | 0.3.8-rc.5 | 2026-08-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Revert the concurrency work from 0.3.8-rc.1 through 0.3.8-rc.3: remove the API budget, concurrency level, and `num_workers` option. |
 | 0.3.8-rc.4 | 2026-08-11 | [83816](https://github.com/airbytehq/airbyte/pull/83816) | Add missing application, candidate, and source fields to the declared schemas, and remove duplicated unreferenced manifest blocks. |
 | 0.3.8-rc.3 | 2026-05-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Decrease default concurrency to 2 and add explicit worker count plus API request budget for the next rollout. |
