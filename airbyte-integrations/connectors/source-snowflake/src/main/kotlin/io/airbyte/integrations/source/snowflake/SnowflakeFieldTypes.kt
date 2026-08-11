@@ -18,18 +18,9 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
-// Snowflake timestamps can have up to 9 decimal places (nanoseconds), but destinations may only
-// support 6 (microseconds). Rounded up, not down: this value is also used as a cursor bound for
-// incremental sync, and flooring it can make it compare as less than the row it should include.
-private fun roundUpToMicros(localDateTime: LocalDateTime): LocalDateTime {
-    val remainderNanos = localDateTime.nano % 1000
-    return if (remainderNanos == 0) {
-        localDateTime
-    } else {
-        localDateTime.plusNanos((1000 - remainderNanos).toLong())
-    }
-}
-
+/**
+ * Nanoseconds are rounded up to microsecond precision (6 decimal places). See [roundUpToMicros].
+ */
 object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
     override fun get(
         rs: ResultSet,
@@ -89,3 +80,16 @@ object SnowflakeOffsetDateTimeFieldType :
             stmt.setTimestamp(paramIdx, timestamp)
         }
     )
+
+// Snowflake timestamps can have up to 9 decimal places (nanoseconds), but the Airbyte
+// protocol only supports 6 (microseconds). Round up, never down. This value is also used as a
+// cursor bound for incremental syncs, and reducing it can make it compare as less than a row with
+// higher value that we should include in the WHERE clause of the subsequent sync.
+private fun roundUpToMicros(localDateTime: LocalDateTime): LocalDateTime {
+    val remainderNanos = localDateTime.nano % 1000
+    return if (remainderNanos == 0) {
+        localDateTime
+    } else {
+        localDateTime.plusNanos((1000 - remainderNanos).toLong())
+    }
+}
