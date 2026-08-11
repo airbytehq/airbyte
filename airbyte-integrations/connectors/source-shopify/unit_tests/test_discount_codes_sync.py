@@ -6,13 +6,14 @@ import json
 
 import pytest
 import requests_mock as rmock
+from source_shopify.streams.base_streams import ShopifyStream
 from source_shopify.streams.streams import DiscountCodesSync
 
 from airbyte_cdk.utils import AirbyteTracedException
 
 
 def _graphql_url(shop: str = "test-shop") -> str:
-    return f"https://{shop}.myshopify.com/admin/api/2025-10/graphql.json"
+    return f"https://{shop}.myshopify.com/admin/api/{ShopifyStream.api_version}/graphql.json"
 
 
 _EXTENSIONS = {
