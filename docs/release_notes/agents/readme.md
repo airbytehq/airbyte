@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 11, 2026
+
+Web app
+
+- When your request to an agent is ambiguous, the chat now asks you a short clarifying question with a few options to choose from instead of guessing. You can pick an option, type your own answer, or skip the question and let the agent proceed with its best assumption, which it states in its reply.
+
 ## July 21, 2026
 
 Web app
