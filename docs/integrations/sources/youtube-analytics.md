@@ -2,45 +2,38 @@
 
 This page contains the setup guide and reference information for the YouTube Analytics source connector.
 
+This connector reads bulk reports from the [YouTube Reporting API](https://developers.google.com/youtube/reporting/v1/reports). It doesn't use the YouTube Analytics targeted-query API, so the data you get matches YouTube's predefined channel and playlist reports rather than an arbitrary set of dimensions and metrics.
+
 ## Prerequisites
 
-The Google account you authorize must own or manage a YouTube channel. All YouTube Reporting API data belongs to a channel or a content owner, so an account with no associated channel cannot read any data and setup fails with a 401. If you see the error `The authorized Google account does not appear to have an associated YouTube channel`, create a channel for that account or re-authenticate with an account that already has one.
-
-YouTube does not start to generate a report until you create a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) for that report.
-Airbyte creates a reporting job for your report, or uses the current reporting job if it already exists, during the **first sync** of that stream. Setting up the source does not create any reporting jobs.
-The report will be available within 48 hours of creating the reporting job and will be for the day that the job was scheduled.
-Because of this, on a brand-new source the first sync creates the jobs and returns no records for the report streams; records begin to arrive on a sync that runs at least 48 hours after that first sync.
-For example, if you schedule a job on September 1, 2015, then the report for September 1, 2015, will be ready on September 3, 2015.
-The report for September 2, 2015, will be posted on September 4, 2015, and so forth.
-Youtube also generates historical data reports covering the 30-day period prior to when you created the job. Airbyte syncs all available historical data too.
+- A Google account that owns or manages a YouTube channel. All Reporting API data belongs to a channel or a content owner, so an account with no associated channel can't read any data.
+- Authorization for the `https://www.googleapis.com/auth/yt-analytics.readonly` [scope](https://developers.google.com/youtube/reporting/v1/reports#step-1:-retrieve-authorization-credentials). The connector doesn't request the monetary scope, so revenue and ad performance reports aren't available.
+- For self-managed Airbyte: a Google Cloud project with the [YouTube Reporting API](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) enabled, an OAuth client, and a refresh token for that client.
 
 ## Setup guide
 
-### Step 1: Enable the YouTube Reporting API
+### Airbyte Cloud
 
-In the Google Cloud project you authorize with, open the [YouTube Reporting API page](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) and enable the API. The connector authenticates as a user through OAuth 2.0, not as a service account, and it needs the [`https://www.googleapis.com/auth/yt-analytics.readonly` scope](https://developers.google.com/youtube/reporting/v1/reports#step-1:-retrieve-authorization-credentials).
-
-### Step 2: Set up the YouTube Analytics connector in Airbyte
-
-#### For Airbyte Cloud
-
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Search for and select **YouTube Analytics**.
-4. Click **Authenticate your account**, then sign in with the Google account that owns or manages the channel and grant access.
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **New source**.
+2. Search for and select **YouTube Analytics**, then enter a name for the source.
+3. Click **Authenticate your account** and complete Google's consent screen with the account that has access to your channel.
+4. Optionally enter a **Content Owner ID**. See [Content Owner ID](#content-owner-id).
 5. Click **Set up source**.
 
-#### For Airbyte Self-Managed
+### Self-managed Airbyte
 
-Self-managed deployments don't include Airbyte's OAuth application, so you supply your own Google OAuth client and refresh token.
+Self-managed deployments authenticate with your own Google OAuth client instead of Airbyte's.
 
-1. In your Google Cloud project, create an **OAuth client ID** of type **Web application** and note the client ID and client secret. See Google's [authorization guide](https://developers.google.com/youtube/reporting/guides/authorization) for the full flow.
-2. Complete the OAuth consent flow for that client with the `https://www.googleapis.com/auth/yt-analytics.readonly` scope and `access_type=offline` to obtain a refresh token.
-3. In Airbyte, click **Sources**, then **+ New source**, and select **YouTube Analytics**.
+1. In your Google Cloud project, enable the [YouTube Reporting API](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) and create an OAuth 2.0 client ID of type **Web application** or **Desktop app**.
+2. Generate a refresh token for that client, granting the `https://www.googleapis.com/auth/yt-analytics.readonly` scope with the Google account that has access to your channel.
+3. In Airbyte, click **Sources** > **New source**, then select **YouTube Analytics**.
 4. Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
-5. Click **Set up source**.
+5. Optionally enter a **Content Owner ID**. See [Content Owner ID](#content-owner-id).
+6. Click **Set up source**.
 
-### Content Owner ID (Optional)
+The connection check reads the `report_types` stream, which only requires valid credentials and doesn't create any reporting jobs.
+
+### Content Owner ID
 
 The **Content Owner ID** field is for YouTube partners who participate in the [YouTube Partner Program](https://support.google.com/youtube/answer/72851) and manage multiple channels through a content owner account. This includes Multi-Channel Networks (MCNs) and media companies that manage content across multiple YouTube channels.
 
@@ -48,24 +41,36 @@ The **Content Owner ID** field is for YouTube partners who participate in the [Y
 - If you are a YouTube partner with a content owner account, enter your content owner ID to retrieve data for channels managed under that account.
 - To find your content owner ID, you can check the URL when logged into the [YouTube Studio](https://studio.youtube.com/) (look for the `o=` parameter), use the [YouTube Content ID API](https://developers.google.com/youtube/partner/docs/v1/contentOwners/list), or contact your YouTube partner manager.
 
-When you set this field, the connector adds `onBehalfOfContentOwner` to every request. The streams themselves are the same channel and playlist reports listed below. The connector doesn't sync content owner-specific reports, such as `content_owner_basic_a3`, or the system-managed ad revenue reports.
+When you set this field, the connector adds the `onBehalfOfContentOwner` parameter to its requests. The streams themselves are still channel and playlist reports; the content owner-specific report types, such as `content_owner_basic_a4`, aren't available in this connector.
+
+## How reporting jobs affect your syncs
+
+YouTube doesn't generate a bulk report until a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) exists for that report type. For each stream you enable, the connector reuses an existing job or creates one named `Airbyte reporting job` during the first sync of that stream. Setting up the source doesn't create any jobs. This has a few consequences worth planning for:
+
+- **The first sync of a new source returns no report records.** It creates the reporting jobs; records begin to arrive on a sync that runs at least 48 hours later.
+- **Recent days lag by about 48 hours.** The report for a given day is ready roughly two days later. If a job is created on September 1, the report for September 1 arrives on September 3, and the report for September 2 arrives on September 4.
+- **Historical data goes back 30 days.** When YouTube creates a job, it also generates reports covering the 30 days before that date, and the connector syncs them. There's no way to backfill further, so a stream you enable today can't return data from before last month.
+- **Reports expire.** YouTube keeps generated reports for 60 days, and historical reports for 30 days. If a connection is disabled or failing for longer than that, the missed days are gone permanently; only newly generated reports are synced when the connection resumes.
+- **Each report covers one day** in Pacific time (UTC-8), and the connector stores that day in the `date` field as an integer such as `20260730`. `date` is also the cursor for incremental syncs.
+- **Some rows are anonymized.** YouTube replaces dimension values with aggregated or null values when the underlying metrics don't meet its privacy threshold, so expect rows with empty `video_id` or `country_code` values.
 
 ## Supported sync modes
 
 The YouTube Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
-| Incremental Sync with dedupe  | Yes        |
-| SSL connection                | Yes        |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| SSL connection    | Yes        |
 
-All report streams sync incrementally using `date` as the cursor field. Each report covers a single 24-hour period, so a sync fetches the report days that YouTube published since the previous sync. The `report_types` stream is full refresh only.
+Because YouTube only exposes each report as complete daily files, incremental syncs resume from the last day already synced rather than from a timestamp within a day.
 
-## Supported Streams
+## Supported streams
 
-- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream because it returns data with valid credentials alone and requires no reporting job.
+Each stream except `report_types` corresponds to one YouTube channel or playlist report. Enable only the reports you need: every enabled report stream creates a reporting job in your account.
+
+- [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - the report types available to your channel or content owner. Full refresh only, and it doesn't require a reporting job.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
@@ -85,6 +90,24 @@ All report streams sync incrementally using `date` as the cursor field. Each rep
 - [playlist_province_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-province)
 - [playlist_traffic_source_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-traffic-sources)
 
+## Troubleshooting
+
+### The connection check fails with "no stream slices were found"
+
+Upgrade to version 1.3.0 or later, which checks the `reportTypes` endpoint instead of a report that may have no reporting job. Versions before 1.2.12 checked the `channel_annotations_a1` report, and versions 1.2.12 through 1.2.x checked `channel_basic_a3`; both can fail this way.
+
+### A stream syncs no records
+
+This is expected in two cases: the reporting job for that report was created less than 48 hours ago, or your channel has no activity for the dimensions in that report. YouTube also generates report files for days with no data, and those files contain only a header row.
+
+### Setup fails with "The authorized Google account does not appear to have an associated YouTube channel"
+
+The account you authorized has no YouTube channel or content owner linked to it, so the Reporting API rejects its requests with a 401. Create a channel for that account, or re-authenticate with an account that already owns or manages one. If you're connecting as a content owner, also confirm the **Content Owner ID** is correct.
+
+### Requests fail with a 403 error
+
+The authorized Google account must have access to the channel's analytics. Re-authenticate with an account that can view the channel in [YouTube Studio](https://studio.youtube.com/), and confirm you granted the `yt-analytics.readonly` scope. If you set a **Content Owner ID**, confirm the account is linked to that content owner.
+
 ## YouTube API Services usage disclosure
 
 This connector uses [YouTube API Services](https://developers.google.com/youtube/analytics) to retrieve data from YouTube. By using this connector, you agree to be bound by the [YouTube Terms of Service](https://www.youtube.com/t/terms).
@@ -92,13 +115,6 @@ This connector uses [YouTube API Services](https://developers.google.com/youtube
 YouTube API Services are provided by Google. For information about how Google handles data, review the [Google Privacy Policy](https://www.google.com/policies/privacy).
 
 When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
-
-## Limitations
-
-- **Report retention.** YouTube keeps each generated report for [30 to 60 days, depending on the report type](https://developers.google.com/youtube/reporting/v1/reports). If a connection stays paused or broken for longer than that window, the reports for those days are deleted at the source and can't be recovered by a later sync or by resetting the stream.
-- **Restated data.** YouTube sometimes reissues a report for a day it already delivered, for example to correct or backfill data. Because the streams are incremental on `date`, use **Incremental | Append + Deduped** if you want the corrected rows to replace earlier ones in your destination.
-- **Anonymized rows.** When a dimension value doesn't meet YouTube's privacy threshold, YouTube aggregates those rows and returns null or aggregated dimension values instead of dropping them. Rows with null dimensions are expected and aren't a connector error.
-- **Reporting jobs.** The connector creates one reporting job per enabled report stream, named `Airbyte reporting job`, and reuses an existing job for that report type if one exists. Deleting these jobs in the YouTube Reporting API stops report generation until the next sync recreates them, and you lose the days in between.
 
 ## Performance considerations
 
@@ -119,8 +135,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+| Version    | Date       | Pull Request                                             | Subject                                             |
+|:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
 | 1.3.0 | 2026-08-04 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
 | 1.2.12 | 2026-07-30 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
