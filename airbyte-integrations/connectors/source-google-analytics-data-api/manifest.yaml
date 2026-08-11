@@ -1058,9 +1058,19 @@ dynamic_streams:
         # When the config contains multiple property IDs, it keeps the
         # first stream as <report_name>, and names each additional stream
         # <report_name>Property<property_id>.
+        #
+        # When `single_stream_per_report` is enabled the stream covers every property, so it gets
+        # a `Consolidated` suffix instead. The suffix is load-bearing, not cosmetic: destination
+        # tables and incremental state are both keyed by stream name, so reusing `<report_name>`
+        # here would make the platform treat the consolidated stream as a continuation of the
+        # single-property stream. It would inherit that stream's cursor -- which only ever
+        # reflected the FIRST property's progress -- and every other property would silently
+        # resume from it instead of backfilling. A distinct name forces a full initial sync.
+        # Note `source_config_1` holds the gate value `(0, True)` when enabled, so its `[1]` is
+        # a boolean and must not be concatenated into a name.
         - type: ComponentMappingDefinition
           field_path: ["**", "name"]
-          value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
+          value: "{{ components_values['name'] ~ ('Consolidated' if config.get('single_stream_per_report') else ('Property' ~ components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else '')) }}"
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
         # it doesn't exist in this context yet as we populate the template
@@ -1392,7 +1402,11 @@ spec:
         title: One Stream per Report
         description:
           When enabled, each report produces one stream containing data from all configured
-          properties, distinguished by the property_id field.
+          properties, distinguished by the property_id field. These streams take a Consolidated
+          suffix (for example, devicesConsolidated) and replace the per-property streams. If you
+          are changing this setting on an existing connection, refresh the source schema
+          afterwards to drop the old per-property streams and pick up the new ones, then clear
+          the new streams so every property backfills.
         order: 2
         type: boolean
         default: false

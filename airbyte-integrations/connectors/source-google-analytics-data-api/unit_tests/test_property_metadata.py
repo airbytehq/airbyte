@@ -129,6 +129,9 @@ def test_property_metadata_coexists_with_dynamic_report_streams(
     stream_names = [stream.name for stream in source.streams(config)]
 
     assert "property_metadata" in stream_names
-    assert "metadata_coexistence_report" in stream_names
+    # Consolidated report streams carry a `Consolidated` suffix so they never collide with the
+    # per-property stream names. `property_metadata` is static and named the same either way.
+    expected_report = "metadata_coexistence_reportConsolidated" if single_stream_per_report else "metadata_coexistence_report"
+    assert expected_report in stream_names
     assert len(stream_names) > 1
     assert len(stream_names) == len(set(stream_names))

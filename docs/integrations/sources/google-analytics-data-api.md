@@ -266,11 +266,35 @@ By default, the connector creates a separate stream for every combination of rep
 
 Enabling **One Stream per Report** creates one stream per report instead, covering every configured property. Each record carries a `property_id` field, and `property_id` is part of the stream's primary key, so rows from different properties remain distinct in the destination. Each property also keeps its own incremental cursor, so they sync independently.
 
+Consolidated streams are named `<report_name>Consolidated` — for example, the `devices` report becomes `devicesConsolidated`. The per-property streams (`devices`, `devicesProperty5729978930`, and so on) are not created while this setting is enabled. The distinct name is deliberate: it guarantees the consolidated stream starts with a clean slate rather than inheriting the destination table and incremental cursor of the single-property stream it replaces.
+
 The stream's schema is the union of the field definitions across all configured properties. This matters if you use custom metrics, which are defined per property in GA4: a custom metric that exists on only some of your properties is still included in the schema, so its data is not dropped. If the same metric name is typed differently across properties, the type from the property listed first in **Property IDs** is used.
 
 :::caution
 
-Enabling or disabling this setting changes stream names, so data is written to new destination tables and incremental state resets. The next sync after changing it is a full re-sync, and any previously synced tables are left in place for you to clean up. This is not a setting to toggle casually on an established connection.
+Enabling or disabling this setting changes stream names, so data is written to new destination tables and incremental state resets. This is not a setting to toggle casually on an established connection.
+
+**Changing it on an existing connection requires a schema refresh.** The stream list you see in a connection is a snapshot of the last schema discovery, so the per-property streams keep appearing — and keep syncing nothing — until you refresh it. Follow these steps in order:
+
+1. Enable the setting on the source and save.
+2. Run **Refresh source schema** on each connection using this source. The per-property streams (`devices`, `devicesProperty5729978930`, and so on) are reported as removed, and the `<report_name>Consolidated` streams appear.
+3. Enable the consolidated streams you want and apply the changes.
+4. Run a sync. Because the consolidated streams are new, this is a full backfill covering every property.
+5. Once you have confirmed the backfill, you may drop the old per-property tables in your destination. Airbyte leaves them in place. Keep them if there is any chance you will revert &mdash; see below.
+
+Between steps 1 and 3 the connection still lists the old stream names, which no longer exist in the source. Syncs during that window return no records for them.
+
+**Reverting is supported and loses no data.** Disabling the setting restores the per-property streams under their original names once you refresh the schema again. Each one resumes from the cursor it held before you enabled the setting, so the period the setting was on is re-fetched on the next sync and no gap is left behind.
+
+The one exception is step 5. Deleting a destination table does not reset the stream's cursor, so if you dropped the old per-property tables and later revert, those streams resume from their old cursor and the recreated tables will be missing everything before it. Clear those streams when you revert, and they will backfill in full.
+
+:::
+
+:::caution
+
+**Adding a Property ID after enabling this setting.** New properties are added to the existing consolidated streams as new partitions, and a new partition starts from the stream's current cursor rather than from your **Start Date**. The new property's historical data is not backfilled and no error is raised. To backfill it, clear the affected streams after adding the Property ID.
+
+This does not apply when the setting is off, where a new Property ID produces new streams that backfill on their own.
 
 :::
 
@@ -308,7 +332,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.11.1-rc.1 | 2026-08-07 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report, with schemas merged across properties. Off by default; existing connections are unchanged |
+| 2.11.0-rc.1 | 2026-08-11 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
 | 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
 | 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |

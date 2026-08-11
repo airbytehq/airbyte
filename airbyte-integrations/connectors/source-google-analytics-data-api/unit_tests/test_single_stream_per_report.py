@@ -50,20 +50,43 @@ def test_stream_names(single_stream_per_report):
     streams = get_source(config).streams(config=config)
     stream_names = [stream.name for stream in streams]
     assert "property_metadata" in stream_names
-    report_names = [name for name in stream_names if name != "property_metadata" and "Property" not in name]
+    report_names = [name for name in stream_names if name != "property_metadata"]
 
-    assert len(report_names) == 59
-    assert "devices" in report_names
     if single_stream_per_report:
-        assert "devicesProperty222" not in stream_names
-    else:
-        assert "devicesProperty222" in stream_names
-    assert len(stream_names) == len(report_names) * (1 if single_stream_per_report else 2) + 1
-    if single_stream_per_report:
-        stream = next(stream for stream in streams if stream.name == "first_report")
+        # One stream per report, each covering every property and suffixed `Consolidated`.
+        assert len(report_names) == 59
+        assert all(name.endswith("Consolidated") for name in report_names)
+        assert "devicesConsolidated" in report_names
+
+        stream = next(stream for stream in streams if stream.name == "first_reportConsolidated")
         partitions = list(stream.generate_partitions())
         assert [partition.to_slice()["property_id"] for partition in partitions] == ["111", "222"]
         assert all("start_time" in partition.to_slice() for partition in partitions)
+    else:
+        # One stream per report per property: the first property keeps the plain report name and
+        # the rest get a `Property<id>` suffix.
+        plain_names = [name for name in report_names if "Property" not in name]
+        assert len(plain_names) == 59
+        assert "devices" in plain_names
+        assert "devicesProperty222" in report_names
+        assert len(report_names) == len(plain_names) * 2
+
+
+def test_enabling_the_flag_never_reuses_a_per_property_stream_name():
+    """
+    Destination tables and incremental state are both keyed by stream name, so a consolidated
+    stream that reused `<report_name>` would look to the platform like a continuation of the
+    single-property stream. It would inherit that stream's cursor -- which only ever tracked the
+    FIRST property -- and every other property would resume from it rather than backfilling,
+    silently losing history with no error. Distinct names force a full initial sync instead.
+
+    `property_metadata` is the one intentional overlap: it is a static stream that already covers
+    all properties and is identical in both modes.
+    """
+    per_property = {stream.name for stream in get_source(_config(False)).streams(config=_config(False))}
+    consolidated = {stream.name for stream in get_source(_config(True)).streams(config=_config(True))}
+
+    assert per_property & consolidated == {"property_metadata"}
 
 
 # GA4 lets each property define its own custom metrics, so the metric fields in a stream's
@@ -119,7 +142,7 @@ def test_schema_is_unioned_across_properties():
     the union across properties -- building it from a single property would lose every custom
     metric defined only on the others.
     """
-    properties = _schema_of("union_report", _union_config(single_stream_per_report=True))
+    properties = _schema_of("union_reportConsolidated", _union_config(single_stream_per_report=True))
 
     assert _METRIC_ON_BOTH in properties
     assert _METRIC_ON_SECOND_PROPERTY_ONLY in properties, (
@@ -185,7 +208,7 @@ def test_metadata_is_fetched_once_per_property_not_once_per_stream():
 
 def test_single_stream_per_report_reads_each_property_partition():
     config = _config(single_stream_per_report=True)
-    catalog = CatalogBuilder().with_stream("first_report", SyncMode.full_refresh).build()
+    catalog = CatalogBuilder().with_stream("first_reportConsolidated", SyncMode.full_refresh).build()
     metadata_response = {"metrics": [{"apiName": "sessions", "type": "TYPE_INTEGER"}]}
     report_response = {
         "dimensionHeaders": [{"name": "date"}],
