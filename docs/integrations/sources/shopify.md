@@ -91,22 +91,22 @@ Grant these scopes to sync all available data. The connector checks your granted
 
 | Scope | Streams it enables |
 | :--- | :--- |
-| `read_content` | `Pages`, `Metafield Pages` |
-| `read_customers` | `Customers`, `Customer Address`, `Metafield Customers` |
-| `read_discounts` | `Discount Codes`, `Discount Codes Sync` |
-| `read_draft_orders` | `Draft Orders`, `Metafield Draft Orders` |
-| `read_inventory` | `Inventory Items`, `Inventory Levels`, `Product Variants` |
-| `read_locations` | `Locations`, `Metafield Locations` |
-| `read_merchant_managed_fulfillment_orders` | `Fulfillment Orders` |
-| `read_online_store_pages` | `Articles`, `Blogs`, `Metafield Articles`, `Metafield Blogs` |
-| `read_orders` | `Orders`, `Order Refunds`, `Order Risks`, `Order Agreements`, `Transactions`, `Tender Transactions`, `Fulfillments`, `Abandoned Checkouts`, `Customer Journey Summary`, `Metafield Orders` |
-| `read_price_rules` | `Price Rules` |
-| `read_products` | `Products`, `Deleted Products`, `Product Images`, `Product Variants`, `Collections`, `Collection Products`, `Collects`, `Custom Collections`, `Smart Collections`, and the product, product image, product variant, collection, and smart collection `Metafield` streams |
-| `read_publications` | `Collections` |
-| `read_shipping` | `Countries` |
-| `read_shopify_payments_payouts` | `Balance Transactions`, `Disputes` |
+| `read_content` | Pages, Metafield Pages |
+| `read_customers` | Customers, Customer Address, Metafield Customers |
+| `read_discounts` | Discount Codes, Discount Codes Sync |
+| `read_draft_orders` | Draft Orders, Metafield Draft Orders |
+| `read_inventory` | Inventory Items, Inventory Levels, Product Variants |
+| `read_locations` | Locations, Metafield Locations |
+| `read_merchant_managed_fulfillment_orders` | Fulfillment Orders |
+| `read_online_store_pages` | Articles, Blogs, Metafield Articles, Metafield Blogs |
+| `read_orders` | Orders, Order Refunds, Order Risks, Order Agreements, Transactions, Tender Transactions, Fulfillments, Abandoned Checkouts, Customer Journey Summary, Metafield Orders |
+| `read_price_rules` | Price Rules |
+| `read_products` | Products, Deleted Products, Product Images, Product Variants, Collections, Collection Products, Collects, Custom Collections, Smart Collections, and the product, product image, product variant, collection, and smart collection metafield streams |
+| `read_publications` | Collections |
+| `read_shipping` | Countries |
+| `read_shopify_payments_payouts` | Balance Transactions, Disputes |
 
-The `Shop` and `Metafield Shops` streams don't require a scope beyond app installation. `Product Variants` requires both `read_products` and `read_inventory`, and `Collections` requires both `read_products` and `read_publications`.
+The Shop and Metafield Shops streams don't require a scope beyond app installation. Product Variants requires both `read_products` and `read_inventory`, and Collections requires both `read_products` and `read_publications`.
 
 <!-- /env:oss -->
 
@@ -119,7 +119,7 @@ The Shopify source connector supports the following [sync modes](https://docs.ai
 - Full Refresh
 - Incremental
 
-The following streams are full refresh only, because the Shopify endpoints behind them don't support filtering by an updated timestamp: `Countries`, `Locations`, and `Shop`. `Collects` and `Balance Transactions` sync incrementally by record ID rather than by timestamp, so they replicate new records but not updates to existing ones.
+The following streams are full refresh only, because the Shopify endpoints behind them don't support filtering by an updated timestamp: Countries, Locations, and Shop. Collects and Balance Transactions sync incrementally by record ID rather than by timestamp, so they replicate new records but not updates to existing ones.
 
 This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API. The connector calls Shopify Admin API version `2025-10`.
 
@@ -147,7 +147,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
-- [Metafields](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections. The Collections, Customers, Draft Orders, Locations, Orders, Products, Product Images, and Product Variants `Metafield` streams use the bulk API. The remaining streams use the REST API.
+- [Metafields](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections. The Collections, Customers, Draft Orders, Locations, Orders, Products, Product Images, and Product Variants metafield streams use the BULK API. The rest use the REST API.
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
@@ -190,16 +190,16 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 
 ## Tuning sync performance
 
-Most stores don't need to change these settings. Adjust them if bulk jobs time out, syncs are slower than you'd like, or you're missing late-arriving records.
+Most stores don't need to change these settings. Adjust them if BULK jobs time out, syncs are slower than you'd like, or you're missing late-arriving records. The setting names below match the labels in the connector's configuration form.
 
 | Setting | Default | What it does |
 | :--- | :--- | :--- |
-| **GraphQL bulk date range in days** | 30 | The size of the date window each bulk job covers. The connector shrinks the window automatically when a job times out, but lowering it up front helps large stores finish bulk streams. |
-| **Bulk job termination threshold** | 7200 seconds | How long a single bulk job may run before the connector cancels it and retries with a smaller date window. Accepts 3600 to 21600. |
-| **Bulk job checkpoint** | 100000 | How many rows a bulk job collects before the connector checkpoints it, consumes the partial result, and resumes from where it left off. Accepts 15000 to 1000000. Lower it if bulk jobs on high-volume streams fail before finishing. |
-| **Add `Presentment prices` to Product Variants** | Enabled | Includes the `presentmentPrices` field in the Product Variants query. Turn it off if you don't need presentment prices and the stream is slow. |
-| **Add `user_id` to Transactions** | Off | Switches the Transactions stream from the bulk API to the REST API so records include `user_id`. |
-| **`lookback_window_in_days`** | 0 | Rewinds the saved cursor by this many days on each incremental sync so the connector re-fetches recent records. Accepts 0 to 30. Use a small value of 1 to 3 days if a sync misses records because updates occur while it runs. It has no effect on `Collects` or `Balance Transactions`, which sync by record ID. |
+| **GraphQL BULK Date Range in Days** | 30 | The size of the date window each BULK job covers. The connector shrinks the window automatically when a job times out, but lowering it up front helps large stores finish BULK streams. |
+| **BULK Job termination threshold** | 7200 seconds | How long a single BULK job may run before the connector cancels it and retries with a smaller date window. Accepts 3600 to 21600. |
+| **BULK Job checkpoint (rows collected)** | 100000 | How many rows a BULK job collects before the connector checkpoints it, consumes the partial result, and resumes from where it left off. Accepts 15000 to 1000000. Lower it if BULK jobs on high-volume streams fail before finishing. |
+| **Add `Presentment prices` to Product Variants** | On | Includes the `presentmentPrices` field in the Product Variants query. Turn it off if you don't need presentment prices and the stream is slow. |
+| **Add `user_id` to Transactions (slower)** | Off | Switches the Transactions stream from the BULK API to the REST API so records include `user_id`. |
+| **Lookback Window (in Days)** | 0 | Rewinds the saved cursor by this many days on each incremental sync so the connector re-fetches recent records. Accepts 0 to 30. Use a small value of 1 to 3 days if a sync misses records because updates occur while it runs. It has no effect on Collects or Balance Transactions, which sync by record ID. |
 
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
