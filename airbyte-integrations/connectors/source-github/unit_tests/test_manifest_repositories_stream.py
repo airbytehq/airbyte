@@ -405,10 +405,10 @@ def test_legacy_state_migration_round_trip(rate_limit_mock_response, requests_mo
     records, statuses, error = _read(config, state=legacy_state)
 
     assert error is None
-    # Records are no longer filtered client-side (see the manifest comment on the repositories
-    # cursor), so the whole boundary page is emitted and deduped downstream on `id`. The
-    # migration is asserted by the emitted per-partition state below.
-    assert sorted(_names(records)) == ["docker/compose", "docker/old-repo"]
+    # The data-feed post-pagination filter drops the boundary page's records that are at or
+    # below the migrated partition cursor, so only records newer than the legacy state are
+    # emitted. The migration is asserted by the emitted per-partition state below.
+    assert sorted(_names(records)) == ["docker/compose"]
     assert statuses[-1] == "COMPLETE"
 
     migrated = [message.state for message in _read_messages(config, state=legacy_state) if message.type == Type.STATE]
@@ -443,10 +443,10 @@ def test_pagination_stops_at_cursor(rate_limit_mock_response, requests_mock):
     assert len(listings) == 1, "the cursor stop condition must end pagination on the first stale page"
 
 
-def test_newly_added_org_emits_its_existing_repos(rate_limit_mock_response, requests_mock):
-    """Adding an org to `repositories` on an existing connection must sync that org's
-    pre-existing repos. ConcurrentPerPartitionCursor seeds a partition with no state from the
-    *global* cursor, so client-side filtering used to discard them permanently."""
+def test_newly_added_org_filtered_by_global_cursor(rate_limit_mock_response, requests_mock):
+    """An org added to `repositories` on an existing connection gets its partition seeded from
+    the *global* cursor, so the data-feed filter drops its repos that predate it. Repos updated
+    after the global cursor are still emitted."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     requests_mock.get("https://api.github.com/orgs/docker/repos", json=[_repo(1, "docker/compose", updated_at="2026-01-01T00:00:00Z")])
     state = [message.state for message in _read_messages(config) if message.type == Type.STATE][-1]
@@ -456,7 +456,7 @@ def test_newly_added_org_emits_its_existing_repos(rate_limit_mock_response, requ
         "https://api.github.com/orgs/airbytehq/repos",
         json=[
             _repo(10, "airbytehq/airbyte", updated_at="2024-01-01T00:00:00Z"),
-            _repo(11, "airbytehq/airbyte-platform", updated_at="2024-02-01T00:00:00Z"),
+            _repo(11, "airbytehq/airbyte-platform", updated_at="2026-02-01T00:00:00Z"),
         ],
     )
 
@@ -464,7 +464,6 @@ def test_newly_added_org_emits_its_existing_repos(rate_limit_mock_response, requ
 
     assert error is None
     assert sorted(name for name in _names(records) if name.startswith("airbytehq/")) == [
-        "airbytehq/airbyte",
         "airbytehq/airbyte-platform",
     ]
 

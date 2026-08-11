@@ -365,18 +365,12 @@ definitions:
       # below the partition cursor. This replaces the legacy `Repositories.is_sorted =
       # "desc"` early break; without it every incremental sync walked the org's entire
       # repo listing (ceil(repos/100) requests per org per sync instead of ~1).
+      # The CDK's data-feed post-pagination filter drops the boundary page's records that
+      # are at or below the partition cursor, so only records newer than the cursor are
+      # emitted. Note that ConcurrentPerPartitionCursor seeds a partition that has no state
+      # from the *global* cursor, so repos of an org added to `repositories` after the
+      # first sync are only emitted if updated after that cursor.
       is_data_feed: true
-      # Deliberately NOT `is_client_side_incremental: true`:
-      #  1. ConcurrentPerPartitionCursor seeds a partition that has no state from the
-      #     *global* cursor, so client-side filtering permanently discarded every
-      #     pre-existing repo of an org added to `repositories` after the first sync
-      #     (probe: a newly added org emitted 0 of its 2 repos).
-      #  2. It defeats the stop condition above — StopConditionPaginationStrategyDecorator
-      #     evaluates the cursor against the *post-filter* last record, and a fully
-      #     filtered page yields `last_record=None`, so pagination continues anyway.
-      # Filtering saved no requests either way: /orgs/{org}/repos has no `since` parameter,
-      # so every page fetched was fetched regardless. The boundary page is now emitted
-      # whole and its already-seen repos are deduped downstream on `id`.
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     schema_loader:
