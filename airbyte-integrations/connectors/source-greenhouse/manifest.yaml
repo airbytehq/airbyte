@@ -1686,14 +1686,9 @@ streams:
   - $ref: "#/definitions/streams/user_roles"
   - $ref: "#/definitions/streams/user_permissions"
 
-# Greenhouse Harvest API documented rate limit (single tier — Path A):
-# - 50 requests per 10 seconds (5 req/sec) for all accounts.
-# - Source: https://developers.greenhouse.io/harvest.html#throttling
-#
-# Starting concurrency followed the connector concurrency tuning playbook:
-# floor(5 / 4) = 1 ≤ 2 triggered the low-rate-limit special case →
-# starting_concurrency = 4, step = 1. Empirical tuning adjusts by 1
-# against the documented 5 req/sec ceiling.
+# Phase 1 retains the Harvest v1 ceiling of 50 requests per 10 seconds.
+# The v1 documentation retires on 2026-08-31; Phase 2 retunes against
+# https://harvestdocs.greenhouse.io/docs/api-rate-limiting.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 2) }}"
@@ -1730,7 +1725,7 @@ spec:
         title: Number of concurrent threads
         description: >-
           The number of worker threads to use for syncing. The default is tuned
-          against Greenhouse's documented limit of 50 requests per 10 seconds.
+          against Greenhouse's documented Harvest API rate limit.
           Increase this only if your Greenhouse account can support higher API
           usage, or lower it if you see rate-limit errors.
         minimum: 1
