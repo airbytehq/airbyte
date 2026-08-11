@@ -4,997 +4,6 @@ check:
   type: CheckStream
   stream_names:
     - users
-definitions:
-  streams:
-    applications:
-      type: DeclarativeStream
-      name: applications
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /application.list
-          http_method: POST
-          request_body_json:
-            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            archiveReason:
-              type:
-                - "null"
-                - string
-            candidate:
-              type:
-                - "null"
-                - object
-            createdAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            creditedToUser:
-              type:
-                - "null"
-                - object
-            currentInterviewStage:
-              type:
-                - "null"
-                - object
-            customFields:
-              type:
-                - "null"
-                - array
-            hiringTeam:
-              type:
-                - "null"
-                - array
-            id:
-              type:
-                - "null"
-                - string
-            job:
-              type:
-                - "null"
-                - object
-            status:
-              type:
-                - "null"
-                - string
-            updatedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-    archive_reasons:
-      type: DeclarativeStream
-      name: archive_reasons
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /archiveReason.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            id:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            reasonType:
-              type:
-                - "null"
-                - string
-            text:
-              type:
-                - "null"
-                - string
-    candidate_tags:
-      type: DeclarativeStream
-      name: candidate_tags
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /candidateTag.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            id:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            title:
-              type:
-                - "null"
-                - string
-    candidates:
-      type: DeclarativeStream
-      name: candidates
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /candidate.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            applicationIds:
-              type:
-                - "null"
-                - array
-            company:
-              type:
-                - "null"
-                - string
-            customFields:
-              type:
-                - "null"
-                - array
-            emailAddresses:
-              type:
-                - "null"
-                - array
-            fileHandles:
-              type:
-                - "null"
-                - array
-            id:
-              type:
-                - "null"
-                - string
-            name:
-              type:
-                - "null"
-                - string
-            phoneNumbers:
-              type:
-                - "null"
-                - array
-            position:
-              type:
-                - "null"
-                - string
-            primaryEmailAddress:
-              type:
-                - "null"
-                - object
-            resumeFileHandle:
-              type:
-                - "null"
-                - object
-            school:
-              type:
-                - "null"
-                - string
-            socialLinks:
-              type:
-                - "null"
-                - array
-            tags:
-              type:
-                - "null"
-                - array
-    custom_fields:
-      type: DeclarativeStream
-      name: custom_fields
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /customField.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            fieldType:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            objectType:
-              type:
-                - "null"
-                - string
-            title:
-              type:
-                - "null"
-                - string
-    departments:
-      type: DeclarativeStream
-      name: departments
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /department.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            id:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            name:
-              type:
-                - "null"
-                - string
-            parentId:
-              type:
-                - "null"
-                - string
-    feedback_form_definitions:
-      type: DeclarativeStream
-      name: feedback_form_definitions
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /feedbackFormDefinition.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            formDefinition:
-              type:
-                - "null"
-                - object
-            id:
-              type:
-                - "null"
-                - string
-            interviewId:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            isDefaultForm:
-              type:
-                - "null"
-                - boolean
-            organizationId:
-              type:
-                - "null"
-                - string
-            title:
-              type:
-                - "null"
-                - string
-    interview_schedules:
-      type: DeclarativeStream
-      name: interview_schedules
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /interviewSchedule.list
-          http_method: POST
-          request_body_json:
-            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            applicationId:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            interviewStageId:
-              type:
-                - "null"
-                - string
-            status:
-              type:
-                - "null"
-                - string
-    job_postings:
-      type: DeclarativeStream
-      name: job_postings
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /jobPosting.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            departmentName:
-              type:
-                - "null"
-                - string
-            employmentType:
-              type:
-                - "null"
-                - string
-            externalLink:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            isListed:
-              type:
-                - "null"
-                - boolean
-            jobId:
-              type:
-                - "null"
-                - string
-            locationIds:
-              type:
-                - "null"
-                - object
-            locationName:
-              type:
-                - "null"
-                - string
-            publishedDate:
-              type:
-                - "null"
-                - string
-              format: date-time
-            teamName:
-              type:
-                - "null"
-                - string
-            title:
-              type:
-                - "null"
-                - string
-    jobs:
-      type: DeclarativeStream
-      name: jobs
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /job.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            confidential:
-              type:
-                - "null"
-                - boolean
-            customFields:
-              type:
-                - "null"
-                - array
-            customRequisitionId:
-              type:
-                - "null"
-                - string
-            defaultInterviewPlanId:
-              type:
-                - "null"
-                - string
-            departmentId:
-              type:
-                - "null"
-                - string
-            employmentType:
-              type:
-                - "null"
-                - string
-            hiringTeam:
-              type:
-                - "null"
-                - array
-            id:
-              type:
-                - "null"
-                - string
-            interviewPlanIds:
-              type:
-                - "null"
-                - array
-            jobPostingIds:
-              type:
-                - "null"
-                - array
-            locationId:
-              type:
-                - "null"
-                - string
-            status:
-              type:
-                - "null"
-                - string
-            title:
-              type:
-                - "null"
-                - string
-    locations:
-      type: DeclarativeStream
-      name: locations
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /location.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            address:
-              type:
-                - "null"
-                - object
-            id:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            isRemote:
-              type:
-                - "null"
-                - boolean
-            name:
-              type:
-                - "null"
-                - string
-    offers:
-      type: DeclarativeStream
-      name: offers
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /offer.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            acceptanceStatus:
-              type:
-                - "null"
-                - string
-            applicationId:
-              type:
-                - "null"
-                - string
-            decidedAt:
-              type:
-                - "null"
-                - string
-              format: date-time
-            id:
-              type:
-                - "null"
-                - string
-            latestVersion:
-              type:
-                - "null"
-                - object
-    sources:
-      type: DeclarativeStream
-      name: sources
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /source.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            id:
-              type:
-                - "null"
-                - string
-            isArchived:
-              type:
-                - "null"
-                - boolean
-            title:
-              type:
-                - "null"
-                - string
-    users:
-      type: DeclarativeStream
-      name: users
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          type: HttpRequester
-          url_base: https://api.ashbyhq.com
-          authenticator:
-            type: BasicHttpAuthenticator
-            username: "{{ config['api_key'] }}"
-            password: "{{ config['api_key'] }}"
-          path: /user.list
-          http_method: POST
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - results
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: cursor
-          page_size_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: per_page
-          pagination_strategy:
-            type: CursorPagination
-            page_size: 100
-            cursor_value: "{{ response.nextCursor }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          type: object
-          $schema: http://json-schema.org/draft-07/schema#
-          additionalProperties: true
-          properties:
-            email:
-              type:
-                - "null"
-                - string
-            firstName:
-              type:
-                - "null"
-                - string
-            id:
-              type:
-                - "null"
-                - string
-            lastName:
-              type:
-                - "null"
-                - string
-  base_requester:
-    type: HttpRequester
-    url_base: https://api.ashbyhq.com
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['api_key'] }}"
-      password: "{{ config['api_key'] }}"
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -1054,7 +63,16 @@ streams:
         $schema: http://json-schema.org/draft-07/schema#
         additionalProperties: true
         properties:
+          archivedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
           archiveReason:
+            type:
+              - "null"
+              - string
+          appliedViaJobPostingId:
             type:
               - "null"
               - string
@@ -1092,6 +110,48 @@ streams:
               - "null"
               - object
           status:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              isArchived:
+                type:
+                  - "null"
+                  - boolean
+              sourceType:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  isArchived:
+                    type:
+                      - "null"
+                      - boolean
+                  title:
+                    type:
+                      - "null"
+                      - string
+              title:
+                type:
+                  - "null"
+                  - string
+          submitterClientIp:
+            type:
+              - "null"
+              - string
+          submitterUserAgent:
             type:
               - "null"
               - string
@@ -1258,6 +318,11 @@ streams:
             type:
               - "null"
               - array
+          createdAt:
+            type:
+              - "null"
+              - string
+            format: date-time
           company:
             type:
               - "null"
@@ -1286,6 +351,10 @@ streams:
             type:
               - "null"
               - array
+          primaryPhoneNumber:
+            type:
+              - "null"
+              - object
           position:
             type:
               - "null"
@@ -1302,14 +371,69 @@ streams:
             type:
               - "null"
               - string
+          profileUrl:
+            type:
+              - "null"
+              - string
           socialLinks:
             type:
               - "null"
               - array
+          source:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              isArchived:
+                type:
+                  - "null"
+                  - boolean
+              sourceType:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - string
+                  isArchived:
+                    type:
+                      - "null"
+                      - boolean
+                  title:
+                    type:
+                      - "null"
+                      - string
+              title:
+                type:
+                  - "null"
+                  - string
           tags:
             type:
               - "null"
               - array
+          timezone:
+            type:
+              - "null"
+              - string
+          updatedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          fraudStatus:
+            type:
+              - "null"
+              - string
+          creditedToUser:
+            type:
+              - "null"
+              - object
   - type: DeclarativeStream
     name: custom_fields
     primary_key:
@@ -2085,6 +1209,23 @@ streams:
             type:
               - "null"
               - boolean
+          sourceType:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              isArchived:
+                type:
+                  - "null"
+                  - boolean
+              title:
+                type:
+                  - "null"
+                  - string
           title:
             type:
               - "null"
@@ -2327,450 +1468,3 @@ metadata:
     interviews: false
     interview_stages: false
     application_criteria_evaluations: false
-schemas:
-  applications:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      archiveReason:
-        type:
-          - "null"
-          - string
-      candidate:
-        type:
-          - "null"
-          - object
-      createdAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      creditedToUser:
-        type:
-          - "null"
-          - object
-      currentInterviewStage:
-        type:
-          - "null"
-          - object
-      customFields:
-        type:
-          - "null"
-          - array
-      hiringTeam:
-        type:
-          - "null"
-          - array
-      id:
-        type:
-          - "null"
-          - string
-      job:
-        type:
-          - "null"
-          - object
-      status:
-        type:
-          - "null"
-          - string
-      updatedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-  archive_reasons:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      reasonType:
-        type:
-          - "null"
-          - string
-      text:
-        type:
-          - "null"
-          - string
-  candidate_tags:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      title:
-        type:
-          - "null"
-          - string
-  candidates:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      applicationIds:
-        type:
-          - "null"
-          - array
-      company:
-        type:
-          - "null"
-          - string
-      customFields:
-        type:
-          - "null"
-          - array
-      emailAddresses:
-        type:
-          - "null"
-          - array
-      fileHandles:
-        type:
-          - "null"
-          - array
-      id:
-        type:
-          - "null"
-          - string
-      name:
-        type:
-          - "null"
-          - string
-      phoneNumbers:
-        type:
-          - "null"
-          - array
-      position:
-        type:
-          - "null"
-          - string
-      primaryEmailAddress:
-        type:
-          - "null"
-          - object
-      resumeFileHandle:
-        type:
-          - "null"
-          - object
-      school:
-        type:
-          - "null"
-          - string
-      socialLinks:
-        type:
-          - "null"
-          - array
-      tags:
-        type:
-          - "null"
-          - array
-  custom_fields:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      fieldType:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      objectType:
-        type:
-          - "null"
-          - string
-      title:
-        type:
-          - "null"
-          - string
-  departments:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      name:
-        type:
-          - "null"
-          - string
-      parentId:
-        type:
-          - "null"
-          - string
-  feedback_form_definitions:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      formDefinition:
-        type:
-          - "null"
-          - object
-      id:
-        type:
-          - "null"
-          - string
-      interviewId:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      isDefaultForm:
-        type:
-          - "null"
-          - boolean
-      organizationId:
-        type:
-          - "null"
-          - string
-      title:
-        type:
-          - "null"
-          - string
-  interview_schedules:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      applicationId:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - string
-      interviewStageId:
-        type:
-          - "null"
-          - string
-      status:
-        type:
-          - "null"
-          - string
-  job_postings:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      departmentName:
-        type:
-          - "null"
-          - string
-      employmentType:
-        type:
-          - "null"
-          - string
-      externalLink:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - string
-      isListed:
-        type:
-          - "null"
-          - boolean
-      jobId:
-        type:
-          - "null"
-          - string
-      locationIds:
-        type:
-          - "null"
-          - object
-      locationName:
-        type:
-          - "null"
-          - string
-      publishedDate:
-        type:
-          - "null"
-          - string
-        format: date-time
-      teamName:
-        type:
-          - "null"
-          - string
-      title:
-        type:
-          - "null"
-          - string
-  jobs:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      confidential:
-        type:
-          - "null"
-          - boolean
-      customFields:
-        type:
-          - "null"
-          - array
-      customRequisitionId:
-        type:
-          - "null"
-          - string
-      defaultInterviewPlanId:
-        type:
-          - "null"
-          - string
-      departmentId:
-        type:
-          - "null"
-          - string
-      employmentType:
-        type:
-          - "null"
-          - string
-      hiringTeam:
-        type:
-          - "null"
-          - array
-      id:
-        type:
-          - "null"
-          - string
-      interviewPlanIds:
-        type:
-          - "null"
-          - array
-      jobPostingIds:
-        type:
-          - "null"
-          - array
-      locationId:
-        type:
-          - "null"
-          - string
-      status:
-        type:
-          - "null"
-          - string
-      title:
-        type:
-          - "null"
-          - string
-  locations:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      address:
-        type:
-          - "null"
-          - object
-      id:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      isRemote:
-        type:
-          - "null"
-          - boolean
-      name:
-        type:
-          - "null"
-          - string
-  offers:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      acceptanceStatus:
-        type:
-          - "null"
-          - string
-      applicationId:
-        type:
-          - "null"
-          - string
-      decidedAt:
-        type:
-          - "null"
-          - string
-        format: date-time
-      id:
-        type:
-          - "null"
-          - string
-      latestVersion:
-        type:
-          - "null"
-          - object
-  sources:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      id:
-        type:
-          - "null"
-          - string
-      isArchived:
-        type:
-          - "null"
-          - boolean
-      title:
-        type:
-          - "null"
-          - string
-  users:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      email:
-        type:
-          - "null"
-          - string
-      firstName:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - string
-      lastName:
-        type:
-          - "null"
-          - string
