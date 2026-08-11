@@ -16,8 +16,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
-import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
+import io.airbyte.integrations.destination.bigquery.toConfigExceptionIfNeeded
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import kotlin.math.min
@@ -177,6 +177,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
                 if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
                 }
+                return e.toConfigExceptionIfNeeded()
             }
         }
         return e
