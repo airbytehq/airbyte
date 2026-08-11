@@ -98,6 +98,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.3.4 | 2026-08-11 | [83953](https://github.com/airbytehq/airbyte/pull/83953) | Update dependencies |
 | 1.3.3 | 2026-08-04 | [83474](https://github.com/airbytehq/airbyte/pull/83474) | Update dependencies |
 | 1.3.2 | 2026-07-28 | [82937](https://github.com/airbytehq/airbyte/pull/82937) | Update dependencies |
 | 1.3.1 | 2026-07-27 | [80891](https://github.com/airbytehq/airbyte/pull/80891) | Throttle requests to Gong's 3 requests-per-second limit and honor the `Retry-After` header when a 429 occurs |

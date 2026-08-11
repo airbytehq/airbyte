@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.53.1
+  dockerImageTag: 3.53.2
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql
@@ -77,7 +77,12 @@ data:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   externalDocumentationUrls:
     - title: MySQL documentation
       url: https://dev.mysql.com/doc/
