@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 11, 2026
+
+Platform
+
+- Airbyte Cloud now uses a new cookie consent tool. You see a redesigned consent banner on your first visit, and you can still change your choices at any time with the Cookie preferences option in your user settings.
+
 ## July 23, 2026
 
 Connections
