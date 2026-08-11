@@ -16,29 +16,29 @@ Youtube also generates historical data reports covering the 30-day period prior 
 
 ## Setup guide
 
-### Step 1: Set up YouTube Analytics
+### Step 1: Enable the YouTube Reporting API
 
-- Go to the [YouTube Reporting API dashboard](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) in the project for your service user. Enable the API for your account.
-- Use your Google account and authorize over Google's OAuth 2.0 on connection setup. Please make sure to grant the following [authorization scope](https://developers.google.com/youtube/reporting/v1/reports#step-1:-retrieve-authorization-credentials): `https://www.googleapis.com/auth/yt-analytics.readonly`.
+In the Google Cloud project you authorize with, open the [YouTube Reporting API page](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) and enable the API. The connector authenticates as a user through OAuth 2.0, not as a service account, and it needs the [`https://www.googleapis.com/auth/yt-analytics.readonly` scope](https://developers.google.com/youtube/reporting/v1/reports#step-1:-retrieve-authorization-credentials).
 
-## Step 2: Set up the YouTube Analytics connector in Airbyte
+### Step 2: Set up the YouTube Analytics connector in Airbyte
 
-### For Airbyte Cloud:
+#### For Airbyte Cloud
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
-4. Select `Authenticate your account`.
-5. Log in and Authorize to the Youtube account and click `Set up source`.
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Search for and select **YouTube Analytics**.
+4. Click **Authenticate your account**, then sign in with the Google account that owns or manages the channel and grant access.
+5. Click **Set up source**.
 
-### For Airbyte OSS:
+#### For Airbyte Self-Managed
 
-1. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-2. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
-3. Enter your `client_id`
-4. Enter your `client_secret`
-5. Enter your `refresh_token`
-6. Click `Set up source`.
+Self-managed deployments don't include Airbyte's OAuth application, so you supply your own Google OAuth client and refresh token.
+
+1. In your Google Cloud project, create an **OAuth client ID** of type **Web application** and note the client ID and client secret. See Google's [authorization guide](https://developers.google.com/youtube/reporting/guides/authorization) for the full flow.
+2. Complete the OAuth consent flow for that client with the `https://www.googleapis.com/auth/yt-analytics.readonly` scope and `access_type=offline` to obtain a refresh token.
+3. In Airbyte, click **Sources**, then **+ New source**, and select **YouTube Analytics**.
+4. Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
+5. Click **Set up source**.
 
 ### Content Owner ID (Optional)
 
@@ -48,18 +48,20 @@ The **Content Owner ID** field is for YouTube partners who participate in the [Y
 - If you are a YouTube partner with a content owner account, enter your content owner ID to retrieve data for channels managed under that account.
 - To find your content owner ID, you can check the URL when logged into the [YouTube Studio](https://studio.youtube.com/) (look for the `o=` parameter), use the [YouTube Content ID API](https://developers.google.com/youtube/partner/docs/v1/contentOwners/list), or contact your YouTube partner manager.
 
+When you set this field, the connector adds `onBehalfOfContentOwner` to every request. The streams themselves are the same channel and playlist reports listed below. The connector doesn't sync content owner-specific reports, such as `content_owner_basic_a3`, or the system-managed ad revenue reports.
+
 ## Supported sync modes
 
 The YouTube Analytics source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature               | Supported?  |
-| :-------------------- | :---------- |
-| Full Refresh Sync     | Yes         |
-| Incremental Sync      | Yes         |
-| SSL connection        | Yes         |
-| Channel Reports       | Yes         |
-| Content Owner Reports | Coming soon |
-| YouTube Data API      | Coming soon |
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | Yes        |
+| Incremental Sync with dedupe  | Yes        |
+| SSL connection                | Yes        |
+
+All report streams sync incrementally using `date` as the cursor field. Each report covers a single 24-hour period, so a sync fetches the report days that YouTube published since the previous sync. The `report_types` stream is full refresh only.
 
 ## Supported Streams
 
@@ -91,6 +93,13 @@ YouTube API Services are provided by Google. For information about how Google ha
 
 When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
 
+## Limitations
+
+- **Report retention.** YouTube keeps each generated report for [30 to 60 days, depending on the report type](https://developers.google.com/youtube/reporting/v1/reports). If a connection stays paused or broken for longer than that window, the reports for those days are deleted at the source and can't be recovered by a later sync or by resetting the stream.
+- **Restated data.** YouTube sometimes reissues a report for a day it already delivered, for example to correct or backfill data. Because the streams are incremental on `date`, use **Incremental | Append + Deduped** if you want the corrected rows to replace earlier ones in your destination.
+- **Anonymized rows.** When a dimension value doesn't meet YouTube's privacy threshold, YouTube aggregates those rows and returns null or aggregated dimension values instead of dropping them. Rows with null dimensions are expected and aren't a connector error.
+- **Reporting jobs.** The connector creates one reporting job per enabled report stream, named `Airbyte reporting job`, and reuses an existing job for that report type if one exists. Deleting these jobs in the YouTube Reporting API stops report generation until the next sync recreates them, and you lose the days in between.
+
 ## Performance considerations
 
 The YouTube Reporting API has the following quota limits:
@@ -110,11 +119,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                             |
-|:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
-| 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
-| 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
+| 1.3.0 | 2026-08-04 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
+| 1.2.12 | 2026-07-30 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |
 | 1.2.11 | 2026-07-14 | [82069](https://github.com/airbytehq/airbyte/pull/82069) | Update dependencies |
 | 1.2.10 | 2026-06-30 | [81330](https://github.com/airbytehq/airbyte/pull/81330) | Update dependencies |
 | 1.2.9 | 2026-06-23 | [80732](https://github.com/airbytehq/airbyte/pull/80732) | Update dependencies |
@@ -124,7 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.2.5 | 2026-04-28 | [77489](https://github.com/airbytehq/airbyte/pull/77489) | Update dependencies |
 | 1.2.4 | 2026-04-21 | [74693](https://github.com/airbytehq/airbyte/pull/74693) | Update dependencies |
 | 1.2.3 | 2026-02-24 | [73149](https://github.com/airbytehq/airbyte/pull/73149) | Update dependencies |
-| 1.2.2 | 2026-02-03 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |
+| 1.2.2 | 2026-02-06 | [72635](https://github.com/airbytehq/airbyte/pull/72635) | Update dependencies |
 | 1.2.1 | 2026-01-20 | [72048](https://github.com/airbytehq/airbyte/pull/72048) | Update dependencies |
 | 1.2.0 | 2026-01-14 | [71377](https://github.com/airbytehq/airbyte/pull/71377) | Promoting release candidate 1.2.0-rc.2 to a main version. |
 | 1.2.0-rc.2 | 2026-01-09 | [71244](https://github.com/airbytehq/airbyte/pull/71244) | Fix incorrect report_id key and remove additional error message |
@@ -132,16 +141,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 1.1.2 | 2025-12-18 | [70715](https://github.com/airbytehq/airbyte/pull/70715) | Update dependencies |
 | 1.1.1 | 2025-12-02 | [64964](https://github.com/airbytehq/airbyte/pull/64964) | Update dependencies |
 | 1.1.0 | 2025-11-17 | [69352](https://github.com/airbytehq/airbyte/pull/69352) | Promoting release candidate 1.1.0-rc.1 to a main version. |
-| 1.1.0-rc.1 | 2025-11-02 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to Manifest-only |
+| 1.1.0-rc.1 | 2025-11-10 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to Manifest-only |
 | 1.0.0 | 2025-10-30 | [66558](https://github.com/airbytehq/airbyte/pull/66558) | Update deprecated channel and playlist BULK reports |
-| 0.2.0 | 2025-02-07 | [53196](https://github.com/airbytehq/airbyte/pull/53196) | Update check connection and empty responses |
-| 0.1.7 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
+| 0.2.0 | 2025-05-29 | [53196](https://github.com/airbytehq/airbyte/pull/53196) | Update check connection and empty responses |
+| 0.1.7 | 2025-02-27 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
 | 0.1.6 | 2024-06-17 | [39529](https://github.com/airbytehq/airbyte/pull/39529) | Pin CDK version to 0.38.0 |
-| 0.1.5 | 2024-05-21 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
-| 0.1.4 | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth |
-| 0.1.3 | 2022-09-30 | [17454](https://github.com/airbytehq/airbyte/pull/17454) | Added custom backoff logic |
+| 0.1.5 | 2024-06-13 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
+| 0.1.4 | 2023-05-26 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth |
+| 0.1.3 | 2022-10-07 | [17454](https://github.com/airbytehq/airbyte/pull/17454) | Added custom backoff logic |
 | 0.1.2 | 2022-09-29 | [17399](https://github.com/airbytehq/airbyte/pull/17399) | Fixed `403` error while `check connection` |
-| 0.1.1 | 2022-08-18 | [15744](https://github.com/airbytehq/airbyte/pull/15744) | Fix `channel_basic_a2` schema fields data type |
-| 0.1.0 | 2021-11-01 | [7407](https://github.com/airbytehq/airbyte/pull/7407) | Initial Release |
+| 0.1.1 | 2022-08-22 | [15744](https://github.com/airbytehq/airbyte/pull/15744) | Fix `channel_basic_a2` schema fields data type |
+| 0.1.0 | 2021-11-19 | [7407](https://github.com/airbytehq/airbyte/pull/7407) | Initial Release |
 
 </details>
