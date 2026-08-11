@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b2ad3cc6-5d5d-4a81-96b9-58d4bc4be9b9
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-commission-junction
   githubIssueLabel: source-commission-junction
   icon: icon.svg
