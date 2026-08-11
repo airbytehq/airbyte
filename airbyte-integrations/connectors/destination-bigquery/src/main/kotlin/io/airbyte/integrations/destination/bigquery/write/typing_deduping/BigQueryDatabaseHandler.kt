@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.orchestration.db.DatabaseHandler
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.util.ConnectorExceptionUtil
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils
+import io.airbyte.integrations.destination.bigquery.toConfigExceptionIfNeeded
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import kotlin.math.min
@@ -99,7 +100,11 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
         while (JobStatus.State.DONE != job.status.state) {
             Thread.sleep(1000L)
-            job = job.reload()
+            try {
+                job = job.reload()
+            } catch (e: BigQueryException) {
+                throw wrapWithConfigExceptionIfNeeded(e)
+            }
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
