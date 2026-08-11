@@ -147,7 +147,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
-- [Metafields](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections. The Collections, Customers, Draft Orders, Locations, Orders, Products, Product Images, and Product Variants `Metafield` streams use the BULK API; the rest use the REST API.
+- [Metafields](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections. The Collections, Customers, Draft Orders, Locations, Orders, Products, Product Images, and Product Variants `Metafield` streams use the bulk API. The remaining streams use the REST API.
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
