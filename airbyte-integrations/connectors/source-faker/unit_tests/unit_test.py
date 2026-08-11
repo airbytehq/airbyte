@@ -5,6 +5,7 @@
 import jsonschema
 import pytest
 from source_faker import SourceFaker
+from source_faker.source import MAX_RECORDS_LIMIT
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
@@ -36,6 +37,14 @@ def schemas_are_valid():
 
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
+
+
+def test_count_is_capped_at_safety_limit():
+    source = SourceFaker()
+    streams = source.streams({"count": MAX_RECORDS_LIMIT + 5})
+
+    for stream in streams:
+        assert stream.count == MAX_RECORDS_LIMIT
 
 
 def test_source_streams():
