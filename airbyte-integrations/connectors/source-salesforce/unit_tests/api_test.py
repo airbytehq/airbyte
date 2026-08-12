@@ -36,6 +36,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
     Type,
 )
@@ -412,6 +413,135 @@ def test_pagination_rest(stream_config, stream_api):
 
         records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
         assert len(records) == 4
+
+
+def test_pagination_rest_restarts_query_when_locator_session_expires(stream_config, stream_api):
+    """
+    A query locator belongs to the session that created it. When that session is invalidated mid-pagination, for instance because the
+    refresh token rotated, retrying `nextRecordsUrl` can never succeed, so the query is restarted after the last record that was read.
+    """
+    stream_name = "AcceptedEventRelation"
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
+    with requests_mock.Mocker() as m:
+        first_page = {
+            "done": False,
+            "totalSize": 4,
+            "nextRecordsUrl": next_page_url,
+            "records": [{"Id": "001", "LastModifiedDate": "2021-11-15"}, {"Id": "002", "LastModifiedDate": "2021-11-16"}],
+        }
+        restarted_page = {
+            "done": True,
+            "totalSize": 2,
+            "records": [{"Id": "003", "LastModifiedDate": "2021-11-17"}, {"Id": "004", "LastModifiedDate": "2021-11-18"}],
+        }
+        invalid_session = [{"errorCode": "INVALID_SESSION_ID", "message": "Session expired or invalid"}]
+
+        query_matcher = m.register_uri("GET", stream.path(), [{"json": first_page}, {"json": restarted_page}])
+        m.register_uri("GET", next_page_url, status_code=401, json=invalid_session)
+
+        records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
+
+        assert [record["Id"] for record in records] == ["001", "002", "003", "004"]
+        assert len(query_matcher.request_history) == 2
+        # `requests_mock` lower-cases parsed query string values
+        restarted_query = query_matcher.request_history[1].qs["q"][0]
+        assert "lastmodifieddate >=" in restarted_query and "lastmodifieddate <" in restarted_query
+        assert "id > '002'" in restarted_query
+        assert "order by id asc" in restarted_query
+
+
+def test_pagination_rest_restart_stitches_records_across_property_chunks(stream_config, stream_api_v2_pk_too_many_properties):
+    """
+    Chunks paginate independently and are stitched by primary key, so a restart must not strand the halves already read by other chunks.
+    """
+    stream_name = "Account"
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api_v2_pk_too_many_properties)
+    assert stream.too_many_properties
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
+    with requests_mock.Mocker() as m:
+        # The first chunk's locator dies; every other chunk returns its half in one page
+        first_chunk_pages = [
+            {"json": {"nextRecordsUrl": next_page_url, "records": [{"Id": "001"}, {"Id": "002"}]}},
+            {"json": {"records": [{"Id": "003"}]}},
+        ]
+        other_chunk_page = {"json": {"records": [{"Id": "001"}, {"Id": "002"}, {"Id": "003"}]}}
+        query_matcher = m.register_uri("GET", stream.path(), first_chunk_pages + [other_chunk_page for _ in range(50)])
+        m.register_uri("GET", next_page_url, status_code=401, json=[{"errorCode": "INVALID_SESSION_ID", "message": "expired"}])
+
+        records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
+
+        assert sorted(record["Id"] for record in records) == ["001", "002", "003"]
+        # Chunks interleave, so the restarted query is not at a fixed position
+        assert [request for request in query_matcher.request_history if "id > '002'" in request.qs["q"][0]]
+
+
+def test_pagination_rest_restarts_repeatedly_while_the_query_makes_progress(stream_config, stream_api):
+    """A long read under RTR can lose a locator many times over; every restart that read records must be allowed to continue."""
+    stream_name = "AcceptedEventRelation"
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
+    with requests_mock.Mocker() as m:
+
+        def page(*ids, last=False):
+            records = [{"Id": record_id, "LastModifiedDate": "2021-11-15"} for record_id in ids]
+            return {"json": {"records": records} if last else {"nextRecordsUrl": next_page_url, "records": records}}
+
+        query_matcher = m.register_uri(
+            "GET", stream.path(), [page("001", "002"), page("003", "004"), page("005", "006"), page("007", last=True)]
+        )
+        m.register_uri("GET", next_page_url, status_code=401, json=[{"errorCode": "INVALID_SESSION_ID", "message": "expired"}])
+
+        records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
+
+        assert [record["Id"] for record in records] == ["001", "002", "003", "004", "005", "006", "007"]
+        assert len(query_matcher.request_history) == 4
+        assert "id > '002'" in query_matcher.request_history[1].qs["q"][0]
+        assert "id > '004'" in query_matcher.request_history[2].qs["q"][0]
+        assert "id > '006'" in query_matcher.request_history[3].qs["q"][0]
+
+
+def test_pagination_rest_raises_transient_error_when_query_cannot_be_restarted(stream_config, stream_api):
+    """When the locator dies before any record is read there is no position to resume from, so the attempt fails rather than looping."""
+    stream_name = "AcceptedEventRelation"
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
+    with requests_mock.Mocker() as m:
+        m.register_uri("GET", stream.path(), json={"nextRecordsUrl": next_page_url, "records": []})
+        m.register_uri("GET", next_page_url, status_code=401, json=[{"errorCode": "INVALID_SESSION_ID", "message": "expired"}])
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+        assert exception.value.failure_type == FailureType.transient_error
+        assert "could not be resumed" in exception.value.message
+
+
+def test_pagination_rest_gives_up_when_restart_makes_no_progress(stream_config, stream_api):
+    """
+    A restarted query that reads nothing before its own locator expires would otherwise be restarted from the same position forever.
+    """
+    stream_name = "AcceptedEventRelation"
+    stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
+    next_page_url = f"/services/data/{API_VERSION}/query/012345"
+    with requests_mock.Mocker() as m:
+        query_matcher = m.register_uri(
+            "GET",
+            stream.path(),
+            [
+                {"json": {"nextRecordsUrl": next_page_url, "records": [{"Id": "001", "LastModifiedDate": "2021-11-15"}]}},
+                # A restart that returns no records but another locator
+                {"json": {"nextRecordsUrl": next_page_url, "records": []}},
+            ],
+        )
+        m.register_uri("GET", next_page_url, status_code=401, json=[{"errorCode": "INVALID_SESSION_ID", "message": "expired"}])
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+        assert exception.value.failure_type == FailureType.transient_error
+        assert "without the query making progress" in exception.value.message
+        assert len(query_matcher.request_history) == 2
 
 
 @pytest.fixture(name="mocked_response")
