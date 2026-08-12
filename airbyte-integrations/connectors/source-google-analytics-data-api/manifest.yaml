@@ -1060,7 +1060,7 @@ dynamic_streams:
         # <report_name>Property<property_id>.
         #
         # When `single_stream_per_report` is enabled the stream covers every property, so it gets
-        # a `Consolidated` suffix instead. The suffix is load-bearing, not cosmetic: destination
+        # a `Consolidated` suffix instead. The suffix is required, not cosmetic: destination
         # tables and incremental state are both keyed by stream name, so reusing `<report_name>`
         # here would make the platform treat the consolidated stream as a continuation of the
         # single-property stream. It would inherit that stream's cursor -- which only ever
