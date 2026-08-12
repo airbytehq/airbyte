@@ -267,13 +267,9 @@ internal class SnowflakeAirbyteClientTest {
             sourceTransient = "Y",
             targetTransient = "N",
         ) { source, target, executeStatements ->
-            verify(exactly = 1) {
-                sqlGenerator.replaceTableWithSelectFrom(source, target)
-            }
+            verify(exactly = 1) { sqlGenerator.replaceTableWithSelectFrom(source, target) }
             verify(exactly = 1) { executeStatements[0].executeQuery("CTAS") }
-            verify(exactly = 0) {
-                sqlGenerator.cloneTableWith(any(), any(), any())
-            }
+            verify(exactly = 0) { sqlGenerator.cloneTableWith(any(), any(), any()) }
         }
 
     @Test
@@ -282,13 +278,9 @@ internal class SnowflakeAirbyteClientTest {
             sourceTransient = "Y",
             targetTransient = "Y",
         ) { source, target, executeStatements ->
-            verify(exactly = 1) {
-                sqlGenerator.cloneTableWith(source, target, transient = true)
-            }
+            verify(exactly = 1) { sqlGenerator.cloneTableWith(source, target, transient = true) }
             verify(exactly = 1) { executeStatements[0].executeQuery("CLONE") }
-            verify(exactly = 0) {
-                sqlGenerator.replaceTableWithSelectFrom(any(), any())
-            }
+            verify(exactly = 0) { sqlGenerator.replaceTableWithSelectFrom(any(), any()) }
         }
 
     @Test
@@ -297,13 +289,9 @@ internal class SnowflakeAirbyteClientTest {
             sourceTransient = "N",
             targetTransient = "N",
         ) { source, target, executeStatements ->
-            verify(exactly = 1) {
-                sqlGenerator.cloneTableWith(source, target, transient = false)
-            }
+            verify(exactly = 1) { sqlGenerator.cloneTableWith(source, target, transient = false) }
             verify(exactly = 1) { executeStatements[0].executeQuery("CLONE") }
-            verify(exactly = 0) {
-                sqlGenerator.replaceTableWithSelectFrom(any(), any())
-            }
+            verify(exactly = 0) { sqlGenerator.replaceTableWithSelectFrom(any(), any()) }
         }
 
     @Test
@@ -312,13 +300,9 @@ internal class SnowflakeAirbyteClientTest {
             sourceTransient = "Y",
             targetTransient = null,
         ) { source, target, executeStatements ->
-            verify(exactly = 1) {
-                sqlGenerator.replaceTableWithSelectFrom(source, target)
-            }
+            verify(exactly = 1) { sqlGenerator.replaceTableWithSelectFrom(source, target) }
             verify(exactly = 1) { executeStatements[0].executeQuery("CTAS") }
-            verify(exactly = 0) {
-                sqlGenerator.cloneTableWith(any(), any(), any())
-            }
+            verify(exactly = 0) { sqlGenerator.cloneTableWith(any(), any(), any()) }
         }
 
     @Test
@@ -412,8 +396,12 @@ internal class SnowflakeAirbyteClientTest {
                 }
             }
         every { dataSource.connection } returnsMany
-            listOf(tableExistsConnection, countConnection, sourceKindConnection, targetKindConnection) +
-                executeConnections
+            listOf(
+                tableExistsConnection,
+                countConnection,
+                sourceKindConnection,
+                targetKindConnection
+            ) + executeConnections
         every { sqlGenerator.countTable(targetTableName) } returns "COUNT TARGET"
         every { sqlGenerator.dropTable(sourceTableName) } returns "DROP SOURCE"
         every { sqlGenerator.cloneTableWith(any(), any(), any()) } returns "CLONE"

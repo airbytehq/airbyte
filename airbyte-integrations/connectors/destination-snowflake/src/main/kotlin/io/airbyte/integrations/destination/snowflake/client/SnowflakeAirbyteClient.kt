@@ -229,12 +229,13 @@ class SnowflakeAirbyteClient(
                         } else {
                             rs.getString("IS_TRANSIENT")?.let { value ->
                                 value.startsWith("Y", ignoreCase = true)
-                            } ?: run {
-                                log.warn {
-                                    "Could not determine whether table ${table.toPrettyString()} is transient: metadata was null"
-                                }
-                                null
                             }
+                                ?: run {
+                                    log.warn {
+                                        "Could not determine whether table ${table.toPrettyString()} is transient: metadata was null"
+                                    }
+                                    null
+                                }
                         }
                     }
                 }
