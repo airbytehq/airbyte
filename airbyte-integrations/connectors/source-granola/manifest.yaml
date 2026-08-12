@@ -205,6 +205,12 @@ schemas:
         type: string
         description: The creation time of the note in ISO 8601 format.
         format: date-time
+        airbyte_type: timestamp_with_timezone
+      updated_at:
+        type: string
+        description: The last update time of the note in ISO 8601 format.
+        format: date-time
+        airbyte_type: timestamp_with_timezone
     additionalProperties: true
     required:
       - id
@@ -248,12 +254,19 @@ schemas:
           - string
         description: The creation time of the note in ISO 8601 format.
         format: date-time
+        airbyte_type: timestamp_with_timezone
       updated_at:
         type:
           - "null"
           - string
         description: The last update time of the note in ISO 8601 format.
         format: date-time
+        airbyte_type: timestamp_with_timezone
+      web_url:
+        type:
+          - "null"
+          - string
+        description: URL of the note in Granola.
       calendar_event:
         type:
           - "null"
@@ -293,12 +306,14 @@ schemas:
               - "null"
               - string
             format: date-time
+            airbyte_type: timestamp_with_timezone
             description: Scheduled start time of the event.
           scheduled_end_time:
             type:
               - "null"
               - string
             format: date-time
+            airbyte_type: timestamp_with_timezone
             description: Scheduled end time of the event.
       attendees:
         type:
@@ -341,6 +356,39 @@ schemas:
                 - "null"
                 - string
               description: Name of the folder.
+            parent_folder_id:
+              type:
+                - "null"
+                - string
+              description: Parent folder identifier.
+            space_id:
+              type:
+                - "null"
+                - string
+              description: Space identifier containing the folder.
+      space_membership:
+        type:
+          - "null"
+          - array
+        description: Spaces containing the note.
+        items:
+          type: object
+          properties:
+            object:
+              type:
+                - "null"
+                - string
+              description: Object type (space).
+            id:
+              type:
+                - "null"
+                - string
+              description: Unique space identifier.
+            name:
+              type:
+                - "null"
+                - string
+              description: Name of the space.
       summary_text:
         type:
           - "null"
@@ -370,6 +418,21 @@ schemas:
                     - "null"
                     - string
                   description: Source of the speaker (microphone or speaker).
+                attribution:
+                  type:
+                    - "null"
+                    - string
+                  description: Speaker attribution when available.
+                diarization_label:
+                  type:
+                    - "null"
+                    - string
+                  description: Diarization label assigned to the speaker.
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Resolved speaker name when the speaker is identified.
             text:
               type:
                 - "null"
@@ -380,12 +443,14 @@ schemas:
                 - "null"
                 - string
               format: date-time
+              airbyte_type: timestamp_with_timezone
               description: Start time of the transcript segment.
             end_time:
               type:
                 - "null"
                 - string
               format: date-time
+              airbyte_type: timestamp_with_timezone
               description: End time of the transcript segment.
     additionalProperties: true
     required:
