@@ -20,7 +20,7 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 
 ### Step 2: Set up the Klaviyo connector in Airbyte
 
-### For Airbyte Cloud:
+### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -32,9 +32,10 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
 9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
 10. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
-11. Click **Set up source**.
+11. (Optional) For **Event Stream Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. This can significantly reduce sync volume for accounts with high event traffic. See [Event stream filtering](#event-stream-filtering) below.
+12. Click **Set up source**.
 
-### For Airbyte Open Source:
+### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
@@ -108,6 +109,20 @@ To find your conversion metric IDs:
 3. Select the metric you want to track conversions for (for example, "Placed Order").
 4. Copy the metric ID from the URL, or use the **Metrics** stream to list all available metrics and their IDs.
 
+### Event stream filtering
+
+The **Events** and **Events Detailed** streams support optional server-side filtering by metric ID using the **Event Stream Metric ID(s)** configuration field. This uses Klaviyo's `metric_id` filter parameter to reduce the volume of data returned from the API.
+
+When multiple metric IDs are specified (comma-separated), the connector makes separate API requests for each metric ID, since Klaviyo's API only supports filtering by one metric at a time. Each configured metric ID therefore multiplies the number of API requests per sync. If you hit Klaviyo [rate limits](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling), reduce the number of configured metrics or lower the **Number of concurrent threads** setting.
+
+:::note
+Klaviyo's `metric_id` filter does not support custom metrics - only Klaviyo's built-in metrics (e.g., Placed Order, Opened Email) can be filtered. If you specify a custom metric ID, it will be silently ignored by the Klaviyo API and all events will be returned.
+:::
+
+Metric IDs added to an existing configuration are synced from the stream's current cursor position onward - their older events are not backfilled automatically. To backfill history for a newly added metric, clear (reset) the affected stream after updating the configuration.
+
+To find metric IDs, navigate to **Analytics** > **Metrics** in your Klaviyo account, or use the **Metrics** stream to list all available metrics and their IDs.
+
 ## Performance considerations
 
 The connector is restricted by Klaviyo [requests limitation](https://apidocs.klaviyo.com/reference/api-overview#rate-limits).
@@ -147,6 +162,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.21.1 | 2026-08-11 | [83991](https://github.com/airbytehq/airbyte/pull/83991) | Update dependencies |
+| 2.21.0 | 2026-08-06 | [75301](https://github.com/airbytehq/airbyte/pull/75301) | Add optional metric ID filtering for the `events` and `events_detailed` streams |
 | 2.20.0 | 2026-08-05 | [61338](https://github.com/airbytehq/airbyte/pull/61338) | Sync all metric definitions in the `metrics` stream regardless of the configured start date (existing connections: clear/reset the `metrics` stream to backfill older metric definitions) |
 | 2.19.3 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 2.19.2 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.19.0 — 2.19.1 is built on SDM 7.23.7, which breaks bundled custom components |

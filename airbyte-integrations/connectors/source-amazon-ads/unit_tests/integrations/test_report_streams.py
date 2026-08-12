@@ -210,7 +210,8 @@ class TestDisplayReportStreams:
             status_code=200,
             request_headers={"Authorization": "Bearer test-access-token"},
         )
-        report_data = gzip.compress(b'[{"adId": "a1", "cost": 1.5, "videoCompleteViews": 42, "video5SecondViews": 90}]')
+        # Reporting v3 returns numeric ids; the stream schema declares `adId` as integer.
+        report_data = gzip.compress(b'[{"adId": 275827446150944, "cost": 1.5, "videoCompleteViews": 42, "video5SecondViews": 90}]')
         requests_mock.get(download_url, content=report_data, status_code=200)
 
         output = self._read(config, "sponsored_brands_ads_report_stream", SyncMode.incremental)
@@ -601,12 +602,21 @@ def _report_stream_configurations() -> list:
         configuration = stream.get("retriever", {}).get("creation_requester", {}).get("request_body_json", {}).get("configuration")
         if configuration and "reportTypeId" in configuration:
             configurations.append((name, configuration, manifest["schemas"][stream["schema_loader"]["schema"]["$ref"].split("/")[-1]]))
+    return configurations
+
+
+def test_report_stream_discovery_covers_every_report_stream() -> None:
+    """Kept standalone on purpose: `_report_stream_configurations()` is evaluated at import time by
+    the `@pytest.mark.parametrize` decorators below, so asserting inside it turns a count change into
+    a collection error that takes down every test in this module - including the finer column and
+    schema guards that would have named the actual regression.
+    """
+    configurations = _report_stream_configurations()
     assert len(configurations) == _EXPECTED_REPORT_STREAM_COUNT, (
         f"expected {_EXPECTED_REPORT_STREAM_COUNT} report stream configurations, found {len(configurations)}: "
         "a manifest restructuring may have moved `creation_requester`/`request_body_json` and silently "
         "narrowed the report-column guard tests"
     )
-    return configurations
 
 
 # `transformation_report_add_fields` (manifest.yaml) injects these into every report record, so they

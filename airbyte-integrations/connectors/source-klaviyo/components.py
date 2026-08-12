@@ -322,7 +322,8 @@ class PerPartitionToSingleStateMigration(StateMigration):
         self._cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters).eval(self._config)
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return "states" in stream_state
+        states = stream_state.get("states") or []
+        return bool(states) and all("event_metric_id" not in (state.get("partition") or {}) for state in states)
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):

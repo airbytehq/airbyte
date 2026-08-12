@@ -96,7 +96,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             )
             .with_request_body(_DEFAULT_REQUEST_BODY)
             .build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(400).build(),
         )
         with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
@@ -206,7 +206,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             )
             .with_request_body(_DEFAULT_REQUEST_BODY)
             .build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(400).build(),
         )
         with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
@@ -214,6 +214,37 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
         assert any([breaking_error.build().get("message") in error for error in error_logs])
+
+    @HttpMocker()
+    def test_given_throttled_when_read_campaigns_then_retry_and_return_records(self, http_mocker: HttpMocker):
+        """`basic_error_handler` is shared by ten entity streams. Pin the 429 retry resolution on a
+        pre-existing stream too, so a future edit that reorders the filters cannot silently restore
+        the IGNORE-then-stop-paginating behaviour on streams this PR did not otherwise touch."""
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        stream_name = "sponsored_brands_campaigns"
+        data_field = "campaigns"
+        record_id_path = "campaignId"
+
+        http_mocker.post(
+            SponsoredBrandsRequestBuilder.campaigns_endpoint(
+                self._config["client_id"], self._config["access_token"], self._config["profiles"][0]
+            )
+            .with_request_body(_DEFAULT_REQUEST_BODY)
+            .build(),
+            [
+                ErrorResponseBuilder.non_breaking_error_response()
+                .with_record(ErrorRecordBuilder.non_breaking_error())
+                .with_status_code(429)
+                .build(),
+                _a_response(stream_name, data_field, None).with_record(_a_record(stream_name, data_field, record_id_path)).build(),
+            ],
+        )
+
+        with patch("time.sleep", return_value=None):
+            output = read_stream(stream_name, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
 
     @HttpMocker()
     def test_given_one_page_when_read_campaigns_then_return_records(self, http_mocker: HttpMocker):
@@ -335,7 +366,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             SponsoredBrandsRequestBuilder.ads_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0])
             .with_request_body(_DEFAULT_REQUEST_BODY)
             .build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(400).build(),
         )
         with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_ads", SyncMode.full_refresh, self._config)
@@ -350,6 +381,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         Check ads stream: a 429 carries the same `code`/`details` body shape as a non-breaking error,
         so without an explicit retry filter it would be IGNOREd — pagination would stop and the sync
         would finish green having delivered only part of the account's ads. Assert it retries instead.
+
+        The `Retry-After: 600` header also pins the `max_waiting_time_in_seconds` ceiling: the CDK
+        compares with `>=` and aborts the stream outright at or above it, so this fails if the
+        manifest ceiling is ever moved back down to 600 or below.
         """
         self._given_oauth_and_profiles(http_mocker, self._config)
 
@@ -365,6 +400,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
                 ErrorResponseBuilder.non_breaking_error_response()
                 .with_record(ErrorRecordBuilder.non_breaking_error())
                 .with_status_code(429)
+                .with_headers({"Retry-After": "600"})
                 .build(),
                 _a_response(stream_name, data_field, None).with_record(_a_record(stream_name, data_field, record_id_path)).build(),
             ],
@@ -443,7 +479,7 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             SponsoredBrandsRequestBuilder.keywords_endpoint(
                 self._config["client_id"], self._config["access_token"], self._config["profiles"][0], limit=100
             ).build(),
-            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(500).build(),
+            ErrorResponseBuilder.breaking_error_response().with_record(breaking_error).with_status_code(400).build(),
         )
         with patch("time.sleep", return_value=None):
             output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)

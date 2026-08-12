@@ -32,19 +32,36 @@ definitions:
     backoff_strategies:
       # Amazon returns 429 with a Retry-After header (seconds) and asks clients to
       # retry throttling and server errors: reference/concepts/rate-limiting.
+      # NOTE: the CDK compares with `>=` and STOPS the stream (AirbyteTracedException,
+      # zero retries) at or above this value, so it must sit strictly above the largest
+      # Retry-After we still want to wait out. 900 keeps round-number waits (60/300/600)
+      # honoured while still capping an absurd header value.
       - type: WaitTimeFromHeader
         header: "Retry-After"
-        max_waiting_time_in_seconds: 600
+        max_waiting_time_in_seconds: 900
     response_filters:
+      # The two retryable filters must precede BOTH filters below. DefaultErrorHandler
+      # returns the first matching filter and HttpResponseFilter matches on `predicate` OR
+      # `http_codes`, so a retryable status whose body carries `message` would be FAILed,
+      # and one carrying `code`/`details` (the documented Sponsored Brands v4 / Sponsored
+      # Display error envelope) would be IGNOREd - halting pagination mid-stream on an
+      # otherwise successful sync.
+      #
+      # 429 is RATE_LIMITED rather than RETRY so the platform surfaces the stream as
+      # rate-limited and `exit_on_rate_limit` keeps applying; the CDK retries both actions
+      # with the same backoff strategy above.
+      #
+      # No `error_message` on either filter on purpose: HttpResponseFilter.matches falls
+      # back to the CDK's DEFAULT_ERROR_MAPPING text, which names the status code (e.g.
+      # "HTTP Status Code: 429. Error: Too many requests."). A static string here would
+      # collapse five distinct codes into one opaque message.
+      - http_codes: [429]
+        action: RATE_LIMITED
+      - http_codes: [500, 502, 503, 504]
+        action: RETRY
       - predicate: "{{ 'message' in response }}"
         action: FAIL
         error_message: "{{ response.message }}"
-      # Must precede the code/details IGNORE filter below: every documented Sponsored
-      # Brands v4 error body carries `code` and `details`, so without this a 429/5xx would
-      # be swallowed and pagination would halt mid-stream on an otherwise successful sync.
-      - http_codes: [429, 500, 502, 503, 504]
-        action: RETRY
-        error_message: "Amazon Ads returned a retryable error; retrying with backoff."
       - predicate: "{{ 'code' in response and 'details' in response }}"
         action: IGNORE
         error_message: "{{ response.code }}; {{ response.details }}"
