@@ -36,7 +36,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 
+@Execution(ExecutionMode.SAME_THREAD)
 internal class SnowflakeAirbyteClientTest {
 
     private lateinit var client: SnowflakeAirbyteClient
@@ -337,6 +340,7 @@ internal class SnowflakeAirbyteClientTest {
         val countResultSet =
             mockk<ResultSet> {
                 every { next() } returns true
+                every { getLong("TOTAL") } returns 1L
                 every { close() } just Runs
             }
         val sourceKindResultSet =
@@ -369,19 +373,47 @@ internal class SnowflakeAirbyteClientTest {
                 every { executeQuery(any()) } returns countResultSet
                 every { close() } just Runs
             }
+        val tableExistsStatement =
+            mockk<PreparedStatement> {
+                every { setString(any(), any()) } just runs
+                every { executeQuery().next() } returns true
+                every { close() } just Runs
+            }
         val executeStatements =
             listOf(
                 mockk<Statement>(relaxed = true),
                 mockk<Statement>(relaxed = true),
             )
-        val connection =
+        val tableExistsConnection =
             mockk<Connection> {
-                every { prepareStatement(any()) } returnsMany kindStatements
-                every { createStatement() } returnsMany
-                    listOf(countStatement) + executeStatements
+                every { prepareStatement(any()) } returns tableExistsStatement
                 every { close() } just Runs
             }
-        every { dataSource.connection } returns connection
+        val countConnection =
+            mockk<Connection> {
+                every { createStatement() } returns countStatement
+                every { close() } just Runs
+            }
+        val sourceKindConnection =
+            mockk<Connection> {
+                every { prepareStatement(any()) } returns kindStatements[0]
+                every { close() } just Runs
+            }
+        val targetKindConnection =
+            mockk<Connection> {
+                every { prepareStatement(any()) } returns kindStatements[1]
+                every { close() } just Runs
+            }
+        val executeConnections =
+            executeStatements.map { statement ->
+                mockk<Connection> {
+                    every { createStatement() } returns statement
+                    every { close() } just Runs
+                }
+            }
+        every { dataSource.connection } returnsMany
+            listOf(tableExistsConnection, countConnection, sourceKindConnection, targetKindConnection) +
+                executeConnections
         every { sqlGenerator.countTable(targetTableName) } returns "COUNT TARGET"
         every { sqlGenerator.dropTable(sourceTableName) } returns "DROP SOURCE"
         every { sqlGenerator.cloneTableWith(any(), any(), any()) } returns "CLONE"
