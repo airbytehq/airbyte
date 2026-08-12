@@ -502,7 +502,7 @@ def test_pagination_rest_restart_stitches_records_across_property_chunks(stream_
 
 
 def test_pagination_rest_restarts_repeatedly_while_the_query_makes_progress(stream_config, stream_api):
-    """A long read under RTR can lose a locator many times over; every restart that read records must be allowed to continue."""
+    """A long read can lose a locator many times over; every restart that read records must be allowed to continue."""
     stream_name = "AcceptedEventRelation"
     stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
     next_page_url = f"/services/data/{API_VERSION}/query/012345"

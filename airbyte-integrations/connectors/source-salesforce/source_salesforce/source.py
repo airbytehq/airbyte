@@ -15,6 +15,7 @@ from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import JSONDecodeError, codes, exceptions  # type: ignore[import]
 
+from airbyte_cdk import BearerAuthenticator
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import (
@@ -46,7 +47,6 @@ from .api import (
     UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS,
     UNSUPPORTED_FILTERING_STREAMS,
     Salesforce,
-    SalesforceRestAuthenticator,
     SalesforceTokenProvider,
 )
 from .streams import (
@@ -249,7 +249,8 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         sf_object: Salesforce,
     ) -> List[Stream]:
         """Generates a list of stream by their names. It can be used for different tests too"""
-        authenticator = SalesforceRestAuthenticator(SalesforceTokenProvider(sf_object))
+        # Same provider-backed authenticator the Bulk path uses, so REST streams also see refreshed tokens
+        authenticator = BearerAuthenticator(token_provider=SalesforceTokenProvider(sf_object), config={}, parameters={})
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
