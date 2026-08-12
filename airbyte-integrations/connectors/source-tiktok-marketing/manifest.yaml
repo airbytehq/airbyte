@@ -353,6 +353,7 @@ definitions:
     name: ads
     $parameters:
       path: "ad/get/"
+      page_size: 100
     primary_key:
       - ad_id
     schema_loader:
