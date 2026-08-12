@@ -44,6 +44,13 @@ class PostgresCustomConverterTest {
         assertEquals(PGInterval(0, 0, 1, 1, 1, 1.0), result)
     }
 
+    @Test
+    fun `microsecondsToPgInterval decomposes negative microseconds`() {
+        val result = PostgresCustomConverter().microsecondsToPgInterval(-90_061_000_000L)
+
+        assertEquals(PGInterval(0, 0, -1, -1, -1, -1.0), result)
+    }
+
     private fun converterFor(defaultValue: Long): CustomConverter.Converter {
         val field = mockk<RelationalColumn>()
         every { field.typeName() } returns "interval"
