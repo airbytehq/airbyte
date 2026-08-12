@@ -125,6 +125,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.12 | 2026-08-12 | [84277](https://github.com/airbytehq/airbyte/pull/84277) | Fix notes created on 30-day window boundary dates being silently skipped |
 | 0.2.11 | 2026-08-11 | [83964](https://github.com/airbytehq/airbyte/pull/83964) | Update dependencies |
 | 0.2.10 | 2026-08-04 | [83481](https://github.com/airbytehq/airbyte/pull/83481) | Update dependencies |
 | 0.2.9 | 2026-07-28 | [82970](https://github.com/airbytehq/airbyte/pull/82970) | Update dependencies |

@@ -60,12 +60,17 @@ definitions:
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
       incremental_sync:
+        # created_before is exclusive with respect to a whole day when given a bare
+        # date, so slice bounds must stay full timestamps at second granularity.
+        # start_datetime keeps the date-only format of the start_date spec field, and
+        # cursor_datetime_formats keeps "%Y-%m-%d" to parse state saved by <= 0.2.11.
         type: DatetimeBasedCursor
         cursor_field: created_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
@@ -80,10 +85,10 @@ definitions:
           field_name: created_before
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P30D
-        cursor_granularity: P1D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
