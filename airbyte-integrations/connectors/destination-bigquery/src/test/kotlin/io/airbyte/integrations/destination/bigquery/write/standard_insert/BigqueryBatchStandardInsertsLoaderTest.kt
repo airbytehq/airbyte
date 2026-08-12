@@ -75,7 +75,10 @@ class BigqueryBatchStandardInsertsLoaderTest {
         every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
 
         val loader = loader(maxOpenAttempts = 4)
-        val thrown = assertThrows<TransientErrorException> { runBlocking { loader.accept(record()) } }
+        val thrown =
+            assertThrows<TransientErrorException> {
+                runBlocking { loader.accept(record()) }
+            }
 
         assertEquals(exception, thrown.cause)
         verify(exactly = 4) { bigquery.writer(any<JobId>(), any()) }
@@ -122,7 +125,9 @@ class BigqueryBatchStandardInsertsLoaderTest {
         }
     }
 
-    private fun loader(maxOpenAttempts: Int = BigqueryBatchStandardInsertsLoader.MAX_OPEN_ATTEMPTS) =
+    private fun loader(
+        maxOpenAttempts: Int = BigqueryBatchStandardInsertsLoader.MAX_OPEN_ATTEMPTS
+    ) =
         BigqueryBatchStandardInsertsLoader(
             bigquery,
             configuration,
