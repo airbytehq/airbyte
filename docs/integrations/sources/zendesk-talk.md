@@ -8,19 +8,19 @@
 
 ## Setup guide
 
-### Step 1: choose an authentication method
+### Step 1: Choose an authentication method
 
 The connector supports three authentication methods:
 
-- **OAuth 2.0**: recommended for Airbyte Cloud. Uses Zendesk grant-type tokens with rotating refresh tokens.
-- **API Token**: recommended for self-managed Airbyte. Uses a Zendesk API token and the email address of the user who owns it.
-- **OAuth 2.0 (Legacy)**: a long-lived OAuth access token that never refreshes. This method exists for connections created before connector version 2.0.0. Don't choose it for new connections.
+- **OAuth 2.0**: Recommended for Airbyte Cloud. Uses Zendesk grant-type tokens with rotating refresh tokens.
+- **API Token**: Recommended for self-managed Airbyte. Uses a Zendesk API token and the email address of the user who owns it.
+- **OAuth 2.0 (Legacy)**: A long-lived OAuth access token that never refreshes. This method exists for connections created before connector version 2.0.0. Don't choose it for new connections.
 
 All authentication methods only need read access. When you register your own OAuth client, request the `read` [scope](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/#scope).
 
 #### Generate an API token
 
-1. In the Zendesk administrator center, go to **Apps and integrations > APIs > Zendesk API**.
+1. In Zendesk Admin Center, go to **Apps and integrations > APIs > Zendesk API**.
 2. On the **Settings** tab, enable **Token access**.
 3. Click **Add API token**, optionally describe it, and copy the token. Zendesk only shows the token once.
 
@@ -30,7 +30,7 @@ For details, see [Generating a new API token](https://support.zendesk.com/hc/en-
 
 Airbyte Cloud uses its own OAuth client, so you can skip this step and click **Authenticate your Zendesk Talk account** during setup instead.
 
-On self-managed Airbyte, register your own client in the Zendesk administrator center under **Apps and integrations > APIs > OAuth Clients**, then obtain a refresh token with the [authorization code grant flow](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/). You supply the client ID, client secret, and refresh token to the connector. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application).
+On self-managed Airbyte, register your own client in Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**, then obtain a refresh token with the [authorization code grant flow](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/). You supply the client ID, client secret, and refresh token to the connector. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application).
 
 ### Step 2: Set up the Zendesk Talk connector in Airbyte
 
@@ -51,7 +51,7 @@ Two Zendesk behaviors are worth planning for:
 - **Refresh tokens are single use.** Each refresh returns a new refresh token and invalidates the previous one. The connector writes the new refresh token back to the source configuration after every refresh.
 - **Refresh tokens expire after 30 days.** If a connection doesn't sync for 30 days, its refresh token expires and syncs fail until you re-authenticate the source.
 
-If OAuth syncs start failing with an authentication error, re-authenticate the source in its settings. On self-managed Airbyte, generate a new refresh token, and update the source configuration.
+If OAuth syncs start failing with an authentication error, re-authenticate the source in its settings. On self-managed Airbyte, generate a new refresh token and update the source configuration.
 
 ## Supported sync modes
 
