@@ -12,10 +12,11 @@ from unit_tests.conftest import get_source
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import KlaviyoRequestBuilder
+from mock_server.response_builder import metrics_response
 
 
 _NOW = datetime(2024, 2, 1, 12, 0, 0, tzinfo=timezone.utc)
@@ -25,31 +26,6 @@ _BASE_URL = "https://a.klaviyo.com/api"
 
 _UNSUPPORTED_METRIC_ID = "unsupported_metric_RJYhz9"
 _SUPPORTED_METRIC_ID = "supported_metric_ABC123"
-
-
-def _metrics_response(metric_ids: List[str]) -> HttpResponse:
-    """Build a metrics endpoint response with the given metric IDs."""
-    return HttpResponse(
-        body=json.dumps(
-            {
-                "data": [
-                    {
-                        "type": "metric",
-                        "id": mid,
-                        "attributes": {
-                            "name": f"Metric {mid}",
-                            "created": "2024-01-01T00:00:00+00:00",
-                            "updated": "2024-01-15T00:00:00+00:00",
-                            "integration": {"id": "int_001", "name": "API"},
-                        },
-                    }
-                    for mid in metric_ids
-                ],
-                "links": {"self": f"{_BASE_URL}/metrics", "next": None},
-            }
-        ),
-        status_code=200,
-    )
 
 
 def _days(first_day: datetime, count: int) -> List[str]:
@@ -131,7 +107,7 @@ class TestFlowSeriesReportsUnsupportedMetric(TestCase):
         # Mock the parent metrics_for_reporting stream (GET /metrics)
         http_mocker.get(
             KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
-            _metrics_response([_SUPPORTED_METRIC_ID, _UNSUPPORTED_METRIC_ID]),
+            metrics_response([_SUPPORTED_METRIC_ID, _UNSUPPORTED_METRIC_ID]),
         )
 
         # Use the underlying requests_mock to handle POST with dynamic body matching
@@ -169,7 +145,7 @@ class TestFlowSeriesReportsUnsupportedMetric(TestCase):
         # Mock the parent metrics_for_reporting stream (GET /metrics)
         http_mocker.get(
             KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
-            _metrics_response([_UNSUPPORTED_METRIC_ID]),
+            metrics_response([_UNSUPPORTED_METRIC_ID]),
         )
 
         # Every POST returns 400 unsupported
@@ -213,10 +189,11 @@ def _echo_requested_days_callback(recorded_timeframes: List[Dict[str, str]]):
 
 
 class _Sync(NamedTuple):
-    """What one sync asked for and what it produced."""
+    """What one sync asked for, what it produced, and the state a next sync would resume from."""
 
     timeframes: List[Dict[str, str]]
     records: List[Dict[str, Any]]
+    state: Any
 
 
 def _primary_key_of(record: Dict[str, Any]) -> tuple:
@@ -243,27 +220,32 @@ class TestFlowSeriesReportsPerDayRecords(TestCase):
         source = get_source(config=config, state=state)
         return read(source, config=config, catalog=catalog, state=state)
 
-    def _read_at(self, now: str, config: Dict[str, Any], cursor: Optional[str] = None) -> "_Sync":
+    def _read_at(self, now: str, config: Dict[str, Any], state: Optional[Any] = None) -> "_Sync":
         """
-        Run one incremental sync at a fixed wall clock, resuming from `cursor`, against an API
-        that reports every calendar day the requested timeframe touches.
+        Run one incremental sync at a fixed wall clock, resuming from `state`, against an API that
+        reports every calendar day the requested timeframe touches. The returned state is the one
+        the sync really emitted, so a following sync can be chained onto it as a connection would.
         """
-        state = StateBuilder().with_stream_state(_STREAM_NAME, {"date": cursor}).build() if cursor else None
+        input_state = StateBuilder().with_stream_state(_STREAM_NAME, state).build() if state is not None else None
         timeframes: List[Dict[str, str]] = []
         with freezegun.freeze_time(now):
             with HttpMocker() as http_mocker:
                 http_mocker.get(
                     KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
-                    _metrics_response([_SUPPORTED_METRIC_ID]),
+                    metrics_response([_SUPPORTED_METRIC_ID]),
                 )
                 http_mocker._mocker.post(
                     f"{_BASE_URL}/flow-series-reports",
                     text=_echo_requested_days_callback(timeframes),
                 )
-                output = self._read(config, state=state)
+                output = self._read(config, state=input_state)
 
         assert len(output.errors) == 0, f"Expected no errors but got: {output.errors}"
-        return _Sync(timeframes=timeframes, records=[message.record.data for message in output.records])
+        return _Sync(
+            timeframes=timeframes,
+            records=[message.record.data for message in output.records],
+            state=output.most_recent_state.stream_state,
+        )
 
     def test_emits_one_record_per_day_with_scalar_statistics(self):
         """One response covering three days yields three records, each with scalar statistics."""
@@ -272,7 +254,7 @@ class TestFlowSeriesReportsPerDayRecords(TestCase):
             with HttpMocker() as http_mocker:
                 http_mocker.get(
                     KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(),
-                    _metrics_response([_SUPPORTED_METRIC_ID]),
+                    metrics_response([_SUPPORTED_METRIC_ID]),
                 )
                 days = _days(datetime(2024, 2, 1, tzinfo=timezone.utc), 3)
                 http_mocker._mocker.post(
@@ -292,21 +274,20 @@ class TestFlowSeriesReportsPerDayRecords(TestCase):
 
     def test_a_day_reread_in_a_different_window_keeps_the_same_primary_key(self):
         """
-        This is the whole point of offering a reporting lookback window: a day re-read on a
-        later sync has to come back under the primary key it already had, so the destination
-        replaces the row instead of appending a second copy of the same day.
+        This is the whole point of offering a reporting lookback window: a day re-read on a later
+        sync has to come back under the primary key it already had, so a destination that
+        deduplicates replaces the row instead of appending a second copy of the same day.
 
         Two syncs read overlapping periods through differently bounded request windows. The
-        earlier sync resumes from 2024-02-01 and runs on 2024-02-10, so it asks for
-        2024-02-01 to 2024-02-10. The later sync resumes from 2024-02-10 with a 5 day lookback
-        and runs on 2024-02-12, so it asks for 2024-02-05 to 2024-02-12. The days 2024-02-05
-        through 2024-02-10 are therefore reported twice, inside two windows that share neither
-        a start nor an end.
+        earlier sync starts from the configured 2024-01-01 and runs on 2024-02-10, so it asks in
+        30 day steps for everything up to the end of 2024-02-09. The later sync resumes from the
+        state that sync actually emitted, with a 5 day lookback, and runs on 2024-02-12, so it
+        asks for 2024-02-04 to the end of 2024-02-11. The days 2024-02-04 through 2024-02-09 are
+        therefore reported twice, inside two windows that share neither a start nor an end.
         """
         earlier = self._read_at(
             "2024-02-10T12:00:00+00:00",
             ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build(),
-            cursor="2024-02-01T00:00:00+00:00",
         )
         later = self._read_at(
             "2024-02-12T12:00:00+00:00",
@@ -315,7 +296,7 @@ class TestFlowSeriesReportsPerDayRecords(TestCase):
             .with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
             .with_reporting_lookback_window(5)
             .build(),
-            cursor="2024-02-10T00:00:00+00:00",
+            state=earlier.state,
         )
 
         # The windows must genuinely differ, otherwise the rest of this test proves nothing.
@@ -335,8 +316,8 @@ class TestFlowSeriesReportsPerDayRecords(TestCase):
             f"earlier={sorted(earlier_by_day)[-3:]} later={sorted(later_by_day)[:3]}"
         )
         assert reread_days == _days(
-            datetime(2024, 2, 5, tzinfo=timezone.utc), 6
-        ), f"expected 2024-02-05 through 2024-02-10 to be re-read, got {reread_days}"
+            datetime(2024, 2, 4, tzinfo=timezone.utc), 6
+        ), f"expected 2024-02-04 through 2024-02-09 to be re-read, got {reread_days}"
         for day in reread_days:
             assert earlier_by_day[day] == later_by_day[day], (
                 f"the record for {day} came back under a different primary key, so a destination "

@@ -1167,13 +1167,20 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        # The start date is floored to midnight UTC so every report window covers whole calendar
-        # days. Klaviyo report timeframes are inclusive on both ends and round the end up to
-        # :59:59 of its hour, so a start date carrying a time-of-day makes each 30-day window
-        # overlap the next one on a shared day.
+        # Every report window covers whole calendar days: the start is floored to midnight and the
+        # last window stops at the end of the previous day. Klaviyo report timeframes are inclusive
+        # on both ends and round the end up to :59:59 of its hour, so a window that stops mid-day
+        # reports that whole day and so does the next window. Stopping at the previous day also
+        # keeps today's partial numbers out of the report - the next sync reads that day in full.
+        # Klaviyo evaluates both bounds in the account's company timezone (it documents that the
+        # offset written here is ignored), so these are whole days in that timezone, not in UTC.
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1321,15 +1328,26 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        # Floored to midnight UTC for the same reason as flow_series_reports: whole calendar day
-        # windows stop consecutive 30-day timeframes from sharing - and so double-counting - a day.
-        # This endpoint takes no `interval`, so each record is one aggregate over the whole window
-        # keyed by the window end. A lookback window is deliberately not offered here: re-reading a
-        # period would return a fresh aggregate under a new `date`, adding to the previous rows
-        # instead of replacing them. See the reporting_lookback_window spec field.
+        # Whole calendar day windows, as in flow_series_reports, and here they are what keeps the
+        # numbers right rather than merely tidy. This endpoint takes no `interval`, so a request
+        # answers with a single aggregate over the whole window and the connector has to give that
+        # row a `date` itself (see the transformation below). That `date` is also the cursor the
+        # next sync resumes from, so a window ending at the moment the sync runs would store a
+        # wall-clock instant, the next sync would start requesting mid-day, and the day on that
+        # boundary would end up inside two aggregates filed under two different `date` values -
+        # counted twice, with nothing for a destination to deduplicate. Ending on the last complete
+        # day instead makes consecutive syncs tile the calendar exactly, and a second sync on the
+        # same day requests nothing at all.
+        # A lookback window is deliberately not offered here: re-reading a period would return a
+        # fresh aggregate under a new `date`, adding to the previous rows instead of replacing
+        # them. See the reporting_lookback_window spec field.
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1338,7 +1356,10 @@ definitions:
           fields:
             - path:
                 - date
-              value: "{{ stream_interval.end_time }}"
+              # The exclusive upper bound of the period this row aggregates. The window ends at
+              # 23:59:59 on its last day, so this is the midnight that closes it - a day boundary,
+              # which is what the next sync needs to resume from without re-reading that day.
+              value: "{{ (str_to_datetime(stream_interval.end_time) + duration('P1D')).strftime('%Y-%m-%dT00:00:00+00:00') }}"
             - path:
                 - campaign_id
               value: "{{ record.get('groupings', {}).get('campaign_id') }}"
@@ -1466,13 +1487,15 @@ spec:
           send - by default for up to 5 days, and up to 90 days if you raise the
           attribution window in your account settings - so the numbers first
           reported for a day keep changing for a while. Set this to at least your
-          attribution window to pick those revisions up. Each re-synced day
-          replaces the row previously written for it rather than adding a second
-          one, because flow_series_reports rows are keyed by the calendar day they
-          report on. This does not apply to campaign_values_reports: that endpoint
-          returns a single aggregate for the whole requested period instead of a
-          per-day breakdown, so a re-read cannot replace anything and would only
-          add double-counted rows. Defaults to 0 (no re-sync).
+          attribution window to pick those revisions up. Because
+          flow_series_reports rows are keyed by the calendar day they report on, a
+          destination that deduplicates on the primary key replaces the row
+          previously written for a re-synced day, while in append mode each
+          re-synced day adds an extra row per sync. This does not apply to
+          campaign_values_reports: that endpoint returns a single aggregate for the
+          whole requested period instead of a per-day breakdown, so a re-read
+          cannot replace anything and would only add double-counted rows. Defaults
+          to 0 (no re-sync).
         minimum: 0
         default: 0
         examples:
@@ -4250,7 +4273,9 @@ schemas:
           - "null"
           - string
         format: date-time
-        description: End date of the reporting period (used as cursor field)
+        description: >-
+          Exclusive upper bound of the reporting period this row aggregates - the midnight after
+          its last calendar day (used as cursor field)
       campaign_id:
         type:
           - "null"

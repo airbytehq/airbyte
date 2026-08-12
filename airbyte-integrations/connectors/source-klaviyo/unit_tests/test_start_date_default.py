@@ -10,9 +10,10 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 _MANIFEST_PATH = Path(__file__).resolve().parent.parent / "manifest.yaml"
 _EXPECTED_TEMPLATE = "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
-# The report streams take the same start date but floor it to midnight UTC, because Klaviyo
-# report timeframes are inclusive on both ends: a window that stops mid-day reports that day
-# and so does the next window, which double-counts it.
+# The report streams take the same start date but floor it to midnight, because Klaviyo report
+# timeframes are inclusive on both ends: a window that stops mid-day reports that day and so does
+# the next window, which double-counts it. Klaviyo reads the bound in the account's company
+# timezone and ignores the offset written here.
 _REPORT_TEMPLATE = "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
 _REPORT_STREAMS = {"flow_series_reports", "campaign_values_reports"}
 # The metrics stream ignores start_date so that every metric definition is synced and can be

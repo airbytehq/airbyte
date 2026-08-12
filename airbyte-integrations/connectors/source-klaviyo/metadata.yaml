@@ -35,9 +35,9 @@ data:
   releases:
     breakingChanges:
       3.0.0:
-        message: "The 'flow_series_reports' stream now emits one record per calendar day instead of one record per request window. Every 'statistics' field changes from an array of daily values to a single number for that day, and 'date' is now the real day the row reports on rather than the end of the request window. Both 'flow_series_reports' and 'campaign_values_reports' now request whole calendar day windows, which changes the reporting periods previously written by 'campaign_values_reports'. Users must refresh the source schema and clear both streams after upgrading. See the [Klaviyo migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-300) for details."
+        message: "The 'flow_series_reports' stream now emits one record per calendar day instead of one record per request window. Every 'statistics' field changes from an array of daily values to a single number for that day, and 'date' is now the real day the row reports on rather than the end of the request window. Both 'flow_series_reports' and 'campaign_values_reports' now request whole calendar day periods ending on the last complete day, which changes the reporting periods previously written by 'campaign_values_reports', and its 'date' is now the midnight that closes the reported period instead of a timestamp inside it. Users must refresh the source schema and clear both streams after upgrading. See the [Klaviyo migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-300) for details."
         upgradeDeadline: "2026-08-31"
-        deadlineAction: "auto_upgrade"
+        deadlineAction: "disable"
         scopedImpact:
           - scopeType: stream
             impactedScopes:

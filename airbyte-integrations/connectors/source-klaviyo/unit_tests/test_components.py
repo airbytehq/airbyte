@@ -593,10 +593,10 @@ def _manifest():
         return yaml.safe_load(manifest_file)
 
 
-def _report_windows(stream_name, config, now):
+def _report_windows(stream_name, config, now, stream_state=None):
     """
     Build the stream's real cursor straight from the manifest and return the report windows it
-    would request, as (start, end) datetimes.
+    would request, as (start, end) datetimes. Pass `stream_state` to measure a resumed sync.
     """
     import freezegun
 
@@ -611,7 +611,7 @@ def _report_windows(stream_name, config, now):
             component_definition=definition,
             stream_name=stream_name,
             stream_namespace=None,
-            stream_state={},
+            stream_state=stream_state or {},
             config=config,
         )
         return [
@@ -623,35 +623,62 @@ def _report_windows(stream_name, config, now):
         ]
 
 
+_REPORT_WINDOWS_NOW = "2024-06-15T12:34:56+00:00"
+_LAST_COMPLETE_DAY = datetime_module.date(2024, 6, 14)
+_MIDNIGHT = datetime_module.time(0, 0, 0)
+_END_OF_DAY = datetime_module.time(23, 59, 59)
+_STORED_CURSOR = {"date": "2024-05-02T00:00:00+00:00"}
+
+
 @pytest.mark.parametrize("stream_name", ["flow_series_reports", "campaign_values_reports"])
-@pytest.mark.parametrize("start_date", ["2024-01-01T00:00:00Z", "2024-01-01T05:30:00Z", "2024-01-01T23:59:59Z"])
-def test_report_windows_are_whole_calendar_days(stream_name, start_date):
+@pytest.mark.parametrize(
+    "case, start_date, stream_state, lookback",
+    [
+        ("first sync from midnight", "2024-01-01T00:00:00Z", None, 0),
+        ("first sync from a start date with a time of day", "2024-01-01T05:30:00Z", None, 0),
+        ("first sync from a start date one second before midnight", "2024-01-01T23:59:59Z", None, 0),
+        ("resumed from a stored cursor", "2024-01-01T00:00:00Z", _STORED_CURSOR, 0),
+        ("resumed from a stored cursor with a 5 day lookback", "2024-01-01T00:00:00Z", _STORED_CURSOR, 5),
+    ],
+)
+def test_report_windows_are_whole_calendar_days(stream_name, case, start_date, stream_state, lookback):
     """
     Klaviyo report timeframes are inclusive on both ends and round the end up to :59:59 of its
     hour, so a window that stops mid-day reports that day and so does the next window, which
-    double-counts it. Every window must therefore begin at midnight, and consecutive windows
-    must neither share nor skip a calendar day whatever time of day the configured start date
-    carries.
+    double-counts it. Every window must therefore begin at midnight and the last one must stop at
+    the end of the last complete day - not at the moment the sync happens to run, which would both
+    report a partial day and leave a mid-day cursor for the next sync to resume from. Consecutive
+    windows must neither share nor skip a calendar day, whatever time of day the configured start
+    date carries and whether the sync starts fresh or resumes from a stored cursor.
     """
-    windows = _report_windows(stream_name, {"start_date": start_date}, "2024-06-15T12:34:56+00:00")
+    config = {"start_date": start_date, "reporting_lookback_window": lookback}
+    windows = _report_windows(stream_name, config, _REPORT_WINDOWS_NOW, stream_state=stream_state)
 
-    assert len(windows) > 1, f"expected several 30-day windows, got {windows}"
+    assert len(windows) > 1, f"{case}: expected several 30-day windows, got {windows}"
     for start, _ in windows:
-        assert (start.hour, start.minute, start.second) == (0, 0, 0), f"window starts mid-day: {start.isoformat()}"
+        assert start.time() == _MIDNIGHT, f"{case}: window starts mid-day: {start.isoformat()}"
+    last_end = windows[-1][1]
+    assert (
+        last_end.time() == _END_OF_DAY
+    ), f"{case}: the last window ends mid-day at {last_end.isoformat()}, so it reports a partial day the next sync reports again"
+    assert (
+        last_end.date() == _LAST_COMPLETE_DAY
+    ), f"{case}: the last window ends on {last_end.date()} instead of the last complete day {_LAST_COMPLETE_DAY}"
     for (_, earlier_end), (later_start, _) in zip(windows, windows[1:]):
         assert (
             earlier_end.date() < later_start.date()
-        ), f"windows share the day {earlier_end.date()}: {earlier_end.isoformat()} then {later_start.isoformat()}"
+        ), f"{case}: windows share the day {earlier_end.date()}: {earlier_end.isoformat()} then {later_start.isoformat()}"
         assert (later_start.date() - earlier_end.date()).days == 1, (
-            f"the day after {earlier_end.date()} is in no window at all, so a day of data is lost " f"before {later_start.isoformat()}"
+            f"{case}: the day after {earlier_end.date()} is in no window at all, so a day of data is lost "
+            f"before {later_start.isoformat()}"
         )
 
 
 def test_only_flow_series_reports_offers_a_reporting_lookback_window():
     """
-    campaign_values_reports takes no `interval`, so one request yields a single aggregate over
-    the whole window keyed by the window end. Re-reading a period there cannot replace anything,
-    it can only add a second differently-keyed row covering the same days.
+    campaign_values_reports takes no `interval`, so one request yields a single aggregate over the
+    whole window, keyed by the day boundary that closes it. Re-reading a period there cannot
+    replace anything, it can only add a second differently-keyed row covering the same days.
     """
     streams = _manifest()["definitions"]["streams"]
 

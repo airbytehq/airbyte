@@ -62,7 +62,7 @@ The Klaviyo API supports cursor-based pagination and `filter` parameters with `g
 | metrics | medium | top-level parent | updated | updated | incremental |  |
 | metrics_for_reporting | small | top-level parent | none | none | deferred_no_api_support | Lists metric definitions; config-style lookup, no date filter |
 | profiles | medium | top-level parent | updated | updated | incremental |  |
-| campaign_values_reports | medium | child | date | date | incremental | Aggregate over the whole request window keyed by window end; no `interval` support, so no lookback window is offered |
+| campaign_values_reports | medium | child | date | date | incremental | Aggregate over the whole request window, keyed by the midnight that closes it; windows end on the last complete day; no `interval` support, so no lookback window is offered |
 | flow_series_reports | medium | child | date | date | incremental | Custom `FlowSeriesPerDayExtractor` splits the shared `date_times` array into one record per calendar day with scalar statistics |
 | lists_detailed | medium | child | updated | updated | incremental |  |
 
