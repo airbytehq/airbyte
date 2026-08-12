@@ -650,6 +650,20 @@ definitions:
           type: NoPagination
         decoder:
           type: JsonDecoder
+      transformations:
+        # Report rows are a single aggregate per person for the whole requested
+        # range and carry no marker of the period they cover. Stamp the requested
+        # range onto each record so the numbers stay interpretable after the sync.
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - start_date
+              value: "{{ config['start_date'][:10] }}"
+            - type: AddedFieldDefinition
+              path:
+                - end_date
+              value: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -678,6 +692,20 @@ definitions:
           type: NoPagination
         decoder:
           type: JsonDecoder
+      transformations:
+        # Report rows are a single aggregate per project for the whole requested
+        # range and carry no marker of the period they cover. Stamp the requested
+        # range onto each record so the numbers stay interpretable after the sync.
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - start_date
+              value: "{{ config['start_date'][:10] }}"
+            - type: AddedFieldDefinition
+              path:
+                - end_date
+              value: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%d')) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1771,6 +1799,14 @@ schemas:
         type:
           - number
           - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
   reports-projects:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1799,4 +1835,12 @@ schemas:
       nonBillable:
         type:
           - number
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      end_date:
+        type:
+          - string
           - "null"

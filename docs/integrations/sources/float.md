@@ -31,6 +31,14 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 | reports-people | people_id | No pagination | ✅ |  ❌  |
 | reports-projects | project_id | No pagination | ✅ |  ❌  |
 
+### Report streams
+
+`reports-people` and `reports-projects` return one aggregated row per person or project covering the whole configured `start_date`..`end_date` window, as computed at sync time. They are snapshots, not history: because the underlying schedule keeps changing, the same row will come back with different numbers on the next sync. To make each snapshot interpretable, every record carries the `start_date` and `end_date` it was computed for.
+
+Use **full refresh | overwrite** for these streams. With **append** you accumulate one snapshot per sync, which is only useful if you keep the `end_date` field to tell the snapshots apart.
+
+Set `end_date` on or after `start_date`. Float does not document how it handles an inverted range, so the results are unspecified rather than empty.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
