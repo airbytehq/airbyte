@@ -15,6 +15,7 @@ from requests.exceptions import RequestException  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, StreamDescriptor
 from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
@@ -300,6 +301,21 @@ class SalesforceTokenProvider(TokenProvider):
         except Exception:
             logger.error("Forced token refresh failed; subsequent requests will likely fail", exc_info=True)
             return False
+
+
+class SalesforceRestAuthenticator(TokenAuthenticator):
+    """
+    Reads the access token from the shared provider on every request, so REST streams pick up a refreshed token instead of holding the one
+    captured when the stream was built. The Bulk path already does this through its own `BearerAuthenticator`.
+    """
+
+    def __init__(self, token_provider: SalesforceTokenProvider) -> None:
+        super().__init__(token="")
+        self._token_provider = token_provider
+
+    @property
+    def token(self) -> str:
+        return f"{self._auth_method} {self._token_provider.get_token()}"
 
 
 class Salesforce:

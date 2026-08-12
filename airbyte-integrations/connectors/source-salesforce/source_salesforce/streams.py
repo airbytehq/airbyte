@@ -124,7 +124,11 @@ class SalesforceStream(HttpStream, ABC):
             self.stream_name,
             self.logger,
             session=self._http_client._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
-            error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
+            error_handler=SalesforceErrorHandler(
+                stream_name=self.stream_name,
+                sobject_options=self.sobject_options,
+                token_provider=SalesforceTokenProvider(self.sf_api),
+            ),
         )
 
     def read_records(

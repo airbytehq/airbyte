@@ -415,6 +415,31 @@ def test_pagination_rest(stream_config, stream_api):
         assert len(records) == 4
 
 
+def test_rest_authenticator_reads_the_current_token(stream_config, stream_api):
+    """REST streams must authenticate with the shared provider's token, not one captured when the stream was built."""
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    authenticator = stream._http_client._session.auth
+    stream_api.access_token = "first_token"
+
+    assert authenticator.token == "Bearer first_token"
+
+    stream_api.access_token = "rotated_token"
+
+    assert authenticator.token == "Bearer rotated_token"
+
+
+def test_rest_error_handler_can_force_a_refresh(stream_config, stream_api):
+    """Without a token provider the INVALID_SESSION_ID branch cannot refresh, which is what left REST streams unable to recover."""
+    stream: RestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
+    error_handler = stream._http_client._error_handler
+
+    assert error_handler._token_provider is not None
+
+    stream_api.login = Mock()
+    assert error_handler._token_provider.force_refresh() is True
+    stream_api.login.assert_called_once()
+
+
 def test_pagination_rest_restarts_query_when_locator_session_expires(stream_config, stream_api):
     """
     A query locator belongs to the session that created it. When that session is invalidated mid-pagination, for instance because the
