@@ -51,6 +51,7 @@ internal const val TIMESTAMP_MAX_EPOCH_SECONDS = 9223371331200L
 @Singleton
 class PostgresValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        value.abValue = sanitizePostgresValue(value.abValue)
         value.abValue =
             if (value.type is UnionType || value.type is UnknownType) {
                 // Don't serialize null values - keep them as NullValue
@@ -84,19 +85,10 @@ class PostgresValueCoercer : ValueCoercer {
                 } else ValidationResult.Valid
             }
             is StringValue -> {
-                // PostgreSQL doesn't allow null bytes (\u0000) in text fields
-                // Replace them with empty string to prevent COPY errors
-                // Using replace() without regex for optimal performance (O(n) vs O(n*m) with regex)
-                if (abValue.value.contains('\u0000')) {
-                    val sanitizedValue = abValue.value.replace("\u0000", "")
-                    value.abValue = StringValue(sanitizedValue)
-                }
-
                 // Validate string length (conservative check - actual byte size may vary with
                 // encoding)
                 // PostgreSQL uses UTF-8, so we check character count * 4 (max bytes per UTF-8 char)
-                val currentValue = (value.abValue as StringValue).value
-                if (currentValue.length * 4 > TEXT_LIMIT_BYTES) {
+                if (abValue.value.length * 4 > TEXT_LIMIT_BYTES) {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
