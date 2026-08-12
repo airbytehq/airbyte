@@ -260,7 +260,10 @@ internal class SnowflakeAirbyteClientTest {
 
     @Test
     fun `overwriteTable uses CTAS for transient source and permanent target`() =
-        runOverwriteTableTest(sourceTransient = "Y", targetTransient = "N") { source, target, executeStatements ->
+        runOverwriteTableTest(
+            sourceTransient = "Y",
+            targetTransient = "N",
+        ) { source, target, executeStatements ->
             verify(exactly = 1) {
                 sqlGenerator.replaceTableWithSelectFrom(source, target)
             }
@@ -272,7 +275,10 @@ internal class SnowflakeAirbyteClientTest {
 
     @Test
     fun `overwriteTable uses transient clone for transient source and target`() =
-        runOverwriteTableTest(sourceTransient = "Y", targetTransient = "Y") { source, target, executeStatements ->
+        runOverwriteTableTest(
+            sourceTransient = "Y",
+            targetTransient = "Y",
+        ) { source, target, executeStatements ->
             verify(exactly = 1) {
                 sqlGenerator.cloneTableWith(source, target, transient = true)
             }
@@ -284,7 +290,10 @@ internal class SnowflakeAirbyteClientTest {
 
     @Test
     fun `overwriteTable uses permanent clone for permanent source and target`() =
-        runOverwriteTableTest(sourceTransient = "N", targetTransient = "N") { source, target, executeStatements ->
+        runOverwriteTableTest(
+            sourceTransient = "N",
+            targetTransient = "N",
+        ) { source, target, executeStatements ->
             verify(exactly = 1) {
                 sqlGenerator.cloneTableWith(source, target, transient = false)
             }
@@ -296,7 +305,10 @@ internal class SnowflakeAirbyteClientTest {
 
     @Test
     fun `overwriteTable uses CTAS when target kind is unknown`() =
-        runOverwriteTableTest(sourceTransient = "Y", targetTransient = null) { source, target, executeStatements ->
+        runOverwriteTableTest(
+            sourceTransient = "Y",
+            targetTransient = null,
+        ) { source, target, executeStatements ->
             verify(exactly = 1) {
                 sqlGenerator.replaceTableWithSelectFrom(source, target)
             }
@@ -308,8 +320,10 @@ internal class SnowflakeAirbyteClientTest {
 
     @Test
     fun `overwriteTable uses CTAS when source kind is unknown and target is permanent`() =
-        runOverwriteTableTest(sourceTransient = null, targetTransient = "N") {
-            _, _, executeStatements ->
+        runOverwriteTableTest(
+            sourceTransient = null,
+            targetTransient = "N",
+        ) { _, _, executeStatements ->
             verify(exactly = 1) { executeStatements[0].executeQuery("CTAS") }
         }
 
