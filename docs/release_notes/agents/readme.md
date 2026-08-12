@@ -1,5 +1,17 @@
 # Airbyte Agents release notes
 
+## August 12, 2026
+
+Web app
+
+- The sessions list now stays on screen while you change filters or move between pages. Results dim briefly while the new ones load instead of the table disappearing.
+- Status labels for connectors and Context Store now stay on a single line and shorten with an ellipsis in narrow columns, so they're easier to read.
+
+Other
+
+- Your agents can now combine data from more than one connector in a single query against your synced data, so you can join related records, such as issues from one tool with calls from another, without running separate queries.
+- Fixed an issue where a retried Context Store update could count already-completed data as failed, which could stop healthy data from staying searchable.
+
 ## July 21, 2026
 
 Web app
