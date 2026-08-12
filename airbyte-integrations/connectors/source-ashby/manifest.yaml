@@ -1812,6 +1812,7 @@ streams:
             type:
               - "null"
               - string
+            format: date-time
   - type: DeclarativeStream
     name: application_criteria_evaluations
     primary_key: []
