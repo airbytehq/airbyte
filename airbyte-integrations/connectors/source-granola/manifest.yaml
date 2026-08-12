@@ -65,7 +65,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%d"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
@@ -80,10 +81,10 @@ definitions:
           field_name: created_before
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P30D
-        cursor_granularity: P1D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
