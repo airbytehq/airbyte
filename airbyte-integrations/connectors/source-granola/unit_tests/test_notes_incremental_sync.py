@@ -34,21 +34,8 @@ def _parse_timestamp(value: str) -> datetime:
 
 def _notes_response(request, notes):
     query = parse_qs(urlparse(request.url).query)
-    created_after = _parse_timestamp(query["created_after"][0])
-    created_before_value = query.get("created_before", [None])[0]
-    created_before = (
-        _parse_timestamp(created_before_value)
-        if created_before_value and "T" in created_before_value
-        else datetime.strptime(created_before_value, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if created_before_value
-        else None
-    )
-    filtered_notes = [
-        note
-        for note in notes
-        if _parse_timestamp(note["created_at"]) >= created_after
-        and (created_before is None or _parse_timestamp(note["created_at"]) < created_before)
-    ]
+    updated_after = _parse_timestamp(query["updated_after"][0])
+    filtered_notes = [note for note in notes if _parse_timestamp(note["updated_at"]) >= updated_after]
     return {"notes": filtered_notes, "cursor": "", "hasMore": False}
 
 
@@ -64,9 +51,21 @@ def _read_notes(notes, config=_CONFIG, state=None):
 
 def test_boundary_date_note_is_not_dropped():
     notes = [
-        {"id": "before-boundary", "created_at": "2026-01-29T23:59:59Z"},
-        {"id": "on-boundary", "created_at": "2026-01-30T00:00:00.123Z"},
-        {"id": "after-boundary", "created_at": "2026-01-31T00:00:00Z"},
+        {
+            "id": "before-boundary",
+            "created_at": "2026-01-29T23:59:59Z",
+            "updated_at": "2026-01-29T23:59:59Z",
+        },
+        {
+            "id": "on-boundary",
+            "created_at": "2026-01-30T00:00:00.123Z",
+            "updated_at": "2026-01-30T00:00:00.123Z",
+        },
+        {
+            "id": "after-boundary",
+            "created_at": "2026-01-31T00:00:00Z",
+            "updated_at": "2026-01-31T00:00:00Z",
+        },
     ]
 
     output, _ = _read_notes(notes)
@@ -79,26 +78,82 @@ def test_boundary_date_note_is_not_dropped():
 
 
 def test_notes_request_is_unbounded():
-    notes = [{"id": "note-1", "created_at": "2026-01-02T00:00:00Z"}]
+    notes = [
+        {
+            "id": "note-1",
+            "created_at": "2026-01-02T00:00:00Z",
+            "updated_at": "2026-01-02T00:00:00Z",
+        }
+    ]
 
     output, requests = _read_notes(notes)
 
     assert len(output.records) == 1
     assert len(requests) == 1
     query = parse_qs(urlparse(requests[0].url).query)
-    assert query["created_after"] == ["2026-01-01T00:00:00Z"]
+    assert query["updated_after"] == ["2026-01-01T00:00:00Z"]
+    assert "created_after" not in query
     assert "created_before" not in query
 
 
 def test_legacy_date_state_is_accepted_and_emits_iso_state():
-    notes = [{"id": "note-2", "created_at": "2026-06-02T12:34:56.123Z"}]
-    state = StateBuilder().with_stream_state("notes", {"created_at": "2026-06-01"}).build()
+    notes = [
+        {
+            "id": "note-2",
+            "created_at": "2026-06-02T12:34:56.123Z",
+            "updated_at": "2026-06-02T12:34:56.123Z",
+        }
+    ]
+    state = StateBuilder().with_stream_state("notes", {"updated_at": "2026-06-01"}).build()
     config = {"api_key": "test-api-key", "start_date": "2026-01-01"}
 
     output, requests = _read_notes(notes, config=config, state=state)
 
     query = parse_qs(urlparse(requests[0].url).query)
-    assert query["created_after"] == ["2026-06-01T00:00:00Z"]
+    assert query["updated_after"] == ["2026-06-01T00:00:00Z"]
     assert len(output.records) == 1
     latest_state = output.state_messages[-1].state.stream.stream_state
-    assert latest_state.created_at == "2026-06-02T12:34:56Z"
+    assert latest_state.updated_at == "2026-06-02T12:34:56Z"
+
+
+def test_updated_at_cursor_replicates_later_edits_only():
+    notes = [
+        {
+            "id": "edited-note",
+            "created_at": "2026-05-01T00:00:00Z",
+            "updated_at": "2026-06-02T00:00:00Z",
+        },
+        {
+            "id": "stale-note",
+            "created_at": "2026-05-01T00:00:00Z",
+            "updated_at": "2026-05-31T23:59:59Z",
+        },
+    ]
+    state = StateBuilder().with_stream_state("notes", {"updated_at": "2026-06-01T00:00:00Z"}).build()
+
+    output, requests = _read_notes(notes, state=state)
+
+    query = parse_qs(urlparse(requests[0].url).query)
+    assert query["updated_after"] == ["2026-06-01T00:00:00Z"]
+    assert "created_after" not in query
+    assert "created_before" not in query
+    assert [record.record.data["id"] for record in output.records] == ["edited-note"]
+    latest_state = output.state_messages[-1].state.stream.stream_state
+    assert latest_state.updated_at == "2026-06-02T00:00:00Z"
+
+
+def test_created_at_state_restarts_from_start_date():
+    notes = [
+        {
+            "id": "note-after-reset",
+            "created_at": "2026-01-02T00:00:00Z",
+            "updated_at": "2026-01-02T00:00:00Z",
+        }
+    ]
+    state = StateBuilder().with_stream_state("notes", {"created_at": "2026-06-01"}).build()
+
+    output, requests = _read_notes(notes, state=state)
+
+    query = parse_qs(urlparse(requests[0].url).query)
+    assert query["updated_after"] == ["2026-01-01T00:00:00Z"]
+    assert len(output.records) == 1

@@ -61,7 +61,7 @@ definitions:
             stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: created_at
+        cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -74,7 +74,7 @@ definitions:
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: created_after
+          field_name: updated_after
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -195,6 +195,10 @@ schemas:
       created_at:
         type: string
         description: The creation time of the note in ISO 8601 format.
+        format: date-time
+      updated_at:
+        type: string
+        description: The last update time of the note in ISO 8601 format.
         format: date-time
     additionalProperties: true
     required:
