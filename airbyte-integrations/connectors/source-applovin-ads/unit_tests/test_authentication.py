@@ -74,7 +74,6 @@ def test_rejected_api_key_fails_as_config_error():
 
     assert output.errors
     assert any(
-        error.trace.error.failure_type == FailureType.config_error
-        and "Report Key" in (error.trace.error.message or "")
+        error.trace.error.failure_type == FailureType.config_error and "Report Key" in (error.trace.error.message or "")
         for error in output.errors
     )
