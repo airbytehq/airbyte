@@ -3046,6 +3046,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The organization skill registry is temporarily unavailable; retrying is safe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -3184,6 +3194,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The organization skill registry is temporarily unavailable; retrying is safe.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3338,6 +3358,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The organization skill registry is temporarily unavailable; retrying is safe.",
             "content": {
               "application/json": {
                 "schema": {
