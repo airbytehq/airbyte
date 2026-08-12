@@ -333,6 +333,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.11.0-rc.1 | 2026-08-11 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
+| 2.10.2 | 2026-08-11 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
 | 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
 | 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |

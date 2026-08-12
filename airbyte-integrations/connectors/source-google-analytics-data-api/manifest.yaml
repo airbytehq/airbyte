@@ -1069,7 +1069,7 @@ dynamic_streams:
         # Note `source_config_1` holds the gate value `(0, True)` when enabled, so its `[1]` is
         # a boolean and must not be concatenated into a name.
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
+          field_path: ["name"]
           value: "{{ components_values['name'] ~ ('Consolidated' if config.get('single_stream_per_report') else ('Property' ~ components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else '')) }}"
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
