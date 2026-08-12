@@ -67,7 +67,7 @@ transformation or the stream will emit invalid metric types.
 TikTok's API does not use standard HTTP 429 status codes for rate limiting. Instead, it returns HTTP
 200 with a `code` field in the JSON response body set to `40100`. The error handler uses a predicate
 (`response.get('code') == 40100`) to detect rate limiting, and a separate predicate
-(`response.get('code') == 50000`) retries transient server-side errors, while
+(`50000 <= response.get('code') < 60000`) retries transient service-side errors, while
 (`response.get('code') != 0`) detects general API errors.
 
 **Why this matters:** Standard HTTP status code-based rate limit detection will not work with TikTok's

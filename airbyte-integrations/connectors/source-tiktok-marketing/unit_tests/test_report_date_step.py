@@ -134,6 +134,38 @@ def test_error_40067_not_on_global_requester():
 
 
 @pytest.mark.parametrize(
+    "handler_path",
+    [
+        pytest.param(("definitions", "requester", "error_handler"), id="global_requester"),
+        pytest.param(("definitions", "report_daily_error_handler"), id="daily_report"),
+        pytest.param(
+            ("definitions", "pixel_instant_page_events", "retriever", "requester", "error_handler"),
+            id="pixel_instant_page_events",
+        ),
+        pytest.param(
+            ("definitions", "pixel_events_statistics", "retriever", "requester", "error_handler"),
+            id="pixel_events_statistics",
+        ),
+    ],
+)
+def test_service_error_handler_retries_5xxxx_before_catch_all(handler_path):
+    manifest = _load_manifest()
+    handler = manifest
+    for path_part in handler_path:
+        handler = handler[path_part]
+
+    filters = handler["response_filters"]
+    service_filters = [f for f in filters if ">= 50000" in f.get("predicate", "") and "< 60000" in f.get("predicate", "")]
+    assert len(service_filters) == 1
+    service_filter = service_filters[0]
+    assert service_filter["action"] == "RETRY"
+    assert "service-side error" in service_filter["error_message"]
+
+    catch_all_index = next(i for i, f in enumerate(filters) if "!= 0" in f.get("predicate", ""))
+    assert filters.index(service_filter) < catch_all_index
+
+
+@pytest.mark.parametrize(
     "retriever_name",
     [
         pytest.param("base_report_retriever", id="basic_daily_retriever"),

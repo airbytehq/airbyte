@@ -28,12 +28,13 @@ definitions:
         - predicate: "{{ response.get('code') == 60001 }}"
           action: RETRY
           error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
-        - predicate: "{{ response.get('code') == 50000 }}"
-          action: RETRY
-          error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+        # TikTok 5xxxx codes are transient service-side errors returned with HTTP 200.
+        - predicate: "{{ response.get('code', 0) | int >= 50000 and response.get('code', 0) | int < 60000 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a service-side error (code {{ response.get('code') }}). The connector will retry automatically, but if the issue persists the TikTok API may be experiencing an outage and the sync may need to be re-run later. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') != 0 }}"
           action: FAIL
           error_message: "{{ response['message'] }}"
@@ -413,9 +414,6 @@ definitions:
       - predicate: "{{ response.get('code') == 60001 }}"
         action: RETRY
         error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
-      - predicate: "{{ response.get('code') == 50000 }}"
-        action: RETRY
-        error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') == 40002 }}"
         action: IGNORE
         error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -423,6 +421,10 @@ definitions:
         action: FAIL
         failure_type: config_error
         error_message: "TikTok Marketing API query size limit exceeded (error 40067). Reduce the 'Daily Reports Date Step' in your connector settings to a smaller value (e.g., 7 or 1) and retry."
+      # TikTok 5xxxx codes are transient service-side errors returned with HTTP 200.
+      - predicate: "{{ response.get('code', 0) | int >= 50000 and response.get('code', 0) | int < 60000 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a service-side error (code {{ response.get('code') }}). The connector will retry automatically, but if the issue persists the TikTok API may be experiencing an outage and the sync may need to be re-run later. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') != 0 }}"
         action: FAIL
         error_message: "{{ response['message'] }}"
@@ -2205,6 +2207,10 @@ definitions:
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+            # TikTok 5xxxx codes are transient service-side errors returned with HTTP 200.
+            - predicate: "{{ response.get('code', 0) | int >= 50000 and response.get('code', 0) | int < 60000 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a service-side error (code {{ response.get('code') }}). The connector will retry automatically, but if the issue persists the TikTok API may be experiencing an outage and the sync may need to be re-run later. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') != 0 }}"
               action: FAIL
               error_message: "{{ response['message'] }}"
@@ -2306,6 +2312,10 @@ definitions:
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
+            # TikTok 5xxxx codes are transient service-side errors returned with HTTP 200.
+            - predicate: "{{ response.get('code', 0) | int >= 50000 and response.get('code', 0) | int < 60000 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a service-side error (code {{ response.get('code') }}). The connector will retry automatically, but if the issue persists the TikTok API may be experiencing an outage and the sync may need to be re-run later. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') != 0 }}"
               action: FAIL
               error_message: "{{ response['message'] }}"
