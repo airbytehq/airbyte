@@ -69,7 +69,7 @@ When you set up the connector in Airbyte Cloud, you'll be redirected to Zendesk 
 
 Zendesk uses rotating refresh tokens, meaning each time the connector refreshes its access token, it receives a new refresh token and the previous one is invalidated. The connector handles this automatically. Airbyte requests access tokens with a 48-hour lifetime and refreshes them only after they expire.
 
-If a sync fails with an invalid or expired refresh token, re-authenticate the source in Airbyte. This replaces both tokens. Editing a source that was authorized in more than one place, or restoring an older copy of a source's configuration, can leave Airbyte holding a refresh token that Zendesk has already rotated away.
+If a sync fails because the refresh token is invalid, re-authenticate the source in Airbyte to get a new token pair.
 
 #### API Token (recommended for Airbyte Open Source)
 
