@@ -71,9 +71,7 @@ def _read_records():
                 "space_id": "space_test",
             }
         ],
-        "space_membership": [
-            {"object": "space", "id": "space_test", "name": "Test space"}
-        ],
+        "space_membership": [{"object": "space", "id": "space_test", "name": "Test space"}],
         "summary_text": "Summary",
         "summary_markdown": "**Summary**",
         "transcript": [
@@ -101,12 +99,7 @@ def _read_records():
             json={"notes": [notes], "cursor": "", "hasMore": False},
         )
         mocker.get(f"{_BASE_URL}/v1/notes/not_test", json=detailed_note)
-        catalog = (
-            CatalogBuilder()
-            .with_stream("notes", SyncMode.full_refresh)
-            .with_stream("detailed_notes", SyncMode.full_refresh)
-            .build()
-        )
+        catalog = CatalogBuilder().with_stream("notes", SyncMode.full_refresh).with_stream("detailed_notes", SyncMode.full_refresh).build()
         output = read(_get_source(), _CONFIG, catalog)
 
     return [(record.record.stream, record.record.data) for record in output.records]
@@ -170,26 +163,13 @@ def test_schema_declarations_cover_mocked_records():
         for record in stream_records:
             undeclared_paths.update(_record_paths(record) - declared_paths)
 
-        assert not undeclared_paths, (
-            f"{stream_name} emitted undeclared paths: {sorted(undeclared_paths)}"
-        )
+        assert not undeclared_paths, f"{stream_name} emitted undeclared paths: {sorted(undeclared_paths)}"
 
 
 def test_date_time_properties_declare_timezone_type():
     manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
-    date_time_properties = [
-        (path, schema)
-        for schema in manifest["schemas"].values()
-        for path, schema in _date_time_schemas(schema)
-    ]
+    date_time_properties = [(path, schema) for schema in manifest["schemas"].values() for path, schema in _date_time_schemas(schema)]
 
     assert date_time_properties, "No date-time properties found in schemas"
-    missing_timezone_type = [
-        path
-        for path, schema in date_time_properties
-        if schema.get("airbyte_type") != "timestamp_with_timezone"
-    ]
-    assert not missing_timezone_type, (
-        "Date-time properties missing airbyte_type: "
-        f"{sorted(missing_timezone_type)}"
-    )
+    missing_timezone_type = [path for path, schema in date_time_properties if schema.get("airbyte_type") != "timestamp_with_timezone"]
+    assert not missing_timezone_type, "Date-time properties missing airbyte_type: " f"{sorted(missing_timezone_type)}"
