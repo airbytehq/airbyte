@@ -324,7 +324,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.8.2 | 2026-08-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Restart the REST query instead of retrying an expired `nextRecordsUrl` when the session is invalidated mid-pagination |
+| 2.8.2 | 2026-08-12 | [84302](https://github.com/airbytehq/airbyte/pull/84302) | Restart the REST query instead of retrying an expired `nextRecordsUrl` when the session is invalidated mid-pagination |
 | 2.8.1 | 2026-08-05 | [82784](https://github.com/airbytehq/airbyte/pull/82784) | Fail fast when the refresh token is rejected instead of retrying the token endpoint from every stream |
 | 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
