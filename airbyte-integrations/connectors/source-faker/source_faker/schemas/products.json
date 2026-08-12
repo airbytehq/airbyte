@@ -5,6 +5,8 @@
     "id": { "type": "integer" },
     "make": { "type": "string" },
     "model": { "type": "string" },
+    "color": { "type": "string" },
+    "weight_kg": { "type": "number" },
     "year": { "type": "integer" },
     "price": { "type": "number" },
     "created_at": {
