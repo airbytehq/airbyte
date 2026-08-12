@@ -8,6 +8,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
+import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import io.airbyte.cdk.ConfigErrorException
@@ -15,6 +16,7 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -48,12 +50,42 @@ class BigqueryBatchStandardInsertsLoaderTest {
             BigqueryBatchStandardInsertsLoaderFactory.CONFIG_ERROR_MSG + exception,
             thrown.message,
         )
+        verify(exactly = 1) { bigquery.writer(any<JobId>(), any()) }
     }
 
     @Test
-    fun `writer error preserves its cause`() {
+    fun `retryable writer errors retry and then succeed`() {
+        val writer = mockk<TableDataWriteChannel>(relaxed = true)
+        every { bigquery.writer(any<JobId>(), any()) } throws
+            BigQueryException(503, "backend unavailable") andThenThrows
+            BigQueryException(503, "backend unavailable") andThen
+            writer
+        every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
+
+        val loader = loader(maxOpenAttempts = 5)
+        runBlocking { loader.accept(record()) }
+
+        verify(exactly = 3) { bigquery.writer(any<JobId>(), any()) }
+    }
+
+    @Test
+    fun `writer retries are exhausted as transient error`() {
+        val exception = BigQueryException(503, "backend unavailable")
+        every { bigquery.writer(any<JobId>(), any()) } throws exception
+        every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
+
+        val loader = loader(maxOpenAttempts = 4)
+        val thrown =
+            assertThrows<TransientErrorException> { runBlocking { loader.accept(record()) } }
+
+        assertEquals(exception, thrown.cause)
+        verify(exactly = 4) { bigquery.writer(any<JobId>(), any()) }
+    }
+
+    @Test
+    fun `non-retryable writer error preserves its cause`() {
         val cause = IllegalStateException("writer failed")
-        val exception = BigQueryException(500, "operation failed", cause)
+        val exception = BigQueryException(400, "operation failed", cause)
         every { bigquery.writer(any<JobId>(), any()) } throws exception
         every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
 
@@ -63,6 +95,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
         assertEquals(exception.code, thrown.code)
         assertEquals(exception.message, thrown.message)
         assertEquals(exception, thrown.cause)
+        verify(exactly = 1) { bigquery.writer(any<JobId>(), any()) }
     }
 
     @Test
@@ -90,8 +123,18 @@ class BigqueryBatchStandardInsertsLoaderTest {
         }
     }
 
-    private fun loader() =
-        BigqueryBatchStandardInsertsLoader(bigquery, configuration, jobId, formatter)
+    private fun loader(
+        maxOpenAttempts: Int = BigqueryBatchStandardInsertsLoader.MAX_OPEN_ATTEMPTS
+    ) =
+        BigqueryBatchStandardInsertsLoader(
+            bigquery,
+            configuration,
+            jobId,
+            formatter,
+            sleep = {},
+            maxOpenAttempts = maxOpenAttempts,
+            jitterMs = { 0 },
+        )
 
     private fun record(): DestinationRecordRaw = mockk()
 }

@@ -16,6 +16,7 @@ import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -45,6 +46,8 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+import kotlin.math.min
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
 
@@ -57,6 +60,11 @@ class BigqueryBatchStandardInsertsLoader(
     private val writeChannelConfiguration: WriteChannelConfiguration,
     private val job: JobId,
     private val recordFormatter: RecordFormatter,
+    private val sleep: (Long) -> Unit = { Thread.sleep(it) },
+    private val maxOpenAttempts: Int = MAX_OPEN_ATTEMPTS,
+    private val initialOpenDelayMs: Long = INITIAL_OPEN_DELAY_MS,
+    private val maxOpenDelayMs: Long = MAX_OPEN_DELAY_MS,
+    private val jitterMs: () -> Long = { Random.nextLong(0, MAX_JITTER_MS + 1) },
 ) : DirectLoader {
     // a TableDataWriteChannel holds (by default) a 15MB buffer in memory.
     // so we start out by writing to a BAOS, which grows dynamically.
@@ -118,22 +126,46 @@ class BigqueryBatchStandardInsertsLoader(
     // check...
     @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
     private fun switchToWriteChannel() {
-        writer =
+        var delayMs = initialOpenDelayMs
+        for (attempt in 1..maxOpenAttempts) {
             try {
-                BigQueryUtils.executeBigQueryOperation {
-                    bigquery.writer(job, writeChannelConfiguration)
-                }
+                writer =
+                    BigQueryUtils.executeBigQueryOperation {
+                        bigquery.writer(job, writeChannelConfiguration)
+                    }
+                break
             } catch (e: BigQueryException) {
                 if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
                     throw ConfigErrorException(CONFIG_ERROR_MSG + e)
-                } else {
+                }
+                if (e.code !in RETRYABLE_BACKEND_STATUS_CODES) {
                     throw BigQueryException(e.code, e.message, e)
                 }
+                if (attempt == maxOpenAttempts) {
+                    throw TransientErrorException(
+                        "The BigQuery backend was unavailable while opening the standard-inserts write channel. The next sync attempt should succeed.",
+                        e,
+                    )
+                }
+                logger.warn(e) {
+                    "Retrying BigQuery write-channel open (attempt ${attempt + 1}/$maxOpenAttempts, HTTP ${e.code}): ${e.message}"
+                }
+                sleep(delayMs + jitterMs())
+                delayMs = min(delayMs * 2, maxOpenDelayMs)
             }
+        }
         val byteArray = buffer!!.toByteArray()
         // please GC this object :)
         buffer = null
         BigQueryUtils.executeBigQueryOperation { writer.write(ByteBuffer.wrap(byteArray)) }
+    }
+
+    companion object {
+        internal const val MAX_OPEN_ATTEMPTS = 5
+        internal const val INITIAL_OPEN_DELAY_MS = 1000L
+        internal const val MAX_OPEN_DELAY_MS = 30_000L
+        internal const val MAX_JITTER_MS = 1000L
+        private val RETRYABLE_BACKEND_STATUS_CODES = setOf(500, 502, 503, 504)
     }
 }
 
