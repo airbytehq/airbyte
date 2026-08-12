@@ -8,36 +8,39 @@ This page contains the setup guide and reference information for the [Granola](h
 
 ## Prerequisites
 
-You need one of the following API keys:
+You need a Granola API key, which is available on a **Business** or **Enterprise** plan. You can create either a personal API key or a workspace API key. The note access scopes selected when a key is created determine which data it returns:
 
-- **Personal API key (Beta)**: available to any workspace member on a **Business** or **Enterprise** plan. On Enterprise plans, a workspace administrator must enable user-scoped API key creation in **Settings > Workspace > General**.
-- **Enterprise API key**: available to workspace administrators on an **Enterprise** plan.
+- **Personal API key**: available to workspace members on a Business or Enterprise plan.
+- **Workspace API key**: available to workspace administrators on a Business or Enterprise plan.
 
-The API endpoints and connector behavior are the same for both key types. The difference is the scope of data each key can access. See [Data access by key type](#data-access-by-key-type) for details.
+See [Data access by scope and key type](#data-access-by-scope-and-key-type) for details about the available scopes.
 
 ## Setup guide
 
 ### Generate an API key
 
-Granola supports two API key types. Choose the one that matches your plan and access needs.
+Granola supports two API key types. Choose the one that matches your access needs.
 
-#### Personal API key (Beta)
+#### Personal API key
 
 1. Open the Granola desktop app.
-2. Go to **Settings > Connectors > API keys > Create new key**.
-3. Select **Personal API key** and click **Generate API Key**.
-4. Copy the generated API key and store it securely.
+2. Go to **Settings > Connectors > API keys**.
+3. Click **Create new key**.
+4. Select the note access scopes the key should include.
+5. Click **Generate API Key**.
+6. Copy the generated API key and store it securely.
 
 :::note
-On Enterprise plans, a workspace administrator must enable Personal API key creation with the **Allow user-scoped API keys** toggle in **Settings > Workspace > General** before members can create Personal API keys.
+Workspace administrators control which note access scopes members may use in **Settings > Workspace > General > API access for members**. Click **Manage** to review or update these controls.
 :::
 
-#### Enterprise API key
+#### Workspace API key
 
-1. Log in to your Granola workspace as an administrator.
-2. Go to **Settings > Connectors > API keys > Create new key**.
-3. Select **Enterprise API key** and click **Generate API Key**.
-4. Copy the generated API key and store it securely.
+1. Log in to the Granola desktop app as a workspace administrator.
+2. Go to **Settings > Connectors > Workspace API keys**.
+3. Click **Create new key**.
+4. Select the note access scopes the key should include.
+5. Copy the generated API key and store it securely.
 
 ### Set up the Granola connector in Airbyte
 
@@ -82,18 +85,21 @@ The connector always requests transcript data for this stream. Syncing `detailed
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
-### Data access by key type
+### Data access by scope and key type
 
-The set of notes returned by the API depends on the type of API key you use:
+The set of notes returned by the API depends on the access scopes selected when the key is created:
 
-| Key type | Data scope |
+| Scope or key type | Data scope |
 | :--- | :--- |
-| **Personal API key** | Notes you own, notes shared with you, and notes in private folders shared with you. For more information, refer to the [Granola Personal API documentation](https://docs.granola.ai/help-center/sharing/integrations/personal-api). |
-| **Enterprise API key** | All notes in the Team space that workspace members can read. Private notes and private folders are excluded. For more information, refer to the [Granola Enterprise API documentation](https://docs.granola.ai/help-center/sharing/integrations/enterprise-api). |
+| **Personal notes** | Notes you own, notes shared directly with you, and notes in private folders shared with you. |
+| **Public notes** | Notes visible to everyone in the workspace, such as notes in the Team space. |
+| **Workspace API key** | Can read public notes unless the workspace has turned off **Allow public folders**, plus notes in spaces where **Allow Granola API access** is enabled. It cannot read private notes or private folders. Workspace API keys are not tied to a user and do not expire. |
+
+For more information, refer to the [Granola API documentation](https://docs.granola.ai/help-center/sharing/integrations/granola-api).
 
 ## Performance considerations
 
-The Granola API enforces rate limits. For Enterprise API keys, limits are applied per workspace. For Personal API keys, limits are applied per user.
+The Granola API enforces rate limits of 25 requests in a burst and 5 requests per second sustained. Limits may apply per user or per workspace depending on the key's access scope.
 
 | Metric | Value |
 | :--- | :--- |
@@ -115,7 +121,7 @@ For programmatic configuration, use these parameter names:
 
 | Field | Required | Description |
 | :--- | :---: | :--- |
-| `api_key` | Yes | Granola API key. Use a Personal API key for your own notes or an Enterprise API key for workspace Team space notes. |
+| `api_key` | Yes | Granola API key starting with `grn_`. Create a personal or workspace API key in Granola and select the note access scopes it should include. |
 | `start_date` | No | Earliest note creation date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
 
 ## Changelog
@@ -125,6 +131,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.12 | 2026-08-12 | [PR_NUMBER](https://github.com/airbyte/airbyte/pull/PR_NUMBER) | Clarify API key setup instructions and document the default two-year start date |
 | 0.2.11 | 2026-08-11 | [83964](https://github.com/airbytehq/airbyte/pull/83964) | Update dependencies |
 | 0.2.10 | 2026-08-04 | [83481](https://github.com/airbytehq/airbyte/pull/83481) | Update dependencies |
 | 0.2.9 | 2026-07-28 | [82970](https://github.com/airbytehq/airbyte/pull/82970) | Update dependencies |

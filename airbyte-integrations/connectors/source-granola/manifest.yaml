@@ -143,11 +143,14 @@ spec:
         type: string
         title: API Key
         description: >-
-          Your Granola API key. For a personal key, open the Granola desktop app
-          and go to Settings > Connectors > API keys > Create new key. For an
-          Enterprise API key, go to Settings > API > Create new key. On Enterprise
-          plans, workspace admins must enable "Allow personal API keys" in
-          Settings > Workspace > General before personal keys can be created.
+          Your Granola API key, which starts with "grn_". API keys require a
+          Business or Enterprise plan. For a personal key, open the Granola
+          desktop app, go to Settings > Connectors > API keys, click Create new
+          key, select the note access scopes the key should include, then click
+          Generate API Key. Workspace admins can instead create a workspace key
+          in Settings > Connectors > Workspace API keys. On Enterprise plans, an
+          admin may first need to allow the scopes you need in Settings >
+          Workspace > General > API access for members.
         airbyte_secret: true
         order: 0
       start_date:
@@ -155,7 +158,8 @@ spec:
         title: Start Date
         description: >-
           The earliest date from which to start replicating notes, in YYYY-MM-DD
-          format.
+          format. Leave this field empty to replicate notes created in the last
+          two years (730 days before the sync starts).
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         pattern_descriptor: "YYYY-MM-DD"
         examples:
