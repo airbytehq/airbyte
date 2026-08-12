@@ -94,6 +94,12 @@ NESTED_FIELDS = {
     },
 }
 
+POLYMORPHIC_CUSTOM_FIELD_TYPES = {
+    "applications": {"value": {"null", "boolean", "number", "string", "array", "object"}, "valueLabel": {"null", "string", "array"}},
+    "candidates": {"value": {"null", "boolean", "number", "string", "array", "object"}, "valueLabel": {"null", "string", "array"}},
+    "jobs": {"value": {"null", "boolean", "number", "string", "array", "object"}, "valueLabel": {"null", "string", "array"}},
+}
+
 
 @pytest.fixture(scope="module")
 def manifest():
@@ -128,3 +134,16 @@ def test_nested_documented_fields_are_expanded(schemas, stream_name, field_name,
     field = schemas[stream_name]["properties"][field_name]
     nested = field["items"] if field["type"][-1] == "array" else field
     assert set(child_fields).issubset(nested["properties"])
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "field_name", "expected_types"),
+    [
+        pytest.param(stream, field, types, id=f"{stream}-{field}")
+        for stream, fields in POLYMORPHIC_CUSTOM_FIELD_TYPES.items()
+        for field, types in fields.items()
+    ],
+)
+def test_custom_field_polymorphic_values_preserve_documented_types(schemas, stream_name, field_name, expected_types):
+    custom_fields = schemas[stream_name]["properties"]["customFields"]["items"]["properties"]
+    assert set(custom_fields[field_name]["type"]) == expected_types

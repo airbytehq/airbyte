@@ -71,6 +71,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               name:
                 type:
                   - "null"
@@ -107,6 +108,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 isPrivate:
                   type:
                     - "null"
@@ -119,10 +121,15 @@ streams:
                   type:
                     - "null"
                     - string
+                    - array
                 value:
                   type:
                     - "null"
                     - boolean
+                    - number
+                    - string
+                    - array
+                    - object
           hiringTeam:
             type:
               - "null"
@@ -134,6 +141,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 firstName:
                   type:
                     - "null"
@@ -146,6 +154,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: email
                 role:
                   type:
                     - "null"
@@ -163,6 +172,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               title:
                 type:
                   - "null"
@@ -171,10 +181,12 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               departmentId:
                 type:
                   - "null"
                   - string
+                format: uuid
           openings:
             type:
               - "null"
@@ -414,6 +426,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 isPrivate:
                   type:
                     - "null"
@@ -426,10 +439,15 @@ streams:
                   type:
                     - "null"
                     - boolean
+                    - number
+                    - string
+                    - array
+                    - object
                 valueLabel:
                   type:
                     - "null"
                     - string
+                    - array
           emailAddresses:
             type:
               - "null"
@@ -460,6 +478,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 name:
                   type:
                     - "null"
@@ -554,6 +573,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               name:
                 type:
                   - "null"
@@ -626,6 +646,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 title:
                   type:
                     - "null"
@@ -1113,6 +1134,7 @@ streams:
             type:
               - "null"
               - string
+            format: uuid
           isArchived:
             type:
               - "null"
@@ -1180,6 +1202,7 @@ streams:
             type:
               - "null"
               - string
+            format: uri
           compensationTierSummary:
             type:
               - "null"
@@ -1217,6 +1240,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               secondaryLocationIds:
                 type:
                   - "null"
@@ -1307,6 +1331,7 @@ streams:
             type:
               - "null"
               - string
+            format: uuid
           closedAt:
             type:
               - "null"
@@ -1336,6 +1361,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 isPrivate:
                   type:
                     - "null"
@@ -1348,10 +1374,15 @@ streams:
                   type:
                     - "null"
                     - boolean
+                    - number
+                    - string
+                    - array
+                    - object
                 valueLabel:
                   type:
                     - "null"
                     - string
+                    - array
           customRequisitionId:
             type:
               - "null"
@@ -1379,6 +1410,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: uuid
                 firstName:
                   type:
                     - "null"
@@ -1391,6 +1423,7 @@ streams:
                   type:
                     - "null"
                     - string
+                  format: email
                 role:
                   type:
                     - "null"
@@ -1518,6 +1551,7 @@ streams:
             type:
               - "null"
               - string
+            format: uuid
           type:
             type:
               - "null"
@@ -1598,6 +1632,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               startDate:
                 type:
                   - "null"
@@ -1616,6 +1651,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               customFields:
                 type:
                   - "null"
@@ -1793,6 +1829,7 @@ streams:
             type:
               - "null"
               - string
+            format: uuid
           updatedAt:
             type:
               - "null"
@@ -1907,6 +1944,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               title:
                 type:
                   - "null"
@@ -1923,6 +1961,7 @@ streams:
                 type:
                   - "null"
                   - string
+                format: uuid
               applicationFormFieldPath:
                 type:
                   - "null"
@@ -1940,6 +1979,7 @@ streams:
             type:
               - "null"
               - string
+            format: uuid
           jobId:
             type:
               - "null"
