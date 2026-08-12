@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 12, 2026
+
+Connections
+
+- When you set up a new source or destination, Airbyte now opens the configuration form first instead of the AI setup assistant. You can still switch to the assistant at any time with the Agent/Form toggle at the top of the page.
+
 ## July 23, 2026
 
 Connections
