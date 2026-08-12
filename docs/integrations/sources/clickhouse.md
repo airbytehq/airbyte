@@ -4,14 +4,14 @@ The ClickHouse source reads tables from a single ClickHouse database over the HT
 
 ## Features
 
-| Feature               | Supported | Notes                                                                     |
-| :-------------------- | :-------- | :------------------------------------------------------------------------ |
-| Full refresh sync     | Yes       |                                                                           |
-| Incremental sync      | Yes       | Cursor-based. The connector doesn't read the ClickHouse replication log.   |
-| Replicate deletes     | No        | Rows deleted in ClickHouse remain in the destination.                      |
-| SSL                   | Yes       | Enabled by default. Always enforced in Airbyte Cloud.                      |
-| SSH tunnel connection | Yes       |                                                                           |
-| Namespaces            | Yes       | Each stream keeps its ClickHouse database name as its namespace.           |
+| Feature               | Supported | Notes                                                                    |
+| :-------------------- | :-------- | :----------------------------------------------------------------------- |
+| Full refresh sync     | Yes       |                                                                          |
+| Incremental sync      | Yes       | Cursor-based. The connector doesn't read the ClickHouse replication log. |
+| Replicate deletes     | No        | Rows deleted in ClickHouse remain in the destination.                    |
+| SSL                   | Yes       | Enabled by default. Always enforced in Airbyte Cloud.                    |
+| SSH tunnel connection | Yes       |                                                                          |
+| Namespaces            | Yes       | Each stream keeps its ClickHouse database name as its namespace.         |
 
 ## Prerequisites
 
@@ -31,18 +31,18 @@ GRANT SELECT ON <database name>.* TO airbyte;
 
 You can narrow the grant to individual tables, for example `GRANT SELECT ON <database name>.<table name> TO airbyte`.
 
-Each source reads from one database. To replicate tables from several databases on the same server, grant access to each database and create one source per database.
+Each source reads from one database. To replicate tables from several databases on the same server, grant access to each database, and create one source per database.
 
 ### 2. Configure the source in Airbyte
 
-| Field                             | Description                                                                                                                                                                                          |
-| :-------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Host**                          | Hostname of the ClickHouse server or cluster endpoint. Don't include a scheme or port.                                                                                                                |
-| **Port**                          | Port of the HTTP interface. Defaults to `8123`, which is the plaintext HTTP port. If you leave **SSL Connection** enabled, use the HTTPS port instead, which is `8443` in ClickHouse Cloud and in a default self-managed configuration. |
-| **Database**                      | The database to replicate from, such as `default`.                                                                                                                                                   |
-| **Username** and **Password**     | The ClickHouse credentials Airbyte authenticates with.                                                                                                                                               |
-| **JDBC URL Parameters (Advanced)** | Extra [ClickHouse JDBC driver properties](https://clickhouse.com/docs/integrations/language-clients/java/jdbc) as `key=value` pairs joined by `&`. The connector appends them to the JDBC URL it builds. |
-| **SSL Connection**                | Connects over HTTPS. Enabled by default. Airbyte Cloud always connects over HTTPS and doesn't show this option.                                                                                       |
+| Field                              | Description                                                                                                                                                                                                                             |
+| :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Host**                           | Hostname of the ClickHouse server or cluster endpoint. Don't include a scheme or port.                                                                                                                                                  |
+| **Port**                           | Port of the HTTP interface. Defaults to `8123`, which is the plaintext HTTP port. If you leave **SSL Connection** enabled, use the HTTPS port instead, which is `8443` in ClickHouse Cloud and in a default self-managed configuration. |
+| **Database**                       | The database to replicate from, such as `default`.                                                                                                                                                                                      |
+| **Username** and **Password**      | The ClickHouse credentials Airbyte authenticates with.                                                                                                                                                                                  |
+| **JDBC URL Parameters (Advanced)** | Extra [ClickHouse JDBC driver properties](https://clickhouse.com/docs/integrations/language-clients/java/jdbc) as `key=value` pairs joined by `&`. The connector appends them to the JDBC URL it builds.                                |
+| **SSL Connection**                 | Connects over HTTPS. Enabled by default. Airbyte Cloud always connects over HTTPS and doesn't show this option.                                                                                                                         |
 
 When SSL is enabled, the connector connects with the driver's `sslmode=none`, which encrypts the connection but doesn't validate the server certificate. To validate certificates, add the corresponding driver properties, such as `sslmode=strict` and `sslrootcert=<path>`, to **JDBC URL Parameters**.
 
@@ -70,15 +70,15 @@ The connector reads whole tables through the HTTP interface without server-side 
 
 The connector maps ClickHouse types to Airbyte types as follows. Nullable columns keep their underlying type.
 
-| ClickHouse type                                   | Airbyte type                    |
-| :------------------------------------------------ | :------------------------------ |
-| `Date`, `Date32`                                  | date                            |
-| `DateTime`, `DateTime64`                          | timestamp without timezone      |
-| `Int8` through `Int64`, `UInt8` through `UInt32`   | integer                         |
-| `Float32`, `Float64`, `Decimal`                   | number                          |
-| `Array`                                           | array                           |
-| Binary types                                      | base64-encoded string           |
-| Everything else, including `Map`, `Tuple`, and `Nested` | string                    |
+| ClickHouse type                                         | Airbyte type               |
+| :------------------------------------------------------ | :------------------------- |
+| `Date`, `Date32`                                        | date                       |
+| `DateTime`, `DateTime64`                                | timestamp without timezone |
+| `Int8` through `Int64`, `UInt8` through `UInt32`        | integer                    |
+| `Float32`, `Float64`, `Decimal`                         | number                     |
+| `Array`                                                 | array                      |
+| Binary types                                            | base64-encoded string      |
+| Everything else, including `Map`, `Tuple`, and `Nested` | string                     |
 
 Since version 0.3.1, temporal columns are emitted as Airbyte date and timestamp types instead of unformatted strings. Version 0.4.0 declares this change as breaking. If a sync fails with a schema evolution error between string and timestamp, follow the [migration guide](/integrations/sources/clickhouse-migrations).
 
