@@ -88,7 +88,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.3.3 | 2024-04-19 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.3.2 | 2024-04-15 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | schema descriptions |
-| 0.3.0   | 2023-08-27 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | ✨ Source Clockify: Migrate to LowCode CDK                                      |
+| 0.3.0   | 2023-08-27 | [29899](https://github.com/airbytehq/airbyte/pull/29899)     | ✨ Source Clockify: Migrate to LowCode CDK                                      |
 | 0.2.1   | 2023-08-01 | [27881](https://github.com/airbytehq/airbyte/pull/27881) | 🐛 Source Clockify: Source Clockify: Fix pagination logic                       |
 | 0.2.0   | 2023-08-01 | [27689](https://github.com/airbytehq/airbyte/pull/27689) | ✨ Source Clockify: Add Optional API Url parameter                              |
 | 0.1.0   | 2022-10-26 | [17767](https://github.com/airbytehq/airbyte/pull/17767) | 🎉 New Connector: Clockify [python cdk]                                         |
