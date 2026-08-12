@@ -3,6 +3,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import requests_mock
 
 from airbyte_cdk.models import SyncMode
@@ -28,65 +29,32 @@ _SUCCESS_RESPONSE = {"notes": [{"id": "note-1"}], "cursor": "", "hasMore": False
 
 
 def _sync_notes():
+    catalog = CatalogBuilder().with_stream("notes", SyncMode.full_refresh).build()
     source = YamlDeclarativeSource(
         path_to_yaml=str(_MANIFEST_PATH),
-        catalog=CatalogBuilder().with_stream("notes", SyncMode.full_refresh).build(),
+        catalog=catalog,
         config=_CONFIG,
         state=StateBuilder().build(),
     )
-    return read(
-        source,
-        _CONFIG,
-        CatalogBuilder().with_stream("notes", SyncMode.full_refresh).build(),
-    )
+    return read(source, _CONFIG, catalog)
 
 
-def test_retries_429_using_retry_after_header():
+# The CDK sleeps for the backoff time plus one second to cover fractions of a second,
+# so a Retry-After of 7 sleeps 8s and the first exponential interval (factor 5) sleeps 11s.
+@pytest.mark.parametrize(
+    "retryable_response,expected_sleep",
+    [
+        pytest.param({"status_code": 429, "headers": {"Retry-After": "7"}}, 8.0, id="429_with_retry_after_header"),
+        pytest.param({"status_code": 429}, 11.0, id="429_without_retry_after_header"),
+        pytest.param({"status_code": 500}, 11.0, id="500_server_error"),
+    ],
+)
+def test_retryable_response_is_retried_with_configured_backoff(retryable_response, expected_sleep):
     with requests_mock.Mocker() as mocker, patch.object(rate_limiting.time, "sleep") as sleep:
-        mocker.get(
-            _NOTES_URL,
-            [
-                {"status_code": 429, "headers": {"Retry-After": "7"}},
-                {"status_code": 200, "json": _SUCCESS_RESPONSE},
-            ],
-        )
+        mocker.get(_NOTES_URL, [retryable_response, {"status_code": 200, "json": _SUCCESS_RESPONSE}])
 
         output = _sync_notes()
 
     assert [record.record.data["id"] for record in output.records] == ["note-1"]
     assert mocker.call_count == 2
-    assert sleep.call_args_list[0].args == (8.0,)
-
-
-def test_retries_429_with_exponential_backoff_without_retry_after_header():
-    with requests_mock.Mocker() as mocker, patch.object(rate_limiting.time, "sleep") as sleep:
-        mocker.get(
-            _NOTES_URL,
-            [
-                {"status_code": 429},
-                {"status_code": 200, "json": _SUCCESS_RESPONSE},
-            ],
-        )
-
-        output = _sync_notes()
-
-    assert [record.record.data["id"] for record in output.records] == ["note-1"]
-    assert mocker.call_count == 2
-    assert sleep.call_args_list[0].args == (11.0,)
-
-
-def test_retries_5xx_response():
-    with requests_mock.Mocker() as mocker, patch.object(rate_limiting.time, "sleep") as sleep:
-        mocker.get(
-            _NOTES_URL,
-            [
-                {"status_code": 500},
-                {"status_code": 200, "json": _SUCCESS_RESPONSE},
-            ],
-        )
-
-        output = _sync_notes()
-
-    assert [record.record.data["id"] for record in output.records] == ["note-1"]
-    assert mocker.call_count == 2
-    assert sleep.call_args_list[0].args == (11.0,)
+    assert sleep.call_args_list[0].args == (expected_sleep,)
