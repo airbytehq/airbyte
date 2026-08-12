@@ -22,7 +22,7 @@ For details, see the Greenhouse [authentication guide](https://harvestdocs.green
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
 5. Enter your Harvest **API Key**.
-6. Optionally, change **Number of concurrent threads**. The default of 2 helps stay inside Greenhouse's rate limit for one API key. Raise it to 8 only if the key isn't shared with other integrations, and lower it to 1 if you see rate-limit errors.
+6. Optionally, change **Number of concurrent threads**. The default of 2 helps stay inside Greenhouse's rate limit for one API key. Raise it, up to 8, only if the key isn't shared with other integrations, and lower it to 1 if you see rate-limit errors.
 7. Click **Set up source**.
 
 ## Supported sync modes
@@ -89,7 +89,7 @@ Greenhouse states that OAuth becomes the only supported authentication method on
 
 ## Performance considerations
 
-Greenhouse rate limits Harvest requests per API key. On v1 and v2, the allowance is the value of the `X-RateLimit-Limit` response header, typically 50, for each 10-second window. The connector retries throttled requests, so a sync recovers on its own. If you see rate-limit failures, lower **Number of concurrent threads**, and remember that other integrations share the limit when they use the same key.
+Greenhouse rate limits Harvest requests per API key. On v1 and v2, the allowance is the value of the `X-RateLimit-Limit` response header, typically 50, for each 10-second window. The connector retries throttled requests, so a sync usually recovers on its own. If you see rate-limit failures, lower **Number of concurrent threads**, and remember that other integrations share the limit when they use the same key.
 
 ## Troubleshooting
 
