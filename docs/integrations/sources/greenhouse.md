@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 You need a Greenhouse Harvest API key. To create one:
 
-1. Ask a Greenhouse site admin to grant your user the **Can manage ALL organization's API Credentials** developer permission, if you don't have it already.
+1. Ask a Greenhouse site administrator to grant your user the **Can manage ALL organization's API Credentials** developer permission, if you don't have it already.
 2. In Greenhouse, go to **Configure** > **Dev Center** > **API Credential Management**.
 3. Create a **Harvest** API key.
 4. Click **Manage Permissions** next to the key, then grant it the `GET` permission for every endpoint you want to sync. Keys created after January 18, 2017 have no endpoint permissions until you grant them.
@@ -22,7 +22,7 @@ For details, see the Greenhouse [authentication guide](https://harvestdocs.green
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
 5. Enter your Harvest **API Key**.
-6. Optionally, change **Number of concurrent threads**. The default of 2 is tuned to stay inside Greenhouse's rate limit for one API key. Raise it (up to 8) only if the key isn't shared with other integrations, and lower it to 1 if you see rate-limit errors.
+6. Optionally, change **Number of concurrent threads**. The default of 2 helps stay inside Greenhouse's rate limit for one API key. Raise it to 8 only if the key isn't shared with other integrations, and lower it to 1 if you see rate-limit errors.
 7. Click **Set up source**.
 
 ## Supported sync modes
@@ -34,11 +34,11 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-A stream supports incremental sync only when its Harvest endpoint accepts a date filter. The remaining streams re-read all records on every sync; most of them are small configuration lookups, but a few (`activity_feed`, `approvals`, `tags`, `user_permissions`) fan out one request per parent record and can be slow on large accounts.
+A stream supports incremental sync only when its Harvest endpoint accepts a date filter. The remaining streams re-read all records on every sync. Most are small lookup resources, but a few, including `activity_feed`, `approvals`, `tags`, and `user_permissions`, fan out one request per parent record and can be slow on large accounts.
 
 ## Supported streams
 
-The table lists the Harvest endpoint behind each stream and the cursor field for incremental streams. Endpoints with a `{...}` segment are child streams: the connector reads the parent stream first, then requests the child endpoint once per parent record.
+The table lists the Harvest endpoint behind each stream and the cursor field for incremental streams. Endpoints with a `{...}` segment are child streams. The connector reads the parent stream first, then requests the child endpoint once per parent record.
 
 | Stream | Harvest endpoint | Cursor field |
 | --- | --- | --- |
@@ -83,17 +83,17 @@ For field-level details on each resource, see the [Harvest API reference](https:
 
 ## Harvest v1 deprecation
 
-Greenhouse has deprecated Harvest v1 and v2 and plans to remove those endpoints on August 31, 2026. This connector still reads the v1 endpoints listed above; Airbyte is migrating it to Harvest v3. Version 0.8.0 was the first step, changing how the connector builds request URLs and pagination parameters without changing any data it returns.
+Greenhouse has deprecated Harvest v1 and v2 and plans to remove those endpoints on August 31, 2026. This connector still reads the v1 endpoints listed earlier, and Airbyte is migrating it to Harvest v3. Version 0.8.0 was the first step, changing how the connector builds request URLs and pagination parameters without changing any data it returns.
 
-Greenhouse states that OAuth becomes the only supported authentication method once v1 and v2 are removed, so expect the connector's credentials to change from a Harvest API key to OAuth client credentials as part of that migration. Watch the changelog on this page for the version that makes the switch, and don't upgrade past it until you have the new credentials ready.
+Greenhouse states that OAuth becomes the only supported authentication method once Greenhouse removes v1 and v2, so expect the connector's credentials to change from a Harvest API key to OAuth client credentials as part of that migration. Watch the changelog on this page for the version that makes the switch, and don't upgrade past it until you have the new credentials ready.
 
 ## Performance considerations
 
-Greenhouse rate limits Harvest requests per API key. On v1 and v2, the allowance is the value of the `X-RateLimit-Limit` response header (commonly 50) for each 10-second window. The connector retries throttled requests, so a sync usually recovers on its own. If you see rate-limit failures, lower **Number of concurrent threads** — and remember the limit is shared with any other integration using the same key.
+Greenhouse rate limits Harvest requests per API key. On v1 and v2, the allowance is the value of the `X-RateLimit-Limit` response header, typically 50, for each 10-second window. The connector retries throttled requests, so a sync recovers on its own. If you see rate-limit failures, lower **Number of concurrent threads**, and remember that other integrations share the limit when they use the same key.
 
 ## Troubleshooting
 
-- **A stream syncs zero records but the sync succeeds.** The connector treats an HTTP 403 from Greenhouse as an empty response so that one unpermitted endpoint doesn't fail the whole sync. Check that your Harvest key has the `GET` permission for that stream's endpoint in **API Credential Management**.
+- **A stream syncs zero records but the sync succeeds.** The connector treats an HTTP 403 from Greenhouse as an empty response so that one unauthorized endpoint doesn't fail the whole sync. Check that your Harvest key has the `GET` permission for that stream's endpoint in **API Credential Management**.
 - **The connection check fails with an authentication error.** The check reads `/users`. Confirm the key is active and has `GET` permission on the users endpoint.
 
 ## IP allow list
