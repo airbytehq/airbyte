@@ -131,7 +131,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.2.12 | 2026-08-12 | [PR_NUMBER](https://github.com/airbyte/airbyte/pull/PR_NUMBER) | Clarify API key setup instructions and document the default two-year start date |
+| 0.2.12 | 2026-08-12 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Clarify API key setup instructions and document the default two-year start date |
 | 0.2.11 | 2026-08-11 | [83964](https://github.com/airbytehq/airbyte/pull/83964) | Update dependencies |
 | 0.2.10 | 2026-08-04 | [83481](https://github.com/airbytehq/airbyte/pull/83481) | Update dependencies |
 | 0.2.9 | 2026-07-28 | [82970](https://github.com/airbytehq/airbyte/pull/82970) | Update dependencies |
