@@ -57,9 +57,8 @@ class BigqueryBatchStandardInsertsLoaderTest {
     fun `retryable writer errors retry and then succeed`() {
         val writer = mockk<TableDataWriteChannel>(relaxed = true)
         every { bigquery.writer(any<JobId>(), any()) } throws
-            BigQueryException(503, "backend unavailable") andThen
-            BigQueryException(503, "backend unavailable") andThen
-            writer
+            BigQueryException(503, "backend unavailable") andThenThrows
+            BigQueryException(503, "backend unavailable") andThen writer
         every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
 
         val loader = loader(maxOpenAttempts = 5)
