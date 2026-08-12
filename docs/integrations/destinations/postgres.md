@@ -299,7 +299,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.17-rc.1 | 2026-08-12 |                                                             | Prevent sync failures when NUL characters are nested in JSON values. |
+| 3.0.17-rc.1 | 2026-08-12 | [84321](https://github.com/airbytehq/airbyte/pull/84321) | Prevent sync failures when NUL characters are nested in JSON values. |
 | 3.0.16 | 2026-03-31 | [75902](https://github.com/airbytehq/airbyte/pull/75902) | Fix silent error swallowing in COPY flush and sanitize null bytes in raw JSON data |
 | 3.0.15  | 2026-08-07 | [83235](https://github.com/airbytehq/airbyte/pull/83235)   | Fail sync on transient DB errors.                                                                                                             |
 | 3.0.14  | 2026-07-30 | [82273](https://github.com/airbytehq/airbyte/pull/82273)   | Remove column DROP logic during schema evolution; upgrade CDK to 1.0.20                                                                                                                |
