@@ -60,6 +60,10 @@ definitions:
             cursor_value: "{{ response.get('cursor', '') }}"
             stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
       incremental_sync:
+        # created_before is exclusive with respect to a whole day when given a bare
+        # date, so slice bounds must stay full timestamps at second granularity.
+        # start_datetime keeps the date-only format of the start_date spec field, and
+        # cursor_datetime_formats keeps "%Y-%m-%d" to parse state saved by <= 0.2.11.
         type: DatetimeBasedCursor
         cursor_field: created_at
         cursor_datetime_formats:
