@@ -10,6 +10,9 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 _MANIFEST_PATH = Path(__file__).resolve().parent.parent / "manifest.yaml"
 _EXPECTED_TEMPLATE = "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+# The metrics stream ignores start_date so that every metric definition is synced and can be
+# joined against events (https://github.com/airbytehq/airbyte/pull/61338).
+_METRICS_EXPECTED_START = "1970-01-01T00:00:00Z"
 
 
 def _collect_start_datetime_templates(node):
@@ -30,10 +33,13 @@ def _collect_start_datetime_templates(node):
 
 def test_manifest_uses_one_year_default_for_every_stream():
     manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
-    templates = _collect_start_datetime_templates(manifest)
+    streams = manifest["definitions"]["streams"]
+    metrics_templates = _collect_start_datetime_templates(streams.pop("metrics"))
+    templates = _collect_start_datetime_templates(streams)
 
     assert templates, "Expected to find start_datetime templates in the manifest"
     assert all(template == _EXPECTED_TEMPLATE for template in templates)
+    assert metrics_templates == [_METRICS_EXPECTED_START]
 
 
 @freeze_time("2024-06-15T12:00:00Z")

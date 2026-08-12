@@ -8,6 +8,10 @@ For production deployments, we recommend using a dedicated database instance for
 
 The following instructions assume that you've already configured a Postgres instance:
 
+## Supported Postgres versions
+
+Airbyte requires Postgres 13 or later. Airbyte tests its deployments through Postgres 17. Newer versions may work, but Airbyte doesn't test them.
+
 ## Secrets
 
 ```yaml
