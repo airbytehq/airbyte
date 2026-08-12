@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.sql.SQLException
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
@@ -138,9 +139,56 @@ class SnowflakeAirbyteClient(
         }
 
         if (targetExists) {
-            // If target exists, use CLONE for efficiency
-            log.info { "Using CLONE operation since target table exists" }
-            execute(sqlGenerator.cloneTableWith(sourceTableName, targetTableName))
+            val sourceTransient = isTransient(sourceTableName)
+            val targetTransient = isTransient(targetTableName)
+
+            when {
+                sourceTransient == false -> {
+                    if (targetTransient == null) {
+                        log.warn {
+                            "Could not determine whether target table ${targetTableName.toPrettyString()} is transient; using permanent CLONE"
+                        }
+                    }
+                    log.info {
+                        "Using CLONE operation since target table exists and source table is permanent"
+                    }
+                    execute(
+                        sqlGenerator.cloneTableWith(
+                            sourceTableName,
+                            targetTableName,
+                            transient = targetTransient == true,
+                        )
+                    )
+                }
+                targetTransient == true -> {
+                    log.info {
+                        "Using TRANSIENT CLONE operation since source table is transient or unknown and target table is transient"
+                    }
+                    execute(
+                        sqlGenerator.cloneTableWith(
+                            sourceTableName,
+                            targetTableName,
+                            transient = true,
+                        )
+                    )
+                }
+                else -> {
+                    if (targetTransient == null) {
+                        log.warn {
+                            "Could not determine whether target table ${targetTableName.toPrettyString()} is transient; using CTAS to preserve its permanent table kind"
+                        }
+                    }
+                    log.info {
+                        "Using CTAS operation since source table is transient or unknown and target table is permanent or unknown"
+                    }
+                    execute(
+                        sqlGenerator.replaceTableWithSelectFrom(
+                            sourceTableName,
+                            targetTableName,
+                        )
+                    )
+                }
+            }
             execute(sqlGenerator.dropTable(sourceTableName))
         } else {
             // If target doesn't exist, rename source to target
@@ -156,6 +204,47 @@ class SnowflakeAirbyteClient(
             execute(sqlGenerator.renameTable(sourceTableName, targetTableName))
         }
     }
+
+    private suspend fun isTransient(table: TableName): Boolean? =
+        try {
+            dataSource.connection.use { connection ->
+                val statement =
+                    connection.prepareStatement(
+                        """
+                        SELECT IS_TRANSIENT
+                        FROM "$databaseName".INFORMATION_SCHEMA.TABLES
+                        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+                        """.andLog()
+                    )
+                statement.use {
+                    it.setString(1, table.namespace.replace("\"\"", "\""))
+                    it.setString(2, table.name.replace("\"\"", "\""))
+                    val resultSet = it.executeQuery()
+                    resultSet.use { rs ->
+                        if (!rs.next()) {
+                            log.warn {
+                                "Could not determine whether table ${table.toPrettyString()} is transient: no table metadata found"
+                            }
+                            null
+                        } else {
+                            rs.getString("IS_TRANSIENT")?.let { value ->
+                                value.startsWith("Y", ignoreCase = true)
+                            } ?: run {
+                                log.warn {
+                                    "Could not determine whether table ${table.toPrettyString()} is transient: metadata was null"
+                                }
+                                null
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: SQLException) {
+            log.warn(e) {
+                "Could not determine whether table ${table.toPrettyString()} is transient"
+            }
+            null
+        }
 
     override suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,

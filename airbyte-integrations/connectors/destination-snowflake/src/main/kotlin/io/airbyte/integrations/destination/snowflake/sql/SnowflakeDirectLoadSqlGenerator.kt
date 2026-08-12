@@ -360,15 +360,29 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+    fun cloneTableWith(
+        sourceTableName: TableName,
+        targetTableName: TableName,
+        transient: Boolean = false,
+    ): String {
         return """
-            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            CREATE OR REPLACE ${if (transient) "TRANSIENT " else ""}TABLE ${
+            fullyQualifiedName(targetTableName)
+        } CLONE ${
             fullyQualifiedName(sourceTableName)
         } COPY GRANTS
         """
             .trimIndent()
             .andLog()
     }
+
+    fun replaceTableWithSelectFrom(
+        sourceTableName: TableName,
+        targetTableName: TableName,
+    ): String =
+        "CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} COPY GRANTS AS SELECT * FROM ${
+            fullyQualifiedName(sourceTableName)
+        }".andLog()
 
     fun renameTable(sourceTableName: TableName, targetTableName: TableName): String {
         // Snowflake RENAME TO only accepts the table name, not a fully qualified name

@@ -259,6 +259,125 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
+    fun `overwriteTable uses CTAS for transient source and permanent target`() =
+        runOverwriteTableTest(sourceTransient = "Y", targetTransient = "N") { source, target, executeStatements ->
+            verify(exactly = 1) {
+                sqlGenerator.replaceTableWithSelectFrom(source, target)
+            }
+            verify(exactly = 1) { executeStatements[0].executeQuery("CTAS") }
+            verify(exactly = 0) {
+                sqlGenerator.cloneTableWith(any(), any(), any())
+            }
+        }
+
+    @Test
+    fun `overwriteTable uses transient clone for transient source and target`() =
+        runOverwriteTableTest(sourceTransient = "Y", targetTransient = "Y") { source, target, executeStatements ->
+            verify(exactly = 1) {
+                sqlGenerator.cloneTableWith(source, target, transient = true)
+            }
+            verify(exactly = 1) { executeStatements[0].executeQuery("CLONE") }
+            verify(exactly = 0) {
+                sqlGenerator.replaceTableWithSelectFrom(any(), any())
+            }
+        }
+
+    @Test
+    fun `overwriteTable uses permanent clone for permanent source and target`() =
+        runOverwriteTableTest(sourceTransient = "N", targetTransient = "N") { source, target, executeStatements ->
+            verify(exactly = 1) {
+                sqlGenerator.cloneTableWith(source, target, transient = false)
+            }
+            verify(exactly = 1) { executeStatements[0].executeQuery("CLONE") }
+            verify(exactly = 0) {
+                sqlGenerator.replaceTableWithSelectFrom(any(), any())
+            }
+        }
+
+    @Test
+    fun `overwriteTable uses CTAS when target kind is unknown`() =
+        runOverwriteTableTest(sourceTransient = "Y", targetTransient = null) { source, target, executeStatements ->
+            verify(exactly = 1) {
+                sqlGenerator.replaceTableWithSelectFrom(source, target)
+            }
+            verify(exactly = 1) { executeStatements[0].executeQuery("CTAS") }
+            verify(exactly = 0) {
+                sqlGenerator.cloneTableWith(any(), any(), any())
+            }
+        }
+
+    @Test
+    fun `overwriteTable uses CTAS when source kind is unknown and target is permanent`() =
+        runOverwriteTableTest(sourceTransient = null, targetTransient = "N") {
+            _, _, executeStatements ->
+            verify(exactly = 1) { executeStatements[0].executeQuery("CTAS") }
+        }
+
+    private fun runOverwriteTableTest(
+        sourceTransient: String?,
+        targetTransient: String?,
+        assertions: (TableName, TableName, List<Statement>) -> Unit,
+    ) {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val countResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { close() } just Runs
+            }
+        val sourceKindResultSet =
+            mockk<ResultSet> {
+                every { next() } returns (sourceTransient != null)
+                every { getString("IS_TRANSIENT") } returns sourceTransient
+                every { close() } just Runs
+            }
+        val targetKindResultSet =
+            mockk<ResultSet> {
+                every { next() } returns (targetTransient != null)
+                every { getString("IS_TRANSIENT") } returns targetTransient
+                every { close() } just Runs
+            }
+        val kindStatements =
+            listOf(
+                mockk<PreparedStatement> {
+                    every { executeQuery() } returns sourceKindResultSet
+                    every { setString(any(), any()) } just runs
+                    every { close() } just Runs
+                },
+                mockk<PreparedStatement> {
+                    every { executeQuery() } returns targetKindResultSet
+                    every { setString(any(), any()) } just runs
+                    every { close() } just Runs
+                },
+            )
+        val countStatement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns countResultSet
+                every { close() } just Runs
+            }
+        val executeStatements =
+            listOf(
+                mockk<Statement>(relaxed = true),
+                mockk<Statement>(relaxed = true),
+            )
+        val connection =
+            mockk<Connection> {
+                every { prepareStatement(any()) } returnsMany kindStatements
+                every { createStatement() } returnsMany
+                    listOf(countStatement) + executeStatements
+                every { close() } just Runs
+            }
+        every { dataSource.connection } returns connection
+        every { sqlGenerator.countTable(targetTableName) } returns "COUNT TARGET"
+        every { sqlGenerator.dropTable(sourceTableName) } returns "DROP SOURCE"
+        every { sqlGenerator.cloneTableWith(any(), any(), any()) } returns "CLONE"
+        every { sqlGenerator.replaceTableWithSelectFrom(any(), any()) } returns "CTAS"
+
+        runBlocking { client.overwriteTable(sourceTableName, targetTableName) }
+        assertions(sourceTableName, targetTableName, executeStatements)
+    }
+
+    @Test
     fun testCopyTable() {
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
         val sourceTableName = TableName(namespace = "namespace", name = "source")

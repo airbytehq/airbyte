@@ -402,6 +402,37 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testGenerateTransientCloneTable() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val sql =
+            snowflakeDirectLoadSqlGenerator.cloneTableWith(
+                sourceTableName,
+                targetTableName,
+                transient = true,
+            )
+        assertEquals(
+            "CREATE OR REPLACE TRANSIENT TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} CLONE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} COPY GRANTS",
+            sql
+        )
+    }
+
+    @Test
+    fun testGenerateReplaceTableWithSelectFrom() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val sql =
+            snowflakeDirectLoadSqlGenerator.replaceTableWithSelectFrom(
+                sourceTableName,
+                targetTableName,
+            )
+        assertEquals(
+            "CREATE OR REPLACE TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} COPY GRANTS AS SELECT * FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)}",
+            sql
+        )
+    }
+
+    @Test
     fun testAlterTable() {
         val uuid = UUID.randomUUID()
         every { uuidGenerator.v4() } returns uuid
