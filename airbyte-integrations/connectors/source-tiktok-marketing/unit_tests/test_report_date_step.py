@@ -46,6 +46,40 @@ def test_spec_includes_report_granularity_field():
 
 
 @pytest.mark.parametrize(
+    "report_granularity,expected_config",
+    [
+        pytest.param(
+            "LIFETIME",
+            {"legacy_report_granularity": "LIFETIME", "report_granularity": 30},
+            id="legacy_lifetime_string",
+        ),
+        pytest.param(
+            "DAY",
+            {"legacy_report_granularity": "DAY", "report_granularity": 30},
+            id="legacy_day_string",
+        ),
+        pytest.param(7, {"report_granularity": 7}, id="integer_value"),
+        pytest.param(None, {}, id="absent_value"),
+    ],
+)
+def test_report_granularity_config_migration(report_granularity, expected_config, tmp_path):
+    config = {} if report_granularity is None else {"report_granularity": report_granularity}
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{}")
+    source = YamlDeclarativeSource(
+        path_to_yaml=str(_YAML_FILE_PATH),
+        catalog=CatalogBuilder().build(),
+        config=config,
+        state=[],
+        config_path=str(config_path),
+    )
+
+    assert source._config == expected_config
+    if "report_granularity" in expected_config:
+        assert isinstance(source._config["report_granularity"], int)
+
+
+@pytest.mark.parametrize(
     "stream_name",
     [
         pytest.param("ads_reports_daily_stream", id="ads_reports_daily"),

@@ -6103,6 +6103,22 @@ spec:
         default: false
         order: 5
         type: boolean
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["legacy_report_granularity"]
+                value: "{{ config['report_granularity'] }}"
+                value_type: string
+              - type: AddedFieldDefinition
+                path: ["report_granularity"]
+                value: "30"
+                value_type: integer
+            condition: "{{ config.get('report_granularity') is string }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
