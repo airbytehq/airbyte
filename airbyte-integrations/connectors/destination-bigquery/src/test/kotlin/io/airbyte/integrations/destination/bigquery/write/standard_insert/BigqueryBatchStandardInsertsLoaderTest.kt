@@ -58,7 +58,8 @@ class BigqueryBatchStandardInsertsLoaderTest {
         val writer = mockk<TableDataWriteChannel>(relaxed = true)
         every { bigquery.writer(any<JobId>(), any()) } throws
             BigQueryException(503, "backend unavailable") andThenThrows
-            BigQueryException(503, "backend unavailable") andThen writer
+            BigQueryException(503, "backend unavailable") andThen
+            writer
         every { formatter.formatRecord(any<DestinationRecordRaw>()) } returns oversizedRecord
 
         val loader = loader(maxOpenAttempts = 5)
@@ -75,9 +76,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
 
         val loader = loader(maxOpenAttempts = 4)
         val thrown =
-            assertThrows<TransientErrorException> {
-                runBlocking { loader.accept(record()) }
-            }
+            assertThrows<TransientErrorException> { runBlocking { loader.accept(record()) } }
 
         assertEquals(exception, thrown.cause)
         verify(exactly = 4) { bigquery.writer(any<JobId>(), any()) }
