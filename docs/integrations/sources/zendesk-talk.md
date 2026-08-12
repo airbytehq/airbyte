@@ -4,33 +4,33 @@
 
 - A Zendesk account on a plan that includes the [Zendesk Talk](https://www.zendesk.com/service/voice/) add-on
 - Your Zendesk subdomain (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, the subdomain is `mycompany`)
-- Zendesk admin access, which you need to generate an API token or register an OAuth client
+- Zendesk administrator access, which you need to generate an API token or register an OAuth client
 
 ## Setup guide
 
-### Step 1: Choose an authentication method
+### Step 1: choose an authentication method
 
 The connector supports three authentication methods:
 
-- **OAuth 2.0**: Recommended for Airbyte Cloud. Uses Zendesk grant-type tokens with rotating refresh tokens.
-- **API Token**: Recommended for self-managed Airbyte. Uses a Zendesk API token and the email address of the user who owns it.
-- **OAuth 2.0 (Legacy)**: A long-lived OAuth access token that never refreshes. This method exists for connections created before connector version 2.0.0. Don't choose it for new connections.
+- **OAuth 2.0**: recommended for Airbyte Cloud. Uses Zendesk grant-type tokens with rotating refresh tokens.
+- **API Token**: recommended for self-managed Airbyte. Uses a Zendesk API token and the email address of the user who owns it.
+- **OAuth 2.0 (Legacy)**: a long-lived OAuth access token that never refreshes. This method exists for connections created before connector version 2.0.0. Don't choose it for new connections.
 
 All authentication methods only need read access. When you register your own OAuth client, request the `read` [scope](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/#scope).
 
 #### Generate an API token
 
-1. In Zendesk Admin Center, go to **Apps and integrations > APIs > Zendesk API**.
+1. In the Zendesk administrator center, go to **Apps and integrations > APIs > Zendesk API**.
 2. On the **Settings** tab, enable **Token access**.
 3. Click **Add API token**, optionally describe it, and copy the token. Zendesk only shows the token once.
 
-For details, see [Generating a new API token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-) in the Zendesk documentation. Create a token that you use only for Airbyte, so you can revoke it without affecting other integrations.
+For details, see [Generating a new API token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-) in the Zendesk documentation. Create a token exclusively for Airbyte, so you can revoke it without affecting other integrations.
 
 #### Register an OAuth client
 
 Airbyte Cloud uses its own OAuth client, so you can skip this step and click **Authenticate your Zendesk Talk account** during setup instead.
 
-On self-managed Airbyte, register your own client in Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**, then obtain a refresh token with the [authorization code grant flow](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/). You supply the client ID, client secret, and refresh token to the connector. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application).
+On self-managed Airbyte, register your own client in the Zendesk administrator center under **Apps and integrations > APIs > OAuth Clients**, then obtain a refresh token with the [authorization code grant flow](https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/). You supply the client ID, client secret, and refresh token to the connector. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application).
 
 ### Step 2: Set up the Zendesk Talk connector in Airbyte
 
@@ -51,7 +51,7 @@ Two Zendesk behaviors are worth planning for:
 - **Refresh tokens are single use.** Each refresh returns a new refresh token and invalidates the previous one. The connector writes the new refresh token back to the source configuration after every refresh.
 - **Refresh tokens expire after 30 days.** If a connection doesn't sync for 30 days, its refresh token expires and syncs fail until you re-authenticate the source.
 
-If OAuth syncs start failing with an authentication error, re-authenticate the source in its settings. On self-managed Airbyte, generate a new refresh token and update the source configuration.
+If OAuth syncs start failing with an authentication error, re-authenticate the source in its settings. On self-managed Airbyte, generate a new refresh token, and update the source configuration.
 
 ## Supported sync modes
 
@@ -63,7 +63,7 @@ The **Zendesk Talk** source connector supports the following [sync modes](https:
 ## Supported streams
 
 | Stream | Sync mode | Cursor | Notes |
-|:--|:--|:--|:--|
+| :-- | :-- | :-- | :-- |
 | [Account Overview](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#show-account-overview) | Full refresh | | A single record of current account-level call statistics |
 | [Addresses](https://developer.zendesk.com/api-reference/voice/talk-api/addresses/#list-addresses) | Full refresh | | Physical addresses registered for your voice numbers |
 | [Agents Activity](https://developer.zendesk.com/api-reference/voice/talk-api/stats/#list-agents-activity) | Full refresh | | Current activity snapshot, one record per agent |
@@ -85,7 +85,7 @@ The statistics streams report the state of your account when the sync runs. Zend
 Zendesk applies two sets of limits to this connector's requests. The plan-based [Support API limit](https://developer.zendesk.com/api-reference/introduction/rate-limits/) caps all requests your account makes, including requests from other integrations:
 
 | Zendesk Suite plan | Requests per minute |
-|:--|:--|
+| :-- | :-- |
 | Team | 200 |
 | Growth | 400 |
 | Professional | 400 |
@@ -95,7 +95,7 @@ Zendesk applies two sets of limits to this connector's requests. The plan-based 
 The [Talk API](https://developer.zendesk.com/api-reference/voice/talk-api/introduction/#rate-limits) adds its own per-endpoint limits:
 
 | Endpoint | Rate limit |
-|:--|:--|
+| :-- | :-- |
 | All Talk API endpoints | 15,000 requests per 5 minutes |
 | Current Queue Activity | 2,500 requests per 5 minutes |
 | Incremental Exports (Calls, Call Legs) | 10 requests per minute |
@@ -107,7 +107,7 @@ The connector also handles `429` responses by waiting for the interval in the `R
 ## Data type map
 
 | Integration Type | Airbyte Type |
-|:--|:--|
+| :-- | :-- |
 | `string` | `string` |
 | `number` | `number` |
 | `array` | `array` |
@@ -132,7 +132,7 @@ For step-by-step instructions, see the [Zendesk Talk migration guide](/integrati
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|:--|:--|:--|:--|
+| :-- | :-- | :-- | :-- |
 | 2.0.24 | 2026-08-11 | [83814](https://github.com/airbytehq/airbyte/pull/83814) | Persist OAuth token expiry on initial authentication so the first sync no longer refreshes and rotates away the single-use refresh token |
 | 2.0.23 | 2026-08-11 | [84187](https://github.com/airbytehq/airbyte/pull/84187) | Update dependencies |
 | 2.0.22 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
