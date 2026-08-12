@@ -67,7 +67,9 @@ definitions:
       inject_into: request_parameter
     pagination_strategy:
       type: OffsetIncrement
-      page_size: 1000
+      # Row order is unstable without sort_<column> params, so each stream
+      # sorts by its primary-key dimensions to keep offset pages consistent.
+      page_size: 10000
 
   base_record_selector:
     type: RecordSelector
@@ -77,15 +79,9 @@ definitions:
       field_path:
         - results
 
-  # All three endpoints are queried one day at a time (start == end) so every
-  # record belongs to a single date, which is what makes the cursor and the
-  # composite primary keys stable. `lookback_window` re-requests recent days so
-  # restated attribution data overwrites the earlier values.
-  #
-  # AppLovin enforces a request window: dates outside it return an error rather
-  # than empty results, so `min_datetime` clamps the start date to the oldest
-  # day the endpoint still serves. /report and /assetAnalyticsReport allow 45
-  # days; /webReport allows 90.
+  # One-day slices keep composite keys stable; `lookback_window` re-requests
+  # recent days for restated attribution. `min_datetime` clamps to AppLovin's
+  # serving window (45 days; 90 for /webReport) — earlier dates error.
   report_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: day
@@ -121,8 +117,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
       min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
 
-  # The asset report has no day dimension: a single-day range aggregates to that
-  # day, and the connector adds the requested date as `date`.
+  # No day dimension in the asset report; AddFields stamps the slice date.
   asset_report_incremental_sync:
     $ref: "#/definitions/report_incremental_sync"
     cursor_field: date
@@ -131,11 +126,15 @@ definitions:
     advertiser_report_daily:
       type: DeclarativeStream
       name: advertiser_report_daily
+      # No ad_id column; the key needs every dimension that can split rows.
       primary_key:
         - day
         - campaign_id_external
         - creative_set_id
         - ad
+        - ad_type
+        - ad_creative_type
+        - custom_page_id
         - country
         - platform
         - placement_type
@@ -148,7 +147,19 @@ definitions:
           request_parameters:
             report_type: advertiser
             format: json
+            # Cohort mode: attribute *_0d/7d/28d metrics to click/serve day.
+            day_column: day
             columns: day,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_bid_goal,campaign_package_name,ad,ad_creative_type,ad_type,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales,sales_0d,sales_7d,sales_30d,cpp_0d,cpp_7d,cpp_30d,roas_0d,roas_7d,roas_28d,total_rev_0d,total_rev_7d,total_rev_28d,unique_purchasers_0d,unique_purchasers_7d,unique_purchasers_28d
+            sort_campaign_id_external: ASC
+            sort_creative_set_id: ASC
+            sort_ad: ASC
+            sort_ad_type: ASC
+            sort_ad_creative_type: ASC
+            sort_custom_page_id: ASC
+            sort_country: ASC
+            sort_platform: ASC
+            sort_placement_type: ASC
+            sort_device_type: ASC
         record_selector:
           $ref: "#/definitions/base_record_selector"
         paginator:
@@ -179,7 +190,13 @@ definitions:
             report_type: advertiser
             format: json
             attribution_mode: "{{ config.get('attribution_mode', 'click') }}"
+            day_column: day
             columns: day,campaign,campaign_id_external,campaign_type,country,creative_set,creative_set_id,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,sales,sales_0d,sales_7d,sales_28d,cpp_0d,cpp_7d,cpp_28d,roas_0d,roas_7d,roas_28d,chka_usd_0d,chka_usd_7d,chka_usd_28d,new_visitor_rate,nc_d0_checkouts,nc_d0_checkout_rev,nc_d0_cpp,nc_d0_roas,nc_percent_d0_checkouts,nc_percent_d0_checkout_rev,nc_d7_checkouts,nc_d7_checkout_rev,nc_d7_cpp,nc_d7_roas,nc_percent_d7_checkouts,nc_percent_d7_checkout_rev
+            sort_campaign_id_external: ASC
+            sort_creative_set_id: ASC
+            sort_country: ASC
+            sort_platform: ASC
+            sort_placement_type: ASC
         record_selector:
           $ref: "#/definitions/base_record_selector"
         paginator:
@@ -207,6 +224,9 @@ definitions:
           request_parameters:
             format: json
             columns: asset_id,asset_name,asset_url,campaign,campaign_id,creative_set,creative_set_id,impressions,clicks,ctr,cost
+            sort_campaign_id: ASC
+            sort_creative_set_id: ASC
+            sort_asset_id: ASC
         record_selector:
           $ref: "#/definitions/base_record_selector"
         paginator:
@@ -314,10 +334,8 @@ metadata:
       - authenticator
 
 schemas:
-  # The reporting APIs return every metric as a string. `schema_normalization:
-  # Default` casts values to the declared types so destinations receive plain
-  # scalars. Schemas stay permissive because AppLovin adds columns over time and
-  # users may request extra ones by editing the manifest.
+  # Metrics arrive as strings; `schema_normalization: Default` casts them to
+  # the declared types. Permissive schemas: AppLovin adds columns over time.
   advertiser_report_daily:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
