@@ -22,7 +22,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            created_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -56,6 +55,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: created_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -76,7 +79,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -119,6 +121,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -139,7 +145,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -182,6 +187,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -199,7 +208,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -233,6 +241,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -370,7 +382,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -404,6 +415,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -677,7 +692,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -711,6 +725,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -776,7 +794,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -810,6 +827,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -827,7 +848,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -861,6 +881,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -878,7 +902,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -912,6 +935,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -932,7 +959,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -975,6 +1001,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -992,7 +1022,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1026,6 +1055,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1083,7 +1116,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1117,6 +1149,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1174,7 +1210,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1208,6 +1243,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1363,7 +1402,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            submitted_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1397,6 +1435,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: submitted_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1414,7 +1456,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 100 if not next_page_token }}"
-            updated_after: "{{ stream_interval.start_time if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1448,6 +1489,10 @@ definitions:
           type: MinMaxDatetime
           datetime: "1970-01-01T00:00:00.000Z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_after
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:

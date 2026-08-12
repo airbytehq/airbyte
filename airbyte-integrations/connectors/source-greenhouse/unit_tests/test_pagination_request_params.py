@@ -2,6 +2,7 @@
 
 import json
 import sys
+from urllib.parse import quote
 
 import pytest
 
@@ -51,7 +52,7 @@ def test_incremental_pagination_request_parameters(
             cursor_parameter: cursor_value,
         },
     )
-    second_request = HttpRequest(next_url)
+    second_request = HttpRequest(f"{next_url}&{cursor_parameter}={quote(cursor_value, safe='')}")
     parent_request = HttpRequest(
         "https://harvest.greenhouse.io/v1/applications",
         query_params={
