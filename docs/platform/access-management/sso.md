@@ -9,6 +9,8 @@ import TabItem from "@theme/TabItem";
 
 Use Open ID Connect (OIDC) to log into Airbyte using an Identity Provider (IdP) like Okta or Entra ID/Active Directory.
 
+SCIM provisioning is an add-on to SSO. After you set up SSO, see [SCIM provisioning](scim) to configure user and group provisioning.
+
 ## Set up single sign on
 
 Administrators must set up SSO before your organization can use it. The steps differ slightly depending on which IdP you use and whether you're on the Cloud or Self-Managed version of Airbyte. To get started, choose your identity provider below.

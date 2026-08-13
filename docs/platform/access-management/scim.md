@@ -1,0 +1,154 @@
+---
+products: cloud-teams
+---
+
+# SCIM provisioning
+
+System for Cross-domain Identity Management (SCIM) lets your identity provider (IdP) create, update, and deactivate Airbyte users, and create [user groups](user-groups) and manage their membership, without an administrator doing that work in Airbyte.
+
+SCIM is an add-on to [single sign on](sso). To use it, contact Airbyte to enable SCIM for your organization.
+
+## How SCIM changes Airbyte
+
+When SCIM is enabled, your IdP owns who belongs to your organization and which groups they're in. Airbyte still owns what those people and groups can do.
+
+| Airbyte object                   | Owner when SCIM is enabled                                   |
+| -------------------------------- | ------------------------------------------------------------ |
+| Organization membership          | Your IdP                                                     |
+| User profile details, like names | Your IdP                                                     |
+| Group names                      | Your IdP                                                     |
+| Group membership                 | Your IdP                                                     |
+| Group permissions                | Airbyte, set by an organization admin                        |
+| Individual user permissions      | Airbyte, set by an organization admin                        |
+
+Because your IdP is the source of truth for membership, the **Members** page in Airbyte hides invitations while SCIM is enabled. To add or remove someone, assign or unassign them in your IdP.
+
+Airbyte never receives passwords through SCIM. People still sign in with SSO.
+
+## Before you start
+
+You need the following:
+
+- The Pro or Enterprise Flex plan, with SCIM enabled for your organization.
+- Organization admin permissions in Airbyte.
+- Permission to configure provisioning in Okta or Microsoft Entra ID.
+- A **verified domain** in Airbyte for every email domain you plan to provision. Airbyte rejects any user whose email domain your organization hasn't verified. Add and verify domains in **Organization settings** > **SSO**. See the [Okta](sso-providers/okta) or [Entra ID](sso-providers/azure-entra-id) SSO guide for the DNS steps.
+
+Set up SSO before SCIM. Users your IdP provisions can only sign in with the credentials your IdP manages.
+
+## Enable SCIM in Airbyte
+
+1. In Airbyte, click **Organization settings** > **SSO**.
+
+2. In the SCIM section, choose your **Identity provider**: **Okta** or **Microsoft Entra ID**.
+
+    :::warning
+    You can't change the identity provider later. To switch providers, [contact support](https://support.airbyte.com).
+    :::
+
+3. Click **Enable SCIM**. Airbyte shows you a **SCIM base URL** and a **Bearer token**.
+
+4. Copy both values. Airbyte shows the token only once. If you lose it, you must generate a new one.
+
+    :::warning
+    The bearer token grants your IdP the ability to create, modify, and deactivate users in your organization. Treat it like a password and store it in a secrets manager or password manager.
+    :::
+
+5. Paste the base URL and token into your IdP. Follow the guide for your provider.
+
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+
+<DocCardList />
+```
+
+Airbyte continues to display the base URL in the SCIM section after setup, but not the token.
+
+## Manage the bearer token
+
+The token doesn't expire, but you can replace it at any time.
+
+1. Click **Organization settings** > **SSO**.
+
+2. In the SCIM section, click **Generate new token**, then confirm.
+
+The previous token stops working immediately, so your IdP can't provision anyone until you paste the new token into it. Like the first token, Airbyte shows the replacement only once.
+
+## Disable and re-enable SCIM
+
+Click **Disable SCIM** to stop your IdP from provisioning. Airbyte invalidates the token, and:
+
+- Existing users, groups, and group memberships remain as they are.
+- Group names and membership become editable in Airbyte again.
+- Nobody loses access.
+
+To resume provisioning, enable SCIM again with the same identity provider. Airbyte issues a new token, which you must paste into your IdP.
+
+When you re-enable SCIM, Airbyte reconciles any users your IdP had already deactivated: those users lose their permissions and group memberships in this organization, the same way they would have if they were deactivated while SCIM was enabled.
+
+## What your identity provider can manage
+
+Airbyte implements SCIM 2.0 with the core `User` and `Group` schemas.
+
+Users:
+
+- Create, update, deactivate, reactivate, and delete users.
+- Supported user attributes are `userName`, `externalId`, `active`, `emails`, `name` (including `givenName`, `familyName`, `formatted`, `middleName`, and honorific prefixes and suffixes), `displayName`, `nickName`, `profileUrl`, `title`, `userType`, `preferredLanguage`, `locale`, and `timezone`.
+- Every user needs a `userName` and at least one email. Airbyte uses the primary email, or the single work email if none is primary.
+- Group membership is read-only on the user resource. Change membership on the group.
+
+Groups:
+
+- Create, rename, delete, and change membership.
+- Supported group attributes are `displayName`, `externalId`, and `members`.
+- Members must be active users that SCIM provisioned in the same organization.
+
+Airbyte doesn't support the following:
+
+- Assigning Airbyte permissions or roles through SCIM. An organization admin assigns permissions to groups in Airbyte. See [user groups](user-groups).
+- Nested groups.
+- Password synchronization. Airbyte ignores any password your IdP sends.
+- Bulk operations, sorting, and ETags.
+
+Airbyte returns at most 200 resources per page and 100 by default, so configure your IdP to page through results.
+
+## How deactivation affects access
+
+Deactivating or deleting a user is destructive within the organization that provisioned them. Airbyte removes:
+
+- Their organization permissions.
+- Their permissions in every workspace in the organization.
+- Their membership in every group in the organization.
+
+Airbyte keeps their user account and their access in any other organization they belong to. It also keeps the SCIM record, so your IdP can reactivate them later.
+
+Reactivating a user only restores the baseline organization member permission. Airbyte doesn't restore the workspace roles, elevated organization roles, or group memberships they had before.
+
+:::warning
+After you reactivate someone, your IdP must re-add them to their groups, and an organization admin must re-grant any individual roles they had. Otherwise, they can sign in but only see what an organization member sees.
+:::
+
+## Provision users who already have Airbyte accounts
+
+If someone already has an Airbyte account with the email address your IdP provisions, Airbyte links the SCIM record to that existing account instead of creating a duplicate. The account keeps any elevated access it already had in your organization.
+
+If you provision someone before they've ever signed in, Airbyte attaches their identity to the record the first time they sign in with a verified matching email address.
+
+## Troubleshoot
+
+Your IdP surfaces the status code Airbyte returns. Use these to narrow down the cause.
+
+| Status | Meaning                                                                                                                                                                     |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | Airbyte rejected the request body, an attribute it doesn't support, or an unsupported filter. Trim your IdP's attribute mappings to the supported attributes above.          |
+| 401    | The bearer token is missing, malformed, or no longer valid. This happens after you generate a new token or disable SCIM. Paste the current token into your IdP.              |
+| 403    | SCIM isn't enabled for your organization, or your plan doesn't include it. Contact Airbyte.                                                                                  |
+| 404    | The user or group no longer exists in Airbyte. This is common after someone deletes a group in Airbyte while SCIM was disabled.                                              |
+| 409    | Another record already uses that `userName`, email, `externalId`, or group name. Airbyte also returns this when your IdP tries to create a group that already exists in Airbyte. |
+| 500    | An unexpected Airbyte error. The response includes a reference ID. Send it to [support](https://support.airbyte.com).                                                        |
+
+Other things to check:
+
+- **A user can't be created.** Verify that Airbyte has verified the domain of that user's email address.
+- **One group never provisions.** Your IdP can't take over a group that already exists in Airbyte. Rename or delete the Airbyte group, then let your IdP create it.
+- **Nobody is syncing.** Confirm SCIM is still enabled in **Organization settings** > **SSO**, and that your IdP has the current token and the base URL Airbyte shows there.

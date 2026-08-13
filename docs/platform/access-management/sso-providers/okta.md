@@ -158,3 +158,5 @@ If you no longer need a domain for SSO purposes, delete its verification.
 4. Click **Test your connection** to verify the updated credentials work correctly.
 
 5. Click **Activate SSO**. -->
+
+For the next step, see [Set up SCIM using Okta](../scim-providers/okta).
