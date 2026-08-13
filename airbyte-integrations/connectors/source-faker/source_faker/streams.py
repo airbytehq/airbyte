@@ -103,7 +103,7 @@ class Users(Stream, IncrementalMixin):
 
         updated_at = ""
 
-        median_record_byte_size = 450
+        median_record_byte_size = 500
         yield generate_estimate(self.name, self.count, median_record_byte_size)
 
         loop_offset = 0
