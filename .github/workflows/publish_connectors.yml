@@ -498,7 +498,7 @@ jobs:
           body_file="${RUNNER_TEMP}/merged-pr-body.md"
           gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq '.[0].body // ""' > "$body_file"
           checked='false'
-          grep -Ei "^[[:space:]]*-[[:space:]]*\\[[xX]\\]" "$body_file" |
+          grep -Ei "^[[:space:]>]*-[[:space:]]*\\[[xX]\\]" "$body_file" |
             grep -Fqi -- "$RELEASE_IMMEDIATELY_PHRASE" && checked='true'
           echo "checked=$checked" | tee -a "$GITHUB_OUTPUT"
 
