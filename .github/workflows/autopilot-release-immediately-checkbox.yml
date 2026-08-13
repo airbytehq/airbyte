@@ -10,8 +10,7 @@ on:
     paths:
       - "airbyte-integrations/connectors/**"
 
-permissions:
-  {}
+permissions: {}
 
 concurrency:
   group: autopilot-release-immediately-${{ github.event.pull_request.number }}
