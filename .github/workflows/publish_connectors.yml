@@ -1,8 +1,5 @@
 name: Publish Connectors
 
-env:
-  RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
-
 on:
   push:
     branches:
@@ -82,6 +79,10 @@ on:
         required: false
         default: false
         type: boolean
+
+env:
+  RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
+
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -98,13 +99,8 @@ jobs:
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch'
         shell: bash
-        env:
-          CONNECTOR_ARGS: ${{ inputs.connectors }}
         # When invoked manually, we run on the connectors specified in the input.
-        run: |
-          read -r -a connector_args <<< "$CONNECTOR_ARGS"
-          connectors_json="$(./poe-tasks/parse-connector-name-args.sh "${connector_args[@]}")"
-          echo "connectors-to-publish=${connectors_json}" | tee -a "$GITHUB_OUTPUT"
+        run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
         if: github.event_name == 'push'
@@ -119,20 +115,6 @@ jobs:
         env:
           CONNECTORS_JSON: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
         run: echo "connector-count=$(jq '[.connector[] | select(. != "")] | length' <<< "$CONNECTORS_JSON")" | tee -a "$GITHUB_OUTPUT"
-      - name: Report connectors skipped due to unchanged version
-        if: github.event_name == 'push'
-        env:
-          CONNECTORS_TO_PUBLISH: ${{ steps.list-connectors-master.outputs.connectors-to-publish }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          all_modified="$(./poe-tasks/get-modified-connectors.sh --prev-commit --json)"
-          skipped="$(
-            jq -r --argjson published "$CONNECTORS_TO_PUBLISH" '
-              [.connector[] | select(. != "" and (. as $connector | ($published.connector | index($connector) | not)))] | join(", ")
-            ' <<< "$all_modified"
-          )"
-          echo "::notice::Connectors skipped because dockerImageTag was unchanged: ${skipped:-none}"
       - name: Resolve semver suffix
         id: resolve-semver-suffix
         shell: bash
@@ -510,7 +492,6 @@ jobs:
           steps.check-release-block.outputs.blocked != 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          RELEASE_IMMEDIATELY_PHRASE: ${{ env.RELEASE_IMMEDIATELY_PHRASE }}
         shell: bash
         run: |
           set -euo pipefail
