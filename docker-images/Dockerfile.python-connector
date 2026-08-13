@@ -54,11 +54,14 @@ set -e
 ${CONNECTOR_NAME} "\$\@"
 EOT
 
-# Set the non-root user
+# Fail the build here instead of at container start, where Docker only reports
+# `unable to find user airbyte` without naming the base image.
 RUN if ! id -u airbyte >/dev/null 2>&1; then \
         echo "ERROR: base image ${BASE_IMAGE} does not contain the airbyte user. Bump connectorBuildOptions.baseImage in the connector's metadata.yaml." >&2; \
         exit 1; \
     fi
+
+# Set the non-root user
 USER airbyte
 
 ENV AIRBYTE_ENTRYPOINT="/entrypoint.sh"
