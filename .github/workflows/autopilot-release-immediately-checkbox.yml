@@ -132,7 +132,11 @@ jobs:
         with:
           github_token: ${{ github.token }}
           add_markdown: |
-            > [!NOTE]
-            > Autopilot progressive rollout is enabled for connector(s) modified in this PR.
+            ---
 
-            - [ ] :black_square_button: Release immediately (bypasses automatic progressive rollout)
+            > [!NOTE]
+            > **Optional Progressive Rollout Bypass**
+            >
+            > Autopilot progressive rollout is enabled for connector(s) modified in this PR. Check the box below to bypass normal rollout safety processes.
+
+            - [ ] ⚡ Release immediately (bypasses automatic progressive rollout)
