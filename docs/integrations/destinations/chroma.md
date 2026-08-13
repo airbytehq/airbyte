@@ -61,7 +61,7 @@ In Docker deployments, `/local` is mapped to the directory Airbyte mounts for lo
 
 :::danger
 
-Persistent Client Mode isn't supported on Kubernetes, because the sync pod has no durable local storage. Use Client/Server Mode instead.
+Persistent Client Mode isn't supported on Kubernetes deployments. Use Client/Server Mode instead.
 
 :::
 
@@ -87,7 +87,7 @@ Pick how the embeddings are produced:
 - **OpenAI-compatible**: for self-hosted or third-party services that expose the OpenAI embeddings API. Requires the **Base URL**, **Embedding dimensions**, and, depending on the service, an **API key** and **Model name**.
 - **From Field**: uses an embedding that already exists in the record. Set **Field name** to the field holding the vector and **Embedding dimensions** to its length. Records whose vector has a different length fail the sync.
 - **Fake**: random vectors with 1536 dimensions, for testing a pipeline without paying for embeddings.
-- **Chroma Default Embedding Function**: Airbyte sends no embedding, and Chroma embeds the documents itself with a local sentence-transformers model. This can be slow, depending on the hardware running Chroma, and suits prototypes better than production loads.
+- **Chroma Default Embedding Function**: Airbyte sends no embedding, and Chroma embeds the documents itself with its [default embedding function](https://docs.trychroma.com/docs/embeddings/embedding-functions), which runs the `all-MiniLM-L6-v2` model on the machine running Chroma. No API key is needed.
 
 ### Processing
 
