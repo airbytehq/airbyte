@@ -5,7 +5,7 @@ This destination writes each stream to a newline-delimited JSON file in a direct
 ## Prerequisites
 
 - An SFTP server reachable from your Airbyte deployment.
-- A username and password for that server. This destination authenticates with a password only. It doesn't support SSH key or keyboard-interactive authentication.
+- A username and password for that server. This destination authenticates with a password. Its configuration has no field for a private key, so it can't authenticate with an SSH key.
 - An existing directory on the server that the account can read from and write to. The connector doesn't create the directory for you.
 
 ## Setup
@@ -56,7 +56,7 @@ Throughput depends on your network connection to the SFTP server and how quickly
 
 ### The connection test fails with an authentication error
 
-Confirm that the server accepts password authentication for this account. Servers configured for public key authentication only reject this connector.
+Confirm that the server accepts password authentication for this account. This connector can't connect to servers that require public key authentication.
 
 ### The connection test fails but the credentials are correct
 
