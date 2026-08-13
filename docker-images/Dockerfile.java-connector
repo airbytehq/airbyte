@@ -8,9 +8,14 @@ ARG BASE_IMAGE
 
 # Base image - using Amazon Corretto (Amazon's distribution of OpenJDK)
 FROM ${BASE_IMAGE}
+ARG BASE_IMAGE
 ARG CONNECTOR_NAME
 
 # Set permissions for downloaded files
+RUN if ! id -u airbyte >/dev/null 2>&1; then \
+        echo "ERROR: base image ${BASE_IMAGE} does not contain the airbyte user. Bump connectorBuildOptions.baseImage in the connector's metadata.yaml." >&2; \
+        exit 1; \
+    fi
 RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
     chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh
 
