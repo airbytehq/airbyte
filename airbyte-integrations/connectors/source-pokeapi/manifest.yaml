@@ -29,12 +29,34 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/pokemon"
+    pokemon_moves:
+      type: DeclarativeStream
+      name: pokemon_moves
+      primary_key:
+        - move_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /{{config['pokemon_name']}}/moves
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - moves
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pokemon_moves"
   base_requester:
     type: HttpRequester
     url_base: https://pokeapi.co/api/v2/pokemon
 
 streams:
   - $ref: "#/definitions/streams/pokemon"
+  - $ref: "#/definitions/streams/pokemon_moves"
 
 spec:
   type: Spec
@@ -1353,6 +1375,47 @@ schemas:
                 - "null"
                 - integer
       weight:
+        type:
+          - "null"
+          - integer
+  pokemon_moves:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      move_id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      power:
+        type:
+          - "null"
+          - integer
+      accuracy:
+        type:
+          - "null"
+          - integer
+      pp:
+        type:
+          - "null"
+          - integer
+      damage_class:
+        type:
+          - "null"
+          - string
+      learn_method:
+        type:
+          - "null"
+          - string
+      level_learned_at:
         type:
           - "null"
           - integer
