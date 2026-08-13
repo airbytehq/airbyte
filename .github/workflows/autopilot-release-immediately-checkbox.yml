@@ -9,19 +9,12 @@ on:
       - ready_for_review
     paths:
       - "airbyte-integrations/connectors/**"
-  workflow_dispatch:
-    inputs:
-      pr:
-        description: "Pull request number to inspect."
-        required: true
-        type: number
-
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: autopilot-release-immediately-${{ github.event.pull_request.number || inputs.pr }}
+  group: autopilot-release-immediately-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -30,8 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Resolve PR context from pull request event
-        id: context-event
-        if: github.event_name == 'pull_request'
+        id: context
         env:
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
@@ -45,40 +37,21 @@ jobs:
             echo "is-fork=${EVENT_IS_FORK}"
           } | tee -a "$GITHUB_OUTPUT"
 
-      - name: Resolve PR context from workflow dispatch
-        id: context-dispatch
-        if: github.event_name == 'workflow_dispatch'
+      - name: Read existing release immediately checkbox
+        id: bypass-state
+        if: steps.context.outputs.is-fork == 'false'
         env:
-          INPUT_PR: ${{ inputs.pr }}
+          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          [[ "$INPUT_PR" =~ ^[1-9][0-9]*$ ]] || {
-            echo "::error::Invalid pull request number: ${INPUT_PR}"
-            exit 1
-          }
-          gh api "repos/${GITHUB_REPOSITORY}/pulls/${INPUT_PR}" |
-            jq -r '"pr-number=\(.number)\nhead-repo=\(.head.repo.full_name)\nhead-sha=\(.head.sha)\nis-fork=\(.head.repo.fork)"' |
-            tee -a "$GITHUB_OUTPUT"
-
-      - name: Resolve PR context
-        id: context
-        env:
-          EVENT_PR_NUMBER: ${{ steps.context-event.outputs.pr-number }}
-          EVENT_HEAD_REPO: ${{ steps.context-event.outputs.head-repo }}
-          EVENT_HEAD_SHA: ${{ steps.context-event.outputs.head-sha }}
-          EVENT_IS_FORK: ${{ steps.context-event.outputs.is-fork }}
-          DISPATCH_PR_NUMBER: ${{ steps.context-dispatch.outputs.pr-number }}
-          DISPATCH_HEAD_REPO: ${{ steps.context-dispatch.outputs.head-repo }}
-          DISPATCH_HEAD_SHA: ${{ steps.context-dispatch.outputs.head-sha }}
-          DISPATCH_IS_FORK: ${{ steps.context-dispatch.outputs.is-fork }}
-        run: |
-          {
-            echo "pr-number=${EVENT_PR_NUMBER:-${DISPATCH_PR_NUMBER}}"
-            echo "head-repo=${EVENT_HEAD_REPO:-${DISPATCH_HEAD_REPO}}"
-            echo "head-sha=${EVENT_HEAD_SHA:-${DISPATCH_HEAD_SHA}}"
-            echo "is-fork=${EVENT_IS_FORK:-${DISPATCH_IS_FORK}}"
-          } | tee -a "$GITHUB_OUTPUT"
+          body="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.body // ""')"
+          normalized_body="$(printf '%s' "$body" | tr -d '*_')"
+          exists='false'
+          grep -Fqi -- \
+            "Release immediately (bypasses automatic progressive rollout)" \
+            <<< "$normalized_body" && exists='true'
+          echo "exists=$exists" | tee -a "$GITHUB_OUTPUT"
 
       - name: Checkout connector metadata
         if: steps.context.outputs.is-fork == 'false'
@@ -127,7 +100,7 @@ jobs:
         if: >
           steps.context.outputs.is-fork == 'false' &&
           steps.detect.outputs.connectors != '' &&
-          github.event_name == 'pull_request'
+          steps.bypass-state.outputs.exists != 'true'
         uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
         with:
           github_token: ${{ github.token }}

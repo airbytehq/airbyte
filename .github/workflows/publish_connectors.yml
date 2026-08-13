@@ -114,7 +114,9 @@ jobs:
         shell: bash
         env:
           CONNECTORS_JSON: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
-        run: echo "connector-count=$(jq '[.connector[] | select(. != "")] | length' <<< "$CONNECTORS_JSON")" | tee -a "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          echo "connector-count=$(jq '[.connector[] | select(. != "")] | length' <<< "$CONNECTORS_JSON")" | tee -a "$GITHUB_OUTPUT"
       - name: Resolve semver suffix
         id: resolve-semver-suffix
         shell: bash
@@ -496,21 +498,45 @@ jobs:
         run: |
           set -euo pipefail
           body_file="${RUNNER_TEMP}/merged-pr-body.md"
-          gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq '.[0].body // ""' > "$body_file"
+          gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq '.[0].body // ""' > "$body_file" || {
+            echo "::warning::Could not read the merged pull request body; using the safe default of progressive rollout enabled."
+            echo "checked=false" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          }
           checked='false'
           tr -d '*_' < "$body_file" |
             grep -Ei "^[[:space:]>]*-[[:space:]]*\\[[xX]\\]" |
             grep -Fqi -- "$RELEASE_IMMEDIATELY_PHRASE" && checked='true'
           echo "checked=$checked" | tee -a "$GITHUB_OUTPUT"
 
-      - name: Disable progressive rollout for immediate release
+      - name: Resolve progressive rollout setting
+        id: progressive-rollout
         if: steps.release-immediately.outputs.checked == 'true'
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          enabled="$(yq -r '.data.releases.rolloutConfiguration.enableProgressiveRollout // false' metadata.yaml)"
+          echo "enabled=$enabled" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Disable progressive rollout for immediate release
+        if: >
+          steps.release-immediately.outputs.checked == 'true' &&
+          steps.progressive-rollout.outputs.enabled == 'true'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         env:
           CONNECTOR: ${{ matrix.connector }}
         run: |
+          set -euo pipefail
           yq -i '.data.releases.rolloutConfiguration.enableProgressiveRollout = false' metadata.yaml
           echo "::notice::Immediate release requested for ${CONNECTOR}; progressive rollout disabled for this publish."
+
+      - name: Keep progressive rollout metadata unchanged
+        if: >
+          steps.release-immediately.outputs.checked == 'true' &&
+          steps.progressive-rollout.outputs.enabled != 'true'
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+        run: echo "::notice::Immediate release requested for ${CONNECTOR}, but progressive rollout is not enabled; metadata.yaml remains unchanged."
 
       # --- Registry artifact generation and publishing ---
       - name: Generate Registry Artifacts
