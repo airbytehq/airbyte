@@ -16,9 +16,6 @@ on:
         required: true
         type: number
 
-env:
-  RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
-
 permissions:
   contents: read
   pull-requests: write
@@ -126,41 +123,16 @@ jobs:
             echo "${delimiter}"
           } | tee -a "$GITHUB_OUTPUT"
 
-      - name: Read PR body
-        id: body
-        if: steps.context.outputs.is-fork == 'false' && steps.detect.outputs.connectors != ''
-        env:
-          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          body_file="${RUNNER_TEMP}/autopilot-release-immediately-pr-body.md"
-          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.body // ""' > "$body_file"
-          echo "path=${body_file}" | tee -a "$GITHUB_OUTPUT"
+      - name: Add release immediately checkbox to PR description
+        if: >
+          steps.context.outputs.is-fork == 'false' &&
+          steps.detect.outputs.connectors != '' &&
+          github.event_name == 'pull_request'
+        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff670c4 # v2.0.0
+        with:
+          github_token: ${{ github.token }}
+          add_markdown: |
+            > [!NOTE]
+            > Autopilot progressive rollout is enabled for connector(s) modified in this PR.
 
-      - name: Detect existing release immediately checkbox
-        id: existing
-        if: steps.body.outputs.path != ''
-        env:
-          BODY_PATH: ${{ steps.body.outputs.path }}
-        run: |
-          if grep -Fq -- "$RELEASE_IMMEDIATELY_PHRASE" "$BODY_PATH"; then
-            echo "present=true" | tee -a "$GITHUB_OUTPUT"
-          else
-            echo "present=false" | tee -a "$GITHUB_OUTPUT"
-          fi
-
-      - name: Append release immediately checkbox
-        if: steps.existing.outputs.present == 'false'
-        env:
-          BODY_PATH: ${{ steps.body.outputs.path }}
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
-        run: |
-          set -euo pipefail
-          [[ -n "$(tr -d '[:space:]' < "$BODY_PATH")" ]] || : > "$BODY_PATH"
-          [[ ! -s "$BODY_PATH" ]] || printf '\n\n' >> "$BODY_PATH"
-          printf '> [!NOTE]\n> Autopilot progressive rollout is enabled for connector(s) modified in this PR.\n\n- [ ] :black_square_button: %s\n' \
-            "$RELEASE_IMMEDIATELY_PHRASE" >> "$BODY_PATH"
-          jq -n --rawfile body "$BODY_PATH" '{body: $body}' |
-            gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --method PATCH --input -
+            - [ ] :black_square_button: Release immediately (bypasses automatic progressive rollout)
