@@ -35,6 +35,26 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 
 **Why this matters:** This stream is distinct from `ticket_comments` — both use the same API endpoint but extract different data. `ticket_comments` uses a custom extractor (`ZendeskSupportExtractorEvents`) to drill into `child_events` and filter for Comment events. `ticket_events` uses the default `DpathExtractor` to return the raw ticket event envelope, giving users access to all event types and metadata.
 
+## 5. Never Render Epoch Cursors With `strftime('%s')`
+
+Several streams use `datetime_format: "%s"`, so their cursor boundaries are rendered as unix epochs. Render those with `.timestamp() | int`, never with `strftime('%s')`:
+
+```yaml
+# Correct
+datetime: "{{ now_utc().timestamp() | int }}"
+datetime: "{{ (now_utc() - duration('P730D')).timestamp() | int }}"
+
+# Wrong — shifts by the host's UTC offset
+datetime: "{{ now_utc().strftime('%s') }}"
+datetime: "{{ day_delta(-730, '%s') }}"
+```
+
+`%s` is not implemented by Python; `strftime` delegates it to the C library, which ignores the datetime's `tzinfo` and applies the host's timezone. On a UTC host the two forms agree, which is why this is easy to miss — Airbyte's job containers run UTC. On any other host the rendered epoch is off by the host's offset, so request windows are silently wrong. The CDK's own `DatetimeParser` special-cases `%s` for exactly this reason.
+
+`day_delta(num_days, format)` is affected whenever `format` is `'%s'`, because it applies `strftime` internally. Use `now_utc() - duration('P<n>D')` instead. `timestamp(...)` and `str_to_datetime(...)` are timezone-correct and safe.
+
+**Why this matters:** the practical symptom is unit tests that pass in CI and fail on a developer machine outside UTC, with `requests_mock.exceptions.NoMockAddress` because the rendered query window does not match the mock. The underlying defect is real, though — a self-managed deployment on a non-UTC host would request the wrong window.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
