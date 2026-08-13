@@ -128,7 +128,7 @@ jobs:
           steps.context.outputs.is-fork == 'false' &&
           steps.detect.outputs.connectors != '' &&
           github.event_name == 'pull_request'
-        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff670c4 # v2.0.0
+        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
         with:
           github_token: ${{ github.token }}
           add_markdown: |
