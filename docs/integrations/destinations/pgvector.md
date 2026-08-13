@@ -198,6 +198,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.12 | 2026-08-13 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.1.11 | 2026-07-02 | [81384](https://github.com/airbytehq/airbyte/pull/81384) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.1.10 | 2026-07-02 | [81395](https://github.com/airbytehq/airbyte/pull/81395) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
 | 0.1.9 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
