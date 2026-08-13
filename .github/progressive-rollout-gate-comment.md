@@ -11,6 +11,8 @@
 
 - Rollout version: `{{ .rollout_docker_image_tag }}`
 - Rollout state: `{{ .rollout_state }}`
+- Rollout last updated by: `{{ .rollout_updated_by }}`
+- [Open Connector Rollout Manager in Retool]({{ .retool_url }}) to clean up or close out this rollout if appropriate.
 
 ### Version on `master` Branch: `{{ .master_version }}`
 
@@ -36,15 +38,22 @@ No new connector version should be released, and the active rollout should conti
 
 </details>
 
-<details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
+<details><summary>If the connector version increments to a higher `-rc` version...</summary>
 
-The merged PR may publish the GA version and make it default for eligible non-pinned actors. The existing rollout is not stopped immediately by the merge, but the rollout worker can later cancel it as superseded when finalizing.
+After this PR is merged, the new RC will be published and registered, replacing the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector without unpinning actors.
+
+After merging, you still need to start the new rollout. During start, pinned actors from the previous rollout can be moved to the new RC.
 
 </details>
 
-<details><summary>If the connector version increments to a higher `-rc` version...</summary>
+<details><summary>If the connector version changes from RC to non-RC (GA) version...</summary>
 
-The merged PR may publish a new release candidate and replace the active RC marker. The previous incomplete rollout is canceled without unpinning, and a new rollout is created for the subsequent RC version.
+You should not merge the PR unless/until the RC has been finalized as canceled. See above `Rollout state` for detected status.
+
+> [!Warning]
+> This PR should not be merged if the RC rollout is still active. First finalize the active rollout as successful or cancel it in [Connector Rollout Manager]({{ .retool_url }}).
+
+When you finalize an RC rollout as successful, the platform triggers a promotion workflow that strips the `-rc` suffix, removes stable-version `registryOverrides`, disables progressive rollout, force-merges that promotion, and unpins actors.
 
 </details>
 

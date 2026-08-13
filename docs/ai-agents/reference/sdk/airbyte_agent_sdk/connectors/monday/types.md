@@ -3045,29 +3045,8 @@ Classes
     `email: Any`
     :   User's email address
 
-    `enabled: Any`
-    :   Whether the user account is enabled
-
     `id: Any`
     :   Unique user identifier
-
-    `is_admin: Any`
-    :   Whether the user is an admin
-
-    `is_guest: Any`
-    :   Whether the user is a guest
-
-    `is_pending: Any`
-    :   Whether the user is pending
-
-    `is_verified: Any`
-    :   Whether the user is verified
-
-    `is_view_only: Any`
-    :   Whether the user is view-only
-
-    `join_date: Any`
-    :   When the user joined
 
     `location: Any`
     :   User's location
@@ -3081,21 +3060,6 @@ Classes
     `phone: Any`
     :   User's phone number
 
-    `photo_original: Any`
-    :   URL to original size photo
-
-    `photo_small: Any`
-    :   URL to small photo
-
-    `photo_thumb: Any`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: Any`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: Any`
-    :   URL to tiny photo
-
     `time_zone_identifier: Any`
     :   User's timezone identifier
 
@@ -3106,7 +3070,7 @@ Classes
     :   User's Monday.com profile URL
 
     `utc_hours_diff: Any`
-    :   UTC hours difference for the user's timezone
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="UsersContainsCondition"></a>
 
@@ -3237,29 +3201,8 @@ Classes
     `email: list[str]`
     :   User's email address
 
-    `enabled: list[bool]`
-    :   Whether the user account is enabled
-
     `id: list[str]`
     :   Unique user identifier
-
-    `is_admin: list[bool]`
-    :   Whether the user is an admin
-
-    `is_guest: list[bool]`
-    :   Whether the user is a guest
-
-    `is_pending: list[bool]`
-    :   Whether the user is pending
-
-    `is_verified: list[bool]`
-    :   Whether the user is verified
-
-    `is_view_only: list[bool]`
-    :   Whether the user is view-only
-
-    `join_date: list[str]`
-    :   When the user joined
 
     `location: list[str]`
     :   User's location
@@ -3273,21 +3216,6 @@ Classes
     `phone: list[str]`
     :   User's phone number
 
-    `photo_original: list[str]`
-    :   URL to original size photo
-
-    `photo_small: list[str]`
-    :   URL to small photo
-
-    `photo_thumb: list[str]`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: list[str]`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: list[str]`
-    :   URL to tiny photo
-
     `time_zone_identifier: list[str]`
     :   User's timezone identifier
 
@@ -3297,8 +3225,8 @@ Classes
     `url: list[str]`
     :   User's Monday.com profile URL
 
-    `utc_hours_diff: list[int]`
-    :   UTC hours difference for the user's timezone
+    `utc_hours_diff: list[float]`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="UsersKeywordCondition"></a>
 
@@ -3336,6 +3264,14 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
 
 <a id="UsersLtCondition"></a>
 
@@ -3446,29 +3382,8 @@ Classes
     `email: str | None`
     :   User's email address
 
-    `enabled: bool | None`
-    :   Whether the user account is enabled
-
     `id: str | None`
     :   Unique user identifier
-
-    `is_admin: bool | None`
-    :   Whether the user is an admin
-
-    `is_guest: bool | None`
-    :   Whether the user is a guest
-
-    `is_pending: bool | None`
-    :   Whether the user is pending
-
-    `is_verified: bool | None`
-    :   Whether the user is verified
-
-    `is_view_only: bool | None`
-    :   Whether the user is view-only
-
-    `join_date: str | None`
-    :   When the user joined
 
     `location: str | None`
     :   User's location
@@ -3482,21 +3397,6 @@ Classes
     `phone: str | None`
     :   User's phone number
 
-    `photo_original: str | None`
-    :   URL to original size photo
-
-    `photo_small: str | None`
-    :   URL to small photo
-
-    `photo_thumb: str | None`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: str | None`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: str | None`
-    :   URL to tiny photo
-
     `time_zone_identifier: str | None`
     :   User's timezone identifier
 
@@ -3506,8 +3406,8 @@ Classes
     `url: str | None`
     :   User's Monday.com profile URL
 
-    `utc_hours_diff: int | None`
-    :   UTC hours difference for the user's timezone
+    `utc_hours_diff: float | None`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="UsersSearchQuery"></a>
 
@@ -3549,29 +3449,8 @@ Classes
     `email: Literal['asc', 'desc']`
     :   User's email address
 
-    `enabled: Literal['asc', 'desc']`
-    :   Whether the user account is enabled
-
     `id: Literal['asc', 'desc']`
     :   Unique user identifier
-
-    `is_admin: Literal['asc', 'desc']`
-    :   Whether the user is an admin
-
-    `is_guest: Literal['asc', 'desc']`
-    :   Whether the user is a guest
-
-    `is_pending: Literal['asc', 'desc']`
-    :   Whether the user is pending
-
-    `is_verified: Literal['asc', 'desc']`
-    :   Whether the user is verified
-
-    `is_view_only: Literal['asc', 'desc']`
-    :   Whether the user is view-only
-
-    `join_date: Literal['asc', 'desc']`
-    :   When the user joined
 
     `location: Literal['asc', 'desc']`
     :   User's location
@@ -3585,21 +3464,6 @@ Classes
     `phone: Literal['asc', 'desc']`
     :   User's phone number
 
-    `photo_original: Literal['asc', 'desc']`
-    :   URL to original size photo
-
-    `photo_small: Literal['asc', 'desc']`
-    :   URL to small photo
-
-    `photo_thumb: Literal['asc', 'desc']`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: Literal['asc', 'desc']`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: Literal['asc', 'desc']`
-    :   URL to tiny photo
-
     `time_zone_identifier: Literal['asc', 'desc']`
     :   User's timezone identifier
 
@@ -3610,7 +3474,7 @@ Classes
     :   User's Monday.com profile URL
 
     `utc_hours_diff: Literal['asc', 'desc']`
-    :   UTC hours difference for the user's timezone
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="UsersStringFilter"></a>
 
@@ -3635,29 +3499,8 @@ Classes
     `email: str`
     :   User's email address
 
-    `enabled: str`
-    :   Whether the user account is enabled
-
     `id: str`
     :   Unique user identifier
-
-    `is_admin: str`
-    :   Whether the user is an admin
-
-    `is_guest: str`
-    :   Whether the user is a guest
-
-    `is_pending: str`
-    :   Whether the user is pending
-
-    `is_verified: str`
-    :   Whether the user is verified
-
-    `is_view_only: str`
-    :   Whether the user is view-only
-
-    `join_date: str`
-    :   When the user joined
 
     `location: str`
     :   User's location
@@ -3671,21 +3514,6 @@ Classes
     `phone: str`
     :   User's phone number
 
-    `photo_original: str`
-    :   URL to original size photo
-
-    `photo_small: str`
-    :   URL to small photo
-
-    `photo_thumb: str`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: str`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: str`
-    :   URL to tiny photo
-
     `time_zone_identifier: str`
     :   User's timezone identifier
 
@@ -3696,7 +3524,7 @@ Classes
     :   User's Monday.com profile URL
 
     `utc_hours_diff: str`
-    :   UTC hours difference for the user's timezone
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="WorkspacesAndCondition"></a>
 

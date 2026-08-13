@@ -28,6 +28,17 @@ The Clickup-Api connector supports the following entities and actions.
 
 View the details of the authenticated user's ClickUp account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "user",
+  "action": "get"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -71,6 +82,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### User Context Store Search
 
 Search and filter user records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "user",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -134,6 +165,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the workspaces (teams) available to the authenticated user
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -173,6 +215,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Teams Context Store Search
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -236,6 +298,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the spaces available in a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "spaces",
+  "action": "list",
+  "params": {
+    "team_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -292,6 +368,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single space by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "spaces",
+  "action": "get",
+  "params": {
+    "space_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -347,6 +437,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Spaces Context Store Search
 
 Search and filter spaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "spaces",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -412,6 +522,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the folders in a space
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "folders",
+  "action": "list",
+  "params": {
+    "space_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -470,6 +594,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single folder by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "folders",
+  "action": "get",
+  "params": {
+    "folder_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -527,6 +665,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Folders Context Store Search
 
 Search and filter folders records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "folders",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -594,6 +752,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the lists in a folder
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "lists",
+  "action": "list",
+  "params": {
+    "folder_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -658,6 +830,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single list by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "lists",
+  "action": "get",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -721,6 +907,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "lists",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -793,6 +999,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tasks List
 
 Get the tasks in a list
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "tasks",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -887,6 +1107,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single task by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "tasks",
+  "action": "get",
+  "params": {
+    "task_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -977,6 +1211,20 @@ View the tasks that meet specific criteria from a workspace. Supports free-text 
 and structured filters including status, assignee, tags, priority, and date ranges.
 Responses are limited to 100 tasks per page.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "tasks",
+  "action": "api_search",
+  "params": {
+    "team_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1086,6 +1334,26 @@ Operators: = (contains), == (exact), \<, \<=, \>, \>=, !=, !==, IS NULL, IS NOT 
 
 Search and filter tasks records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "tasks",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1162,6 +1430,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the comments on a task
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "comments",
+  "action": "list",
+  "params": {
+    "task_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1216,6 +1498,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Create
 
 Create a comment on a task
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "comments",
+  "action": "create",
+  "params": {
+    "comment_text": "<str>",
+    "assignee": 0,
+    "notify_all": true,
+    "task_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1276,6 +1575,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get threaded replies on a comment
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "comments",
+  "action": "get",
+  "params": {
+    "comment_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1331,6 +1644,23 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Update an existing comment
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "comments",
+  "action": "update",
+  "params": {
+    "comment_text": "<str>",
+    "assignee": 0,
+    "resolved": true,
+    "comment_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1374,6 +1704,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Comments Context Store Search
 
 Search and filter comments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "comments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1441,6 +1791,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the goals in a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "goals",
+  "action": "list",
+  "params": {
+    "team_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1506,6 +1870,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single goal by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "goals",
+  "action": "get",
+  "params": {
+    "goal_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1570,6 +1948,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Goals Context Store Search
 
 Search and filter goals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "goals",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1649,6 +2047,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the workspace-level (Everything level) views
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "views",
+  "action": "list",
+  "params": {
+    "team_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1714,6 +2126,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Views Get
 
 Get a single view by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "views",
+  "action": "get",
+  "params": {
+    "view_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1782,6 +2208,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### View Tasks List
 
 Get tasks matching a view's pre-configured filters — useful as a secondary search mechanism
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "view_tasks",
+  "action": "list",
+  "params": {
+    "view_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1878,6 +2318,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get time entries within a date range for a workspace
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "time_tracking",
+  "action": "list",
+  "params": {
+    "team_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1938,6 +2392,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a single time entry by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "time_tracking",
+  "action": "get",
+  "params": {
+    "team_id": "<str>",
+    "time_entry_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1997,6 +2466,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Time Tracking Context Store Search
 
 Search and filter time tracking records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "time_tracking",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "time": 0.0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2060,6 +2549,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get the members assigned to a task
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "members",
+  "action": "list",
+  "params": {
+    "task_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2113,6 +2616,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Docs List
 
 Search for docs in a workspace
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "docs",
+  "action": "list",
+  "params": {
+    "workspace_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2177,6 +2694,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Docs Get
 
 Fetch a single doc by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "clickup-api",
+  "entity": "docs",
+  "action": "get",
+  "params": {
+    "workspace_id": "<str>",
+    "doc_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

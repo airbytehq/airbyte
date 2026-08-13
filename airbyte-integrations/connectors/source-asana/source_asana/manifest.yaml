@@ -2684,17 +2684,7 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         scopes:
-          - scope: "attachments:read"
-          - scope: "custom_fields:read"
-          - scope: "portfolios:read"
-          - scope: "projects:read"
-          - scope: "stories:read"
-          - scope: "tags:read"
-          - scope: "tasks:read"
-          - scope: "team_memberships:read"
-          - scope: "teams:read"
-          - scope: "users:read"
-          - scope: "workspaces:read"
+          - scope: "default"
         consent_url: "https://app.asana.com/-/oauth_authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
         access_token_url: "https://app.asana.com/-/oauth_token"
         access_token_headers:

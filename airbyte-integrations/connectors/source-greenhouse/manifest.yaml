@@ -18,8 +18,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: applications
+          url: https://harvest.greenhouse.io/v1/applications
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -36,10 +38,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -77,8 +75,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: applications/{{ stream_partition.application_id }}/demographics/answers
+          url: https://harvest.greenhouse.io/v1/applications/{{ stream_partition.application_id }}/demographics/answers
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -95,10 +95,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -145,8 +141,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: applications/{{ stream_partition.application_id }}/scheduled_interviews
+          url: https://harvest.greenhouse.io/v1/applications/{{ stream_partition.application_id }}/scheduled_interviews
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -163,10 +161,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -210,8 +204,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: candidates
+          url: https://harvest.greenhouse.io/v1/candidates
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -228,10 +224,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -266,8 +258,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: close_reasons
+          url: https://harvest.greenhouse.io/v1/close_reasons
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -284,10 +278,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -308,8 +298,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: custom_fields
+          url: https://harvest.greenhouse.io/v1/custom_fields
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -326,10 +318,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -350,8 +338,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: degrees
+          url: https://harvest.greenhouse.io/v1/degrees
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -368,10 +358,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -392,8 +378,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/answers
+          url: https://harvest.greenhouse.io/v1/demographics/answers
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -410,10 +398,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -448,8 +432,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/answer_options
+          url: https://harvest.greenhouse.io/v1/demographics/answer_options
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -466,10 +452,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -490,8 +472,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/questions
+          url: https://harvest.greenhouse.io/v1/demographics/questions
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -508,10 +492,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -532,8 +512,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/questions/{{ stream_partition.parent_id }}/answer_options
+          url: https://harvest.greenhouse.io/v1/demographics/questions/{{ stream_partition.parent_id }}/answer_options
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -550,10 +532,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -582,8 +560,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/question_sets
+          url: https://harvest.greenhouse.io/v1/demographics/question_sets
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -600,10 +580,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -624,8 +600,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: demographics/question_sets/{{ stream_partition.parent_id }}/questions
+          url: https://harvest.greenhouse.io/v1/demographics/question_sets/{{ stream_partition.parent_id }}/questions
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -642,10 +620,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -674,8 +648,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: departments
+          url: https://harvest.greenhouse.io/v1/departments
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -692,10 +668,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -716,8 +688,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs
+          url: https://harvest.greenhouse.io/v1/jobs
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -734,10 +708,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -772,8 +742,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs/{{ stream_partition.parent_id }}/openings
+          url: https://harvest.greenhouse.io/v1/jobs/{{ stream_partition.parent_id }}/openings
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -790,10 +762,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -822,8 +790,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: scheduled_interviews
+          url: https://harvest.greenhouse.io/v1/scheduled_interviews
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -840,10 +810,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -878,8 +844,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: job_posts
+          url: https://harvest.greenhouse.io/v1/job_posts
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -896,10 +864,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -934,8 +898,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: job_stages
+          url: https://harvest.greenhouse.io/v1/job_stages
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -952,10 +918,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -993,8 +955,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs/{{ stream_partition.job_id }}/stages
+          url: https://harvest.greenhouse.io/v1/jobs/{{ stream_partition.job_id }}/stages
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1011,10 +975,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1058,8 +1018,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: offers
+          url: https://harvest.greenhouse.io/v1/offers
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1076,10 +1038,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1114,8 +1072,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: rejection_reasons
+          url: https://harvest.greenhouse.io/v1/rejection_reasons
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1132,10 +1092,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1156,8 +1112,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: scorecards
+          url: https://harvest.greenhouse.io/v1/scorecards
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1174,10 +1132,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1212,8 +1166,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: sources
+          url: https://harvest.greenhouse.io/v1/sources
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1230,10 +1186,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1254,8 +1206,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: users
+          url: https://harvest.greenhouse.io/v1/users
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1272,10 +1226,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1309,7 +1259,7 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: candidates/{{ stream_partition.parent_id }}/activity_feed
+          url: https://harvest.greenhouse.io/v1/candidates/{{ stream_partition.parent_id }}/activity_feed
           http_method: GET
           error_handler:
             type: DefaultErrorHandler
@@ -1346,7 +1296,7 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: jobs/{{ stream_partition.parent_id }}/approval_flows
+          url: https://harvest.greenhouse.io/v1/jobs/{{ stream_partition.parent_id }}/approval_flows
           http_method: GET
           error_handler:
             type: DefaultErrorHandler
@@ -1385,7 +1335,7 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: disciplines
+          url: https://harvest.greenhouse.io/v1/disciplines
           http_method: GET
           error_handler:
             type: DefaultErrorHandler
@@ -1416,7 +1366,7 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: schools
+          url: https://harvest.greenhouse.io/v1/schools
           http_method: GET
           error_handler:
             type: DefaultErrorHandler
@@ -1448,8 +1398,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: eeoc
+          url: https://harvest.greenhouse.io/v1/eeoc
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1466,10 +1418,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1504,8 +1452,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: email_templates
+          url: https://harvest.greenhouse.io/v1/email_templates
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1522,10 +1472,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1560,8 +1506,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: offices
+          url: https://harvest.greenhouse.io/v1/offices
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1578,10 +1526,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1602,8 +1546,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: prospect_pools
+          url: https://harvest.greenhouse.io/v1/prospect_pools
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1620,10 +1566,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1643,7 +1585,7 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: tags/candidate
+          url: https://harvest.greenhouse.io/v1/tags/candidate
           http_method: GET
           error_handler:
             type: DefaultErrorHandler
@@ -1675,8 +1617,10 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: user_roles
+          url: https://harvest.greenhouse.io/v1/user_roles
           http_method: GET
+          request_parameters:
+            per_page: "{{ 100 if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -1693,10 +1637,6 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -1716,7 +1656,7 @@ definitions:
         primary_key: "{{ options['primary_key'] }}"
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/{{ stream_partition.parent_id }}/permissions/jobs
+          url: https://harvest.greenhouse.io/v1/users/{{ stream_partition.parent_id }}/permissions/jobs
           http_method: GET
           error_handler:
             type: DefaultErrorHandler
@@ -1749,7 +1689,6 @@ definitions:
           $ref: "#/schemas/user_permissions"
   base_requester:
     type: HttpRequester
-    url_base: https://harvest.greenhouse.io/v1/
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
@@ -1792,18 +1731,22 @@ streams:
   - $ref: "#/definitions/streams/user_roles"
   - $ref: "#/definitions/streams/user_permissions"
 
-# Greenhouse Harvest API documented rate limit (single tier — Path A):
-# - 50 requests per 10 seconds (5 req/sec) for all accounts.
-# - Source: https://developers.greenhouse.io/harvest.html#throttling
-#
-# Starting concurrency followed the connector concurrency tuning playbook:
-# floor(5 / 4) = 1 ≤ 2 triggered the low-rate-limit special case →
-# starting_concurrency = 4, step = 1. Empirical tuning adjusts by 1
-# against the documented 5 req/sec ceiling.
+# Phase 1 retains the Harvest v1 ceiling of 50 requests per 10 seconds.
+# The v1 documentation retires on 2026-08-31; Phase 2 retunes against
+# https://harvestdocs.greenhouse.io/docs/api-rate-limiting.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
-  max_concurrency: 16
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 8
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT10S
+      matchers: []
 
 spec:
   type: Spec
@@ -1822,6 +1765,22 @@ spec:
         title: API Key
         airbyte_secret: true
         order: 0
+      num_workers:
+        type: integer
+        title: Number of concurrent threads
+        description: >-
+          The number of worker threads to use for syncing. The default is tuned
+          against Greenhouse's documented Harvest API rate limit.
+          Increase this only if your Greenhouse account can support higher API
+          usage, or lower it if you see rate-limit errors.
+        minimum: 1
+        maximum: 8
+        default: 2
+        examples:
+          - 1
+          - 2
+          - 3
+        order: 1
     additionalProperties: true
 
 metadata:

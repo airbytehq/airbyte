@@ -23,7 +23,7 @@ For Airbyte Open Source, set up your application to get a **Client ID**, **Clien
 
 :::note
 
-The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
+Microsoft refresh tokens are valid for 90 days and rotate each time they're used. Airbyte saves the rotated refresh token whenever it refreshes the access token, so a connection that syncs at least once every 90 days stays authenticated without re-authorizing. If a connection doesn't sync for more than 90 days, the refresh token expires and you must repeat the authorization process to get a new one. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
 
 :::
 
@@ -283,6 +283,10 @@ For example, if you select a report with daily aggregation, the report will cont
 
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Report aggregated using an hourly window.
 
+## Upgrading
+
+For information on breaking changes and migration steps, see the [Bing Ads Migration Guide](./bing-ads-migrations.md).
+
 ## Limitations and troubleshooting
 
 <details>
@@ -306,6 +310,10 @@ Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign 
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -313,6 +321,17 @@ Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign 
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.7 | 2026-08-11 | [83859](https://github.com/airbytehq/airbyte/pull/83859) | Update dependencies |
+| 3.0.6 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 3.0.5 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 3.0.3 — 3.0.4 is built on SDM 7.23.7, which breaks bundled custom components |
+| 3.0.4 | 2026-07-28 | [82806](https://github.com/airbytehq/airbyte/pull/82806) | Update dependencies |
+| 3.0.3 | 2026-07-21 | [82339](https://github.com/airbytehq/airbyte/pull/82339) | Update dependencies |
+| 3.0.2 | 2026-07-14 | [77143](https://github.com/airbytehq/airbyte/pull/77143) | Update dependencies |
+| 3.0.1 | 2026-07-08 | [79625](https://github.com/airbytehq/airbyte/pull/79625) | Add refresh_token_updater to persist rotated Microsoft OAuth refresh tokens; remove non-standard OAuth refresh params |
+| 3.0.0 | 2026-05-12 | [78031](https://github.com/airbytehq/airbyte/pull/78031) | Breaking: include every attribute (dimension) column in the primary keys of all report streams to prevent silent row collapse at the destination during incremental append+dedup. A stream reset is required for the affected report streams after upgrading. |
+| 2.23.17 | 2026-05-29 | [78518](https://github.com/airbytehq/airbyte/pull/78518) | Add num_workers config for user-adjustable concurrency |
+| 2.23.17-rc.2 | 2026-05-27 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Revert concurrency to 10, add num_workers config and HTTP API budget |
+| 2.23.17-rc.1 | 2026-05-26 | [78438](https://github.com/airbytehq/airbyte/pull/78438) | Enable progressive rollout for concurrency tuning |
 | 2.23.16 | 2026-04-21 | [76515](https://github.com/airbytehq/airbyte/pull/76515) | Update dependencies |
 | 2.23.15 | 2026-04-08 | [76165](https://github.com/airbytehq/airbyte/pull/76165) | Promote 2.23.15-rc.3 to GA — fixes SAS token expiry during report downloads |
 | 2.23.15-rc.3 | 2026-04-02 | [76053](https://github.com/airbytehq/airbyte/pull/76053) | Fix SAS token expiry during report downloads by re-polling for fresh URL before each download |

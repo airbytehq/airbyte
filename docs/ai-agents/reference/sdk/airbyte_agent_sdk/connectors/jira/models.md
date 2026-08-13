@@ -3002,33 +3002,6 @@ Classes
     `versioned_representations: dict[str, typing.Any]`
     :   The versions of each field on the issue
 
-<a id="JiraAuthConfig"></a>
-
-`JiraAuthConfig(**data: Any)`
-:   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `password: str`
-    :   Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens
-
-    `username: str`
-    :   Your Atlassian account email address
-
 <a id="JiraCheckResult"></a>
 
 `JiraCheckResult(**data: Any)`
@@ -3507,6 +3480,93 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.JiraExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="JiraJiraApiTokenAuthenticationAuthConfig"></a>
+
+`JiraJiraApiTokenAuthenticationAuthConfig(**data: Any)`
+:   Jira API Token Authentication - Authenticate using your Atlassian account email and API token
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `password: str`
+    :   Your Jira API token from https://id.atlassian.com/manage-profile/security/api-tokens
+
+    `username: str`
+    :   Your Atlassian account email address
+
+<a id="JiraOAuthCredentials"></a>
+
+`JiraOAuthCredentials(**data: Any)`
+:   Jira OAuth App Credentials - Provide your own Jira OAuth app credentials to override the default Airbyte-managed ones.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `client_id: str`
+    :   Your Jira OAuth app's client ID
+
+    `client_secret: str`
+    :   Your Jira OAuth app's client secret
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="JiraOauth20AuthenticationAuthConfig"></a>
+
+`JiraOauth20AuthenticationAuthConfig(**data: Any)`
+:   OAuth 2.0 Authentication
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `access_token: str | None`
+    :   Your Jira Cloud OAuth 2.0 access token
+
+    `client_id: str | None`
+    :   Your Jira OAuth App Client ID from the Atlassian Developer Console
+
+    `client_secret: str | None`
+    :   Your Jira OAuth App Client Secret from the Atlassian Developer Console
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `refresh_token: str`
+    :   Your Jira Cloud OAuth 2.0 refresh token (requires offline_access scope)
 
 <a id="Project"></a>
 

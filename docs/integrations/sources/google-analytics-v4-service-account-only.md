@@ -2,6 +2,10 @@
 
 Google has discontinued Universal Analytics in favor of Google Analytics 4. Airbyte has archived this connector and the Reporting API v4 is no longer available. Use the [Google Analytics 4 (GA4) connector](https://docs.airbyte.com/integrations/sources/google-analytics-data-api) instead to sync data from Google Analytics 4.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

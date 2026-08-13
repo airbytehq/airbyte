@@ -27,6 +27,17 @@ The Mailchimp connector supports the following entities and actions.
 
 Get all campaigns in an account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "campaigns",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -103,6 +114,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a specific campaign
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "campaigns",
+  "action": "get",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -166,6 +191,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Campaigns Context Store Search
 
 Search and filter campaigns records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "campaigns",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ab_split_opts": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -269,6 +314,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about all lists in the account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "lists",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -344,6 +400,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a specific list in your Mailchimp account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "lists",
+  "action": "get",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -409,6 +479,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Lists Context Store Search
 
 Search and filter lists records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "lists",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "beamer_address": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -510,6 +600,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about members in a specific Mailchimp list
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "list_members",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -604,6 +708,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a specific list member
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "list_members",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "subscriber_hash": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -679,6 +798,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### List Members Context Store Search
 
 Search and filter list members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "list_members",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -792,6 +931,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get campaign reports
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "reports",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -865,6 +1015,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get report details for a specific sent campaign
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "reports",
+  "action": "get",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -932,6 +1096,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Reports Context Store Search
 
 Search and filter reports records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "reports",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "ab_split": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1043,6 +1227,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of member's subscriber activity in a specific campaign
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "email_activity",
+  "action": "list",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1103,6 +1301,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Email Activity Context Store Search
 
 Search and filter email activity records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "email_activity",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "action": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1182,6 +1400,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a summary of an account's classic automations
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "automations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1243,6 +1472,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Automations Context Store Search
 
 Search and filter automations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "automations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1320,6 +1569,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search for tags on a list by name
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "tags",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1374,6 +1637,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags Context Store Search
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1437,6 +1720,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a list's interest categories
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interest_categories",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1496,6 +1793,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a specific interest category
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interest_categories",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "interest_category_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1549,6 +1861,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Interest Categories Context Store Search
 
 Search and filter interest categories records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interest_categories",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "list_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1618,6 +1950,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get a list of this category's interests
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interests",
+  "action": "list",
+  "params": {
+    "list_id": "<str>",
+    "interest_category_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1681,6 +2028,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get interests or group names for a specific category
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interests",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "interest_category_id": "<str>",
+    "interest_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1738,6 +2101,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Interests Context Store Search
 
 Search and filter interests records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "interests",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "category_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1809,6 +2192,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about all available segments for a specific list
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segments",
+  "action": "list",
+  "params": {
+    "list_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1876,6 +2273,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about a specific segment
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segments",
+  "action": "get",
+  "params": {
+    "list_id": "<str>",
+    "segment_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1932,6 +2344,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Segments Context Store Search
 
 Search and filter segments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2006,6 +2438,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Segment Members List
 
 Get information about members in a saved segment
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segment_members",
+  "action": "list",
+  "params": {
+    "list_id": "<str>",
+    "segment_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2082,6 +2529,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Segment Members Context Store Search
 
 Search and filter segment members records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "segment_members",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -2179,6 +2646,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Get information about members who have unsubscribed from a specific campaign
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "unsubscribes",
+  "action": "list",
+  "params": {
+    "campaign_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -2241,6 +2722,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Unsubscribes Context Store Search
 
 Search and filter unsubscribes records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "mailchimp",
+  "entity": "unsubscribes",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "email_id": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

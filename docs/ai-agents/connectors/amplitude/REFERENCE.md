@@ -20,6 +20,17 @@ The Amplitude connector supports the following entities and actions.
 
 Returns all chart annotations for the project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "annotations",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -58,6 +69,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Annotations Get
 
 Retrieves a single chart annotation by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "annotations",
+  "action": "get",
+  "params": {
+    "annotation_id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -111,6 +136,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Annotations Context Store Search
 
 Search and filter annotations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "annotations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "date": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -178,6 +223,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all cohorts for the project.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "cohorts",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -243,6 +299,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Cohorts Get
 
 Retrieves a single cohort by ID.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "cohorts",
+  "action": "get",
+  "params": {
+    "cohort_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -320,6 +390,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Cohorts Context Store Search
 
 Search and filter cohorts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "cohorts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "appId": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -432,6 +522,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns the list of event types with the current week's totals, unique users, and percentage of DAU.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "events_list",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -481,6 +582,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Events List Context Store Search
 
 Search and filter events list records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "events_list",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "autohidden": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -569,6 +690,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns the number of active or new users for each day in the specified date range.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "active_users",
+  "action": "list",
+  "params": {
+    "start": "<str>",
+    "end": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -625,6 +761,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Active Users Context Store Search
 
 Search and filter active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "date": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -689,6 +845,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Returns the average session length (in seconds) for each day in the specified date range.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "average_session_length",
+  "action": "list",
+  "params": {
+    "start": "<str>",
+    "end": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -741,6 +912,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Average Session Length Context Store Search
 
 Search and filter average session length records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "amplitude",
+  "entity": "average_session_length",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "date": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
