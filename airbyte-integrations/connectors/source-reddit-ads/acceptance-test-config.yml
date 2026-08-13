@@ -19,14 +19,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: ad
-            bypass_reason: "Test account has no ads yet"
-          - name: campaign
-            bypass_reason: "Test account has no campaigns yet"
           - name: campaign_report
-            bypass_reason: "Test account has no campaigns yet, so no report rows"
+            bypass_reason: "Test account campaign is paused with no delivery, so the report returns no metric rows"
   incremental:
-    bypass_reason: "Test account has no records yet; enable once test data is seeded"
+    bypass_reason: "Test account has minimal data; enable once more test data is seeded"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
