@@ -4,16 +4,20 @@
 
 package io.airbyte.integrations.source.snowflake
 
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import net.snowflake.client.api.resultset.SnowflakeType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
 class SnowflakeFieldTypesTest {
@@ -101,6 +105,20 @@ class SnowflakeFieldTypesTest {
         val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
 
         assertNull(result)
+    }
+
+    @Test
+    fun `SnowflakeLocalDateTimeAccessor binds the parameter explicitly as TIMESTAMP_NTZ`() {
+        val stmt = mock(PreparedStatement::class.java)
+
+        SnowflakeLocalDateTimeAccessor.set(stmt, 1, LocalDateTime.of(2025, 11, 6, 22, 30, 46))
+
+        verify(stmt)
+            .setObject(
+                eq(1),
+                eq(Timestamp.valueOf(LocalDateTime.of(2025, 11, 6, 22, 30, 46))),
+                eq(SnowflakeType.EXTRA_TYPES_TIMESTAMP_NTZ),
+            )
     }
 
     // --- SnowflakeOffsetDateTimeFieldType tests ---
