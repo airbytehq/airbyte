@@ -158,8 +158,8 @@ jobs:
           PR_NUMBER: ${{ steps.context.outputs.pr-number }}
         run: |
           set -euo pipefail
-          [[ "$(wc -c < "$BODY_PATH")" != 1 ]] || : > "$BODY_PATH"
-          [[ ! -s "$BODY_PATH" ]] || printf '\n\n'
+          [[ -n "$(tr -d '[:space:]' < "$BODY_PATH")" ]] || : > "$BODY_PATH"
+          [[ ! -s "$BODY_PATH" ]] || printf '\n\n' >> "$BODY_PATH"
           printf '> [!NOTE]\n> Autopilot progressive rollout is enabled for connector(s) modified in this PR.\n\n- [ ] :black_square_button: %s\n' \
             "$RELEASE_IMMEDIATELY_PHRASE" >> "$BODY_PATH"
           jq -n --rawfile body "$BODY_PATH" '{body: $body}' |
