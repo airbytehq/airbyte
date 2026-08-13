@@ -23,10 +23,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    outputs:
-      has-connectors: ${{ steps.detect.outputs.has-connectors }}
-      callout-exists: ${{ steps.bypass-state.outputs.exists }}
-      is-fork: ${{ steps.context.outputs.is-fork }}
     steps:
       - name: Resolve PR context from pull request event
         id: context
@@ -97,6 +93,10 @@ jobs:
           has_connectors='false'
           [[ -n "$connectors" ]] && has_connectors='true'
           echo "has-connectors=$has_connectors" | tee -a "$GITHUB_OUTPUT"
+    outputs:
+      has-connectors: ${{ steps.detect.outputs.has-connectors }}
+      callout-exists: ${{ steps.bypass-state.outputs.exists }}
+      is-fork: ${{ steps.context.outputs.is-fork }}
 
   add-checkbox:
     name: Add release immediately checkbox
