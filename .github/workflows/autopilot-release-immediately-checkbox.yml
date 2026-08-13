@@ -134,9 +134,9 @@ jobs:
           add_markdown: |
             ---
 
-            > [!NOTE]
-            > **Optional Progressive Rollout Bypass**
-            >
-            > Autopilot progressive rollout is enabled for connector(s) modified in this PR. Check the box below to bypass normal rollout safety processes.
+            **⚡ Optional Progressive Rollout Bypass**
+
+            Autopilot progressive rollout is enabled for connector(s) modified in this PR.
+            Check the box below **_only_** if you want to bypass normal rollout safety processes.
 
             - [ ] ⚡ Release immediately (bypasses automatic progressive rollout)
