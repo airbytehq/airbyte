@@ -4,21 +4,22 @@
 
 package io.airbyte.integrations.destination.postgres.config
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.createTunnelSession
-import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFactory
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
@@ -168,7 +169,7 @@ class PostgresBeanFactory {
         return when (sslMode) {
             is SslModeVerifyCa -> {
                 val sslModeJson =
-                    Jsons.jsonNode(
+                    Jsons.valueToTree<JsonNode>(
                         mapOf(
                             PostgresSslConnectionUtils.PARAM_MODE to
                                 PostgresSslConnectionUtils.VERIFY_CA,
@@ -182,7 +183,7 @@ class PostgresBeanFactory {
             }
             is SslModeVerifyFull -> {
                 val sslModeJson =
-                    Jsons.jsonNode(
+                    Jsons.valueToTree<JsonNode>(
                         mapOf(
                             PostgresSslConnectionUtils.PARAM_MODE to
                                 PostgresSslConnectionUtils.VERIFY_FULL,

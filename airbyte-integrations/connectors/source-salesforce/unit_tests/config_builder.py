@@ -23,6 +23,10 @@ class ConfigBuilder:
         self._config["stream_slice_step"] = stream_slice_step
         return self
 
+    def lookback_window(self, lookback_window: str) -> "ConfigBuilder":
+        self._config["lookback_window"] = lookback_window
+        return self
+
     def client_id(self, client_id: str) -> "ConfigBuilder":
         self._config["client_id"] = client_id
         return self
@@ -33,6 +37,10 @@ class ConfigBuilder:
 
     def refresh_token(self, refresh_token: str) -> "ConfigBuilder":
         self._config["refresh_token"] = refresh_token
+        return self
+
+    def preserve_na_values(self, preserve_na_values: bool) -> "ConfigBuilder":
+        self._config["preserve_na_values"] = preserve_na_values
         return self
 
     def build(self) -> Mapping[str, Any]:

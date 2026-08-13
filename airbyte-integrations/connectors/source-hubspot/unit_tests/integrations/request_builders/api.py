@@ -63,3 +63,17 @@ class PropertiesRequestBuilder(AbstractRequestBuilder):
 
     def build(self) -> HttpRequest:
         return HttpRequest(url=self.URL.format(resource=self._resource))
+
+
+class CrmSearchPropertiesRequestBuilder(AbstractRequestBuilder):
+    URL = "https://api.hubapi.com/crm/v3/properties/{resource}"
+
+    def __init__(self):
+        self._resource = None
+
+    def for_entity(self, entity):
+        self._resource = entity
+        return self
+
+    def build(self) -> HttpRequest:
+        return HttpRequest(url=self.URL.format(resource=self._resource))

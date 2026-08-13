@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessa
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .dataverse import convert_dataverse_type, do_request, get_auth
+from .dataverse import convert_dataverse_type, do_request, get_all_datetime_behaviors, get_auth
 from .streams import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStream
 
 
@@ -18,16 +18,32 @@ class SourceMicrosoftDataverse(AbstractSource):
         self.catalogs = None
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        response = do_request(config, "EntityDefinitions?$expand=Attributes")
+        response = do_request(
+            config,
+            "EntityDefinitions"
+            "?$select=LogicalName,EntitySetName,PrimaryIdAttribute,CanChangeTrackingBeEnabled,ChangeTrackingEnabled"
+            "&$expand=Attributes($select=LogicalName,AttributeType)",
+        )
         response_json = response.json()
+
+        entities_with_datetime = [
+            entity["LogicalName"]
+            for entity in response_json["value"]
+            if any(attr["AttributeType"] == "DateTime" for attr in entity["Attributes"])
+        ]
+        all_datetime_behaviors = get_all_datetime_behaviors(config, entities_with_datetime)
+
         streams = []
         for entity in response_json["value"]:
             schema = {"properties": {}}
+            datetime_behaviors = all_datetime_behaviors.get(entity["LogicalName"], {})
+
             for attribute in entity["Attributes"]:
                 dataverse_type = attribute["AttributeType"]
                 if dataverse_type == "Lookup":
                     attribute["LogicalName"] = "_" + attribute["LogicalName"] + "_value"
-                attribute_type = convert_dataverse_type(dataverse_type)
+                behavior = datetime_behaviors.get(attribute["LogicalName"])
+                attribute_type = convert_dataverse_type(dataverse_type, datetime_behavior=behavior)
 
                 if not attribute_type:
                     continue
@@ -81,7 +97,7 @@ class SourceMicrosoftDataverse(AbstractSource):
 
         streams = []
         for catalog in self.catalogs.streams:
-            response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')")
+            response = do_request(config, f"EntityDefinitions(LogicalName='{catalog.stream.name}')?$select=EntitySetName")
             response_json = response.json()
 
             args = {

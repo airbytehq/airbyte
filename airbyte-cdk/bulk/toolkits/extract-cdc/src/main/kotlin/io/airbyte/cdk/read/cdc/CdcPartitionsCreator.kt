@@ -16,7 +16,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
 
 /** [PartitionsCreator] implementation for CDC with Debezium. */
-class CdcPartitionsCreator<T : Comparable<T>>(
+class CdcPartitionsCreator<T : PartiallyOrdered<T>>(
     val concurrencyResource: ConcurrencyResource,
     val resourceAcquirer: ResourceAcquirer,
     val feedBootstrap: GlobalFeedBootstrap,
@@ -105,6 +105,8 @@ class CdcPartitionsCreator<T : Comparable<T>>(
                 startingSchemaHistory = null
             }
         }
+        // Optional startup hook
+        creatorOps.runStartup(startingOffset)
         // Build and return PartitionReader instance, if applicable.
         val partitionReader =
             CdcPartitionReader(
@@ -125,14 +127,14 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             log.info { "Current offset is synthetic." }
             return listOf(partitionReader)
         }
-        if (upperBound <= lowerBound) {
+        if (lowerBound.isGreaterOrEqual(upperBound)) {
             // Handle completion due to reaching the WAL position upper bound.
             log.info {
                 "Current position '$lowerBound' equals or exceeds target position '$upperBound'."
             }
             return emptyList()
         }
-        if (lowerBoundInPreviousRound != null && lowerBound <= lowerBoundInPreviousRound) {
+        if (lowerBoundInPreviousRound.isGreaterOrEqual(lowerBound)) {
             // Handle completion due to stalling.
             log.info {
                 "Current position '$lowerBound' has not increased in the last round, " +

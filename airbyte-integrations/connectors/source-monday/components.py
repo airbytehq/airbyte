@@ -198,8 +198,14 @@ class MondayGraphqlRequester(HttpRequester):
 
         if object_name == "column_values":
             fields.remove("display_value")
+            if "linked_item_ids" in fields:
+                fields.remove("linked_item_ids")
             fields.extend(
-                ["... on MirrorValue{display_value}", "... on BoardRelationValue{display_value}", "... on DependencyValue{display_value}"]
+                [
+                    "... on MirrorValue{display_value}",
+                    "... on BoardRelationValue{display_value,linked_item_ids}",
+                    "... on DependencyValue{display_value,linked_item_ids}",
+                ]
             )
 
         fields = ",".join(fields)
@@ -298,7 +304,7 @@ class MondayGraphqlRequester(HttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         headers = super().get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        headers["API-Version"] = "2024-10"
+        headers["API-Version"] = "2026-01"
         return headers
 
     def get_request_body_json(  # type: ignore

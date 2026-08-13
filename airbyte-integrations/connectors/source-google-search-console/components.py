@@ -2,13 +2,47 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
+
+import requests
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+
+
+logger = logging.getLogger("airbyte")
+
+_LOAD_QUOTA_BACKOFF_SECONDS = 900.0
+
+
+@dataclass
+class LoadQuotaBackoffStrategy(BackoffStrategy):
+    """Returns a 15-minute backoff when the response indicates a load-based quota error.
+
+    Google Search Console distinguishes between per-second QPS quota and longer-term load
+    quota. Load quota recovery typically requires 10–15 minutes, so a longer backoff is
+    appropriate. For any other error, returns `None` to defer to the next backoff strategy
+    in the chain (e.g. the 60-second constant backoff used for QPS errors).
+    """
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            try:
+                message = response_or_exception.json().get("error", {}).get("message", "")
+            except (ValueError, AttributeError):
+                return None
+            if "load quota exceeded" in message.lower():
+                return _LOAD_QUOTA_BACKOFF_SECONDS
+        return None
 
 
 @dataclass
@@ -130,6 +164,35 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
             record[dimension] = record["keys"].pop(0)
 
         record.pop("keys")
+
+
+@dataclass
+class SanitizeNumericFields(RecordTransformation):
+    """
+    Ensures numeric metric fields are JSON-serializable by guarding against non-standard
+    Python numeric types (e.g., complex) that can cause serialization failures and deadlocks
+    in the concurrent read pipeline.
+
+    See: https://github.com/airbytehq/airbyte/issues/74883
+    """
+
+    NUMERIC_FIELDS = ("clicks", "impressions", "ctr", "position")
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        for field_name in self.NUMERIC_FIELDS:
+            value = record.get(field_name)
+            if value is not None and isinstance(value, complex):
+                logger.warning(
+                    "Complex value encountered for field '%s'. Using real component only.",
+                    field_name,
+                )
+                record[field_name] = value.real
 
 
 @dataclass

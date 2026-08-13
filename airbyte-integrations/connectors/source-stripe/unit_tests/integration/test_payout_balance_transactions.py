@@ -51,7 +51,7 @@ _EVENT_TYPES = [
 
 
 def _config() -> ConfigBuilder:
-    return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
+    return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET).with_slice_range_in_days(365)
 
 
 def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh) -> ConfiguredAirbyteCatalog:

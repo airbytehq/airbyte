@@ -3,13 +3,6 @@
 This page guides you through the process of setting up the [Databend](https://databend.rs/)
 destination connector.
 
-## Features
-
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-
 #### Output Schema
 
 Each stream will be output into its own table in Databend. Each table will contain 3 columns:
@@ -20,6 +13,16 @@ Each stream will be output into its own table in Databend. Each table will conta
   The column type in Databend is `TIMESTAMP`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in Databend is
   `VARVHAR`.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started (Airbyte Cloud)
 
@@ -64,6 +67,10 @@ You'll need the following information to configure the Databend destination:
 
 If your databend version >= v0.9.0 or later, you need to use databend-sqlalchemy version >= v0.1.0.
 And the [Databend Cloud](https://app.databend.com/) will only support databend version > 0.9.0.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
