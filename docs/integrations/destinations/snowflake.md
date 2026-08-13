@@ -118,10 +118,20 @@ commit;
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
-Note: Our integration automatically creates the necessary schemas in your Snowflake destination database.
+:::info
+Airbyte automatically creates the necessary schemas in your Snowflake destination database.
 To enable this, ensure the connection user has `CREATE SCHEMA` privileges on the target database.
 If you prefer to create schemas manually, that's supported—however, our connection user must have `OWNERSHIP` privileges on those schemas.
 This allows us to manage tables and other objects required for the integration to function properly.
+:::
+
+:::info Cost-saving tip
+Snowflake bills for compute on a per-second basis, meaning the warehouse resumes and incurs charges
+each time Airbyte loads data. To reduce costs, we recommend provisioning an X-Small warehouse with a
+one-minute auto-suspend timeout dedicated to Airbyte syncs. This is the smallest available compute
+tier and ensures the warehouse shuts down quickly after each load completes, minimizing idle compute
+charges. The script above already configures this (`warehouse_size = xsmall`, `auto_suspend = 60`).
+:::
 
 ### Step 2: Set up a data loading method
 
@@ -165,9 +175,18 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 override this with the **Airbyte Internal Table Dataset Name** setting) and a final table with typed columns. Contents in the raw table are _not_
 deduplicated.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to [Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+:::info
+By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated
+transient database for Airbyte. Using a transient database ensures all Airbyte-created tables are
+transient by default, which helps reduce the additional costs and storage space associated with
+[Fail-safe](https://docs.snowflake.com/en/user-guide/data-failsafe). However, transient tables
+cannot be recovered in case of operational or system failures.
+
+If you configure a custom **Airbyte Internal Table Dataset Name** (internal schema), ensure both the
+default schema and the internal schema reside in databases of the same nature (both transient or
+both permanent) to avoid inconsistent data protection behavior. For more information, refer to
+[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html).
+:::
 
 ### Raw Table schema
 
@@ -182,8 +201,10 @@ The raw table contains these fields:
 `_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
-**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
-could be subject to change in future versions.
+:::info
+Although the contents of the `_airbyte_data` are fairly stable, the schema of the raw table could
+be subject to change in future versions.
+:::
 
 ### Final Table schema
 
