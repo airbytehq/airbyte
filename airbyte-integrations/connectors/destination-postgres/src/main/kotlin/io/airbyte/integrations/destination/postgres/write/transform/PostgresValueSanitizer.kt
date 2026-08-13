@@ -16,12 +16,14 @@ private data class SanitizedValue(val value: AirbyteValue, val changed: Boolean)
 
 private fun sanitizePostgresValueWithChange(value: AirbyteValue): SanitizedValue =
     when (value) {
-        is StringValue ->
-            if ('\u0000' in value.value) {
-                SanitizedValue(StringValue(value.value.replace("\u0000", "")), true)
+        is StringValue -> {
+            val sanitizedValue = value.value.replace("\u0000", "")
+            if (sanitizedValue.length != value.value.length) {
+                SanitizedValue(StringValue(sanitizedValue), true)
             } else {
                 SanitizedValue(value, false)
             }
+        }
         is ArrayValue -> {
             var sanitizedValues: MutableList<AirbyteValue>? = null
             value.values.forEachIndexed { index, child ->
