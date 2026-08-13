@@ -364,7 +364,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+          filtering: '{{ {"modified_after": format_datetime(stream_interval.start_time, "%Y-%m-%d %H:%M:%S"), "secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) else {"modified_after": format_datetime(stream_interval.start_time, "%Y-%m-%d %H:%M:%S")}|string }}'
       record_selector:
         $ref: "#/definitions/record_selector"
         # This filter is needed because the API will at times return Smart+ Ad Records without a modify_time value.
