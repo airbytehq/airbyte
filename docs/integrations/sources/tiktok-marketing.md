@@ -171,6 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.16 | 2026-08-13 | [84347](https://github.com/airbytehq/airbyte/pull/84347) | Reduce per-sync request rate against TikTok's shared application rate limit |
 | 5.1.15 | 2026-08-13 | [84347](https://github.com/airbytehq/airbyte/pull/84347) | Include the ads cursor boundary in server-side modification-time filtering |
 | 5.1.14 | 2026-08-13 | [84345](https://github.com/airbytehq/airbyte/pull/84345) | Filter ads requests by modification time to reduce unnecessary API requests |
 | 5.1.13 | 2026-08-13 | [84293](https://github.com/airbytehq/airbyte/pull/84293) | Migrate legacy `report_granularity` configurations |

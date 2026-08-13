@@ -95,7 +95,7 @@ class TestAdsStream(TestCase):
         config = self.config()
         cursor = "2024-01-02T03:04:05Z"
         mock_advertisers_slices(http_mocker, config)
-        self.mock_ads(http_mocker, "2024-01-02 03:04:04")
+        self.mock_ads(http_mocker, "2024-01-02 02:59:05")
 
         output = read(
             source=get_source(config=config, state=self.state(cursor)),
@@ -131,7 +131,7 @@ class TestAdsStream(TestCase):
         config = self.config()
         cursor = "2024-01-02T03:04:05Z"
         mock_advertisers_slices(http_mocker, config)
-        self.mock_ads(http_mocker, "2024-01-02 03:04:04", modify_time="2024-01-02 03:04:05")
+        self.mock_ads(http_mocker, "2024-01-02 02:59:05", modify_time="2024-01-02 03:04:05")
 
         output = read(
             source=get_source(config=config, state=self.state(cursor)),

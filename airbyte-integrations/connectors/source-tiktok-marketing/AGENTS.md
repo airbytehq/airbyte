@@ -74,7 +74,9 @@ TikTok's API does not use standard HTTP 429 status codes for rate limiting. Inst
 **Why this matters:** Standard HTTP status code-based rate limit detection will not work with TikTok's
 API. If you modify the error handler, make sure the response body code checks remain intact. The error
 message also specifically warns about concurrent connections with the same credentials, as TikTok's
-rate limits are per-access-token.
+rate limits are per developer application and shared across all Airbyte Cloud customers. The
+`api_budget` `status_codes_for_ratelimit_hit` cannot see body code `40100`, so the static rate is what
+actually paces requests.
 
 ---
 

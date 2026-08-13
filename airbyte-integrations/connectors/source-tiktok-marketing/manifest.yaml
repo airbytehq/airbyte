@@ -21,7 +21,9 @@ definitions:
     http_method: GET
     error_handler:
       type: DefaultErrorHandler
-      max_retries: 9
+      # max_retries is shared across all filters below, so this also narrows retries for transient
+      # 50000/51041/51004 responses; nine 60-second retries consume shared quota during saturation.
+      max_retries: 3
       backoff_strategies:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 60
@@ -102,7 +104,11 @@ definitions:
 
   ads_incremental_sync:
     $ref: "#/definitions/semi_incremental_sync"
-    lookback_window: PT1S
+    # TikTok's `filtering.modified_after` is exclusive, so a lookback is required to re-read the
+    # boundary record. Five minutes also absorbs read-after-write lag between an ad being modified
+    # and that modification being visible to `/ad/get/`. Records older than the state cursor are
+    # dropped by the client-side incremental filter, so this widens the request window only.
+    lookback_window: PT5M
 
   single_id_partition_router:
     - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
@@ -420,7 +426,9 @@ definitions:
   # non-report streams keep the generic handler from the global requester.
   report_daily_error_handler:
     type: DefaultErrorHandler
-    max_retries: 9
+    # max_retries is shared across all filters below, so this also narrows retries for transient
+    # 50000/51041/51004 responses; nine 60-second retries consume shared quota during saturation.
+    max_retries: 3
     backoff_strategies:
       - type: ConstantBackoffStrategy
         backoff_time_in_seconds: 60
@@ -2212,7 +2220,9 @@ definitions:
         http_method: GET
         error_handler:
           type: DefaultErrorHandler
-          max_retries: 9
+          # max_retries is shared across all filters below, so this also narrows retries for transient
+          # 50000/51041/51004 responses; nine 60-second retries consume shared quota during saturation.
+          max_retries: 3
           backoff_strategies:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
@@ -2330,7 +2340,9 @@ definitions:
           date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d')} | string }}"
         error_handler:
           type: DefaultErrorHandler
-          max_retries: 9
+          # max_retries is shared across all filters below, so this also narrows retries for transient
+          # 50000/51041/51004 responses; nine 60-second retries consume shared quota during saturation.
+          max_retries: 3
           backoff_strategies:
             - type: ConstantBackoffStrategy
               backoff_time_in_seconds: 60
@@ -6174,12 +6186,15 @@ spec:
           - app_id
           - secret
 
-# Based on https://developers.tiktok.com/doc/tiktok-api-v2-rate-limit, the rate limiting for the API on all endpoint is 600 requests per minutes.
-# This means 10 requests per second. Assuming response time of 250 ms (there is very little based for this response time though) and a bit of time for processing the responses, it would mean a thread can do ~3 requests per second.
-# If time allows it, we can definitely try to scope this number a bit better empirically.
+# TikTok enforces rate limits per developer application, not per access token, and every Airbyte
+# Cloud connection shares one application. The documented per-endpoint limit (600 requests/minute)
+# is therefore not the operative ceiling: the app-wide budget is, and it is consumed by all syncs
+# running concurrently. A single sync opening a wide slice fan-out is enough to saturate it, so
+# the default concurrency is 1 and the api_budget below paces requests well under the per-endpoint
+# limit. Users who need faster syncs can raise `concurrency_level` in the config.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('concurrency_level', 4) }}"
+  default_concurrency: "{{ config.get('concurrency_level', 1) }}"
   max_concurrency: 20
 
 metadata:
@@ -6190,11 +6205,18 @@ api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
+      # A one-second window, rather than a larger window with a proportionally larger limit, so that
+      # the budget also caps the instantaneous burst a slice fan-out produces at the start of a
+      # stream. Bursts, not sustained throughput, are what saturate TikTok's shared app budget.
       rates:
-        - limit: 100
-          interval: PT10S
+        - limit: 2
+          interval: PT1S
       matchers:
         - method: GET
           url_path_pattern: .*
+  # TikTok signals rate limiting as code 40100 in the body of an HTTP 200 response, so this never
+  # matches and the budget never observes a hit. HTTPAPIBudget can only key off status codes and
+  # response headers, so the static rate above is what actually paces requests. The error handlers
+  # detect 40100 separately and retry.
   status_codes_for_ratelimit_hit:
     - 429
