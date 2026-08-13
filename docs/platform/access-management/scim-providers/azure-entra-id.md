@@ -1,7 +1,6 @@
 ---
 sidebar_label: Entra ID
 products: cloud-teams
-title: Set up SCIM using Entra ID
 ---
 
 # Set up SCIM using Entra ID
@@ -65,10 +64,8 @@ Entra ID owns group names and membership. Airbyte owns permissions assigned to g
 
 ## Deactivate and delete users
 
-Use Entra ID's provisioning state to deactivate a user when you want to remove their organization access through SCIM. Airbyte handles an actual SCIM `DELETE /Users/{id}` request independently of a provider-specific UI action.
+Use Entra ID's provisioning state to deactivate a user when you want to remove their organization access through SCIM; Airbyte also accepts SCIM `DELETE /Users/{id}`, but that is a protocol operation rather than a button in Entra ID.
 
 When a user is deactivated, Airbyte removes their organization permissions, workspace permissions, and group memberships in that organization. Reactivating the user restores only baseline organization-member access. Entra ID must provision group membership again.
 
-## Review against a live Entra ID tenant
-
-Review the exact enterprise-application creation flow, **Provisioning** menu labels, **Mappings** controls, scoping controls, and start-provisioning action against a live Entra ID tenant. Microsoft can change these labels and the available application types.
+<!-- Review against a live Entra ID tenant: confirm the exact enterprise-application creation flow, **Provisioning** menu labels, **Mappings** controls, scoping controls, and start-provisioning action. Microsoft can change these labels and the available application types. -->

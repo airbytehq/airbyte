@@ -1,7 +1,6 @@
 ---
 sidebar_label: Okta
 products: cloud-teams
-title: Set up SCIM using Okta
 ---
 
 # Set up SCIM using Okta
@@ -17,19 +16,7 @@ You need:
 - SCIM enabled for your Airbyte organization.
 - A verified email domain in Airbyte for every domain you plan to provision.
 
-## Configure SCIM in Airbyte
-
-If SCIM is not enabled, follow these steps:
-
-1. In Airbyte, click **Organization settings** > **SSO**.
-
-2. In the SCIM section, select **Okta** as your **Identity provider**.
-
-3. Click **Enable SCIM**.
-
-4. Copy the **SCIM base URL** and **Bearer token**. Airbyte shows the token only once.
-
-Keep the token secure. It allows Okta to create, update, and deactivate users in your organization.
+Before you configure Okta, [enable SCIM in Airbyte](../scim#enable-scim-in-airbyte) and copy the SCIM base URL and bearer token.
 
 ## Configure the Okta application
 
@@ -66,7 +53,7 @@ When the connector test succeeds:
 
 4. Save the provisioning settings.
 
-Okta sends changes for the people assigned to the application. Airbyte creates or updates their SCIM records and applies the organization membership represented by the provisioning state.
+Okta sends changes for the people assigned to the application. An assigned, active user becomes an organization member in Airbyte.
 
 ## Push groups
 
@@ -76,10 +63,8 @@ Group members must be users provisioned into the same Airbyte organization. For 
 
 ## Deactivate and delete users
 
-Use Okta deactivation to remove a user's organization access through SCIM. Airbyte handles an actual SCIM `DELETE /Users/{id}` request independently of a provider-specific UI action; Okta's normal deactivation flow is the operation you will usually use.
+Use Okta deactivation to remove a user's organization access through SCIM; Airbyte also accepts SCIM `DELETE /Users/{id}`, but that is a protocol operation rather than a button in Okta.
 
 When a user is deactivated, Airbyte removes their organization permissions, workspace permissions, and group memberships in that organization. Reactivating the user restores only baseline organization-member access. Your IdP must provision group membership again.
 
-## Review against a live Okta tenant
-
-Review the exact Okta menu names, connector test location, provisioning capability labels, and group-push workflow against your Okta edition. This guide intentionally points to Okta's documentation instead of prescribing edition-specific navigation.
+<!-- Review against a live Okta tenant: confirm the exact Okta menu names, connector test location, provisioning capability labels, and group-push workflow against the Okta edition. This guide intentionally points to Okta's documentation instead of prescribing edition-specific navigation. -->

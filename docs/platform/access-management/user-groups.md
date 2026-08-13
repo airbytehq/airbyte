@@ -1,6 +1,5 @@
 ---
 products: cloud-teams
-title: User groups
 ---
 
 # User groups
