@@ -2,30 +2,56 @@
 
 This page contains the setup guide and reference information for the destination-astra connector.
 
-## Pre-Requisites
+Use this destination to load records into [Astra DB](https://www.datastax.com/products/datastax-astra) as vector documents. For each record, the connector concatenates the text fields you select, splits the text into chunks, generates an embedding for each chunk with the embedding service you configure, and writes each chunk as a document in a single Astra DB collection through the [Data API](https://docs.datastax.com/en/astra-db-serverless/api-reference/overview.html).
 
-- An OpenAI, AzureOpenAI, Cohere, etc. API Key
+## Prerequisites
 
-## Setup Guide
+- A Serverless (Vector) database in Astra DB, and its API endpoint. The endpoint looks like `https://<database-id>-<region>.apps.astra.datastax.com`.
+- An Astra DB [application token](https://docs.datastax.com/en/astra-db-serverless/administration/manage-application-tokens.html) that can create collections and read and write data in the target keyspace. A token generated from the database's **Overview** tab gets a Database Administrator role scoped to that database, which is sufficient.
+- A keyspace in that database. New Serverless (Vector) databases include `default_keyspace`.
+- A name for the collection to write to. The connector creates the collection if it doesn't exist.
+- An API key for the embedding service you want to use, unless you pick the **Fake** embedder. The connector supports OpenAI, Azure OpenAI, Cohere, and any OpenAI-compatible embedding service.
 
-#### Set Up an Astra Database
+## Set up an Astra DB database
 
-- Create an Astra account [here](https://astra.datastax.com/signup)
-- In the Astra Portal, select Databases in the main navigation.
-- Click Create Database.
-- In the Create Database dialog, select the Serverless (Vector) deployment type.
-- In the Configuration section, enter a name for the new database in the Database name field.
-  -- Because database names can’t be changed later, it’s best to name your database something meaningful. Database names must start and end with an alphanumeric character, and may contain the following special characters: & + - \_ ( ) < > . , @.
-- Select your preferred Provider and Region.
-  -- You can select from a limited number of regions if you’re on the Free plan. Regions with a lock icon require that you upgrade to a Pay As You Go plan.
-- Click Create Database.
-  -- You are redirected to your new database’s Overview screen. Your database starts in Pending status before transitioning to Initializing. You’ll receive a notification once your database is initialized.
+If you don't already have a Serverless (Vector) database, create one:
 
-#### Gathering other credentials
+1. Create an Astra account at [astra.datastax.com/signup](https://astra.datastax.com/signup).
+2. In the Astra Portal, select **Databases**, then click **Create Database**.
+3. Select the **Serverless (Vector)** deployment type.
+4. Enter a name in the **Database name** field. You can't change the name later. Names must start and end with an alphanumeric character, and can contain the following special characters: `& + - _ ( ) < > . , @`.
+5. Select your preferred provider and region. The Free plan offers a limited set of regions. Regions with a lock icon require the Pay As You Go plan.
+6. Click **Create Database**. The database starts in `Pending` status, moves to `Initializing`, and you get a notification when it's ready.
 
-- Go back to the Overview tab on the Astra UI
-- Copy the Endpoint under Database Details and load into Airbyte under the name astra_db_endpoint
-- Click generate token, copy the application token and load under astra_db_app_token
+## Get the endpoint and token
+
+1. Open the **Overview** tab for your database in the Astra Portal.
+2. Under **Database Details**, copy the endpoint and enter it in Airbyte as the **Astra DB Endpoint**.
+3. Click **Generate Token**, then copy the token and enter it in Airbyte as the **Astra DB Application Token**. Astra shows the token only once, so store it somewhere safe.
+4. Enter the keyspace you want to write to as the **Astra DB Keyspace**, and the collection name as the **Astra DB collection**. To create a keyspace or inspect existing ones, use the **Data Explorer** tab.
+
+## Choose an embedding service
+
+The embedding service determines the vector dimension of your documents. Astra fixes a collection's dimension when the collection is created, so if you change the embedding model or dimension later, write to a new collection. Astra supports vectors of up to 4,096 dimensions.
+
+If you select **OpenAI-compatible**, you must supply the dimension of the model yourself, along with the base URL of the service. Airbyte can't detect it from the service.
+
+The **Fake** embedder generates random vectors. Use it to test the pipeline end to end without paying for embeddings. Don't use it in production, because random vectors make search results meaningless.
+
+## How the connector stores data
+
+Every stream you sync writes into the single collection you configure. The connector creates that collection with the cosine similarity metric and the dimension of your embedding model.
+
+Each document corresponds to one chunk of one record and contains:
+
+- `_id`: a generated UUID.
+- `$vector`: the embedding of the chunk.
+- `text`: the chunk's text. The connector omits this field if you enable **Do not store raw text**.
+- `_ab_stream`: the stream the chunk came from, including its namespace.
+- `_ab_record_id`: the primary key of the source record. The connector uses this field to delete outdated chunks in deduplicating sync modes.
+- One field for each of the metadata fields you configure.
+
+Because all streams share one collection, filter on `_ab_stream` when you query documents from a specific stream.
 
 ## Supported sync modes
 
@@ -37,9 +63,24 @@ This page contains the setup guide and reference information for the destination
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
+Sync modes behave as follows:
+
+- **Overwrite** deletes only the documents whose `_ab_stream` matches the stream being synced, then writes the new documents. Documents from other streams in the same collection are untouched.
+- **Append** adds documents without deleting anything. Syncing the same record again creates duplicate documents.
+- **Deduped** modes delete the existing documents for each incoming record's primary key before writing that record's new chunks, so the stream needs a primary key.
+
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). A namespace doesn't create a separate Astra keyspace or collection. It becomes part of the `_ab_stream` value on each document.
+
+## Limitations
+
+Keep the following [Astra DB limits](https://docs.datastax.com/en/astra-db-serverless/api-reference/dataapi-limits.html) in mind when you plan a sync:
+
+- A collection's vector dimension is fixed when the collection is created. To switch to an embedding model with a different dimension, configure a different collection.
+- A collection can hold no more than 64 distinct fields across all of its documents. Every metadata field you configure, on every stream that shares the collection, counts toward that limit.
+- A database supports approximately 10 collections.
+- Indexed string values are limited to 8,000 bytes. The connector creates collections with default indexing, which indexes every field, including `text`. If inserts fail because a chunk is too large, reduce the chunk size.
 
 ## Changelog
 
@@ -89,8 +130,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.1.7 | 2024-06-25 | [40467](https://github.com/airbytehq/airbyte/pull/40467) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40162](https://github.com/airbytehq/airbyte/pull/40162) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39198](https://github.com/airbytehq/airbyte/pull/39198) | [autopull] Upgrade base image to v1.2.2 |
-| 0.1.4   | 2024-05-16 | #38181       | Add explicit projection when reading from Astra DB        |
-| 0.1.3   | 2024-04-19 | #37405       | Add "airbyte" user-agent in the HTTP requests to Astra DB |
+| 0.1.4   | 2024-05-16 | [38181](https://github.com/airbytehq/airbyte/pull/38181) | Add explicit projection when reading from Astra DB        |
+| 0.1.3   | 2024-04-19 | [37405](https://github.com/airbytehq/airbyte/pull/37405) | Add "airbyte" user-agent in the HTTP requests to Astra DB |
 | 0.1.2   | 2024-04-15 |              | Moved to Poetry; Updated CDK & pytest versions            |
 | 0.1.1   | 2024-01-26 |              | DS Branding Update                                        |
 | 0.1.0   | 2024-01-08 |              | Initial Release                                           |
