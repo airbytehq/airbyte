@@ -109,10 +109,13 @@ jobs:
             ---
 
             > [!IMPORTANT]
-            > **Optional Progressive Rollout Bypass**
+            > **Autopilot Progressive Rollout Enabled**
             >
-            > [Autopilot progressive rollouts](https://github.com/airbytehq/airbyte-ops-mcp/blob/main/docs/autopilot-rollouts.md) are enabled for one or more connector(s) modified in this PR. Check the box below if you want to bypass normal rollout safety processes and release to all users immediately upon merge:
+            > [Autopilot progressive rollouts](https://github.com/airbytehq/airbyte-ops-mcp/blob/main/docs/autopilot-rollouts.md) are enabled for one or more connector(s) modified in this PR. Check the box below if you need to bypass normal rollout safety processes:
             >
             > - [ ] ⚡ **Release immediately** (bypasses automatic progressive rollout)
             >
-            > _Note: This option only applies to connectors with a valid version bump in this PR. Connectors without a version bump will not be re-released._
+            > **Note:**
+            >
+            > - ⚠️ The above bypass option is for emergency/hotfix use only.
+            > - 🔗 You can monitor or manually advance a rollout at **[ops.internal.airbyte.ai](https://ops.internal.airbyte.ai)**.
