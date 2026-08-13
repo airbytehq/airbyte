@@ -61,10 +61,23 @@ class TestAdsStream(TestCase):
             .build()
         )
 
-    def mock_ads(self, http_mocker: HttpMocker, modified_after: str, include_deleted: bool = False):
+    def mock_ads(
+        self,
+        http_mocker: HttpMocker,
+        modified_after: str,
+        include_deleted: bool = False,
+        modify_time: str = "2024-01-02 04:00:00",
+    ):
         filtering = {"modified_after": modified_after}
         if include_deleted:
             filtering["secondary_status"] = "AD_STATUS_ALL"
+        response = {
+            **AD_RESPONSE,
+            "data": {
+                **AD_RESPONSE["data"],
+                "list": [{**AD_RESPONSE["data"]["list"][0], "modify_time": modify_time}],
+            },
+        }
         http_mocker.get(
             HttpRequest(
                 url=ADS_URL,
@@ -74,7 +87,7 @@ class TestAdsStream(TestCase):
                     "filtering": json.dumps(filtering),
                 },
             ),
-            HttpResponse(body=json.dumps(AD_RESPONSE), status_code=200),
+            HttpResponse(body=json.dumps(response), status_code=200),
         )
 
     @HttpMocker()
@@ -82,7 +95,7 @@ class TestAdsStream(TestCase):
         config = self.config()
         cursor = "2024-01-02T03:04:05Z"
         mock_advertisers_slices(http_mocker, config)
-        self.mock_ads(http_mocker, "2024-01-02 03:04:05")
+        self.mock_ads(http_mocker, "2024-01-02 03:04:04")
 
         output = read(
             source=get_source(config=config, state=self.state(cursor)),
@@ -110,5 +123,21 @@ class TestAdsStream(TestCase):
         self.mock_ads(http_mocker, "2016-09-01 00:00:00", include_deleted=True)
 
         output = read(get_source(config=config, state=None), config, self.catalog())
+
+        assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_read_with_state_emits_record_at_cursor_boundary(self, http_mocker: HttpMocker):
+        config = self.config()
+        cursor = "2024-01-02T03:04:05Z"
+        mock_advertisers_slices(http_mocker, config)
+        self.mock_ads(http_mocker, "2024-01-02 03:04:04", modify_time="2024-01-02 03:04:05")
+
+        output = read(
+            source=get_source(config=config, state=self.state(cursor)),
+            config=config,
+            catalog=self.catalog(),
+            state=self.state(cursor),
+        )
 
         assert len(output.records) == 1
