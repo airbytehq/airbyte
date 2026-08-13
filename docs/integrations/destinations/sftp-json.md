@@ -1,19 +1,40 @@
 # SFTP JSON
 
-## Overview
+This destination writes each stream to a newline-delimited JSON file in a directory on an SFTP server.
 
-This destination writes data to a directory on an SFTP server.
+## Prerequisites
 
-### Sync Overview
+- An SFTP server reachable from your Airbyte deployment.
+- A username and password for that server. This destination authenticates with a password only. It doesn't support SSH key or keyboard-interactive authentication.
+- An existing directory on the server that the account can read from and write to. The connector doesn't create the directory for you.
 
-#### Output schema
+## Setup
 
-Each stream will be output into its own file.
-Each file will contain a collection of `json` objects which correspond directly with the data supplied by the source.
+Configure the following fields:
 
-#### Performance considerations
+| Field | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **Host** | Yes | | Hostname or IP address of the SFTP server. |
+| **Port** | No | `22` | Port the SFTP server listens on. |
+| **User** | Yes | | Username used to sign in to the server. |
+| **Password** | Yes | | Password for that username. |
+| **Destination path** | Yes | | Absolute path to the directory where the connector writes files, such as `/json_data`. |
 
-This integration will be constrained by the connection speed to the SFTP server and speed at which that server accepts writes.
+When you test the connection, the connector writes a small file to **Destination path** and then deletes it, so the account needs write and delete permissions in that directory, not just read access.
+
+## Output files
+
+The connector writes one file per stream and names it after the stream:
+
+```text
+{destination_path}/airbyte_json_{stream_name}.jsonl
+```
+
+For example, if **Destination path** is `/json_data` and you sync a stream named `users`, the connector writes `/json_data/airbyte_json_users.jsonl`.
+
+Each line in the file is a single JSON object holding the record exactly as the source emitted it. The connector doesn't add Airbyte metadata fields such as `_airbyte_raw_id` or `_airbyte_extracted_at`, so the file contains only your source data.
+
+Because the file name comes from the stream name alone, two streams with the same name in different namespaces write to the same file. This destination doesn't support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Supported sync modes
 
@@ -25,21 +46,25 @@ This integration will be constrained by the connection speed to the SFTP server 
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
-## Getting Started
+In overwrite mode, the connector deletes the stream's existing file at the start of the sync and writes a new one. In the append modes, it appends records to the end of the existing file and never rewrites earlier lines, so records from failed or partial syncs stay in the file. Deduplicate downstream if that matters to you.
 
-The `destination_path` can refer to any path that the associated account has write permissions to.
+## Performance considerations
 
-The `filename` **should not** have an extension in the configuration, as `.jsonl` will be added on by the connector.
+Throughput depends on your network connection to the SFTP server and how quickly the server accepts writes. The connector holds one open file handle per stream and writes records as it receives them, so it doesn't batch or compress data.
 
-### Example:
+## Troubleshooting
 
-If `destination_path` is set to `/myfolder/files` and `filename` is set to `mydata`, the resulting file will be `/myfolder/files/mydata.jsonl`.
+### The connection test fails with an authentication error
 
-These files can then be accessed by creating an SFTP connection to the server and navigating to the `destination_path`.
+Confirm that the server accepts password authentication for this account. Servers configured for public key authentication only reject this connector.
 
-## Namespace support
+### The connection test fails but the credentials are correct
 
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+Check that **Destination path** already exists and that the account can write to it and delete files in it. The connector doesn't create missing directories.
+
+### Passwords containing special characters
+
+Version 0.2.16 and later percent-encode the username, password, host, and path before building the SFTP URI, so credentials containing characters such as `#`, `@`, `/`, or `?` work as entered. On earlier versions, these characters truncated or corrupted the URI and syncs and connection tests failed. If you're on an earlier version, upgrade rather than changing the password.
 
 ## Changelog
 
@@ -48,7 +73,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                           | Subject                       |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------- |
-| 0.2.16 | 2026-05-15 | [78111](https://github.com/airbytehq/airbyte/pull/78111) | Fixed SFTP connection checks for passwords with URI-reserved characters. |
+| 0.2.16 | 2026-08-13 | [78111](https://github.com/airbytehq/airbyte/pull/78111) | Escape URI-reserved characters in credentials and paths, fixing syncs and connection checks for passwords containing characters such as `#` |
 | 0.2.15 | 2025-05-27 | [60870](https://github.com/airbytehq/airbyte/pull/60870) | Update dependencies |
 | 0.2.14 | 2025-05-10 | [59809](https://github.com/airbytehq/airbyte/pull/59809) | Update dependencies |
 | 0.2.13 | 2025-05-03 | [59353](https://github.com/airbytehq/airbyte/pull/59353) | Update dependencies |
