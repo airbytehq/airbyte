@@ -1,5 +1,11 @@
 # Milvus
 
+## Changelog
+
+| Version | Date | Pull Request |
+| --- | --- | --- |
+| 0.0.61 | 2026-08-13 | [84345](https://github.com/airbytehq/airbyte/pull/84345) |
+
 ## Overview
 
 This page guides you through the process of setting up the [Milvus](https://milvus.io/) destination connector.
