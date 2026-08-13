@@ -70,7 +70,7 @@ Configure the following fields.
 
 ### Embedding
 
-(Required) Choose how to produce vectors. Options are **OpenAI**, **Azure OpenAI**, **Cohere**, **OpenAI-compatible** (for self-hosted or third-party services that implement the OpenAI embedding API), **From Field** (for vectors already present in each record), and **Fake** (random vectors, for testing only). Each option has its own configuration fields, including credentials or vector dimensions where applicable.
+(Required) Choose how to produce vectors. Options are **OpenAI**, **Azure OpenAI**, **Cohere**, **OpenAI-compatible** (for self-hosted or third-party services that implement the OpenAI embedding API), and **Fake** (random vectors, for testing only). Each option has its own configuration fields, including credentials or vector dimensions where applicable.
 
 ### Indexing
 
