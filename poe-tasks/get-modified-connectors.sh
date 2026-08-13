@@ -164,6 +164,7 @@ filter_to_version_bumps() {
       version_bumped+=("$connector")
     else
       echo "⚠️ Skipping '$connector': dockerImageTag is unchanged from the parent commit." >&2
+      echo "   To push metadata-only edits to the registry, run the publish workflow with registry-refresh-only." >&2
     fi
   done
   connectors=("${version_bumped[@]}")
