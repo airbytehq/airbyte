@@ -48,7 +48,7 @@ class DestinationPinecone(Destination):
     def _log(self, level, message: str) -> AirbyteMessage:
         from airbyte_cdk.models import AirbyteLogMessage
 
-        return AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=level, message=message))
+        return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=message))
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
