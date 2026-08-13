@@ -21,7 +21,7 @@ You need the following information to configure the destination:
 
 - **Embedding service API Key** - The API key for your embedding provider account.
 - **Pinecone API Key** - The API key for your Pinecone project. You can find this in the [Pinecone console](https://docs.pinecone.io/guides/get-started/authentication).
-- **Pinecone Environment** - The environment of your Pinecone project, such as `us-west1-gcp`. The connector resolves the index host from your API key, so this value only appears in error messages. It's still required.
+- **Pinecone Environment** - The environment of your Pinecone project, such as `us-west1-gcp` for a pod-based index. The connector looks up the index host with your API key rather than this value, but Airbyte only allows traffic to `*.{environment}.pinecone.io`, so it must match the environment segment of the index host shown in the Pinecone console. A mismatch causes connection failures.
 - **Pinecone Index name** - The name of the Pinecone index to load data into.
 
 ## Supported sync modes
