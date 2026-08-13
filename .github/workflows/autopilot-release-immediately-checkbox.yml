@@ -1,0 +1,165 @@
+name: Add Autopilot Release Immediately Checkbox
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    paths:
+      - "airbyte-integrations/connectors/**"
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number to inspect."
+        required: true
+        type: number
+
+env:
+  RELEASE_IMMEDIATELY_PHRASE: Release immediately (bypasses automatic progressive rollout)
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: autopilot-release-immediately-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  add-checkbox:
+    name: Add release immediately checkbox
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve PR context from pull request event
+        id: context-event
+        if: github.event_name == 'pull_request'
+        env:
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
+        run: |
+          {
+            echo "pr-number=${EVENT_PR_NUMBER}"
+            echo "head-repo=${EVENT_HEAD_REPO}"
+            echo "head-sha=${EVENT_HEAD_SHA}"
+            echo "is-fork=${EVENT_IS_FORK}"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Resolve PR context from workflow dispatch
+        id: context-dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          INPUT_PR: ${{ inputs.pr }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$INPUT_PR" =~ ^[1-9][0-9]*$ ]] || {
+            echo "::error::Invalid pull request number: ${INPUT_PR}"
+            exit 1
+          }
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${INPUT_PR}" |
+            jq -r '"pr-number=\(.number)\nhead-repo=\(.head.repo.full_name)\nhead-sha=\(.head.sha)\nis-fork=\(.head.repo.fork)"' |
+            tee -a "$GITHUB_OUTPUT"
+
+      - name: Resolve PR context
+        id: context
+        env:
+          EVENT_PR_NUMBER: ${{ steps.context-event.outputs.pr-number }}
+          EVENT_HEAD_REPO: ${{ steps.context-event.outputs.head-repo }}
+          EVENT_HEAD_SHA: ${{ steps.context-event.outputs.head-sha }}
+          EVENT_IS_FORK: ${{ steps.context-event.outputs.is-fork }}
+          DISPATCH_PR_NUMBER: ${{ steps.context-dispatch.outputs.pr-number }}
+          DISPATCH_HEAD_REPO: ${{ steps.context-dispatch.outputs.head-repo }}
+          DISPATCH_HEAD_SHA: ${{ steps.context-dispatch.outputs.head-sha }}
+          DISPATCH_IS_FORK: ${{ steps.context-dispatch.outputs.is-fork }}
+        run: |
+          {
+            echo "pr-number=${EVENT_PR_NUMBER:-${DISPATCH_PR_NUMBER}}"
+            echo "head-repo=${EVENT_HEAD_REPO:-${DISPATCH_HEAD_REPO}}"
+            echo "head-sha=${EVENT_HEAD_SHA:-${DISPATCH_HEAD_SHA}}"
+            echo "is-fork=${EVENT_IS_FORK:-${DISPATCH_IS_FORK}}"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Checkout connector metadata
+        if: steps.context.outputs.is-fork == 'false'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ steps.context.outputs.head-repo }}
+          ref: ${{ steps.context.outputs.head-sha }}
+          fetch-depth: 1
+
+      - name: Install uv
+        if: steps.context.outputs.is-fork == 'false'
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          ignore-empty-workdir: true
+
+      - name: Install Ops CLI
+        if: steps.context.outputs.is-fork == 'false'
+        run: uv tool install "airbyte-internal-ops>=0.77.0"
+
+      - name: Detect modified connectors with autopilot enabled
+        id: detect
+        if: steps.context.outputs.is-fork == 'false'
+        env:
+          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          connectors="$(
+            airbyte-ops local connector list \
+              --repo-path . \
+              --autopilot-enabled=true \
+              --modified-only \
+              --pr "${PR_NUMBER}" \
+              --gh-token "${GH_TOKEN}" \
+              --output-format lines
+          )"
+          [[ -z "$connectors" ]] && exit 0
+          delimiter="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
+          {
+            echo "connectors<<${delimiter}"
+            echo "$connectors"
+            echo "${delimiter}"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Read PR body
+        id: body
+        if: steps.context.outputs.is-fork == 'false' && steps.detect.outputs.connectors != ''
+        env:
+          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          body_file="${RUNNER_TEMP}/autopilot-release-immediately-pr-body.md"
+          gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --template '{{.body}}' > "$body_file"
+          echo "path=${body_file}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Detect existing release immediately checkbox
+        id: existing
+        if: steps.body.outputs.path != ''
+        env:
+          BODY_PATH: ${{ steps.body.outputs.path }}
+          RELEASE_IMMEDIATELY_PHRASE: ${{ env.RELEASE_IMMEDIATELY_PHRASE }}
+        run: |
+          if grep -Fq -- "$RELEASE_IMMEDIATELY_PHRASE" "$BODY_PATH"; then
+            echo "present=true" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "present=false" | tee -a "$GITHUB_OUTPUT"
+          fi
+
+      - name: Append release immediately checkbox
+        if: steps.existing.outputs.present == 'false'
+        env:
+          BODY_PATH: ${{ steps.body.outputs.path }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+        run: |
+          set -euo pipefail
+          printf '\n\n> [!NOTE]\n> Autopilot progressive rollout is enabled for connector(s) modified in this PR.\n>\n> - [ ] :black_square_button: %s\n' \
+            "$RELEASE_IMMEDIATELY_PHRASE" >> "$BODY_PATH"
+          jq -n --rawfile body "$BODY_PATH" '{body: $body}' |
+            gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --method PATCH --input -
