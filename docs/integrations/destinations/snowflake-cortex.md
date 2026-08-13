@@ -26,7 +26,7 @@ Snowflake is [phasing out sign-in with only a password](https://docs.snowflake.c
 
 | Field | Description |
 | :--- | :--- |
-| Host | Your account identifier, in the form `<organization>-<account>` — the part of your account URL before `.snowflakecomputing.com`. |
+| Host | Your account identifier, in the form `<organization>-<account>`, which is the part of your account URL before `.snowflakecomputing.com`. |
 | Role | The role the connector activates for the session. |
 | Warehouse | The warehouse that runs the load. |
 | Database | The database that holds the tables. |
