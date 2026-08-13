@@ -229,3 +229,7 @@ Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_d
 the first request will be sent as `https://cloud.airbyte.com/api/get_data`
 Assuming the response's next url is `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`,
 the next request will be sent as `https://cloud.airbyte.com/api/get_data?page=1&page_size=100`
+
+## Related
+
+- *No-Code Connector Builder*: [Pagination](/platform/connector-development/connector-builder-ui/pagination)

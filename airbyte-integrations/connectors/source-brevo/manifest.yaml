@@ -1224,7 +1224,7 @@ spec:
   type: Spec
   connection_specification:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: https://json-schema.org/draft-07/schema#
     required:
       - api_key
       - start_date
@@ -1434,7 +1434,7 @@ metadata:
 schemas:
   contacts:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributes:
@@ -2167,7 +2167,7 @@ schemas:
       - modifiedAt
   contacts_attributes:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
@@ -2209,7 +2209,7 @@ schemas:
           - "null"
   contacts_folders_lists:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       id:
@@ -2234,7 +2234,7 @@ schemas:
       - id
   contacts_folders:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       id:
@@ -2259,7 +2259,7 @@ schemas:
       - id
   contacts_segments:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       categoryName:
@@ -2280,7 +2280,7 @@ schemas:
       - id
   contacts_lists_contacts:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributes:
@@ -3006,7 +3006,7 @@ schemas:
       - modifiedAt
   contacts_lists:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       folderId:
@@ -3035,7 +3035,7 @@ schemas:
       - id
   senders:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       active:
@@ -3060,7 +3060,7 @@ schemas:
       - id
   companies:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributes:
@@ -3213,7 +3213,7 @@ schemas:
       - last_updated_at
   companies_attributes:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributeOptions:
@@ -3251,7 +3251,7 @@ schemas:
           - "null"
   crm_pipeline_stages:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       id:
@@ -3264,7 +3264,7 @@ schemas:
       - id
   crm_pipeline_details_all:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       pipeline:
@@ -3294,7 +3294,7 @@ schemas:
       - pipeline
   crm_attributes_deals:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributeOptions:
@@ -3332,7 +3332,7 @@ schemas:
           - "null"
   crm_deals:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributes:
@@ -3622,7 +3622,7 @@ schemas:
       - last_updated_at
   crm_tasktypes:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       id:
@@ -3635,7 +3635,7 @@ schemas:
       - id
   crm_tasks:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       assignToId:
@@ -3703,7 +3703,7 @@ schemas:
       - updatedAt
   crm_notes:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       author:
@@ -3811,7 +3811,7 @@ schemas:
       - updatedAt
   domains:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       authenticated:
@@ -3857,7 +3857,7 @@ schemas:
       - id
   webhooks:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
@@ -3894,7 +3894,7 @@ schemas:
       - id
   account:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       address:
@@ -4062,7 +4062,7 @@ schemas:
       - organization_id
   organization_invited_users:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       email:
@@ -4108,7 +4108,7 @@ schemas:
       - email
   emailCampaigns:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       type:
@@ -4374,11 +4374,11 @@ schemas:
               - object
               - "null"
             properties:
-              http://:
+              https://:
                 type:
                   - number
                   - "null"
-              http://www.brevo.com:
+              https://www.brevo.com:
                 type:
                   - number
                   - "null"
@@ -5031,7 +5031,7 @@ schemas:
       - modifiedAt
   smsCampaigns:
     type: object
-    $schema: http://json-schema.org/schema#
+    $schema: https://json-schema.org/schema#
     additionalProperties: true
     properties:
       content:

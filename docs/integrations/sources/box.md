@@ -31,6 +31,10 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 | trashed_items | id | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -38,6 +42,7 @@ Follow [this](https://developer.box.com/guides/authentication/client-credentials
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2026-04-21 | [76536](https://github.com/airbytehq/airbyte/pull/76536) | Update dependencies |
 | 0.0.20 | 2025-05-24 | [60665](https://github.com/airbytehq/airbyte/pull/60665) | Update dependencies |
 | 0.0.19 | 2025-04-26 | [58701](https://github.com/airbytehq/airbyte/pull/58701) | Update dependencies |
 | 0.0.18 | 2025-04-19 | [58259](https://github.com/airbytehq/airbyte/pull/58259) | Update dependencies |

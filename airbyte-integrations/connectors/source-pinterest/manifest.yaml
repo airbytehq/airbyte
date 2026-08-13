@@ -29,8 +29,9 @@ definitions:
         header: "X-RateLimit-Reset"
     response_filters:
       - type: HttpResponseFilter
-        action: IGNORE
-        error_message: "Max rate limit exceeded"
+        action: RATE_LIMITED
+        failure_type: transient_error
+        error_message: "Rate limit exceeded for Pinterest API."
         predicate: "{{ response.get('code') == 8 }}"
       - type: HttpResponseFilter
         action: IGNORE
@@ -54,6 +55,16 @@ definitions:
       - type: HttpResponseFilter
         action: RETRY
         http_codes: [400]
+        predicate: "{{ response.get('message', '') is string and 'Retry after' in response.get('message', '') }}"
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes: [400]
+        failure_type: transient_error
+        predicate: >-
+          {{ response.get('code') == 12 or
+          (response.get('message', '') is string and
+          'something went wrong' in response.get('message', '') | lower) }}
+        error_message: "Pinterest API request failed due to a temporary error."
 
   # Requester
   requester:
@@ -294,10 +305,22 @@ definitions:
       path: ad_accounts/{{ stream_partition['id'] }}/reports
       request_parameters:
         token: "'{{ creation_response['token'] }}'"
+    download_target_requester:
+      $ref: "#/definitions/requester"
+      path: "ad_accounts/{{ polling_response['request'].url | regex_search('ad_accounts/([^/]+)/reports') }}/reports?token={{ polling_response['request'].url | regex_search('[?&]token=([^&]+)') }}"
     download_requester:
       type: HttpRequester
       url_base: "{{download_target}}"
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            failure_type: transient_error
+            http_codes: [403]
+            error_message_contains: "Request has expired"
+            error_message: "Pinterest report download URL is expired."
     download_decoder:
       type: JsonDecoder
 
@@ -461,7 +484,7 @@ definitions:
             columns: "{{ components_values['columns'] }}"
     schema_loader:
       type: InlineSchemaLoader
-      schema: "#/definitions/reports_schema"
+      schema: "#/definitions/custom_reports_schema"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "DATE"
@@ -507,7 +530,7 @@ definitions:
               value,
               click_window_days,
             ]
-          value: "{{ components_values['click_window_days'] or 30 }}"
+          value: "{{ components_values['click_window_days'] if components_values['click_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -518,7 +541,7 @@ definitions:
               value,
               engagement_window_days,
             ]
-          value: "{{ components_values['engagement_window_days'] or 30 }}"
+          value: "{{ components_values['engagement_window_days'] if components_values['engagement_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -529,7 +552,7 @@ definitions:
               value,
               view_window_days,
             ]
-          value: "{{ components_values['view_window_days'] or 30 }}"
+          value: "{{ components_values['view_window_days'] if components_values['view_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -553,6 +576,42 @@ definitions:
               attribution_types,
             ]
           value: "{{ components_values['attribution_types'] or ['INDIVIDUAL', 'HOUSEHOLD'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              campaign_statuses,
+            ]
+          value: "{{ components_values['campaign_statuses'] }}"
+          condition: "{{ components_values.get('campaign_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              ad_group_statuses,
+            ]
+          value: "{{ components_values['ad_group_statuses'] }}"
+          condition: "{{ components_values.get('ad_group_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              ad_statuses,
+            ]
+          value: "{{ components_values['ad_statuses'] }}"
+          condition: "{{ components_values.get('ad_statuses') is not none }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -4117,6 +4176,589 @@ definitions:
           - number
     additionalProperties: true
 
+  custom_reports_schema:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      DATE:
+        description: Date of the data record
+        type:
+          - "null"
+          - string
+        format: date
+      ADVERTISER_ID:
+        description: Unique identifier for the advertiser
+        type:
+          - "null"
+          - number
+      AD_ACCOUNT_ID:
+        description: Unique identifier for the ad account
+        type:
+          - string
+      AD_GROUP_ENTITY_STATUS:
+        description: Status of the ad group entity
+        type:
+          - "null"
+          - string
+      AD_GROUP_ID:
+        description: Unique identifier for the ad group
+        type:
+          - "null"
+          - string
+      AD_ID:
+        description: Unique identifier for the ad
+        type:
+          - "null"
+          - string
+      CAMPAIGN_DAILY_SPEND_CAP:
+        description: Daily spend cap for the campaign
+        type:
+          - "null"
+          - number
+      CAMPAIGN_ENTITY_STATUS:
+        description: Status of the campaign entity
+        type:
+          - "null"
+          - string
+      CAMPAIGN_ID:
+        description: Unique identifier for the campaign
+        type:
+          - "null"
+          - number
+      CAMPAIGN_LIFETIME_SPEND_CAP:
+        description: Lifetime spend cap for the campaign
+        type:
+          - "null"
+          - number
+      CAMPAIGN_NAME:
+        description: Name of the campaign
+        type:
+          - "null"
+          - string
+      CHECKOUT_ROAS:
+        description: Return on ad spend for checkout actions
+        type:
+          - "null"
+          - number
+      CLICKTHROUGH_1:
+        description: Number of click-through events
+        type:
+          - "null"
+          - number
+      CLICKTHROUGH_1_GROSS:
+        description: Gross number of click-through events
+        type:
+          - "null"
+          - number
+      CLICKTHROUGH_2:
+        description: Second type of click-through events
+        type:
+          - "null"
+          - number
+      CPC_IN_MICRO_DOLLAR:
+        description: Cost per click in micro dollars
+        type:
+          - "null"
+          - number
+      CPM_IN_DOLLAR:
+        description: Cost per mille (cost per thousand impressions) in dollars
+        type:
+          - "null"
+          - number
+      CPM_IN_MICRO_DOLLAR:
+        description: Cost per mille in micro dollars
+        type:
+          - "null"
+          - number
+      CTR:
+        description: Click-through rate
+        type:
+          - "null"
+          - number
+      CTR_2:
+        description: Second click-through rate
+        type:
+          - "null"
+          - number
+      ECPCV_IN_DOLLAR:
+        description: Effective cost per conversion value in dollars
+        type:
+          - "null"
+          - number
+      ECPCV_P95_IN_DOLLAR:
+        description: P95 percentile of effective cost per conversion value in dollars
+        type:
+          - "null"
+          - number
+      ECPC_IN_DOLLAR:
+        description: Effective cost per click in dollars
+        type:
+          - "null"
+          - number
+      ECPC_IN_MICRO_DOLLAR:
+        description: Effective cost per click in micro dollars
+        type:
+          - "null"
+          - number
+      ECPE_IN_DOLLAR:
+        description: Effective cost per engagement in dollars
+        type:
+          - "null"
+          - number
+      ECPM_IN_MICRO_DOLLAR:
+        description: Effective cost per mille in micro dollars
+        type:
+          - "null"
+          - number
+      ECPV_IN_DOLLAR:
+        description: Effective cost per view in dollars
+        type:
+          - "null"
+          - number
+      ECTR:
+        description: Effective click-through rate
+        type:
+          - "null"
+          - number
+      EENGAGEMENT_RATE:
+        description: Effective engagement rate
+        type:
+          - "null"
+          - number
+      ENGAGEMENT_1:
+        description: Number of engagement events
+        type:
+          - "null"
+          - number
+      ENGAGEMENT_2:
+        description: Second type of engagement events
+        type:
+          - "null"
+          - number
+      ENGAGEMENT_RATE:
+        description: Engagement rate
+        type:
+          - "null"
+          - number
+      IDEA_PIN_PRODUCT_TAG_VISIT_1:
+        description: Number of visits to pinned product tags
+        type:
+          - "null"
+          - number
+      IDEA_PIN_PRODUCT_TAG_VISIT_2:
+        description: Second type of visits to pinned product tags
+        type:
+          - "null"
+          - number
+      IMPRESSION_1:
+        description: Number of impressions
+        type:
+          - "null"
+          - number
+      IMPRESSION_1_GROSS:
+        description: Gross number of impressions
+        type:
+          - "null"
+          - number
+      IMPRESSION_2:
+        description: Second type of impressions
+        type:
+          - "null"
+          - number
+      INAPP_CHECKOUT_COST_PER_ACTION:
+        description: Cost per in-app checkout action
+        type:
+          - "null"
+          - number
+      OUTBOUND_CLICK_1:
+        description: Number of outbound clicks
+        type:
+          - "null"
+          - number
+      OUTBOUND_CLICK_2:
+        description: Second type of outbound clicks
+        type:
+          - "null"
+          - number
+      PAGE_VISIT_COST_PER_ACTION:
+        description: Cost per page visit action
+        type:
+          - "null"
+          - number
+      PAGE_VISIT_ROAS:
+        description: Return on ad spend for page visit actions
+        type:
+          - "null"
+          - number
+      PAID_IMPRESSION:
+        description: Number of paid impressions
+        type:
+          - "null"
+          - number
+      PIN_ID:
+        description: Unique identifier for the pinned image
+        type:
+          - "null"
+          - number
+      PIN_PROMOTION_ID:
+        description: Unique identifier for the pinned promotion
+        type:
+          - "null"
+          - number
+      REPIN_1:
+        description: Number of repins
+        type:
+          - "null"
+          - number
+      REPIN_2:
+        description: Second type of repins
+        type:
+          - "null"
+          - number
+      REPIN_RATE:
+        description: Repins rate
+        type:
+          - "null"
+          - number
+      SPEND_IN_DOLLAR:
+        description: Total spend in dollars
+        type:
+          - "null"
+          - number
+      SPEND_IN_MICRO_DOLLAR:
+        description: Total spend in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_CHECKOUT:
+        description: Total number of checkout actions
+        type:
+          - "null"
+          - number
+      TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of checkout actions in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_CLICKTHROUGH:
+        description: Total number of click-through events
+        type:
+          - "null"
+          - number
+      TOTAL_CLICK_ADD_TO_CART:
+        description: Total number of click events leading to adding items to cart
+        type:
+          - "null"
+          - number
+      TOTAL_CLICK_CHECKOUT:
+        description: Total number of click events leading to checkout
+        type:
+          - "null"
+          - number
+      TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of click events leading to checkout in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_CLICK_LEAD:
+        description: Total number of click events leading to generating leads
+        type:
+          - "null"
+          - number
+      TOTAL_CLICK_SIGNUP:
+        description: Total number of click events leading to sign-ups
+        type:
+          - "null"
+          - number
+      TOTAL_CLICK_SIGNUP_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of click events leading to sign-ups in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_CONVERSIONS:
+        description: Total number of conversions
+        type:
+          - "null"
+          - number
+      TOTAL_CUSTOM:
+        description: Total number of custom events
+        type:
+          - "null"
+          - number
+      TOTAL_ENGAGEMENT:
+        description: Total number of engagement actions
+        type:
+          - "null"
+          - number
+      TOTAL_ENGAGEMENT_CHECKOUT:
+        description: Total number of engagement actions leading to checkout
+        type:
+          - "null"
+          - number
+      TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description:
+          Total value of engagement actions leading to checkout in micro
+          dollars
+        type:
+          - "null"
+          - number
+      TOTAL_ENGAGEMENT_LEAD:
+        description: Total number of engagement actions leading to generating leads
+        type:
+          - "null"
+          - number
+      TOTAL_ENGAGEMENT_SIGNUP:
+        description: Total number of engagement actions leading to sign-ups
+        type:
+          - "null"
+          - number
+      TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR:
+        description:
+          Total value of engagement actions leading to sign-ups in micro
+          dollars
+        type:
+          - "null"
+          - number
+      TOTAL_IDEA_PIN_PRODUCT_TAG_VISIT:
+        description: Total number of visits to pinned product tags
+        type:
+          - "null"
+          - number
+      TOTAL_IMPRESSION:
+        description: Total number of impressions
+        type:
+          - "null"
+          - number
+      TOTAL_IMPRESSION_FREQUENCY:
+        description: Total impression frequency
+        type:
+          - "null"
+          - number
+      TOTAL_IMPRESSION_USER:
+        description: Total number of users reached by impressions
+        type:
+          - "null"
+          - number
+      TOTAL_LEAD:
+        description: Total number of leads generated
+        type:
+          - "null"
+          - number
+      TOTAL_OFFLINE_CHECKOUT:
+        description: Total number of offline checkout actions
+        type:
+          - "null"
+          - number
+      TOTAL_PAGE_VISIT:
+        description: Total number of page visits
+        type:
+          - "null"
+          - number
+      TOTAL_REPIN_RATE:
+        description: Total repins rate
+        type:
+          - "null"
+          - number
+      TOTAL_SIGNUP:
+        description: Total number of sign-ups
+        type:
+          - "null"
+          - number
+      TOTAL_SIGNUP_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of sign-ups in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_3SEC_VIEWS:
+        description: Total number of views for 3 seconds or more on video ads
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_AVG_WATCHTIME_IN_SECOND:
+        description: Total average watch time for video ads in seconds
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_MRC_VIEWS:
+        description: Total number of viewable impressions for video ads
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_P0_COMBINED:
+        description: Total percentage of video ads viewed to the start
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_P100_COMPLETE:
+        description: Total percentage of video ads viewed to completion
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_P25_COMBINED:
+        description: Total percentage of video ads viewed to 25% completion
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_P50_COMBINED:
+        description: Total percentage of video ads viewed to 50% completion
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_P75_COMBINED:
+        description: Total percentage of video ads viewed to 75% completion
+        type:
+          - "null"
+          - number
+      TOTAL_VIDEO_P95_COMBINED:
+        description: Total percentage of video ads viewed to 95% completion
+        type:
+          - "null"
+          - number
+      TOTAL_VIEW_ADD_TO_CART:
+        description: Total number of view events leading to adding items to cart
+        type:
+          - "null"
+          - number
+      TOTAL_VIEW_CHECKOUT:
+        description: Total number of view events leading to checkout
+        type:
+          - "null"
+          - number
+      TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of view events leading to checkout in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_VIEW_LEAD:
+        description: Total number of view events leading to generating leads
+        type:
+          - "null"
+          - number
+      TOTAL_VIEW_SIGNUP:
+        description: Total number of view events leading to sign-ups
+        type:
+          - "null"
+          - number
+      TOTAL_VIEW_SIGNUP_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of view events leading to sign-ups in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_CHECKOUT:
+        description: Total number of checkout actions on the web
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description: Total value of checkout actions on the web in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_CLICK_CHECKOUT:
+        description: Total number of click events leading to checkout on the web
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description:
+          Total value of click events leading to checkout on the web in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_ENGAGEMENT_CHECKOUT:
+        description: Total number of engagement actions leading to checkout on the web
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description:
+          Total value of engagement actions leading to checkout on the web in micro dollars
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_SESSIONS:
+        description: Total number of sessions on the web
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_VIEW_CHECKOUT:
+        description: Total number of view events leading to checkout on the web
+        type:
+          - "null"
+          - number
+      TOTAL_WEB_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
+        description:
+          Total value of view events leading to checkout on the web in micro dollars
+        type:
+          - "null"
+          - number
+      VIDEO_3SEC_VIEWS_2:
+        description: Number of 3-second views for a second type of video ad
+        type:
+          - "null"
+          - number
+      VIDEO_LENGTH:
+        description: Length of the video ad
+        type:
+          - "null"
+          - number
+      VIDEO_MRC_VIEWS_2:
+        description: Number of viewable impressions for a second type of video ad
+        type:
+          - "null"
+          - number
+      VIDEO_P0_COMBINED_2:
+        description: Percentage of the second type of video ads viewed to the start
+        type:
+          - "null"
+          - number
+      VIDEO_P100_COMPLETE_2:
+        description: Percentage of the second type of video ads viewed to completion
+        type:
+          - "null"
+          - number
+      VIDEO_P25_COMBINED_2:
+        description: Percentage of the second type of video ads viewed to 25% completion
+        type:
+          - "null"
+          - number
+      VIDEO_P50_COMBINED_2:
+        description: Percentage of the second type of video ads viewed to 50% completion
+        type:
+          - "null"
+          - number
+      VIDEO_P75_COMBINED_2:
+        description: Percentage of the second type of video ads viewed to 75% completion
+        type:
+          - "null"
+          - number
+      VIDEO_P95_COMBINED_2:
+        description: Percentage of the second type of video ads viewed to 95% completion
+        type:
+          - "null"
+          - number
+      WEB_CHECKOUT_COST_PER_ACTION:
+        description: Cost per checkout action on the web
+        type:
+          - "null"
+          - number
+      WEB_CHECKOUT_ROAS:
+        description: Return on ad spend for web checkout actions
+        type:
+          - "null"
+          - number
+      WEB_SESSIONS_1:
+        description: Number of sessions on the web
+        type:
+          - "null"
+          - number
+      WEB_SESSIONS_2:
+        description: Second type of web sessions
+        type:
+          - "null"
+          - number
+    additionalProperties: true
+
 spec:
   documentation_url: "https://docs.airbyte.com/integrations/sources/pinterest"
   connection_specification:
@@ -4283,6 +4925,7 @@ spec:
                   - "TOTAL_ENGAGEMENT_SIGNUP"
                   - "TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR"
                   - "TOTAL_IDEA_PIN_PRODUCT_TAG_VISIT"
+                  - "TOTAL_IMPRESSION"
                   - "TOTAL_IMPRESSION_FREQUENCY"
                   - "TOTAL_IMPRESSION_USER"
                   - "TOTAL_LEAD"
@@ -4338,14 +4981,14 @@ spec:
             engagement_window_days:
               title: "Engagement window days"
               description: "Number of days to use as the conversion attribution window for an engagement action."
-              default: [30]
+              default: 30
               enum: [0, 1, 7, 14, 30, 60]
               type: integer
               order: 5
             view_window_days:
               title: "View window days"
               description: "Number of days to use as the conversion attribution window for a view action."
-              default: [30]
+              default: 30
               enum: [0, 1, 7, 14, 30, 60]
               type: integer
               order: 6
@@ -4366,6 +5009,60 @@ spec:
                 description: "An enumeration."
                 enum: ["INDIVIDUAL", "HOUSEHOLD"]
               order: 8
+            campaign_statuses:
+              title: "Campaign statuses (max 6 values)"
+              description: "Select at most 6 campaign status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "RUNNING"
+                  - "PAUSED"
+                  - "NOT_STARTED"
+                  - "COMPLETED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 9
+            ad_group_statuses:
+              title: "Ad group statuses (max 6 values)"
+              description: "Select at most 6 ad group status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "RUNNING"
+                  - "PAUSED"
+                  - "NOT_STARTED"
+                  - "COMPLETED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 10
+            ad_statuses:
+              title: "Ad statuses (max 6 values)"
+              description: "Select at most 6 ad status values for filtering custom report rows."
+              type: [array, "null"]
+              items:
+                type: string
+                enum:
+                  - "APPROVED"
+                  - "PAUSED"
+                  - "PENDING"
+                  - "REJECTED"
+                  - "ADVERTISER_DISABLED"
+                  - "ARCHIVED"
+                  - "DRAFT"
+                  - "DELETED_DRAFT"
+              uniqueItems: true
+              maxItems: 6
+              order: 11
             start_date:
               type: string
               title: "Start Date"
@@ -4374,23 +5071,24 @@ spec:
               pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
               pattern_descriptor: "YYYY-MM-DD"
               examples: ["2022-07-28"]
-              order: 9
+              order: 12
       account_id:
         type: string
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
+        maxLength: 18 # Pinterest account IDs are at most 18 characters
         examples: ["1234567890"]
-      num_threads:
+      num_workers:
         type: integer
-        title: Number of concurrent threads
+        title: Number of concurrent workers
         minimum: 1
         maximum: 40
         default: 2
         examples:
           - 1
           - 2
-          - 3
-        description: The number of parallel threads to use for the sync.
+          - 5
+        description: The number of worker threads to use for the sync. Higher values can speed up syncs but may increase rate-limit pressure against Pinterest.
         order: 10
   advanced_auth:
     auth_flow_type: "oauth2.0"
@@ -4422,7 +5120,34 @@ spec:
           client_secret:
             type: string
             path_in_connector_config: ["credentials", "client_secret"]
-
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Migrate custom_reports window_days fields from array [30] to integer 30.
+          Prior versions incorrectly declared default: [30] (array) for engagement_window_days
+          and view_window_days, so saved configs may contain array values instead of integers.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["custom_reports"]
+                value: >-
+                  {%- set migrated_reports = [] -%}
+                  {%- for report in config.get('custom_reports', []) -%}
+                    {%- set new_report = {} -%}
+                    {%- for key, val in report.items() -%}
+                      {%- if key in ('click_window_days', 'engagement_window_days', 'view_window_days') and val is iterable and val is not string and val | length > 0 -%}
+                        {%- set _ = new_report.update({key: val[0]}) -%}
+                      {%- else -%}
+                        {%- set _ = new_report.update({key: val}) -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- set _ = migrated_reports.append(new_report) -%}
+                  {%- endfor -%}
+                  {{- migrated_reports -}}
+            condition: "{{ config.get('custom_reports', False) }}"
 streams:
   # Full refresh streams
   - "#/definitions/boards_stream"
@@ -4477,31 +5202,5 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_threads'] or 2 }}"
+  default_concurrency: "{{ config.get('num_workers') or config.get('num_threads') or 2 }}"
   max_concurrency: 50
-
-api_budget:
-  type: HTTPAPIBudget
-  status_codes_for_ratelimit_hit: [429]
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - interval: "PT60S"
-          limit: 300
-      matchers:
-        # ad account analytics (NOT user_account/analytics)
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/analytics"
-        # campaign analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
-        # ad group analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
-        # ad analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ads/analytics"

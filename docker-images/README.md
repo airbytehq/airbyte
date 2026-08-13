@@ -76,21 +76,9 @@ Here are some convenient commands:
 
 Note:
 
-- While connectors are being migrating from `airbyte-ci` to the new Dockerfile images here in this directory, some connectors will build using the legacy `airbyte-ci` method and some will build using the new `Dockerfile`-based method.
 - _This is the preferred and recommended method of building Docker files for all JVM-based connectors._
 - By default, this builds an image matching your local architecture (`arm64` on M-series Macs).
 
-### `airbyte-ci`-based Image Builds
-
-We are in the process of phasing this out, but for now it is still the official method of building connector images:
-
-`airbyte-ci connectors --connector-name=source-foo build`
-
-Note:
-
-- This method is _not_ using the Dockerfile images in this directory. Instead it is using custom Dagger code, which is currently at its end-of-life (EOL) and will no longer be supported going forward.
-- You need to be careful about which platform(s) you are building for in this method. Use `--help` for info on how to build `arm64` images vs `amd64` images, etc.
-- This is not guaranteed to work for JVM connectors that have migrated over to the new gradle flow. Gradle commands are recommended instead.
 ### `airbyte-cdk`-based Builds
 
 This new method is faster, easier to type, and builds using the Dockerfiles in this directory, using the connector directory that is active:
@@ -101,13 +89,13 @@ airbyte-cdk image build
 ```
 
 Note:
-- Until `airybte-ci` is phased out, the images created this way will not exactly match the ones that would be built by the connector publish flow.
+
 - This method will automatically build arm64 and amd64 images - defaulting your `dev` image to `arm64` (since Mac M-series laptops are standard at Airbyte), while still providing an `amd64` based image, which you will need if uploading to `amd64`-based Platform instances.
-- All connector types are supported using this method, since the code is only thin wrapper around the `Dockerfile`-based build process.
+- All connector types are supported using this method, since the code is only a thin wrapper around the `Dockerfile`-based build process.
 
 ## GitHub Actions Workflow for Building and Publishing Images
 
-A GitHub Actions workflow is now available for manually building and publishing connector base images:
+A GitHub Actions workflow is available for manually building and publishing connector base images. **This workflow is manual-only (`workflow_dispatch`) and does not run automatically on merge to `master`.** Publishing to DockerHub requires explicit opt-in (see below).
 
 ### Using the Workflow
 
@@ -118,17 +106,30 @@ A GitHub Actions workflow is now available for manually building and publishing 
    - **Image Type**: `base` (currently only base images are supported)
    - **Tag or Version Number**: The tag to apply to the image (e.g., `dev-test` or `2.0.2`)
    - **Repository Root**: Choose between:
-     - `docker.io/airbyte` for production images
-     - `ghcr.io/airbytehq` for testing
-   - **Dry Run**: If enabled, builds the image but doesn't publish it
-   - **Require Security Check**: If enabled, fails the workflow if HIGH/CRITICAL vulnerabilities are found
+     - `ghcr.io/airbytehq` for testing (this is the **default**)
+     - `docker.io/airbyte` for production images on DockerHub
+   - **Dry Run**: If enabled, builds the image but doesn't publish it (**enabled by default**)
+   - **Require Security Check**: If enabled, fails the workflow if HIGH/CRITICAL vulnerabilities are found (enabled by default)
+
+### Publishing to DockerHub
+
+> **DockerHub publishing is opt-in.** The workflow defaults are intentionally safe: images are sent to GHCR with dry-run enabled. To actually publish a production image to DockerHub, you must change **both** of the following:
+>
+> 1. Set **Repository Root** to `docker.io/airbyte`
+> 2. Uncheck **Dry Run**
+>
+> The `docker.io/airbyte` option requires a GitHub Environment approval (`hub.docker.com/r/airbyte`), providing an additional safeguard.
+
+### Automated CI Testing (Pull Requests)
+
+A separate workflow ([Dockerfile Tests](https://github.com/airbytehq/airbyte/actions/workflows/docker-connector-base-image-tests.yml)) runs automatically on pull requests that modify Dockerfiles in this directory. It builds and tests images against GHCR but **does not publish to DockerHub**.
 
 ### Key Features
 
 - **Multi-Architecture Support**: Builds images for both `linux/amd64` and `linux/arm64` architectures
 - **Vulnerability Scanning**: Automatically scans images for security vulnerabilities
 - **Registry Options**: Supports publishing to either DockerHub or GitHub Container Registry
-- **Dry-Run Mode**: Test builds without publishing
+- **Dry-Run Mode**: Test builds without publishing (default)
 
 ## Common Build Args
 

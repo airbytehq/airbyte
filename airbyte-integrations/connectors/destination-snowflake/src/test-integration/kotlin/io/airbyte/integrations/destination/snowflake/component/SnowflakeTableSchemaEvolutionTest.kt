@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures.allTypesColumnNameMapping
@@ -32,6 +33,7 @@ class SnowflakeTableSchemaEvolutionTest(
     override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
     override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
+    override val columnDropBehavior = ColumnDropBehavior.RETAIN
 
     @Test
     fun `discover recognizes all data types`() {

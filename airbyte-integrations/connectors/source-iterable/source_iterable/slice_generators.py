@@ -108,6 +108,7 @@ class AdjustableSliceGenerator(SliceGenerator):
 
     REQUEST_PER_MINUTE_LIMIT = 4
     INITIAL_RANGE_DAYS: int = 30
+    MIN_RANGE_DAYS: int = 1
     DEFAULT_RANGE_DAYS: int = 90
     MAX_RANGE_DAYS: int = 180
     RANGE_REDUCE_FACTOR = 2
@@ -145,8 +146,9 @@ class AdjustableSliceGenerator(SliceGenerator):
         RANGE_REDUCE_FACTOR (2 times).
         Returns updated slice to try again.
         """
-        self._current_range = int(max(self._current_range / self.RANGE_REDUCE_FACTOR, self.INITIAL_RANGE_DAYS))
         start_date = self._prev_start_date
+        actual_range = (self._start_date - start_date).total_seconds() / 86400
+        self._current_range = int(max(actual_range / self.RANGE_REDUCE_FACTOR, self.MIN_RANGE_DAYS))
         end_date = min(self._end_date, start_date + (pendulum.Duration(days=self._current_range)))
         self._start_date = end_date
         return StreamSlice(start_date=start_date, end_date=end_date)

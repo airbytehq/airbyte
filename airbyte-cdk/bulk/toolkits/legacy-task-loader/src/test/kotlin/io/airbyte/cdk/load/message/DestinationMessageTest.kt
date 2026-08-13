@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.message
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -46,7 +45,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
@@ -100,31 +98,23 @@ internal class DestinationMessageTest {
     }
 
     @Test
-    fun testThrowOnIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
-            }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
+    fun testIgnoreIncompleteStatus() {
+        // INCOMPLETE must not enter the pipeline — drop it at deserialization time,
+        // matching what the orchestrator already does in STDIO mode. The source will
+        // exit non-zero and the orchestrator will shut down the destination.
+        val converted = assertDoesNotThrow {
+            convert(factory(isFileTransferEnabled = false), incompleteStatusMessage)
+        }
+        assertEquals(Ignored, converted)
     }
 
     @Test
-    fun testThrowOnFileIncompleteStatus() {
-        val e =
-            assertThrows<ConfigErrorException> {
-                convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
-            }
-        assertTrue(
-            e.message!!.startsWith(
-                "Received stream status INCOMPLETE message. This indicates a bug in the Airbyte platform. Original message:"
-            ),
-            "Exception message was wrong: ${e.message}",
-        )
+    fun testIgnoreIncompleteStatusFileTransfer() {
+        // Same behavior for file transfer mode.
+        val converted = assertDoesNotThrow {
+            convert(factory(isFileTransferEnabled = true), incompleteStatusMessage)
+        }
+        assertEquals(Ignored, converted)
     }
 
     @ParameterizedTest
