@@ -173,6 +173,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.1.12 | 2026-08-12 | [84293](https://github.com/airbytehq/airbyte/pull/84293) | Reduce `ads` stream page size from 1000 to 100 |
 | 5.1.13 | 2026-08-13 | | Migrate legacy `report_granularity` configurations |
+| 5.1.15 | 2026-08-13 | | Include the ads cursor boundary in server-side modification-time filtering |
 | 5.1.14 | 2026-08-13 | | Filter ads requests by modification time to reduce unnecessary API requests |
 | 5.1.11 | 2026-08-12 | [84290](https://github.com/airbytehq/airbyte/pull/84290) | Widen retry budget and retry transient TikTok API errors 51041 and 51004 |
 | 5.1.10 | 2026-08-11 | [84199](https://github.com/airbytehq/airbyte/pull/84199) | Retry transient TikTok API error 50000 |

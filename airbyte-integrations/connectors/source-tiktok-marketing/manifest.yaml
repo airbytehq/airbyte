@@ -100,6 +100,10 @@ definitions:
       datetime_format: "%Y-%m-%d"
     is_client_side_incremental: true
 
+  ads_incremental_sync:
+    $ref: "#/definitions/semi_incremental_sync"
+    lookback_window: PT1S
+
   single_id_partition_router:
     - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
       $parameters:
@@ -378,7 +382,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/semi_incremental_sync"
+      $ref: "#/definitions/ads_incremental_sync"
 
   creative_assets_images_stream:
     type: DeclarativeStream
