@@ -1099,6 +1099,9 @@ Classes
 
     ### Class variables
 
+    `body: str | None`
+    :   Markdown body (description) of the issue
+
     `closed_at: str | None`
     :   ISO 8601 timestamp when the issue was closed, if applicable
 
@@ -1395,6 +1398,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `body: str | None`
+    :   Markdown body (description) of the pull request
 
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable

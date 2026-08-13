@@ -129,9 +129,9 @@ The Google Analytics 4 (GA4) source connector supports the following [sync modes
 
 ## Supported Streams
 
-This connector outputs the following incremental streams:
+This connector outputs the following streams:
 
-All preconfigured streams and custom streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
+Preconfigured and custom report streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each report stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
 
 - Preconfigured streams:
   - daily_active_users
@@ -191,7 +191,13 @@ All preconfigured streams and custom streams use the Google Analytics Data API [
   - tech_platform_device_category_report
   - tech_operating_system_report
   - tech_os_with_version_report
+- Property metadata stream:
+  - `property_metadata`
 - Custom stream(s)
+
+The `property_metadata` stream is full-refresh and uses the Admin API [`properties.get`](https://developers.google.com/analytics/admin-rest/v1beta/properties/get) method. It emits one record for each configured property ID and includes a `property_id` field for joining with report streams.
+
+The `property_metadata` stream requires the Google Analytics Admin API (`analyticsadmin.googleapis.com`) to be enabled for the GCP project associated with the credentials; service-account users must enable it in their own project. If it is not enabled, this stream fails with a `403 SERVICE_DISABLED` error, while report streams continue to work.
 
 ## Connector-specific features
 
@@ -284,6 +290,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.2 | 2026-08-11 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
+| 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
+| 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
 | 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
 | 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
 | 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
