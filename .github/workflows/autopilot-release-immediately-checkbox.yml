@@ -9,6 +9,7 @@ on:
       - ready_for_review
     paths:
       - "airbyte-integrations/connectors/**"
+
 permissions:
   contents: read
   pull-requests: write
