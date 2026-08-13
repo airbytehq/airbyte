@@ -78,12 +78,19 @@ rate limits are per-access-token.
 
 ---
 
-## 5. Smart+ Ads Missing modify_time Filter
+## 5. Ads Modification-Time Filtering and Smart+ Ads
 
-The `ads` stream includes a `RecordFilter` that drops records where `modify_time` is `None`. This is
+The `ads` stream sends `filtering.modified_after` to TikTok so each advertiser's request is
+server-filtered by the incremental cursor. This reduces request volume because the previous
+client-side-only behavior re-read every ad for every advertiser on every sync, which was a large
+share of request volume against TikTok's shared-app rate limit. The value must be formatted as
+`%Y-%m-%d %H:%M:%S`; the cursor's `datetime_format` includes a trailing `Z`, which TikTok rejects.
+Only `/ad/get/` supports this filter among the ad, adgroup, and campaign endpoints.
+
+The stream retains a `RecordFilter` that drops records where `modify_time` is `None`. This is
 specifically to handle TikTok's Smart+ Ad records, which can be returned by the API without a
 `modify_time` value. Since the stream uses `modify_time` as its incremental cursor, records without
-this field would cause cursor comparison failures.
+this field would cause cursor comparison failures. The client-side filter remains as a safety net.
 
 **Why this matters:** This filter silently drops valid ad records from the sync output. If a user
 reports missing ads data, Smart+ ads without `modify_time` values are the likely cause. This is a known
