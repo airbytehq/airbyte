@@ -79,7 +79,7 @@ public class InitialSnapshotHandler {
           idTypes.stream().findFirst().ifPresent(idType -> {
             if (IdType.findByBsonType(idType).isEmpty()) {
               throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED
-                  + " (collection = " + collectionName + ").");
+                  + " (collection = " + collectionName + "). type: " + idType);
             }
           });
 

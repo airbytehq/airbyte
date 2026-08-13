@@ -133,6 +133,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private MongoCursor<Document> buildNewQueryIterator() {
     Bson filter = buildFilter();
+    LOGGER.info("filter: {}", filter);
     return isEnforceSchema ? collection.find()
         .filter(filter)
         .projection(fields)
@@ -164,6 +165,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
             case BINARY -> parseBinaryIdString(state.id(), state.binarySubType());
+            case OBJECT -> BsonDocument.parse(state.id());
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);
