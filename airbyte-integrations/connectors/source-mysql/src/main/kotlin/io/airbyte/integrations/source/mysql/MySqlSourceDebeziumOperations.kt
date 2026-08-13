@@ -387,20 +387,21 @@ class MySqlSourceDebeziumOperations(
         //
         // Safety: if information_schema or any SHOW CREATE TABLE call fails, fall back to
         // existing history rather than partial-replace. Worst-case v7 is no worse than v6.
-        val rebuiltSchemaHistory: DebeziumSchemaHistory? =
-            try {
-                rebuildSchemaHistoryFromSource(
-                    existing = debeziumState.schemaHistory,
-                    referencePosition = savedStateOffset.position,
-                )
-            } catch (e: Exception) {
-                log.warn(e) {
-                    "Schema history rebuild failed; proceeding with existing history. " +
-                        "${e.message}"
+        val schemaHistory: DebeziumSchemaHistory? =
+            debeziumState.schemaHistory?.takeIf { it.wrapped.isNotEmpty() }
+                ?: try {
+                    rebuildSchemaHistoryFromSource(
+                        existing = debeziumState.schemaHistory,
+                        referencePosition = savedStateOffset.position,
+                    )
+                } catch (e: Exception) {
+                    log.warn(e) {
+                        "Schema history rebuild failed; proceeding with existing history. " +
+                            "${e.message}"
+                    }
+                    debeziumState.schemaHistory
                 }
-                debeziumState.schemaHistory
-            }
-        return ValidDebeziumWarmStartState(debeziumState.offset, rebuiltSchemaHistory)
+        return ValidDebeziumWarmStartState(debeziumState.offset, schemaHistory)
     }
 
     private val createTableHeadPattern: Regex =
