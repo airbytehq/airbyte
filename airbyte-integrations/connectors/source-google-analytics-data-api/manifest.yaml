@@ -1037,7 +1037,7 @@ dynamic_streams:
         # first stream as <report_name>, and names each additional stream
         # <report_name>Property<property_id>.
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
+          field_path: ["name"]
           value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
