@@ -416,15 +416,13 @@ class SnowflakeDirectLoadSqlGenerator(
                     // As above: we add the column as nullable.
                     "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog(),
                 )
+
                 val castExpression =
-                    if (typeChange.newType.type == SnowflakeDataType.NUMERIC_38_9.typeName) {
-                        // When changing from FLOAT TO NUMERIC(38,9) CAST aborts the whole migration
-                        // on values that
-                        // don't fit in 29 integer digits (e.g. large FLOATs, NaN, infinity), so
-                        // nullify them instead
-                        // (mirroring what SnowflakeValueCoercer does to new values). NaN compares
-                        // greater than any
-                        // other value in Snowflake, so the guard catches it too.
+                    if (
+                        typeChange.originalType.type == SnowflakeDataType.FLOAT.typeName &&
+                            typeChange.newType.type == SnowflakeDataType.NUMERIC_38_9.typeName
+                    ) {
+                        // FLOAT TO NUMERIC(38,9) CAST aborts on values that don't fit in 29 digits
                         "IFF(ABS(${name.quote()}) >= 1e29, NULL, CAST(${name.quote()} AS ${typeChange.newType.type}))"
                     } else {
                         "CAST(${name.quote()} AS ${typeChange.newType.type})"

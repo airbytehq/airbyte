@@ -20,7 +20,8 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType.NUMBER
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType.NUMERIC_38_9
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
@@ -377,28 +378,20 @@ fun DataSource.execute(query: String): ResultSet =
         connection.createStatement().use { it.executeQuery(query) }
     }
 
-// NUMBER, NUMERIC and DECIMAL are synonyms in Snowflake. DESCRIBE TABLE reports all of them as
-// NUMBER(precision, scale).
+/** NUMBER, NUMERIC and DECIMAL are synonyms in Snowflake */
 private val NUMBER_TYPE_SYNONYMS = setOf("NUMBER", "NUMERIC", "DECIMAL")
 private val SCALE_REGEX = Regex("""\(\s*\d+\s*,\s*(\d+)\s*\)""")
 
-/**
- * Reduces a data type string reported by DESCRIBE TABLE (e.g. `VARCHAR(16777216)`) to the canonical
- * type name emitted by SnowflakeTableSchemaMapper. For most types this just strips the
- * parenthesized arguments, but for numeric types the scale is significant. A NUMBER with scale 0 is
- * a NUMBER(38,0), which is what the connector creates for integer columns, so it maps to the
- * integer type ([SnowflakeDataType.NUMBER]). A scale greater than 0 maps to the decimal type (
- * [SnowflakeDataType.NUMERIC_38_9]).
- */
+/** Reduces a data type (e.g. `VARCHAR(16777216)`) to the canonical type name (VARCHAR) */
 internal fun toCanonicalDataType(dataType: String): String {
     val baseName = dataType.takeWhile { char -> char != '(' }
     if (baseName.uppercase() !in NUMBER_TYPE_SYNONYMS) {
         return baseName
     }
-    val scale = SCALE_REGEX.find(dataType)?.groupValues?.get(1)?.toIntOrNull()
-    return if (scale != null && scale > 0) {
-        SnowflakeDataType.NUMERIC_38_9.typeName
-    } else {
-        SnowflakeDataType.NUMBER.typeName
-    }
+    val scale =
+        SCALE_REGEX.find(dataType)?.groupValues?.get(1)?.toIntOrNull()
+            ?: throw IllegalArgumentException(
+                "Expected NUMBER type with explicit precision and scale, but got: $dataType",
+            )
+    return if (scale > 0) NUMERIC_38_9.typeName else NUMBER.typeName
 }

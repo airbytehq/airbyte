@@ -785,8 +785,13 @@ internal class SnowflakeAirbyteClientTest {
     fun testToCanonicalDataTypeMapsScaleZeroNumberToIntegerType() {
         // Integer columns are created as NUMBER and reported by DESCRIBE TABLE as NUMBER(38,0).
         assertEquals(SnowflakeDataType.NUMBER.typeName, toCanonicalDataType("NUMBER(38,0)"))
-        assertEquals(SnowflakeDataType.NUMBER.typeName, toCanonicalDataType("NUMBER"))
-        assertEquals(SnowflakeDataType.NUMBER.typeName, toCanonicalDataType("NUMBER(38)"))
+    }
+
+    @Test
+    fun testToCanonicalDataTypeThrowsWhenScaleIsAbsent() {
+        // Bare NUMBER or NUMBER(precision) without explicit scale should throw
+        assertThrows<IllegalArgumentException> { toCanonicalDataType("NUMBER") }
+        assertThrows<IllegalArgumentException> { toCanonicalDataType("NUMBER(38)") }
     }
 
     @Test
