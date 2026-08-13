@@ -289,11 +289,11 @@ class TestSideConversationsErrorHandling(TestCase):
         api_token_authenticator = self._get_authenticator(self._config)
         start_date = string_to_datetime(self._config["start_date"])
 
-        denied_ticket = TicketsRecordBuilder.tickets_record().with_id(1).with_field(
-            FieldPath("generated_timestamp"), int(start_date.timestamp())
+        denied_ticket = (
+            TicketsRecordBuilder.tickets_record().with_id(1).with_field(FieldPath("generated_timestamp"), int(start_date.timestamp()))
         )
-        readable_ticket = TicketsRecordBuilder.tickets_record().with_id(2).with_field(
-            FieldPath("generated_timestamp"), int(start_date.timestamp())
+        readable_ticket = (
+            TicketsRecordBuilder.tickets_record().with_id(2).with_field(FieldPath("generated_timestamp"), int(start_date.timestamp()))
         )
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(int(start_date.timestamp())).build(),
