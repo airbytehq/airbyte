@@ -11,17 +11,23 @@ on:
       - "airbyte-integrations/connectors/**"
 
 permissions:
-  contents: read
-  pull-requests: write
+  {}
 
 concurrency:
   group: autopilot-release-immediately-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  add-checkbox:
-    name: Add release immediately checkbox
+  detect-autopilot-connectors:
+    name: Detect autopilot-enabled connectors
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      has-connectors: ${{ steps.detect.outputs.has-connectors }}
+      callout-exists: ${{ steps.bypass-state.outputs.exists }}
+      is-fork: ${{ steps.context.outputs.is-fork }}
     steps:
       - name: Resolve PR context from pull request event
         id: context
@@ -89,19 +95,22 @@ jobs:
               --gh-token "${GH_TOKEN}" \
               --output-format lines
           )"
-          [[ -z "$connectors" ]] && exit 0
-          delimiter="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
-          {
-            echo "connectors<<${delimiter}"
-            echo "$connectors"
-            echo "${delimiter}"
-          } | tee -a "$GITHUB_OUTPUT"
+          has_connectors='false'
+          [[ -n "$connectors" ]] && has_connectors='true'
+          echo "has-connectors=$has_connectors" | tee -a "$GITHUB_OUTPUT"
 
+  add-checkbox:
+    name: Add release immediately checkbox
+    needs: detect-autopilot-connectors
+    if: >
+      needs.detect-autopilot-connectors.outputs.is-fork == 'false' &&
+      needs.detect-autopilot-connectors.outputs.has-connectors == 'true' &&
+      needs.detect-autopilot-connectors.outputs.callout-exists != 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
       - name: Add release immediately checkbox to PR description
-        if: >
-          steps.context.outputs.is-fork == 'false' &&
-          steps.detect.outputs.connectors != '' &&
-          steps.bypass-state.outputs.exists != 'true'
         uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
         with:
           github_token: ${{ github.token }}
