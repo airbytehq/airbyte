@@ -1419,6 +1419,37 @@ streams:
         http_method: POST
         request_body_json:
           applicationId: "{{ stream_partition.application_id }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              http_codes:
+                - 429
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+                - 502
+                - 503
+                - 504
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: >-
+                {{ response.get('success', true) == false and
+                response.get('errorInfo', {}).get('code') == 'application_not_found' }}
+              error_message: >-
+                Ashby applicationId request returned application_not_found:
+                {{ response.get('errorInfo', {}).get('message', 'Application not found') }}.
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.get('success', true) == false }}"
+              error_message: >-
+                Ashby applicationId request failed with code
+                {{ response.get('errorInfo', {}).get('code', 'unknown') }}:
+                {{ response.get('errorInfo', {}).get('message') or
+                (response.get('errors') and response.get('errors')[0].get('message')) or
+                'Unknown error' }}.
       record_selector:
         type: RecordSelector
         extractor:
