@@ -38,6 +38,10 @@ Set up SSO before SCIM. Users your IdP provisions can only sign in with the cred
 
 ## Enable SCIM in Airbyte
 
+:::warning
+Before you enable SCIM, review your existing Airbyte user groups and delete or rename any groups that your IdP should provision. Your IdP can't adopt an Airbyte group with the same name, so provisioning for that group keeps failing with a `409` response until you rename or delete the Airbyte group. After a group is created or adopted through SCIM, you can't rename it or change its membership in Airbyte while SCIM is enabled, and you can't delete it in Airbyte while its SCIM mapping exists, even after you disable SCIM. Groups that have never been mapped through SCIM remain editable and deletable in Airbyte.
+:::
+
 1. In Airbyte, click **Organization settings** > **SSO**.
 
 2. In the SCIM section, choose your **Identity provider**: **Okta** or **Microsoft Entra ID**.
@@ -80,6 +84,7 @@ Click **Disable SCIM** to stop your IdP from provisioning. Airbyte invalidates t
 
 - Existing users, groups, and group memberships remain as they are.
 - Group names and membership become editable in Airbyte again.
+- SCIM-mapped groups remain undeletable in Airbyte while their mapping exists.
 - Nobody loses access.
 
 To resume provisioning, enable SCIM again with the same identity provider. Airbyte issues a new token, which you must paste into your IdP.
@@ -110,7 +115,7 @@ Airbyte doesn't support the following:
 - Password synchronization. Airbyte ignores any password your IdP sends.
 - Bulk operations, sorting, and ETags.
 
-Airbyte returns at most 200 resources per page and 100 by default, so configure your IdP to page through results.
+Airbyte returns 100 resources per SCIM response page by default. If your IdP requests a `count` above 200, Airbyte clamps it to 200. Your IdP must request additional pages to retrieve the remaining resources; this page size does not limit the total number of users or groups you can provision.
 
 ## How deactivation affects access
 
@@ -121,6 +126,10 @@ Deactivating or deleting a user is destructive within the organization that prov
 - Their membership in every group in the organization.
 
 Airbyte keeps their user account and their access in any other organization they belong to. It also keeps the SCIM record, so your IdP can reactivate them later.
+
+### People in multiple organizations
+
+SCIM never gates sign-in and issues no credentials. Deactivation affects only the organization that provisioned the user, so their account and access in other organizations remain unchanged and they can continue to sign in. Whether someone must sign in through SSO is determined by [SSO domain enforcement](sso), not SCIM: if an organization's claimed domain uses SSO, they must use that organization's SSO, and the same account can still access their other organizations, including organizations without SSO or SCIM.
 
 Reactivating a user only restores the baseline organization member permission. Airbyte doesn't restore the workspace roles, elevated organization roles, or group memberships they had before.
 

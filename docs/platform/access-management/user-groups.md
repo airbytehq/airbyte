@@ -24,6 +24,8 @@ While SCIM is enabled, you can't rename a group, change its membership, or delet
 
 :::warning
 Your identity provider can't adopt an existing Airbyte group with the same name. Provisioning for that group fails with a `409` response until you rename or delete the Airbyte group.
+
+Before SCIM provisioning starts, review and delete or rename any pre-existing Airbyte groups that your IdP should provision. See [Enable SCIM in Airbyte](scim#enable-scim-in-airbyte) for the full guidance.
 :::
 
 ## Open user groups
