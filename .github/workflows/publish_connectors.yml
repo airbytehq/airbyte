@@ -554,14 +554,7 @@ jobs:
           PR_NUMBER_ARGS=()
           PR_NUMBER="${PR_NUMBER//[[:space:]]/}"
           if [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
-            # The installed Ops CLI release may predate `--pr-number`; passing an
-            # unrecognized flag would fail the publish, so probe before using it.
-            if COLUMNS=200 airbyte-ops registry connector-version artifacts generate --help 2>/dev/null \
-              | grep -q -- '--pr-number'; then
-              PR_NUMBER_ARGS+=(--pr-number "$PR_NUMBER")
-            else
-              echo "::warning::Installed airbyte-ops does not support --pr-number; publishing without release attribution."
-            fi
+            PR_NUMBER_ARGS+=(--pr-number "$PR_NUMBER")
           elif [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             echo "::warning::Ignoring non-numeric PR number '$PR_NUMBER' for release attribution."
           fi
