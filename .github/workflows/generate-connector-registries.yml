@@ -165,8 +165,6 @@ jobs:
     env:
       REGISTRY_STORE: ${{ inputs.store || 'coral:prod' }}
       REGISTRY_BUCKET: prod-airbyte-cloud-connector-metadata-service
-      REHEARSAL_DIR: ${{ runner.temp }}/registry-rehearsal
-      REPORT_DIR: ${{ runner.temp }}/registry-rehearsal-reports
 
     steps:
       - name: Install uv
@@ -176,10 +174,17 @@ jobs:
         # The minimum version is gated on the airbyte-ops-mcp PR 1264 release.
         run: uv tool install "airbyte-internal-ops>=0.99.0"
 
+      - name: Resolve Variables
+        id: resolve-vars
+        shell: bash
+        run: |
+          echo "REHEARSAL_DIR=$RUNNER_TEMP/registry-rehearsal" | tee -a "$GITHUB_ENV"
+          echo "REPORT_DIR=$RUNNER_TEMP/registry-rehearsal-reports" | tee -a "$GITHUB_ENV"
+
       - name: Compile Registry Rehearsal
         id: compile-rehearsal
         env:
-          # Prefer a read-only production credential here once one is available.
+          # This credential is read/write; the Ops CLI enforces the source-store read-only guarantee.
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
           CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
