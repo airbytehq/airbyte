@@ -15,7 +15,7 @@ import requests
 from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
@@ -45,7 +45,7 @@ from .graphql import (
     get_query_releases,
     get_query_reviews,
 )
-from .utils import GitHubAPILimitException, getter
+from .utils import getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -57,8 +57,10 @@ class GithubStreamABC(HttpStream, ABC):
     stream_base_params = {}
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
+        # The wait bound belongs to the shared manifest authenticator, which reads the same
+        # `max_waiting_time` config key through its `max_wait_time` field. Setting it here would
+        # write a dead attribute onto an instance shared with every other stream.
+        kwargs.pop("max_waiting_time", None)
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -209,12 +211,10 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException as e:
-            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
-            message = "Rate limit exceeded for all configured GitHub API tokens."
-            raise AirbyteTracedException(
-                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
-            ) from e
+        # Exhausting every token no longer raises a connector-specific exception here: the
+        # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
+        # `except AirbyteTracedException` branch above re-raises untouched (it carries no
+        # response to classify).
 
 
 class GithubStream(GithubStreamABC):

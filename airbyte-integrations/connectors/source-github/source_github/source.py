@@ -16,6 +16,10 @@ from airbyte_cdk.models import (
     Status,
 )
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    RateLimitedMultipleTokenAuthenticator as RateLimitedMultipleTokenAuthenticatorModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     UnionPartitionRouter as UnionPartitionRouterModel,
 )
@@ -23,7 +27,6 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 from . import constants
 from .streams import (
@@ -201,18 +204,30 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
         raise Exception("Invalid config format")
 
-    def _get_authenticator(self, config: Mapping[str, Any]):
-        # Transition state: during the manifest migration one sync holds two
-        # authenticator instances over the same tokens — this legacy one for the
-        # Python streams and the manifest's RateLimitedMultipleTokenAuthenticator
-        # for declarative streams (shared with repository resolution via the
-        # component factory). Each tracks token quotas independently, so combined
-        # usage can transiently overcommit near the rate-limit boundary (excess
-        # requests are retried). This resolves itself once all streams are on the
-        # manifest authenticator.
-        _, token = self.get_access_token(config)
-        tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
-        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
+    def _get_authenticator(self, config: Mapping[str, Any]) -> DeclarativeAuthenticator:
+        """Return the manifest's `RateLimitedMultipleTokenAuthenticator` so the Python streams
+        charge the same per-token quota counters as the declarative ones.
+
+        This does NOT build a second authenticator, even though it reads like it: the CDK's
+        `ModelToComponentFactory` caches `RateLimitedMultipleTokenAuthenticator` instances in
+        `self._rate_limited_authenticators`, keyed by their *resolved* constructor arguments,
+        precisely so that every stream shares one set of quota counters (the same mechanism
+        `api_budget` uses). Since `self._constructor` is the very factory that builds the
+        manifest streams, the call below returns the instance already bound to their
+        requesters — verified by `test_authenticator_instance_is_shared_with_manifest_streams`.
+
+        Because the cache key is value-based, a *differently resolved* config yields a
+        different instance. Two consequences worth knowing:
+          - `config` must be the transformed config (normalized `api_url`), so this is called
+            after `_validate_and_transform_config`;
+          - `check_connection` intentionally resolves with `max_waiting_time: 0`, which is a
+            separate instance by design — `check` builds no Python streams.
+        """
+        return self._constructor.create_component(
+            model_type=RateLimitedMultipleTokenAuthenticatorModel,
+            component_definition=self.resolved_manifest["definitions"]["requester_base"]["authenticator"],
+            config=config,
+        )
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)
@@ -300,8 +315,10 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             return False, user_message or message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
+        # Resolved after the transform so the authenticator's `quota_status_url` is built from
+        # the normalized `api_url` — see `_get_authenticator` on why that matters for sharing.
+        authenticator = self._get_authenticator(config)
 
         organizations, repositories = self._resolve_repositories_and_organizations(config)
 

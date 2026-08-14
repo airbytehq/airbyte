@@ -10,6 +10,8 @@ import requests
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
+from .utils import rotate_authenticator_token
+
 
 class GithubStreamABCBackoffStrategy(BackoffStrategy):
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
@@ -38,9 +40,12 @@ class GithubStreamABCBackoffStrategy(BackoffStrategy):
     def get_waiting_time(self, backoff_time_in_seconds: Optional[float]) -> Optional[float]:
         if backoff_time_in_seconds < 60 * 10:  # type: ignore[operator]
             return backoff_time_in_seconds
-        else:
-            self.stream._http_client._session.auth.update_token()  # New token will be used in next request
-            return 1
+        # Waiting out a reset that is more than 10 minutes away is wasteful when another token
+        # is available, so rotate and retry almost immediately instead. With nothing to rotate
+        # to, waiting is the only option — returning 1 there would busy-retry a live rate limit.
+        if rotate_authenticator_token(self.stream._http_client._session.auth):
+            return 1  # New token will be used in next request
+        return backoff_time_in_seconds
 
 
 class ContributorActivityBackoffStrategy(BackoffStrategy):

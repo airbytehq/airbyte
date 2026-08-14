@@ -81,15 +81,19 @@ definitions:
           # burning the retry budget against a rate limit that hasn't reset (the legacy
           # strategy floored that path at 60s too).
           # NOTE: the legacy strategy also rotated tokens instead of waiting when the
-          # computed backoff exceeded 10 minutes (backoff_strategies.py:39-43). That
-          # *reactive* rotation has no declarative equivalent yet — the manifest
-          # authenticator only rotates *proactively*, when its own local quota counters hit
-          # zero. When GitHub rejects a request whose local counters still look healthy
-          # (token shared across connections, in-flight overcount under concurrency, or a
-          # secondary limit), the sync waits out the reset window instead of rotating.
+          # computed backoff exceeded 10 minutes. That *reactive* rotation has no declarative
+          # equivalent yet — this authenticator only rotates *proactively*, when its own local
+          # quota counters hit zero. When GitHub rejects a request whose local counters still
+          # look healthy (token shared across connections, in-flight overcount under
+          # concurrency, or a secondary limit), the manifest streams wait out the reset window
+          # instead of rotating. The Python streams still rotate here, via
+          # `utils.rotate_authenticator_token` called from `GithubStreamABCBackoffStrategy` —
+          # it drives this same shared authenticator, so a rotation triggered there also moves
+          # the manifest streams onto the next token.
           # Follow-up: give RateLimitedMultipleTokenAuthenticator a public
           # "mark this token exhausted from these response headers and rotate" hook in the
-          # CDK and call it from this error handler.
+          # CDK, call it from this error handler, and drop the private-attribute fallback in
+          # `rotate_authenticator_token`.
       response_filters:
         - type: HttpResponseFilter
           predicate: "{{ 'Retry-After' in headers }}"
