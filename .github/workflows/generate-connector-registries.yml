@@ -25,6 +25,11 @@ on:
         description: "Associated pull request number, for linking in notifications."
         required: false
         type: string
+      dry-run:
+        description: "Compile a local rehearsal and compare it with the reference store without writing the store."
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       pr:
@@ -45,6 +50,11 @@ on:
         required: false
         type: string
         default: "coral:prod"
+      dry-run:
+        description: "Compile a local rehearsal and compare it with the reference store without writing the store."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -60,6 +70,7 @@ concurrency:
 jobs:
   compile-registries:
     name: Compile Registries (ops CLI)
+    if: inputs.dry-run != true
     runs-on: ubuntu-24.04
     env:
       REGISTRY_STORE: ${{ inputs.store || 'coral:prod' }}
@@ -146,3 +157,117 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
+  rehearse-registry-compile:
+    name: Rehearse Registry Compile (read-only)
+    if: inputs.dry-run == true
+    runs-on: ubuntu-24.04
+    env:
+      REGISTRY_STORE: ${{ inputs.store || 'coral:prod' }}
+      REGISTRY_BUCKET: prod-airbyte-cloud-connector-metadata-service
+      REHEARSAL_DIR: ${{ runner.temp }}/registry-rehearsal
+      REPORT_DIR: ${{ runner.temp }}/registry-rehearsal-reports
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Ops CLI
+        # The minimum version is gated on the airbyte-ops-mcp PR 1264 release.
+        run: uv tool install "airbyte-internal-ops>=0.99.0"
+
+      - name: Compile Registry Rehearsal
+        id: compile-rehearsal
+        env:
+          # Prefer a read-only production credential here once one is available.
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
+          CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
+        shell: bash
+        run: >
+          airbyte-ops registry store compile
+          --store "${REGISTRY_STORE}"
+          --output-store "file:${REHEARSAL_DIR}"
+          --with-secrets-mask
+          ${FORCE_FLAG}
+          ${CONNECTOR_NAME_FLAG}
+
+      - name: Prepare Registry Rehearsal Reports
+        if: always()
+        run: mkdir -p "${REPORT_DIR}/prod-snapshot"
+
+      - name: Authenticate to Google Cloud
+        id: authenticate-gcloud
+        if: always()
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          credentials_json: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+
+      - name: Download Production Registry Snapshot
+        if: always()
+        shell: bash
+        run: |
+          gcloud storage cp \
+            "gs://${REGISTRY_BUCKET}/registries/v0/cloud_registry.json" \
+            "${REPORT_DIR}/prod-snapshot/cloud_registry.json"
+          gcloud storage cp \
+            "gs://${REGISTRY_BUCKET}/registries/v0/oss_registry.json" \
+            "${REPORT_DIR}/prod-snapshot/oss_registry.json"
+          gcloud storage cp \
+            "gs://${REGISTRY_BUCKET}/registries/v0/composite_registry.json" \
+            "${REPORT_DIR}/prod-snapshot/composite_registry.json"
+
+      - name: Compare Registry Rehearsal
+        if: >
+          steps.compile-rehearsal.outcome == 'success' &&
+          steps.authenticate-gcloud.outcome == 'success'
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        shell: bash
+        run: >
+          airbyte-ops registry store compare
+          --assert-stable
+          --html-report "${REPORT_DIR}/report.html"
+          --text-report "${REPORT_DIR}/report.txt"
+          "file:${REHEARSAL_DIR}"
+          "${REGISTRY_STORE}"
+
+      - name: Upload Recompiled Registry Indexes
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: registry-rehearsal-recompiled
+          path: ${{ runner.temp }}/registry-rehearsal/registries/v0/*.json
+          if-no-files-found: ignore
+
+      - name: Upload Production Registry Snapshot
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: registry-rehearsal-production-snapshot
+          path: ${{ runner.temp }}/registry-rehearsal-reports/prod-snapshot/*.json
+          if-no-files-found: ignore
+
+      - name: Upload Registry Rehearsal Text Report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: registry-rehearsal-report-txt
+          path: ${{ runner.temp }}/registry-rehearsal-reports/report.txt
+          archive: false
+          if-no-files-found: ignore
+
+      - name: Upload Registry Rehearsal HTML Report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: registry-rehearsal-report-html
+          path: ${{ runner.temp }}/registry-rehearsal-reports/report.html
+          archive: false
+          if-no-files-found: ignore
