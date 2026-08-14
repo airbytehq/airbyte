@@ -62,7 +62,7 @@ permissions:
 concurrency:
   # Only allow one active run, and one pending run.
   # This prevents race conditions between multiple runs of this workflow.
-  group: generate-connector-registry-${{ inputs.dry-run }}
+  group: ${{ inputs.dry-run == true && 'generate-connector-registry-dry-run' || 'generate-connector-registry' }}
   # If a new run is triggered while there's already one in-progress,
   # allow the in-progress run to finish.
   cancel-in-progress: false
