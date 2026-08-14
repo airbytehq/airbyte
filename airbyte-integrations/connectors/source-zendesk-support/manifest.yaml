@@ -1034,9 +1034,8 @@ definitions:
               action: IGNORE
               error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
             - http_codes: [403, 404]
-              action: FAIL
-              failure_type: config_error
-              error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
+              action: IGNORE
+              error_message: "Skipping side conversations for this ticket because it is deleted or inaccessible. Other tickets will continue to sync normally."
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
