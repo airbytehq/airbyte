@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 14, 2026
+
+Connections
+
+- Your connections now recover immediately when Airbyte runs into a conflict while starting a sync. Previously, the connection paused for about 10 minutes in this situation, which delayed its next scheduled sync.
+
+Connector Builder
+
+- Fields that share a linked value keep that link when you switch between the UI and YAML views. Previously, the first switch to YAML could replace shared values with copies, so later edits to one field no longer updated the others.
+
 ## August 12, 2026
 
 Connections
