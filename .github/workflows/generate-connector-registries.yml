@@ -13,7 +13,7 @@ on:
         type: boolean
         default: false
       connector-name:
-        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when dry-run=true."
+        description: "Connector name. A connector name to limit the scope of the latest/ resync and of the per-connector version indexes written (e.g. 'source-faker'). Leave empty to compile all connectors."
         required: false
         type: string
       store:
@@ -42,7 +42,7 @@ on:
         type: boolean
         default: false
       connector-name:
-        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when dry-run=true."
+        description: "Connector name. A connector name to limit the scope of the latest/ resync and of the per-connector version indexes written (e.g. 'source-faker'). Leave empty to compile all connectors."
         required: false
         type: string
       store:
