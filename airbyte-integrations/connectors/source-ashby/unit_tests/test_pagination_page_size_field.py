@@ -24,9 +24,9 @@ _PAGE_SIZE = 100
 
 
 def _read(stream_name: str):
-    source = get_source(config=_CONFIG, state=[])
+    source = get_source(config=_CONFIG)
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
-    return read(source, _CONFIG, catalog, [])
+    return read(source=source, config=_CONFIG, catalog=catalog)
 
 
 def _request_bodies(mocker: requests_mock.Mocker, path: str) -> list[dict]:
