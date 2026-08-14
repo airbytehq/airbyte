@@ -222,7 +222,7 @@ kubectl -n airbyte-abctl exec deploy/airbyte-abctl-temporal -- getent hosts airb
 kubectl -n airbyte-abctl exec deploy/airbyte-abctl-server -- getent hosts airbyte-db-svc.airbyte-abctl.svc.cluster.local
 ```
 
-If the lookup fails in the Temporal pod but succeeds in the server pod, lower `ndots` for the Temporal pod so its resolver doesn't apply the search list to the fully qualified name. Put the following in a values file and pass it to `abctl` with `abctl local install --values values.yaml`, so the setting persists across reinstalls and upgrades.
+If the lookup fails in the Temporal pod but succeeds in the server pod, lower `ndots` for the Temporal pod so its resolver queries the fully qualified name as-is instead of trying the search domains against it first. Put the following in a values file and pass it to `abctl` with `abctl local install --values values.yaml`, so the setting persists across reinstalls and upgrades.
 
 ```yaml
 temporal:
@@ -233,7 +233,20 @@ temporal:
 ```
 
 :::note
-`temporal.dnsConfig` requires a Helm chart version that supports it. If your chart version doesn't, you can apply the same setting directly to the running deployment with `kubectl -n airbyte-abctl patch deployment airbyte-abctl-temporal --patch '{"spec":{"template":{"spec":{"dnsConfig":{"options":[{"name":"ndots","value":"1"}]}}}}}'`, but a reinstall or upgrade discards it.
+`temporal.dnsConfig` requires a Helm chart version that supports it. If your chart version doesn't, you can apply the same setting directly to the running deployment, but a reinstall or upgrade discards it.
+
+```shell
+kubectl -n airbyte-abctl patch deployment airbyte-abctl-temporal --patch '
+spec:
+  template:
+    spec:
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+'
+```
+
 :::
 
 Only set this for Temporal. A low `ndots` value changes how partially qualified hostnames resolve, which can break an external database host configured as a short name.
