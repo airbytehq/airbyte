@@ -200,6 +200,44 @@ Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade
 - Fix 1: Upgrade abctl to version 0.29 or higher. A bug in previous versions caused this message to appear even when it should not have.
 - Fix 2: Deploy Airbyte again and set the `--insecure-cookies` flag. For example, `abctl local install --host example.com --insecure-cookies`.
 
+### Could not create Temporal client within max timeout
+
+- Error: `Could not create Temporal client within max timeout!`
+- Cause: the Temporal pod can't resolve the database service name, so it never finishes waiting for PostgreSQL. This has been reported on hosts whose resolver configuration includes a `search` domain, such as RHEL 9 machines managed by NetworkManager.
+
+The Temporal image is Alpine-based. Its startup script waits for PostgreSQL by resolving the fully qualified service name, and musl (Alpine's C library) resolves that name differently than glibc when the pod's `/etc/resolv.conf` sets `options ndots:5`, which Kubernetes injects by default. If a search-domain-suffixed query returns an error rather than `NXDOMAIN`, musl stops instead of retrying the unsuffixed name. Other Airbyte pods aren't Alpine-based, so they resolve the same name successfully.
+
+The Temporal pod logs this in a loop:
+
+```shell
+nc: bad address 'airbyte-db-svc.airbyte-abctl.svc.cluster.local'
+Waiting for PostgreSQL to startup.
+```
+
+To confirm this is what you're seeing, compare name resolution in the Temporal pod against a non-Alpine pod. Set `KUBECONFIG=~/.airbyte/abctl/abctl.kubeconfig` first.
+
+```shell
+kubectl -n airbyte-abctl exec deploy/airbyte-abctl-temporal -- cat /etc/resolv.conf
+kubectl -n airbyte-abctl exec deploy/airbyte-abctl-temporal -- getent hosts airbyte-db-svc.airbyte-abctl.svc.cluster.local
+kubectl -n airbyte-abctl exec deploy/airbyte-abctl-server -- getent hosts airbyte-db-svc.airbyte-abctl.svc.cluster.local
+```
+
+If the lookup fails in the Temporal pod but succeeds in the server pod, lower `ndots` for the Temporal pod so its resolver doesn't apply the search list to the fully qualified name. Put the following in a values file and pass it to `abctl` with `abctl local install --values values.yaml`, so the setting persists across reinstalls and upgrades.
+
+```yaml
+temporal:
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
+```
+
+:::note
+`temporal.dnsConfig` requires a Helm chart version that supports it. If your chart version doesn't, you can apply the same setting directly to the running deployment with `kubectl -n airbyte-abctl patch deployment airbyte-abctl-temporal --patch '{"spec":{"template":{"spec":{"dnsConfig":{"options":[{"name":"ndots","value":"1"}]}}}}}'`, but a reinstall or upgrade discards it.
+:::
+
+Only set this for Temporal. A low `ndots` value changes how partially qualified hostnames resolve, which can break an external database host configured as a short name.
+
 ## FAQ
 
 ### Can I use abctl with an existing Kubernetes cluster?
