@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 13, 2026
+
+Connectors
+
+- You can now search Zendesk Support by meaning, including the text of ticket comments, so your agents can find relevant conversations without matching exact keywords. Each result carries details of the ticket it belongs to, such as the title, status, and priority, so your agents know which conversation a comment came from.
+
 ## August 12, 2026
 
 Web app
