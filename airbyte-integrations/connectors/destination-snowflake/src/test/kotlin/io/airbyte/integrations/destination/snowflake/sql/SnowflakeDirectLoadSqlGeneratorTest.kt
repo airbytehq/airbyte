@@ -476,10 +476,10 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val modifiedColumns =
             mapOf(
                 "COL1" to
-                        ColumnTypeChange(
-                            ColumnType("NUMBER", true),
-                            ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
-                        )
+                    ColumnTypeChange(
+                        ColumnType("NUMBER", true),
+                        ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
+                    )
             )
         val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
         val expectedTableName =
@@ -510,10 +510,10 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val modifiedColumns =
             mapOf(
                 "COL1" to
-                        ColumnTypeChange(
-                            ColumnType("TEXT", true),
-                            ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
-                        )
+                    ColumnTypeChange(
+                        ColumnType("TEXT", true),
+                        ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
+                    )
             )
         val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
         val expectedTableName =

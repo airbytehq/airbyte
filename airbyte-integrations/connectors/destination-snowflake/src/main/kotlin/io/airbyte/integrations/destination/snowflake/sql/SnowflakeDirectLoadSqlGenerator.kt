@@ -26,7 +26,8 @@ import jakarta.inject.Singleton
 
 internal const val COUNT_TOTAL_ALIAS = "TOTAL"
 internal const val NOT_NULL = "NOT NULL"
-internal val NUMERIC_SOURCE_TYPES = setOf(SnowflakeDataType.FLOAT.typeName, SnowflakeDataType.NUMBER.typeName)
+internal val NUMERIC_SOURCE_TYPES =
+    setOf(SnowflakeDataType.FLOAT.typeName, SnowflakeDataType.NUMBER.typeName)
 
 // Snowflake-compatible (uppercase) versions of the Airbyte meta column names
 internal val SNOWFLAKE_AB_RAW_ID = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
@@ -418,11 +419,14 @@ class SnowflakeDirectLoadSqlGenerator(
                     "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog(),
                 )
                 val castExpression =
-                    // ABS() errors on non-numeric columns, so only guard numeric sources.
-                    if (typeChange.originalType.type in NUMERIC_SOURCE_TYPES &&
-                        typeChange.newType.type == SnowflakeDataType.NUMERIC_38_9.typeName) {
+                // ABS() errors on non-numeric columns, so only guard numeric sources.
+                if (
+                        typeChange.originalType.type in NUMERIC_SOURCE_TYPES &&
+                            typeChange.newType.type == SnowflakeDataType.NUMERIC_38_9.typeName
+                    ) {
                         // Nullify values over 29 digits that would abort CAST.
-                        // Snowflake orders NaN above all values, so this also catches NaN and infinity.
+                        // Snowflake orders NaN above all values, so this also catches NaN and
+                        // infinity.
                         "IFF(ABS(${name.quote()}) >= 1e29, NULL, CAST(${name.quote()} AS ${typeChange.newType.type}))"
                     } else {
                         "CAST(${name.quote()} AS ${typeChange.newType.type})"
