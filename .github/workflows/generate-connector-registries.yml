@@ -68,8 +68,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  compile-registries:
-    name: Compile Registries (ops CLI)
+  registry-compile:
+    name: Compile Registry
     if: inputs.dry-run != true
     runs-on: ubuntu-24.04
     env:
@@ -89,7 +89,7 @@ jobs:
         run: uv tool install airbyte-internal-ops
 
       - name: Compile Registries
-        id: compile-registries
+        id: registry-compile
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
@@ -133,7 +133,7 @@ jobs:
           echo "run-url=${RUN_URL}" >> $GITHUB_OUTPUT
 
       - name: Notify Slack on Registry Compile Success
-        if: steps.compile-registries.outcome == 'success'
+        if: steps.registry-compile.outcome == 'success'
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
           payload: |
@@ -146,7 +146,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
       - name: Notify Slack on Registry Compile Failure
-        if: always() && steps.compile-registries.outcome == 'failure'
+        if: always() && steps.registry-compile.outcome == 'failure'
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
           payload: |
@@ -158,8 +158,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
-  rehearse-registry-compile:
-    name: Rehearse Registry Compile (read-only)
+  registry-compile-dryrun:
+    name: Compile Registry (Dry-Run)
     if: inputs.dry-run == true
     runs-on: ubuntu-24.04
     env:
