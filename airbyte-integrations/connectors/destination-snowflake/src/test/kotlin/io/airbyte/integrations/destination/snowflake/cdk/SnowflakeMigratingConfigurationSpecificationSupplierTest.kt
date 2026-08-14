@@ -204,8 +204,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
     @Test
     fun testNumberDataTypeDefaultsToFloatWhenAbsentFromConfig() {
-        // A config without the number_data_type option must parse it as null, and the
-        // configuration factory must default it to FLOAT.
+        // Missing `number_data_type` parses as null and defaults to FLOAT.
         val json =
             unprettyPrintJson(
                 this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()

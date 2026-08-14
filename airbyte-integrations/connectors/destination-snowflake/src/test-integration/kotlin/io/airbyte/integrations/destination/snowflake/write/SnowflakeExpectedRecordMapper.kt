@@ -26,8 +26,8 @@ import io.mockk.mockk
 class SnowflakeExpectedRecordMapper(numberDataType: NumberDataType = NumberDataType.FLOAT) :
     ExpectedRecordMapper {
 
-    // The mocked config must mirror the config the variant under test runs the destination with,
-    // and must stub every property the coercer reads (the mock is strict).
+    // numberDataType must match the `number_data_type` used by the test variant.
+    // This isn't enforced, so a mismatch can silently produce incorrect expectations.
     private val coercer =
         SnowflakeValueCoercer(
             mockk {

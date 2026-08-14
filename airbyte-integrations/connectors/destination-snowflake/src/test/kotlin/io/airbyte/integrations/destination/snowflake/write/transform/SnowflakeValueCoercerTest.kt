@@ -34,8 +34,6 @@ internal class SnowflakeValueCoercerTest {
 
     private lateinit var coercer: SnowflakeValueCoercer
 
-    // Legacy raw tables mode is off by default here. In that mode every value lands in the
-    // _airbyte_data VARIANT column.
     @BeforeEach
     fun setUp() {
         coercer =
@@ -799,8 +797,7 @@ internal class SnowflakeValueCoercerTest {
     @Test
     fun testNumericModeExcessDecimalPlacesRoundedHalfUp() {
         // Values with more than 9 decimal places are truncated to 9, rounding half away from
-        // zero (HALF_UP) to match Snowflake's cast semantics. HALF_EVEN would produce
-        // 0.123456788.
+        // zero (HALF_UP) to match Snowflake's cast semantics.
         val result = numericModeCoercer().validate(enrichedNumber("0.1234567885"))
         assertEquals(ValidationResult.ShouldTruncate::class, result::class)
         val truncated = result as ValidationResult.ShouldTruncate

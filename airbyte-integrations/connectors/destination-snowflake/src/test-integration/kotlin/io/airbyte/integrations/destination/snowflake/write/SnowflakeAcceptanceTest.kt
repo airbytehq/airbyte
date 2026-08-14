@@ -196,8 +196,7 @@ class SnowflakeNumberWithScaleInsertAcceptanceTest :
         allTypesBehavior =
             StronglyTyped(
                 integerCanBeLarge = true,
-                // NUMBER(38,9) holds at most 29 digits left of the decimal point, so 1e39 is
-                // nulled rather than stored.
+                // NUMBER(38,9) holds at most 29 digits left of the decimal point.
                 numberCanBeLarge = false,
                 nestedFloatLosesPrecision = false,
                 numberIsFixedPointPrecision38Scale9 = true,

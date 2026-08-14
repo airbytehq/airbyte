@@ -74,8 +74,7 @@ fun isVarcharValid(s: String): Boolean {
 
 @Singleton
 class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
-    // In legacy raw tables mode every value lands in a VARIANT column, so the NUMBER(38, 9)
-    // column limits don't apply there; keep the FLOAT validation in that case.
+    // Legacy raw tables use VARIANT, so NUMBER(38, 9) limits don't apply; keep FLOAT validation.
     private val useDecimalNumbers =
         config.numberDataTypeConversion == NumberDataType.NUMBER_38_9 && !config.legacyRawTablesOnly
 
@@ -177,8 +176,6 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
                 AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
             )
         } else {
-            // Unlike validateFloatNumber, intentionally no Double conversion here: the exact
-            // BigDecimal is what gets loaded.
             ValidationResult.Valid
         }
     }

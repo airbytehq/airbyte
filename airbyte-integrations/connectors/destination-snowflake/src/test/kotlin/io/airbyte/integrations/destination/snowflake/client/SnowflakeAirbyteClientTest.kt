@@ -796,9 +796,7 @@ internal class SnowflakeAirbyteClientTest {
 
     @Test
     fun testToCanonicalDataTypeMapsPositiveScaleNumberToDecimalType() {
-        // The canonical decimal name must equal what SnowflakeTableSchemaMapper emits for
-        // NumberType in
-        // NUMBER(38,9) mode. NUMBER, NUMERIC and DECIMAL are all synonyms.
+        // NUMBER, NUMERIC and DECIMAL are all synonyms.
         assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("NUMBER(38,9)"))
         assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("NUMERIC(38,9)"))
         assertEquals(SnowflakeDataType.NUMERIC_38_9.typeName, toCanonicalDataType("DECIMAL(38,9)"))
