@@ -26,7 +26,7 @@ on:
         required: false
         type: string
       dry-run:
-        description: "Compile a local rehearsal and compare it with the reference store without writing the store."
+        description: "Compile to local output and compare it with the reference store without writing the store."
         required: false
         type: boolean
         default: false
@@ -51,7 +51,7 @@ on:
         type: string
         default: "coral:prod"
       dry-run:
-        description: "Compile a local rehearsal and compare it with the reference store without writing the store."
+        description: "Compile to local output and compare it with the reference store without writing the store."
         required: false
         type: boolean
         default: false
@@ -178,11 +178,11 @@ jobs:
         id: resolve-vars
         shell: bash
         run: |
-          echo "REHEARSAL_DIR=$RUNNER_TEMP/registry-rehearsal" | tee -a "$GITHUB_ENV"
-          echo "REPORT_DIR=$RUNNER_TEMP/registry-rehearsal-reports" | tee -a "$GITHUB_ENV"
+          echo "COMPILE_OUTPUT_DIR=$RUNNER_TEMP/registry-compile-output" | tee -a "$GITHUB_ENV"
+          echo "REPORT_DIR=$RUNNER_TEMP/registry-comparison-reports" | tee -a "$GITHUB_ENV"
 
-      - name: Compile Registry Rehearsal
-        id: compile-rehearsal
+      - name: Compile Registry To Local Output
+        id: compile-dryrun
         env:
           # This credential is read/write; the Ops CLI enforces the source-store read-only guarantee.
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -192,12 +192,12 @@ jobs:
         run: >
           airbyte-ops registry store compile
           --store "${REGISTRY_STORE}"
-          --output-store "file:${REHEARSAL_DIR}"
+          --output-store "file:${COMPILE_OUTPUT_DIR}"
           --with-secrets-mask
           ${FORCE_FLAG}
           ${CONNECTOR_NAME_FLAG}
 
-      - name: Prepare Registry Rehearsal Reports
+      - name: Prepare Comparison Report Directory
         if: always()
         run: mkdir -p "${REPORT_DIR}/prod-snapshot"
 
@@ -233,9 +233,9 @@ jobs:
           "gs://${REGISTRY_BUCKET}/registries/v0/composite_registry.json"
           "${REPORT_DIR}/prod-snapshot/composite_registry.json"
 
-      - name: Compare Registry Rehearsal
+      - name: Compare Compiled Output With Production
         if: >
-          steps.compile-rehearsal.outcome == 'success' &&
+          steps.compile-dryrun.outcome == 'success' &&
           steps.authenticate-gcloud.outcome == 'success'
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -245,39 +245,39 @@ jobs:
           --assert-stable
           --html-report "${REPORT_DIR}/report.html"
           --text-report "${REPORT_DIR}/report.txt"
-          "file:${REHEARSAL_DIR}"
+          "file:${COMPILE_OUTPUT_DIR}"
           "${REGISTRY_STORE}"
 
       - name: Upload Recompiled Registry Indexes
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: registry-rehearsal-recompiled
-          path: ${{ env.REHEARSAL_DIR }}/registries/v0/*.json
+          name: registry-compiled-indexes
+          path: ${{ env.COMPILE_OUTPUT_DIR }}/registries/v0/*.json
           if-no-files-found: ignore
 
       - name: Upload Production Registry Snapshot
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: registry-rehearsal-production-snapshot
+          name: registry-production-snapshot
           path: ${{ env.REPORT_DIR }}/prod-snapshot/*.json
           if-no-files-found: ignore
 
-      - name: Upload Registry Rehearsal Text Report
+      - name: Upload Registry Comparison Text Report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: registry-rehearsal-report.txt
+          name: comparison-report.txt
           path: ${{ env.REPORT_DIR }}/report.txt
           archive: false
           if-no-files-found: ignore
 
-      - name: Upload Registry Rehearsal HTML Report
+      - name: Upload Registry Comparison HTML Report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: registry-rehearsal-report.html
+          name: comparison-report.html
           path: ${{ env.REPORT_DIR }}/report.html
           archive: false
           if-no-files-found: ignore
