@@ -1,5 +1,5 @@
 ---
-products: oss-community, oss-enterprise
+products: oss-community
 ---
 
 import ContainerProviders from '@site/static/_docker_image_registries.md';
