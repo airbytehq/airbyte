@@ -1439,13 +1439,14 @@ streams:
                 {{ response.get('success', true) == false and
                 response.get('errorInfo', {}).get('code') == 'application_not_found' }}
               error_message: >-
-                Ashby applicationId request returned application_not_found:
-                {{ response.get('errorInfo', {}).get('message', 'Application not found') }}.
+                application.listHistory skipped this application's history
+                (Ashby request ID:
+                {{ response.get('errorInfo', {}).get('requestId', 'unavailable') }}).
             - type: HttpResponseFilter
               action: FAIL
               predicate: "{{ response.get('success', true) == false }}"
               error_message: >-
-                Ashby applicationId request failed with code
+                application.listHistory failed with code
                 {{ response.get('errorInfo', {}).get('code', 'unknown') }}:
                 {{ response.get('errorInfo', {}).get('message') or
                 (response.get('errors') and response.get('errors')[0].get('message')) or
