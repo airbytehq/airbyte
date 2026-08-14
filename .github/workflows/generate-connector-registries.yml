@@ -192,7 +192,7 @@ jobs:
         run: >
           airbyte-ops registry store compile
           --store "${REGISTRY_STORE}"
-          --output-store "file:${COMPILE_OUTPUT_DIR}"
+          --output-store "coral:local:${COMPILE_OUTPUT_DIR}"
           --with-secrets-mask
           ${FORCE_FLAG}
           ${CONNECTOR_NAME_FLAG}
@@ -245,7 +245,7 @@ jobs:
           --assert-stable
           --html-report "${REPORT_DIR}/report.html"
           --text-report "${REPORT_DIR}/report.txt"
-          "file:${COMPILE_OUTPUT_DIR}"
+          "coral:local:${COMPILE_OUTPUT_DIR}"
           "${REGISTRY_STORE}"
 
       - name: Upload Recompiled Registry Indexes
