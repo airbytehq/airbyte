@@ -4,54 +4,54 @@ on:
   workflow_dispatch:
     inputs:
       gitref:
-        description: "The git ref to check out from the repository"
+        description: "Git ref. The git ref to check out from the repository. Ignored when Dry run is checked."
         required: false
         type: string
       force:
-        description: "Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump."
+        description: "Force. Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump. Ignored when Dry run is checked."
         required: false
         type: boolean
         default: false
       connector-name:
-        description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
+        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when Dry run is checked."
         required: false
         type: string
       store:
-        description: "Registry store to compile."
+        description: "Store. Registry store to compile."
         required: false
         type: string
         default: "coral:prod"
       pr:
-        description: "Associated pull request number, for linking in notifications."
+        description: "PR. Associated pull request number, for linking in notifications."
         required: false
         type: string
       dry-run:
-        description: "Compile to local output and compare it with the reference store without writing the store."
+        description: "Dry run. Compile to local output and compare it with the reference store without writing the store."
         required: false
         type: boolean
         default: false
   workflow_call:
     inputs:
       pr:
-        description: "Associated pull request number, for linking in notifications."
+        description: "PR. Associated pull request number, for linking in notifications."
         required: false
         type: string
       force:
-        description: "Force resync of latest/ directories even if version markers are current. Useful when metadata changes without a version bump."
+        description: "Force. Force resync of latest/ directories even if version markers are current. Useful when metadata changes without a version bump. Ignored when Dry run is true."
         required: false
         type: boolean
         default: false
       connector-name:
-        description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
+        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when Dry run is true."
         required: false
         type: string
       store:
-        description: "Registry store to compile."
+        description: "Store. Registry store to compile."
         required: false
         type: string
         default: "coral:prod"
       dry-run:
-        description: "Compile to local output and compare it with the reference store without writing the store."
+        description: "Dry run. Compile to local output and compare it with the reference store without writing the store."
         required: false
         type: boolean
         default: false
