@@ -3,6 +3,7 @@
 #
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Iterable, Mapping
 
 import requests
@@ -81,6 +82,23 @@ class UsersRecordExtractor(DpathExtractor):
         }
     )
 
+    # The export API emits these as space-separated timestamps ("2021-04-14 16:52:31 +00:00")
+    # while the schema declares format: date-time (RFC3339); normalize so typed destinations
+    # do not null the values into _airbyte_meta.changes.
+    TIMESTAMP_FIELDS = ("signupDate", "profileUpdatedAt")
+    _TIMESTAMP_FORMATS = ("%Y-%m-%d %H:%M:%S %z", "%Y-%m-%dT%H:%M:%S%z")
+
+    @classmethod
+    def _normalize_timestamp(cls, value: Any) -> Any:
+        if not isinstance(value, str):
+            return value
+        for fmt in cls._TIMESTAMP_FORMATS:
+            try:
+                return datetime.strptime(value, fmt).isoformat()
+            except ValueError:
+                continue
+        return value
+
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         jsonl_records = super().extract_records(response=response)
         for record_dict in jsonl_records:
@@ -91,5 +109,8 @@ class UsersRecordExtractor(DpathExtractor):
                     standard[key] = value
                 else:
                     data[key] = value
+            for field in self.TIMESTAMP_FIELDS:
+                if field in standard:
+                    standard[field] = self._normalize_timestamp(standard[field])
             standard["data"] = data
             yield standard

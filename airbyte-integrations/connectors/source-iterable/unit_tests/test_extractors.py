@@ -82,9 +82,9 @@ def test_events_extraction():
                 "email": "user@example.com",
                 "userId": "u123",
                 "itblUserId": "98765",
-                "signupDate": "2024-01-15 10:30:00 +00:00",
+                "signupDate": "2024-01-15T10:30:00+00:00",
                 "signupSource": "API",
-                "profileUpdatedAt": "2024-06-01 08:00:00 +00:00",
+                "profileUpdatedAt": "2024-06-01T08:00:00+00:00",
                 "emailListIds": [1, 2, 3],
                 "subscribedMessageTypeIds": [10],
                 "unsubscribedMessageTypeIds": [20],
@@ -120,10 +120,38 @@ def test_events_extraction():
             },
             {
                 "email": "minimal@example.com",
-                "profileUpdatedAt": "2024-03-01 00:00:00 +0000",
+                "profileUpdatedAt": "2024-03-01T00:00:00+00:00",
                 "data": {},
             },
             id="minimal_record_no_custom_fields",
+        ),
+        pytest.param(
+            {
+                "email": "dates@example.com",
+                "signupDate": "2021-04-14 16:52:31 +00:00",
+                "profileUpdatedAt": "2021-04-14T16:52:30+00:00",
+            },
+            {
+                "email": "dates@example.com",
+                "signupDate": "2021-04-14T16:52:31+00:00",
+                "profileUpdatedAt": "2021-04-14T16:52:30+00:00",
+                "data": {},
+            },
+            id="space_separated_timestamps_normalized_to_rfc3339_rfc3339_passed_through",
+        ),
+        pytest.param(
+            {
+                "email": "odd-dates@example.com",
+                "signupDate": None,
+                "profileUpdatedAt": "not-a-timestamp",
+            },
+            {
+                "email": "odd-dates@example.com",
+                "signupDate": None,
+                "profileUpdatedAt": "not-a-timestamp",
+                "data": {},
+            },
+            id="null_and_unparseable_timestamps_passed_through_unchanged",
         ),
         pytest.param(
             {
