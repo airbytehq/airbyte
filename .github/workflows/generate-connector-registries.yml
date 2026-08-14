@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       gitref:
-        description: "Git ref. The git ref to check out from the repository. Ignored when Dry run is checked."
+        description: "Git ref. The git ref to check out from the repository. Ignored when dry-run=true."
         required: false
         type: string
       force:
-        description: "Force. Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump. Ignored when Dry run is checked."
+        description: "Force. Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump. Ignored when dry-run=true."
         required: false
         type: boolean
         default: false
       connector-name:
-        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when Dry run is checked."
+        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when dry-run=true."
         required: false
         type: string
       store:
@@ -37,12 +37,12 @@ on:
         required: false
         type: string
       force:
-        description: "Force. Force resync of latest/ directories even if version markers are current. Useful when metadata changes without a version bump. Ignored when Dry run is true."
+        description: "Force. Force resync of latest/ directories even if version markers are current. Useful when metadata changes without a version bump. Ignored when dry-run=true."
         required: false
         type: boolean
         default: false
       connector-name:
-        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when Dry run is true."
+        description: "Connector name. A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors. Ignored when dry-run=true."
         required: false
         type: string
       store:
