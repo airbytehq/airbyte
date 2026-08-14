@@ -22,7 +22,7 @@ on:
         type: string
         default: "coral:prod"
       pr:
-        description: "PR. Associated pull request number, for linking in notifications."
+        description: "PR. Associated pull request number, for linking in notifications. Ignored when dry-run=true."
         required: false
         type: string
       dry-run:
@@ -33,7 +33,7 @@ on:
   workflow_call:
     inputs:
       pr:
-        description: "PR. Associated pull request number, for linking in notifications."
+        description: "PR. Associated pull request number, for linking in notifications. Ignored when dry-run=true."
         required: false
         type: string
       force:
