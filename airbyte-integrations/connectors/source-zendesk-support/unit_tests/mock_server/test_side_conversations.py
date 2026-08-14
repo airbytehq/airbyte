@@ -5,7 +5,8 @@ from unittest import TestCase
 
 import freezegun
 
-from airbyte_cdk.models import Level as LogLevel, SyncMode
+from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
