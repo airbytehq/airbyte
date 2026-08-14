@@ -6,7 +6,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 The source-defined primary keys for the non-advertiser report streams now include `advertiser_id`, in addition to the entity identifier and the requested report dimensions. TikTok returns report records per advertiser partition, and `advertiser_id` is supplied as the request parameter rather than in the record body, so the previous keys could collapse distinct rows from different advertisers into one another during Incremental + Deduped syncs. The connector now injects `advertiser_id` into each affected record and includes it in the primary key so deduplication matches the real report grain.
 
-Because the primary key columns change, this is a breaking change for deduplicated destinations. Users syncing any of the impacted streams need to refresh the source schema and clear data for those streams after upgrading.
+Because the primary key columns change, this is a breaking change for deduplicated destinations. Users syncing any of the impacted streams need to refresh the source schema and clear data for those streams after upgrading. Clearing is required: refreshing the schema without clearing leaves previously synced rows keyed without `advertiser_id` next to new rows keyed with it, producing duplicates. If you take no action by the upgrade deadline (2026-09-14), the connection will stop syncing until you upgrade and complete these steps.
 
 The following streams are affected:
 
