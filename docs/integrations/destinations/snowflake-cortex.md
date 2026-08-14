@@ -88,6 +88,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.31 | 2026-08-14 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Fix sync failures caused by an incompatible pandas/SQLAlchemy dependency pair |
 | 0.2.30 | 2026-08-13 | [84363](https://github.com/airbytehq/airbyte/pull/84363) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.2.29 | 2026-07-02 | [81385](https://github.com/airbytehq/airbyte/pull/81385) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.2.28 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to community |
