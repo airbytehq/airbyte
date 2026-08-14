@@ -36,13 +36,13 @@ Platform
 
 Platform
 
-- Your Data Worker usage now reflects only the capacity your syncs are actually using. Previously, if a job reached a failed or cancelled state moments before its capacity reservation was recorded, that capacity stayed reserved indefinitely, overstating your organization's usage and leaving less capacity available for new syncs.
+- Your Data Worker usage now reflects only the capacity your syncs are actually using. Previously, if a job reached a failed or cancelled state moments before Airbyte recorded its capacity reservation, that capacity stayed reserved indefinitely, overstating your organization's usage and leaving less capacity available for new syncs.
 
 ## July 27, 2026
 
 Platform
 
-- The invitation code that lets someone join your organization or workspace is now sent only to the person you invited. It's no longer visible to anyone viewing your list of pending invitations, so an invitation can only be accepted by its intended recipient. Inviting, viewing, and canceling pending invitations in Settings works exactly as before.
+- The invitation code that lets someone join your organization or workspace is now sent only to the person you invited. It's no longer visible to anyone viewing your list of pending invitations, so only the intended recipient can accept an invitation. Inviting, viewing, and canceling pending invitations in Settings works exactly as before.
 
 ## July 23, 2026
 
