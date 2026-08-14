@@ -127,15 +127,17 @@ Deactivating or deleting a user is destructive within the organization that prov
 
 Airbyte keeps their user account and their access in any other organization they belong to. It also keeps the SCIM record, so your IdP can reactivate them later.
 
-### People in multiple organizations
-
-SCIM never gates sign-in and issues no credentials. Deactivation affects only the organization that provisioned the user, so their account and access in other organizations remain unchanged and they can continue to sign in. Whether someone must sign in through SSO is determined by [SSO domain enforcement](sso), not SCIM: if an organization's claimed domain uses SSO, they must use that organization's SSO, and the same account can still access their other organizations, including organizations without SSO or SCIM.
-
 Reactivating a user only restores the baseline organization member permission. Airbyte doesn't restore the workspace roles, elevated organization roles, or group memberships they had before.
 
 :::warning
 After you reactivate someone, your IdP must re-add them to their groups, and an organization admin must re-grant any individual roles they had. Otherwise, they can sign in but only see what an organization member sees.
 :::
+
+### People in multiple organizations
+
+SCIM doesn't control sign-in. It issues no credentials, and deactivation only affects the organization that provisioned the person, so they keep their account and their access in every other organization they belong to.
+
+Whether someone signs in with SSO depends on [SSO](sso), not SCIM. If an organization that uses SSO has verified their email domain, they sign in through that organization's SSO, and that same account still gives them access to their other organizations, including any that don't use SSO or SCIM.
 
 ## Provision users who already have Airbyte accounts
 
