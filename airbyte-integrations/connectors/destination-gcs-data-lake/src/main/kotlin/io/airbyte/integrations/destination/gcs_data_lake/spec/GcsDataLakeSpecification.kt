@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.gcs_data_lake.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
@@ -115,6 +116,19 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order": 8}""")
     val gcsEndpoint: String? = null
 
+    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding")
+    @get:JsonPropertyDescription(
+        "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes " +
+            "but may change in a future version. Choose EQUALITY to always use equality deletes, or " +
+            "POSITIONAL for readers that do not support equality-delete files."
+    )
+    @get:JsonProperty("merge_on_read_delete_encoding", required = false)
+    @get:JsonSchemaInject(
+        json =
+            """{"default":"AUTOMATIC","examples":["AUTOMATIC","EQUALITY","POSITIONAL"],"order":9}"""
+    )
+    val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding? = null
+
     fun toGcsCatalogConfiguration(): GcsCatalogConfiguration {
         val catalogConfig =
             when (catalogType) {
@@ -142,6 +156,12 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
             catalogConfiguration = catalogConfig
         )
     }
+}
+
+enum class MergeOnReadDeleteEncoding(@get:JsonValue val value: String) {
+    AUTOMATIC("AUTOMATIC"),
+    EQUALITY("EQUALITY"),
+    POSITIONAL("POSITIONAL"),
 }
 
 @Singleton
