@@ -205,8 +205,11 @@ class GcsDataLakeStreamLoader(
 
         val positionalDeletesEnabled =
             stream.tableSchema.importType is Dedupe &&
-                icebergConfiguration.mergeOnReadDeleteEncoding ==
-                    MergeOnReadDeleteEncoding.POSITIONAL
+                when (icebergConfiguration.mergeOnReadDeleteEncoding) {
+                    MergeOnReadDeleteEncoding.AUTOMATIC,
+                    MergeOnReadDeleteEncoding.EQUALITY -> false
+                    MergeOnReadDeleteEncoding.POSITIONAL -> true
+                }
         val identifierFieldIds =
             if (positionalDeletesEnabled) targetSchema.identifierFieldIds() else emptySet()
         val positionalDeleteState =
