@@ -67,9 +67,9 @@ sets: only the web report exposes checkout, ROAS, and new-customer metrics such 
 `conversions`.
 
 The `advertiser_report_hourly` and `web_report_hourly` streams add the `hour` column for a
-per-day-and-hour breakdown of campaign spend and traffic metrics. AppLovin serves hourly
-data in realtime mode only, so these streams omit the cohort attribution metrics
-(`sales_0d`, `roas_7d`, and so on) available in the daily streams. Note that AppLovin's
+per-day-and-hour breakdown of campaign spend and traffic metrics. Like the daily streams,
+they request cohort mode (`day_column=day`), but they only pull base spend and traffic
+metrics, not the `sales_0d`/`roas_7d`-style cohort attribution columns. Note that AppLovin's
 documentation lists `hour` only for publisher reports, but the advertiser endpoints serve
 it as well.
 
