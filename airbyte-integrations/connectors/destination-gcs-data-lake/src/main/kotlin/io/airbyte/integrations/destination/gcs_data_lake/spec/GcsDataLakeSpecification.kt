@@ -116,7 +116,7 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"order": 8}""")
     val gcsEndpoint: String? = null
 
-    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding (Automatic, Equality, or Positional)")
+    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding")
     @get:JsonPropertyDescription(
         "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes " +
             "but may change in a future version. Choose EQUALITY to always use equality deletes, or " +
