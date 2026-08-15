@@ -78,21 +78,13 @@ class GcsDataLakeStreamLoader(
                         ?: originalName
 
                 if (mappedName != originalName) {
-                    if (field.isOptional) {
-                        Types.NestedField.optional(
-                            field.fieldId(),
-                            mappedName,
-                            field.type(),
-                            field.doc()
-                        )
-                    } else {
-                        Types.NestedField.required(
-                            field.fieldId(),
-                            mappedName,
-                            field.type(),
-                            field.doc()
-                        )
-                    }
+                    Types.NestedField.of(
+                        field.fieldId(),
+                        field.isOptional,
+                        mappedName,
+                        field.type(),
+                        field.doc()
+                    )
                 } else {
                     field
                 }
