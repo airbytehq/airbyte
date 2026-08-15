@@ -70,7 +70,7 @@ class CommentsTest(TestCase):
         self.r_mock.get(
             HttpRequest(
                 url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/issues/comments",
-                query_params={"per_page": 10, "since": "2020-05-01T00:00:00Z"},
+                query_params={"per_page": 100, "since": "2020-05-01T00:00:00Z"},
             ),
             HttpResponse(json.dumps(find_template("comments", __file__)), 200),
         )

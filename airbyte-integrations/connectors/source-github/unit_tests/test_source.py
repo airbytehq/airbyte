@@ -230,7 +230,9 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
     assert constants.DEFAULT_PAGE_SIZE != constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
 
     for stream in streams:
-        if stream.large_stream:
+        if stream.name == "comments":
+            assert stream.page_size == constants.DEFAULT_PAGE_SIZE
+        elif stream.large_stream:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
         else:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE
