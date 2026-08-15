@@ -40,7 +40,7 @@ In the AppLovin dashboard, click your account name (top right) → **Keys** and 
 | `start_date` | `string` | UTC date to start replicating from (`YYYY-MM-DD`). | |
 | `end_date` | `string` | UTC date to replicate up to, inclusive (`YYYY-MM-DD`). | today |
 | `lookback_window` | `integer` | Days before the last synced date to re-request on each incremental sync. | `3` |
-| `attribution_mode` | `string` | Attribution mode for `web_report_daily`: `click` or `click_and_view`. | `click` |
+| `attribution_mode` | `string` | Attribution mode for the web report streams: `click` or `click_and_view`. | `click` |
 | `num_workers` | `integer` | Number of streams to sync concurrently. | `2` |
 
 ## Supported sync modes
@@ -55,7 +55,9 @@ In the AppLovin dashboard, click your account name (top right) → **Keys** and 
 | Stream Name | Endpoint | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|----------|-------------|------------|---------------------|----------------------|
 | advertiser_report_daily | `/report` | day.campaign_id_external.creative_set_id.country.platform.placement_type | Offset | ✅ | ✅ |
+| advertiser_report_hourly | `/report` | day.hour.campaign_id_external.creative_set_id.country.platform.placement_type | Offset | ✅ | ✅ |
 | web_report_daily | `/webReport` | day.campaign_id_external.creative_set_id.country.platform.placement_type | Offset | ✅ | ✅ |
+| web_report_hourly | `/webReport` | day.hour.campaign_id_external.creative_set_id.country.platform.placement_type | Offset | ✅ | ✅ |
 | asset_report_daily | `/assetAnalyticsReport` | date.asset_id.campaign_id.creative_set_id | Offset | ✅ | ✅ |
 
 Use `advertiser_report_daily` for app install campaigns and `web_report_daily` for campaigns
@@ -64,10 +66,18 @@ sets: only the web report exposes checkout, ROAS, and new-customer metrics such 
 `nc_d0_checkouts` and `chka_usd_7d`, and only the app report exposes install metrics such as
 `conversions`.
 
+The `advertiser_report_hourly` and `web_report_hourly` streams add the `hour` column for a
+per-day-and-hour breakdown of campaign spend and traffic metrics. AppLovin serves hourly
+data in realtime mode only, so these streams omit the cohort attribution metrics
+(`sales_0d`, `roas_7d`, and so on) available in the daily streams. Note that AppLovin's
+documentation lists `hour` only for publisher reports, but the advertiser endpoints serve
+it as well.
+
 ### Incremental syncs and restated data
 
 Every stream requests one day at a time, so each record belongs to a single date.
-`advertiser_report_daily` and `web_report_daily` cursor on the API's native `day` column;
+All report streams except `asset_report_daily` cursor on the API's native `day` column
+(hourly records stay day-sliced — each day's sync returns that day's 24 hourly rows);
 `asset_report_daily` has no day dimension, so the connector adds the requested date as
 `date` and cursors on that.
 
@@ -83,8 +93,8 @@ an empty result:
 
 | Endpoint | Window |
 |----------|--------|
-| `/report` | 45 days |
-| `/webReport` | 90 days |
+| `/report` | 45 days (30 days for the `hour` column, so `advertiser_report_hourly` clamps to 30) |
+| `/webReport` | 90 days (30 days for the `hour` column, so `web_report_hourly` clamps to 30) |
 | `/assetAnalyticsReport` | 45 days |
 
 The connector clamps `start_date` to the oldest day each endpoint still serves, so a
@@ -94,9 +104,9 @@ Backfilling more history than the window allows is not possible through this API
 ### Requesting other columns
 
 Each stream requests a fixed column set. AppLovin exposes many more columns, including
-hourly and longer attribution windows. To add them, edit the stream's `columns` request
-parameter and the corresponding schema in `manifest.yaml`; the schemas allow additional
-properties, so extra columns pass through even if they are not declared.
+longer attribution windows. To add them, edit the stream's `columns` request parameter and
+the corresponding schema in `manifest.yaml`; the schemas allow additional properties, so
+extra columns pass through even if they are not declared.
 
 ## Changelog
 
@@ -105,6 +115,6 @@ properties, so extra columns pass through even if they are not declared.
 
 | Version | Date       | Pull Request                                           | Subject                                                                             |
 | :------ | :--------- | :----------------------------------------------------- | :---------------------------------------------------------------------------------- |
-| 0.1.0   | 2026-06-29 | [81418](https://github.com/airbytehq/airbyte/pull/81418) | Initial release: `advertiser_report_daily`, `web_report_daily`, `asset_report_daily` |
+| 0.1.0   | 2026-06-29 | [81418](https://github.com/airbytehq/airbyte/pull/81418) | Initial release: `advertiser_report_daily`, `advertiser_report_hourly`, `web_report_daily`, `web_report_hourly`, `asset_report_daily` |
 
 </details>
