@@ -3,7 +3,7 @@
 import hashlib
 import json
 import logging
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Iterable, Mapping, Optional
 
@@ -13,6 +13,10 @@ from requests.auth import HTTPBasicAuth
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice
 
 
@@ -21,6 +25,24 @@ logger = logging.getLogger("airbyte")
 
 FRESHDESK_EXPORT_DATE_FORMAT = "%d-%m-%Y %H:%M:%S %z"
 RFC3339_SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+_EXPORT_UNAVAILABLE_MESSAGE = (
+    "Freshdesk ticket activities export is unavailable. Confirm the API key belongs to an "
+    "account admin and that the ticket activities scheduled export is enabled."
+)
+
+
+class FreshdeskExportBackoffStrategy(BackoffStrategy):
+    """Honor Retry-After when present, otherwise use exponential backoff for 429/5xx."""
+
+    def backoff_time(self, response_or_exception, attempt_count: int) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            retry_after = response_or_exception.headers.get("Retry-After")
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except ValueError:
+                    pass
+        return min(2**attempt_count, 60.0)
 
 
 @dataclass
@@ -28,9 +50,33 @@ class TicketActivitiesRetriever(Retriever):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_timeout: int = 300
+    backoff_strategy: Optional[BackoffStrategy] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._session = requests.Session()
+        error_mapping = {
+            **DEFAULT_ERROR_MAPPING,
+            401: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message=_EXPORT_UNAVAILABLE_MESSAGE,
+            ),
+            403: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message=_EXPORT_UNAVAILABLE_MESSAGE,
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=None,
+                error_message="Freshdesk ticket activities export is not ready yet.",
+            ),
+        }
+        self._http_client = HttpClient(
+            name="ticket_activities",
+            logger=logger,
+            error_handler=HttpStatusErrorHandler(logger, error_mapping=error_mapping),
+            backoff_strategy=self.backoff_strategy or FreshdeskExportBackoffStrategy(),
+        )
 
     def read_records(
         self,
@@ -83,21 +129,22 @@ class TicketActivitiesRetriever(Retriever):
         auth: Optional[HTTPBasicAuth] = None,
         allow_missing: bool = False,
     ) -> Optional[Mapping[str, Any]]:
-        response = self._session.get(url, params=params, auth=auth, timeout=self.request_timeout)
+        headers = None
+        if auth is not None:
+            headers = requests.Request("GET", url, auth=auth).prepare().headers
+        _, response = self._http_client.send_request(
+            http_method="GET",
+            url=url,
+            request_kwargs={"timeout": self.request_timeout},
+            headers=headers,
+            params=params,
+        )
         if allow_missing and response.status_code == 404:
             return None
         if response.status_code in (401, 403):
             raise AirbyteTracedException(
-                message=(
-                    "Freshdesk ticket activities export is unavailable. Confirm the API key belongs to an "
-                    "account admin and that the ticket activities scheduled export is enabled."
-                ),
+                message=_EXPORT_UNAVAILABLE_MESSAGE,
                 failure_type=FailureType.config_error,
-            )
-        if response.status_code == 429 or response.status_code >= 500:
-            raise AirbyteTracedException(
-                message=f"Freshdesk ticket activities export returned HTTP {response.status_code}.",
-                failure_type=FailureType.transient_error,
             )
         response.raise_for_status()
         try:

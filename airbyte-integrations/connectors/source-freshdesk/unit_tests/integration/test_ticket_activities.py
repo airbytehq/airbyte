@@ -7,6 +7,7 @@ import pytest
 from requests_mock import Mocker
 
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, FailureType, YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import StreamSlice
 
 
@@ -26,13 +27,22 @@ from components import TicketActivitiesRetriever  # noqa: E402
 from config_builder import ConfigBuilder  # noqa: E402
 
 
+class _FastBackoffStrategy(BackoffStrategy):
+    def backoff_time(self, response_or_exception, attempt_count: int) -> float:
+        return 0.01
+
+
 _DOMAIN = "a-domain.freshdesk.com"
 _EXPORT_URL = f"https://{_DOMAIN}/api/v2/export/ticket_activities"
 _DOWNLOAD_URL = "https://exports.freshdesk.example/2022-01-01-ticket-activities.json"
 
 
 def _retriever() -> TicketActivitiesRetriever:
-    return TicketActivitiesRetriever(config=ConfigBuilder().domain(_DOMAIN).build(), parameters={})
+    return TicketActivitiesRetriever(
+        config=ConfigBuilder().domain(_DOMAIN).build(),
+        parameters={},
+        backoff_strategy=_FastBackoffStrategy(),
+    )
 
 
 def _slice(start_time: str = "2022-01-01T00:00:00Z", end_time: str = "2022-01-01T23:59:59Z") -> StreamSlice:
@@ -152,6 +162,25 @@ def test_ticket_activities_export_errors_are_traced(requests_mock: Mocker, statu
         list(_retriever().read_records({}, _slice()))
 
     assert exc_info.value.failure_type == failure_type
+
+
+def test_ticket_activities_retries_rate_limits_then_reads(requests_mock: Mocker) -> None:
+    requests_mock.get(
+        _EXPORT_URL,
+        [
+            {"status_code": 429, "json": {}, "headers": {"Retry-After": "0.01"}},
+            {"status_code": 200, "json": {"export": {"url": _DOWNLOAD_URL}}},
+        ],
+    )
+    requests_mock.get(
+        _DOWNLOAD_URL,
+        json={"activities_data": [_activity(ticket_id=600)]},
+    )
+
+    records = list(_retriever().read_records({}, _slice()))
+
+    assert [record["ticket_id"] for record in records] == [600]
+    assert requests_mock.call_count == 3
 
 
 def test_ticket_activities_stream_is_incremental() -> None:
