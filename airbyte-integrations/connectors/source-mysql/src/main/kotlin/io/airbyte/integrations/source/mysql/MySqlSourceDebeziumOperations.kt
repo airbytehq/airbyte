@@ -273,12 +273,6 @@ class MySqlSourceDebeziumOperations(
                 )
         }
 
-    private fun parseSavedOffset(debeziumState: UnvalidatedDeserializedState): SavedOffset {
-        val position: MySqlSourceCdcPosition = position(debeziumState.offset)
-        val gtidSet: String? = debeziumState.offset.wrapped.values.first()["gtids"]?.asText()
-        return SavedOffset(position, gtidSet)
-    }
-
     data class SavedOffset(val position: MySqlSourceCdcPosition, val gtidSet: String?)
 
     enum class CdcStateValidateResult {
@@ -580,6 +574,16 @@ class MySqlSourceDebeziumOperations(
             }
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
             return MySqlSourceCdcPosition(offsetValue["file"].asText(), offsetValue["pos"].asLong())
+        }
+
+        internal fun parseSavedOffset(debeziumState: UnvalidatedDeserializedState): SavedOffset {
+            val position: MySqlSourceCdcPosition = position(debeziumState.offset)
+            val gtidSet: String? =
+                debeziumState.offset.wrapped.values.first()["gtids"]
+                    ?.takeIf { it.isTextual }
+                    ?.asText()
+                    ?.takeIf { it.isNotBlank() && it != "null" }
+            return SavedOffset(position, gtidSet)
         }
     }
 }
