@@ -201,9 +201,9 @@ def test_exhaustion_waits_for_reset_then_refreshes_counters(sleep_mock, requests
     list(read_full_refresh(stream))
 
     all_sleeps = [c.args[0] for c in sleep_mock.call_args_list]
-    assert sum(all_sleeps) >= accepted_waiting_time_in_seconds, (
-        f"Expected total sleep >= {accepted_waiting_time_in_seconds}s, got {sum(all_sleeps):.1f}s"
-    )
+    assert (
+        sum(all_sleeps) >= accepted_waiting_time_in_seconds
+    ), f"Expected total sleep >= {accepted_waiting_time_in_seconds}s, got {sum(all_sleeps):.1f}s"
     heartbeat_sleeps = [s for s in all_sleeps if s >= 1.0]
     assert len(heartbeat_sleeps) > 1, "Expected multiple heartbeat sleep chunks, not a single blocking sleep"
     # Counters were reseeded to 500 each after the wait; the two remaining pages were charged
