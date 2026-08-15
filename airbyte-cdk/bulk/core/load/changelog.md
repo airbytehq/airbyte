@@ -7,7 +7,7 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### Unreleased
+### 1.0.25 — 2026-08-15
 
 [#82750](https://github.com/airbytehq/airbyte/pull/82750) — Add positional delete support to the Iceberg load toolkit.
 
