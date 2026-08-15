@@ -88,12 +88,14 @@ class S3DataLakeStreamLoader(
         }
         stagingBranchCreated = true
 
+        // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing; flip it
+        // back to equality before release.
         val positionalDeletesEnabled =
             stream.tableSchema.importType is Dedupe &&
                 when (icebergConfiguration.mergeOnReadDeleteEncoding) {
                     MergeOnReadDeleteEncoding.AUTOMATIC,
-                    MergeOnReadDeleteEncoding.EQUALITY -> false
                     MergeOnReadDeleteEncoding.POSITIONAL -> true
+                    MergeOnReadDeleteEncoding.EQUALITY -> false
                 }
         val identifierFieldIds =
             if (positionalDeletesEnabled) {

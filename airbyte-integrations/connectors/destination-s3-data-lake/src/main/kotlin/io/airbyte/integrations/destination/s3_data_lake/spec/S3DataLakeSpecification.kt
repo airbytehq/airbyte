@@ -85,7 +85,7 @@ class S3DataLakeSpecification :
     )
     val flushBatchSizeMb: Long? = null
 
-    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding (Automatic, Equality, or Positional)")
+    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding")
     @get:JsonPropertyDescription(
         "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes " +
             "but may change in a future version. Choose EQUALITY to always use equality deletes, or " +
