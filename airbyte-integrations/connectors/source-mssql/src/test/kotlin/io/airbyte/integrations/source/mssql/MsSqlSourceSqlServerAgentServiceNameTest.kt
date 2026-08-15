@@ -36,9 +36,7 @@ class MsSqlSourceSqlServerAgentServiceNameTest {
                     pattern.split("%").joinToString(".*") { Regex.escape(it) }.toRegex()
                 )
             }
-        assertEquals(expectedMatch, matches) {
-            "patterns=$patterns serviceName='$serviceName'"
-        }
+        assertEquals(expectedMatch, matches) { "patterns=$patterns serviceName='$serviceName'" }
     }
 
     companion object {

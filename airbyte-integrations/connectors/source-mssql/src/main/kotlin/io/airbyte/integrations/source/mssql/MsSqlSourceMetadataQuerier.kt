@@ -77,21 +77,19 @@ class MsSqlSourceMetadataQuerier(
 
             // For on-premises SQL Server, check if SQL Server Agent is running
             base.conn.createStatement().use { stmt: Statement ->
-                stmt
-                    .executeQuery(SQL_SERVER_AGENT_SERVICE_QUERY)
-                    .use { rs: ResultSet ->
-                        if (!rs.next()) {
-                            throw ConfigErrorException(
-                                "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running."
-                            )
-                        }
-                        val status = rs.getString("status_desc")
-                        if (status != "Running") {
-                            throw ConfigErrorException(
-                                "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running."
-                            )
-                        }
+                stmt.executeQuery(SQL_SERVER_AGENT_SERVICE_QUERY).use { rs: ResultSet ->
+                    if (!rs.next()) {
+                        throw ConfigErrorException(
+                            "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running."
+                        )
                     }
+                    val status = rs.getString("status_desc")
+                    if (status != "Running") {
+                        throw ConfigErrorException(
+                            "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running."
+                        )
+                    }
+                }
             }
         } catch (e: SQLException) {
             // Gracefully handle cases where sys.dm_server_services is not accessible
