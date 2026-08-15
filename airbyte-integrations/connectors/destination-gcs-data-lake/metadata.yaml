@@ -48,4 +48,12 @@ data:
     - title: Access control
       url: https://cloud.google.com/storage/docs/access-control
       type: permissions_scopes
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
 metadataSpecVersion: "1.0"
