@@ -75,7 +75,7 @@ def test_api_key_is_sent_as_request_parameter():
         ("web_report_hourly", "/webReport"),
     ],
 )
-def test_hourly_streams_request_hour_breakdown_in_realtime_mode(stream_name, endpoint):
+def test_hourly_streams_request_hour_breakdown_in_cohort_mode(stream_name, endpoint):
     with requests_mock.Mocker() as mocker:
         mocker.get(
             f"{_BASE_URL}{endpoint}",
@@ -102,8 +102,8 @@ def test_hourly_streams_request_hour_breakdown_in_realtime_mode(stream_name, end
         assert "day" in columns
         assert "hour" in columns
         assert request.qs["sort_hour"] == ["asc"]
-        # Realtime mode: hourly metrics must not be pulled under cohort.
-        assert "day_column" not in request.qs
+        # Cohort mode, same as the daily streams.
+        assert request.qs["day_column"] == ["day"]
     assert len(output.records) >= 1
 
 

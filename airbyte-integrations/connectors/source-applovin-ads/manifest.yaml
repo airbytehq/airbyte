@@ -217,10 +217,10 @@ definitions:
         schema:
           $ref: "#/schemas/web_report_daily"
 
-    # Hourly streams run in realtime mode (no `day_column`): cohort *_0d/7d/28d
-    # metrics are not requested because attributing them to an hour is
-    # undocumented. AppLovin's docs list `hour` only for publisher reports, but
-    # the advertiser report on /report serves it too (verified empirically).
+    # Hourly streams use cohort mode (`day_column: day`) like the daily streams,
+    # but request only base spend/traffic metrics — no *_0d/7d/28d columns.
+    # AppLovin's docs list `hour` only for publisher reports, but the advertiser
+    # report on /report serves it too (verified empirically).
     advertiser_report_hourly:
       type: DeclarativeStream
       name: advertiser_report_hourly
@@ -245,6 +245,7 @@ definitions:
           request_parameters:
             report_type: advertiser
             format: json
+            day_column: day
             columns: day,hour,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_bid_goal,campaign_package_name,ad,ad_creative_type,ad_type,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales
             sort_hour: ASC
             sort_campaign_id_external: ASC
@@ -288,6 +289,7 @@ definitions:
             report_type: advertiser
             format: json
             attribution_mode: "{{ config.get('attribution_mode', 'click') }}"
+            day_column: day
             columns: day,hour,campaign,campaign_id_external,campaign_type,country,creative_set,creative_set_id,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,sales
             sort_hour: ASC
             sort_campaign_id_external: ASC
