@@ -33,7 +33,9 @@ def _remove_temp_file(path: str) -> None:
     try:
         os.remove(path)
     except FileNotFoundError:
-        pass
+        # Best-effort atexit cleanup: the materialized key file may already have
+        # been unlinked by an earlier explicit delete or a previous cleanup hook.
+        logger.debug("Service account temp key file already removed: %s", path)
 
 
 def _materialize_service_account_credentials(credentials: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
