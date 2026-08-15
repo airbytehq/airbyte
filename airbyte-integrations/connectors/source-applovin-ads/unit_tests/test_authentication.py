@@ -9,6 +9,7 @@ request parameter and that a rejected key surfaces as a config error.
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pytest
 import requests_mock
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -64,6 +65,45 @@ def test_api_key_is_sent_as_request_parameter():
     assert mocker.called
     for request in mocker.request_history:
         assert request.qs.get("api_key") == ["test-report-key"]
+    assert len(output.records) >= 1
+
+
+@pytest.mark.parametrize(
+    ("stream_name", "endpoint"),
+    [
+        ("advertiser_report_hourly", "/report"),
+        ("web_report_hourly", "/webReport"),
+    ],
+)
+def test_hourly_streams_request_hour_breakdown_in_realtime_mode(stream_name, endpoint):
+    with requests_mock.Mocker() as mocker:
+        mocker.get(
+            f"{_BASE_URL}{endpoint}",
+            json={
+                "results": [
+                    {
+                        "day": _CONFIG["start_date"],
+                        "hour": "13",
+                        "campaign_id_external": "campaign-1",
+                        "creative_set_id": "creative-set-1",
+                        "country": "us",
+                        "platform": "web",
+                        "placement_type": "BANNER",
+                        "impressions": "10",
+                    }
+                ]
+            },
+        )
+        output = _read_stream(stream_name)
+
+    assert mocker.called
+    for request in mocker.request_history:
+        columns = request.qs["columns"][0].split(",")
+        assert "day" in columns
+        assert "hour" in columns
+        assert request.qs["sort_hour"] == ["asc"]
+        # Realtime mode: hourly metrics must not be pulled under cohort.
+        assert "day_column" not in request.qs
     assert len(output.records) >= 1
 
 

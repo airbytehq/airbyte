@@ -15,7 +15,29 @@
       "stream": {
         "default_cursor_field": ["day"],
         "json_schema": {},
+        "name": "advertiser_report_hourly",
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "default_cursor_field": ["day"],
+        "json_schema": {},
         "name": "web_report_daily",
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "destination_sync_mode": "append",
+      "sync_mode": "incremental"
+    },
+    {
+      "stream": {
+        "default_cursor_field": ["day"],
+        "json_schema": {},
+        "name": "web_report_hourly",
         "source_defined_cursor": true,
         "supported_sync_modes": ["full_refresh", "incremental"]
       },

@@ -117,6 +117,15 @@ definitions:
       datetime_format: "%Y-%m-%d"
       min_datetime: "{{ day_delta(-89, format='%Y-%m-%d') }}"
 
+  # The `hour` column is only served for the past 30 days.
+  hourly_report_incremental_sync:
+    $ref: "#/definitions/report_incremental_sync"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+      min_datetime: "{{ day_delta(-29, format='%Y-%m-%d') }}"
+
   # No day dimension in the asset report; AddFields stamps the slice date.
   asset_report_incremental_sync:
     $ref: "#/definitions/report_incremental_sync"
@@ -208,6 +217,95 @@ definitions:
         schema:
           $ref: "#/schemas/web_report_daily"
 
+    # Hourly streams run in realtime mode (no `day_column`): cohort *_0d/7d/28d
+    # metrics are not requested because attributing them to an hour is
+    # undocumented. AppLovin's docs list `hour` only for publisher reports, but
+    # the advertiser report on /report serves it too (verified empirically).
+    advertiser_report_hourly:
+      type: DeclarativeStream
+      name: advertiser_report_hourly
+      primary_key:
+        - day
+        - hour
+        - campaign_id_external
+        - creative_set_id
+        - ad
+        - ad_type
+        - ad_creative_type
+        - custom_page_id
+        - country
+        - platform
+        - placement_type
+        - device_type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /report
+          request_parameters:
+            report_type: advertiser
+            format: json
+            columns: day,hour,campaign,campaign_id_external,campaign_type,campaign_ad_type,campaign_bid_goal,campaign_package_name,ad,ad_creative_type,ad_type,country,creative_set,creative_set_id,custom_page_id,device_type,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,average_cpa,conversions,conversion_rate,sales
+            sort_hour: ASC
+            sort_campaign_id_external: ASC
+            sort_creative_set_id: ASC
+            sort_ad: ASC
+            sort_ad_type: ASC
+            sort_ad_creative_type: ASC
+            sort_custom_page_id: ASC
+            sort_country: ASC
+            sort_platform: ASC
+            sort_placement_type: ASC
+            sort_device_type: ASC
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/hourly_report_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/advertiser_report_hourly"
+
+    web_report_hourly:
+      type: DeclarativeStream
+      name: web_report_hourly
+      primary_key:
+        - day
+        - hour
+        - campaign_id_external
+        - creative_set_id
+        - country
+        - platform
+        - placement_type
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /webReport
+          request_parameters:
+            report_type: advertiser
+            format: json
+            attribution_mode: "{{ config.get('attribution_mode', 'click') }}"
+            columns: day,hour,campaign,campaign_id_external,campaign_type,country,creative_set,creative_set_id,placement_type,platform,cost,impressions,clicks,ctr,average_cpc,sales
+            sort_hour: ASC
+            sort_campaign_id_external: ASC
+            sort_creative_set_id: ASC
+            sort_country: ASC
+            sort_platform: ASC
+            sort_placement_type: ASC
+        record_selector:
+          $ref: "#/definitions/base_record_selector"
+        paginator:
+          $ref: "#/definitions/base_paginator"
+      incremental_sync:
+        $ref: "#/definitions/hourly_report_incremental_sync"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/web_report_hourly"
+
     asset_report_daily:
       type: DeclarativeStream
       name: asset_report_daily
@@ -247,7 +345,9 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/advertiser_report_daily"
+  - $ref: "#/definitions/streams/advertiser_report_hourly"
   - $ref: "#/definitions/streams/web_report_daily"
+  - $ref: "#/definitions/streams/web_report_hourly"
   - $ref: "#/definitions/streams/asset_report_daily"
 
 spec:
@@ -274,9 +374,9 @@ spec:
         title: Start Date
         description: >-
           UTC date to start replicating from, in YYYY-MM-DD format. AppLovin only
-          serves the last 45 days for app campaign and asset reports, and the last
-          90 days for web campaign reports, so earlier dates are clamped to the
-          oldest available day.
+          serves the last 45 days for app campaign and asset reports, the last
+          90 days for web campaign reports, and the last 30 days for the hourly
+          reports, so earlier dates are clamped to the oldest available day.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
           - "2026-01-01"
@@ -306,7 +406,7 @@ spec:
         type: string
         title: Web Attribution Mode
         description: >-
-          Attribution mode for the web campaign report. Click counts
+          Attribution mode for the web campaign reports. Click counts
           click-through conversions only; click and view also counts
           view-through conversions.
         enum:
@@ -327,7 +427,9 @@ spec:
 metadata:
   autoImportSchema:
     advertiser_report_daily: false
+    advertiser_report_hourly: false
     web_report_daily: false
+    web_report_hourly: false
     asset_report_daily: false
   yamlComponents:
     global:
@@ -506,6 +608,121 @@ schemas:
         type:
           - integer
           - "null"
+  advertiser_report_hourly:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      # Kept as string: AppLovin does not document the hour value format.
+      hour:
+        type:
+          - string
+          - "null"
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id_external:
+        type:
+          - string
+          - "null"
+      campaign_type:
+        type:
+          - string
+          - "null"
+      campaign_ad_type:
+        type:
+          - string
+          - "null"
+      campaign_bid_goal:
+        type:
+          - number
+          - "null"
+      campaign_package_name:
+        type:
+          - string
+          - "null"
+      ad:
+        type:
+          - string
+          - "null"
+      ad_creative_type:
+        type:
+          - string
+          - "null"
+      ad_type:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      custom_page_id:
+        type:
+          - string
+          - "null"
+      device_type:
+        type:
+          - string
+          - "null"
+      placement_type:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      average_cpc:
+        type:
+          - number
+          - "null"
+      average_cpa:
+        type:
+          - number
+          - "null"
+      conversions:
+        type:
+          - integer
+          - "null"
+      conversion_rate:
+        type:
+          - number
+          - "null"
+      sales:
+        type:
+          - integer
+          - "null"
   web_report_daily:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -671,6 +888,77 @@ schemas:
       nc_percent_d7_checkout_rev:
         type:
           - number
+          - "null"
+  web_report_hourly:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      day:
+        type:
+          - string
+          - "null"
+        format: date
+      # Kept as string: AppLovin does not document the hour value format.
+      hour:
+        type:
+          - string
+          - "null"
+      campaign:
+        type:
+          - string
+          - "null"
+      campaign_id_external:
+        type:
+          - string
+          - "null"
+      campaign_type:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      creative_set:
+        type:
+          - string
+          - "null"
+      creative_set_id:
+        type:
+          - string
+          - "null"
+      placement_type:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - integer
+          - "null"
+      clicks:
+        type:
+          - integer
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      average_cpc:
+        type:
+          - number
+          - "null"
+      sales:
+        type:
+          - integer
           - "null"
   asset_report_daily:
     type: object
