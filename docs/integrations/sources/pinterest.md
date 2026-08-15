@@ -233,6 +233,13 @@ When the connector encounters a rate-limit response, it automatically waits usin
 workers** setting (default: 2, range: 1–40) to lower rate-limit pressure at the cost of slower
 syncs.
 
+Custom report status filters are sent in chunks of at most six values per dimension. Selecting
+many campaign, ad group, and ad statuses multiplies async report-creation requests by
+`ceil(campaign_statuses / 6) × ceil(ad_group_statuses / 6) × ceil(ad_statuses / 6)` for each
+account and date window. The connector retries those calls with
+`PinterestAnalyticsBackoffStrategy` when Pinterest returns `Retry after N seconds`. If you hit
+analytics rate limits, select fewer statuses or lower concurrent workers.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
