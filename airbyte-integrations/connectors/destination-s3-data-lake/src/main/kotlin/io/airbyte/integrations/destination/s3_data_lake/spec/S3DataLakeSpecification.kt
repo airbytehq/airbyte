@@ -85,20 +85,22 @@ class S3DataLakeSpecification :
     )
     val flushBatchSizeMb: Long? = null
 
-    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding")
+    @get:JsonSchemaTitle("Merge-on-Read Delete Encoding (Automatic, Equality, or Positional)")
     @get:JsonPropertyDescription(
-        "The delete-file encoding used by append deduplication syncs. Equality deletes are the " +
-            "backwards-compatible default; positional deletes are compatible with readers that do " +
-            "not support equality-delete files."
+        "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes " +
+            "but may change in a future version. Choose EQUALITY to always use equality deletes, or " +
+            "POSITIONAL for readers that do not support equality-delete files."
     )
     @get:JsonProperty("merge_on_read_delete_encoding", required = false)
     @get:JsonSchemaInject(
-        json = """{"default":"EQUALITY","examples":["EQUALITY","POSITIONAL"],"order":9}"""
+        json =
+            """{"default":"AUTOMATIC","examples":["AUTOMATIC","EQUALITY","POSITIONAL"],"order":9}"""
     )
     val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding? = null
 }
 
 enum class MergeOnReadDeleteEncoding(@get:JsonValue val value: String) {
+    AUTOMATIC("AUTOMATIC"),
     EQUALITY("EQUALITY"),
     POSITIONAL("POSITIONAL"),
 }
