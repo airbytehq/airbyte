@@ -62,7 +62,7 @@ All retailer endpoints are paginated (`?page=N`, 1-indexed) and require the `Acc
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------- | :----------- | :------ |
-| 0.3.0   | 2026-08-05 |              | Fix `latest-change-date` semantics (exact-day filter → daily cursor slices); add `order_details` (prices + commission) behind an FBB-only parent; honor `Retry-After` on 429. |
-| 0.1.0   | 2026-06-30 |              | Initial release: orders (incremental), shipments, returns, inventory. |
+| 0.3.0   | 2026-08-05 | [84416](https://github.com/airbytehq/airbyte/pull/84416) | Fix `latest-change-date` semantics (exact-day filter → daily cursor slices); add `order_details` (prices + commission) behind an FBB-only parent; honor `Retry-After` on 429. |
+| 0.1.0   | 2026-06-30 | [84416](https://github.com/airbytehq/airbyte/pull/84416) | Initial release: orders (incremental), shipments, returns, inventory. |
 
 </details>
