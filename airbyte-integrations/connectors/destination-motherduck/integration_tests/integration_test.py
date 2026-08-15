@@ -131,6 +131,7 @@ def table_schema() -> str:
             },
             "empty_object_key": {"type": ["object"]},
             "array_of_objects_key": {"type": ["null", "array"], "items": {"type": "object"}},
+            "ArrayOfObjectsUpperCase": {"type": ["null", "array"], "items": {"type": "object"}},
         },
     }
     return schema
@@ -256,6 +257,7 @@ def airbyte_message1(test_table_name: str):
                 "object_key": {},
                 "empty_object_key": {},
                 "array_of_objects_key": [{}],
+                "ArrayOfObjectsUpperCase": [{"Amount": 100.0, "SubTotalLineDetail": {}}],
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -276,6 +278,7 @@ def airbyte_message2(test_table_name: str):
                 "object_key": {},
                 "empty_object_key": {"a": {}},
                 "array_of_objects_key": [{"a": 1}, {}],
+                "ArrayOfObjectsUpperCase": [{}],
             },
             emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
@@ -414,7 +417,7 @@ def test_write(
     assert len(result) == 1
 
     sql_result = sql_processor._execute_sql(
-        "SELECT key1, keyuppercase, object_key, empty_object_key, array_of_objects_key, "
+        "SELECT key1, keyuppercase, object_key, empty_object_key, array_of_objects_key, arrayofobjectsuppercase, "
         "_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta "
         f"FROM {test_schema_name}.{test_table_name} ORDER BY key1"
     )
@@ -430,6 +433,8 @@ def test_write(
     assert sql_result[1][3] == {}
     assert sql_result[0][4] == [{"a": 1}, {}]
     assert sql_result[1][4] == [{}]
+    assert sql_result[0][5] == [{}]
+    assert sql_result[1][5] == [{"Amount": 100.0, "SubTotalLineDetail": {}}]
 
 
 def test_write_dupe(
