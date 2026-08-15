@@ -508,6 +508,12 @@ definitions:
       start_datetime: "template_value"
       cursor_granularity: "P1D"
       step: "template_value"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.CustomReportStatusChunkStateMigration
+        campaign_statuses: []
+        ad_group_statuses: []
+        ad_statuses: []
 
   custom_reports_dynamic_stream:
     type: DynamicDeclarativeStream
@@ -607,6 +613,24 @@ definitions:
         - type: ComponentMappingDefinition
           field_path:
             [retriever, partition_router, "1", ad_statuses]
+          value: "{{ components_values['ad_statuses'] }}"
+          condition: "{{ components_values.get('ad_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [state_migrations, "0", campaign_statuses]
+          value: "{{ components_values['campaign_statuses'] }}"
+          condition: "{{ components_values.get('campaign_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [state_migrations, "0", ad_group_statuses]
+          value: "{{ components_values['ad_group_statuses'] }}"
+          condition: "{{ components_values.get('ad_group_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [state_migrations, "0", ad_statuses]
           value: "{{ components_values['ad_statuses'] }}"
           condition: "{{ components_values.get('ad_statuses') is not none }}"
           create_or_update: true

@@ -5,7 +5,7 @@
 import os
 
 import pytest
-from components import AdAccountRecordExtractor, StatusChunkPartitionRouter
+from components import AdAccountRecordExtractor, CustomReportStatusChunkStateMigration, StatusChunkPartitionRouter
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
@@ -139,3 +139,45 @@ def test_status_chunk_partition_router_chunks_status_combinations():
     assert all(len(partition["campaign_statuses_chunk"]) <= 6 for partition in partitions)
     assert all(len(partition["ad_group_statuses_chunk"]) <= 6 for partition in partitions)
     assert all(len(partition["ad_statuses_chunk"]) <= 6 for partition in partitions)
+
+
+def test_status_chunk_state_migration_copies_legacy_account_cursors():
+    campaign_statuses = ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
+    migration = CustomReportStatusChunkStateMigration(
+        config={},
+        campaign_statuses=campaign_statuses,
+        ad_group_statuses=["G1"],
+        ad_statuses=["A1"],
+    )
+    legacy_state = {
+        "states": [
+            {"partition": {"id": 123, "parent_slice": {}}, "cursor": {"DATE": "2026-05-20"}},
+        ]
+    }
+
+    assert migration.should_migrate(legacy_state) is True
+    migrated = migration.migrate(legacy_state)
+
+    assert {tuple(entry["partition"]["campaign_statuses_chunk"]) for entry in migrated["states"]} == {
+        tuple(campaign_statuses[:6]),
+        tuple(campaign_statuses[6:]),
+    }
+    assert all(entry["partition"]["id"] == 123 for entry in migrated["states"])
+    assert all(entry["partition"]["parent_slice"] == {} for entry in migrated["states"])
+    assert all(entry["cursor"] == {"DATE": "2026-05-20"} for entry in migrated["states"])
+
+
+def test_status_chunk_state_migration_skips_when_filters_absent_or_already_chunked():
+    migration = CustomReportStatusChunkStateMigration(config={}, campaign_statuses=["RUNNING"])
+    already_chunked = {
+        "states": [
+            {
+                "partition": {"id": "123", "campaign_statuses_chunk": ["RUNNING"]},
+                "cursor": {"DATE": "2026-05-20"},
+            }
+        ]
+    }
+
+    assert CustomReportStatusChunkStateMigration(config={}).should_migrate({"states": [{"partition": {"id": "123"}}]}) is False
+    assert migration.should_migrate(already_chunked) is False
+    assert migration.should_migrate({"DATE": "2026-05-20"}) is False

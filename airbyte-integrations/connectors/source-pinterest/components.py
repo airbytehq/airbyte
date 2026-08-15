@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
@@ -17,6 +18,11 @@ from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 PINTEREST_STATUS_CHUNK_SIZE = 6
+STATUS_CHUNK_PARTITION_KEYS = (
+    "campaign_statuses_chunk",
+    "ad_group_statuses_chunk",
+    "ad_statuses_chunk",
+)
 
 
 class AdAccountRecordExtractor(RecordExtractor):
@@ -127,3 +133,85 @@ class StatusChunkPartitionRouter(PartitionRouter):
 
     def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
         return None
+
+
+class CustomReportStatusChunkStateMigration(StateMigration):
+    """Copy pre-chunking per-account cursors onto the new status-chunk partitions.
+
+    Incremental custom reports persist state per partition. Before this change the
+    partition was ``{"id": <ad_account_id>}``. With status filters configured it
+    becomes ``{"id": ..., "campaign_statuses_chunk": [...], ...}``. Without a
+    migration, prior-version state is ignored and the stream re-reads from the
+    start date.
+    """
+
+    config: Config
+    campaign_statuses: Optional[List[str]]
+    ad_group_statuses: Optional[List[str]]
+    ad_statuses: Optional[List[str]]
+
+    def __init__(
+        self,
+        config: Config,
+        campaign_statuses: Optional[List[str]] = None,
+        ad_group_statuses: Optional[List[str]] = None,
+        ad_statuses: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        self._config = config
+        self._campaign_statuses = campaign_statuses
+        self._ad_group_statuses = ad_group_statuses
+        self._ad_statuses = ad_statuses
+
+    def _legacy_partition_entries(self, stream_state: Mapping[str, Any]) -> List[Mapping[str, Any]]:
+        entries = stream_state.get("states")
+        if not isinstance(entries, list):
+            return []
+        legacy_entries = []
+        for entry in entries:
+            if not isinstance(entry, Mapping):
+                continue
+            partition = entry.get("partition")
+            if not isinstance(partition, Mapping):
+                continue
+            if "id" in partition and not any(key in partition for key in STATUS_CHUNK_PARTITION_KEYS):
+                legacy_entries.append(entry)
+        return legacy_entries
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state:
+            return False
+        if not (self._campaign_statuses or self._ad_group_statuses or self._ad_statuses):
+            return False
+        return bool(self._legacy_partition_entries(stream_state))
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        chunk_partitions = [
+            stream_slice.partition
+            for stream_slice in StatusChunkPartitionRouter(
+                config=self._config,
+                parameters={},
+                campaign_statuses=self._campaign_statuses,
+                ad_group_statuses=self._ad_group_statuses,
+                ad_statuses=self._ad_statuses,
+            ).stream_slices()
+        ]
+        migrated_states: List[Mapping[str, Any]] = []
+        for entry in stream_state.get("states", []):
+            if not isinstance(entry, Mapping):
+                migrated_states.append(entry)
+                continue
+            partition = entry.get("partition")
+            if not isinstance(partition, Mapping) or any(key in partition for key in STATUS_CHUNK_PARTITION_KEYS):
+                migrated_states.append(entry)
+                continue
+            for chunk_partition in chunk_partitions:
+                migrated_states.append(
+                    {
+                        "partition": {**partition, **chunk_partition},
+                        "cursor": entry.get("cursor"),
+                    }
+                )
+        migrated_state = dict(stream_state)
+        migrated_state["states"] = migrated_states
+        return migrated_state
