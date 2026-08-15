@@ -78,9 +78,7 @@ class MsSqlSourceMetadataQuerier(
             // For on-premises SQL Server, check if SQL Server Agent is running
             base.conn.createStatement().use { stmt: Statement ->
                 stmt
-                    .executeQuery(
-                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'"
-                    )
+                    .executeQuery(SQL_SERVER_AGENT_SERVICE_QUERY)
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
                             throw ConfigErrorException(
@@ -508,6 +506,15 @@ class MsSqlSourceMetadataQuerier(
     )
 
     companion object {
+
+        // Localized Agent names; `%` between Server and Agent covers hyphen/spaces.
+        internal const val SQL_SERVER_AGENT_LIKE_PATTERN = "%SQL Server%Agent%"
+        internal const val SQL_SERVER_AGENT_CJK_LIKE_PATTERN = "%SQL Server 代理%"
+
+        internal const val SQL_SERVER_AGENT_SERVICE_QUERY =
+            "SELECT servicename, status_desc FROM sys.dm_server_services " +
+                "WHERE servicename LIKE '$SQL_SERVER_AGENT_LIKE_PATTERN' " +
+                "OR servicename LIKE '$SQL_SERVER_AGENT_CJK_LIKE_PATTERN'"
 
         /**
          * SQL Server system schemas that should be excluded from auto-discovery. These schemas
