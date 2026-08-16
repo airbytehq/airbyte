@@ -22,6 +22,7 @@ object IcebergTableCommitter {
         fullySupersededDataFiles: Set<DataFile>,
     ) {
         synchronized(commitLock) {
+            var rewriteSnapshotId = plannedSnapshotId
             val hasReferencedDataFiles = writeResult.referencedDataFiles().isNotEmpty()
             if (
                 writeResult.deleteFiles().isNotEmpty() ||
@@ -39,6 +40,7 @@ object IcebergTableCommitter {
                 writeResult.dataFiles().forEach(delta::addRows)
                 writeResult.deleteFiles().forEach(delta::addDeletes)
                 delta.commit()
+                rewriteSnapshotId = table.refs()[branch]?.snapshotId() ?: plannedSnapshotId
             } else if (writeResult.dataFiles().isNotEmpty()) {
                 val append = table.newAppend().toBranch(branch)
                 writeResult.dataFiles().forEach(append::appendFile)
@@ -47,7 +49,7 @@ object IcebergTableCommitter {
 
             if (fullySupersededDataFiles.isNotEmpty()) {
                 val deleteFiles =
-                    registeredDeletes(table, plannedSnapshotId, fullySupersededDataFiles)
+                    registeredDeletes(table, rewriteSnapshotId, fullySupersededDataFiles)
                 table
                     .newRewrite()
                     .toBranch(branch)
@@ -57,7 +59,7 @@ object IcebergTableCommitter {
                         emptySet(),
                         emptySet(),
                     )
-                    .validateFromSnapshot(plannedSnapshotId)
+                    .validateFromSnapshot(rewriteSnapshotId)
                     .commit()
             }
         }

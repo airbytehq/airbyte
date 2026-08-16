@@ -16,6 +16,7 @@ import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.exceptions.CommitFailedException
+import org.apache.iceberg.exceptions.ValidationException
 import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.TypeUtil
 import org.apache.iceberg.types.Types
@@ -104,33 +105,48 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteRef = "staging",
                 positionalDeleteState = positionalState,
                 maxTouchedKeys = 2,
+                allowWholeFileSupersession = true,
             )
-        val (_, warningMessages) =
+        val (firstResult, warningMessages) =
             captureWarnings {
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE)
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "3", "three"), Operation.INSERT)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(
+                        record(schema, StringBuilder("3"), "three-repeated"),
+                        Operation.UPDATE
                     )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE)
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE)
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "3", "three"), Operation.INSERT)
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(
-                            record(schema, StringBuilder("3"), "three-repeated"),
-                            Operation.UPDATE
-                        )
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "9", "missing"), Operation.DELETE)
-                    )
-                    firstUpdateWriter.complete()
-                }
-                .also { commitRowDelta(table, "staging", it.first) }
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "9", "missing"), Operation.DELETE)
+                )
+                firstUpdateWriter.complete()
+            }
+        assertThat(
+                (firstUpdateWriter as? SupersededDataFileProvider)
+                    ?.fullySupersededDataFiles()
+                    .orEmpty()
+            )
+            .isNotEmpty()
+        IcebergTableCommitter.commit(
+            table,
+            "staging",
+            firstResult,
+            initialSnapshotId,
+            (firstUpdateWriter as? SupersededDataFileProvider)
+                ?.fullySupersededDataFiles()
+                .orEmpty(),
+        )
         assertThat(warningMessages).anyMatch {
             it.contains("Positional delete mode found 1 existing equality-delete file(s)")
         }
@@ -146,6 +162,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = positionalState,
+                allowWholeFileSupersession = true,
             )
         secondUpdateWriter.write(
             RecordWrapper(record(schema, "3", "three-updated"), Operation.UPDATE)
@@ -236,6 +253,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = state,
+                allowWholeFileSupersession = true,
             )
         firstWriter.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
         val firstResult = firstWriter.complete()
@@ -277,6 +295,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = state,
+                allowWholeFileSupersession = true,
             )
         thirdWriter.write(RecordWrapper(record(schema, "c", "new-c"), Operation.UPDATE))
         val thirdResult = thirdWriter.complete()
@@ -337,12 +356,18 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = state,
+                allowWholeFileSupersession = true,
             )
         writer.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
         writer.write(RecordWrapper(record(schema, "b", "new-b"), Operation.UPDATE))
         val result = writer.complete()
         assertThat(result.deleteFiles()).isEmpty()
-        assertThat(result.referencedDataFiles())
+        assertThat(
+                (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty().map {
+                    dataFile ->
+                    dataFile.location()
+                }
+            )
             .containsExactly(initialResult.dataFiles().single().location())
         IcebergTableCommitter.commit(
             table,
@@ -419,7 +444,7 @@ class PositionalDeleteEndToEndTest {
                     (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
                 )
             }
-            .isInstanceOf(CommitFailedException::class.java)
+            .isInstanceOfAny(CommitFailedException::class.java, ValidationException::class.java)
         warehouse.toFile().deleteRecursively()
     }
 
