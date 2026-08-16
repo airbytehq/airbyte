@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.iceberg.DataFile
+import org.apache.iceberg.deletes.PositionDeleteIndex
 
 /** Stream-scoped state shared by positional writers created for successive flushes. */
 class PositionalDeleteResolutionState {
@@ -16,4 +17,8 @@ class PositionalDeleteResolutionState {
     internal val dataFilesOpened = AtomicInteger(0)
     internal val rowsScanned = AtomicLong(0)
     internal val fullySupersededDataFiles: MutableSet<DataFile> = ConcurrentHashMap.newKeySet()
+    internal val positionDeleteIndexes =
+        ConcurrentHashMap<String, Map<String, PositionDeleteIndex>>()
+    internal val unreadablePositionDeleteFiles = ConcurrentHashMap.newKeySet<String>()
+    internal val positionDeleteFilesRead = AtomicInteger(0)
 }
