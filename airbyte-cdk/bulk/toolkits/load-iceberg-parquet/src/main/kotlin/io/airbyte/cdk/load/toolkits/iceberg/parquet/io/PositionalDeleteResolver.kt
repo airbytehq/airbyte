@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import org.apache.iceberg.DataFile
 import org.apache.iceberg.DeleteFile
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.Schema
 import org.apache.iceberg.StructLike
 import org.apache.iceberg.Table
@@ -33,7 +35,7 @@ class PositionalDeleteResolver(
     val dataFilesOpened: Int
         get() = finder.dataFilesOpened
 
-    val fullySupersededDataFiles: Set<org.apache.iceberg.DataFile>
+    val fullySupersededDataFiles: Set<DataFile>
         get() = finder.fullySupersededDataFiles
 
     init {
@@ -53,7 +55,7 @@ class PositionalDeleteResolver(
     data class RowLocation(
         val path: CharSequence,
         val position: Long,
-        val spec: org.apache.iceberg.PartitionSpec,
+        val spec: PartitionSpec,
         val partition: StructLike?,
     )
 

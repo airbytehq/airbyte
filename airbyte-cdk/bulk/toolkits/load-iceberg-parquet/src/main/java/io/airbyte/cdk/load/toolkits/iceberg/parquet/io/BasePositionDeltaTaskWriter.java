@@ -7,7 +7,9 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io;
 import io.airbyte.cdk.ConfigErrorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
@@ -38,7 +40,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
   private final InternalRecordWrapper keyWrapper;
   private final PositionalDeleteResolver resolver;
   private final TouchedKeys touchedKeys;
-  private final Set<DataFile> fullySupersededDataFiles = new java.util.HashSet<>();
+  private final Set<DataFile> fullySupersededDataFiles = new HashSet<>();
   private final List<DeleteFile> completedPositionDeleteFiles = new ArrayList<>();
 
   protected BasePositionDeltaTaskWriter(
@@ -120,7 +122,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       result.addDeleteFiles(completedPositionDeleteFiles);
       completedPositionDeleteFiles.stream()
           .map(DeleteFile::referencedDataFile)
-          .filter(java.util.Objects::nonNull)
+          .filter(Objects::nonNull)
           .forEach(result::addReferencedDataFiles);
     }
     fullySupersededDataFiles.stream()
