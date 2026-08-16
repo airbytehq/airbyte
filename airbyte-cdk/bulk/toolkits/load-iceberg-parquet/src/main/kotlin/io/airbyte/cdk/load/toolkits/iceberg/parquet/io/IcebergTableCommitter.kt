@@ -9,9 +9,10 @@ import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.Table
 import org.apache.iceberg.io.WriteResult
+import java.util.concurrent.ConcurrentHashMap
 
 object IcebergTableCommitter {
-    private val commitLock = Any()
+    private val commitLocks = ConcurrentHashMap<String, Any>()
 
     @Suppress("DEPRECATION")
     fun commit(
@@ -21,7 +22,7 @@ object IcebergTableCommitter {
         plannedSnapshotId: Long,
         fullySupersededDataFiles: Set<DataFile>,
     ) {
-        synchronized(commitLock) {
+        synchronized(commitLocks.computeIfAbsent("${table.name()}::$branch") { Any() }) {
             var rewriteSnapshotId = plannedSnapshotId
             val hasReferencedDataFiles = writeResult.referencedDataFiles().isNotEmpty()
             if (
@@ -70,16 +71,15 @@ object IcebergTableCommitter {
         snapshotId: Long,
         dataFiles: Set<DataFile>,
     ): Set<DeleteFile> {
+        val dataFileLocations = dataFiles.map { it.location().toString() }.toSet()
         return table.newScan().useSnapshot(snapshotId).planFiles().use { tasks ->
             tasks
-                .filter { task -> dataFiles.any { it.location() == task.file().location() } }
+                .filter { task -> dataFileLocations.contains(task.file().location().toString()) }
                 .flatMap { task ->
                     task.deletes().filter { deleteFile ->
                         deleteFile.content() == FileContent.POSITION_DELETES &&
                             deleteFile.referencedDataFile() != null &&
-                            dataFiles.any {
-                                it.location().toString() == deleteFile.referencedDataFile()
-                            }
+                            dataFileLocations.contains(deleteFile.referencedDataFile())
                     }
                 }
                 .toSet()
