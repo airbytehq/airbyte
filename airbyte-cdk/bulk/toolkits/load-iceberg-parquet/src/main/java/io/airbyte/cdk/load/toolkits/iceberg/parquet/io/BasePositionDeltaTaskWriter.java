@@ -54,8 +54,7 @@ public abstract class BasePositionDeltaTaskWriter
                                         final long targetFileSize,
                                         final Schema schema,
                                         final Set<Integer> identifierFieldIds,
-                                        final PositionalDeleteResolver resolver,
-                                        final boolean allowWholeFileSupersession) {
+                                        final PositionalDeleteResolver resolver) {
     super(spec, format, writerFactory, fileFactory, io, targetFileSize);
     this.table = table;
     this.deleteSchema = TypeUtil.select(schema, identifierFieldIds);

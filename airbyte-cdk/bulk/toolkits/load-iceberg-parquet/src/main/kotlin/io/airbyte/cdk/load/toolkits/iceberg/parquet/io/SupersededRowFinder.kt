@@ -106,7 +106,12 @@ class SupersededRowFinder(
         val priorDeletedPositions = positionIndex?.cardinality() ?: 0
         val projectedSchema = Schema(identifierFields + MetadataColumns.ROW_POSITION)
         val inputFile = table.io().newInputFile(planned.file.location().toString())
-        val locations = mutableListOf<PositionalDeleteResolver.RowLocation>()
+        val locations =
+            if (allowWholeFileSupersession) {
+                mutableListOf<PositionalDeleteResolver.RowLocation>()
+            } else {
+                null
+            }
         Parquet.read(inputFile)
             .project(projectedSchema)
             .filter(expression)
@@ -123,24 +128,28 @@ class SupersededRowFinder(
                         touched.contains(keyFrom(record)) &&
                             (positionIndex == null || !positionIndex.isDeleted(position))
                     ) {
-                        locations +=
+                        val location =
                             PositionalDeleteResolver.RowLocation(
                                 planned.file.location(),
                                 position,
                                 planned.spec,
                                 planned.partition,
                             )
+                        if (locations == null) {
+                            yield(location)
+                        } else {
+                            locations += location
+                        }
                     }
                 }
             }
-        if (
-            allowWholeFileSupersession &&
-                locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()
-        ) {
-            state.fullySupersededDataFiles += planned.file
-        } else {
-            for (location in locations) {
-                yield(location)
+        if (locations != null) {
+            if (locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()) {
+                state.fullySupersededDataFiles += planned.file
+            } else {
+                for (location in locations) {
+                    yield(location)
+                }
             }
         }
     }

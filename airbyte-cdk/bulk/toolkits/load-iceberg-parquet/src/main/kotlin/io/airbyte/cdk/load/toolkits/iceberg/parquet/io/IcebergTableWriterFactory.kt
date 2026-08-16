@@ -264,7 +264,6 @@ class IcebergTableWriterFactory {
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
                 resolver = positionalDeleteResolver,
-                allowWholeFileSupersession = allowWholeFileSupersession,
             )
         } else {
             PartitionedPositionDeltaWriter(
@@ -278,7 +277,6 @@ class IcebergTableWriterFactory {
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
                 resolver = positionalDeleteResolver,
-                allowWholeFileSupersession = allowWholeFileSupersession,
             )
         }
     }
