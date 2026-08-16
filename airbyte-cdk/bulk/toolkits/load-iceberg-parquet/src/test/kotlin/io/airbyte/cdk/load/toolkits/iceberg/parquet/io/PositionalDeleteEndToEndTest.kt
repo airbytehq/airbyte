@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import io.airbyte.cdk.load.command.Append
 import java.nio.file.Files
+import java.util.UUID
 import kotlin.system.measureTimeMillis
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.FileContent
@@ -13,11 +14,15 @@ import org.apache.iceberg.FileFormat
 import org.apache.iceberg.Schema
 import org.apache.iceberg.TableProperties
 import org.apache.iceberg.catalog.TableIdentifier
+import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.IcebergGenerics
+import org.apache.iceberg.data.Record
+import org.apache.iceberg.deletes.PositionDelete
 import org.apache.iceberg.exceptions.CommitFailedException
 import org.apache.iceberg.exceptions.ValidationException
 import org.apache.iceberg.hadoop.HadoopCatalog
+import org.apache.iceberg.io.OutputFileFactory
 import org.apache.iceberg.types.TypeUtil
 import org.apache.iceberg.types.Types
 import org.apache.logging.log4j.Level
@@ -105,33 +110,42 @@ class PositionalDeleteEndToEndTest {
                 positionalDeleteRef = "staging",
                 positionalDeleteState = positionalState,
                 maxTouchedKeys = 2,
+                allowWholeFileSupersession = true,
             )
-        val (_, warningMessages) =
+        val (firstResult, warningMessages) =
             captureWarnings {
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE)
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "1", "one-updated"), Operation.UPDATE)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "3", "three"), Operation.INSERT)
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(
+                        record(schema, StringBuilder("3"), "three-repeated"),
+                        Operation.UPDATE
                     )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "2", "ignored"), Operation.DELETE)
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "1", "one-updated-again"), Operation.UPDATE)
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "3", "three"), Operation.INSERT)
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(
-                            record(schema, StringBuilder("3"), "three-repeated"),
-                            Operation.UPDATE
-                        )
-                    )
-                    firstUpdateWriter.write(
-                        RecordWrapper(record(schema, "9", "missing"), Operation.DELETE)
-                    )
-                    firstUpdateWriter.complete()
-                }
-                .also { commitRowDelta(table, "staging", it.first) }
+                )
+                firstUpdateWriter.write(
+                    RecordWrapper(record(schema, "9", "missing"), Operation.DELETE)
+                )
+                firstUpdateWriter.complete()
+            }
+        assertThat(supersededDataFiles(firstUpdateWriter).map { it.location() })
+            .contains(initialResult.dataFiles().single().location())
+        IcebergTableCommitter.commit(
+            table,
+            "staging",
+            firstResult,
+            initialSnapshotId,
+            supersededDataFiles(firstUpdateWriter),
+        )
         assertThat(warningMessages).anyMatch {
             it.contains("Positional delete mode found 1 existing equality-delete file(s)")
         }
@@ -237,6 +251,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = state,
+                allowWholeFileSupersession = true,
             )
         firstWriter.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
         val firstResult = firstWriter.complete()
@@ -278,6 +293,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = state,
+                allowWholeFileSupersession = true,
             )
         thirdWriter.write(RecordWrapper(record(schema, "c", "new-c"), Operation.UPDATE))
         val thirdResult = thirdWriter.complete()
@@ -296,6 +312,193 @@ class PositionalDeleteEndToEndTest {
                 .build()
                 .use { records -> records.map { it.getField("name") }.toSet() }
         assertThat(rows).containsExactlyInAnyOrder("new-a", "new-b", "new-c")
+        warehouse.toFile().deleteRecursively()
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun `falls back per data file when a prior position delete cannot be read`() {
+        val warehouse = Files.createTempDirectory("positional-delete-fallback")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "fallback")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "name", Types.StringType.get()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase()
+                )
+                .create()
+        val writerFactory = IcebergTableWriterFactory()
+        val first = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        first.write(record(schema, "a", "old-a"))
+        val firstResult = first.complete()
+        val second = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        second.write(record(schema, "b", "old-b"))
+        val initialSecondResult = second.complete()
+        table
+            .newAppend()
+            .apply {
+                firstResult.dataFiles().forEach(::appendFile)
+                initialSecondResult.dataFiles().forEach(::appendFile)
+            }
+            .commit()
+        table.manageSnapshots().createBranch("staging").commit()
+        val importType = io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList())
+        val state = PositionalDeleteResolutionState()
+        val planned = table.refs()["staging"]!!.snapshotId()
+        val firstUpdate =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                importType,
+                schema,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = state,
+            )
+        firstUpdate.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
+        firstUpdate.write(RecordWrapper(record(schema, "b", "new-b"), Operation.UPDATE))
+        val firstUpdateResult = firstUpdate.complete()
+        IcebergTableCommitter.commit(
+            table,
+            "staging",
+            firstUpdateResult,
+            planned,
+            supersededDataFiles(firstUpdate),
+        )
+        val priorDeletes =
+            table.newScan().useRef("staging").planFiles().use { tasks ->
+                tasks
+                    .flatMap { it.deletes().toList() }
+                    .filter { it.content() == FileContent.POSITION_DELETES }
+                    .toList()
+            }
+        assertThat(priorDeletes).hasSize(2)
+        table.io().deleteFile(priorDeletes.first().location())
+
+        val secondPlanned = table.refs()["staging"]!!.snapshotId()
+        val secondUpdate =
+            writerFactory.create(
+                table,
+                "ab-generation-id-2-e",
+                importType,
+                schema,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = state,
+            )
+        secondUpdate.write(RecordWrapper(record(schema, "a", "newer-a"), Operation.UPDATE))
+        secondUpdate.write(RecordWrapper(record(schema, "b", "newer-b"), Operation.UPDATE))
+        val secondResult = secondUpdate.complete()
+        assertThat(secondResult.deleteFiles()).hasSize(2)
+        assertThat(secondResult.deleteFiles().map { it.referencedDataFile() })
+            .contains(firstResult.dataFiles().single().location())
+            .doesNotContain(secondResult.dataFiles().single().location())
+        assertThat(secondResult.deleteFiles().map { it.referencedDataFile() })
+            .doesNotContain(initialSecondResult.dataFiles().single().location())
+        IcebergTableCommitter.commit(
+            table,
+            "staging",
+            secondResult,
+            secondPlanned,
+            supersededDataFiles(secondUpdate),
+        )
+        warehouse.toFile().deleteRecursively()
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun `retains a shared position delete when only one data file is superseded`() {
+        val warehouse = Files.createTempDirectory("positional-delete-shared")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "shared")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "name", Types.StringType.get()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase()
+                )
+                .create()
+        val writerFactory = IcebergTableWriterFactory()
+        val first = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        first.write(record(schema, "a", "old-a"))
+        val firstResult = first.complete()
+        val second = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        second.write(record(schema, "b", "old-b"))
+        val secondResult = second.complete()
+        table
+            .newAppend()
+            .apply {
+                firstResult.dataFiles().forEach(::appendFile)
+                secondResult.dataFiles().forEach(::appendFile)
+            }
+            .commit()
+        table.manageSnapshots().createBranch("staging").commit()
+        val sharedDelete =
+            sharedPositionDeleteFile(
+                table,
+                schema,
+                firstResult.dataFiles().single().location(),
+                secondResult.dataFiles().single().location()
+            )
+        val planned = table.refs()["staging"]!!.snapshotId()
+        table
+            .newRowDelta()
+            .toBranch("staging")
+            .validateFromSnapshot(planned)
+            .addDeletes(sharedDelete)
+            .commit()
+
+        val updatePlanned = table.refs()["staging"]!!.snapshotId()
+        val state = PositionalDeleteResolutionState()
+        val update =
+            writerFactory.create(
+                table,
+                "ab-generation-id-1-e",
+                io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList()),
+                schema,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = state,
+                allowWholeFileSupersession = true,
+            )
+        update.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
+        val result = update.complete()
+        IcebergTableCommitter.commit(
+            table,
+            "staging",
+            result,
+            updatePlanned,
+            supersededDataFiles(update),
+        )
+        val liveDeletes =
+            table.newScan().useRef("staging").planFiles().use { tasks ->
+                tasks.flatMap { it.deletes().toList() }.toList()
+            }
+        assertThat(liveDeletes.map { it.location() }).contains(sharedDelete.location())
+        val names =
+            IcebergGenerics.read(table)
+                .useSnapshot(table.refs()["staging"]!!.snapshotId())
+                .build()
+                .use { records -> records.map { it.getField("name") }.toSet() }
+        assertThat(names).containsExactly("new-a")
         warehouse.toFile().deleteRecursively()
     }
 
@@ -338,6 +541,7 @@ class PositionalDeleteEndToEndTest {
                 schema,
                 positionalDeleteRef = "staging",
                 positionalDeleteState = state,
+                allowWholeFileSupersession = true,
             )
         writer.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
         writer.write(RecordWrapper(record(schema, "b", "new-b"), Operation.UPDATE))
@@ -707,6 +911,40 @@ class PositionalDeleteEndToEndTest {
                 result.deleteFiles().forEach(::addDeletes)
             }
             .commit()
+    }
+
+    private fun sharedPositionDeleteFile(
+        table: org.apache.iceberg.Table,
+        schema: Schema,
+        firstPath: String,
+        secondPath: String,
+    ): org.apache.iceberg.DeleteFile {
+        val writerFactory =
+            GenericFileWriterFactory.Builder(table)
+                .dataSchema(schema)
+                .writerProperties(table.properties())
+                .build()
+        val outputFileFactory =
+            OutputFileFactory.builderFor(table, 0, 1L)
+                .defaultSpec(table.spec())
+                .operationId(UUID.randomUUID().toString())
+                .format(FileFormat.PARQUET)
+                .suffix("shared")
+                .build()
+        val writer =
+            writerFactory.newPositionDeleteWriter(
+                outputFileFactory.newOutputFile(table.spec(), null),
+                table.spec(),
+                null,
+            )
+        val first = PositionDelete.create<Record>()
+        first.set(firstPath, 0L)
+        writer.write(first)
+        val second = PositionDelete.create<Record>()
+        second.set(secondPath, 0L)
+        writer.write(second)
+        writer.close()
+        return writer.result().deleteFiles().single()
     }
 
     private fun supersededDataFiles(writer: Any): Set<org.apache.iceberg.DataFile> =

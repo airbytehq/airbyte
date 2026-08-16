@@ -59,6 +59,7 @@ class IcebergTableWriterFactory {
         positionalDeleteRef: String? = null,
         positionalDeleteState: PositionalDeleteResolutionState? = null,
         maxTouchedKeys: Int = PositionalDeleteResolver.DEFAULT_MAX_TOUCHED_KEYS,
+        allowWholeFileSupersession: Boolean = false,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
@@ -96,6 +97,7 @@ class IcebergTableWriterFactory {
                     outputFileFactory,
                     maxTouchedKeys = maxTouchedKeys,
                     state = resolutionState,
+                    allowWholeFileSupersession = allowWholeFileSupersession,
                 )
             }
         val targetFileSize =
@@ -136,6 +138,7 @@ class IcebergTableWriterFactory {
                         outputFileFactory = outputFileFactory,
                         format = format,
                         positionalDeleteResolver = positionalDeleteResolver,
+                        allowWholeFileSupersession = allowWholeFileSupersession,
                     )
                 }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
@@ -247,6 +250,7 @@ class IcebergTableWriterFactory {
         targetFileSize: Long,
         identifierFieldIds: Set<Int>,
         positionalDeleteResolver: PositionalDeleteResolver,
+        allowWholeFileSupersession: Boolean,
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
             UnpartitionedPositionDeltaWriter(
@@ -260,6 +264,7 @@ class IcebergTableWriterFactory {
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
                 resolver = positionalDeleteResolver,
+                allowWholeFileSupersession = allowWholeFileSupersession,
             )
         } else {
             PartitionedPositionDeltaWriter(
@@ -273,6 +278,7 @@ class IcebergTableWriterFactory {
                 schema = schema,
                 identifierFieldIds = identifierFieldIds,
                 resolver = positionalDeleteResolver,
+                allowWholeFileSupersession = allowWholeFileSupersession,
             )
         }
     }

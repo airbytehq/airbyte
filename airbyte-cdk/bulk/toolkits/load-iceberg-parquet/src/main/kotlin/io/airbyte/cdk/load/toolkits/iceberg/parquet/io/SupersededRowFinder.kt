@@ -35,6 +35,7 @@ class SupersededRowFinder(
     private val state: PositionalDeleteResolutionState,
     private val maxInValues: Int = MAX_IN_VALUES,
     private val maxSubRanges: Int = MAX_SUB_RANGES,
+    private val allowWholeFileSupersession: Boolean = false,
 ) {
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
@@ -132,7 +133,10 @@ class SupersededRowFinder(
                     }
                 }
             }
-        if (locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()) {
+        if (
+            allowWholeFileSupersession &&
+                locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()
+        ) {
             state.fullySupersededDataFiles += planned.file
         } else {
             for (location in locations) {

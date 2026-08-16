@@ -28,6 +28,7 @@ class UnpartitionedPositionDeltaWriter(
     schema: Schema,
     identifierFieldIds: Set<Int>,
     resolver: PositionalDeleteResolver,
+    allowWholeFileSupersession: Boolean,
 ) :
     BasePositionDeltaTaskWriter(
         table,
@@ -40,6 +41,7 @@ class UnpartitionedPositionDeltaWriter(
         schema,
         identifierFieldIds,
         resolver,
+        allowWholeFileSupersession,
     ) {
     private val writer = RowDataPositionDeltaWriter(null)
 
@@ -61,6 +63,7 @@ class PartitionedPositionDeltaWriter(
     schema: Schema,
     identifierFieldIds: Set<Int>,
     resolver: PositionalDeleteResolver,
+    allowWholeFileSupersession: Boolean,
 ) :
     BasePositionDeltaTaskWriter(
         table,
@@ -73,6 +76,7 @@ class PartitionedPositionDeltaWriter(
         schema,
         identifierFieldIds,
         resolver,
+        allowWholeFileSupersession,
     ) {
     private val partitionKey = PartitionKey(spec, schema)
     private val writers = mutableMapOf<PartitionKey, RowDataPositionDeltaWriter>()

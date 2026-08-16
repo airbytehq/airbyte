@@ -26,8 +26,16 @@ class PositionalDeleteResolver(
     outputFileFactory: OutputFileFactory,
     private val maxTouchedKeys: Int = DEFAULT_MAX_TOUCHED_KEYS,
     state: PositionalDeleteResolutionState = PositionalDeleteResolutionState(),
+    allowWholeFileSupersession: Boolean = false,
 ) {
-    private val finder = SupersededRowFinder(table, schema, identifierFieldIds, state)
+    private val finder =
+        SupersededRowFinder(
+            table,
+            schema,
+            identifierFieldIds,
+            state,
+            allowWholeFileSupersession = allowWholeFileSupersession,
+        )
     private val deleteFiles = PositionalDeleteFiles(writerFactory, outputFileFactory)
 
     val dataFilesOpened: Int
