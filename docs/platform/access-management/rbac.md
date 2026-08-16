@@ -20,13 +20,20 @@ When you assign an organization role, Airbyte scopes permissions to the entire o
 
 In a workspace role, Airbyte scopes permissions to that specific workspace. You can override an organization role by assigning someone a higher role in a workspace. However, you can't assign a role that's more restricted than the role that person holds in the organization. For example, an organization admin must also be a workspace admin. However, an organization reader can be a workspace reader, editor, or admin.
 
-| Permissions                                                                                                                                                                                                                                            | Reader | Runner | Editor | Admin |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----: | :----: | :----: | :---: |
-| **Read Workspace**<br /><ul><li>List the connections in a workspace</li><li>Read individual connections</li><li>Read workspace settings (data residency, users, connector versions, notification settings)</li></ul>                                    |   X    |   X    |   X    |   X   |
-| **Sync Connection**<br /><ul><li>Start/cancel syncs and refreshes</li></ul>                                                                                                                                                                            |        |   X    |   X    |   X   |
-| **Modify Connector Settings**<br /><ul><li>Create, modify, delete  sources and destinations in a workspace</li></ul>                                                                                                                                   |        |        |   X    |   X   |
-| **Update Connection**<br /><ul><li>Modify a connection, including name, replication settings, normalization, DBT</li><li>Clear connection data</li><li>Create/Delete a connection</li><li> Create/Update/Delete connector builder connectors</li></ul> |        |        |   X    |   X   |
-| **Update Workspace**<br /><ul><li> Update workspace settings (data residency, users, connector versions, notification settings)</li><li> Modify workspace connector versions</li></ul>                                                                  |        |        |        |   X   |
+| Permissions                                                                                                                                                                                            | Reader | Runner | Source editor | Destination editor | Editor | Admin |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----: | :----: | :-----------: | :----------------: | :----: | :---: |
+| **Read Workspace**<br /><ul><li>List the connections in a workspace</li><li>Read individual connections</li><li>Read workspace settings (data residency, users, connector versions, notification settings)</li></ul> |   X    |   X    |       X       |         X          |   X    |   X   |
+| **Sync Connection**<br /><ul><li>Start/cancel syncs and refreshes</li></ul>                                                                                                                            |        |   X    |       X       |         X          |   X    |   X   |
+| **Modify Source Settings**<br /><ul><li>Create, modify, delete sources in a workspace</li><li>Run the OAuth flow for a source</li><li>Create/Update/Delete connector builder connectors</li></ul>      |        |        |       X       |                    |   X    |   X   |
+| **Modify Destination Settings**<br /><ul><li>Create, modify, delete destinations in a workspace</li><li>Run the OAuth flow for a destination</li></ul>                                                 |        |        |               |         X          |   X    |   X   |
+| **Update Connection**<br /><ul><li>Modify a connection, including name, replication settings, normalization, DBT</li><li>Clear connection data</li><li>Create/Delete a connection</li></ul>            |        |        |       X       |         X          |   X    |   X   |
+| **Update Workspace**<br /><ul><li> Update workspace settings (data residency, users, connector versions, notification settings)</li><li> Modify workspace connector versions</li></ul>                 |        |        |               |                    |        |   X   |
+
+### Source editor and destination editor
+
+Destinations are usually the more critical half of a pipeline. They're shared warehouses and lakes that a central platform team owns, and a careless configuration change there affects everyone using them. Source editor exists so that the teams who know their own source systems can connect them and start syncing without waiting on the platform team, and without being able to reconfigure the destinations they write to. Give destination editor to the people who do own those destinations.
+
+Both roles can create and modify connections, and both can run syncs. Neither role can change workspace settings, and neither one implies the other. If someone needs to manage both sources and destinations, give them the editor role instead.
 
 ## Best practices for assigning roles
 
