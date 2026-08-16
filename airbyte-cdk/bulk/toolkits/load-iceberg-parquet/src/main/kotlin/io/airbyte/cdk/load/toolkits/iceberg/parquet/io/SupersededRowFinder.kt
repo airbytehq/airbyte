@@ -16,6 +16,7 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.data.parquet.GenericParquetReaders
+import org.apache.iceberg.deletes.Deletes
 import org.apache.iceberg.deletes.PositionDeleteIndex
 import org.apache.iceberg.deletes.PositionDeleteIndexUtil
 import org.apache.iceberg.expressions.Expression
@@ -34,6 +35,7 @@ class SupersededRowFinder(
     private val state: PositionalDeleteResolutionState,
     private val maxInValues: Int = MAX_IN_VALUES,
     private val maxSubRanges: Int = MAX_SUB_RANGES,
+    private val allowWholeFileSupersession: Boolean = false,
 ) {
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
@@ -131,17 +133,22 @@ class SupersededRowFinder(
                     }
                 }
             }
-        if (locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()) {
+        if (
+            allowWholeFileSupersession &&
+                locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()
+        ) {
             state.fullySupersededDataFiles += planned.file
         } else {
-            locations.forEach(::yield)
+            for (location in locations) {
+                yield(location)
+            }
         }
     }
 
     private fun positionDeleteIndex(planned: PlannedDataFile): PositionDeleteIndex? {
         val positionDeletes =
             planned.deletes.filter { it.content() == FileContent.POSITION_DELETES }
-        if (positionDeletes.isEmpty()) return PositionDeleteIndex.empty()
+        if (positionDeletes.isEmpty()) return null
         return try {
             PositionDeleteIndexUtil.merge(
                 positionDeletes.map {
@@ -162,9 +169,6 @@ class SupersededRowFinder(
         dataFilePath: String,
     ): PositionDeleteIndex {
         val deleteSchema = DeleteSchemaUtil.pathPosSchema()
-        val pathField = deleteSchema.columns()[0].name()
-        val positionField = deleteSchema.columns()[1].name()
-        val index = PositionDeleteIndex.empty()
         Parquet.read(table.io().newInputFile(deleteFile.location().toString()))
             .project(deleteSchema)
             .createReaderFunc { messageType ->
@@ -172,13 +176,8 @@ class SupersededRowFinder(
             }
             .build<Record>()
             .use { records ->
-                for (record in records) {
-                    if (record.getField(pathField).toString() == dataFilePath) {
-                        index.delete((record.getField(positionField) as Number).toLong())
-                    }
-                }
+                return Deletes.toPositionIndex(dataFilePath, records, deleteFile)
             }
-        return index
     }
 
     private fun rowGroupExpression(touched: Set<StructLike>): Expression {

@@ -32,7 +32,8 @@ import org.apache.iceberg.types.Types;
 /**
  * Delta writer that emits only positional deletes.
  */
-public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record> {
+public abstract class BasePositionDeltaTaskWriter
+    extends BaseTaskWriter<Record> implements SupersededDataFileProvider {
 
   private final Table table;
   private final Schema deleteSchema;
@@ -53,7 +54,8 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
                                         final long targetFileSize,
                                         final Schema schema,
                                         final Set<Integer> identifierFieldIds,
-                                        final PositionalDeleteResolver resolver) {
+                                        final PositionalDeleteResolver resolver,
+                                        final boolean allowWholeFileSupersession) {
     super(spec, format, writerFactory, fileFactory, io, targetFileSize);
     this.table = table;
     this.deleteSchema = TypeUtil.select(schema, identifierFieldIds);
@@ -117,7 +119,6 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     WriteResult dataResult = super.complete();
     WriteResult.Builder result = WriteResult.builder().addDataFiles(dataResult.dataFiles());
     result.addDeleteFiles(dataResult.deleteFiles());
-    result.addReferencedDataFiles(dataResult.referencedDataFiles());
     synchronized (completedPositionDeleteFiles) {
       result.addDeleteFiles(completedPositionDeleteFiles);
       completedPositionDeleteFiles.stream()
@@ -125,10 +126,12 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
           .filter(Objects::nonNull)
           .forEach(result::addReferencedDataFiles);
     }
-    fullySupersededDataFiles.stream()
-        .map(dataFile -> dataFile.location())
-        .forEach(result::addReferencedDataFiles);
     return result.build();
+  }
+
+  @Override
+  public Set<DataFile> fullySupersededDataFiles() {
+    return Set.copyOf(fullySupersededDataFiles);
   }
 
   private void resolvePending() {
@@ -136,7 +139,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       return;
     }
     List<DeleteFile> resolved = resolver.resolve(touchedKeys);
-    fullySupersededDataFiles.addAll(resolver.fullySupersededDataFiles());
+    fullySupersededDataFiles.addAll(resolver.getFullySupersededDataFiles());
     resolved.forEach(this::addCompletedPositionDeleteFile);
     touchedKeys.clear();
   }
