@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import java.util.concurrent.ConcurrentHashMap
 import org.apache.iceberg.DataFile
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileContent
 import org.apache.iceberg.Table
 import org.apache.iceberg.io.WriteResult
-import java.util.concurrent.ConcurrentHashMap
 
 object IcebergTableCommitter {
     private val commitLocks = ConcurrentHashMap<String, Any>()
