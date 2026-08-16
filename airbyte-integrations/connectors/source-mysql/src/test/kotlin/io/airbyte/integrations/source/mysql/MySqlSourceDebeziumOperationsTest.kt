@@ -80,12 +80,10 @@ class MySqlSourceDebeziumOperationsTest {
     fun `empty saved gtid plus purged set does not abort warm start`() {
         val available = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-100"
         val purged = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-50"
-        // Old path: empty saved set makes every server GTID look unseen, so purge overlap aborts.
-        val saved = MySqlGtidSet(null as String?)
-        val newGtidSet = MySqlGtidSet(available).subtract(saved)
-        assertTrue(!newGtidSet.isEmpty)
-        assertTrue(!newGtidSet.subtract(MySqlGtidSet(purged)).equals(newGtidSet))
-        // New path: skip GTID checks when the parsed saved GTID is absent.
+        // Debezium MySqlGtidSet.subtract NPEs when the saved set is empty. Even
+        // without that, an empty saved set would treat every server GTID as unseen
+        // and abort on gtid_purged overlap. Skip GTID checks when saved GTIDs are
+        // absent; keep aborting when a real saved set is behind purged GTIDs.
         assertFalse(
             MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart(null, available, purged)
         )
@@ -95,6 +93,13 @@ class MySqlSourceDebeziumOperationsTest {
         assertTrue(
             MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart(
                 "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-10",
+                available,
+                purged,
+            )
+        )
+        assertFalse(
+            MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart(
+                "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-100",
                 available,
                 purged,
             )
