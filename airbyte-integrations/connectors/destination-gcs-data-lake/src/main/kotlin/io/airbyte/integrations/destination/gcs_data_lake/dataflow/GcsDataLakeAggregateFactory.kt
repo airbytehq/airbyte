@@ -43,7 +43,6 @@ class GcsDataLakeAggregateFactory(
             schema = state.schema,
             stagingBranchName = state.stagingBranchName,
             writer = writer,
-            positionalDeletesEnabled = state.positionalDeleteState != null,
         )
     }
 }
