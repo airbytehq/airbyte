@@ -138,7 +138,6 @@ class IcebergTableWriterFactory {
                         outputFileFactory = outputFileFactory,
                         format = format,
                         positionalDeleteResolver = positionalDeleteResolver,
-                        allowWholeFileSupersession = allowWholeFileSupersession,
                     )
                 }
             else -> throw IllegalArgumentException("Unsupported import type $importType")
@@ -250,7 +249,6 @@ class IcebergTableWriterFactory {
         targetFileSize: Long,
         identifierFieldIds: Set<Int>,
         positionalDeleteResolver: PositionalDeleteResolver,
-        allowWholeFileSupersession: Boolean,
     ): BaseTaskWriter<Record> {
         return if (table.spec().isUnpartitioned) {
             UnpartitionedPositionDeltaWriter(
