@@ -137,6 +137,103 @@ definitions:
               target_type: number
               current_type: TYPE_KILOMETERS
 
+    property_metadata:
+      type: DeclarativeStream
+      name: property_metadata
+      primary_key:
+        - property_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: https://analyticsadmin.googleapis.com/v1beta
+          path: properties/{{ stream_partition.property_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          values: '{{ config["property_ids"] }}'
+          cursor_field: property_id
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ stream_partition.property_id | string }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            propertyType:
+              type:
+                - string
+                - "null"
+            parent:
+              type:
+                - string
+                - "null"
+            createTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            updateTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            displayName:
+              type:
+                - string
+                - "null"
+            industryCategory:
+              type:
+                - string
+                - "null"
+            timeZone:
+              type:
+                - string
+                - "null"
+            currencyCode:
+              type:
+                - string
+                - "null"
+            serviceLevel:
+              type:
+                - string
+                - "null"
+            deleteTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            expireTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            account:
+              type:
+                - string
+                - "null"
+            property_id:
+              type: string
+
   jwt_authenticator:
     type: JwtAuthenticator
     secret_key: "{{ json_loads(config['credentials']['credentials_json'])['private_key'] }}"
@@ -197,6 +294,9 @@ definitions:
           http_codes: [403]
           action: RETRY
           error_message: "{{ response.error.message }}"
+
+streams:
+  - $ref: "#/definitions/streams/property_metadata"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -937,7 +1037,7 @@ dynamic_streams:
         # first stream as <report_name>, and names each additional stream
         # <report_name>Property<property_id>.
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
+          field_path: ["name"]
           value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since

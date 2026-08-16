@@ -501,7 +501,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = columnsToAdd,
-                columnsToRemove = emptyMap(),
                 columnsToModify = emptyMap(),
             )
         } returns "ALTER TABLE SQL"
@@ -513,7 +512,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = columnsToAdd,
-                columnsToRemove = emptyMap(),
                 columnsToModify = emptyMap(),
             )
         }
@@ -534,7 +532,7 @@ internal class RedshiftAirbyteClientTest {
         client.applyChangeset(stream, columnNameMapping, testTable, emptyMap(), changeset)
 
         // Should not call sqlGenerator.matchSchemas or execute anything
-        verify(exactly = 0) { sqlGenerator.matchSchemas(any(), any(), any(), any()) }
+        verify(exactly = 0) { sqlGenerator.matchSchemas(any(), any(), any()) }
         verify(exactly = 0) { mockStatement.execute(any<String>()) }
     }
 
@@ -562,7 +560,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify = typeChanges,
             )
         } returns "ALTER TABLE TYPE CHANGE SQL"
@@ -574,7 +571,6 @@ internal class RedshiftAirbyteClientTest {
             sqlGenerator.matchSchemas(
                 tableName = testTable,
                 columnsToAdd = emptyMap(),
-                columnsToRemove = emptyMap(),
                 columnsToModify = typeChanges,
             )
         }
