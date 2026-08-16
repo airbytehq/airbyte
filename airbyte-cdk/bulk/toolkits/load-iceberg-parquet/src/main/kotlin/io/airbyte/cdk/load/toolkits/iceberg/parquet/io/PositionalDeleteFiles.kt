@@ -5,14 +5,15 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.DeleteFile
-import org.apache.iceberg.StructLike
+import org.apache.iceberg.FileMetadata
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.deletes.PositionDelete
 import org.apache.iceberg.deletes.PositionDeleteWriter
 import org.apache.iceberg.io.OutputFileFactory
 
-/** One positional delete writer per partition, with file paths and positions in ascending order. */
+/** One positional delete writer per data file, with positions in ascending order. */
 class PositionalDeleteFiles(
     private val writerFactory: GenericFileWriterFactory,
     private val outputFileFactory: OutputFileFactory,
@@ -36,10 +37,10 @@ class PositionalDeleteFiles(
     private fun writeOrdered(
         locations: Sequence<PositionalDeleteResolver.RowLocation>,
     ): List<DeleteFile> {
-        val writers = mutableMapOf<PartitionKey, WriterState>()
+        val writers = mutableMapOf<String, WriterState>()
         try {
             locations.forEach { location ->
-                val key = PartitionKey(location.spec.specId(), partitionValues(location.partition))
+                val key = location.path.toString()
                 val writer =
                     writers.getOrPut(key) {
                         WriterState(
@@ -48,6 +49,8 @@ class PositionalDeleteFiles(
                                 location.spec,
                                 location.partition,
                             ),
+                            location.spec,
+                            key,
                         )
                     }
                 check(
@@ -60,6 +63,7 @@ class PositionalDeleteFiles(
                 }
                 val delete = PositionDelete.create<Record>()
                 delete.set(location.path, location.position)
+                writer.writer.referencedDataFiles().add(location.path.toString())
                 writer.writer.write(delete)
                 writer.lastPath = location.path.toString()
                 writer.lastPosition = location.position
@@ -67,20 +71,20 @@ class PositionalDeleteFiles(
         } finally {
             writers.values.forEach { it.writer.close() }
         }
-        return writers.values.flatMap { it.writer.result().deleteFiles() }
-    }
-
-    private fun partitionValues(partition: StructLike?): List<Any?> =
-        if (partition == null) {
-            emptyList()
-        } else {
-            (0 until partition.size()).map { partition.get(it, Any::class.java) }
+        return writers.values.flatMap { state ->
+            state.writer.result().deleteFiles().map { deleteFile ->
+                FileMetadata.deleteFileBuilder(state.spec)
+                    .copy(deleteFile)
+                    .withReferencedDataFile(state.dataFilePath)
+                    .build()
+            }
         }
-
-    private data class PartitionKey(val specId: Int, val values: List<Any?>)
+    }
 
     private class WriterState(
         val writer: PositionDeleteWriter<Record>,
+        val spec: PartitionSpec,
+        val dataFilePath: String,
         var lastPath: String? = null,
         var lastPosition: Long = Long.MIN_VALUE,
     )
