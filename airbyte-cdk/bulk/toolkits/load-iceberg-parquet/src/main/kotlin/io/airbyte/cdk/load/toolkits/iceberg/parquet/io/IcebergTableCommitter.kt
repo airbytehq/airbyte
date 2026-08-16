@@ -6,12 +6,14 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.DataFile
 import org.apache.iceberg.DeleteFile
+import org.apache.iceberg.FileContent
 import org.apache.iceberg.Table
 import org.apache.iceberg.io.WriteResult
 
 object IcebergTableCommitter {
     private val commitLock = Any()
 
+    @Suppress("DEPRECATION")
     fun commit(
         table: Table,
         branch: String,
@@ -73,7 +75,7 @@ object IcebergTableCommitter {
                 .filter { task -> dataFiles.any { it.location() == task.file().location() } }
                 .flatMap { task ->
                     task.deletes().filter { deleteFile ->
-                        deleteFile.content() == org.apache.iceberg.FileContent.POSITION_DELETES &&
+                        deleteFile.content() == FileContent.POSITION_DELETES &&
                             deleteFile.referencedDataFile() != null &&
                             dataFiles.any {
                                 it.location().toString() == deleteFile.referencedDataFile()

@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.DeleteFile
 import org.apache.iceberg.FileMetadata
+import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.deletes.PositionDelete
@@ -82,7 +83,7 @@ class PositionalDeleteFiles(
 
     private class WriterState(
         val writer: PositionDeleteWriter<Record>,
-        val spec: org.apache.iceberg.PartitionSpec,
+        val spec: PartitionSpec,
         val dataFilePath: String,
         var lastPath: String? = null,
         var lastPosition: Long = Long.MIN_VALUE,
