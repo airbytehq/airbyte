@@ -16,8 +16,11 @@ import org.apache.iceberg.Table
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.data.parquet.GenericParquetReaders
+import org.apache.iceberg.deletes.PositionDeleteIndex
+import org.apache.iceberg.deletes.PositionDeleteIndexUtil
 import org.apache.iceberg.expressions.Expression
 import org.apache.iceberg.expressions.Expressions
+import org.apache.iceberg.io.DeleteSchemaUtil
 import org.apache.iceberg.parquet.Parquet
 import org.apache.iceberg.types.Comparators
 import org.apache.iceberg.types.Conversions
@@ -41,6 +44,9 @@ class SupersededRowFinder(
 
     val rowsScanned: Long
         get() = state.rowsScanned.get()
+
+    val fullySupersededDataFiles: Set<DataFile>
+        get() = state.fullySupersededDataFiles
 
     fun find(keys: TouchedKeys, ref: String): Sequence<PositionalDeleteResolver.RowLocation> {
         if (keys.isEmpty()) return emptySequence()
@@ -81,6 +87,7 @@ class SupersededRowFinder(
         }
         state.dataFilesOpened.set(0)
         state.rowsScanned.set(0)
+        state.fullySupersededDataFiles.clear()
         return plannedFiles
             .asSequence()
             .sortedBy { it.file.location().toString() }
@@ -93,8 +100,11 @@ class SupersededRowFinder(
         touched: Set<StructLike>,
         expression: Expression,
     ): Sequence<PositionalDeleteResolver.RowLocation> = sequence {
+        val positionIndex = positionDeleteIndex(planned)
+        val priorDeletedPositions = positionIndex?.cardinality() ?: 0
         val projectedSchema = Schema(identifierFields + MetadataColumns.ROW_POSITION)
         val inputFile = table.io().newInputFile(planned.file.location().toString())
+        val locations = mutableListOf<PositionalDeleteResolver.RowLocation>()
         Parquet.read(inputFile)
             .project(projectedSchema)
             .filter(expression)
@@ -105,19 +115,70 @@ class SupersededRowFinder(
             .use { records ->
                 for (record in records) {
                     state.rowsScanned.incrementAndGet()
-                    if (touched.contains(keyFrom(record))) {
-                        yield(
+                    val position =
+                        (record.getField(MetadataColumns.ROW_POSITION.name()) as Number).toLong()
+                    if (
+                        touched.contains(keyFrom(record)) &&
+                            (positionIndex == null || !positionIndex.isDeleted(position))
+                    ) {
+                        locations +=
                             PositionalDeleteResolver.RowLocation(
                                 planned.file.location(),
-                                (record.getField(MetadataColumns.ROW_POSITION.name()) as Number)
-                                    .toLong(),
+                                position,
                                 planned.spec,
                                 planned.partition,
                             )
-                        )
                     }
                 }
             }
+        if (locations.size.toLong() + priorDeletedPositions == planned.file.recordCount()) {
+            state.fullySupersededDataFiles += planned.file
+        } else {
+            locations.forEach(::yield)
+        }
+    }
+
+    private fun positionDeleteIndex(planned: PlannedDataFile): PositionDeleteIndex? {
+        val positionDeletes =
+            planned.deletes.filter { it.content() == FileContent.POSITION_DELETES }
+        if (positionDeletes.isEmpty()) return PositionDeleteIndex.empty()
+        return try {
+            PositionDeleteIndexUtil.merge(
+                positionDeletes.map {
+                    readPositionDeleteIndex(it, planned.file.location().toString())
+                }
+            )
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Unable to load prior position deletes for ${planned.file.location()}; " +
+                    "position suppression is disabled for this data file"
+            }
+            null
+        }
+    }
+
+    private fun readPositionDeleteIndex(
+        deleteFile: DeleteFile,
+        dataFilePath: String,
+    ): PositionDeleteIndex {
+        val deleteSchema = DeleteSchemaUtil.pathPosSchema()
+        val pathField = deleteSchema.columns()[0].name()
+        val positionField = deleteSchema.columns()[1].name()
+        val index = PositionDeleteIndex.empty()
+        Parquet.read(table.io().newInputFile(deleteFile.location().toString()))
+            .project(deleteSchema)
+            .createReaderFunc { messageType ->
+                GenericParquetReaders.buildReader(deleteSchema, messageType)
+            }
+            .build<Record>()
+            .use { records ->
+                for (record in records) {
+                    if (record.getField(pathField).toString() == dataFilePath) {
+                        index.delete((record.getField(positionField) as Number).toLong())
+                    }
+                }
+            }
+        return index
     }
 
     private fun rowGroupExpression(touched: Set<StructLike>): Expression {
