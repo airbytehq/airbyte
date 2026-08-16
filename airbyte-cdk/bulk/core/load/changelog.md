@@ -11,6 +11,10 @@ The Load CDK provides functionality for destination connectors including stream-
 
 [#82750](https://github.com/airbytehq/airbyte/pull/82750) — Add positional delete support to the Iceberg load toolkit.
 
+### 1.0.26 — 2026-08-16
+
+Optimize positional delete output and suppress positions already covered by registered delete files.
+
 ### 1.0.24 — 2026-08-10
 
 [#83806](https://github.com/airbytehq/airbyte/pull/83806) — Fix: honor the configured Azure Blob `endpointDomainName` and target the matching Entra authority host.

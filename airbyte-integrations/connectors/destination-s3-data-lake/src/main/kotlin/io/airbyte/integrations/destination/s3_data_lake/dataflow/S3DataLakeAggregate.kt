@@ -7,8 +7,10 @@ package io.airbyte.integrations.destination.s3_data_lake.dataflow
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCommitter
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.SupersededDataFileProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,17 +52,18 @@ class S3DataLakeAggregate(
         }
 
         fun completeAndCommit() {
-            val validationSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
+            val plannedSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
             val writeResult = writer.complete()
-            if (writeResult.deleteFiles().isNotEmpty()) {
+            if (plannedSnapshotId != null) {
+                IcebergTableCommitter.commit(
+                    table,
+                    stagingBranchName,
+                    writeResult,
+                    plannedSnapshotId,
+                    (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
+                )
+            } else if (writeResult.deleteFiles().isNotEmpty()) {
                 val delta = table.newRowDelta().toBranch(stagingBranchName)
-                validationSnapshotId?.let {
-                    delta
-                        .validateFromSnapshot(it)
-                        .validateDeletedFiles()
-                        .validateNoConflictingDataFiles()
-                        .validateNoConflictingDeleteFiles()
-                }
                 writeResult.dataFiles().forEach { delta.addRows(it) }
                 writeResult.deleteFiles().forEach { delta.addDeletes(it) }
                 delta.commit()
@@ -96,7 +99,6 @@ class S3DataLakeAggregate(
             writer.close()
         }
     }
-
     companion object {
         val commitLock: Any = Any()
     }

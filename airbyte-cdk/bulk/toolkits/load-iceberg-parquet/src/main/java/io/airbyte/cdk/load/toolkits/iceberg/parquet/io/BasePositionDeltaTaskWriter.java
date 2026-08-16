@@ -7,8 +7,11 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io;
 import io.airbyte.cdk.ConfigErrorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
@@ -29,7 +32,8 @@ import org.apache.iceberg.types.Types;
 /**
  * Delta writer that emits only positional deletes.
  */
-public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record> {
+public abstract class BasePositionDeltaTaskWriter
+    extends BaseTaskWriter<Record> implements SupersededDataFileProvider {
 
   private final Table table;
   private final Schema deleteSchema;
@@ -37,6 +41,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
   private final InternalRecordWrapper keyWrapper;
   private final PositionalDeleteResolver resolver;
   private final TouchedKeys touchedKeys;
+  private final Set<DataFile> fullySupersededDataFiles = new HashSet<>();
   private final List<DeleteFile> completedPositionDeleteFiles = new ArrayList<>();
 
   protected BasePositionDeltaTaskWriter(
@@ -115,8 +120,17 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     result.addDeleteFiles(dataResult.deleteFiles());
     synchronized (completedPositionDeleteFiles) {
       result.addDeleteFiles(completedPositionDeleteFiles);
+      completedPositionDeleteFiles.stream()
+          .map(DeleteFile::referencedDataFile)
+          .filter(Objects::nonNull)
+          .forEach(result::addReferencedDataFiles);
     }
     return result.build();
+  }
+
+  @Override
+  public Set<DataFile> fullySupersededDataFiles() {
+    return Set.copyOf(fullySupersededDataFiles);
   }
 
   private void resolvePending() {
@@ -124,6 +138,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       return;
     }
     List<DeleteFile> resolved = resolver.resolve(touchedKeys);
+    fullySupersededDataFiles.addAll(resolver.getFullySupersededDataFiles());
     resolved.forEach(this::addCompletedPositionDeleteFile);
     touchedKeys.clear();
   }
