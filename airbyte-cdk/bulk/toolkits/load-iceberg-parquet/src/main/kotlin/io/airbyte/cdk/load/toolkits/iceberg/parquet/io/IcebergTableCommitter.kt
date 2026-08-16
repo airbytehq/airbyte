@@ -68,7 +68,6 @@ object IcebergTableCommitter {
         snapshotId: Long,
         dataFiles: Set<DataFile>,
     ): Set<DeleteFile> {
-        val paths = dataFiles.map { it.location().toString() }.toSet()
         return table.newScan().useSnapshot(snapshotId).planFiles().use { tasks ->
             tasks
                 .filter { task -> dataFiles.any { it.location() == task.file().location() } }
