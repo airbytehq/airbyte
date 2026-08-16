@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
@@ -37,6 +38,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
   private final InternalRecordWrapper keyWrapper;
   private final PositionalDeleteResolver resolver;
   private final TouchedKeys touchedKeys;
+  private final Set<DataFile> fullySupersededDataFiles = new java.util.HashSet<>();
   private final List<DeleteFile> completedPositionDeleteFiles = new ArrayList<>();
 
   protected BasePositionDeltaTaskWriter(
@@ -113,9 +115,17 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     WriteResult dataResult = super.complete();
     WriteResult.Builder result = WriteResult.builder().addDataFiles(dataResult.dataFiles());
     result.addDeleteFiles(dataResult.deleteFiles());
+    result.addReferencedDataFiles(dataResult.referencedDataFiles());
     synchronized (completedPositionDeleteFiles) {
       result.addDeleteFiles(completedPositionDeleteFiles);
+      completedPositionDeleteFiles.stream()
+          .map(DeleteFile::referencedDataFile)
+          .filter(java.util.Objects::nonNull)
+          .forEach(result::addReferencedDataFiles);
     }
+    fullySupersededDataFiles.stream()
+        .map(dataFile -> dataFile.location())
+        .forEach(result::addReferencedDataFiles);
     return result.build();
   }
 
@@ -124,6 +134,7 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
       return;
     }
     List<DeleteFile> resolved = resolver.resolve(touchedKeys);
+    fullySupersededDataFiles.addAll(resolver.fullySupersededDataFiles());
     resolved.forEach(this::addCompletedPositionDeleteFile);
     touchedKeys.clear();
   }

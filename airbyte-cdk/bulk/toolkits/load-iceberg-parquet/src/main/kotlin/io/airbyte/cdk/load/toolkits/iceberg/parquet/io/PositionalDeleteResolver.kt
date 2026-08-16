@@ -33,6 +33,9 @@ class PositionalDeleteResolver(
     val dataFilesOpened: Int
         get() = finder.dataFilesOpened
 
+    val fullySupersededDataFiles: Set<org.apache.iceberg.DataFile>
+        get() = finder.fullySupersededDataFiles
+
     init {
         require(maxTouchedKeys > 0) { "maxTouchedKeys must be positive" }
     }
