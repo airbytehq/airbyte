@@ -14,9 +14,14 @@ import org.junit.jupiter.params.provider.MethodSource
 class MsSqlSourceSqlServerAgentServiceNameTest {
 
     @Test
-    fun `agent lookup queries sys dm_server_services with two LIKE patterns`() {
+    fun `agent lookup queries sys dm_server_services with Agent-only LIKE patterns`() {
         assertEquals(
-            listOf("%SQL Server%Agent%", "%SQL Server 代理%"),
+            listOf(
+                "SQL Server Agent%",
+                "SQL Server-Agent%",
+                "SQL Server  Agent%",
+                "%SQL Server 代理%",
+            ),
             likePatternsInAgentQuery(),
         )
     }
@@ -58,6 +63,9 @@ class MsSqlSourceSqlServerAgentServiceNameTest {
                 Arguments.of("SQL Server Agent (EXPRESS)", true),
                 Arguments.of("SQL Server 代理", true),
                 Arguments.of("SQL Server 代理 (MSSQLSERVER)", true),
+                Arguments.of("SQL Server (Agent)", false),
+                Arguments.of("SQL Server (MSSQLSERVER)", false),
+                Arguments.of("SQL Server (EXPRESS)", false),
                 Arguments.of("SQL Server Browser", false),
                 Arguments.of("SQL Agent", false),
                 Arguments.of("Agent", false),
