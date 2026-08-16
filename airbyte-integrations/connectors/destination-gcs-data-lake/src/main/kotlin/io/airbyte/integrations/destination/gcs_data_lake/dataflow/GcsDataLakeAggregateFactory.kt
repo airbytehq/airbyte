@@ -35,6 +35,7 @@ class GcsDataLakeAggregateFactory(
                 schema = state.schema,
                 positionalDeleteRef = state.positionalDeleteState?.let { state.stagingBranchName },
                 positionalDeleteState = state.positionalDeleteState,
+                allowWholeFileSupersession = state.positionalDeleteState != null,
             )
 
         return GcsDataLakeAggregate(
