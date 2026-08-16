@@ -27,41 +27,41 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 ## Supported Streams
 
 - [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
-- [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications) \(Incremental\)
-- [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application) \(Incremental\)
-- [Applications Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers-for-application) \(Incremental\)
-- [Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers) \(Incremental\)
-- [Demographic Answer Options](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options)
-- [Demographic Answer Options For Question](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question)
-- [Demographic Questions](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions)
-- [Demographic Question Set](https://developers.greenhouse.io/harvest.html#get-list-demographic-question-sets)
-- [Demographic Questions For Question Set](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set)
-- [Approvals](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
-- [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates) \(Incremental\)
-- [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
-- [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
+- [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
+- [Applications Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
+- [Applications Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
+- [Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
+- [Demographic Answer Options](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
+- [Demographic Answer Options For Question](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
+- [Demographic Questions](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions)
+- [Demographic Question Set](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets)
+- [Demographic Questions For Question Set](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions)
+- [Approvals](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows)
+- [Candidates](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) \(Incremental\)
+- [Close Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons)
+- [Custom Fields](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields)
 - [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
-- [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
+- [Departments](https://harvestdocs.greenhouse.io/reference/get_v3-departments)
 - [Disciplines](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
-- [EEOC](https://developers.greenhouse.io/harvest.html#get-list-eeoc) \(Incremental\)
-- [Email Templates](https://developers.greenhouse.io/harvest.html#get-list-email-templates) \(Incremental\)
-- [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews) \(Incremental\)
-- [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts) \(Incremental\)
-- [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages) \(Incremental\)
-- [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs) \(Incremental\)
-- [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
-- [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job) \(Incremental\)
-- [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers) \(Incremental\)
-- [Offices](https://developers.greenhouse.io/harvest.html#get-list-offices)
-- [Prospect Pools](https://developers.greenhouse.io/harvest.html#get-list-prospect-pools)
-- [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
+- [EEOC](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) \(Incremental\)
+- [Email Templates](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) \(Incremental\)
+- [Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
+- [Job Posts](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) \(Incremental\)
+- [Job Stages](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) \(Incremental\)
+- [Jobs](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) \(Incremental\)
+- [Job Openings](https://harvestdocs.greenhouse.io/reference/get_v3-openings)
+- [Jobs Stages](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) \(Incremental\)
+- [Offers](https://harvestdocs.greenhouse.io/reference/get_v3-offers) \(Incremental\)
+- [Offices](https://harvestdocs.greenhouse.io/reference/get_v3-offices)
+- [Prospect Pools](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools)
+- [Rejection Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons)
 - [Schools](https://developers.greenhouse.io/harvest.html#get-list-schools)
-- [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards) \(Incremental\)
-- [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
-- [Tags](https://developers.greenhouse.io/harvest.html#get-list-candidate-tags)
-- [Users](https://developers.greenhouse.io/harvest.html#get-list-users) \(Incremental\)
-- [User Permissions](https://developers.greenhouse.io/harvest.html#get-list-job-permissions)
-- [User Roles](https://developers.greenhouse.io/harvest.html#the-user-role-object)
+- [Scorecards](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) \(Incremental\)
+- [Sources](https://harvestdocs.greenhouse.io/reference/get_v3-sources)
+- [Tags](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags)
+- [Users](https://harvestdocs.greenhouse.io/reference/get_v3-users) \(Incremental\)
+- [User Permissions](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions)
+- [User Roles](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles)
 
 ## Performance considerations
 
@@ -78,6 +78,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
+| 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
+| 0.7.32 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.7.31 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.7.29 — 0.7.30 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.7.30 | 2026-07-28 | [82944](https://github.com/airbytehq/airbyte/pull/82944) | Update dependencies |
 | 0.7.29 | 2026-07-21 | [82444](https://github.com/airbytehq/airbyte/pull/82444) | Update dependencies |
 | 0.7.28 | 2026-07-14 | [81887](https://github.com/airbytehq/airbyte/pull/81887) | Update dependencies |
 | 0.7.27 | 2026-06-30 | [81129](https://github.com/airbytehq/airbyte/pull/81129) | Update dependencies |

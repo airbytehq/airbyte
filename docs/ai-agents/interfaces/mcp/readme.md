@@ -9,9 +9,18 @@ import TabItem from '@theme/TabItem';
 
 # Agent MCP
 
-The Agent MCP connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
+The Agent MCP connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors/readme.md) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
+
+## When to use the MCP server
+
+- Your agent already supports the Model Context Protocol (Claude, ChatGPT, Cursor, VS Code, Codex).
+- You want zero-install setup — just add a URL and authenticate.
+- You prefer conversational, prompt-driven access to your connected data.
+- You don't need to run commands offline or in a CI pipeline.
+
+If you need to process large result sets, make many sequential calls in one turn, run long-running operations, or compose output with shell tools, use the [CLI](../cli/readme.md) instead. The CLI also provides fuller, prescriptive guidance through an installable agent skill; see [Use the CLI with AI agents](../cli/using-with-ai-agents.md). If you're building a Python agent with a framework like Pydantic AI or LangChain, see the [SDK](../sdk/readme.md). For non-Python backends or custom admin flows, see the [API](../api/readme.md).
 
 ## Requirements
 
@@ -296,7 +305,7 @@ After you connect the MCP server, your agent can discover and call its tools aut
 
 ### Add a connector
 
-To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../../connectors). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
+To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../../connectors/readme.md). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
 
 ```text
 Connect my Linear account
@@ -350,7 +359,7 @@ Under the hood, the agent uses a small set of skill-docs tools to learn a connec
 - `read_skill_docs` returns a connector's usage docs — an outline of entities and actions, or a specific section when the agent passes one.
 - `list_skills` and `search_skills` browse and search the skills available to your agent.
 
-The agent inspects the connector, reads the relevant skill docs, then executes — the same inspect → read docs → execute flow the [SDK](../sdk/execute) and [API](../api/execute) expose. Most clients call these tools automatically, so you just prompt in natural language.
+The agent inspects the connector, reads the relevant skill docs, then executes — the same inspect → read docs → execute flow the [SDK](../sdk/execute.md) and [API](../api/execute.md) expose. Most clients call these tools automatically, so you just prompt in natural language.
 
 ## How authentication works
 
@@ -437,9 +446,9 @@ For example:
 
 Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
 
-When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [Context Store](../../concepts/context-store). The Context Store is a managed, searchable replica of select entities from all your connected data sources. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
+When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [Context Store](../../concepts/context-store.md). The Context Store is a managed, searchable replica of select entities from all your connected data sources. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
 
-For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors).
+For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors/readme.md).
 
 ## Troubleshooting
 
@@ -474,4 +483,4 @@ ChatGPT may not realize it has access to data through the MCP server. If ChatGPT
 ### Queries return unexpected results
 
 - Ask the agent to describe the available entities before querying, so it picks the right one.
-- For time-based queries, the agent resolves relative dates like "this week" or "last month" automatically. The MCP server returns timestamps in UTC; see [Time zones](../../concepts/time-zones) for how this interacts with your local time.
+- For time-based queries, the agent resolves relative dates like "this week" or "last month" automatically. The MCP server returns timestamps in UTC; see [Time zones](../../concepts/time-zones.md) for how this interacts with your local time.

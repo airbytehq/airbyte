@@ -2,6 +2,48 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 12, 2026
+
+Connections
+
+- When you set up a new source or destination, Airbyte now opens the configuration form first instead of the AI setup assistant. You can still switch to the assistant at any time with the Agent/Form toggle at the top of the page.
+
+## August 11, 2026
+
+Platform
+
+- Airbyte Cloud now uses a new cookie consent tool. You see a redesigned consent banner on your first visit, and you can still change your choices at any time with the Cookie preferences option in your user settings.
+
+## August 7, 2026
+
+Connections
+
+- Some syncs now run faster. Airbyte correctly reads the processing capacity allotted to a sync and opens as many parallel data channels as that capacity allows, instead of falling back to a single channel.
+
+## August 6, 2026
+
+API
+
+- Not-found (404) error responses in the API no longer declare a message as required. If you generate a client from Airbyte's API spec, those clients no longer fail to parse a not-found response that comes back without a message.
+
+## August 5, 2026
+
+Platform
+
+- You can now assign two new workspace roles from the Members page: Source editor and Destination editor. A source editor can create and edit a workspace's sources and connections but not its destinations, and a destination editor can do the reverse. Both roles are available on the Pro and Enterprise Flex plans.
+
+## August 3, 2026
+
+Platform
+
+- Your Data Worker usage now reflects only the capacity your syncs are actually using. Previously, if a job reached a failed or cancelled state moments before Airbyte recorded its capacity reservation, that capacity stayed reserved indefinitely, overstating your organization's usage and leaving less capacity available for new syncs.
+
+## July 27, 2026
+
+Platform
+
+- The invitation code that lets someone join your organization or workspace is now sent only to the person you invited. It's no longer visible to anyone viewing your list of pending invitations, so only the intended recipient can accept an invitation. Inviting, viewing, and canceling pending invitations in Settings works exactly as before.
+
 ## July 23, 2026
 
 Connections

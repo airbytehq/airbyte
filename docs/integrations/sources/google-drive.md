@@ -326,6 +326,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.29 | 2026-08-11 | [84223](https://github.com/airbytehq/airbyte/pull/84223) | Update CDK to ^7.25.1 |
+| 0.5.28 | 2026-08-11 | [83966](https://github.com/airbytehq/airbyte/pull/83966) | Update dependencies |
+| 0.5.27 | 2026-08-04 | [83492](https://github.com/airbytehq/airbyte/pull/83492) | Update dependencies |
+| 0.5.26 | 2026-07-28 | [82943](https://github.com/airbytehq/airbyte/pull/82943) | Update dependencies |
 | 0.5.25 | 2026-07-21 | [82459](https://github.com/airbytehq/airbyte/pull/82459) | Update dependencies |
 | 0.5.24 | 2026-07-14 | [81878](https://github.com/airbytehq/airbyte/pull/81878) | Update dependencies |
 | 0.5.23 | 2026-07-07 | [81443](https://github.com/airbytehq/airbyte/pull/81443) | Update dependencies |

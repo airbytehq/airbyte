@@ -60,6 +60,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.67 | 2026-08-13 | [84389](https://github.com/airbytehq/airbyte/pull/84389) | No-op version bump to validate the new autopilot release-immediately checkbox workflow |
+| 0.3.66 | 2026-08-11 | [84043](https://github.com/airbytehq/airbyte/pull/84043) | Update dependencies |
+| 0.3.65 | 2026-08-04 | [83560](https://github.com/airbytehq/airbyte/pull/83560) | Update dependencies |
+| 0.3.64 | 2026-07-28 | [83032](https://github.com/airbytehq/airbyte/pull/83032) | Update dependencies |
 | 0.3.63 | 2026-07-21 | [82557](https://github.com/airbytehq/airbyte/pull/82557) | Update dependencies |
 | 0.3.62 | 2026-07-14 | [81961](https://github.com/airbytehq/airbyte/pull/81961) | Update dependencies |
 | 0.3.61 | 2026-07-10 | [81655](https://github.com/airbytehq/airbyte/pull/81655) | chore(source-pokeapi): dummy version bump for progressive rollout (autopilot) testing |

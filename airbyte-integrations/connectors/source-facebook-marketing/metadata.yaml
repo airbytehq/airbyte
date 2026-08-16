@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 6.0.3-rc.1
+  dockerImageTag: 6.1.1-rc.1
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   externalDocumentationUrls:
@@ -19,6 +19,13 @@ data:
       type: api_release_history
     - title: 2026 Out-Of-Cycle Changes
       url: https://developers.facebook.com/documentation/ads-commerce/marketing-api/out-of-cycle-changes/occ-2026
+      type: api_deprecations
+    - title: Marketing API Versioning
+      url: https://developers.facebook.com/docs/marketing-api/versions
+      type: api_deprecations
+    - title: Marketing API Authorization
+      url: https://developers.facebook.com/docs/marketing-api/access
+      type: authentication_guide
     - title: API Upgrade Tool
       url: https://developers.facebook.com/tools/api_versioning/600551260845577/
       type: api_reference
@@ -43,7 +50,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       2.0.0:
         message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"

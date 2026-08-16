@@ -309,6 +309,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.12.35 | 2026-07-28 | [82977](https://github.com/airbytehq/airbyte/pull/82977) | Update dependencies |
 | 0.12.34 | 2026-07-21 | [82453](https://github.com/airbytehq/airbyte/pull/82453) | Update dependencies |
 | 0.12.33 | 2026-07-14 | [81855](https://github.com/airbytehq/airbyte/pull/81855) | Update dependencies |
 | 0.12.32 | 2026-06-30 | [81092](https://github.com/airbytehq/airbyte/pull/81092) | Update dependencies |
@@ -322,7 +323,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.12.25 | 2026-04-28 | [77273](https://github.com/airbytehq/airbyte/pull/77273) | Update dependencies |
 | 0.12.24 | 2026-04-21 | [76629](https://github.com/airbytehq/airbyte/pull/76629) | Update dependencies |
 | 0.12.23 | 2026-04-02 | [75578](https://github.com/airbytehq/airbyte/pull/75578) | Add `oauth_connector_input_specification` with granular scopes |
-| 0.12.23 | 2026-03-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `oauth_connector_input_specification` with granular scopes |
+| 0.12.23 | 2026-03-30 | [75578](https://github.com/airbytehq/airbyte/pull/75578) | Add `oauth_connector_input_specification` with granular scopes |
 | 0.12.22 | 2026-03-17 | [74660](https://github.com/airbytehq/airbyte/pull/74660) | Update dependencies |
 | 0.12.21 | 2026-02-24 | [73968](https://github.com/airbytehq/airbyte/pull/73968) | Update dependencies |
 | 0.12.20 | 2026-02-10 | [73078](https://github.com/airbytehq/airbyte/pull/73078) | Update dependencies |

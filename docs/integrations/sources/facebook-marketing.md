@@ -278,8 +278,8 @@ The Facebook Marketing source connector supports the following [sync modes](http
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives, AdCreativesFromAds, AdAccount, CustomConversions, and CustomAudiences streams)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives, AdCreativesFromAds, AdAccount, CustomConversions, and CustomAudiences streams)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives, AdAccount, CustomConversions, and CustomAudiences streams)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives, AdAccount, CustomConversions, and CustomAudiences streams)
 
 ## Supported Streams
 
@@ -288,7 +288,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | activities         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)                        | ✅                    | ✅                   |
 | ad_account         | [Latest](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts) | ✅                    | ❌                   |
 | ad_creatives       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)                  | ✅                    | ❌                   |
-| ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)               | ✅                    | ❌                   |
+| ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)               | ✅                    | ✅                   |
 | ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
 | ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
 | ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/insights/)                  | ✅                    | ✅                   |
@@ -305,7 +305,9 @@ The `rule` field in the `Custom Audiences` stream may not be synced for all reco
 :::
 
 :::info Ad Creatives From Ads
-The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema is identical to `ad_creatives`, but this stream only returns creatives associated with ads — orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
+The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema matches `ad_creatives` with one addition - an `updated_time` field carrying the parent ad's timestamp - but this stream only returns creatives associated with ads; orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
+
+When using incremental sync, the cursor is the parent ad's `updated_time` because AdCreative does not expose a timestamp of its own. Content changes always create a new creative and are picked up, but in-place renames, status or ad-label changes on a creative, and edits to the page post behind `effective_object_story_id` may not move the parent ad's timestamp and can be missed; use full refresh to capture those changes. The first incremental sync always reads the full ads history to seed the cursor (the `start_date` setting is not applied to this stream), so the time savings begin with the second sync.
 :::
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
@@ -331,6 +333,10 @@ Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 | Ad Insights Country                               |                           `country`                            | `action_type`, `action_target_id`, `action_destination` |
 | Ad Insights Platform And Device                   | `publisher_platform`, `platform_position`, `impression_device` |                      `action_type`                      |
 | Ad Insights Region                                |                            `region`                            | `action_type`, `action_target_id`, `action_destination` |
+
+:::info Breakdown opt-in requirement (effective August 6, 2026)
+Beginning August 6, 2026, Meta requires certain ad accounts to opt in to the `impression_device`, `hourly_stats_aggregated_by_audience_time_zone`, and `frequency_value` breakdowns. This affects the `Ad Insights Platform And Device` stream and any Custom Insights stream configured with these breakdowns. The requirement applies to non-sales-supported accounts only. The connector retrieves insights through asynchronous report jobs, which Meta documents as a supported fallback, but if these streams return no data, ask your account administrator to opt in to the breakdown through Ads Manager. See [Meta's 2026 out-of-cycle changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2026) for details.
+:::
 
 You can segment the Ad Insights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
@@ -496,7 +502,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.3-rc.1 | 2026-07-26 | [76888](https://github.com/airbytehq/airbyte/pull/76888) | Treat empty `_collect_child_ids` results as "no data for this slice" instead of raising `system_error`, so syncs advance past historical intervals with no campaign activity |
+| 6.1.1-rc.1 | 2026-07-26 | [76888](https://github.com/airbytehq/airbyte/pull/76888) | Treat empty `_collect_child_ids` results as "no data for this slice" instead of raising `system_error`, so syncs advance past historical intervals with no campaign activity |
+| 6.1.0 | 2026-08-04 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
 | 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
 | 6.0.0 | 2026-06-23 | [80324](https://github.com/airbytehq/airbyte/pull/80324) | Replace deprecated `ads_insights_dma` and `ads_insights_demographics_dma_region` streams with `ads_insights_comscore_market` and `ads_insights_demographics_comscore_market_region` following Meta's DMA → Comscore Market transition. Remove `dma` from Custom Insights breakdowns. |
