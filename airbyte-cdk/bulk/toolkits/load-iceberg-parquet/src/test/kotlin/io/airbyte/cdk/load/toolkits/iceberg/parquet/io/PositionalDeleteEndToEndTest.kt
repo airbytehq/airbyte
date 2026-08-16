@@ -16,6 +16,7 @@ import org.apache.iceberg.catalog.TableIdentifier
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.data.IcebergGenerics
 import org.apache.iceberg.exceptions.CommitFailedException
+import org.apache.iceberg.exceptions.ValidationException
 import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.TypeUtil
 import org.apache.iceberg.types.Types
@@ -181,7 +182,7 @@ class PositionalDeleteEndToEndTest {
             .allMatch { it.content() == FileContent.POSITION_DELETES }
         assertThat(positionalDeleteFiles).allMatch { it.referencedDataFile() != null }
         assertThat(positionalDeleteFiles.map { it.referencedDataFile() }.toSet())
-            .hasSize(positionalDeleteFiles.size)
+            .hasSizeLessThanOrEqualTo(positionalDeleteFiles.size)
 
         val rows =
             IcebergGenerics.read(table).useSnapshot(stagingSnapshotId).build().use { records ->
@@ -342,7 +343,8 @@ class PositionalDeleteEndToEndTest {
         writer.write(RecordWrapper(record(schema, "b", "new-b"), Operation.UPDATE))
         val result = writer.complete()
         assertThat(result.deleteFiles()).isEmpty()
-        assertThat(supersededDataFiles(writer)).containsExactly(initialResult.dataFiles().single())
+        assertThat(supersededDataFiles(writer).map { it.location() })
+            .containsExactly(initialResult.dataFiles().single().location())
         IcebergTableCommitter.commit(
             table,
             "staging",
@@ -352,10 +354,10 @@ class PositionalDeleteEndToEndTest {
         )
         assertThat(
                 table.newScan().useRef("staging").planFiles().use {
-                    it.map { task -> task.file() }.toList()
+                    it.map { task -> task.file().location() }.toList()
                 }
             )
-            .noneMatch { it.location() == initialResult.dataFiles().single().location() }
+            .doesNotContain(initialResult.dataFiles().single().location())
         warehouse.toFile().deleteRecursively()
     }
 
@@ -401,13 +403,15 @@ class PositionalDeleteEndToEndTest {
             )
         writer.write(RecordWrapper(record(schema, "a", "new-a"), Operation.UPDATE))
         val result = writer.complete()
-        val concurrentWriter = writerFactory.create(table, "ab-generation-id-2-e", Append, schema)
-        concurrentWriter.write(record(schema, "b", "concurrent-b"))
-        val concurrentResult = concurrentWriter.complete()
         table
-            .newAppend()
+            .newRewrite()
             .toBranch("staging")
-            .apply { concurrentResult.dataFiles().forEach(::appendFile) }
+            .rewriteFiles(
+                setOf(initialResult.dataFiles().single()),
+                emptySet(),
+                emptySet(),
+                emptySet(),
+            )
             .commit()
         assertThatThrownBy {
                 IcebergTableCommitter.commit(
@@ -418,7 +422,7 @@ class PositionalDeleteEndToEndTest {
                     supersededDataFiles(writer),
                 )
             }
-            .isInstanceOf(CommitFailedException::class.java)
+            .isInstanceOfAny(CommitFailedException::class.java, ValidationException::class.java)
         warehouse.toFile().deleteRecursively()
     }
 

@@ -144,7 +144,7 @@ class SupersededRowFinder(
     private fun positionDeleteIndex(planned: PlannedDataFile): PositionDeleteIndex? {
         val positionDeletes =
             planned.deletes.filter { it.content() == FileContent.POSITION_DELETES }
-        if (positionDeletes.isEmpty()) return PositionDeleteIndex.empty()
+        if (positionDeletes.isEmpty()) return null
         return try {
             PositionDeleteIndexUtil.merge(
                 positionDeletes.map {

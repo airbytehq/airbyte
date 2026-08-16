@@ -136,7 +136,7 @@ public abstract class BasePositionDeltaTaskWriter
       return;
     }
     List<DeleteFile> resolved = resolver.resolve(touchedKeys);
-    fullySupersededDataFiles.addAll(resolver.fullySupersededDataFiles());
+    fullySupersededDataFiles.addAll(resolver.getFullySupersededDataFiles());
     resolved.forEach(this::addCompletedPositionDeleteFile);
     touchedKeys.clear();
   }
