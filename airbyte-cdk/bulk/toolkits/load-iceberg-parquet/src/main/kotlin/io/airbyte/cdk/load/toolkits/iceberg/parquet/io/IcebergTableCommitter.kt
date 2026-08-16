@@ -6,31 +6,14 @@ package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.DataFile
 import org.apache.iceberg.DeleteFile
+import org.apache.iceberg.FileContent
 import org.apache.iceberg.Table
 import org.apache.iceberg.io.WriteResult
 
 object IcebergTableCommitter {
     private val commitLock = Any()
 
-    fun fullySupersededDataFiles(
-        table: Table,
-        plannedSnapshotId: Long,
-        writeResult: WriteResult,
-    ): Set<DataFile> {
-        val referenced = writeResult.referencedDataFiles().map { it.toString() }.toSet()
-        val deleteReferences =
-            writeResult
-                .deleteFiles()
-                .mapNotNull { it.referencedDataFile() }
-                .map { it.toString() }
-                .toSet()
-        val paths = referenced - deleteReferences
-        if (paths.isEmpty()) return emptySet()
-        return table.newScan().useSnapshot(plannedSnapshotId).planFiles().use { tasks ->
-            tasks.map { it.file() }.filter { it.location().toString() in paths }.toSet()
-        }
-    }
-
+    @Suppress("DEPRECATION")
     fun commit(
         table: Table,
         branch: String,
@@ -88,8 +71,16 @@ object IcebergTableCommitter {
         val paths = dataFiles.map { it.location().toString() }.toSet()
         return table.newScan().useSnapshot(snapshotId).planFiles().use { tasks ->
             tasks
-                .filter { it.file().location().toString() in paths }
-                .flatMap { it.deletes().toList() }
+                .filter { task -> dataFiles.any { it.location() == task.file().location() } }
+                .flatMap { task ->
+                    task.deletes().filter { deleteFile ->
+                        deleteFile.content() == FileContent.POSITION_DELETES &&
+                            deleteFile.referencedDataFile() != null &&
+                            dataFiles.any {
+                                it.location().toString() == deleteFile.referencedDataFile()
+                        }
+                    }
+                }
                 .toSet()
         }
     }
