@@ -244,7 +244,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             firstResult,
             firstPlanned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, firstPlanned, firstResult),
+            (firstWriter as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
         )
 
         val secondPlanned = table.refs()["staging"]!!.snapshotId()
@@ -265,7 +265,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             secondResult,
             secondPlanned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, secondPlanned, secondResult),
+            (secondWriter as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
         )
 
         val thirdPlanned = table.refs()["staging"]!!.snapshotId()
@@ -286,7 +286,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             thirdResult,
             thirdPlanned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, thirdPlanned, thirdResult),
+            (thirdWriter as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
         )
 
         val rows =
@@ -349,7 +349,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             result,
             planned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, planned, result),
+            (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
         )
         assertThat(
                 table.newScan().useRef("staging").planFiles().use {
@@ -416,7 +416,7 @@ class PositionalDeleteEndToEndTest {
                     "staging",
                     result,
                     planned,
-                    IcebergTableCommitter.fullySupersededDataFiles(table, planned, result),
+                    (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
                 )
             }
             .isInstanceOf(CommitFailedException::class.java)
