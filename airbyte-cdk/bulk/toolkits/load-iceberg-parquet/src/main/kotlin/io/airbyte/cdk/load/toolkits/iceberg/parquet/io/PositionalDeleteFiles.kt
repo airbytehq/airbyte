@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
 import org.apache.iceberg.DeleteFile
-import org.apache.iceberg.FileMetadata
 import org.apache.iceberg.PartitionSpec
 import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.Record

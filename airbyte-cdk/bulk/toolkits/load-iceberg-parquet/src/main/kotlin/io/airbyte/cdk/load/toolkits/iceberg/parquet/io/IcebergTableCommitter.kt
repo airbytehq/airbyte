@@ -78,7 +78,7 @@ object IcebergTableCommitter {
                             deleteFile.referencedDataFile() != null &&
                             dataFiles.any {
                                 it.location().toString() == deleteFile.referencedDataFile()
-                        }
+                            }
                     }
                 }
                 .toSet()
