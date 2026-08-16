@@ -90,6 +90,9 @@ class SupersededRowFinder(
         state.dataFilesOpened.set(0)
         state.rowsScanned.set(0)
         state.fullySupersededDataFiles.clear()
+        state.positionDeleteIndexes.clear()
+        state.unreadablePositionDeleteFiles.clear()
+        state.positionDeleteFilesRead.set(0)
         return plannedFiles
             .asSequence()
             .sortedBy { it.file.location().toString() }
@@ -158,34 +161,51 @@ class SupersededRowFinder(
         val positionDeletes =
             planned.deletes.filter { it.content() == FileContent.POSITION_DELETES }
         if (positionDeletes.isEmpty()) return null
-        return try {
-            PositionDeleteIndexUtil.merge(
-                positionDeletes.map {
-                    readPositionDeleteIndex(it, planned.file.location().toString())
+        val indexes =
+            positionDeletes.mapNotNull { deleteFile ->
+                val deletePath = deleteFile.location().toString()
+                if (state.unreadablePositionDeleteFiles.contains(deletePath)) {
+                    return@mapNotNull null
                 }
-            )
-        } catch (e: Exception) {
-            logger.warn(e) {
-                "Unable to load prior position deletes for ${planned.file.location()}; " +
-                    "position suppression is disabled for this data file"
+                val indexesByDataFile =
+                    state.positionDeleteIndexes[deletePath]
+                        ?: try {
+                            readPositionDeleteIndexes(deleteFile).also {
+                                state.positionDeleteIndexes[deletePath] = it
+                            }
+                        } catch (e: Exception) {
+                            state.unreadablePositionDeleteFiles.add(deletePath)
+                            logger.warn(e) {
+                                "Unable to load prior position deletes from $deletePath; " +
+                                    "position suppression is disabled for data file " +
+                                    "${planned.file.location()}"
+                            }
+                            return@mapNotNull null
+                        }
+                indexesByDataFile[planned.file.location().toString()]
             }
+        return if (indexes.isEmpty()) {
             null
+        } else {
+            PositionDeleteIndexUtil.merge(indexes)
         }
     }
 
-    private fun readPositionDeleteIndex(
+    private fun readPositionDeleteIndexes(
         deleteFile: DeleteFile,
-        dataFilePath: String,
-    ): PositionDeleteIndex {
+    ): Map<String, PositionDeleteIndex> {
+        state.positionDeleteFilesRead.incrementAndGet()
         val deleteSchema = DeleteSchemaUtil.pathPosSchema()
-        Parquet.read(table.io().newInputFile(deleteFile.location().toString()))
+        return Parquet.read(table.io().newInputFile(deleteFile.location().toString()))
             .project(deleteSchema)
             .createReaderFunc { messageType ->
                 GenericParquetReaders.buildReader(deleteSchema, messageType)
             }
             .build<Record>()
             .use { records ->
-                return Deletes.toPositionIndex(dataFilePath, records, deleteFile)
+                Deletes.toPositionIndexes(records, deleteFile).entries.associate {
+                    it.key.toString() to it.value
+                }
             }
     }
 
