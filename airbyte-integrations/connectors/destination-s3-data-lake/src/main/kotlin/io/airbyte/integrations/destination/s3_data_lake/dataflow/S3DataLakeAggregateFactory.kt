@@ -43,6 +43,7 @@ class S3DataLakeAggregateFactory(
             stagingBranchName = state.stagingBranchName,
             writer = writer,
             icebergUtil = icebergUtil,
+            positionalDeletesEnabled = state.positionalDeleteState != null,
         )
     }
 }

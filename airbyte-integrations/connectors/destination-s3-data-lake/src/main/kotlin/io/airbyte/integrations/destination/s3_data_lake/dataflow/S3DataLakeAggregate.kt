@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCommitter
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.SupersededDataFileProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,6 +34,7 @@ class S3DataLakeAggregate(
     private val stagingBranchName: String,
     private val writer: BaseTaskWriter<Record>,
     private val icebergUtil: IcebergUtil,
+    private val positionalDeletesEnabled: Boolean,
 ) : Aggregate {
     override fun accept(record: RecordDTO) {
         val wrappedRecord =
@@ -49,19 +51,45 @@ class S3DataLakeAggregate(
             "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
         }
 
-        val plannedSnapshotId = table.refs()[stagingBranchName]!!.snapshotId()
-        val writeResult = writer.complete()
-        IcebergTableCommitter.commit(
-            table,
-            stagingBranchName,
-            writeResult,
-            plannedSnapshotId,
-            IcebergTableCommitter.fullySupersededDataFiles(
-                table,
-                plannedSnapshotId,
-                writeResult,
-            ),
-        )
+        fun completeAndCommit() {
+            val plannedSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
+            val writeResult = writer.complete()
+            if (plannedSnapshotId != null) {
+                IcebergTableCommitter.commit(
+                    table,
+                    stagingBranchName,
+                    writeResult,
+                    plannedSnapshotId,
+                    (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty(),
+                )
+            } else if (writeResult.deleteFiles().isNotEmpty()) {
+                val delta = table.newRowDelta().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { delta.addRows(it) }
+                writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                delta.commit()
+            } else {
+                val append = table.newAppend().toBranch(stagingBranchName)
+                writeResult.dataFiles().forEach { append.appendFile(it) }
+                append.commit()
+            }
+        }
+        if (positionalDeletesEnabled) {
+            withContext(Dispatchers.IO) { synchronized(commitLock) { completeAndCommit() } }
+        } else {
+            val writeResult = writer.complete()
+            synchronized(commitLock) {
+                if (writeResult.deleteFiles().isNotEmpty()) {
+                    val delta = table.newRowDelta().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { delta.addRows(it) }
+                    writeResult.deleteFiles().forEach { delta.addDeletes(it) }
+                    delta.commit()
+                } else {
+                    val append = table.newAppend().toBranch(stagingBranchName)
+                    writeResult.dataFiles().forEach { append.appendFile(it) }
+                    append.commit()
+                }
+            }
+        }
 
         logger.info { "Flushed records to staging branch $stagingBranchName" }
 
@@ -70,5 +98,8 @@ class S3DataLakeAggregate(
             logger.info { "Closing writer for $stagingBranchName" }
             writer.close()
         }
+    }
+    companion object {
+        val commitLock: Any = Any()
     }
 }
