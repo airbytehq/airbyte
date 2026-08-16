@@ -1,30 +1,17 @@
-# Connector Acceptance Test config for source-bol.
-# Reviewers run this against sandbox credentials stored in Airbyte's secret manager.
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-bol:dev
 acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
   connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request (contact New North Digital)."
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        empty_streams:
-          - name: inventory
-            bypass_reason: "FBB/LVB-only; empty for FBR-only sellers."
-        timeout_seconds: 600
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
   incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/incremental_catalog.json"
-        timeout_seconds: 600
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 600
+    bypass_reason: "Community contribution; sandbox credentials can be provided to reviewers on request."
