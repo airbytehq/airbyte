@@ -129,9 +129,9 @@ The Google Analytics 4 (GA4) source connector supports the following [sync modes
 
 ## Supported Streams
 
-This connector outputs the following incremental streams:
+This connector outputs the following streams:
 
-All preconfigured streams and custom streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
+Preconfigured and custom report streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each report stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
 
 - Preconfigured streams:
   - daily_active_users
@@ -191,7 +191,13 @@ All preconfigured streams and custom streams use the Google Analytics Data API [
   - tech_platform_device_category_report
   - tech_operating_system_report
   - tech_os_with_version_report
+- Property metadata stream:
+  - `property_metadata`
 - Custom stream(s)
+
+The `property_metadata` stream is full-refresh and uses the Admin API [`properties.get`](https://developers.google.com/analytics/admin-rest/v1beta/properties/get) method. It emits one record for each configured property ID and includes a `property_id` field for joining with report streams.
+
+The `property_metadata` stream requires the Google Analytics Admin API (`analyticsadmin.googleapis.com`) to be enabled for the GCP project associated with the credentials; service-account users must enable it in their own project. If it is not enabled, this stream fails with a `403 SERVICE_DISABLED` error, while report streams continue to work.
 
 ## Connector-specific features
 
@@ -284,6 +290,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.10.2 | 2026-08-11 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
+| 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
+| 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
+| 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
+| 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
+| 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
+| 2.9.42 | 2026-06-30 | [81086](https://github.com/airbytehq/airbyte/pull/81086) | Update dependencies |
+| 2.9.41 | 2026-06-23 | [80482](https://github.com/airbytehq/airbyte/pull/80482) | Update dependencies |
+| 2.9.40 | 2026-06-16 | [79881](https://github.com/airbytehq/airbyte/pull/79881) | Update dependencies |
+| 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
+| 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
+| 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
+| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
 | 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
 | 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
 | 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |

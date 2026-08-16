@@ -2028,6 +2028,9 @@ Classes
 
     ### Class variables
 
+    `became_active_at: str | None`
+    :   The type of the None singleton.
+
     `birthday: str | None`
     :   The type of the None singleton.
 
@@ -2040,28 +2043,13 @@ Classes
     `email: str | None`
     :   The type of the None singleton.
 
-    `enabled: bool | None`
-    :   The type of the None singleton.
-
     `id: str | None`
     :   The type of the None singleton.
 
-    `is_admin: bool | None`
+    `is_email_confirmed: bool | None`
     :   The type of the None singleton.
 
-    `is_guest: bool | None`
-    :   The type of the None singleton.
-
-    `is_pending: bool | None`
-    :   The type of the None singleton.
-
-    `is_verified: bool | None`
-    :   The type of the None singleton.
-
-    `is_view_only: bool | None`
-    :   The type of the None singleton.
-
-    `join_date: str | None`
+    `kind: str | None`
     :   The type of the None singleton.
 
     `location: str | None`
@@ -2079,19 +2067,10 @@ Classes
     `phone: str | None`
     :   The type of the None singleton.
 
-    `photo_original: str | None`
+    `photo_url: airbyte_agent_sdk.connectors.monday.models.UserPhotoUrl | None`
     :   The type of the None singleton.
 
-    `photo_small: str | None`
-    :   The type of the None singleton.
-
-    `photo_thumb: str | None`
-    :   The type of the None singleton.
-
-    `photo_thumb_small: str | None`
-    :   The type of the None singleton.
-
-    `photo_tiny: str | None`
+    `status: str | None`
     :   The type of the None singleton.
 
     `time_zone_identifier: str | None`
@@ -2103,8 +2082,44 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
-    `utc_hours_diff: int | None`
+    `utc_hours_diff: float | None`
     :   The type of the None singleton.
+
+<a id="UserPhotoUrl"></a>
+
+`UserPhotoUrl(**data: Any)`
+:   Nested object containing photo URLs at various sizes. Replaces the legacy photo_* scalar fields removed in API 2026-10.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `original: str | None`
+    :   URL to original size photo
+
+    `small: str | None`
+    :   URL to small photo
+
+    `thumb: str | None`
+    :   URL to thumbnail photo
+
+    `thumb_small: str | None`
+    :   URL to small thumbnail photo
+
+    `tiny: str | None`
+    :   URL to tiny photo
 
 <a id="UsersSearchData"></a>
 
@@ -2136,29 +2151,8 @@ Classes
     `email: str | None`
     :   User's email address
 
-    `enabled: bool | None`
-    :   Whether the user account is enabled
-
     `id: str | None`
     :   Unique user identifier
-
-    `is_admin: bool | None`
-    :   Whether the user is an admin
-
-    `is_guest: bool | None`
-    :   Whether the user is a guest
-
-    `is_pending: bool | None`
-    :   Whether the user is pending
-
-    `is_verified: bool | None`
-    :   Whether the user is verified
-
-    `is_view_only: bool | None`
-    :   Whether the user is view-only
-
-    `join_date: str | None`
-    :   When the user joined
 
     `location: str | None`
     :   User's location
@@ -2175,21 +2169,6 @@ Classes
     `phone: str | None`
     :   User's phone number
 
-    `photo_original: str | None`
-    :   URL to original size photo
-
-    `photo_small: str | None`
-    :   URL to small photo
-
-    `photo_thumb: str | None`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: str | None`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: str | None`
-    :   URL to tiny photo
-
     `time_zone_identifier: str | None`
     :   User's timezone identifier
 
@@ -2199,8 +2178,8 @@ Classes
     `url: str | None`
     :   User's Monday.com profile URL
 
-    `utc_hours_diff: int | None`
-    :   UTC hours difference for the user's timezone
+    `utc_hours_diff: float | None`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="Workspace"></a>
 
