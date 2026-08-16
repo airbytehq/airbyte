@@ -214,11 +214,20 @@ class MySqlSourceDebeziumOperations(
      * check if binlog exists or not.
      *
      * Validate is not supposed to perform on synthetic state.
+     *
+     * When the saved offset has no usable GTID set (missing, JSON null, or the string `"null"`),
+     * skip GTID containment and purge checks and validate the saved binlog file instead. An empty
+     * saved set would otherwise treat every server GTID as unseen and abort on any `gtid_purged`
+     * overlap before the binlog fallback can run.
      */
     private fun validate(debeziumState: UnvalidatedDeserializedState): DebeziumWarmStartState {
         val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
+        if (usesBinlogFallback(savedStateOffset.gtidSet)) {
+            return validateSavedBinlog(debeziumState, savedStateOffset)
+        }
+
         val (_: MySqlSourceCdcPosition, gtidSet: String?) = queryPositionAndGtids()
-        if (gtidSet.isNullOrEmpty() && !savedStateOffset.gtidSet.isNullOrEmpty()) {
+        if (gtidSet.isNullOrEmpty()) {
             return abortCdcSync(
                 "Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled"
             )
@@ -243,18 +252,19 @@ class MySqlSourceDebeziumOperations(
                 )
             }
         }
-        // If the connector has saved GTID set, we will use that to validate and skip
-        // binlog validation. GTID and binlog works in an independent way to ensure data
-        // integrity where GTID is for storing transactions and binlog is for storing changes
-        // in DB.
-        if (savedGtidSet.isEmpty) {
-            val existingLogFiles: List<String> = getBinaryLogFileNames()
-            val found = existingLogFiles.contains(savedStateOffset.position.fileName)
-            if (!found) {
-                return abortCdcSync(
-                    "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server. Server has $existingLogFiles"
-                )
-            }
+        return ValidDebeziumWarmStartState(debeziumState.offset, debeziumState.schemaHistory)
+    }
+
+    private fun validateSavedBinlog(
+        debeziumState: UnvalidatedDeserializedState,
+        savedStateOffset: SavedOffset,
+    ): DebeziumWarmStartState {
+        val existingLogFiles: List<String> = getBinaryLogFileNames()
+        val found = existingLogFiles.contains(savedStateOffset.position.fileName)
+        if (!found) {
+            return abortCdcSync(
+                "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server. Server has $existingLogFiles"
+            )
         }
         return ValidDebeziumWarmStartState(debeziumState.offset, debeziumState.schemaHistory)
     }
@@ -585,6 +595,35 @@ class MySqlSourceDebeziumOperations(
                     ?.asText()
                     ?.takeIf { it.isNotBlank() && it != "null" }
             return SavedOffset(position, gtidSet)
+        }
+
+        /**
+         * Missing or unusable saved GTIDs must not run GTID purge/containment checks. Those checks
+         * treat an empty saved set as "every server GTID is unseen" and abort when `gtid_purged`
+         * is nonempty.
+         */
+        internal fun usesBinlogFallback(savedGtidSet: String?): Boolean =
+            savedGtidSet.isNullOrBlank()
+
+        /**
+         * Whether GTID purge overlap would abort a warm start if GTID checks ran. Used to lock the
+         * Codex scenario: empty saved GTIDs + nonempty `gtid_purged` must not abort.
+         */
+        internal fun purgedGtidsAbortWarmStart(
+            savedGtidSet: String?,
+            availableGtidSet: String?,
+            purgedGtidSet: String?,
+        ): Boolean {
+            if (usesBinlogFallback(savedGtidSet)) {
+                return false
+            }
+            val saved = MySqlGtidSet(savedGtidSet)
+            val available = MySqlGtidSet(availableGtidSet)
+            val purged = MySqlGtidSet(purgedGtidSet)
+            val newGtidSet = available.subtract(saved)
+            return !newGtidSet.isEmpty &&
+                !purged.isEmpty &&
+                !newGtidSet.subtract(purged).equals(newGtidSet)
         }
     }
 }
