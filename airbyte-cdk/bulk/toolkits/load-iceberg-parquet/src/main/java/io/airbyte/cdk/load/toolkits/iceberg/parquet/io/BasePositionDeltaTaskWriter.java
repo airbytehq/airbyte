@@ -30,7 +30,8 @@ import org.apache.iceberg.types.Types;
 /**
  * Delta writer that emits only positional deletes.
  */
-public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record> {
+public abstract class BasePositionDeltaTaskWriter
+    extends BaseTaskWriter<Record> implements SupersededDataFileProvider {
 
   private final Table table;
   private final Schema deleteSchema;
@@ -115,7 +116,6 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
     WriteResult dataResult = super.complete();
     WriteResult.Builder result = WriteResult.builder().addDataFiles(dataResult.dataFiles());
     result.addDeleteFiles(dataResult.deleteFiles());
-    result.addReferencedDataFiles(dataResult.referencedDataFiles());
     synchronized (completedPositionDeleteFiles) {
       result.addDeleteFiles(completedPositionDeleteFiles);
       completedPositionDeleteFiles.stream()
@@ -123,10 +123,12 @@ public abstract class BasePositionDeltaTaskWriter extends BaseTaskWriter<Record>
           .filter(java.util.Objects::nonNull)
           .forEach(result::addReferencedDataFiles);
     }
-    fullySupersededDataFiles.stream()
-        .map(dataFile -> dataFile.location())
-        .forEach(result::addReferencedDataFiles);
     return result.build();
+  }
+
+  @Override
+  public Set<DataFile> fullySupersededDataFiles() {
+    return Set.copyOf(fullySupersededDataFiles);
   }
 
   private void resolvePending() {

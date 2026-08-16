@@ -244,7 +244,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             firstResult,
             firstPlanned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, firstPlanned, firstResult),
+            supersededDataFiles(firstWriter),
         )
 
         val secondPlanned = table.refs()["staging"]!!.snapshotId()
@@ -265,7 +265,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             secondResult,
             secondPlanned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, secondPlanned, secondResult),
+            supersededDataFiles(secondWriter),
         )
 
         val thirdPlanned = table.refs()["staging"]!!.snapshotId()
@@ -286,7 +286,7 @@ class PositionalDeleteEndToEndTest {
             "staging",
             thirdResult,
             thirdPlanned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, thirdPlanned, thirdResult),
+            supersededDataFiles(thirdWriter),
         )
 
         val rows =
@@ -342,14 +342,13 @@ class PositionalDeleteEndToEndTest {
         writer.write(RecordWrapper(record(schema, "b", "new-b"), Operation.UPDATE))
         val result = writer.complete()
         assertThat(result.deleteFiles()).isEmpty()
-        assertThat(result.referencedDataFiles())
-            .containsExactly(initialResult.dataFiles().single().location())
+        assertThat(supersededDataFiles(writer)).containsExactly(initialResult.dataFiles().single())
         IcebergTableCommitter.commit(
             table,
             "staging",
             result,
             planned,
-            IcebergTableCommitter.fullySupersededDataFiles(table, planned, result),
+            supersededDataFiles(writer),
         )
         assertThat(
                 table.newScan().useRef("staging").planFiles().use {
@@ -416,7 +415,7 @@ class PositionalDeleteEndToEndTest {
                     "staging",
                     result,
                     planned,
-                    IcebergTableCommitter.fullySupersededDataFiles(table, planned, result),
+                    supersededDataFiles(writer),
                 )
             }
             .isInstanceOf(CommitFailedException::class.java)
@@ -705,6 +704,9 @@ class PositionalDeleteEndToEndTest {
             }
             .commit()
     }
+
+    private fun supersededDataFiles(writer: Any): Set<org.apache.iceberg.DataFile> =
+        (writer as? SupersededDataFileProvider)?.fullySupersededDataFiles().orEmpty()
 
     private fun record(schema: Schema, id: CharSequence, name: String): GenericRecord =
         GenericRecord.create(schema).apply {

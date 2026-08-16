@@ -12,25 +12,6 @@ import org.apache.iceberg.io.WriteResult
 object IcebergTableCommitter {
     private val commitLock = Any()
 
-    fun fullySupersededDataFiles(
-        table: Table,
-        plannedSnapshotId: Long,
-        writeResult: WriteResult,
-    ): Set<DataFile> {
-        val referenced = writeResult.referencedDataFiles().map { it.toString() }.toSet()
-        val deleteReferences =
-            writeResult
-                .deleteFiles()
-                .mapNotNull { it.referencedDataFile() }
-                .map { it.toString() }
-                .toSet()
-        val paths = referenced - deleteReferences
-        if (paths.isEmpty()) return emptySet()
-        return table.newScan().useSnapshot(plannedSnapshotId).planFiles().use { tasks ->
-            tasks.map { it.file() }.filter { it.location().toString() in paths }.toSet()
-        }
-    }
-
     fun commit(
         table: Table,
         branch: String,
@@ -39,6 +20,7 @@ object IcebergTableCommitter {
         fullySupersededDataFiles: Set<DataFile>,
     ) {
         synchronized(commitLock) {
+            var rewriteSnapshotId = plannedSnapshotId
             val hasReferencedDataFiles = writeResult.referencedDataFiles().isNotEmpty()
             if (
                 writeResult.deleteFiles().isNotEmpty() ||
@@ -56,6 +38,7 @@ object IcebergTableCommitter {
                 writeResult.dataFiles().forEach(delta::addRows)
                 writeResult.deleteFiles().forEach(delta::addDeletes)
                 delta.commit()
+                rewriteSnapshotId = table.refs()[branch]?.snapshotId() ?: plannedSnapshotId
             } else if (writeResult.dataFiles().isNotEmpty()) {
                 val append = table.newAppend().toBranch(branch)
                 writeResult.dataFiles().forEach(append::appendFile)
@@ -64,7 +47,7 @@ object IcebergTableCommitter {
 
             if (fullySupersededDataFiles.isNotEmpty()) {
                 val deleteFiles =
-                    registeredDeletes(table, plannedSnapshotId, fullySupersededDataFiles)
+                    registeredDeletes(table, rewriteSnapshotId, fullySupersededDataFiles)
                 table
                     .newRewrite()
                     .toBranch(branch)
@@ -74,7 +57,7 @@ object IcebergTableCommitter {
                         emptySet(),
                         emptySet(),
                     )
-                    .validateFromSnapshot(plannedSnapshotId)
+                    .validateFromSnapshot(rewriteSnapshotId)
                     .commit()
             }
         }
@@ -85,11 +68,18 @@ object IcebergTableCommitter {
         snapshotId: Long,
         dataFiles: Set<DataFile>,
     ): Set<DeleteFile> {
-        val paths = dataFiles.map { it.location().toString() }.toSet()
         return table.newScan().useSnapshot(snapshotId).planFiles().use { tasks ->
             tasks
-                .filter { it.file().location().toString() in paths }
-                .flatMap { it.deletes().toList() }
+                .filter { task -> dataFiles.any { it.location() == task.file().location() } }
+                .flatMap { task ->
+                    task.deletes().filter { deleteFile ->
+                        deleteFile.content() == org.apache.iceberg.FileContent.POSITION_DELETES &&
+                            deleteFile.referencedDataFile() != null &&
+                            dataFiles.any {
+                                it.location().toString() == deleteFile.referencedDataFile()
+                            }
+                    }
+                }
                 .toSet()
         }
     }
