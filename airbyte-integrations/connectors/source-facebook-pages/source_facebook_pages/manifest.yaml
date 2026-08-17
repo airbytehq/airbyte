@@ -48,7 +48,7 @@ definitions:
       type: "CursorPagination"
       cursor_value: "{{ response.paging.get('cursors', {}).get('after') }}"
       stop_condition: "{{ response.paging == '' or not response.paging.get('next') }}"
-      page_size: "{{ config.get('page_size', 100) }}"
+      page_size: "{{ config.get('page_size', 25) }}"
     page_size_option:
       field_name: "limit"
       inject_into: "request_parameter"
