@@ -106,14 +106,32 @@ When **Start date** is set, the connector applies the Gmail `after:<epoch_second
 
 ## Performance considerations
 
-The Gmail API enforces two simultaneous quota limits, measured in [quota units](https://developers.google.com/gmail/api/reference/quota):
+The Gmail API enforces two simultaneous rate limits and a daily threshold, all measured in [quota units](https://developers.google.com/workspace/gmail/api/reference/quota):
 
-| Limit type              | Limit                                  | Error code              |
-|-------------------------|----------------------------------------|-------------------------|
-| Per project rate limit  | 1,200,000 quota units per minute       | `rateLimitExceeded`     |
-| Per user rate limit     | 15,000 quota units per minute per user | `userRateLimitExceeded` |
+| Limit type                  | Limit                                             | Error code              |
+|-----------------------------|---------------------------------------------------|-------------------------|
+| Per project rate limit      | 1,200,000 quota units per minute                  | `rateLimitExceeded`     |
+| Per user rate limit         | 6,000 quota units per minute per user per project  | `userRateLimitExceeded` |
+| Per project daily threshold | 80,000,000 quota units per day                    | _(billing threshold)_   |
 
-Each `messages.list` and `messages.get` call costs 5 units, and each `threads.list` and `threads.get` call costs 10 units. The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so high-volume mailboxes consume quota quickly.
+Each method the connector calls has its own cost:
+
+| Method       | Quota units | Streams that call it |
+|--------------|:-----------:|----------------------|
+| `getProfile` | 1           | `profile`            |
+| `labels.list`| 1           | `labels`             |
+| `labels.get` | 1           | `labels_details`     |
+| `drafts.list`| 5           | `drafts`             |
+| `messages.list` | 5        | `messages`           |
+| `messages.get`  | 20       | `messages_details`   |
+| `threads.list`  | 10       | `threads`            |
+| `threads.get`   | 40       | `threads_details`    |
+
+The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so they dominate quota consumption. Against the per-user limit of 6,000 units per minute, that caps a single mailbox at roughly 300 `messages.get` calls or 150 `threads.get` calls per minute, so high-volume mailboxes spend time backing off.
+
+:::note
+Google [repriced several Gmail API methods on 2026-05-01](https://developers.google.com/workspace/gmail/release-notes), including `messages.get`, `threads.get`, `drafts.get`, `messages.attachments.get`, `messages.trash`, and `threads.trash`. Google Cloud projects that used the affected APIs between November 2025 and April 2026 keep their earlier quotas for a transition period; the limits above apply to projects created on or after 2026-05-01. Google also plans to charge for usage above the daily threshold later in 2026, with at least 90 days' notice. See [Google Workspace standardized model for agent tools and APIs](https://developers.google.com/workspace/tools-safety).
+:::
 
 The connector retries `429 Too Many Requests` and `403` quota-saturation errors with exponential backoff. If you see frequent rate-limit warnings in sync logs, lower the **Number of concurrent workers** setting.
 
