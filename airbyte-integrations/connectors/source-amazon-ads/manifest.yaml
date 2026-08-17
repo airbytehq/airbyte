@@ -113,7 +113,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/profiles?profileTypeFilter=seller,vendor
+          path: v2/profiles?profileTypeFilter=seller,vendor&accessLevel=view
           http_method: GET
           use_cache: true
         record_selector:
@@ -137,7 +137,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: v2/profiles?profileTypeFilter=seller,vendor
+          path: v2/profiles?profileTypeFilter=seller,vendor&accessLevel=view
           http_method: GET
           use_cache: true
         record_selector:
@@ -994,13 +994,18 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           error_handler: "#/definitions/sponsored_product_ad_group_error_handler"
-          path: "v2/sp/adGroups/{{ stream_slice['adGroupId'] }}/suggested/keywords"
-          http_method: GET
+          path: /sp/targets/keywords/recommendations
+          http_method: POST
           request_headers:
             Amazon-Advertising-API-Scope: "{{ stream_slice.parent_slice['profileId'] }}"
             Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
-          request_params:
-            maxNumSuggestions: 100
+            Accept: application/vnd.spkeywordsrecommendation.v4+json
+            Content-Type: application/vnd.spkeywordsrecommendation.v4+json
+          request_body_json:
+            recommendationType: KEYWORDS_FOR_ADGROUP
+            adGroupId: '{{ stream_slice["adGroupId"] }}'
+            campaignId: '{{ stream_slice.extra_fields["campaignId"] }}'
+            maxRecommendations: 200
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1014,9 +1019,19 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - keywordTargetList
         paginator:
           type: NoPagination
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["adGroupId"]
+              value: '{{ stream_slice["adGroupId"] }}'
+              value_type: string
+            - path: ["campaignId"]
+              value: '{{ stream_slice.extra_fields["campaignId"] }}'
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3388,11 +3403,10 @@ definitions:
     lookback_window: P{{ config.get('look_back_window', 3) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: >-
-        {%- set today = today_utc() - duration('P1D') -%}
-        {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set sixty_days_ago = today - duration('P60D') -%}
-        "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
+      datetime: "{{ config.get('start_date', (today_utc() - duration('P1D')).strftime('%Y-%m-%d')) }}"
+      # Amazon Ads Sponsored Brands reports have a 60-day data retention limit.
+      # https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types
+      min_datetime: "{{ today_utc() - duration('P60D') }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"
@@ -7601,11 +7615,11 @@ schemas:
       - object
   sponsored_display_targets_report_stream_daily:
     $schema: http://json-schema.org/draft-07/schema#
-    date:
-      type:
-        - "null"
-        - string
     properties:
+      date:
+        type:
+          - "null"
+          - string
       profileId:
         type:
           - "null"
@@ -7890,8 +7904,36 @@ schemas:
       adGroupId:
         type:
           - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      keyword:
+        type:
+          - "null"
+          - string
+      recId:
+        type:
+          - "null"
+          - string
+      translation:
+        type:
+          - "null"
+          - string
+      userSelectedKeyword:
+        type:
+          - "null"
+          - boolean
+      searchTermImpressionShare:
+        type:
+          - "null"
+          - number
+      searchTermImpressionRank:
+        type:
+          - "null"
           - integer
-      suggestedKeywords:
+      bidInfo:
         type:
           - "null"
           - array
@@ -7900,14 +7942,39 @@ schemas:
             - object
             - "null"
           properties:
-            keywordText:
-              type:
-                - "null"
-                - string
             matchType:
               type:
                 - "null"
                 - string
+            bid:
+              type:
+                - "null"
+                - number
+            rank:
+              type:
+                - "null"
+                - integer
+            suggestedBid:
+              type:
+                - "null"
+                - object
+              properties:
+                rangeStart:
+                  type:
+                    - "null"
+                    - number
+                rangeMedian:
+                  type:
+                    - "null"
+                    - number
+                rangeEnd:
+                  type:
+                    - "null"
+                    - number
+                bidRecId:
+                  type:
+                    - "null"
+                    - string
     title: sponsored_product_ad_group_suggested_keywords
     type:
       - "null"

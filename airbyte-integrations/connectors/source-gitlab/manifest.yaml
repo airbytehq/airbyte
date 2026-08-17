@@ -1,4 +1,4 @@
-version: 6.56.7
+version: 6.56.8
 type: DeclarativeSource
 
 
@@ -125,7 +125,7 @@ spec:
         description: Number of concurrent threads for syncing. Higher values can speed
           up syncs but may hit rate limits. Adjust based on your GitLab instance
           rate limits.
-        default: 8
+        default: 4
         minimum: 2
         maximum: 25
         order: 5
@@ -880,23 +880,16 @@ definitions:
       schema:
         $ref: "#/schemas/pipelines"
 
-# Rate limits:
-# https://docs.gitlab.com/ee/user/gitlab_com/#rate-limits-on-gitlabcom
-# https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/
-# https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/
-#
-# GitLab.com per-endpoint rate limits (per user, per minute):
-#   GET /groups                          — 200/min
-#   GET /groups/:id                      — 400/min
-#   GET /groups/:id/projects             — 600/min
-#   GET /projects/:id                    — 400/min
-#   GET /projects/:id/members/all        — 200/min
-#   GET /groups/:id/members/all          — 200/min
-#   All other authenticated API traffic  — 2,000/min
+# Rate limits from https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom:
+#   List all project members in a project — 200 requests each minute
+#   Groups list requests (/api/v4/groups) — 200 requests each minute
+#   Single group requests (/api/v4/groups/:id) — 400 requests each minute
+#   Single project requests (/api/v4/projects/:id) — 400 requests each minute
+#   Authenticated API traffic for a user — 2,000 requests each minute
 api_budget:
   type: HTTPAPIBudget
   policies:
-    # Members endpoints: 200 requests/min (most restrictive)
+    # Members endpoints: 200 requests/min
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 200
@@ -934,7 +927,7 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "^projects/[^/]+$"
-    # Catch-all: 2,000 requests/min for all other authenticated API traffic
+    # Catch-all authenticated API traffic: 2,000 requests/min
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 2000
@@ -946,7 +939,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 8) }}"
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 25
 
 streams:

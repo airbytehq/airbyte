@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.write.transform
 
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -87,7 +88,11 @@ class RedshiftValueCoercer : ValueCoercer {
             }
             is ArrayValue,
             is ObjectValue -> {
-                if (!isSuperValid(abValue.toCsvValue().toString())) {
+                if (containsOversizedNestedString(abValue)) {
+                    ValidationResult.ShouldNullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                    )
+                } else if (!isSuperValid(abValue.toCsvValue().toString())) {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
@@ -96,18 +101,7 @@ class RedshiftValueCoercer : ValueCoercer {
                 }
             }
             is StringValue -> {
-                val len = abValue.value.length
-                if (len > VARCHAR_MAX_BYTES) {
-                    // Fast fail: more chars than bytes allowed — can't fit even as pure ASCII.
-                    ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                    )
-                } else if (
-                    // Worst case each char maybe 4 bytes
-                    // Compute exact byte size to confirm using toByteArray, which is expensive
-                    len * 4 > VARCHAR_MAX_BYTES &&
-                        abValue.value.toByteArray(Charsets.UTF_8).size > VARCHAR_MAX_BYTES
-                ) {
+                if (isStringOversized(abValue.value)) {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
@@ -121,3 +115,35 @@ class RedshiftValueCoercer : ValueCoercer {
 
 /** Checks whether a serialized SUPER value fits within Redshift's 16 MB limit. */
 internal fun isSuperValid(s: String): Boolean = s.length <= SUPER_LIMIT_BYTES
+
+/**
+ * Returns true if the string exceeds Redshift's VARCHAR max of 65,535 bytes (UTF-8).
+ *
+ * Uses a two-tier check:
+ * 1. Fast path: if char count exceeds the byte limit, it's definitely over (even pure ASCII).
+ * 2. Slow path: if multi-byte characters could push it over, compute exact UTF-8 byte size.
+ */
+internal fun isStringOversized(s: String): Boolean {
+    val len = s.length
+    return when {
+        len > VARCHAR_MAX_BYTES -> true
+        len * 4 > VARCHAR_MAX_BYTES -> s.toByteArray(Charsets.UTF_8).size > VARCHAR_MAX_BYTES
+        else -> false
+    }
+}
+
+/**
+ * Recursively walks an [ObjectValue]/[ArrayValue] tree and returns true if any nested [StringValue]
+ * exceeds Redshift's 65,535-byte VARCHAR limit. Redshift SUPER columns enforce a per-string-scalar
+ * limit of 65,535 bytes, even though the total SUPER value can be up to 16 MB.
+ *
+ * @see <a href="https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html">SUPER
+ * limitations</a>
+ */
+internal fun containsOversizedNestedString(value: AirbyteValue): Boolean =
+    when (value) {
+        is StringValue -> isStringOversized(value.value)
+        is ObjectValue -> value.values.values.any { containsOversizedNestedString(it) }
+        is ArrayValue -> value.values.any { containsOversizedNestedString(it) }
+        else -> false
+    }

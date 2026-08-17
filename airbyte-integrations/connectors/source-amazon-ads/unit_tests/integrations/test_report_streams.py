@@ -1,10 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import gzip
+from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
 import requests_mock
+import yaml
 
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
@@ -412,6 +414,7 @@ class TestDisplayReportStreams:
             "sponsored_brands_campaigns_report_stream_daily",
             "sponsored_brands_adgroups_report_stream_daily",
             "sponsored_display_campaigns_report_stream_daily",
+            "sponsored_display_targets_report_stream_daily",
             "sponsored_products_campaigns_report_stream_daily",
         ],
     )
@@ -485,3 +488,35 @@ class TestDisplayReportStreams:
         assert output.records[0].record.data["reportDate"] is not None
         # Verify cursor state uses 'reportDate' field
         assert output.most_recent_state.stream_state.states[0]["cursor"]["reportDate"] is not None
+
+
+_MANIFEST_PATH = Path(__file__).parent.parent.parent / "manifest.yaml"
+
+_ALL_DAILY_STREAMS = [
+    "sponsored_brands_v3_report_stream_daily",
+    "sponsored_brands_campaigns_report_stream_daily",
+    "sponsored_brands_adgroups_report_stream_daily",
+    "sponsored_display_campaigns_report_stream_daily",
+    "sponsored_display_adgroups_report_stream_daily",
+    "sponsored_display_productads_report_stream_daily",
+    "sponsored_display_targets_report_stream_daily",
+    "sponsored_display_asins_report_stream_daily",
+    "sponsored_products_campaigns_report_stream_daily",
+    "sponsored_products_adgroups_report_stream_daily",
+    "sponsored_products_keywords_report_stream_daily",
+    "sponsored_products_targets_report_stream_daily",
+    "sponsored_products_productads_report_stream_daily",
+    "sponsored_products_asins_keywords_report_stream_daily",
+    "sponsored_products_asins_targets_report_stream_daily",
+]
+
+
+@pytest.mark.parametrize("stream_name", _ALL_DAILY_STREAMS)
+def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
+    """Verify that the `date` field used as PK/cursor is inside `properties`."""
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    schema = manifest["schemas"][stream_name]
+    assert "date" in schema["properties"], (
+        f"{stream_name}: 'date' field is missing from the schema's 'properties' block. "
+        "It may be misplaced at the schema root level due to a YAML indentation error."
+    )
