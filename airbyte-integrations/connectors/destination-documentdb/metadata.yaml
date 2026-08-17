@@ -1,0 +1,34 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+    requireVersionIncrementsInPullRequests: false
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.2@sha256:f8e47304842a2c4d75ac223cf4b3c4117aa1c5c9207149369d296616815fe5b0
+  connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+  connectorType: destination
+  definitionId: 64ad4b70-2d15-4b68-90db-12cf872e61e2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-documentdb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/documentdb
+  githubIssueLabel: destination-documentdb
+  icon: icon.png
+  license: ELv2
+  name: DocumentDB
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: DocumentDB documentation
+      url: https://github.com/documentdb/documentdb
+      type: api_reference
+metadataSpecVersion: "1.0"

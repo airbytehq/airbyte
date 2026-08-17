@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/documentdb",
+  "supportsIncremental": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DocumentDB Source Spec",
+    "type": "object",
+    "required": ["databases"],
+    "oneOf": [
+      {"title": "Host and port", "required": ["host", "port"]},
+      {"title": "Connection string", "required": ["connection_string"]}
+    ],
+    "properties": {
+      "host": {"title": "Host", "type": "string", "order": 1},
+      "port": {"title": "Port", "type": "integer", "default": 10260, "minimum": 1, "maximum": 65535, "order": 2},
+      "connection_string": {"title": "Connection String", "type": "string", "description": "A mongodb:// URI. Airbyte always applies retryWrites=false.", "order": 3},
+      "databases": {"title": "Database Names", "type": "array", "minItems": 1, "items": {"type": "string"}, "order": 4},
+      "username": {"title": "Username", "type": "string", "order": 5},
+      "password": {"title": "Password", "type": "string", "airbyte_secret": true, "order": 6},
+      "auth_source": {"title": "Authentication Source", "type": "string", "default": "admin", "order": 7},
+      "tls": {"title": "TLS", "type": "boolean", "default": true, "order": 8},
+      "direct_connection": {"title": "Direct Connection", "type": "boolean", "default": true, "order": 9},
+      "replica_set": {"title": "Replica Set", "type": "string", "order": 10},
+      "read_preference": {"title": "Read Preference", "type": "string", "enum": ["primary", "primaryPreferred", "secondary", "secondaryPreferred", "nearest"], "default": "primaryPreferred", "order": 11},
+      "schema_enforced": {"title": "Schema Enforced", "type": "boolean", "default": true, "order": 12},
+      "discover_sample_size": {"title": "Document Discovery Sample Size", "type": "integer", "default": 10000, "minimum": 10, "maximum": 100000, "order": 13},
+      "discover_timeout_seconds": {"title": "Discovery Timeout in Seconds", "type": "integer", "default": 600, "minimum": 5, "maximum": 1200, "order": 14}
+    }
+  }
+}
