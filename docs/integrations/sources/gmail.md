@@ -111,21 +111,21 @@ The Gmail API enforces two simultaneous rate limits and a daily threshold, all m
 | Limit type                  | Limit                                             | Error code              |
 |-----------------------------|---------------------------------------------------|-------------------------|
 | Per project rate limit      | 1,200,000 quota units per minute                  | `rateLimitExceeded`     |
-| Per user rate limit         | 6,000 quota units per minute per user per project  | `userRateLimitExceeded` |
+| Per user rate limit         | 6,000 quota units per minute per user per project | `userRateLimitExceeded` |
 | Per project daily threshold | 80,000,000 quota units per day                    | _(billing threshold)_   |
 
 Each method the connector calls has its own cost:
 
-| Method       | Quota units | Streams that call it |
-|--------------|:-----------:|----------------------|
-| `getProfile` | 1           | `profile`            |
-| `labels.list`| 1           | `labels`             |
-| `labels.get` | 1           | `labels_details`     |
-| `drafts.list`| 5           | `drafts`             |
-| `messages.list` | 5        | `messages`           |
-| `messages.get`  | 20       | `messages_details`   |
-| `threads.list`  | 10       | `threads`            |
-| `threads.get`   | 40       | `threads_details`    |
+| Method            | Quota units | Stream that calls it |
+|-------------------|:-----------:|----------------------|
+| `getProfile`      | 1           | `profile`            |
+| `labels.list`     | 1           | `labels`             |
+| `labels.get`      | 1           | `labels_details`     |
+| `drafts.list`     | 5           | `drafts`             |
+| `messages.list`   | 5           | `messages`           |
+| `messages.get`    | 20          | `messages_details`   |
+| `threads.list`    | 10          | `threads`            |
+| `threads.get`     | 40          | `threads_details`    |
 
 The `messages_details` and `threads_details` substreams issue one `get` call per parent record, so they dominate quota consumption. Against the per-user limit of 6,000 units per minute, that caps a single mailbox at roughly 300 `messages.get` calls or 150 `threads.get` calls per minute, so high-volume mailboxes spend time backing off.
 
@@ -165,6 +165,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.13 | 2026-08-17 | [84448](https://github.com/airbytehq/airbyte/pull/84448) | Correct documented Gmail API quota limits and per-method costs; link the Gmail API release notes and scopes pages from connector metadata |
 | 0.1.12 | 2026-08-11 | [83951](https://github.com/airbytehq/airbyte/pull/83951) | Update dependencies |
 | 0.1.11 | 2026-08-04 | [83308](https://github.com/airbytehq/airbyte/pull/83308) | Use `gmail.modify` for Airbyte Cloud's managed OAuth flow; self-managed OAuth clients and service accounts continue to use `gmail.readonly` |
 | 0.1.10 | 2026-08-04 | [83463](https://github.com/airbytehq/airbyte/pull/83463) | Update dependencies |
