@@ -4,6 +4,7 @@
 
 import logging
 from typing import Optional, Union
+from urllib.parse import urlparse
 
 import requests
 
@@ -142,6 +143,27 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                         f"GitHub rate limit hit for stream `{self.stream.name}` "
                         f"(HTTP {response_or_exception.status_code}). "
                         f"Waiting for the rate limit window to reset before retrying."
+                    ),
+                )
+
+            if getattr(self.stream, "requires_repo_admin_access", False) and response_or_exception.status_code in (
+                requests.codes.NOT_FOUND,
+                requests.codes.FORBIDDEN,
+            ):
+                response_url = response_or_exception.url
+                path_parts = urlparse(response_url).path.strip("/").split("/") if isinstance(response_url, str) else []
+                repository = "/".join(path_parts[1:3]) if len(path_parts) >= 3 and path_parts[0] == "repos" else ""
+                repository_label = f" for repository `{repository}`" if repository else ""
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
+                    error_message=(
+                        f"Skipping `{self.stream.name}`{repository_label}: GitHub restricted the "
+                        f"stargazers/watchers listing endpoints to repository admins and collaborators as of "
+                        f"July 2026. This stream will emit no records for repositories the configured token does "
+                        f"not administer or collaborate on. Only aggregate star counts remain available through "
+                        f"GraphQL, which this connector does not currently expose. See "
+                        f"https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/"
                     ),
                 )
 

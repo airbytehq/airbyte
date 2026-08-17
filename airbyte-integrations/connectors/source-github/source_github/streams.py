@@ -53,6 +53,7 @@ class GithubStreamABC(HttpStream, ABC):
 
     # Detect streams with high API load
     large_stream = False
+    requires_repo_admin_access = False
     max_retries: int = 5
     stream_base_params = {}
 
@@ -107,6 +108,11 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        if getattr(self, "requires_repo_admin_access", False) and response.status_code in (
+            requests.codes.NOT_FOUND,
+            requests.codes.FORBIDDEN,
+        ):
+            return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -653,6 +659,8 @@ class Stargazers(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers
     """
 
+    # GitHub access restriction: https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/
+    requires_repo_admin_access = True
     primary_key = "user_id"
     cursor_field = "starred_at"
 

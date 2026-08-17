@@ -349,9 +349,36 @@ def test_read_records_404_message_for_repository_stream(time_mock, caplog, reque
     )
 
     list(read_full_refresh(stream))
+    assert requests_mock.call_count == 6
     assert any(
         "Skipping `Tags` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
     )
+
+
+@pytest.mark.parametrize(
+    "status_code",
+    [
+        pytest.param(HTTPStatus.NOT_FOUND, id="not_found"),
+        pytest.param(HTTPStatus.FORBIDDEN, id="forbidden"),
+    ],
+)
+def test_stargazers_restricted_access_is_ignored_without_retries(status_code, caplog, requests_mock):
+    args = {"authenticator": None, "repositories": ["org/public-repo"], "page_size_for_large_streams": 30}
+    stream = Stargazers(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/public-repo/stargazers",
+        status_code=status_code,
+        json={"message": "Resource not accessible"},
+    )
+
+    assert list(read_full_refresh(stream)) == []
+    assert requests_mock.call_count == 1
+    assert any(
+        "stargazers" in msg.lower() and "repository admins and collaborators" in msg.lower() and "org/public-repo" in msg
+        for msg in caplog.messages
+    )
+    assert all("may not exist" not in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
