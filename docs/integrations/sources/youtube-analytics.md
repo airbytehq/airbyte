@@ -65,15 +65,18 @@ The YouTube Analytics source connector supports the following [sync modes](https
 
 - [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - The report types available to your channel or content owner. Full refresh only. The connection check uses this stream because it returns data with valid credentials alone and requires no reporting job.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
+- [channel_annotations_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
 - [channel_basic_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-user-activity)
 - [channel_cards_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-cards)
 - [channel_combined_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-combined)
 - [channel_demographics_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-viewer-demographics)
 - [channel_device_os_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-device-type-and-operating-system)
 - [channel_end_screens_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
+- [channel_end_screens_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-end-screens)
 - [channel_playback_location_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-playback-locations)
 - [channel_province_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-province)
 - [channel_sharing_service_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
+- [channel_sharing_service_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-content-sharing)
 - [channel_subtitles_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-subtitles)
 - [channel_traffic_source_a3](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-traffic-sources)
 - [playlist_basic_a2](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#playlist-user-activity)
@@ -112,6 +115,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.4.0 | 2026-08-13 | [83309](https://github.com/airbytehq/airbyte/pull/83309) | Add `channel_annotations_a2`, `channel_end_screens_a2`, and `channel_sharing_service_a2` streams |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
 | 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
 | 1.2.12 | 2026-07-23 | [82712](https://github.com/airbytehq/airbyte/pull/82712) | Fix setup check failure by pointing the connection check at the always-available `channel_basic_a3` report instead of `channel_annotations_a1` |

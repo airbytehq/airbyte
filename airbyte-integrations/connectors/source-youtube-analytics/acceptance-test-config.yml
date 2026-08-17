@@ -17,7 +17,15 @@ acceptance_tests:
         backward_compatibility_tests_config:
           disable_for_version: "0.1.0"
   basic_read:
-    bypass_reason: "Test account doesn't have records. Uncomment section below when we have data."
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: channel_annotations_a2
+            bypass_reason: "Test account cannot create reporting jobs for this report type (404 Requested entity was not found)"
+          - name: channel_end_screens_a2
+            bypass_reason: "Test account cannot create reporting jobs for this report type (404 Requested entity was not found)"
+          - name: channel_sharing_service_a2
+            bypass_reason: "Test account cannot create reporting jobs for this report type (404 Requested entity was not found)"
   #    tests:
   #      - config_path: "secrets/config.json"
   #        configured_catalog_path: "integration_tests/configured_catalog.json"

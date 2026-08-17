@@ -143,6 +143,24 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_annotations_a1"
+    channel_annotations_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_annotations_a2
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - annotation_type
+        - annotation_id
+      $parameters:
+        report_type_id: channel_annotations_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_annotations_a2"
     channel_basic_a3:
       $ref: "#/definitions/streams/base_report_stream"
       name: channel_basic_a3
@@ -251,6 +269,24 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_end_screens_a1"
+    channel_end_screens_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_end_screens_a2
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - end_screen_element_type
+        - end_screen_element_id
+      $parameters:
+        report_type_id: channel_end_screens_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_end_screens_a2"
     channel_playback_location_a3:
       $ref: "#/definitions/streams/base_report_stream"
       name: channel_playback_location_a3
@@ -303,6 +339,23 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/channel_sharing_service_a1"
+    channel_sharing_service_a2:
+      $ref: "#/definitions/streams/base_report_stream"
+      name: channel_sharing_service_a2
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - sharing_service
+      $parameters:
+        report_type_id: channel_sharing_service_a2
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/channel_sharing_service_a2"
     channel_subtitles_a3:
       $ref: "#/definitions/streams/base_report_stream"
       name: channel_subtitles_a3
@@ -535,15 +588,18 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/report_types"
   - $ref: "#/definitions/streams/channel_annotations_a1"
+  - $ref: "#/definitions/streams/channel_annotations_a2"
   - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
   - $ref: "#/definitions/streams/channel_combined_a3"
   - $ref: "#/definitions/streams/channel_demographics_a1"
   - $ref: "#/definitions/streams/channel_device_os_a3"
   - $ref: "#/definitions/streams/channel_end_screens_a1"
+  - $ref: "#/definitions/streams/channel_end_screens_a2"
   - $ref: "#/definitions/streams/channel_playback_location_a3"
   - $ref: "#/definitions/streams/channel_province_a3"
   - $ref: "#/definitions/streams/channel_sharing_service_a1"
+  - $ref: "#/definitions/streams/channel_sharing_service_a2"
   - $ref: "#/definitions/streams/channel_subtitles_a3"
   - $ref: "#/definitions/streams/channel_traffic_source_a3"
   - $ref: "#/definitions/streams/playlist_basic_a2"
@@ -636,15 +692,18 @@ metadata:
   autoImportSchema:
     report_types: false
     channel_annotations_a1: false
+    channel_annotations_a2: false
     channel_basic_a3: false
     channel_cards_a1: false
     channel_combined_a3: false
     channel_demographics_a1: false
     channel_device_os_a3: false
     channel_end_screens_a1: false
+    channel_end_screens_a2: false
     channel_playback_location_a3: false
     channel_province_a3: false
     channel_sharing_service_a1: false
+    channel_sharing_service_a2: false
     channel_subtitles_a3: false
     channel_traffic_source_a3: false
     playlist_basic_a2: false
@@ -684,6 +743,69 @@ schemas:
           - "null"
           - boolean
   channel_annotations_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      annotation_click_through_rate:
+        type:
+          - "null"
+          - string
+      annotation_clickable_impressions:
+        type:
+          - "null"
+          - string
+      annotation_clicks:
+        type:
+          - "null"
+          - string
+      annotation_closable_impressions:
+        type:
+          - "null"
+          - string
+      annotation_close_rate:
+        type:
+          - "null"
+          - string
+      annotation_closes:
+        type:
+          - "null"
+          - string
+      annotation_id:
+        type:
+          - "null"
+          - string
+      annotation_impressions:
+        type:
+          - "null"
+          - string
+      annotation_type:
+        type:
+          - "null"
+          - string
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+  channel_annotations_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
@@ -1164,6 +1286,53 @@ schemas:
         type:
           - "null"
           - string
+  channel_end_screens_a2:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      end_screen_element_click_rate:
+        type:
+          - "null"
+          - string
+      end_screen_element_clicks:
+        type:
+          - "null"
+          - string
+      end_screen_element_id:
+        type:
+          - "null"
+          - string
+      end_screen_element_impressions:
+        type:
+          - "null"
+          - string
+      end_screen_element_type:
+        type:
+          - "null"
+          - string
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
   channel_playback_location_a3:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -1339,6 +1508,41 @@ schemas:
           - "null"
           - integer
   channel_sharing_service_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      channel_id:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      date:
+        type: integer
+      live_or_on_demand:
+        type:
+          - "null"
+          - string
+      shares:
+        type:
+          - "null"
+          - string
+      sharing_service:
+        type:
+          - "null"
+          - string
+      subscribed_status:
+        type:
+          - "null"
+          - string
+      video_id:
+        type:
+          - "null"
+          - string
+  channel_sharing_service_a2:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
