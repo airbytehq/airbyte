@@ -546,6 +546,7 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ inputs.pr }}
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
