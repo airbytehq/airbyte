@@ -8,7 +8,7 @@ from pathlib import Path
 
 def test_dc_region_documentation_url():
     spec_path = Path(__file__).parents[1] / "source_zoho_crm" / "spec.json"
-    spec_text = spec_path.read_text()
+    spec_text = spec_path.read_text(encoding="utf-8")
     spec = json.loads(spec_text)
     description = spec["connectionSpecification"]["properties"]["dc_region"]["description"]
 
