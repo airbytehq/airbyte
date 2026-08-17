@@ -118,4 +118,7 @@ data:
     - title: monday.com GraphQL API schema repository
       url: https://github.com/mondaycom/monday-graphql-api
       type: spec_repository
+    - title: monday.com User entity migration guide (2026-04 to 2026-10)
+      url: https://developer.monday.com/api-reference/docs/migrating-user-entity-to-2026-10
+      type: api_deprecations
 metadataSpecVersion: "1.0"
