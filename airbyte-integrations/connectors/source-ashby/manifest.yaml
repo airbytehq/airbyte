@@ -949,6 +949,71 @@ streams:
               - array
             items:
               type: object
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - string
+                interviewId:
+                  type:
+                    - "null"
+                    - string
+                interviewScheduleId:
+                  type:
+                    - "null"
+                    - string
+                startTime:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                endTime:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                createdAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                updatedAt:
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                feedbackLink:
+                  type:
+                    - "null"
+                    - string
+                hasSubmittedFeedback:
+                  type:
+                    - "null"
+                    - boolean
+                interviewerUserIds:
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                location:
+                  type:
+                    - "null"
+                    - string
+                meetingLink:
+                  type:
+                    - "null"
+                    - string
+                interviewerCalendarEventId:
+                  type:
+                    - "null"
+                    - string
+                notetakerTranscriptId:
+                  type:
+                    - "null"
+                    - string
           interviewStageId:
             type:
               - "null"
