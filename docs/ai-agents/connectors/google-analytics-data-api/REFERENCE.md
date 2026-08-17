@@ -65,16 +65,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -247,16 +247,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -415,16 +415,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -583,16 +583,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -751,16 +751,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -937,16 +937,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -1111,16 +1111,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -1299,16 +1299,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 

@@ -112,10 +112,6 @@
       "description": "The device platform (e.g., mobile, desktop) targeted by the ad.",
       "type": ["null", "string"]
     },
-    "dma": {
-      "description": "Designated Market Area for ad targeting in the United States.",
-      "type": ["null", "string"]
-    },
     "fidelity_type": {
       "type": ["null", "string"],
       "description": "The fidelity type of the ad."

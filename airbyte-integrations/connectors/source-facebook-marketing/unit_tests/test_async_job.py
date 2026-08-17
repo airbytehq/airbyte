@@ -567,7 +567,9 @@ class TestInsightAsyncJob:
     )
     def test_split_job_by_fields_parent_not_enough_fields(self, api, fields):
         """
-        If there are <=1 non-PK fields, splitting by fields is impossible and should raise.
+        If there are <=1 non-PK fields, splitting by fields is impossible. Without the
+        incrementality window this surfaces as an actionable config_error that names the
+        offending field and tells the user to unselect it (no incrementality guidance).
         """
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": [], "fields": fields}
@@ -582,10 +584,51 @@ class TestInsightAsyncJob:
             primary_key=pk,
         )
 
-        with pytest.raises(AirbyteTracedException, match="Unable to split the Facebook Insights request") as exc_info:
+        with pytest.raises(AirbyteTracedException, match="Facebook could not generate the Insights report") as exc_info:
             job._split_job()
 
-        assert exc_info.value.failure_type == FailureType.system_error
+        assert exc_info.value.failure_type == FailureType.config_error
+        # No incrementality window in params -> no incrementality guidance in the message.
+        assert "incrementality" not in exc_info.value.message.lower()
+        # The offending non-PK field (if any) is named so the user knows what to unselect.
+        for non_pk_field in [f for f in fields if f not in pk]:
+            assert non_pk_field in exc_info.value.message
+
+    def test_split_job_by_fields_parent_incrementality_raises_config_error(self, api):
+        """
+        When the unsplittable leaf has the `incrementality` attribution window, raise a
+        config_error that additionally guides the user to disable "Include Incrementality"
+        (the verified dma + conversions + incrementality limitation, oncall #12088).
+        """
+        interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
+        params = {
+            "time_increment": 1,
+            "breakdowns": ["comscore_market"],
+            "fields": ["ad_id", "conversions"],  # 1 non-PK field
+            "action_attribution_windows": ["1d_click", "incrementality"],
+            "level": "ad",
+        }
+        pk = ["ad_id"]
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad(1),
+            interval=interval,
+            params=params,
+            job_timeout=timedelta(minutes=60),
+            primary_key=pk,
+            stream_name="ads_insights_comscore_market",
+        )
+
+        with pytest.raises(AirbyteTracedException, match="incrementality") as exc_info:
+            job._split_job()
+
+        assert exc_info.value.failure_type == FailureType.config_error
+        assert "Include Incrementality" in exc_info.value.message
+        assert "comscore_market" in exc_info.value.message
+        assert "conversions" in exc_info.value.message
+        # The stream name is surfaced so the user knows exactly which stream to fix.
+        assert "ads_insights_comscore_market" in exc_info.value.message
 
     def test_split_job_by_fields_parent_does_not_add_missing_breakdown_pk_fields(self, api):
         interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))

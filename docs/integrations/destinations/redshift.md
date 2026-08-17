@@ -208,7 +208,9 @@ Redshift enforces size limits on certain data types. When a value exceeds a limi
 the change in the `_airbyte_meta` column.
 
 - **VARCHAR**: Maximum 65,535 bytes.
-- **SUPER**: Maximum 16 MB per record. See the AWS documentation
+- **SUPER**: Maximum 16 MB per record. Individual string scalars nested within a SUPER value are limited to
+  65,535 bytes. If any nested string exceeds this limit, Airbyte nulls the entire SUPER value and records the
+  change in `_airbyte_meta`. See the AWS documentation
   on [SUPER type](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html)
   and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html).
 - **BIGINT**: Stores values in the range -2^63 to 2^63-1. If an integer value falls outside this range, Airbyte nulls
@@ -268,6 +270,15 @@ to the staging S3 bucket. Verify that:
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Redshift schema.
 
+## Limitations
+
+### NULL primary keys in dedup syncs
+
+When using [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
+or [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped),
+records where any primary key column contains a NULL value are not written to the final table.
+This is by design for performance reasons.
+
 ## Changelog
 
 <details>
@@ -275,27 +286,32 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.1 | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135) | fix(destination-redshift): resolve sslmode/sslfactory conflict in jdbc_url_params |
-| 4.0.0 | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095) | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1 |
-| 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
-| 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
-| 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
-| 3.5.1 | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
-| 3.5.0 | 2024-09-18 | [45435](https://github.com/airbytehq/airbyte/pull/45435) | upgrade all dependencies |
-| 3.4.4 | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb |
-| 3.4.3 | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526) | Revert protocol compliance fix |
-| 3.4.2 | 2024-08-15 | [42506](https://github.com/airbytehq/airbyte/pull/42506) | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance) |
-| 3.4.1 | 2024-08-14 | [44020](https://github.com/airbytehq/airbyte/pull/44020) | Simplify Redshift Options |
-| 3.4.0 | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445) | Respect the `drop cascade` option on raw tables |
-| 3.3.1 | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968) | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status |
-| 3.3.0 | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567) | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
-| 3.2.0 | 2024-07-02 | [40201](https://github.com/airbytehq/airbyte/pull/40201) | Add `_airbyte_generation_id` column, and add `sync_id` to `_airbyte_meta` column |
-| 3.1.1 | 2024-06-26 | [39008](https://github.com/airbytehq/airbyte/pull/39008) | Internal code changes |
-| 3.1.0 | 2024-06-26 | [39141](https://github.com/airbytehq/airbyte/pull/39141) | Remove nonfunctional "encrypted staging" option |
-| 3.0.0 | 2024-06-04 | [38886](https://github.com/airbytehq/airbyte/pull/38886) | Remove standard inserts mode |
-| 2.6.4 | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825) | Adopt CDK 0.35.15 |
-| 2.6.3 | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803) | Source auto-conversion to Kotlin |
-| 2.6.2 | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189) | adding an option to DROP CASCADE on resets |
+| 4.0.6   | 2026-08-06 | [82274](https://github.com/airbytehq/airbyte/pull/82274)   | Set ColumnDropBehavior.RETAIN: stop dropping columns during schema evolution                                                                                                                                     |
+| 4.0.5   | 2026-08-04 | [83700](https://github.com/airbytehq/airbyte/pull/83700)   | Ignore NULL primary key records during dedup insert for performance; revert NULL-safe PK matching to plain equijoin                                                                                              |
+| 4.0.4   | 2026-07-29 | [83245](https://github.com/airbytehq/airbyte/pull/83245)   | fix: use NULL-safe primary key matching in upsert to prevent silent mismatches when PK columns contain NULL values                                                                                               |
+| 4.0.3   | 2026-07-14 | [81552](https://github.com/airbytehq/airbyte/pull/81552)   | fix: narrow SQLException handling to only treat table-not-found as missing                                                                                                                                       |
+| 4.0.2   | 2026-06-08 | [79161](https://github.com/airbytehq/airbyte/pull/79161)   | fix: validate nested string sizes within SUPER columns to prevent COPY error 1224                                                                                                                                |
+| 4.0.1   | 2026-06-04 | [79135](https://github.com/airbytehq/airbyte/pull/79135)   | fix: resolve sslmode/sslfactory conflict in jdbc_url_params                                                                                                                                                      |
+| 4.0.0   | 2026-06-02 | [79095](https://github.com/airbytehq/airbyte/pull/79095)   | Full rewrite using direct load (removal of raw tables), pre-insertion data validation with `_airbyte_meta` tracking, updated dependencies: Redshift JDBC 2.2.7, AWS SDK v2 2.31.1                                |
+| 3.5.4   | 2026-03-26 | [75286](https://github.com/airbytehq/airbyte/pull/75286)   | Fix misleading SSH error when SQLException has null sqlState during connection check                                                                                                                             |
+| 3.5.3   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                                                |
+| 3.5.2   | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500)   | Use a non root base image                                                                                                                                                                                        |
+| 3.5.1   | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                                                              |
+| 3.5.0   | 2024-09-18 | [45435](https://github.com/airbytehq/airbyte/pull/45435)   | upgrade all dependencies                                                                                                                                                                                         |
+| 3.4.4   | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase message parsing limit to 100mb                                                                                                                                                                          |
+| 3.4.3   | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526)   | Revert protocol compliance fix                                                                                                                                                                                   |
+| 3.4.2   | 2024-08-15 | [42506](https://github.com/airbytehq/airbyte/pull/42506)   | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance)                                                                                                                      |
+| 3.4.1   | 2024-08-14 | [44020](https://github.com/airbytehq/airbyte/pull/44020)   | Simplify Redshift Options                                                                                                                                                                                        |
+| 3.4.0   | 2024-07-23 | [42445](https://github.com/airbytehq/airbyte/pull/42445)   | Respect the `drop cascade` option on raw tables                                                                                                                                                                  |
+| 3.3.1   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                                                       |
+| 3.3.0   | 2024-07-02 | [40567](https://github.com/airbytehq/airbyte/pull/40567)   | Support for [refreshes](../../platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                           |
+| 3.2.0   | 2024-07-02 | [40201](https://github.com/airbytehq/airbyte/pull/40201)   | Add `_airbyte_generation_id` column, and add `sync_id` to `_airbyte_meta` column                                                                                                                                 |
+| 3.1.1   | 2024-06-26 | [39008](https://github.com/airbytehq/airbyte/pull/39008)   | Internal code changes                                                                                                                                                                                            |
+| 3.1.0   | 2024-06-26 | [39141](https://github.com/airbytehq/airbyte/pull/39141)   | Remove nonfunctional "encrypted staging" option                                                                                                                                                                  |
+| 3.0.0   | 2024-06-04 | [38886](https://github.com/airbytehq/airbyte/pull/38886)   | Remove standard inserts mode                                                                                                                                                                                     |
+| 2.6.4   | 2024-05-31 | [38825](https://github.com/airbytehq/airbyte/pull/38825)   | Adopt CDK 0.35.15                                                                                                                                                                                                |
+| 2.6.3   | 2024-05-31 | [38803](https://github.com/airbytehq/airbyte/pull/38803)   | Source auto-conversion to Kotlin                                                                                                                                                                                 |
+| 2.6.2   | 2024-05-14 | [38189](https://github.com/airbytehq/airbyte/pull/38189)   | adding an option to DROP CASCADE on resets                                                                                                                                                                       |
 | 2.6.1   | 2024-05-13 | [\#38126](https://github.com/airbytehq/airbyte/pull/38126) | Adapt to signature changes in `StreamConfig`                                                                                                                                                                     |
 | 2.6.0   | 2024-05-08 | [\#37713](https://github.com/airbytehq/airbyte/pull/37713) | Remove option for incremental typing and deduping                                                                                                                                                                |
 | 2.5.0   | 2024-05-06 | [\#34613](https://github.com/airbytehq/airbyte/pull/34613) | Upgrade Redshift driver to work with Cluster patch 181; Adapt to CDK 0.33.0; Minor signature changes                                                                                                             |
@@ -342,7 +358,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.6.8   | 2023-10-10 | [\#31218](https://github.com/airbytehq/airbyte/pull/31218) | Clarify configuration groups                                                                                                                                                                                     |
 | 0.6.7   | 2023-10-06 | [\#31153](https://github.com/airbytehq/airbyte/pull/31153) | Increase jvm GC retries                                                                                                                                                                                          |
 | 0.6.6   | 2023-10-06 | [\#31129](https://github.com/airbytehq/airbyte/pull/31129) | Reduce async buffer size                                                                                                                                                                                         |
-| 0.6.5   | 2023-08-18 | [\#28619](https://github.com/airbytehq/airbyte/pull/29640) | Fix duplicate staging object names in concurrent environment (e.g. async)                                                                                                                                        |
+| 0.6.5   | 2023-08-18 | [\#29640](https://github.com/airbytehq/airbyte/pull/29640) | Fix duplicate staging object names in concurrent environment (e.g. async)                                                                                                                                        |
 | 0.6.4   | 2023-08-10 | [\#28619](https://github.com/airbytehq/airbyte/pull/28619) | Use async method for staging                                                                                                                                                                                     |
 | 0.6.3   | 2023-08-07 | [\#29188](https://github.com/airbytehq/airbyte/pull/29188) | Internal code refactoring                                                                                                                                                                                        |
 | 0.6.2   | 2023-07-24 | [\#28618](https://github.com/airbytehq/airbyte/pull/28618) | Add hooks in preparation for destinations v2 implementation                                                                                                                                                      |
@@ -369,7 +385,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |
 | 0.3.48  | 2022-09-01 |                                                            | Added JDBC URL params                                                                                                                                                                                            |
 | 0.3.47  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                                                                                            |
-| 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/13916) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
+| 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/14190) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
 | 0.3.45  | 2022-06-25 | [\#13916](https://github.com/airbytehq/airbyte/pull/13916) | Use the configured bucket path for S3 staging operations.                                                                                                                                                        |
 | 0.3.44  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging                                                                                                                                      |
 | 0.3.43  | 2022-06-24 | [\#13690](https://github.com/airbytehq/airbyte/pull/13690) | Improved discovery for NOT SUPER column                                                                                                                                                                          |
