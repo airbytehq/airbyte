@@ -108,11 +108,11 @@ When **Start date** is set, the connector applies the Gmail `after:<epoch_second
 
 The Gmail API enforces two simultaneous rate limits and a daily threshold, all measured in [quota units](https://developers.google.com/workspace/gmail/api/reference/quota):
 
-| Limit type                  | Limit                                             | Error code              |
-|-----------------------------|---------------------------------------------------|-------------------------|
-| Per project rate limit      | 1,200,000 quota units per minute                  | `rateLimitExceeded`     |
-| Per user rate limit         | 6,000 quota units per minute per user per project | `userRateLimitExceeded` |
-| Per project daily threshold | 80,000,000 quota units per day                    | _(billing threshold)_   |
+| Limit type                  | Limit                                             | Behavior when exceeded                        |
+|-----------------------------|---------------------------------------------------|-----------------------------------------------|
+| Per project rate limit      | 1,200,000 quota units per minute                  | `rateLimitExceeded` error                     |
+| Per user rate limit         | 6,000 quota units per minute per user per project | `userRateLimitExceeded` error                 |
+| Per project daily threshold | 80,000,000 quota units per day                    | Billing threshold, not enforced with an error |
 
 Each method the connector calls has its own cost:
 
