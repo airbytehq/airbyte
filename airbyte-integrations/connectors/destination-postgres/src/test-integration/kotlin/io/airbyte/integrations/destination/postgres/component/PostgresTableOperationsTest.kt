@@ -12,6 +12,9 @@ import io.airbyte.integrations.destination.postgres.component.PostgresComponentT
 import io.airbyte.integrations.destination.postgres.component.PostgresComponentTestFixtures.testMapping
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -75,6 +78,55 @@ class PostgresTableOperationsTest(
     @Test
     override fun `get generation id`() {
         super.`get generation id`(columnNameMapping = testMapping)
+    }
+
+    @Test
+    fun `countTable returns null for nonexistent table`() = runTest {
+        val testNamespace = TableOperationsFixtures.generateTestNamespace("count-missing-table")
+        client.createNamespace(testNamespace)
+        try {
+            val missingTable =
+                TableOperationsFixtures.generateTestTableName("count-missing-table", testNamespace)
+            assertNull(client.countTable(missingTable))
+        } finally {
+            testClient.dropNamespace(testNamespace)
+        }
+    }
+
+    @Test
+    fun `countTable returns null for nonexistent namespace`() = runTest {
+        val testNamespace = TableOperationsFixtures.generateTestNamespace("count-missing-namespace")
+        val missingTable =
+            TableOperationsFixtures.generateTestTableName("count-missing-table", testNamespace)
+
+        assertNull(client.countTable(missingTable))
+    }
+
+    @Test
+    fun `getGenerationId returns 0 for nonexistent table`() = runTest {
+        val testNamespace =
+            TableOperationsFixtures.generateTestNamespace("generation-missing-table")
+        client.createNamespace(testNamespace)
+        try {
+            val missingTable =
+                TableOperationsFixtures.generateTestTableName(
+                    "generation-missing-table",
+                    testNamespace,
+                )
+            assertEquals(0L, client.getGenerationId(missingTable))
+        } finally {
+            testClient.dropNamespace(testNamespace)
+        }
+    }
+
+    @Test
+    fun `getGenerationId returns 0 for nonexistent namespace`() = runTest {
+        val testNamespace =
+            TableOperationsFixtures.generateTestNamespace("generation-missing-namespace")
+        val missingTable =
+            TableOperationsFixtures.generateTestTableName("generation-missing-table", testNamespace)
+
+        assertEquals(0L, client.getGenerationId(missingTable))
     }
 
     // TODO: Re-enable when CDK TableOperationsSuite is fixed to use ID_AND_TEST_SCHEMA for target

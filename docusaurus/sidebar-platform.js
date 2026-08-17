@@ -24,6 +24,11 @@ const buildAConnector = {
         "connector-development/connector-builder-ui/ai-assist",
         "connector-development/connector-builder-ui/custom-components",
         {
+          label: "Low-Code CDK Intro",
+          type: "doc",
+          id: "connector-development/config-based/low-code-cdk-overview",
+        },
+        {
           type: "category",
           label: "Concepts",
           items: [
@@ -39,13 +44,8 @@ const buildAConnector = {
           ],
         },
         {
-          label: "Low-Code CDK Intro",
-          type: "doc",
-          id: "connector-development/config-based/low-code-cdk-overview",
-        },
-        {
           type: "category",
-          label: "Understanding the YAML file",
+          label: "YAML Components",
           link: {
             type: "doc",
             id: "connector-development/config-based/understanding-the-yaml-file/yaml-overview",
@@ -64,12 +64,12 @@ const buildAConnector = {
                 "connector-development/config-based/understanding-the-yaml-file/error-handling",
               ],
             },
-            "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
+            "connector-development/config-based/understanding-the-yaml-file/record-selector",
             "connector-development/config-based/understanding-the-yaml-file/pagination",
+            "connector-development/config-based/understanding-the-yaml-file/incremental-syncs",
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
             "connector-development/config-based/understanding-the-yaml-file/property-chunking",
             "connector-development/config-based/understanding-the-yaml-file/rate-limit-api-budget",
-            "connector-development/config-based/understanding-the-yaml-file/record-selector",
             "connector-development/config-based/understanding-the-yaml-file/file-syncing",
             "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
@@ -437,23 +437,7 @@ module.exports = {
         buildAConnector,     
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
-        {
-          type: "category",
-          label: "Self-Managed Enterprise",
-          link: {
-            type: "doc",
-            id: "enterprise-setup/README",
-          },
-          items: [
-            "enterprise-setup/implementation-guide",
-            "enterprise-setup/multi-region",
-            "enterprise-setup/audit-logging",
-            "enterprise-setup/scaling-airbyte",
-            "enterprise-setup/upgrade-service-account",
-            "enterprise-setup/upgrading-from-community",
-            "enterprise-setup/chart-v2-enterprise",
-          ],
-        },
+        "enterprise-setup/README",
         {
           type: "category",
           label: "Enterprise Flex",
@@ -493,20 +477,7 @@ module.exports = {
           type: "category",
           label: "Airbyte at Scale",
           items: [
-            {
-              type: "category",
-              label: "Collecting Metrics",
-              link: {
-                type: "doc",
-                id: "operator-guides/collecting-metrics",
-              },
-              items: [
-                {
-                  type: "doc",
-                  id: "operator-guides/open-telemetry",
-                },
-              ],
-            },
+            "operator-guides/collecting-metrics",
             "operator-guides/scaling-airbyte",
             "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
           ],

@@ -254,7 +254,13 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page\", {}) }}"
-            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+            # Zendesk Talk incremental exports always return a `next_page` URL and filter
+            # `start_time` inclusively, so once caught up the paginator keeps re-requesting
+            # `start_time=end_time` and receiving the same boundary record(s). Stop when a page
+            # is not full (fewer than the 1000-record page size) — Zendesk's documented signal
+            # that no more items are available. A count-based "caught up" check is unsafe here
+            # because a single call can have several legs sharing the same `updated_at` second.
+            stop_condition: "{{ response.get(\"count\", 0) < 1000 }}"
       name: call_legs
       primary_key:
         - id
@@ -306,7 +312,13 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get(\"next_page\", {}) }}"
-            stop_condition: "{{ response.get(\"count\", {}) <= 1 }}"
+            # Zendesk Talk incremental exports always return a `next_page` URL and filter
+            # `start_time` inclusively, so once caught up the paginator keeps re-requesting
+            # `start_time=end_time` and receiving the same boundary record(s). Stop when a page
+            # is not full (fewer than the 1000-record page size) — Zendesk's documented signal
+            # that no more items are available. A count-based "caught up" check is unsafe here
+            # because a single call can have several legs sharing the same `updated_at` second.
+            stop_condition: "{{ response.get(\"count\", 0) < 1000 }}"
       name: calls
       primary_key:
         - id
@@ -561,37 +573,30 @@ streams:
 # Concurrency calculated using highest rate limit across all endpoints:
 # highest = 50 req/sec (Talk API all endpoints), initial = floor(50 / 4) = 12
 # Tuning iteration 2: decreased to 9 after Phase 1 showed +6% duration regression
+# Tuning iteration 3: decreased to 6 after rc.2 showed persistent heartbeat_timeout failures on high-volume connections
+# Tuning iteration 4: decreased to 4 and commented out HTTPAPIBudget to isolate concurrency effect
+# Tuning iteration 5: re-enabled HTTPAPIBudget as dynamic tier-based budget using MovingWindowCallRatePolicy
 # Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 9
-  max_concurrency: 36
+  default_concurrency: 4
+  max_concurrency: 16
 
-# HTTP API Budget: throttle requests per Zendesk Talk API rate limits
-# Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
+# HTTP API Budget: dynamic rate limiting based on Zendesk subscription tier.
+# Uses MovingWindowCallRatePolicy (supports config interpolation) instead of FixedWindowCallRatePolicy.
+# Tier-based limits (req/min): Team=200, Growth=400, Professional=400, Enterprise=700, Enterprise Plus=2500.
+# Previous static budget with per-endpoint limits (e.g. 10 req/min for incremental exports) caused
+# heartbeat_timeout on high-volume connections (confirmed in rc.4 experiment). The tier-based catch-all
+# approach avoids over-throttling individual endpoints while still respecting overall API rate limits.
+# Server-side 429 handling via Retry-After header provides per-endpoint enforcement.
 api_budget:
   type: HTTPAPIBudget
   policies:
-    # Incremental Exports (calls, call_legs): 10 requests per minute
-    - type: FixedWindowCallRatePolicy
-      period: "PT1M"
-      call_limit: 10
-      matchers:
-        - method: GET
-          url_path_pattern: "/stats/incremental/"
-    # Current Queue Activity: 2,500 requests per 5 minutes
-    - type: FixedWindowCallRatePolicy
-      period: "PT5M"
-      call_limit: 2500
-      matchers:
-        - method: GET
-          url_path_pattern: "/stats/current_queue_activity"
-    # All Talk API endpoints (catch-all): 15,000 requests per 5 minutes
-    - type: FixedWindowCallRatePolicy
-      period: "PT5M"
-      call_limit: 15000
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ {'team': 200, 'growth': 400, 'professional': 400, 'enterprise': 700, 'enterprise_plus': 2500}.get(config.get('subscription_tier', 'team'), 200) }}"
+          interval: PT1M
       matchers: []
-  ratelimit_reset_header: "Retry-After"
   status_codes_for_ratelimit_hit: [429]
 
 spec:
@@ -733,6 +738,21 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2020-10-15T00:00:00Z"
+      subscription_tier:
+        type: string
+        title: Subscription Plan/Tier
+        description: >-
+          Your Zendesk subscription plan tier. This controls API rate limiting
+          behavior — higher tiers have higher rate limits. If unsure, leave as
+          the default (Team) for the most conservative rate limiting.
+        enum:
+          - team
+          - growth
+          - professional
+          - enterprise
+          - enterprise_plus
+        default: team
+        order: 3
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -794,10 +814,11 @@ spec:
         consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
         scopes:
           - scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}"
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}&expires_in=172800"
         extract_output:
           - access_token
           - refresh_token
+          - expires_in
 
 metadata:
   autoImportSchema:

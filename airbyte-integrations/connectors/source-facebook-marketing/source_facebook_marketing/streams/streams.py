@@ -4,7 +4,8 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from datetime import datetime, timedelta
+from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple
 
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
@@ -80,7 +81,7 @@ class AdCreatives(FBMarketingStream):
         return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
 
 
-class AdCreativesFromAds(FBMarketingStream):
+class AdCreativesFromAds(FBMarketingIncrementalStream):
     """Alternative stream to fetch ad creatives through the ads endpoint.
 
     This stream fetches creatives by first getting ads (which includes creative IDs),
@@ -100,21 +101,34 @@ class AdCreativesFromAds(FBMarketingStream):
     status_field = "effective_status"
     valid_statuses = [status.value for status in ValidAdStatuses]
 
-    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        fetch_thumbnail_images: bool = False,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        **kwargs,
+    ):
+        super().__init__(start_date=start_date, end_date=end_date, **kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
         self._creative_fields: Optional[List[str]] = None
-        self._fields = ["id", "creative"]
+        self._fields = ["id", "creative", "updated_time"]
 
     @property
     def name(self) -> str:
         return "ad_creatives_from_ads"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Use the same schema as ad_creatives stream"""
+        """Use the ad_creatives schema with the parent ad timestamp."""
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
-        return loader.get_schema("ad_creatives")
+        schema = loader.get_schema("ad_creatives").copy()
+        schema["properties"] = schema["properties"].copy()
+        schema["properties"]["updated_time"] = {
+            "description": "The date and time when the parent ad was last updated.",
+            "type": ["null", "string"],
+            "format": "date-time",
+        }
+        return schema
 
     def _get_creative_fields(self) -> List[str]:
         """Get the list of creative fields to request, excluding computed fields"""
@@ -123,12 +137,18 @@ class AdCreativesFromAds(FBMarketingStream):
 
         json_schema = self.get_json_schema()
         creative_fields = list(json_schema.get("properties", {}).keys())
-        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id", "updated_time")]
         return self._creative_fields
 
     def fields(self, **kwargs) -> List[str]:
         """Return fields to request from the ads endpoint - just id and creative reference"""
         return self._fields
+
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Only apply cursor filtering when an incremental state cursor exists."""
+        if not stream_state.get(self.cursor_field):
+            return {}
+        return super()._state_filter(stream_state)
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
@@ -157,19 +177,61 @@ class AdCreativesFromAds(FBMarketingStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Read ads, extract unique creative IDs, and fetch full creative details"""
         self._seen_creative_ids = set()
+        failed_creative_ids: Set[str] = set()
+        max_successful_cursor: Optional[Tuple[AirbyteDateTime, str]] = None
+        earliest_failed_cursor: Optional[AirbyteDateTime] = None
+        failed_ad_without_cursor = False
 
-        for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        # The CDK passes persisted state to read_records whatever the configured sync mode, so a cursor left behind by
+        # an earlier incremental sync would otherwise filter a full refresh and make it silently partial.
+        if sync_mode != SyncMode.incremental:
+            stream_slice = {**stream_slice, "stream_state": {}}
+
+        # Bypass incremental read_records to checkpoint state after the full slice and creative fetches.
+        for ad_record in FBMarketingStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state):
+            updated_time = ad_record.get(self.cursor_field)
+            try:
+                parsed_updated_time = ab_datetime_parse(updated_time) if updated_time is not None else None
+            except (ValueError, TypeError):
+                # A malformed timestamp must not abort the whole account slice; treat it as a missing cursor.
+                logger.warning(
+                    f"Stream {self.name}: ad {ad_record.get('id')} has an unparsable {self.cursor_field} "
+                    f"{updated_time!r}; treating it as missing so the cursor cannot advance past this ad."
+                )
+                parsed_updated_time = None
+
             creative_id = ad_record.get("creative", {}).get("id")
-            if not creative_id or creative_id in self._seen_creative_ids:
+            if not creative_id:
+                continue
+
+            if creative_id in failed_creative_ids:
+                if parsed_updated_time is None:
+                    failed_ad_without_cursor = True
+                elif earliest_failed_cursor is None or parsed_updated_time < earliest_failed_cursor:
+                    earliest_failed_cursor = parsed_updated_time
+                continue
+
+            if creative_id in self._seen_creative_ids:
+                if parsed_updated_time is not None and (max_successful_cursor is None or parsed_updated_time > max_successful_cursor[0]):
+                    max_successful_cursor = (parsed_updated_time, updated_time)
                 continue
 
             self._seen_creative_ids.add(creative_id)
 
             creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
+                failed_creative_ids.add(creative_id)
+                if parsed_updated_time is None:
+                    failed_ad_without_cursor = True
+                elif earliest_failed_cursor is None or parsed_updated_time < earliest_failed_cursor:
+                    earliest_failed_cursor = parsed_updated_time
                 continue
 
+            if parsed_updated_time is not None and (max_successful_cursor is None or parsed_updated_time > max_successful_cursor[0]):
+                max_successful_cursor = (parsed_updated_time, updated_time)
+
             self.fix_date_time(creative_data)
+            creative_data[self.cursor_field] = updated_time
 
             if self._fetch_thumbnail_images:
                 thumbnail_url = creative_data.get("thumbnail_url")
@@ -178,6 +240,35 @@ class AdCreativesFromAds(FBMarketingStream):
 
             self.add_account_id(creative_data, stream_slice["account_id"])
             yield creative_data
+
+        if failed_creative_ids:
+            logger.warning(
+                f"Stream {self.name}: {len(failed_creative_ids)} creative fetch(es) failed for account "
+                f"{stream_slice['account_id']}; the incremental cursor will not advance past the earliest failed ad, "
+                f"so the failed creatives are retried on the next sync. If the same creative fails on every sync, "
+                f"the cursor stays pinned and the stream keeps re-reading from that point."
+            )
+
+        # The CDK assigns persisted state and picks a checkpoint reader from the catalog's cursor_field alone, so a
+        # full refresh would otherwise emit a real cursor and let a retried attempt resume filtered and partial.
+        if sync_mode != SyncMode.incremental:
+            return
+
+        if max_successful_cursor is None or failed_ad_without_cursor:
+            return
+
+        max_parsed, max_raw = max_successful_cursor
+        if earliest_failed_cursor is not None and max_parsed >= earliest_failed_cursor:
+            # Facebook cursors are second-precision and the filter is a strict GREATER_THAN, so rewinding one second
+            # before the earliest failure re-reads every ad at that timestamp without ever skipping a success.
+            checkpoint_value = str(earliest_failed_cursor - timedelta(seconds=1))
+        else:
+            checkpoint_value = max_raw
+
+        self.state = self._get_updated_state(
+            self.state,
+            {"account_id": stream_slice["account_id"], self.cursor_field: checkpoint_value},
+        )
 
 
 class CustomConversions(FBMarketingStream):
@@ -339,7 +430,13 @@ class AdAccount(FBMarketingStream):
         fields = self.fields(account_id=account_id)
         try:
             return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
-        except FacebookRequestError as e:
+        except (FacebookRequestError, AirbyteTracedException) as e:
+            # The backoff give_up handler may convert FacebookRequestError to AirbyteTracedException
+            # before this except block can catch it. Extract the wrapped FacebookRequestError if present.
+            if isinstance(e, AirbyteTracedException):
+                if not isinstance(e._exception, FacebookRequestError):
+                    raise
+                e = e._exception
             # This is a workaround for cases when account seem to have all the required permissions
             # but despite that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
@@ -376,8 +473,8 @@ class AdsInsightsRegion(AdsInsights):
     breakdowns = ["region"]
 
 
-class AdsInsightsDma(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsComscoreMarket(AdsInsights):
+    breakdowns = ["comscore_market"]
 
 
 class AdsInsightsPlatformAndDevice(AdsInsights):
@@ -443,8 +540,8 @@ class AdsInsightsDemographicsCountry(AdsInsights):
     action_breakdowns = ["action_type"]
 
 
-class AdsInsightsDemographicsDMARegion(AdsInsights):
-    breakdowns = ["dma"]
+class AdsInsightsDemographicsComscoreMarketRegion(AdsInsights):
+    breakdowns = ["comscore_market"]
     action_breakdowns = ["action_type"]
 
 

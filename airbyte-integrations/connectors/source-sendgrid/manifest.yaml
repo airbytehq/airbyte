@@ -684,7 +684,7 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 50
+        - limit: 70
           interval: PT1S
       matchers: []
   ratelimit_reset_header: X-RateLimit-Reset

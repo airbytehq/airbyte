@@ -125,20 +125,24 @@ poe test-integration-tests
 
 ### Listing and Fetching Secrets
 
-You can use either Poe or `airbyte-cdk` to fetch secrets. These are equivalent:
+You can use either Poe or `airbyte-internal-ops` to fetch secrets. These are equivalent:
 
 ```bash
-airbyte-cdk secrets fetch
+uvx airbyte-internal-ops secrets fetch
 poe fetch-secrets
 ```
 
-Using the `airbyte-cdk` you can also list the available secrets (if any) for the given connector:
+Using `airbyte-internal-ops` you can also list the available secrets (if any) for the given connector:
 
 ```bash
-airbyte-cdk secrets list
+uvx airbyte-internal-ops secrets list
 ```
 
 The `list` command also provides you with a URL which you can use to quickly navigate to the Google Secrets Manager interface. (GCP login will be required.)
+
+:::note
+The `airbyte-cdk secrets fetch|list` commands are still available for backward compatibility, but `airbyte-internal-ops secrets ...` is now the recommended interface.
+:::
 
 ## Managing Connector Secrets in GSM
 
@@ -165,13 +169,13 @@ To understand which secrets are required for a connector, consult the `metadata.
 
 ### Fetching and Listing Connector Secrets Locally
 
-To view a list of secrets, or to fetch them locally, you can use the [Airbyte CDK CLI](#the-airbyte-cdk-cli):
+To view a list of secrets, or to fetch them locally, you can use the `airbyte-internal-ops` CLI via `uvx`. The canonical CLI reference lives at [airbyte_ops_mcp/cli/secrets](https://airbytehq.github.io/airbyte-ops-mcp/airbyte_ops_mcp/cli/secrets.html).
 
-- `airbyte-cdk secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
-- `airbyte-cdk secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
+- `uvx airbyte-internal-ops secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
+- `uvx airbyte-internal-ops secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
   - Note: The `secrets list` command is purely a metadata operation; no secrets are downloaded to your machine locally when running this step.
-- `airbyte-cdk secrets fetch`
-  - Fetching the secrets saves them to local `.json` files within in the connector's `secrets`, making them available for local connector testing.
+- `uvx airbyte-internal-ops secrets fetch`
+  - Fetching the secrets saves them to local `.json` files within the connector's `secrets` directory, making them available for local connector testing.
 
 :::caution
 The `secrets` directory should be automatically excluded from git based upon repo-level `.gitignore` rules. It is always a good idea to confirm that this is true for your case, and please always use caution whenever handling sensitive credentials.
