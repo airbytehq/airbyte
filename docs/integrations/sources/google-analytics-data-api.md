@@ -37,13 +37,18 @@ Airbyte Cloud authenticates through OAuth, so you don't need a Google Cloud proj
 3. Select the project you want to use, or create a new one, then click **Continue**.
 4. Click **+ Create Service Account** at the top of the page.
 5. Enter a name for the service account and, optionally, a description. Click **Create and Continue**.
-6. Choose a role for the service account. Airbyte recommends **Viewer** (Read & Analyze permissions). Click **Continue**.
+6. Skip the optional step that grants the service account a role in the project. Access to Analytics data comes from the property access you grant in Google Analytics, not from a project role. Click **Continue**.
 7. Select your new service account from the list, then open the **Keys** tab. Click **Add Key** > **Create New Key**.
 8. Select **JSON** as the key type. Google generates and downloads the JSON key file you use to authenticate.
 
-#### Enable the Google Analytics Data API
+#### Enable the Google APIs the connector calls
 
-Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview), make sure the project that owns your service account is selected, and enable the API. This is the only Google API this connector calls, so you don't need to enable the Analytics Reporting API or the Analytics API, which serve Universal Analytics.
+In the project that owns your service account, enable:
+
+- The [Google Analytics Data API](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview), which serves every report stream. This one is required.
+- The [Google Analytics Admin API](https://console.developers.google.com/apis/api/analyticsadmin.googleapis.com/overview), which serves only the `property_metadata` stream. Enable it if you plan to sync that stream.
+
+You don't need the Analytics Reporting API or the Analytics API, which serve Universal Analytics.
 
 #### Grant the service account access to your properties
 
