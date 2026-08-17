@@ -57,9 +57,6 @@ data:
     - title: Microsoft Graph OneDrive and SharePoint files API
       url: https://learn.microsoft.com/en-us/graph/api/resources/onedrive?view=graph-rest-1.0
       type: api_reference
-    - title: SharePoint REST API
-      url: https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/get-to-know-the-sharepoint-rest-service
-      type: api_reference
     - title: Microsoft Graph authentication and authorization
       url: https://learn.microsoft.com/en-us/graph/auth/
       type: authentication_guide
