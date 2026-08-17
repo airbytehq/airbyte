@@ -21,6 +21,7 @@ The Facebook Pages source connector is currently only compatible with v24 of the
    - pages_read_user_content
    - pages_show_list
    - read_insights
+   - catalog_management
 4. Click Generate Access Token and follow instructions.
 
 After all the steps, it should look something like this:
@@ -60,6 +61,7 @@ Required permissions for your OAuth App to sync data using the Facebook Pages so
 - `pages_read_user_content`
 - `pages_show_list`
 - `read_insights`
+- `catalog_management`
 
 If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
 
@@ -102,6 +104,9 @@ To resolve this error, use a token from an app that has access to the permission
 - `pages_read_user_content`
 - `pages_show_list`
 - `read_insights`
+- `catalog_management`
+
+Meta may only report one missing permission per error response. Request the full list above in a single app review to avoid multiple rounds of permission approval.
 
 If you use your own Meta app, it might need [App Review](https://developers.facebook.com/docs/resp-plat-initiatives/appreview/tutorial/) and Advanced Access before it can use these permissions in production.
 The person who generates the token must also be able to perform the required task on the Page.
@@ -144,6 +149,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.2 | 2026-05-26 | [78449](https://github.com/airbytehq/airbyte/pull/78449) | Improve permission error messages to list all required permissions including `catalog_management`. |
 | 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
 | 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
 | 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
