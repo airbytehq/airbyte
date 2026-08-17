@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import urllib
 from http import HTTPStatus
 from pathlib import Path
@@ -365,6 +366,7 @@ def test_read_records_404_message_for_repository_stream(time_mock, caplog, reque
 def test_stargazers_restricted_access_is_ignored_without_retries(status_code, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/public-repo"], "page_size_for_large_streams": 30}
     stream = Stargazers(**args)
+    caplog.set_level(logging.WARNING)
 
     requests_mock.get(
         "https://api.github.com/repos/org/public-repo/stargazers",
@@ -387,6 +389,10 @@ def test_stargazers_restricted_access_is_ignored_without_retries(status_code, ca
         and "org/public-repo" in msg
         and f"HTTP {status_code}" in msg
         for msg in caplog.messages
+    )
+    assert any(
+        record.levelno == logging.WARNING and "stargazers" in record.message.lower() and f"HTTP {status_code}" in record.message
+        for record in caplog.records
     )
     assert all("may not exist" not in msg for msg in caplog.messages)
 

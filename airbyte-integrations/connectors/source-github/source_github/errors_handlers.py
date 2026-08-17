@@ -185,20 +185,21 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 deleted_repository_message = (
                     "; a deleted or renamed repository would also return HTTP 404." if status_code == requests.codes.NOT_FOUND else "."
                 )
+                error_message = (
+                    f"Skipping `{self.stream.name}`{repository_label}: GitHub returned HTTP "
+                    f"{status_code} for this endpoint. Since June 30, 2026, GitHub "
+                    f"restricts the stargazers/watchers listing endpoints to repository admins and "
+                    f"collaborators, which is the most likely cause when the configured token neither "
+                    f"administers nor collaborates on the repository{deleted_repository_message} This stream "
+                    f"will emit no records when the token lacks that access. "
+                    f"Only aggregate star counts remain available through GraphQL, which this connector does "
+                    f"not currently expose. See "
+                    f"https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/"
+                )
+                self._logger.warning(error_message)
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
-                    error_message=(
-                        f"Skipping `{self.stream.name}`{repository_label}: GitHub returned HTTP "
-                        f"{status_code} for this endpoint. Since June 30, 2026, GitHub "
-                        f"restricts the stargazers/watchers listing endpoints to repository admins and "
-                        f"collaborators, which is the most likely cause when the configured token neither "
-                        f"administers nor collaborates on the repository{deleted_repository_message} This stream "
-                        f"will emit no records when the token lacks that access. "
-                        f"Only aggregate star counts remain available through GraphQL, which this connector does "
-                        f"not currently expose. See "
-                        f"https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/"
-                    ),
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
