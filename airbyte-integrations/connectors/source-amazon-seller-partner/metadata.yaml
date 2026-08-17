@@ -100,7 +100,10 @@ data:
     - title: LWA Credentials FAQ
       url: https://developer-docs.amazon.com/sp-api/docs/lwa-credentials-faq
       type: authentication_guide
+    - title: Rotating your application's LWA credentials
+      url: https://developer-docs.amazon.com/sp-api/docs/rotating-your-apps-lwa-credentials
+      type: authentication_guide
     - title: Usage plans and rate limits
       url: https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api
-      type: other
+      type: rate_limits
 metadataSpecVersion: "1.0"
