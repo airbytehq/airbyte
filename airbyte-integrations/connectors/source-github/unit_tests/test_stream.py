@@ -375,7 +375,10 @@ def test_stargazers_restricted_access_is_ignored_without_retries(status_code, ca
     assert list(read_full_refresh(stream)) == []
     assert requests_mock.call_count == 1
     assert any(
-        "stargazers" in msg.lower() and "repository admins and collaborators" in msg.lower() and "org/public-repo" in msg
+        "stargazers" in msg.lower()
+        and "repository admins and collaborators" in msg.lower()
+        and "org/public-repo" in msg
+        and f"HTTP {status_code}" in msg
         for msg in caplog.messages
     )
     assert all("may not exist" not in msg for msg in caplog.messages)

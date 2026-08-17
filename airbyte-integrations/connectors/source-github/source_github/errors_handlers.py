@@ -152,17 +152,25 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
             ):
                 response_url = response_or_exception.url
                 path_parts = urlparse(response_url).path.strip("/").split("/") if isinstance(response_url, str) else []
-                repository = "/".join(path_parts[1:3]) if len(path_parts) >= 3 and path_parts[0] == "repos" else ""
+                repos_index = path_parts.index("repos") if "repos" in path_parts else -1
+                repository = (
+                    "/".join(path_parts[repos_index + 1 : repos_index + 3])
+                    if repos_index >= 0 and len(path_parts) >= repos_index + 3
+                    else ""
+                )
                 repository_label = f" for repository `{repository}`" if repository else ""
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
                     error_message=(
-                        f"Skipping `{self.stream.name}`{repository_label}: GitHub restricted the "
-                        f"stargazers/watchers listing endpoints to repository admins and collaborators as of "
-                        f"July 2026. This stream will emit no records for repositories the configured token does "
-                        f"not administer or collaborate on. Only aggregate star counts remain available through "
-                        f"GraphQL, which this connector does not currently expose. See "
+                        f"Skipping `{self.stream.name}`{repository_label}: GitHub returned HTTP "
+                        f"{response_or_exception.status_code} for this endpoint. Since June 30, 2026, GitHub "
+                        f"restricts the stargazers/watchers listing endpoints to repository admins and "
+                        f"collaborators, which is the most likely cause when the configured token neither "
+                        f"administers nor collaborates on the repository; a deleted or renamed repository would "
+                        f"also return HTTP 404. This stream will emit no records when the token lacks that access. "
+                        f"Only aggregate star counts remain available through GraphQL, which this connector does "
+                        f"not currently expose. See "
                         f"https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/"
                     ),
                 )
