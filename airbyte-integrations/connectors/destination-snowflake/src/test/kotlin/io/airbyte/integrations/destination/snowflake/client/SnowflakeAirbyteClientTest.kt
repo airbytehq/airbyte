@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
@@ -23,15 +22,21 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import io.mockk.verifyOrder
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -61,25 +66,19 @@ internal class SnowflakeAirbyteClientTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet =
             mockk<ResultSet> {
-                every { next() } returns true andThen false
-                every { getLong(COUNT_TOTAL_ALIAS) } returns 1L
-            }
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
+                every { next() } returns true
+                every { getLong("rows") } returns 1L
             }
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns true
+                every { executeQuery() } returns resultSet
                 every { close() } just runs
             }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
                 every { prepareStatement(any()) } returns preparedStatement
-                every { createStatement() } returns statement
             }
 
         every { dataSource.connection } returns mockConnection
@@ -87,17 +86,18 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(1L, result)
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 1) { mockConnection.close() }
         }
     }
 
     @Test
     fun testCountMissingTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet = mockk<ResultSet> { every { next() } returns false }
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns false
+                every { executeQuery() } returns resultSet
                 every { close() } just runs
             }
         val mockConnection =
@@ -116,25 +116,23 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
-    fun testCountTableNoResults() {
+    fun testCountEmptyTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val resultSet = mockk<ResultSet> { every { next() } returns false }
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getLong("rows") } returns 0L
             }
         val preparedStatement =
             mockk<PreparedStatement> {
                 every { setString(any(), any()) } just runs
-                every { executeQuery().next() } returns true
+                every { executeQuery() } returns resultSet
                 every { close() } just runs
             }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
                 every { prepareStatement(any()) } returns preparedStatement
-                every { createStatement() } returns statement
             }
 
         every { dataSource.connection } returns mockConnection
@@ -142,7 +140,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(0L, result)
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 1) { mockConnection.close() }
         }
     }
 
@@ -255,6 +253,162 @@ internal class SnowflakeAirbyteClientTest {
             verify(exactly = 1) { sqlGenerator.createTable(tableName, any(), true) }
             verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
             verify(exactly = 2) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun `zero-record incremental dedup skips temp DDL merge and drop`() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val tempTableName = TableName(namespace = "namespace", name = "temp")
+        val realTableName = TableName(namespace = "namespace", name = "real")
+
+        runBlocking {
+            client.createTempTable(stream, tempTableName, columnNameMapping, replace = true)
+            client.upsertTable(stream, columnNameMapping, tempTableName, realTableName)
+            client.dropTable(tempTableName)
+        }
+
+        verify(exactly = 0) { sqlGenerator.createTable(any(), any(), any()) }
+        verify(exactly = 0) { sqlGenerator.createSnowflakeStage(any()) }
+        verify(exactly = 0) { sqlGenerator.upsertTable(any(), any(), any()) }
+        verify(exactly = 0) { sqlGenerator.dropTable(any()) }
+        verify(exactly = 0) { dataSource.connection }
+    }
+
+    @Test
+    fun `empty overwrite materializes source and replaces target`() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val tempTableName = TableName(namespace = "namespace", name = "temp")
+        val realTableName = TableName(namespace = "namespace", name = "real")
+        val resultSet =
+            mockk<ResultSet>(relaxed = true) {
+                every { next() } returns true
+                every { getLong("rows") } returns 1L
+            }
+        val preparedStatement =
+            mockk<PreparedStatement>(relaxed = true) {
+                every { executeQuery() } returns resultSet
+            }
+        val statement =
+            mockk<Statement>(relaxed = true) {
+                every { executeQuery(any()) } returns resultSet
+            }
+        val connection =
+            mockk<Connection>(relaxed = true) {
+                every { prepareStatement(any()) } returns preparedStatement
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns connection
+
+        runBlocking {
+            client.createTempTable(stream, tempTableName, columnNameMapping, replace = true)
+            client.overwriteTable(tempTableName, realTableName)
+        }
+
+        verifyOrder {
+            sqlGenerator.createTable(tempTableName, any(), true)
+            sqlGenerator.createSnowflakeStage(tempTableName)
+            sqlGenerator.cloneTableWith(tempTableName, realTableName)
+            sqlGenerator.dropTable(tempTableName)
+        }
+    }
+
+    @Test
+    fun `concurrent puts wait for one complete table and stage initialization`() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val tableName = TableName(namespace = "namespace", name = "temp")
+        val createStarted = CountDownLatch(1)
+        val allowCreateToFinish = CountDownLatch(1)
+        val putAttempted = CountDownLatch(1)
+        val stageReady = AtomicBoolean(false)
+        val resultSet = mockk<ResultSet>(relaxed = true)
+
+        every { sqlGenerator.createTable(tableName, any(), true) } returns "create-table"
+        every { sqlGenerator.createSnowflakeStage(tableName) } returns "create-stage"
+        every { sqlGenerator.putInStage(tableName, "/tmp/one.csv") } returns "put-one"
+        every { sqlGenerator.putInStage(tableName, "/tmp/two.csv") } returns "put-two"
+
+        val statement =
+            mockk<Statement>(relaxed = true) {
+                every { executeQuery(any()) } answers {
+                    when (firstArg<String>()) {
+                        "create-table" -> {
+                            createStarted.countDown()
+                            assertTrue(allowCreateToFinish.await(5, TimeUnit.SECONDS))
+                        }
+                        "create-stage" -> stageReady.set(true)
+                        "put-one", "put-two" -> {
+                            putAttempted.countDown()
+                            assertTrue(stageReady.get(), "PUT executed before stage creation completed")
+                        }
+                    }
+                    resultSet
+                }
+            }
+        val connection =
+            mockk<Connection>(relaxed = true) { every { createStatement() } returns statement }
+        every { dataSource.connection } returns connection
+
+        runBlocking {
+            client.createTempTable(stream, tableName, columnNameMapping, replace = true)
+        }
+
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            val first = executor.submit { client.putInStage(tableName, "/tmp/one.csv") }
+            assertTrue(createStarted.await(5, TimeUnit.SECONDS))
+            val second = executor.submit { client.putInStage(tableName, "/tmp/two.csv") }
+
+            assertFalse(
+                putAttempted.await(250, TimeUnit.MILLISECONDS),
+                "A concurrent PUT ran while stage creation was still in progress",
+            )
+            allowCreateToFinish.countDown()
+            first.get(5, TimeUnit.SECONDS)
+            second.get(5, TimeUnit.SECONDS)
+        } finally {
+            allowCreateToFinish.countDown()
+            executor.shutdownNow()
+        }
+
+        verify(exactly = 1) { sqlGenerator.createTable(tableName, any(), true) }
+        verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
+        verify(exactly = 1) { sqlGenerator.putInStage(tableName, "/tmp/one.csv") }
+        verify(exactly = 1) { sqlGenerator.putInStage(tableName, "/tmp/two.csv") }
+    }
+
+    @Test
+    fun `non-empty dedup materializes deferred merge target before upsert`() {
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val resultSet = mockk<ResultSet>(relaxed = true)
+        val statement =
+            mockk<Statement>(relaxed = true) {
+                every { executeQuery(any()) } returns resultSet
+            }
+        val connection =
+            mockk<Connection>(relaxed = true) { every { createStatement() } returns statement }
+        every { dataSource.connection } returns connection
+
+        runBlocking {
+            client.createTempTable(stream, sourceTableName, columnNameMapping, replace = true)
+            client.putInStage(sourceTableName, "/tmp/data.csv")
+            client.createTempTable(stream, targetTableName, columnNameMapping, replace = true)
+            client.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+        }
+
+        verifyOrder {
+            sqlGenerator.createTable(sourceTableName, any(), true)
+            sqlGenerator.createSnowflakeStage(sourceTableName)
+            sqlGenerator.putInStage(sourceTableName, "/tmp/data.csv")
+            sqlGenerator.createTable(targetTableName, any(), true)
+            sqlGenerator.createSnowflakeStage(targetTableName)
+            sqlGenerator.upsertTable(any(), sourceTableName, targetTableName)
         }
     }
 

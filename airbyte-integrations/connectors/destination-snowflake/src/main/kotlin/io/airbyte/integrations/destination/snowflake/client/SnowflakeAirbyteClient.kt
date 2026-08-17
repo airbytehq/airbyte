@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.component.TableColumns
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
@@ -26,6 +27,7 @@ import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
@@ -44,10 +46,27 @@ class SnowflakeAirbyteClient(
 ) : TableOperationsClient, TableSchemaEvolutionClient {
     private val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 
+    private data class PendingTempTable(
+        val schema: StreamTableSchema,
+        val replace: Boolean,
+    )
+
+    /**
+     * Temporary tables are registered here and materialized by the first write. This avoids
+     * creating a table and stage for a stream that receives no records.
+     *
+     * Each value also acts as that table's initialization lock. It is deliberately removed only
+     * after both CREATE TABLE and CREATE STAGE have completed, so concurrent PUTs cannot race ahead
+     * of stage creation.
+     */
+    private val pendingTempTables = ConcurrentHashMap<TableName, PendingTempTable>()
+
     override suspend fun countTable(tableName: TableName): Long? {
-        if (!tableExists(tableName)) {
-            return null
-        }
+        return getTableRowCount(tableName)
+    }
+
+    /** Used by CHECK, where the exact post-write count is part of the connectivity assertion. */
+    fun exactCountTable(tableName: TableName): Long {
         return dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             statement.use {
@@ -62,7 +81,13 @@ class SnowflakeAirbyteClient(
         }
     }
 
-    override suspend fun tableExists(table: TableName): Boolean =
+    override suspend fun tableExists(table: TableName): Boolean = getTableRowCount(table) != null
+
+    /**
+     * Reads Snowflake's table metadata rather than executing SELECT COUNT(*). Initial status only
+     * needs to distinguish missing, empty, and non-empty tables; it does not need an exact count.
+     */
+    private fun getTableRowCount(table: TableName): Long? =
         dataSource.connection.use { connection ->
             val statement =
                 connection.prepareStatement(
@@ -73,7 +98,10 @@ class SnowflakeAirbyteClient(
                     """.trimIndent()
                 )
             statement.setString(1, table.name)
-            statement.use { it.executeQuery().next() }
+            statement.use {
+                val resultSet = it.executeQuery()
+                if (resultSet.next()) resultSet.getLong("rows") else null
+            }
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
@@ -125,11 +153,23 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        execute(sqlGenerator.createTable(tableName, stream.tableSchema, replace))
-        execute(sqlGenerator.createSnowflakeStage(tableName))
+        createTableAndStage(tableName, stream.tableSchema, replace)
+    }
+
+    override suspend fun createTempTable(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        replace: Boolean
+    ) {
+        pendingTempTables[tableName] = PendingTempTable(stream.tableSchema, replace)
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
+        // Truncate/overwrite modes must still replace the target with an empty table when the
+        // source emits zero records, so materialize the deferred source before overwriting.
+        materializePendingTempTable(sourceTableName)
+
         // Check if the target table exists by trying to count its rows
         val targetExists = countTable(targetTableName) != null
 
@@ -162,6 +202,13 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
+        if (isPendingTempTable(sourceTableName)) {
+            log.info {
+                "Skipping copy from unmaterialized empty temp table ${sourceTableName.toPrettyString()}"
+            }
+            return
+        }
+
         // Get all column names from the mapping (both meta columns and user columns)
         val columnNames = buildSet {
             // Add Airbyte meta columns (using uppercase constants)
@@ -179,10 +226,26 @@ class SnowflakeAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
+        if (isPendingTempTable(sourceTableName)) {
+            log.info {
+                "Skipping upsert from unmaterialized empty temp table ${sourceTableName.toPrettyString()}"
+            }
+            return
+        }
+
+        // Dedup + truncate can upsert into a second deferred temporary table. It must exist before
+        // the MERGE starts whenever the source actually contains records.
+        materializePendingTempTable(targetTableName)
         execute(sqlGenerator.upsertTable(stream.tableSchema, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
+        if (discardPendingTempTable(tableName)) {
+            log.info {
+                "Skipping drop of unmaterialized empty temp table ${tableName.toPrettyString()}"
+            }
+            return
+        }
         execute(sqlGenerator.dropTable(tableName))
     }
 
@@ -191,7 +254,6 @@ class SnowflakeAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        execute(sqlGenerator.createSnowflakeStage(tableName))
         /*
          * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
          * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
@@ -307,7 +369,44 @@ class SnowflakeAirbyteClient(
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String) {
+        materializePendingTempTable(tableName)
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
+    }
+
+    private fun createTableAndStage(
+        tableName: TableName,
+        tableSchema: StreamTableSchema,
+        replace: Boolean,
+    ) {
+        execute(sqlGenerator.createTable(tableName, tableSchema, replace))
+        execute(sqlGenerator.createSnowflakeStage(tableName))
+    }
+
+    /**
+     * Materializes a deferred table exactly once. Callers that arrive during initialization wait
+     * for table and stage creation to finish before continuing.
+     */
+    private fun materializePendingTempTable(tableName: TableName): Boolean {
+        val pending = pendingTempTables[tableName] ?: return false
+        synchronized(pending) {
+            if (pendingTempTables[tableName] !== pending) {
+                return false
+            }
+            createTableAndStage(tableName, pending.schema, pending.replace)
+            pendingTempTables.remove(tableName, pending)
+            return true
+        }
+    }
+
+    /** Waits for in-flight materialization before deciding whether a table is still deferred. */
+    private fun isPendingTempTable(tableName: TableName): Boolean {
+        val pending = pendingTempTables[tableName] ?: return false
+        synchronized(pending) { return pendingTempTables[tableName] === pending }
+    }
+
+    private fun discardPendingTempTable(tableName: TableName): Boolean {
+        val pending = pendingTempTables[tableName] ?: return false
+        synchronized(pending) { return pendingTempTables.remove(tableName, pending) }
     }
 
     fun copyFromStage(tableName: TableName, filename: String, columnNames: List<String>) {
