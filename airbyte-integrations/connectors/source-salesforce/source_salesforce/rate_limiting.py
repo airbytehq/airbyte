@@ -21,6 +21,8 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
 )
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
+
 
 if TYPE_CHECKING:
     from source_salesforce.api import SalesforceTokenProvider
@@ -56,11 +58,6 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
-_AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
-}
-
-
 logger = logging.getLogger("airbyte")
 
 
@@ -107,6 +104,14 @@ class SalesforceErrorHandler(ErrorHandler):
                 if error_code == "INVALID_SESSION_ID":
                     if self._token_provider is not None:
                         self._token_provider.force_refresh()
+                        if self._token_provider.credentials_permanently_failed:
+                            # The session is dead and the grant cannot mint a new one; retrying
+                            # floods the token endpoint from every stream.
+                            return ErrorResolution(
+                                ResponseAction.FAIL,
+                                FailureType.config_error,
+                                AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                            )
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,
@@ -126,8 +131,8 @@ class SalesforceErrorHandler(ErrorHandler):
                     ResponseAction.FAIL,
                     FailureType.config_error,
                     (
-                        _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                        if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
+                        AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
+                        if error_message in AUTHENTICATION_ERROR_MESSAGE_MAPPING
                         else f"An error occurred: {response.content.decode()}"
                     ),
                 )
