@@ -45,6 +45,12 @@ data:
     - title: Granola Enterprise API documentation
       url: https://docs.granola.ai/introduction
       type: api_reference
+    - title: Granola API changelog
+      url: https://docs.granola.ai/api-reference/changelog
+      type: api_release_history
+    - title: Granola API keys and access scopes guide
+      url: https://docs.granola.ai/help-center/sharing/integrations/granola-api
+      type: authentication_guide
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
