@@ -46,6 +46,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 3. On the Set up the source page, select Stripe from the Source type dropdown.
 4. Enter a name for the Stripe connector.
 <!-- /env:oss -->
+<!-- markdownlint-disable MD029 -->
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
@@ -64,7 +65,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
 
-10. (Optional) For **Streams with API Data Retention Validation**, select the streams whose cursor age the connector checks against Stripe's 30-day [Events API retention limit](https://stripe.com/docs/api/events). If a selected stream's cursor is older than 30 days, the connector runs a full refresh for that stream instead of an incremental sync that would miss older changes. By default, no streams are selected, so every stream syncs incrementally regardless of cursor age. For advice on which streams benefit from this check, see [Cursor age validation and automatic full refresh](#cursor-age-validation-and-automatic-full-refresh).
+10. (Optional) For **Streams with API Data Retention Validation**, select the streams whose cursor age the connector checks against Stripe's 30-day [Events API retention limit](https://stripe.com/docs/api/events). If a selected stream's cursor is older than 30 days, the connector runs a full refresh for that stream instead of an incremental sync that would miss older changes. By default, no streams are selected, so the connector never overrides a stream's configured sync mode based on cursor age. For advice on which streams benefit from this check, see [Cursor age validation and automatic full refresh](#cursor-age-validation-and-automatic-full-refresh).
 
 11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
 
@@ -72,6 +73,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 13. Click **Set up source** and wait for the tests to complete.
 
+<!-- markdownlint-enable MD029 -->
 <HideInUI>
 
 ## Supported sync modes
@@ -165,7 +167,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
-This also means incremental sync can't replicate a change that is more than 30 days old. To keep your data current, sync at least once every 30 days.
+For the streams that rely on the Events API — the ones listed below as using the `updated` cursor — this also means incremental sync can't replicate a change that is more than 30 days old. To keep those streams current, sync at least once every 30 days.
 :::
 
 #### Cursor age validation and automatic full refresh
