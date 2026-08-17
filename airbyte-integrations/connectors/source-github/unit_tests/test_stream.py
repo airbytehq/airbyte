@@ -369,7 +369,14 @@ def test_stargazers_restricted_access_is_ignored_without_retries(status_code, ca
     requests_mock.get(
         "https://api.github.com/repos/org/public-repo/stargazers",
         status_code=status_code,
-        json={"message": "Resource not accessible"},
+        json={
+            "message": "Resource not accessible",
+            **(
+                {"documentation_url": "https://docs.github.com/en/rest/activity/starring#list-stargazers"}
+                if status_code == HTTPStatus.FORBIDDEN
+                else {}
+            ),
+        },
     )
 
     assert list(read_full_refresh(stream)) == []
@@ -382,6 +389,24 @@ def test_stargazers_restricted_access_is_ignored_without_retries(status_code, ca
         for msg in caplog.messages
     )
     assert all("may not exist" not in msg for msg in caplog.messages)
+
+
+def test_stargazers_forbidden_without_restriction_marker_fails(requests_mock):
+    args = {"authenticator": None, "repositories": ["org/public-repo"], "page_size_for_large_streams": 30}
+    stream = Stargazers(**args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/org/public-repo/stargazers",
+        status_code=HTTPStatus.FORBIDDEN,
+        json={"message": "Resource not accessible by personal access token"},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+
+    assert requests_mock.call_count == 1
+    assert "GitHub denied access (HTTP 403)" in str(exc_info.value)
+    assert "SAML SSO authorization" in str(exc_info.value)
 
 
 @patch("time.sleep")

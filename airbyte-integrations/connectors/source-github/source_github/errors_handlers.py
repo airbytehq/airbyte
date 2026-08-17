@@ -89,6 +89,24 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
     return False
 
 
+def is_stargazers_access_restriction(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
+    if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.FORBIDDEN:
+        try:
+            response_data = response_or_exception.json()
+        except ValueError:
+            logger.warning(
+                "is_stargazers_access_restriction received non-JSON 403 response (first 50 chars: %r).",
+                response_or_exception.text[:50],
+            )
+            return False
+        documentation_url = response_data.get("documentation_url") if isinstance(response_data, dict) else None
+        if not isinstance(documentation_url, str):
+            return False
+        documentation_url = documentation_url.lower()
+        return "/rest/activity/starring" in documentation_url or "/rest/activity/watching" in documentation_url
+    return False
+
+
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
     def __init__(self, stream: GithubStreamProtocol, **kwargs):
         self.stream = stream
@@ -150,9 +168,10 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     ),
                 )
 
-            if self.stream.requires_repo_admin_access and response_or_exception.status_code in (
-                requests.codes.NOT_FOUND,
-                requests.codes.FORBIDDEN,
+            status_code = response_or_exception.status_code
+            if self.stream.requires_repo_admin_access and (
+                status_code == requests.codes.NOT_FOUND
+                or (status_code == requests.codes.FORBIDDEN and is_stargazers_access_restriction(response_or_exception))
             ):
                 response_url = response_or_exception.url
                 path_parts = urlparse(response_url).path.strip("/").split("/") if isinstance(response_url, str) else []
@@ -163,16 +182,19 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     else ""
                 )
                 repository_label = f" for repository `{repository}`" if repository else ""
+                deleted_repository_message = (
+                    "; a deleted or renamed repository would also return HTTP 404." if status_code == requests.codes.NOT_FOUND else "."
+                )
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
                     error_message=(
                         f"Skipping `{self.stream.name}`{repository_label}: GitHub returned HTTP "
-                        f"{response_or_exception.status_code} for this endpoint. Since June 30, 2026, GitHub "
+                        f"{status_code} for this endpoint. Since June 30, 2026, GitHub "
                         f"restricts the stargazers/watchers listing endpoints to repository admins and "
                         f"collaborators, which is the most likely cause when the configured token neither "
-                        f"administers nor collaborates on the repository; a deleted or renamed repository would "
-                        f"also return HTTP 404. This stream will emit no records when the token lacks that access. "
+                        f"administers nor collaborates on the repository{deleted_repository_message} This stream "
+                        f"will emit no records when the token lacks that access. "
                         f"Only aggregate star counts remain available through GraphQL, which this connector does "
                         f"not currently expose. See "
                         f"https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/"
