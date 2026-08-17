@@ -1,25 +1,36 @@
 # Zendesk Sunshine
 
-## Sync overview
+This source syncs data from the [Zendesk Sunshine API](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/custom-objects-api/), which Zendesk now calls the Legacy Custom Objects API. It reads the custom object types, records, and relationships that live under the `/api/sunshine/` endpoints.
 
-The Zendesk Sunshine source supports Full Refresh and Incremental syncs.
+:::warning End of life
 
-This source syncs data from the [Zendesk Sunshine API](https://developer.zendesk.com/documentation/custom-data/custom-objects/custom-objects-handbook/), which provides access to custom objects and relationships in your Zendesk account.
+Zendesk removed legacy custom objects on July 27, 2026. The legacy APIs, the admin interface, and legacy object records are no longer available unless your account has a one-time extension from Zendesk. See Zendesk's [removal announcement](https://support.zendesk.com/hc/en-us/articles/9156194392730-Announcing-the-removal-of-legacy-custom-objects).
 
-### Output schema
+This connector only reads the legacy API. It can't read the [current custom objects](https://developer.zendesk.com/api-reference/custom-data/introduction/), which use a different data model and incompatible endpoints. Migrating your data to the new custom objects experience ends what this source can sync.
 
-This Source is capable of syncing the following core Streams:
+:::
 
-- [ObjectTypes](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/resource_types/)
-- [ObjectRecords](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/resources/)
-- [RelationshipTypes](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationship_types/)
-- [RelationshipRecords](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationships/)
-- [ObjectTypePolicies](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/permissions/)
-- [Jobs](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/jobs/)
+## Supported streams
 
-  This stream is currently not available because it stores data temporary.
+This source syncs the following streams:
 
-- [Limits](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/limits/)
+| Stream | Sync mode | Description |
+| :----- | :-------- | :---------- |
+| [`limits`](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/limits/) | Full refresh | Your account's legacy custom object limits and current usage. |
+| [`object_types`](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/resource_types/) | Full refresh | The legacy object types defined in your account, including each type's schema. |
+| [`object_records`](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/resources/) | Incremental | The records of each legacy object type. |
+| [`object_type_policies`](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/permissions/) | Full refresh | The read and write permissions for each legacy object type. |
+| [`relationship_types`](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationship_types/) | Full refresh | The relationship types defined in your account. |
+| [`relationship_records`](https://developer.zendesk.com/api-reference/custom-data/custom-objects-api/relationships/) | Full refresh | The relationship records for each relationship type. |
+
+Four of these streams depend on another stream to know what to request:
+
+- `object_records` and `object_type_policies` iterate over every type returned by `object_types`.
+- `relationship_records` iterates over every type returned by `relationship_types`.
+
+If your account has no legacy object types or relationship types, these streams sync no records even though the sync succeeds.
+
+`object_records` is the only incremental stream. It uses `updated_at` as its cursor and only requests records updated after your configured start date. The other streams re-read everything on each sync, so your start date doesn't affect them.
 
 ### Data type mapping
 
@@ -30,63 +41,57 @@ This Source is capable of syncing the following core Streams:
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 
-### Features
-
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
-
 ### Performance considerations
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/)
+The connector is restricted by Zendesk [API rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/). The connector automatically retries requests that receive a `429 Too Many Requests` response using the `Retry-After` header. Under normal usage, you should not encounter rate limit issues. If you do, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
-The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Because `object_records`, `object_type_policies`, and `relationship_records` make at least one request per type, sync duration grows with the number of legacy object and relationship types in your account, not just the number of records.
 
-## Getting started
+## Prerequisites
 
-### Requirements
-
-- A Zendesk account with Custom Objects enabled
-- Your Zendesk subdomain (the part before `.zendesk.com` in your Zendesk URL)
+- A Zendesk account with legacy custom objects still enabled. Legacy custom objects are an Enterprise plan feature, and Zendesk only left them enabled for accounts that used them before September 2023. You can't turn them on now. See Zendesk's [getting started with legacy custom objects](https://developer.zendesk.com/documentation/custom-data/custom-objects/getting-started-with-custom-objects/).
+- Your Zendesk subdomain (the part before `.zendesk.com` in your Zendesk URL).
+- A start date for incremental syncs, in the format `YYYY-MM-DDT00:00:00Z`.
 - One of the following authentication methods:
-  - **OAuth2.0** (recommended for Airbyte Cloud): Client ID, Client Secret, and authorization through Airbyte's OAuth flow
-  - **API Token** (recommended for Airbyte Open Source): Your Zendesk email address and an API token
-  - **OAuth2.0 (Legacy)**: A manually generated OAuth access token
+  - **OAuth2.0** (recommended for Airbyte Cloud): Client ID, Client Secret, and authorization through Airbyte's OAuth flow.
+  - **API Token** (recommended for Airbyte Open Source): Your Zendesk email address and an API token.
+  - **OAuth2.0 (Legacy)**: A manually generated OAuth access token.
 
-### Setup guide
+## Setup guide
 
-#### Step 1: Enable Custom Objects
-
-Before using this connector, ensure Custom Objects are enabled in your Zendesk account. Follow Zendesk's [guide to enabling Custom Objects](https://developer.zendesk.com/documentation/custom-data/custom-objects/getting-started-with-custom-objects/#enabling-custom-objects).
-
-#### Step 2: Choose an authentication method
+### Authentication
 
 This connector supports three authentication methods:
 
-##### OAuth2.0 (recommended for Airbyte Cloud)
+#### OAuth2.0 (recommended for Airbyte Cloud)
 
-This is the recommended method for Airbyte Cloud users. When you set up the connector in Airbyte Cloud, you'll be redirected to Zendesk to authorize the connection. This method uses refresh tokens to automatically maintain access without requiring you to manually regenerate tokens.
+When you set up the connector in Airbyte Cloud, you'll be redirected to Zendesk to authorize the connection. Airbyte requests the `read` scope. This method uses refresh tokens to automatically maintain access without requiring you to manually regenerate tokens.
 
-Zendesk uses rotating refresh tokens, meaning each time the connector refreshes its access token, it receives a new refresh token and the previous one is invalidated. The connector handles this automatically.
+Zendesk uses rotating refresh tokens, meaning each time the connector refreshes its access token, it receives a new refresh token and the previous one is invalidated. The connector handles this automatically. Airbyte requests access tokens with a 48-hour lifetime and refreshes them only after they expire.
 
-##### API Token (recommended for Airbyte Open Source)
+If a sync fails because the refresh token is invalid, re-authenticate the source in Airbyte to get a new token pair.
+
+#### API Token (recommended for Airbyte Open Source)
 
 To use API token authentication:
 
 1. In Zendesk, go to **Admin Center** > **Apps and integrations** > **APIs** > **Zendesk API**.
 2. Enable token access if it isn't already enabled.
 3. Click **Add API token**, give it a description, and click **Save**.
-4. Copy the token value (it's only shown once).
+4. Copy the token value. Zendesk only displays it once.
 5. In Airbyte, enter your Zendesk email address and the API token.
 
 For more information, see Zendesk's [API token documentation](https://developer.zendesk.com/api-reference/ticketing/introduction/#api-token).
 
-##### OAuth2.0 (Legacy)
+#### OAuth2.0 (Legacy)
 
 This method uses a manually generated OAuth access token. It's provided for backward compatibility with existing connections. For new connections, use the OAuth2.0 method instead, which handles token refresh automatically.
 
 To generate a legacy access token, follow Zendesk's [OAuth documentation](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -95,6 +100,22 @@ To generate a legacy access token, follow Zendesk's [OAuth documentation](https:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.18 | 2026-08-11 | [83815](https://github.com/airbytehq/airbyte/pull/83815) | Persist OAuth token expiry on initial authentication so the first sync no longer refreshes and rotates away the single-use refresh token |
+| 0.4.17 | 2026-08-11 | [84171](https://github.com/airbytehq/airbyte/pull/84171) | Update dependencies |
+| 0.4.16 | 2026-08-04 | [83672](https://github.com/airbytehq/airbyte/pull/83672) | Update dependencies |
+| 0.4.15 | 2026-07-28 | [83184](https://github.com/airbytehq/airbyte/pull/83184) | Update dependencies |
+| 0.4.14 | 2026-07-21 | [82657](https://github.com/airbytehq/airbyte/pull/82657) | Update dependencies |
+| 0.4.13 | 2026-07-14 | [82071](https://github.com/airbytehq/airbyte/pull/82071) | Update dependencies |
+| 0.4.12 | 2026-06-30 | [81325](https://github.com/airbytehq/airbyte/pull/81325) | Update dependencies |
+| 0.4.11 | 2026-06-23 | [80707](https://github.com/airbytehq/airbyte/pull/80707) | Update dependencies |
+| 0.4.10 | 2026-06-16 | [80099](https://github.com/airbytehq/airbyte/pull/80099) | Update dependencies |
+| 0.4.9 | 2026-06-09 | [79571](https://github.com/airbytehq/airbyte/pull/79571) | Update dependencies |
+| 0.4.8 | 2026-06-02 | [79055](https://github.com/airbytehq/airbyte/pull/79055) | Update dependencies |
+| 0.4.7 | 2026-04-28 | [77479](https://github.com/airbytehq/airbyte/pull/77479) | Update dependencies |
+| 0.4.6 | 2026-04-21 | [76833](https://github.com/airbytehq/airbyte/pull/76833) | Update dependencies |
+| 0.4.5 | 2026-03-31 | [75875](https://github.com/airbytehq/airbyte/pull/75875) | Update dependencies |
+| 0.4.4 | 2026-03-17 | [74393](https://github.com/airbytehq/airbyte/pull/74393) | Migrate to scopes object array format |
+| 0.4.3 | 2026-03-17 | [75115](https://github.com/airbytehq/airbyte/pull/75115) | Update dependencies |
 | 0.4.2 | 2026-02-24 | [73539](https://github.com/airbytehq/airbyte/pull/73539) | Update dependencies |
 | 0.4.1 | 2026-02-10 | [72608](https://github.com/airbytehq/airbyte/pull/72608) | Update dependencies |
 | 0.4.0 | 2026-02-03 | [71856](https://github.com/airbytehq/airbyte/pull/71856) | Add OAuth2.0 with refresh token support; Upgrade CDK version to 7.8.1 |

@@ -1040,11 +1040,35 @@ spec:
           According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Amplitude documentation</a>, grouping by `Country` is optional. If you face issues fetching the stream or checking the connection please set this field to `False`.
         default: true
 
-# Amplitude API rate limits:
-# - Dashboard REST API: 5 concurrent requests, 108,000 cost/hour
-# - Export API: No explicit rate limits documented, but large exports may timeout
-# See: https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits
-# Using conservative limits to avoid rate limiting issues
+# Amplitude API rate limits (see https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits):
+#
+# Dashboard REST API has three limits:
+#   1. Concurrent requests: 5 simultaneous requests across all Dashboard REST API endpoints.
+#      Enforced via concurrency_level below (CDK doesn't support per-endpoint concurrency in api_budget).
+#   2. Burst limit: 1,000 cost per 5-minute window.
+#      Note: Amplitude docs label this "Concurrent Limit" but it functions as a short-term rate limit
+#      (cost budget over a time window), not a true concurrency constraint.
+#   3. Hourly limit: 108,000 cost per hour.
+#
+# Cost formula: (# of days) * (# of conditions) * (query type cost)
+#
+# Export API: No explicit rate limits documented, but large exports may timeout.
+# Chart Annotations & Behavioral Cohorts APIs: No separate rate limits documented.
+#
+# Per-stream cost estimates (based on connector's slice sizes and query parameters):
+#   /2/sessions/average (average_session_length): 15 days * 1 condition * 4 (User Sessions) = 60 cost/request
+#   /2/users (active_users, group_by=country): 30 days * 4 (group-by) * 1 = 120 cost/request
+#   /2/users (active_users, no group-by): 30 days * 1 * 1 = 30 cost/request
+#   /2/events/list (events_list): full refresh, no date range, cost = 1
+#
+# Note: /2/events/list is not given a specific policy because its cost is trivially low (1 per request)
+# and it only makes a single request per sync (full refresh, no date slicing).
+# Other endpoints (annotations, cohorts, export) have no documented rate limits from Amplitude.
+#
+# Both endpoints share Amplitude's budget. With CDK v7.14.0+ weight-based rate limiting,
+# each matcher specifies its per-request weight (cost), and the policy limits are set to
+# Amplitude's actual budgets. The CDK deducts the matched weight from the shared budget
+# on each request, accurately tracking cost consumption across endpoints.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 5
@@ -1052,9 +1076,25 @@ concurrency_level:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: FixedWindowCallRatePolicy
-      period: PT1M
-      # Conservative limit based on Amplitude's concurrent request limit
-      # Amplitude allows 5 concurrent requests for Dashboard REST API
-      call_limit: 60
-      matchers: []
+    # Shared Dashboard REST API budget using Amplitude's actual cost limits.
+    # Each matcher specifies a weight equal to the per-request cost for that endpoint.
+    # The CDK deducts the matched weight from the shared budget on each request.
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 108000
+          interval: PT1H
+        - limit: 1000
+          interval: PT5M
+      matchers:
+        # /2/sessions/average: 15 days * 1 condition * 4 (User Sessions query type) = 60 cost/request
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "/2/sessions/average"
+          weight: 60
+        # /2/users: cost depends on active_users_group_by_country config:
+        #   group_by=true (default):  30 days * 4 (group-by segments) * 1 = 120 cost/request
+        #   group_by=false:           30 days * 1 * 1 = 30 cost/request
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "/2/users"
+          weight: "{{ 120 if config.get('active_users_group_by_country', true) else 30 }}"

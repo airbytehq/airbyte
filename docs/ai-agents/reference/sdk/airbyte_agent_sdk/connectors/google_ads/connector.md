@@ -1,0 +1,796 @@
+---
+id: airbyte_agent_sdk-connectors-google_ads-connector
+title: airbyte_agent_sdk.connectors.google_ads.connector
+---
+
+Module airbyte_agent_sdk.connectors.google_ads.connector
+========================================================
+Google-Ads connector.
+
+Classes
+-------
+
+<a id="AccessibleCustomersQuery"></a>
+
+`AccessibleCustomersQuery(connector: GoogleAdsConnector)`
+:   Query class for AccessibleCustomers entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResult[list[dict[str, Any]]]`
+    :   Returns resource names of customers directly accessible by the user authenticating the call. No customer_id is required for this endpoint.
+        
+        Returns:
+            AccessibleCustomersListResult
+
+<a id="AccountsQuery"></a>
+
+`AccountsQuery(connector: GoogleAdsConnector)`
+:   Query class for Accounts entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AccountsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AccountsSearchData]`
+    :   Search accounts records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AccountsSearchFilter):
+        - customer_auto_tagging_enabled: Whether auto-tagging is enabled for the account
+        - customer_call_reporting_setting_call_conversion_action: Call conversion action resource name
+        - customer_call_reporting_setting_call_conversion_reporting_enabled: Whether call conversion reporting is enabled
+        - customer_call_reporting_setting_call_reporting_enabled: Whether call reporting is enabled
+        - customer_conversion_tracking_setting_conversion_tracking_id: Conversion tracking ID
+        - customer_conversion_tracking_setting_cross_account_conversion_tracking_id: Cross-account conversion tracking ID
+        - customer_currency_code: Currency code for the account (e.g., USD)
+        - customer_descriptive_name: Descriptive name of the customer account
+        - customer_final_url_suffix: URL suffix appended to final URLs
+        - customer_has_partners_badge: Whether the account has a Google Partners badge
+        - customer_id: Unique customer account ID
+        - customer_manager: Whether this is a manager (MCC) account
+        - customer_optimization_score: Optimization score for the account (0.0 to 1.0)
+        - customer_optimization_score_weight: Weight of the optimization score
+        - customer_pay_per_conversion_eligibility_failure_reasons: Reasons why pay-per-conversion is not eligible
+        - customer_remarketing_setting_google_global_site_tag: Google global site tag snippet
+        - customer_resource_name: Resource name of the customer
+        - customer_test_account: Whether this is a test account
+        - customer_time_zone: Time zone of the account
+        - customer_tracking_url_template: Tracking URL template for the account
+        - segments_date: Date segment for the report row
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AccountsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
+    :   Retrieves customer account details using GAQL query.
+        
+        Args:
+            query: Google Ads Query Language (GAQL) query
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AccountsListResult
+
+<a id="AdGroupAdLabelsQuery"></a>
+
+`AdGroupAdLabelsQuery(connector: GoogleAdsConnector)`
+:   Query class for AdGroupAdLabels entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AdGroupAdLabelsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupAdLabelsSearchData]`
+    :   Search ad_group_ad_labels records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AdGroupAdLabelsSearchFilter):
+        - ad_group_ad_ad_id: Ad ID
+        - ad_group_ad_label_resource_name: Resource name of the ad group ad label
+        - label_id: Label ID
+        - label_name: Label name
+        - label_resource_name: Resource name of the label
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AdGroupAdLabelsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupAdLabel], AdGroupAdLabelsListResultMeta]`
+    :   Retrieves ad group ad label associations using GAQL query.
+        
+        Args:
+            query: GAQL query for ad group ad labels
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdGroupAdLabelsListResult
+
+<a id="AdGroupAdsQuery"></a>
+
+`AdGroupAdsQuery(connector: GoogleAdsConnector)`
+:   Query class for AdGroupAds entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AdGroupAdsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupAdsSearchData]`
+    :   Search ad_group_ads records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AdGroupAdsSearchFilter):
+        - ad_group_id: Parent ad group ID
+        - ad_group_ad_ad_id: Ad ID
+        - ad_group_ad_ad_name: Ad name
+        - ad_group_ad_ad_type: Ad type
+        - ad_group_ad_status: Ad group ad status (ENABLED, PAUSED, REMOVED)
+        - ad_group_ad_ad_strength: Ad strength rating
+        - ad_group_ad_ad_display_url: Display URL of the ad
+        - ad_group_ad_ad_final_urls: Final URLs for the ad
+        - ad_group_ad_ad_final_mobile_urls: Final mobile URLs for the ad
+        - ad_group_ad_ad_final_url_suffix: Final URL suffix
+        - ad_group_ad_ad_tracking_url_template: Tracking URL template
+        - ad_group_ad_ad_resource_name: Resource name of the ad
+        - ad_group_ad_ad_group: Ad group resource name
+        - ad_group_ad_resource_name: Resource name of the ad group ad
+        - ad_group_ad_labels: Labels applied to the ad group ad
+        - ad_group_ad_policy_summary_approval_status: Policy approval status
+        - ad_group_ad_policy_summary_review_status: Policy review status
+        - segments_date: Date segment for the report row
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AdGroupAdsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupAd], AdGroupAdsListResultMeta]`
+    :   Retrieves ad group ad data using GAQL query.
+        
+        Args:
+            query: GAQL query for ad group ads
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdGroupAdsListResult
+
+<a id="AdGroupLabelsQuery"></a>
+
+`AdGroupLabelsQuery(connector: GoogleAdsConnector)`
+:   Query class for AdGroupLabels entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AdGroupLabelsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupLabelsSearchData]`
+    :   Search ad_group_labels records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AdGroupLabelsSearchFilter):
+        - ad_group_id: Ad group ID
+        - ad_group_label_resource_name: Resource name of the ad group label
+        - label_id: Label ID
+        - label_name: Label name
+        - label_resource_name: Resource name of the label
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AdGroupLabelsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, operations: list[AdGroupLabelsCreateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.AdGroupLabelMutateResponse`
+    :   Creates an ad group-label association, applying an existing label to an ad group for organization and filtering.
+        
+        Args:
+            operations: List of ad group label operations to perform
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdGroupLabelMutateResponse
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupLabel], AdGroupLabelsListResultMeta]`
+    :   Retrieves ad group label associations using GAQL query.
+        
+        Args:
+            query: GAQL query for ad group labels
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdGroupLabelsListResult
+
+<a id="AdGroupsQuery"></a>
+
+`AdGroupsQuery(connector: GoogleAdsConnector)`
+:   Query class for AdGroups entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: AdGroupsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupsSearchData]`
+    :   Search ad_groups records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (AdGroupsSearchFilter):
+        - campaign_id: Parent campaign ID
+        - ad_group_id: Ad group ID
+        - ad_group_name: Ad group name
+        - ad_group_status: Ad group status (ENABLED, PAUSED, REMOVED)
+        - ad_group_type: Ad group type
+        - ad_group_ad_rotation_mode: Ad rotation mode
+        - ad_group_base_ad_group: Base ad group resource name
+        - ad_group_campaign: Parent campaign resource name
+        - ad_group_cpc_bid_micros: CPC bid in micros
+        - ad_group_cpm_bid_micros: CPM bid in micros
+        - ad_group_cpv_bid_micros: CPV bid in micros
+        - ad_group_effective_target_cpa_micros: Effective target CPA in micros
+        - ad_group_effective_target_cpa_source: Source of the effective target CPA
+        - ad_group_effective_target_roas: Effective target ROAS
+        - ad_group_effective_target_roas_source: Source of the effective target ROAS
+        - ad_group_labels: Labels applied to the ad group
+        - ad_group_resource_name: Resource name of the ad group
+        - ad_group_target_cpa_micros: Target CPA in micros
+        - ad_group_target_roas: Target ROAS
+        - ad_group_tracking_url_template: Tracking URL template
+        - metrics_cost_micros: Cost in micros
+        - segments_date: Date segment for the report row
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            AdGroupsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroup], AdGroupsListResultMeta]`
+    :   Retrieves ad group data using GAQL query.
+        
+        Args:
+            query: GAQL query for ad groups
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdGroupsListResult
+
+    `update(self, operations: list[AdGroupsUpdateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.AdGroupMutateResponse`
+    :   Updates ad group properties such as status (enable/pause), name, or bid amounts using the Google Ads AdGroupService mutate endpoint.
+        
+        Args:
+            operations: List of ad group operations to perform
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            AdGroupMutateResponse
+
+<a id="CampaignLabelsQuery"></a>
+
+`CampaignLabelsQuery(connector: GoogleAdsConnector)`
+:   Query class for CampaignLabels entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: CampaignLabelsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignLabelsSearchData]`
+    :   Search campaign_labels records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CampaignLabelsSearchFilter):
+        - campaign_id: Campaign ID
+        - campaign_label_resource_name: Resource name of the campaign label
+        - label_id: Label ID
+        - label_name: Label name
+        - label_resource_name: Resource name of the label
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CampaignLabelsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `create(self, operations: list[CampaignLabelsCreateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.CampaignLabelMutateResponse`
+    :   Creates a campaign-label association, applying an existing label to a campaign for organization and filtering.
+        
+        Args:
+            operations: List of campaign label operations to perform
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            CampaignLabelMutateResponse
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[CampaignLabel], CampaignLabelsListResultMeta]`
+    :   Retrieves campaign label associations using GAQL query.
+        
+        Args:
+            query: GAQL query for campaign labels
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            CampaignLabelsListResult
+
+<a id="CampaignsQuery"></a>
+
+`CampaignsQuery(connector: GoogleAdsConnector)`
+:   Query class for Campaigns entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: CampaignsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignsSearchData]`
+    :   Search campaigns records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (CampaignsSearchFilter):
+        - campaign_id: Campaign ID
+        - campaign_name: Campaign name
+        - campaign_status: Campaign status (ENABLED, PAUSED, REMOVED)
+        - campaign_advertising_channel_type: Advertising channel type (SEARCH, DISPLAY, etc.)
+        - campaign_advertising_channel_sub_type: Advertising channel sub-type
+        - campaign_bidding_strategy: Bidding strategy resource name
+        - campaign_bidding_strategy_type: Bidding strategy type
+        - campaign_campaign_budget: Campaign budget resource name
+        - campaign_budget_amount_micros: Campaign budget amount in micros
+        - campaign_start_date_time: Campaign start date
+        - campaign_end_date_time: Campaign end date
+        - campaign_serving_status: Campaign serving status
+        - campaign_resource_name: Resource name of the campaign
+        - campaign_labels: Labels applied to the campaign
+        - campaign_network_settings_target_google_search: Whether targeting Google Search
+        - campaign_network_settings_target_search_network: Whether targeting search network
+        - campaign_network_settings_target_content_network: Whether targeting content network
+        - campaign_network_settings_target_partner_search_network: Whether targeting partner search network
+        - metrics_clicks: Number of clicks
+        - metrics_ctr: Click-through rate
+        - metrics_conversions: Number of conversions
+        - metrics_conversions_value: Total conversions value
+        - metrics_cost_micros: Cost in micros
+        - metrics_impressions: Number of impressions
+        - metrics_average_cpc: Average cost per click
+        - metrics_average_cpm: Average cost per thousand impressions
+        - metrics_interactions: Number of interactions
+        - segments_date: Date segment for the report row
+        - segments_hour: Hour segment
+        - segments_ad_network_type: Ad network type segment
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            CampaignsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
+    :   Retrieves campaign data using GAQL query.
+        
+        Args:
+            query: GAQL query for campaigns
+            page_token: Token for pagination
+            page_size: Number of results per page (max 10000)
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            CampaignsListResult
+
+    `update(self, operations: list[CampaignsUpdateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.CampaignMutateResponse`
+    :   Updates campaign properties such as status (enable/pause), name, or other mutable fields using the Google Ads CampaignService mutate endpoint.
+        
+        Args:
+            operations: List of campaign operations to perform
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            CampaignMutateResponse
+
+<a id="GoogleAdsConnector"></a>
+
+`GoogleAdsConnector(auth_config: GoogleAdsAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
+:   Type-safe Google-Ads API connector.
+    
+    Auto-generated from OpenAPI specification with full type safety.
+    
+    Initialize a new google-ads connector instance.
+    
+    Supports both local and hosted execution modes:
+    - Local mode: Provide connector-specific auth config (e.g., GoogleAdsAuthConfig)
+    - Hosted mode: Provide `AirbyteAuthConfig` with client credentials and either `connector_id` or `workspace_name`
+    
+    Args:
+        auth_config: Either connector-specific auth config for local mode, or AirbyteAuthConfig for hosted mode
+        on_token_refresh: Optional callback for OAuth2 token refresh persistence.
+            Called with new_tokens dict when tokens are refreshed. Can be sync or async.
+            Example: lambda tokens: save_to_database(tokens)
+    Examples:
+        # Local mode (direct API calls)
+        connector = GoogleAdsConnector(auth_config=GoogleAdsAuthConfig(client_id="...", client_secret="...", refresh_token="...", developer_token="..."))
+        # Hosted mode with explicit connector_id (no lookup needed)
+        connector = GoogleAdsConnector(
+            auth_config=AirbyteAuthConfig(
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789",
+                connector_id="existing-source-uuid"
+            )
+        )
+    
+        # Hosted mode with lookup by workspace_name
+        connector = GoogleAdsConnector(
+            auth_config=AirbyteAuthConfig(
+                workspace_name="user-123",
+                organization_id="00000000-0000-0000-0000-000000000123",
+                airbyte_client_id="client_abc123",
+                airbyte_client_secret="secret_xyz789"
+            )
+        )
+
+    ### Class variables
+
+    `connector_name`
+    :   The type of the None singleton.
+
+    `connector_version`
+    :   The type of the None singleton.
+
+    `sdk_version`
+    :   The type of the None singleton.
+
+    ### Static methods
+
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
+        
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
+        
+        Usage:
+            connector = GoogleAdsConnector(...)
+        
+            @GoogleAdsConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
+        
+            @GoogleAdsConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @GoogleAdsConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
+        
+        Args:
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = GoogleAdsConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @GoogleAdsConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @GoogleAdsConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @GoogleAdsConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
+                import in order. Explicit always wins.
+            internal_retries: How many transient runtime failures (429/5xx, network,
+                timeout) to retry silently before surfacing. Default 0. Forwarded to
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
+                further restricting which retryable errors are safe for this specific
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
+
+    ### Instance variables
+
+    `connector_id: str | None`
+    :   Get the connector/source ID (only available in hosted mode).
+        
+        Returns:
+            The connector ID if in hosted mode, None if in local mode.
+
+    ### Methods
+
+    `check(self) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsCheckResult`
+    :   Perform a health check to verify connectivity and credentials.
+        
+        Executes a lightweight list operation (limit=1) to validate that
+        the connector can communicate with the API and credentials are valid.
+        
+        Returns:
+            GoogleAdsCheckResult with status ("healthy" or "unhealthy") and optional error message
+        
+        Example:
+            result = await connector.check()
+            if result.status == "healthy":
+                print("Connection verified!")
+            else:
+                print(f"Check failed: \{result.error\}")
+
+    `close(self)`
+    :   Close the connector and release resources.
+
+    `entity_schema(self, entity: str) ‑> dict[str, typing.Any] | None`
+    :   Get the JSON schema for an entity.
+        
+        Args:
+            entity: Entity name (e.g., "contacts", "companies")
+        
+        Returns:
+            JSON schema dict describing the entity structure, or None if not found.
+        
+        Example:
+            schema = connector.entity_schema("contacts")
+            if schema:
+                print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
+
+    `execute(self, entity: str, action: "Literal['list', 'update', 'create', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    :   Execute an entity operation with full type safety.
+        
+        This is the recommended interface for blessed connectors as it:
+        - Uses the same signature as non-blessed connectors
+        - Provides full IDE autocomplete for entity/action/params
+        - Makes migration from generic to blessed connectors seamless
+        
+        Args:
+            entity: Entity name (e.g., "customers")
+            action: Operation action (e.g., "create", "get", "list")
+            params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
+        
+        Returns:
+            Typed response based on the operation
+        
+        Example:
+            customer = await connector.execute(
+                entity="customers",
+                action="get",
+                params=\{"id": "cus_123"\}
+            )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
+    `list_entities(self) ‑> list[dict[str, typing.Any]]`
+    :   Get structured data about available entities, actions, and parameters.
+        
+        Returns a list of entity descriptions with:
+        - entity_name: Name of the entity (e.g., "contacts", "deals")
+        - description: Entity description from the first endpoint
+        - available_actions: List of actions (e.g., ["list", "get", "create"])
+        - parameters: Dict mapping action -> list of parameter dicts
+        
+        Example:
+            entities = connector.list_entities()
+            for entity in entities:
+                print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
+<a id="LabelsQuery"></a>
+
+`LabelsQuery(connector: GoogleAdsConnector)`
+:   Query class for Labels entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, operations: list[LabelsCreateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.LabelMutateResponse`
+    :   Creates a new label that can be applied to campaigns, ad groups, or ads for organization and reporting purposes.
+        
+        Args:
+            operations: List of label operations to perform
+            customer_id: Google Ads customer ID (10 digits, no dashes)
+            **kwargs: Additional parameters
+        
+        Returns:
+            LabelMutateResponse

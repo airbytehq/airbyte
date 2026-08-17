@@ -5,6 +5,10 @@ up-to-date with the latest version of the CDK. The doc is hidden from the docs s
 
 The changelog below is automatically updated by the `bump_version` command as part of the Airbyte CDK publish flow.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
