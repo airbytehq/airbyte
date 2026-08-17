@@ -19,6 +19,12 @@ def _evaluate(expression, config):
     return int(InterpolatedString.create(expression, parameters={}).eval(config))
 
 
+def _default_rate_limit_expression(manifest):
+    default_policies = [policy for policy in manifest["api_budget"]["policies"] if policy["matchers"] == []]
+    assert len(default_policies) == 1
+    return default_policies[0]["rates"][0]["limit"]
+
+
 @pytest.mark.parametrize(
     ("client_secret", "expected_concurrency", "expected_rate_limit"),
     [
@@ -33,7 +39,7 @@ def test_manifest_uses_key_mode_for_default_concurrency_and_rate_limit(client_se
     config = {"client_secret": client_secret}
 
     assert _evaluate(manifest["concurrency_level"]["default_concurrency"], config) == expected_concurrency
-    rate_limit_expression = manifest["api_budget"]["policies"][1]["rates"][0]["limit"]
+    rate_limit_expression = _default_rate_limit_expression(manifest)
     assert _evaluate(rate_limit_expression, config) == expected_rate_limit
 
 
@@ -42,5 +48,5 @@ def test_manifest_honors_explicit_concurrency_and_rate_limit():
     config = {"client_secret": "rk_live_x", "num_workers": 3, "call_rate_limit": 7}
 
     assert _evaluate(manifest["concurrency_level"]["default_concurrency"], config) == 3
-    rate_limit_expression = manifest["api_budget"]["policies"][1]["rates"][0]["limit"]
+    rate_limit_expression = _default_rate_limit_expression(manifest)
     assert _evaluate(rate_limit_expression, config) == 7

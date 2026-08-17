@@ -2052,7 +2052,7 @@ api_budget:
         # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
         # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
         # Sandbox keys contain '_test_' ('sk_test_' secret keys and 'rk_test_' restricted keys),
-        # this is how we check which limit to use if live or sandbox account.
+        # the '_test_' segment determines whether the account is sandbox or live.
         - limit: "{{ config.get('call_rate_limit', 25 if '_test_' in config['client_secret'] else 100) }}"
           interval: PT1S
       matchers: []
