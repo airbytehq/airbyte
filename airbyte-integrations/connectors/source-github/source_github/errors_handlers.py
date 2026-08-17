@@ -3,20 +3,17 @@
 #
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union
+from typing import Optional, Union
 from urllib.parse import urlparse
 
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 from . import constants
-
-
-if TYPE_CHECKING:
-    from .streams import GithubStreamABC
 
 
 logger = logging.getLogger("airbyte")
@@ -89,7 +86,7 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
 
 
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
-    def __init__(self, stream: "GithubStreamABC", **kwargs):  # type: ignore # noqa
+    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
         super().__init__(**kwargs)
 
