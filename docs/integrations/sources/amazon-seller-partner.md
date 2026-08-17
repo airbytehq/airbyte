@@ -10,6 +10,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 - Amazon Seller Partner account
 - For Brand Analytics streams (Market Basket Analysis, Search Terms, Repeat Purchase, Alternate Purchase, Item Comparison reports): Registration in [Amazon Brand Registry](https://brandservices.amazon.com/) and the Brand Analytics role in your SP-API application
+- For the Sales and Traffic report streams and every vendor retail analytics report stream (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting): the Brand Analytics role in your SP-API application. Amazon lists this role for each of these report types in the [analytics report type values](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics).
 - For PII access in Orders and OrderItems streams (BuyerInfo, ShippingAddress): An approved [Restricted Role](https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api), either Direct-to-Consumer Shipping or Tax Invoicing, in your SP-API developer profile
 
 <!-- env:cloud -->
@@ -38,7 +39,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 ## Supported regions
 
-The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
 
 Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
@@ -80,7 +81,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **PARENT** (default): Data aggregated at the parent ASIN level.
     - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
-12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+12. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only—see [Report options](#report-options) before you configure them.
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
@@ -107,7 +108,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **PARENT** (default): Data aggregated at the parent ASIN level.
     - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
-10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+10. Optionally, add per-report-type options in the **Report Options** section. The connector sends these options for the two Inventory Ledger streams only—see [Report options](#report-options) before you configure them.
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
 12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
@@ -143,14 +144,14 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [FBA Returns Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
 - [FBA Storage Fees Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [FBA Stranded Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
-- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\) — uses the [Finances v0 API](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations), which Amazon deprecated on July 21, 2025 and plans to remove on August 28, 2026
-- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\) — uses the [Finances v0 API](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations), which Amazon deprecated on July 21, 2025 and plans to remove on August 28, 2026
+- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\) — see [Finances v0 deprecation](#finances-v0-deprecation)
+- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\)
 - [Flat File Archived Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Feedback Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-performance) \(incremental\)
 - [Flat File Orders By Last Update Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Returns Report by Return Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-returns) \(incremental\)
-- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) this report type on March 17, 2025 and plans to remove it on November 11, 2026. Consider using the V2 settlement report from Amazon directly.
+- [Flat File Settlement Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-settlement) \(incremental\) — this stream reads `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE`, which Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) on March 17, 2025 and plans to remove on November 11, 2026
 - [Inactive Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
@@ -177,6 +178,9 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Sales and Traffic Business Report \(Monthly\)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
+- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\) — `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, which reports inventory at hourly granularity
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 
 ### Stream availability by account type
@@ -201,12 +205,29 @@ The connector automatically shows only the streams compatible with your configur
 - Vendor Forecasting Report (Retail)
 - Vendor Sales Report
 - Vendor Inventory Report
+- Vendor Traffic Report
+- Vendor Net Pure Product Margin Report
+- Vendor Rapid Retail Analytics Inventory Report
 - All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
 - All Brand Analytics streams
 
 If you previously had streams from the wrong account type configured, they will be automatically removed from your connection's catalog after upgrading to version 5.7.10 or later. You may see a schema change notification prompting you to accept the updated catalog.
 
 For more information about Amazon SP-API roles and permissions, see the [Amazon SP-API Role Mappings documentation](https://developer-docs.amazon.com/sp-api/docs/role-mappings).
+
+### Finances v0 deprecation
+
+The Financial Events stream reads the Finances v0 `listFinancialEvents` operation. Amazon [deprecated](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) that operation on July 21, 2025 and plans to remove it on August 27, 2027. Amazon's replacement is the Finances v2024-06-19 [`listTransactions`](https://developer-docs.amazon.com/sp-api/docs/finances-api-v2024-06-19-reference) operation, which this connector doesn't use yet. Amazon's deprecation list doesn't include `listFinancialEventGroups`, so the Financial Event Groups stream isn't affected.
+
+### Daily report windows
+
+The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), and Vendor Sales Report (`GET_VENDOR_SALES_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
+
+Versions before 5.9.2 could send off-midnight windows when a sync ended mid-day, which inflated the metrics for the days those windows overlapped. If you synced these streams with an earlier version and see days whose metrics look doubled, refresh the affected streams (or re-sync the affected date range) after upgrading to 5.9.2 or later.
+
+### Time zone of vendor retail analytics data
+
+Amazon reports data in the vendor retail analytics reports (Vendor Sales, Vendor Inventory, Vendor Traffic, Net Pure Product Margin, Rapid Retail Analytics Inventory, and Vendor Forecasting) in Pacific Standard Time, regardless of your location or the marketplace's local time zone. Airbyte requests these reports using UTC date boundaries, so daily records can appear shifted if you compare them against a local-time report from Vendor Central.
 
 <HideInUI>
 
@@ -216,19 +237,44 @@ For more information about Amazon SP-API roles and permissions, see the [Amazon 
 
 ## Report options
 
-Report options can be assigned on a per-stream basis that alter the behavior when generating a report.
-For the full list, refer to Amazon’s report type values [documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+Amazon accepts a `reportOptions` object when you request a report, and those options change what the report contains. Each report type accepts its own options—see Amazon's [report type values](https://developer-docs.amazon.com/sp-api/docs/report-type-values) documentation for the list.
 
-Certain report types have required parameters that must be defined.
-For the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL`, `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams, the maximum allowable value for `period_in_days` is 30 days, 30 days, and 60 days, respectively.
-If the specified `period_in_days` exceeds these limits, it will be automatically adjusted to the maximum value for the respective stream, or set to 365 days if not provided.
+### Report options you configure
 
-For the Vendor Forecasting Report, we have two streams - `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` which use the same `GET_VENDOR_FORECASTING_REPORT` Amazon's report,
-but with different options for the `sellingProgram` parameter - `FRESH` and `RETAIL` respectively.
+The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.9.3, the connector sends these options for two streams only:
+
+- `GET_LEDGER_DETAIL_VIEW_DATA` — for example, set `eventType` to `Adjustments` to return only adjustment rows.
+- `GET_LEDGER_SUMMARY_VIEW_DATA` — for example, set `aggregatedByTimePeriod` to `DAILY` for daily rows instead of Amazon's `MONTHLY` default, or set `aggregateByLocation` to `FC` to break out rows by fulfillment center instead of by country.
+
+For the other report types the **Report Options** dropdown offers, the connector accepts your entries and validates them, but doesn't send them to Amazon. Those reports come back with Amazon's defaults. [Issue #77617](https://github.com/airbytehq/airbyte/issues/77617) tracks the remaining streams.
+
+If you already had report options configured for either ledger stream before 5.9.3, they take effect as soon as you upgrade, and the records change shape: a summary view aggregated `DAILY` returns one row per day where it previously returned one per month, and a detailed view filtered by `eventType` returns fewer rows. Refresh the stream if you need history to match the new options.
+
+### Report options the connector sets for you
+
+Some streams send report options that you don't configure. Anything you enter in **Report Options** for these report types is ignored:
+
+| Stream | Report options sent |
+| :----- | :------------------ |
+| The five Brand Analytics streams | `reportPeriod: WEEK`, plus a fixed date range covering the most recent complete Sunday-to-Saturday week |
+| `GET_SALES_AND_TRAFFIC_REPORT` | `asinGranularity` from **Sales and Traffic Report ASIN Granularity** |
+| `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` | `dateGranularity: MONTH` and `asinGranularity` |
+| `GET_VENDOR_FORECASTING_FRESH_REPORT` | `sellingProgram: FRESH` |
+| `GET_VENDOR_FORECASTING_RETAIL_REPORT` | `sellingProgram: RETAIL` |
+
+Both Vendor Forecasting streams read Amazon's single `GET_VENDOR_FORECASTING_REPORT` report type and differ only in the `sellingProgram` option they send.
+
+Because the Brand Analytics streams always request the same weekly window, they're full refresh only. Each sync replaces the previous week's data with the latest complete week.
+
+### Report window size
+
+**Period In Days** controls how much time each report request covers, and defaults to 90 days. Three streams cap it lower because Amazon limits how much data those reports return per request: 30 days for `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, and 60 days for `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE`. If you set a larger value, the connector uses the cap for those streams and your value for the rest.
 
 ## Performance considerations
 
 For information about rate limits, see [Usage Plans and Rate Limits in the SP-API](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
+
+Some report types carry their own limits on top of the API-wide ones. For example, Amazon allows only three requests for `GET_SALES_AND_TRAFFIC_REPORT` every five minutes, so a backfill of the Sales and Traffic streams over a long date range spends most of its time backing off.
 
 ### Report reuse
 
@@ -392,10 +438,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.9.4 | 2026-08-11 | [83818](https://github.com/airbytehq/airbyte/pull/83818) | Update dependencies |
+| 5.9.3 | 2026-08-07 | [77620](https://github.com/airbytehq/airbyte/pull/77620) | Pass configured Report Options to the report creation request for GET_LEDGER_DETAIL_VIEW_DATA and GET_LEDGER_SUMMARY_VIEW_DATA |
+| 5.9.2 | 2026-08-05 | [81374](https://github.com/airbytehq/airbyte/pull/81374) | Anchor the report window of the daily `GET_SALES_AND_TRAFFIC_REPORT`, `GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`, and `GET_VENDOR_SALES_REPORT` streams to the slice's calendar day, fixing inflated/mislabeled metrics when a sync ends mid-day |
+| 5.9.1 | 2026-07-28 | [82829](https://github.com/airbytehq/airbyte/pull/82829) | Update dependencies |
+| 5.9.0 | 2026-07-24 | [82254](https://github.com/airbytehq/airbyte/pull/82254) | Add missing fields to GET_VENDOR_SALES_REPORT (customerReturns) and GET_VENDOR_INVENTORY_REPORT (startDate, endDate, unhealthyInventoryUnits, unhealthyInventoryCost, procurableProductOutOfStockRate, receiveFillRate, uft) |
+| 5.8.2 | 2026-07-21 | [82317](https://github.com/airbytehq/airbyte/pull/82317) | Update dependencies |
+| 5.8.1 | 2026-07-14 | [81724](https://github.com/airbytehq/airbyte/pull/81724) | Update dependencies |
+| 5.8.0 | 2026-07-08 | [80845](https://github.com/airbytehq/airbyte/pull/80845) | Add three missing vendor report streams: GET_VENDOR_TRAFFIC_REPORT, GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT, and GET_VENDOR_REAL_TIME_INVENTORY_REPORT |
+| 5.7.12 | 2026-07-07 | [80820](https://github.com/airbytehq/airbyte/pull/80820) | Add Ireland (IE) marketplace support |
+| 5.7.11 | 2026-07-07 | [77151](https://github.com/airbytehq/airbyte/pull/77151) | Update dependencies |
 | 5.7.10 | 2026-06-24 | [79172](https://github.com/airbytehq/airbyte/pull/79172) | Gate vendor-only and seller-only streams behind account type using ConditionalStreams; use CheckDynamicStream so connectivity check works for both Seller and Vendor accounts. Added documentation for stream availability by account type. |
 | 5.7.9 | 2026-06-17 | [75470](https://github.com/airbytehq/airbyte/pull/75470) | Fix GzipXmlDecoder error handling that caused AttributeError on malformed XML responses |
 | 5.7.8 | 2026-06-16 | [79673](https://github.com/airbytehq/airbyte/pull/79673) | Surface rate limit exhaustion on report creation as a config error with troubleshooting guidance |
-| 5.7.7 | 2026-05-21 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
+| 5.7.7 | 2026-05-26 | [78321](https://github.com/airbytehq/airbyte/pull/78321) | Add configurable hourly lookback window for incremental report streams except monthly sales-and-traffic and date-only vendor sales reports |
 | 5.7.6 | 2026-05-20 | [78285](https://github.com/airbytehq/airbyte/pull/78285) | Promoted release candidate to GA |
 | 5.7.6-rc.4 | 2026-05-13 | [78037](https://github.com/airbytehq/airbyte/pull/78037) | Make failed report retry wait time and report creation 429 max retries visible in the source configuration |
 | 5.7.6-rc.3 | 2026-05-11 | [77837](https://github.com/airbytehq/airbyte/pull/77837) | Add configurable cooldown-aware deferred retry for FATAL reports and dedicated 429 error handler with backoff on report creation |

@@ -84,12 +84,11 @@ class SnowflakeDirectLoadSqlGenerator(
                 }
                 .joinToString(",\n    ")
 
-        // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
-        val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val createTableStatement =
             """
-            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |$createPrefix ${fullyQualifiedName(tableName)} (
             |    $columnDeclarations
             |)
             """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin
@@ -134,7 +133,7 @@ class SnowflakeDirectLoadSqlGenerator(
                 pks.joinToString(" AND ") { columnName ->
                     val targetTableColumnName = "target_table.${columnName.quote()}"
                     val newRecordColumnName = "new_record.${columnName.quote()}"
-                    """$targetTableColumnName = $newRecordColumnName"""
+                    """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
                 }
             } else {
                 // If no primary key, we can't perform a meaningful upsert
@@ -361,13 +360,11 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+    fun cloneTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
-            fullyQualifiedName(
-                targetTableName,
-            )
-        }
+            CREATE OR REPLACE TABLE ${fullyQualifiedName(targetTableName)} CLONE ${
+            fullyQualifiedName(sourceTableName)
+        } COPY GRANTS
         """
             .trimIndent()
             .andLog()
@@ -396,7 +393,6 @@ class SnowflakeDirectLoadSqlGenerator(
     fun alterTable(
         tableName: TableName,
         addedColumns: Map<String, ColumnType>,
-        deletedColumns: Map<String, ColumnType>,
         modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
@@ -409,9 +405,6 @@ class SnowflakeDirectLoadSqlGenerator(
                 // So we add the column as nullable.
                 "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog(),
             )
-        }
-        deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
         modifiedColumns.forEach { (name, typeChange) ->
             if (typeChange.originalType.type != typeChange.newType.type) {
