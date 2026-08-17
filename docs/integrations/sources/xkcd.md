@@ -48,6 +48,14 @@ For programmatic configuration, use this parameter name:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.51 | 2026-08-11 | [84196](https://github.com/airbytehq/airbyte/pull/84196) | Update dependencies |
+| 0.2.50 | 2026-08-04 | [83687](https://github.com/airbytehq/airbyte/pull/83687) | Update dependencies |
+| 0.2.49 | 2026-07-28 | [83174](https://github.com/airbytehq/airbyte/pull/83174) | Update dependencies |
+| 0.2.48 | 2026-07-21 | [82667](https://github.com/airbytehq/airbyte/pull/82667) | Update dependencies |
+| 0.2.47 | 2026-07-14 | [82065](https://github.com/airbytehq/airbyte/pull/82065) | Update dependencies |
+| 0.2.46 | 2026-06-30 | [81324](https://github.com/airbytehq/airbyte/pull/81324) | Update dependencies |
+| 0.2.45 | 2026-06-23 | [80713](https://github.com/airbytehq/airbyte/pull/80713) | Update dependencies |
+| 0.2.44 | 2026-06-16 | [80100](https://github.com/airbytehq/airbyte/pull/80100) | Update dependencies |
 | 0.2.43 | 2026-06-09 | [79566](https://github.com/airbytehq/airbyte/pull/79566) | Update dependencies |
 | 0.2.42 | 2026-06-02 | [79085](https://github.com/airbytehq/airbyte/pull/79085) | Update dependencies |
 | 0.2.41 | 2026-05-27 | [78454](https://github.com/airbytehq/airbyte/pull/78454) | Update dependencies |

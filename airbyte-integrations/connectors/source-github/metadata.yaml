@@ -6,11 +6,11 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 2.1.30
+  dockerImageTag: 2.1.40
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
@@ -44,7 +44,12 @@ data:
               - "releases"
               - "review_comments"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - branches
@@ -60,7 +65,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
@@ -92,7 +97,7 @@ data:
       url: https://docs.github.com/en/rest/about-the-rest-api/api-versions
       type: api_release_history
     - title: GitHub API changelog
-      url: https://github.blog/changelog/label/api/
+      url: https://github.blog/changelog/
       type: api_release_history
     - title: GitHub authentication
       url: https://docs.github.com/en/rest/overview/authenticating-to-the-rest-api

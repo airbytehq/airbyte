@@ -214,22 +214,37 @@ Expand to see details about Google Search Console connector limitations and trou
 
 #### Rate limiting
 
-This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
+The Search Console API enforces two distinct types of quota on Search Analytics queries. The connector retries automatically when either type is exceeded, but with different backoff durations. For full details, see Google's [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
-While Google's public documentation states that the Search Console API allows up to 1,200 requests per minute, most Google Cloud projects start with a lower default quota of 60 requests per minute. This is especially common for new projects or projects without billing enabled.
+**QPS (queries per minute) quota**: Limits the number of API requests per minute. Google documents a maximum of 1,200 requests per minute per user and per site, but most new Google Cloud projects start with a lower default of 60 requests per minute. When exceeded, the connector retries with a 60-second backoff.
 
-To check your actual quota limits:
+**Load quota**: Limits the internal resources consumed by queries. Complex queries — particularly those that group or filter by both `page` and `query` dimensions, or that span long date ranges — consume more load. Google measures load quota in 10-minute (short-term) and daily (long-term) windows. When exceeded, the connector retries with a 15-minute backoff, consistent with Google's recommendation to wait 15 minutes before retrying.
+
+To check your actual QPS quota limits:
 
 1. Go to your [Google Cloud Console](https://console.cloud.google.com/).
 2. Navigate to **APIs & Services** then **Quotas**.
 3. Search for "Search Console API".
 4. Look for "Requests per minute per user" to see your current limit.
 
-If you need higher limits, you can enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **API Requests Per Minute** setting in the connector to match your actual quota.
+If you need higher QPS limits, enable billing on your Google Cloud project or submit a quota increase request through the Google Cloud Console. You can then configure the **Search Analytics API Requests Per Minute** setting in the connector to match your actual quota.
+
+If you hit load quota limits, reduce the complexity of your queries. Avoid grouping or filtering by both `page` and `query` simultaneously, use shorter date ranges, and avoid requerying the same data repeatedly.
 
 #### Data retention
 
 Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
+
+#### Retired search appearance values
+
+The `search_analytics_keyword_page_report`, `search_analytics_keyword_site_report_by_page`, and `search_analytics_keyword_site_report_by_site` streams break their data out by `search_appearance`. Google retires search appearance types over time — FAQ rich results stopped appearing in Search in May 2026, and Google's [FAQ structured data documentation](https://developers.google.com/search/docs/appearance/structured-data/faqpage) announced the removal of FAQ rich result data from the Search Console API in August 2026.
+
+The connector discovers appearance values from the API on every sync rather than hard-coding them, so a retired value needs no configuration change: rows for that value simply stop arriving, and the remaining appearance values continue to sync normally. No stream or field is added or removed.
+
+Two effects are worth planning for:
+
+- `search_appearance` is part of these streams' primary key, and syncs do not delete rows. Records already synced for a retired appearance value remain in your destination indefinitely. If you aggregate across `search_appearance`, those rows keep contributing to totals.
+- Re-syncing a historical window may no longer reproduce rows for a retired value, so a full refresh can return fewer records than the original sync did.
 
 ### Troubleshooting
 
@@ -248,6 +263,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.9 | 2026-08-11 | [83959](https://github.com/airbytehq/airbyte/pull/83959) | Update dependencies |
+| 2.1.8 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.1.7 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.1.5 — 2.1.6 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.1.6 | 2026-07-28 | [82942](https://github.com/airbytehq/airbyte/pull/82942) | Update dependencies |
+| 2.1.5 | 2026-07-21 | [82440](https://github.com/airbytehq/airbyte/pull/82440) | Update dependencies |
+| 2.1.4 | 2026-07-14 | [81851](https://github.com/airbytehq/airbyte/pull/81851) | Update dependencies |
+| 2.1.3 | 2026-06-30 | [81094](https://github.com/airbytehq/airbyte/pull/81094) | Update dependencies |
+| 2.1.2 | 2026-06-23 | [80489](https://github.com/airbytehq/airbyte/pull/80489) | Update dependencies |
+| 2.1.1 | 2026-06-16 | [79906](https://github.com/airbytehq/airbyte/pull/79906) | Update dependencies |
+| 2.1.0 | 2026-06-12 | [79146](https://github.com/airbytehq/airbyte/pull/79146) | Handle 403 "Search Analytics load quota exceeded" as rate-limited with a 15-minute backoff instead of config error |
 | 2.0.4 | 2026-06-09 | [79344](https://github.com/airbytehq/airbyte/pull/79344) | Update dependencies |
 | 2.0.3 | 2026-06-01 | [78545](https://github.com/airbytehq/airbyte/pull/78545) | Adds jitter to backoff strategy |
 | 2.0.2 | 2026-05-21 | [78289](https://github.com/airbytehq/airbyte/pull/78289) | Reduce `search_analytics_*` paginator `page_size` from `25000` to `5000` to lower peak worker memory on high-volume tenants. See airbytehq/oncall#12246 for context. |

@@ -103,6 +103,14 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.14 | 2026-08-11 | [83830](https://github.com/airbytehq/airbyte/pull/83830) | Update dependencies |
+| 1.1.13 | 2026-08-04 | [83353](https://github.com/airbytehq/airbyte/pull/83353) | Update dependencies |
+| 1.1.12 | 2026-07-28 | [82825](https://github.com/airbytehq/airbyte/pull/82825) | Update dependencies |
+| 1.1.11 | 2026-07-21 | [82340](https://github.com/airbytehq/airbyte/pull/82340) | Update dependencies |
+| 1.1.10 | 2026-07-14 | [81722](https://github.com/airbytehq/airbyte/pull/81722) | Update dependencies |
+| 1.1.9 | 2026-06-30 | [80968](https://github.com/airbytehq/airbyte/pull/80968) | Update dependencies |
+| 1.1.8 | 2026-06-23 | [80356](https://github.com/airbytehq/airbyte/pull/80356) | Update dependencies |
+| 1.1.7 | 2026-06-16 | [79764](https://github.com/airbytehq/airbyte/pull/79764) | Update dependencies |
 | 1.1.6 | 2026-06-09 | [79235](https://github.com/airbytehq/airbyte/pull/79235) | Update dependencies |
 | 1.1.5 | 2026-06-02 | [78565](https://github.com/airbytehq/airbyte/pull/78565) | Update dependencies |
 | 1.1.4 | 2026-05-12 | [78029](https://github.com/airbytehq/airbyte/pull/78029) | Refresh expired OAuth access tokens before retrying failed Apple Ads API requests |

@@ -20,7 +20,7 @@ def test_get_next_page_token(requests_mock, auth_config):
     response_header_links = {
         "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
         "Content-Type": "application/json; charset=utf-8",
-        "Link": '<https://test_shop.myshopify.com/admin/api/2021-04/test_object.json?limit=1&page_info=eyJjcmVhdGVkX2>; rel="next"',
+        "Link": '<https://test-shop.myshopify.com/admin/api/2021-04/test_object.json?limit=1&page_info=eyJjcmVhdGVkX2>; rel="next"',
     }
     expected_output_token = {
         "limit": "1",
@@ -75,7 +75,7 @@ def test_get_next_page_token(requests_mock, auth_config):
 )
 def test_privileges_validation(requests_mock, fetch_transactions_user_id, basic_config, expected):
     requests_mock.get(
-        "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
+        "https://test-shop.myshopify.com/admin/oauth/access_scopes.json",
         json={"access_scopes": [{"handle": "read_orders"}]},
     )
     basic_config["fetch_transactions_user_id"] = fetch_transactions_user_id

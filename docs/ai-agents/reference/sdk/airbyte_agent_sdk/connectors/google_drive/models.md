@@ -166,6 +166,107 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
+<a id="AirbyteSearchMeta"></a>
+
+`AirbyteSearchMeta(**data: Any)`
+:   Pagination metadata for search responses.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `cursor: str | None`
+    :   Cursor for fetching the next page of results.
+
+    `has_more: bool`
+    :   Whether more results are available.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `took_ms: int | None`
+    :   Time taken to execute the search in milliseconds.
+
+<a id="AirbyteSearchResult"></a>
+
+`AirbyteSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Descendants
+
+    * airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult[FilesSearchData]
+
+    ### Class variables
+
+    `data: list[~D]`
+    :   List of matching records.
+
+    `meta: airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchMeta`
+    :   Pagination metadata.
+
+    `model_config`
+    :   The type of the None singleton.
+
+`AirbyteSearchResult[FilesSearchData](**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="FilesSearchResult"></a>
+
+`FilesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="Change"></a>
 
 `Change(**data: Any)`
@@ -1353,6 +1454,45 @@ Classes
 
     `next_page_token: str | None`
     :   The type of the None singleton.
+
+<a id="FilesSearchData"></a>
+
+`FilesSearchData(**data: Any)`
+:   Search result data for files entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `content: str | None`
+    :   Extracted text content of the file.
+
+    `file_name: str | None`
+    :   Name of the file.
+
+    `file_path: str | None`
+    :   Full path of the file within the synced Drive folder.
+
+    `id: str | None`
+    :   Unique identifier of the file in Google Drive.
+
+    `mime_type: str | None`
+    :   MIME type of the file.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   Timestamp of the last modification to the file.
 
 <a id="GoogleDriveAuthConfig"></a>
 
