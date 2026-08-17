@@ -3,13 +3,12 @@
 #
 
 import logging
-from typing import Optional, Union
+from typing import Optional, Protocol, Union
 from urllib.parse import urlparse
 
 import requests
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
@@ -17,6 +16,11 @@ from . import constants
 
 
 logger = logging.getLogger("airbyte")
+
+
+class GithubStreamProtocol(Protocol):
+    name: str
+    requires_repo_admin_access: bool
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
@@ -86,7 +90,7 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
 
 
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
-    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
+    def __init__(self, stream: GithubStreamProtocol, **kwargs):
         self.stream = stream
         super().__init__(**kwargs)
 
