@@ -242,7 +242,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.41 | 2026-08-17 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd) | Report restricted Stargazers access accurately |
+| 2.1.41 | 2026-08-17 | [84434](https://github.com/airbytehq/airbyte/pull/84434) | Report restricted Stargazers access accurately |
 | 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
 | 2.1.39 | 2026-08-04 | [83469](https://github.com/airbytehq/airbyte/pull/83469) | Update dependencies |
 | 2.1.38 | 2026-07-28 | [82893](https://github.com/airbytehq/airbyte/pull/82893) | Update dependencies |
