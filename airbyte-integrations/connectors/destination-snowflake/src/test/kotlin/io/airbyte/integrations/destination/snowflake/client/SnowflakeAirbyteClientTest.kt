@@ -288,13 +288,9 @@ internal class SnowflakeAirbyteClientTest {
                 every { getLong("rows") } returns 1L
             }
         val preparedStatement =
-            mockk<PreparedStatement>(relaxed = true) {
-                every { executeQuery() } returns resultSet
-            }
+            mockk<PreparedStatement>(relaxed = true) { every { executeQuery() } returns resultSet }
         val statement =
-            mockk<Statement>(relaxed = true) {
-                every { executeQuery(any()) } returns resultSet
-            }
+            mockk<Statement>(relaxed = true) { every { executeQuery(any()) } returns resultSet }
         val connection =
             mockk<Connection>(relaxed = true) {
                 every { prepareStatement(any()) } returns preparedStatement
@@ -333,28 +329,31 @@ internal class SnowflakeAirbyteClientTest {
 
         val statement =
             mockk<Statement>(relaxed = true) {
-                every { executeQuery(any()) } answers {
-                    when (firstArg<String>()) {
-                        "create-table" -> {
-                            createStarted.countDown()
-                            assertTrue(allowCreateToFinish.await(5, TimeUnit.SECONDS))
+                every { executeQuery(any()) } answers
+                    {
+                        when (firstArg<String>()) {
+                            "create-table" -> {
+                                createStarted.countDown()
+                                assertTrue(allowCreateToFinish.await(5, TimeUnit.SECONDS))
+                            }
+                            "create-stage" -> stageReady.set(true)
+                            "put-one",
+                            "put-two" -> {
+                                putAttempted.countDown()
+                                assertTrue(
+                                    stageReady.get(),
+                                    "PUT executed before stage creation completed"
+                                )
+                            }
                         }
-                        "create-stage" -> stageReady.set(true)
-                        "put-one", "put-two" -> {
-                            putAttempted.countDown()
-                            assertTrue(stageReady.get(), "PUT executed before stage creation completed")
-                        }
+                        resultSet
                     }
-                    resultSet
-                }
             }
         val connection =
             mockk<Connection>(relaxed = true) { every { createStatement() } returns statement }
         every { dataSource.connection } returns connection
 
-        runBlocking {
-            client.createTempTable(stream, tableName, columnNameMapping, replace = true)
-        }
+        runBlocking { client.createTempTable(stream, tableName, columnNameMapping, replace = true) }
 
         val executor = Executors.newFixedThreadPool(2)
         try {
@@ -388,9 +387,7 @@ internal class SnowflakeAirbyteClientTest {
         val targetTableName = TableName(namespace = "namespace", name = "target")
         val resultSet = mockk<ResultSet>(relaxed = true)
         val statement =
-            mockk<Statement>(relaxed = true) {
-                every { executeQuery(any()) } returns resultSet
-            }
+            mockk<Statement>(relaxed = true) { every { executeQuery(any()) } returns resultSet }
         val connection =
             mockk<Connection>(relaxed = true) { every { createStatement() } returns statement }
         every { dataSource.connection } returns connection

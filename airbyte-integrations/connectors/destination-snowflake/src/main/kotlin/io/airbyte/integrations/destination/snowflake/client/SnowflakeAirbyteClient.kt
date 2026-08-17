@@ -401,12 +401,16 @@ class SnowflakeAirbyteClient(
     /** Waits for in-flight materialization before deciding whether a table is still deferred. */
     private fun isPendingTempTable(tableName: TableName): Boolean {
         val pending = pendingTempTables[tableName] ?: return false
-        synchronized(pending) { return pendingTempTables[tableName] === pending }
+        synchronized(pending) {
+            return pendingTempTables[tableName] === pending
+        }
     }
 
     private fun discardPendingTempTable(tableName: TableName): Boolean {
         val pending = pendingTempTables[tableName] ?: return false
-        synchronized(pending) { return pendingTempTables.remove(tableName, pending) }
+        synchronized(pending) {
+            return pendingTempTables.remove(tableName, pending)
+        }
     }
 
     fun copyFromStage(tableName: TableName, filename: String, columnNames: List<String>) {
