@@ -52,9 +52,13 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 
 The connector automatically handles Amplitude's [API rate limits](https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits). The Dashboard REST API enforces cost-based rate limits with a budget of 108,000 cost per hour and 1,000 cost per 5-minute burst window, plus a maximum of 5 concurrent requests. The connector tracks per-request costs and throttles automatically to stay within these limits.
 
-The Export API (used by the Events stream) doesn't have documented rate limits, but large exports can time out. If you experience timeouts, reduce the **Request Time Range** in the connector configuration.
+The Export API (used by the Events stream) limits each export to 4 GB and returns an error when a request exceeds that limit. Large exports can also time out. In either case, reduce the **Request Time Range** in the connector configuration so each request covers a shorter interval. For very large data volumes, Amplitude recommends its [Amazon S3 destination](https://amplitude.com/docs/data/destination-catalog/amazon-s3) instead of the Export API.
 
 If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -63,6 +67,12 @@ If you encounter rate limit issues that are not automatically retried, [create a
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.37 | 2026-08-11 | [83823](https://github.com/airbytehq/airbyte/pull/83823) | Update dependencies |
+| 0.7.36 | 2026-07-28 | [82323](https://github.com/airbytehq/airbyte/pull/82323) | Update dependencies |
+| 0.7.35 | 2026-07-14 | [81744](https://github.com/airbytehq/airbyte/pull/81744) | Update dependencies |
+| 0.7.34 | 2026-07-07 | [80954](https://github.com/airbytehq/airbyte/pull/80954) | Update dependencies |
+| 0.7.33 | 2026-07-02 | [81393](https://github.com/airbytehq/airbyte/pull/81393) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
+| 0.7.32 | 2026-06-23 | [78601](https://github.com/airbytehq/airbyte/pull/78601) | Update dependencies |
 | 0.7.31 | 2026-04-28 | [72688](https://github.com/airbytehq/airbyte/pull/72688) | Update dependencies |
 | 0.7.30 | 2026-03-31 | [75406](https://github.com/airbytehq/airbyte/pull/75406) | Upgrade CDK to v7.14.0 and use weight-based rate limiting for Dashboard REST API streams |
 | 0.7.29 | 2026-03-03 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | Add HTTPAPIBudget and concurrency_level |
@@ -170,7 +180,6 @@ If you encounter rate limit issues that are not automatically retried, [create a
 | 0.1.2 | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353) | Correct output schemas on cohorts, events, active_users, and average_session_lengths streams |
 | 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add AIRBYTE_ENTRYPOINT for kubernetes support |
 | 0.1.0 | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude |
-| 0.1.0      | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664) | New Source: Amplitude                                                                                                                                                  |
 
 </details>
 

@@ -193,8 +193,15 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[AgentsSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[CompaniesSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[GroupsSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[RolesSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[SatisfactionRatingsSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[SurveysSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TicketFieldsSearchData]
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TicketsSearchData]
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult[TimeEntriesSearchData]
 
     ### Class variables
 
@@ -210,6 +217,42 @@ Classes
 <a id="AgentsSearchResult"></a>
 
 `AgentsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CompaniesSearchResult"></a>
+
+`CompaniesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="ContactsSearchResult"></a>
+
+`ContactsSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -243,6 +286,78 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="RolesSearchResult"></a>
+
+`RolesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SatisfactionRatingsSearchResult"></a>
+
+`SatisfactionRatingsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="SurveysSearchResult"></a>
+
+`SurveysSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="TicketFieldsSearchResult"></a>
+
+`TicketFieldsSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
 <a id="TicketsSearchResult"></a>
 
 `TicketsSearchResult(**data: Any)`
@@ -260,6 +375,162 @@ Classes
     * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="TimeEntriesSearchResult"></a>
+
+`TimeEntriesSearchResult(**data: Any)`
+:   Result from Airbyte cache search operations with typed records.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.freshdesk.models.AirbyteSearchResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+<a id="CompaniesSearchData"></a>
+
+`CompaniesSearchData(**data: Any)`
+:   Search result data for companies entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `account_tier: str | None`
+    :   Account tier of the company
+
+    `created_at: str | None`
+    :   Company creation timestamp
+
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Custom fields associated with the company
+
+    `description: str | None`
+    :   Description of the company
+
+    `domains: list[typing.Any] | None`
+    :   Email domains associated with the company
+
+    `health_score: str | None`
+    :   Health score of the company
+
+    `id: int | None`
+    :   Unique company ID
+
+    `industry: str | None`
+    :   Industry of the company
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the company
+
+    `note: str | None`
+    :   Notes about the company
+
+    `renewal_date: str | None`
+    :   Renewal date
+
+    `updated_at: str | None`
+    :   Company last update timestamp
+
+<a id="ContactsSearchData"></a>
+
+`ContactsSearchData(**data: Any)`
+:   Search result data for contacts entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `active: bool | None`
+    :   Whether the contact has been verified
+
+    `address: str | None`
+    :   Address of the contact
+
+    `company_id: int | None`
+    :   ID of the primary company
+
+    `created_at: str | None`
+    :   Contact creation timestamp
+
+    `csat_rating: int | None`
+    :   CSAT rating of the contact
+
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Custom fields associated with the contact
+
+    `description: str | None`
+    :   Description of the contact
+
+    `email: str | None`
+    :   Primary email address
+
+    `facebook_id: str | None`
+    :   Facebook ID of the contact
+
+    `id: int | None`
+    :   Unique contact ID
+
+    `job_title: str | None`
+    :   Job title of the contact
+
+    `language: str | None`
+    :   Language of the contact
+
+    `mobile: str | None`
+    :   Mobile number
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the contact
+
+    `phone: str | None`
+    :   Phone number
+
+    `preferred_source: str | None`
+    :   Preferred contact source
+
+    `time_zone: str | None`
+    :   Time zone of the contact
+
+    `twitter_id: str | None`
+    :   Twitter ID
+
+    `unique_external_id: str | None`
+    :   External ID of the contact
+
+    `updated_at: str | None`
+    :   Contact last update timestamp
 
 <a id="FreshdeskAuthConfig"></a>
 
@@ -338,83 +609,138 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'FreshdeskAuthConfig'", name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> airbyte_agent_sdk.connectors.freshdesk.connector.FreshdeskConnector`
-    :   Create a new hosted connector on Airbyte Cloud.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
         
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
         
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config (same as local mode)
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
         
-        Returns:
-            A FreshdeskConnector instance configured in hosted mode
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await FreshdeskConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=FreshdeskAuthConfig(api_key="..."),
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
-        
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @FreshdeskConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = FreshdeskConnector(...)
         
-            @mcp.tool()
-            @FreshdeskConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @FreshdeskConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @FreshdeskConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @FreshdeskConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @FreshdeskConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = FreshdeskConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @FreshdeskConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @FreshdeskConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @FreshdeskConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -423,10 +749,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await FreshdeskConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -463,7 +785,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -475,6 +797,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -485,6 +810,17 @@ Classes
                 action="get",
                 params=\{"id": "cus_123"\}
             )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
 
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
@@ -499,6 +835,18 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
 
 <a id="GroupsSearchData"></a>
 
@@ -550,6 +898,210 @@ Classes
 
     `updated_at: str | None`
     :   Group last update timestamp
+
+<a id="RolesSearchData"></a>
+
+`RolesSearchData(**data: Any)`
+:   Search result data for roles entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `created_at: str | None`
+    :   Role creation timestamp
+
+    `default: bool | None`
+    :   Whether this is a default role
+
+    `description: str | None`
+    :   Description of the role
+
+    `id: int | None`
+    :   Unique role ID
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the role
+
+    `updated_at: str | None`
+    :   Role last update timestamp
+
+<a id="SatisfactionRatingsSearchData"></a>
+
+`SatisfactionRatingsSearchData(**data: Any)`
+:   Search result data for satisfaction_ratings entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `agent_id: int | None`
+    :   ID of the agent
+
+    `created_at: str | None`
+    :   Rating creation timestamp
+
+    `feedback: str | None`
+    :   Feedback text
+
+    `group_id: int | None`
+    :   ID of the group
+
+    `id: int | None`
+    :   Unique satisfaction rating ID
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ratings: dict[str, typing.Any] | None`
+    :   Rating values (question_id to rating mapping)
+
+    `survey_id: int | None`
+    :   ID of the survey
+
+    `ticket_id: int | None`
+    :   ID of the ticket
+
+    `updated_at: str | None`
+    :   Rating last update timestamp
+
+    `user_id: int | None`
+    :   ID of the user (requester)
+
+<a id="SurveysSearchData"></a>
+
+`SurveysSearchData(**data: Any)`
+:   Search result data for surveys entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `active: bool | None`
+    :   Whether the survey is active
+
+    `created_at: str | None`
+    :   Survey creation timestamp
+
+    `id: int | None`
+    :   Unique survey ID
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `questions: list[typing.Any] | None`
+    :   Survey questions
+
+    `title: str | None`
+    :   Title of the survey
+
+    `updated_at: str | None`
+    :   Survey last update timestamp
+
+<a id="TicketFieldsSearchData"></a>
+
+`TicketFieldsSearchData(**data: Any)`
+:   Search result data for ticket_fields entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `choices: dict[str, typing.Any] | None`
+    :   Available choices for dropdown fields
+
+    `created_at: str | None`
+    :   Field creation timestamp
+
+    `customers_can_edit: bool | None`
+    :   Whether customers can edit this field
+
+    `default: bool | None`
+    :   Whether this is a default (non-custom) field
+
+    `description: str | None`
+    :   Description of the field
+
+    `displayed_to_customers: bool | None`
+    :   Whether the field is displayed to customers
+
+    `id: int | None`
+    :   Unique ticket field ID
+
+    `label: str | None`
+    :   Display label for agents
+
+    `label_for_customers: str | None`
+    :   Display label in the customer portal
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the field
+
+    `portal_cc: bool | None`
+    :   Whether CC is enabled in the portal
+
+    `portal_cc_to: str | None`
+    :   CC recipients scope (all or company)
+
+    `position: int | None`
+    :   Position of the field in the form
+
+    `required_for_agents: bool | None`
+    :   Whether the field is required for agents
+
+    `required_for_closure: bool | None`
+    :   Whether the field is required for ticket closure
+
+    `required_for_customers: bool | None`
+    :   Whether the field is required for customers
+
+    `type_: str | None`
+    :   Field type (e.g., custom_dropdown, custom_text)
+
+    `updated_at: str | None`
+    :   Field last update timestamp
 
 <a id="TicketsSearchData"></a>
 
@@ -673,3 +1225,60 @@ Classes
 
     `updated_at: str | None`
     :   Ticket last update timestamp
+
+<a id="TimeEntriesSearchData"></a>
+
+`TimeEntriesSearchData(**data: Any)`
+:   Search result data for time_entries entity.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `agent_id: int | None`
+    :   ID of the agent
+
+    `billable: bool | None`
+    :   Whether the time entry is billable
+
+    `company_id: int | None`
+    :   ID of the associated company
+
+    `created_at: str | None`
+    :   Time entry creation timestamp
+
+    `executed_at: str | None`
+    :   Execution timestamp
+
+    `id: int | None`
+    :   Unique time entry ID
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `note: str | None`
+    :   Description of the time entry
+
+    `start_time: str | None`
+    :   Start time of the timer
+
+    `ticket_id: int | None`
+    :   ID of the associated ticket
+
+    `time_spent: str | None`
+    :   Time spent in hh:mm format
+
+    `timer_running: bool | None`
+    :   Whether the timer is running
+
+    `updated_at: str | None`
+    :   Time entry last update timestamp

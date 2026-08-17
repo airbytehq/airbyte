@@ -23,6 +23,17 @@ The Google-Search-Console connector supports the following entities and actions.
 
 Lists the user's Search Console sites.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "sites",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -59,6 +70,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sites Get
 
 Retrieves information about a specific site.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "sites",
+  "action": "get",
+  "params": {
+    "siteUrl": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -108,6 +133,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sites Context Store Search
 
 Search and filter sites records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "sites",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "permissionLevel": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -171,6 +216,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Lists the sitemaps submitted for a site.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "sitemaps",
+  "action": "list",
+  "params": {
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -229,6 +288,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sitemaps Get
 
 Retrieves information about a specific sitemap.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "sitemaps",
+  "action": "get",
+  "params": {
+    "siteUrl": "<str>",
+    "feedpath": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -291,6 +365,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Sitemaps Context Store Search
 
 Search and filter sitemaps records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "sitemaps",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "contents": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -369,6 +463,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Query search analytics data grouped by date. Returns clicks, impressions, CTR, and average position for each date in the specified range.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_date",
+  "action": "list",
+  "params": {
+    "startDate": "<str>",
+    "endDate": "<str>",
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -440,6 +550,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Search Analytics By Date Context Store Search
 
 Search and filter search analytics by date records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_date",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clicks": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -514,6 +644,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Query search analytics data grouped by date and country. Returns clicks, impressions, CTR, and average position for each country.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_country",
+  "action": "list",
+  "params": {
+    "startDate": "<str>",
+    "endDate": "<str>",
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -585,6 +731,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Search Analytics By Country Context Store Search
 
 Search and filter search analytics by country records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_country",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clicks": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -661,6 +827,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Query search analytics data grouped by date and device. Returns clicks, impressions, CTR, and average position for each device type.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_device",
+  "action": "list",
+  "params": {
+    "startDate": "<str>",
+    "endDate": "<str>",
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -732,6 +914,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Search Analytics By Device Context Store Search
 
 Search and filter search analytics by device records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_device",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clicks": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -808,6 +1010,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Query search analytics data grouped by date and page. Returns clicks, impressions, CTR, and average position for each page URL.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_page",
+  "action": "list",
+  "params": {
+    "startDate": "<str>",
+    "endDate": "<str>",
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -879,6 +1097,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Search Analytics By Page Context Store Search
 
 Search and filter search analytics by page records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_page",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clicks": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -955,6 +1193,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Query search analytics data grouped by date and query. Returns clicks, impressions, CTR, and average position for each search query.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_query",
+  "action": "list",
+  "params": {
+    "startDate": "<str>",
+    "endDate": "<str>",
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1026,6 +1280,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Search Analytics By Query Context Store Search
 
 Search and filter search analytics by query records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_by_query",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clicks": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1102,6 +1376,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 Query search analytics data grouped by all dimensions (date, country, device, page, query). Returns the most granular breakdown of search data.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_all_fields",
+  "action": "list",
+  "params": {
+    "startDate": "<str>",
+    "endDate": "<str>",
+    "siteUrl": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1173,6 +1463,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Search Analytics All Fields Context Store Search
 
 Search and filter search analytics all fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-search-console",
+  "entity": "search_analytics_all_fields",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "clicks": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 

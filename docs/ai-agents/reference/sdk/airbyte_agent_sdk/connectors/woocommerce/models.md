@@ -5138,7 +5138,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `WoocommerceExecuteResultWithMeta[list[Coupon], CouponsListResultMeta](**data: Any)`
@@ -5883,4 +5883,4 @@ Classes
     :   The type of the None singleton.
 
     `start_date: str`
-    :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+    :   UTC date in the format YYYY-MM-DD from which to start replicating data.

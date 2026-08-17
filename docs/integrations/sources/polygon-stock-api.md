@@ -46,6 +46,10 @@ The following fields are required fields for the connector to work:
 - (optional) `sort`: Sort the results by timestamp. asc will return results in ascending order (oldest at the top), desc will return results in descending order (newest at the top).
 - (optional) `limit`: Limits the number of base aggregates queried to create the aggregate results. Max 50000 and Default 5000. Read more about how limit is used to calculate aggregate results in our article on Aggregate Data API Improvements [Find-more](https://polygon.io/blog/aggs-api-updates/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -53,6 +57,7 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.52 | 2026-06-02 | [78869](https://github.com/airbytehq/airbyte/pull/78869) | Update dependencies |
 | 0.2.51 | 2026-04-28 | [77385](https://github.com/airbytehq/airbyte/pull/77385) | Update dependencies |
 | 0.2.50 | 2026-04-21 | [76718](https://github.com/airbytehq/airbyte/pull/76718) | Update dependencies |
 | 0.2.49 | 2026-03-17 | [74926](https://github.com/airbytehq/airbyte/pull/74926) | Update dependencies |

@@ -5,7 +5,7 @@ sidebar_position: 2
 
 # Context Store
 
-The Context Store is a managed, searchable replica of select entities from all your connected data sources. Airbyte populates it from the connectors in your workspace and gives agents a fast, consistent way to search your business data in natural language, without hitting the underlying APIs for every request.
+The Context Store is a managed, searchable replica of select entities from all your connected data sources. Airbyte populates it from the connectors in your workspace and gives agents a fast, consistent way to search your business data without hitting the underlying APIs for every request.
 
 Some third-party APIs have search endpoints, but many don't. Without the Context Store, prompts like these force your agent to list, page through, and filter records from the API in real time:
 
@@ -54,14 +54,14 @@ Ready and Preview are both usable states for agents. Preview means newer records
 
 ### Per-entity status
 
-Click the status badge on a connector to open a detailed view. The view lists every entity Airbyte populates for the connector, along with:
+To see per-entity status, open the connector's detail page. From the Connectors list, click the connector's status badge or its **Details** button. The **Entities and Context Store** section on that page lists every entity Airbyte populates for the connector, along with:
 
 - **Entity.** The entity name, for example `contacts`, `deals`, or `products`.
-- **Status.** `Ready`, `Preview`, `Building Preview`, `Initializing`, or `Updating`.
+- **Context Store status.** `Ready`, `Preview`, `Building Preview`, `Initializing`, or `Updating`.
 - **Records.** The number of records currently searchable for that entity.
 - **Last Synced** or **Last Updated.** The most recent time Airbyte refreshed that entity.
 
-Use this view to confirm which entities are ready to query and which are still populating.
+Use this section to confirm which entities are ready to query and which are still populating.
 
 ## How agents use the Context Store
 
@@ -74,17 +74,25 @@ Agents choose between these paths automatically. You don't need to specify which
 
 ## How search works
 
-The Context Store supports structured search with filter operators, field selection, sorting, and cursor-based pagination. Agents translate natural-language prompts into structured queries automatically, so most users don't need to construct queries by hand.
+The Context Store supports structured search with filter operators, field selection, sorting, and cursor-based pagination. The agent translates user intent from natural language into a structured query, so you don't need to construct queries by hand.
 
-If you build agents with the SDK or API, you can call `context_store_search` directly and pass structured filters. For details on the query model, see the [SDK reference](../reference/sdk/airbyte_agent_sdk) and individual [connector reference pages](../connectors).
+If you build agents with the SDK or API, you can call `context_store_search` directly and pass structured filters. For details on the query model, see the individual [connector reference pages](../connectors), which document the available entities, filter fields, and search parameters for each connector.
 
-## Initial backfill
+### Semantic search
 
-When the Context Store populates data for a connector, Airbyte runs an initial backfill. Backfill time depends on the amount of data and third-party API rate limits, and can range from minutes to days.
+Structured search matches records by exact or fuzzy field values. Some connectors also support **semantic search**: a similarity search that finds relevant passages by meaning rather than by keyword. Instead of matching a filter, Airbyte embeds your natural-language prompt and returns the most similar passages of text, ranked by relevance. It suits long, unstructured text such as call transcripts, issue descriptions, or the contents of a document, where you don't know the exact wording of a match in advance.
 
-During the backfill, Airbyte makes data available to agents progressively. You don't have to wait for the backfill to finish before agents can search. An entity in **Preview** status already has partial data that agents can query. As the backfill continues, more records become searchable until the entity reaches **Ready** status.
+Agents choose semantic search automatically when a prompt calls for meaning-based retrieval over a supported field, so you don't need to specify the search mode in your prompts. If you build agents with the CLI, API, or SDK, you can also request it directly.
 
-The per-entity detail view on the Connectors page shows record counts and timestamps so you can track backfill progress.
+To learn how semantic search works, which connectors and fields support it, and to see complete CLI, API, and SDK examples, see [Semantic search](./semantic-search).
+
+## Initial index
+
+When the Context Store populates data for a connector, Airbyte runs an initial index. Indexing time depends on the amount of data and third-party API rate limits, and can range from minutes to days.
+
+During the initial index, Airbyte makes data available to agents progressively. You don't have to wait for the index to finish before agents can search. An entity in **Preview** status already has partial data that agents can query. As indexing continues, more records become searchable until the entity reaches **Ready** status.
+
+The **Entities and Context Store** section on the connector detail page shows record counts and timestamps so you can track indexing progress.
 
 ## When to use the Context Store
 
@@ -94,8 +102,9 @@ The Context Store is always on and requires no configuration. It benefits most w
 - Prompts like "find all X where Y" run as a single search instead of a live API crawl.
 - Search behavior is consistent across connectors, including connectors whose APIs don't offer their own search endpoint.
 
-If you already maintain your own copy of the relevant data and prefer to expose it through your own tools, or if you only need to read or write a small number of records at a time and don't need to search across a dataset, agents still fall back to direct API requests automatically.
-
 ## Limitations
 
-- All agent connectors and interfaces can use the Context Store. Agents prefer it for search operations whenever the entity is available in the store.
+- **Data freshness.** The Context Store is not real-time. Airbyte refreshes data on a schedule that depends on your plan, ranging from hourly to daily. See [Billing and pricing](../admin/billing) for refresh cadence by plan.
+- **Curated subset of data.** Not every field or entity from a source is included. Airbyte indexes only the fields and entities that are most useful for search. You can see which entities populate the Context Store when selecting entities in the authentication widget.
+- **Initial indexing delay.** The first time Airbyte populates a connector, the [initial index](#initial-index) can take minutes to days depending on data volume and API rate limits.
+- **Read-only.** The Context Store supports search operations only. Write operations like creating, updating, or deleting records always go through a direct API request.

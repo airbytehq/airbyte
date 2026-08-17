@@ -738,8 +738,21 @@ streams:
 # Instagram Rate limits are per app and our app have advanced access for Instagram endpoints.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 15) }}"
+  default_concurrency: "{{ config.get('num_workers', 20) }}"
   max_concurrency: 50
+
+# Facebook Graph API BUC (Business Use Case) rate limits are dynamic and impression-based.
+# This budget acts as a safety net to prevent excessive request bursts.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 200
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
 
 metadata:
   autoImportSchema:
@@ -810,7 +823,7 @@ spec:
         title: Number of concurrent threads
         minimum: 2
         maximum: 40
-        default: 15
+        default: 20
         examples:
           - 1
           - 2

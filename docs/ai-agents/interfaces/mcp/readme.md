@@ -7,11 +7,20 @@ sidebar_label: MCP
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Airbyte Agent MCP
+# Agent MCP
 
-The Airbyte Agent MCP connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
+The Agent MCP connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors/readme.md) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
+
+## When to use the MCP server
+
+- Your agent already supports the Model Context Protocol (Claude, ChatGPT, Cursor, VS Code, Codex).
+- You want zero-install setup — just add a URL and authenticate.
+- You prefer conversational, prompt-driven access to your connected data.
+- You don't need to run commands offline or in a CI pipeline.
+
+If you need to process large result sets, make many sequential calls in one turn, run long-running operations, or compose output with shell tools, use the [CLI](../cli/readme.md) instead. The CLI also provides fuller, prescriptive guidance through an installable agent skill; see [Use the CLI with AI agents](../cli/using-with-ai-agents.md). If you're building a Python agent with a framework like Pydantic AI or LangChain, see the [SDK](../sdk/readme.md). For non-Python backends or custom admin flows, see the [API](../api/readme.md).
 
 ## Requirements
 
@@ -23,20 +32,41 @@ Before you begin, make sure you have the following:
 
 - **Credentials for the connectors you want to use.** Each service requires its own authentication. For example, you need a Linear API key to connect Linear, or Salesforce OAuth credentials to connect Salesforce.
 
-## Add the Airbyte Agent MCP to your agent
+## Add the Agent MCP to your agent
 
 Select your client below for setup instructions. Each client requires you to authenticate with your Airbyte account before you can use the MCP server.
 
 <Tabs>
-<TabItem value="claude-code" label="Claude Code" default>
+<TabItem value="claude-desktop" label="Claude Desktop" default>
+
+Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `claude_desktop_config.json` file, as it only supports local servers.
+
+1. Open Claude Desktop and go to **Settings** > **Connectors**.
+
+2. Click **Add custom connector**.
+
+3. Enter the server name and URL: `https://mcp.airbyte.ai/mcp`
+
+4. Click **Add**.
+
+5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
+
+6. If you're not logged into Airbyte, log in now.
+
+7. Grant access to the Agent MCP.
+
+8. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
+
+</TabItem>
+<TabItem value="claude-code" label="Claude Code">
 
 Add the MCP server to your Claude Code command line tool.
 
 1. Run the following command in your terminal:
 
-    ```bash
-    claude mcp add --transport http airbyte-agent https://mcp.airbyte.ai/mcp
-    ```
+   ```bash
+   claude mcp add --transport http airbyte-agent https://mcp.airbyte.ai/mcp
+   ```
 
 2. Run Claude Code with `claude`.
 
@@ -48,9 +78,57 @@ Add the MCP server to your Claude Code command line tool.
 
 6. If you're not logged into Airbyte, log in now.
 
-7. Grant access to the Airbyte Agent MCP.
+7. Grant access to the Agent MCP.
 
 8. Return to Claude Code and begin using the MCP server.
+
+</TabItem>
+<TabItem value="chatgpt" label="ChatGPT">
+
+ChatGPT can connect to the Agent MCP from the ChatGPT app directory.
+
+:::note Workspace controls can limit app access
+The Airbyte Agent Engine app is currently available only in the United States. ChatGPT can turn off **Connect** based on your plan, geographic restrictions, or workspace settings. On Business plans, workspace administrators can turn off apps and control app actions. On Enterprise and Education plans, apps are off by default until a workspace owner or administrator enables them. Enterprise and Education administrators can also use RBAC to restrict who can use each app.
+:::
+
+1. Open [ChatGPT](https://chatgpt.com) on the web or in the app.
+
+2. Open the app directory. In the web UI, click **Apps** in the sidebar. In the app, click **Settings** > **Apps** > **Browse Apps**.
+
+3. Search or browse for **Airbyte Agent Engine** in the app directory.
+
+4. Open the **Airbyte Agent Engine** app page and click **Connect**.
+
+5. Click **Sign in with Airbyte Agent Engine**.
+
+6. If you're not logged into Airbyte, log in now and grant access.
+
+7. Open a new conversation.
+
+8. Ask ChatGPT to use Airbyte Agent Engine. For example, _"Use Airbyte Agent Engine to find open Salesforce opportunities."_ You can also explicitly add it to the conversation with `@Airbyte Agent Engine` or from **+** > **More** > **Airbyte Agent Engine**.
+
+ChatGPT controls whether write actions require confirmation. Workspace administrators can also restrict which app actions are available. Airbyte still enforces your Airbyte account permissions and each third-party service's credentials and scopes.
+
+</TabItem>
+<TabItem value="codex" label="Codex">
+
+Add the Agent MCP to your Codex command line tool.
+
+1. Run the following command in your terminal to add the server:
+
+   ```bash
+   codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
+   ```
+
+2. Codex detects that the server requires OAuth and opens your browser.
+
+3. If you're not logged into Airbyte, log in now.
+
+4. Grant access to the Agent MCP.
+
+5. Launch Codex with `codex`.
+
+6. Begin using the Agent MCP.
 
 </TabItem>
 <TabItem value="cursor" label="Cursor">
@@ -63,15 +141,15 @@ Add the MCP server to your Cursor app.
 
 3. In `mcp.json`, add:
 
-    ```json
-    {
-      "mcpServers": {
-        "Airbyte Agent MCP": {
-          "url": "https://mcp.airbyte.ai/mcp"
-        }
-      }
-    }
-    ```
+   ```json
+   {
+     "mcpServers": {
+       "Agent MCP": {
+         "url": "https://mcp.airbyte.ai/mcp"
+       }
+     }
+   }
+   ```
 
 4. Close `mcp.json` and return to Cursor Settings.
 
@@ -79,7 +157,7 @@ Add the MCP server to your Cursor app.
 
 6. If you're not logged into Airbyte, log in now.
 
-7. Grant access to the Airbyte Agent MCP.
+7. Grant access to the Agent MCP.
 
 8. Return to Cursor. The MCP server tools are now available.
 
@@ -96,7 +174,7 @@ Add the MCP server to Visual Studio Code. You can use a one-click install from t
 
 3. Select **Add to VS Code**. A new tab opens at `vscode.dev/redirect` and hands the install off to VS Code.
 
-4. Confirm the install in VS Code. The Airbyte Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
+4. Confirm the install in VS Code. The Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
 
 5. VS Code detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
 
@@ -114,7 +192,7 @@ If VS Code isn't installed, the click lands on the `vscode.dev` help page instea
 
 3. Enter the server URL: `https://mcp.airbyte.ai/mcp`
 
-4. Enter a server name, such as `Airbyte Agent MCP`.
+4. Enter a server name, such as `Agent MCP`.
 
 5. Choose whether to install the server in your user profile (**Global**) or the current workspace.
 
@@ -129,7 +207,7 @@ Run **MCP: Open User Configuration** from the Command Palette to open your user 
 ```json
 {
   "servers": {
-    "Airbyte Agent MCP": {
+    "Agent MCP": {
       "type": "http",
       "url": "https://mcp.airbyte.ai/mcp"
     }
@@ -152,7 +230,7 @@ Add the MCP server to Visual Studio Code Insiders. You can use a one-click insta
 
 3. Select **Add to VS Code Insiders**. A new tab opens at `insiders.vscode.dev/redirect` and hands the install off to VS Code Insiders.
 
-4. Confirm the install in VS Code Insiders. The Airbyte Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
+4. Confirm the install in VS Code Insiders. The Agent MCP server appears in your MCP server list, pointing at `https://mcp.airbyte.ai/mcp`.
 
 5. VS Code Insiders detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
 
@@ -170,7 +248,7 @@ If VS Code Insiders isn't installed, the click lands on the `insiders.vscode.dev
 
 3. Enter the server URL: `https://mcp.airbyte.ai/mcp`
 
-4. Enter a server name, such as `Airbyte Agent MCP`.
+4. Enter a server name, such as `Agent MCP`.
 
 5. Choose whether to install the server in your user profile (**Global**) or the current workspace.
 
@@ -185,7 +263,7 @@ Run **MCP: Open User Configuration** from the Command Palette to open your user 
 ```json
 {
   "servers": {
-    "Airbyte Agent MCP": {
+    "Agent MCP": {
       "type": "http",
       "url": "https://mcp.airbyte.ai/mcp"
     }
@@ -194,78 +272,6 @@ Run **MCP: Open User Configuration** from the Command Palette to open your user 
 ```
 
 Save the file. VS Code Insiders detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access.
-
-</TabItem>
-<TabItem value="claude-desktop" label="Claude Desktop">
-
-Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `claude_desktop_config.json` file, as it only supports local servers.
-
-1. Open Claude Desktop and go to **Settings** > **Connectors**.
-
-2. Click **Add custom connector**.
-
-3. Enter the server name and URL: `https://mcp.airbyte.ai/mcp`
-
-4. Click **Add**.
-
-5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
-
-6. If you're not logged into Airbyte, log in now.
-
-7. Grant access to the Airbyte Agent MCP.
-
-8. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
-
-</TabItem>
-<TabItem value="codex" label="Codex">
-
-Add the MCP server to your Codex command line tool.
-
-1. Run the following command in your terminal to add the server:
-
-    ```bash
-    codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
-    ```
-
-2. Codex detects that the server requires OAuth and opens your browser.
-
-3. If you're not logged into Airbyte, log in now.
-
-4. Grant access to the Airbyte Agent MCP.
-
-5. Launch Codex with `codex`.
-
-6. Begin using the MCP server.
-
-</TabItem>
-<TabItem value="chatgpt" label="ChatGPT">
-
-ChatGPT supports remote MCP servers through its [Developer Mode](https://platform.openai.com/docs/guides/developer-mode) feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
-
-:::note Admin access required for Business and Enterprise/Education plans
-On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create connectors. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
-:::
-
-1. Open [ChatGPT](https://chatgpt.com) on the web.
-
-2. Go to **Settings** > **Apps & Connectors** > **Advanced settings** (at the bottom of the page).
-
-3. Toggle **Developer mode** to **ON**.
-
-4. Go back to **Settings** > **Apps & Connectors**.
-
-5. Click **Create App**. This button only appears when Developer Mode is enabled.
-
-6. Enter the connector details:
-
-    - **Connector name**: `Airbyte Agents`
-    - **Connector URL**: `https://mcp.airbyte.ai/mcp`
-
-7. Click **Create**. ChatGPT connects to the MCP server and detects its tools. The connector appears under **Settings** > **Apps & Connectors**.
-
-8. If you're not logged into Airbyte, log in now and grant access.
-
-9. Open a new conversation to start using the MCP server.
 
 </TabItem>
 <TabItem value="other" label="Other clients">
@@ -281,7 +287,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 ```json
 {
   "mcpServers": {
-    "Airbyte Agent MCP": {
+    "Agent MCP": {
       "url": "https://mcp.airbyte.ai/mcp"
     }
   }
@@ -299,7 +305,7 @@ After you connect the MCP server, your agent can discover and call its tools aut
 
 ### Add a connector
 
-To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../../connectors). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
+To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../../connectors/readme.md). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
 
 ```text
 Connect my Linear account
@@ -345,9 +351,19 @@ How many Zendesk tickets are in "open" status?
 
 The agent uses field selection to return only the data you need, which reduces token usage and improves response quality.
 
+### How the agent introspects a connector
+
+Under the hood, the agent uses a small set of skill-docs tools to learn a connector before it acts, so it doesn't need every entity and action loaded into its context up front:
+
+- `inspect_connector` reports a connector's metadata, its `docs_skill_id`, and Context Store readiness.
+- `read_skill_docs` returns a connector's usage docs — an outline of entities and actions, or a specific section when the agent passes one.
+- `list_skills` and `search_skills` browse and search the skills available to your agent.
+
+The agent inspects the connector, reads the relevant skill docs, then executes — the same inspect → read docs → execute flow the [SDK](../sdk/execute.md) and [API](../api/execute.md) expose. Most clients call these tools automatically, so you just prompt in natural language.
+
 ## How authentication works
 
-The Airbyte Agent MCP uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
+The Agent MCP uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
 
 ### Layer 1: Authenticating with the MCP server
 
@@ -430,9 +446,9 @@ For example:
 
 Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
 
-When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [Context Store](../../concepts/context-store). The Context Store is a managed, searchable replica of select entities from all your connected data sources. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
+When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [Context Store](../../concepts/context-store.md). The Context Store is a managed, searchable replica of select entities from all your connected data sources. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
 
-For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors).
+For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors/readme.md).
 
 ## Troubleshooting
 
@@ -454,23 +470,17 @@ For the complete list of connectors and their supported entities, see [Agent con
 - Make sure you visited the credential URL the agent provided and completed the form in the browser.
 - If the flow timed out, ask the agent to start a new credential flow.
 
-### ChatGPT doesn't show the "Create" button
+### ChatGPT connection fails
 
-- Verify that Developer Mode is toggled on in **Settings** > **Apps & Connectors** > **Advanced settings**.
-- Make sure your ChatGPT plan supports Developer Mode. It requires Pro, Plus, Business, Enterprise, or Education. Free plans don't have access.
-- After enabling Developer Mode, go back to **Settings** > **Apps & Connectors**. The **Create** button appears at the top of the page.
+- If **Connect** is off, check whether your plan, geographic restrictions, or workspace settings limit access.
+- On Enterprise and Education plans, ask a workspace owner or administrator to enable Airbyte Agent Engine from **Workspace settings** > **Apps**.
+- If the OAuth flow doesn't complete, try deleting Airbyte Agent Engine in **Settings** > **Apps** and connecting it again.
 
-### ChatGPT can't connect to the MCP server
+### ChatGPT doesn't use MCP server tools
 
-- Confirm the server URL is exactly `https://mcp.airbyte.ai/mcp` with no trailing slash or extra path.
-- If the OAuth flow doesn't complete, try deleting the connector in **Settings** > **Apps & Connectors** and creating it again.
-- On Business, Enterprise, and Education plans, you must be a workspace owner or admin to create connectors. On Pro and Plus plans, any user can enable Developer Mode directly.
-
-### ChatGPT doesn't use the MCP server tools
-
-ChatGPT may not realize it has access to data through the MCP server. If ChatGPT ignores the MCP or tries to answer without using your connected data, instruct it directly. For example: *"Use the Airbyte MCP to discover tools that can help you work with my Salesforce connector."*
+ChatGPT may not realize it has access to data through the MCP server. If ChatGPT ignores the MCP or tries to answer without using your connected data, instruct it directly. For example: _"Use Airbyte Agent Engine to discover tools that can help work with the Salesforce connector."_
 
 ### Queries return unexpected results
 
 - Ask the agent to describe the available entities before querying, so it picks the right one.
-- For time-based queries, the agent resolves relative dates like "this week" or "last month" automatically. The MCP server returns timestamps in UTC; see [Time zones](../../concepts/time-zones) for how this interacts with your local time.
+- For time-based queries, the agent resolves relative dates like "this week" or "last month" automatically. The MCP server returns timestamps in UTC; see [Time zones](../../concepts/time-zones.md) for how this interacts with your local time.

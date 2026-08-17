@@ -201,6 +201,12 @@ class GithubStreamABC(HttpStream, ABC):
                     f"GitHub returned HTTP 502 Bad Gateway for stream `{self.name}` after exhausting retries. "
                     f"This is usually transient — the next sync attempt should succeed."
                 )
+            elif e._exception.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                error_msg = (
+                    f"GitHub returned HTTP 504 Gateway Timeout for stream `{self.name}` after exhausting retries "
+                    f"and reducing the GraphQL page size. The next sync attempt should succeed; "
+                    f'if 504s persist, lower "Page size for large streams" in the source configuration.'
+                )
             else:
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
@@ -232,11 +238,15 @@ class GithubStream(GithubStreamABC):
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if (
             isinstance(exception, DefaultBackoffException)
-            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and exception.response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT)
             and self.large_stream
             and self.page_size > 1
         ):
-            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+            return (
+                f'Please try to decrease the "Page size for large streams" below {self.page_size}. '
+                f'The stream "{self.name}" is a large stream, such streams can fail with '
+                f'{exception.response.status_code} for high "page_size" values.'
+            )
         return super().get_error_display_message(exception)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -250,6 +260,39 @@ class GithubStream(GithubStreamABC):
                 reactions["minus_one"] = reactions.pop("-1")
 
         return record
+
+    def _safe_json_list(self, response: requests.Response, key: Optional[str] = None) -> Optional[list]:
+        """Parse JSON from `response` and return a list, or ``None`` on failure.
+
+        When `key` is provided the body is expected to be a dict and the list is
+        extracted via ``body[key]``.  When `key` is ``None`` the body itself must
+        be a list.  On any parse/validation failure a warning is logged and
+        ``None`` is returned so callers can short-circuit gracefully.
+        """
+        try:
+            body = response.json()
+        except ValueError:
+            self.logger.warning(
+                "`%s` received non-JSON response (HTTP %s, first 50 chars: %r).",
+                self.name,
+                response.status_code,
+                response.text[:50],
+            )
+            return None
+        if key is not None:
+            items = (body or {}).get(key)
+        else:
+            items = body
+        if not isinstance(items, list):
+            self.logger.warning(
+                "`%s` response has unexpected structure (HTTP %s, key=%r, got %s).",
+                self.name,
+                response.status_code,
+                key,
+                type(items).__name__,
+            )
+            return None
+        return items
 
     def parse_response(
         self,
@@ -817,6 +860,16 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     cursor_field = "created_at"
     is_sorted = "asc"
+    # The Releases GraphQL query is high-cost on the server side: every node
+    # materializes `description` and `descriptionHTML`, which forces GitHub
+    # to render each release body to HTML. On repositories with long release
+    # notes, a page_size of 100 pushes the resolver past its internal 10s
+    # deadline and returns 504 Gateway Timeout (reproduced deterministically
+    # against nodejs/node: first=100 -> 504 in ~11s; first=10 -> 200 in ~3s).
+    # `releaseAssets` / `reactionGroups` / `mentions` are NOT the cost driver
+    # — stripping them does not fix the timeout, only lowering `first` does.
+    # Mark as large_stream so it picks up the smaller default page size.
+    large_stream = True
 
     GRAPHQL_REACTION_TO_REST = {
         "THUMBS_UP": "plus_one",
@@ -1595,8 +1648,10 @@ class Workflows(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/workflows"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("workflows")
-        for record in response:
+        items = self._safe_json_list(response, key="workflows")
+        if items is None:
+            return
+        for record in items:
             yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value):
@@ -1620,8 +1675,10 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/actions/runs"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        response = response.json().get("workflow_runs")
-        for record in response:
+        items = self._safe_json_list(response, key="workflow_runs")
+        if items is None:
+            return
+        for record in items:
             yield record
 
     def read_records(
@@ -1699,7 +1756,10 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        for record in response.json()["jobs"]:
+        items = self._safe_json_list(response, key="jobs")
+        if items is None:
+            return
+        for record in items:
             if record.get(self.cursor_field):
                 yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1885,8 +1945,11 @@ class IssueTimelineEvents(GithubStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        events_list = response.json()
         record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
+        events_list = self._safe_json_list(response)
+        if events_list is None:
+            yield record
+            return
         for event in events_list:
             record[event["event"]] = event
         yield record
