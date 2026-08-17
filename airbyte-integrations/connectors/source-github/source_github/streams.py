@@ -108,10 +108,7 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if getattr(self, "requires_repo_admin_access", False) and response.status_code in (
-            requests.codes.NOT_FOUND,
-            requests.codes.FORBIDDEN,
-        ):
+        if not response.ok:
             return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
