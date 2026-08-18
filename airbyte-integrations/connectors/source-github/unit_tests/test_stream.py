@@ -1068,25 +1068,25 @@ def test_stream_comments(requests_mock):
 
     api_url = "https://api.github.com/repos/organization/repository/issues/comments"
 
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
+    requests_mock.get(f"{api_url}?per_page=100&since=2022-02-02T10:10:01Z", json=data[0:2])
 
     requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:10:04Z",
+        f"{api_url}?per_page=100&since=2022-02-02T10:10:04Z",
         json=data[1:3],
         headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=100&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
         },
     )
 
     requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:10:04Z",
+        f"{api_url}?per_page=100&page=2&since=2022-02-02T10:10:04Z",
         json=data[3:5],
         headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=100&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
         },
     )
 
-    requests_mock.get(f"{api_url}?per_page=2&page=3&since=2022-02-02T10:10:04Z", json=data[5:])
+    requests_mock.get(f"{api_url}?per_page=100&page=3&since=2022-02-02T10:10:04Z", json=data[5:])
 
     data = [
         {"id": 1, "updated_at": "2022-02-02T10:11:02Z"},
@@ -1099,26 +1099,26 @@ def test_stream_comments(requests_mock):
 
     api_url = "https://api.github.com/repos/airbytehq/airbyte/issues/comments"
 
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
+    requests_mock.get(f"{api_url}?per_page=100&since=2022-02-02T10:10:01Z", json=data[0:2])
 
     requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:11:04Z",
+        f"{api_url}?per_page=100&since=2022-02-02T10:11:04Z",
         json=data[1:3],
         headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
+            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=100&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
         },
     )
 
     requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:11:04Z",
+        f"{api_url}?per_page=100&page=2&since=2022-02-02T10:11:04Z",
         json=data[3:5],
         headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
+            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=100&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
         },
     )
 
     requests_mock.get(
-        f"{api_url}?per_page=2&page=3&since=2022-02-02T10:11:04Z",
+        f"{api_url}?per_page=100&page=3&since=2022-02-02T10:11:04Z",
         json=data[5:],
     )
 

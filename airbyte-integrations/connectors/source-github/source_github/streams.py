@@ -716,6 +716,11 @@ class Comments(IncrementalMixin, GithubStream):
     large_stream = True
     max_retries = 7
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Issue comments are small payloads; full pages cut request count ~10x with no observed errors.
+        self.page_size = constants.DEFAULT_PAGE_SIZE
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
 
