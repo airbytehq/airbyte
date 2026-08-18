@@ -10,8 +10,6 @@ import requests
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .utils import rotate_authenticator_token
-
 
 class GithubStreamABCBackoffStrategy(BackoffStrategy):
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
@@ -24,28 +22,23 @@ class GithubStreamABCBackoffStrategy(BackoffStrategy):
         # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
         # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
         # we again could have 5000 per another hour.
+        #
+        # The wait returned here is only paid when no other token can serve the request. The
+        # shared RateLimitedMultipleTokenAuthenticator zeroes the rejected token's quota pool
+        # from the response headers, and `HttpClient` asks it (`has_alternative_token`) before
+        # sleeping on a rate limit, retrying on a spare token in 0.1s instead. That replaces the
+        # connector-side rotation this strategy used to do at the 10-minute mark, and gives the
+        # Python and manifest streams one shared implementation.
         if isinstance(response_or_exception, requests.Response):
             min_backoff_time = 60.0
             retry_after = response_or_exception.headers.get("Retry-After")
             if retry_after is not None:
-                backoff_time_in_seconds = max(float(retry_after), min_backoff_time)
-                return self.get_waiting_time(backoff_time_in_seconds)
+                return max(float(retry_after), min_backoff_time)
 
             reset_time = response_or_exception.headers.get("X-RateLimit-Reset")
             if reset_time:
-                backoff_time_in_seconds = max(float(reset_time) - time.time(), min_backoff_time)
-                return self.get_waiting_time(backoff_time_in_seconds)
+                return max(float(reset_time) - time.time(), min_backoff_time)
         return None
-
-    def get_waiting_time(self, backoff_time_in_seconds: Optional[float]) -> Optional[float]:
-        if backoff_time_in_seconds < 60 * 10:  # type: ignore[operator]
-            return backoff_time_in_seconds
-        # Waiting out a reset that is more than 10 minutes away is wasteful when another token
-        # is available, so rotate and retry almost immediately instead. With nothing to rotate
-        # to, waiting is the only option — returning 1 there would busy-retry a live rate limit.
-        if rotate_authenticator_token(self.stream._http_client._session.auth):
-            return 1  # New token will be used in next request
-        return backoff_time_in_seconds
 
 
 class ContributorActivityBackoffStrategy(BackoffStrategy):

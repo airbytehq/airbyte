@@ -20,9 +20,20 @@ the **transformed** config — a different `api_url`, token list or `max_waiting
 different instance. `test_authenticator_instance_is_shared_with_manifest_streams` guards this;
 do not add a second authenticator when migrating further streams.
 
-Reactive token rotation (rotate instead of waiting out a long reset) lives in
-`utils.rotate_authenticator_token`, called from `GithubStreamABCBackoffStrategy`. It uses CDK
-private state as a fallback until the CDK exposes a public rotation hook.
+Reactive token rotation is the CDK's job, not the connector's. Each `TokenQuota` pool in the
+manifest declares `remaining_header`/`reset_header`/`limit_header`, so `HttpClient` feeds
+every response back into the authenticator (`update_from_response`): a primary rate limit
+arrives as `X-RateLimit-Remaining: 0`, the rejected token's pool goes to zero and the next
+request rotates. `exhaustion_status_codes` is intentionally left empty — GitHub uses 403 for
+secondary limits and missing scopes too, and listing it would park a token whose primary
+quota is fine. Before sleeping on a rate limit, `HttpClient` also asks
+`has_alternative_token` and retries in 0.1s on a spare token instead of waiting out the reset
+window. Do not reintroduce connector-side rotation — a previous version poked the
+authenticator's private `_tokens_iter`, which this replaced.
+
+Not rotated, deliberately: a secondary rate limit, where the token's counters stay positive.
+GitHub scopes secondary limits per account, so another token of the same account gets rejected
+the same way; the reset wait is the correct response there.
 
 ## Incremental Stream Considerations
 

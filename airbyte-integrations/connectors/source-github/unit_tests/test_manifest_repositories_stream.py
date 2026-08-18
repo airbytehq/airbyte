@@ -225,6 +225,45 @@ def test_primary_rate_limit_is_retried(sleep_mock, rate_limit_mock_response, req
 
 
 @patch("time.sleep")
+def test_primary_rate_limit_rotates_instead_of_waiting_out_the_reset(sleep_mock, rate_limit_mock_response, requests_mock):
+    """With a second token available, a primary rate limit must cost a rotation, not the reset
+    window. `X-RateLimit-Remaining: 0` spends the rejected token's pool (CDK 7.26.0 reconciles
+    pools against response headers), `HttpClient` then asks `has_alternative_token` and retries
+    on the spare token immediately instead of sleeping until `X-RateLimit-Reset`.
+
+    The reset matches the one the /rate_limit fixture seeds: a response describing an older
+    window than the one the authenticator holds is ignored on purpose, and in production both
+    values come from the same GitHub quota window."""
+    config = {"credentials": {"personal_access_token": "token1,token2"}, "repositories": ["rotationorg/*"]}
+    seeded_reset = 4070908800
+    tokens_used = []
+
+    def respond(request, context):
+        # Recorded at call time: requests_mock's history can hand back the same mutated
+        # PreparedRequest for both attempts, which would hide the rotation being asserted.
+        tokens_used.append(request.headers["Authorization"])
+        if len(tokens_used) == 1:
+            context.status_code = 403
+            context.headers.update({"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(seeded_reset)})
+            return {"message": "API rate limit exceeded for user ID 1."}
+        return [_repo(2, "rotationorg/compose")]
+
+    requests_mock.get("https://api.github.com/orgs/rotationorg/repos", json=respond)
+
+    records, statuses, error = _read(config)
+
+    assert error is None
+    assert _names(records) == ["rotationorg/compose"]
+    assert statuses[-1] == "COMPLETE"
+    # Which token goes first depends on rotation earlier in the sync; what matters is that the
+    # retry did not re-send on the token GitHub just rejected.
+    assert len(tokens_used) == 2 and tokens_used[0] != tokens_used[1]
+    assert set(tokens_used) == {"token token1", "token token2"}
+    # The 0.1s rotation backoff, not the 60s floor the reset-window strategy would have returned.
+    assert max(call.args[0] for call in sleep_mock.call_args_list) < 60
+
+
+@patch("time.sleep")
 def test_rate_limit_backoff_respects_min_wait(sleep_mock, rate_limit_mock_response, requests_mock):
     """A reset timestamp already in the past must still back off for the 60s floor the legacy
     strategy enforced (backoff_strategies.py:26), not retry immediately against a quota that

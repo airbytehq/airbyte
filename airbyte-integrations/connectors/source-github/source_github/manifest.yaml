@@ -28,11 +28,31 @@ definitions:
           remaining_path: ["resources", "core", "remaining"]
           reset_path: ["resources", "core", "reset"]
           limit_path: ["resources", "core", "limit"]
+          # Reconcile the pool against every response, not just the initial /rate_limit
+          # seeding. GitHub returns these headers on every authenticated REST response, and
+          # the local counters drift whenever the token is shared with another client, when
+          # requests overlap under `concurrency_level`, or when a sync outlives its seeding.
+          remaining_header: "X-RateLimit-Remaining"
+          reset_header: "X-RateLimit-Reset"
+          limit_header: "X-RateLimit-Limit"
+          # No `exhaustion_status_codes`, deliberately. GitHub's 403 is not exclusively a
+          # rate-limit code: a secondary limit (403 + `Retry-After`, primary quota untouched)
+          # and a missing-scope denial both use it, and neither carries
+          # `X-RateLimit-Remaining: 0`. Listing 403 would zero the pool for those, which on a
+          # single-token config leaves nothing to rotate to and turns a retryable wait into
+          # "Rate limit is exceeded for all provided tokens." Primary exhaustion needs no
+          # status code here: GitHub reports it as `X-RateLimit-Remaining: 0`, which the
+          # header reconciliation above already picks up.
         - type: TokenQuota
           name: graphql
           remaining_path: ["resources", "graphql", "remaining"]
           reset_path: ["resources", "graphql", "reset"]
           limit_path: ["resources", "graphql", "limit"]
+          # /graphql answers with the same header names, scoped to the separate GraphQL
+          # point budget, so the pool reconciles the same way as `rest`.
+          remaining_header: "X-RateLimit-Remaining"
+          reset_header: "X-RateLimit-Reset"
+          limit_header: "X-RateLimit-Limit"
           matchers:
             - type: HttpRequestRegexMatcher
               url_path_pattern: "/graphql"
@@ -80,20 +100,18 @@ definitions:
           # exponential backoff. Accepted deliberately: a slower retry on a rare 5xx beats
           # burning the retry budget against a rate limit that hasn't reset (the legacy
           # strategy floored that path at 60s too).
-          # NOTE: the legacy strategy also rotated tokens instead of waiting when the
-          # computed backoff exceeded 10 minutes. That *reactive* rotation has no declarative
-          # equivalent yet — this authenticator only rotates *proactively*, when its own local
-          # quota counters hit zero. When GitHub rejects a request whose local counters still
-          # look healthy (token shared across connections, in-flight overcount under
-          # concurrency, or a secondary limit), the manifest streams wait out the reset window
-          # instead of rotating. The Python streams still rotate here, via
-          # `utils.rotate_authenticator_token` called from `GithubStreamABCBackoffStrategy` —
-          # it drives this same shared authenticator, so a rotation triggered there also moves
-          # the manifest streams onto the next token.
-          # Follow-up: give RateLimitedMultipleTokenAuthenticator a public
-          # "mark this token exhausted from these response headers and rotate" hook in the
-          # CDK, call it from this error handler, and drop the private-attribute fallback in
-          # `rotate_authenticator_token`.
+          # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
+          # authenticator's counters against every response (the `*_header` fields on the
+          # quota pools above), so a primary rate limit — which GitHub reports as
+          # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
+          # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
+          # spare token it retries in 0.1s on that token instead of waiting out this window.
+          # This covers the reactive rotation the legacy strategy did at the 10-minute mark
+          # (backoff_strategies.py) and applies to manifest and Python streams alike, since
+          # both share one authenticator.
+          # Still waited out, correctly: a secondary rate limit, where the token's counters
+          # stay positive. GitHub scopes secondary limits per account, so rotating to another
+          # token of the same account would only be rejected again.
       response_filters:
         - type: HttpResponseFilter
           predicate: "{{ 'Retry-After' in headers }}"

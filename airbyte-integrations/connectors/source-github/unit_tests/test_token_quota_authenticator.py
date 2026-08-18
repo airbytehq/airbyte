@@ -11,7 +11,7 @@ import requests
 from freezegun import freeze_time
 from source_github import SourceGithub
 from source_github.streams import Organizations
-from source_github.utils import read_full_refresh, rotate_authenticator_token
+from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.rate_limited_multiple_token import (
@@ -201,9 +201,9 @@ def test_exhaustion_waits_for_reset_then_refreshes_counters(sleep_mock, requests
     list(read_full_refresh(stream))
 
     all_sleeps = [c.args[0] for c in sleep_mock.call_args_list]
-    assert (
-        sum(all_sleeps) >= accepted_waiting_time_in_seconds
-    ), f"Expected total sleep >= {accepted_waiting_time_in_seconds}s, got {sum(all_sleeps):.1f}s"
+    assert sum(all_sleeps) >= accepted_waiting_time_in_seconds, (
+        f"Expected total sleep >= {accepted_waiting_time_in_seconds}s, got {sum(all_sleeps):.1f}s"
+    )
     heartbeat_sleeps = [s for s in all_sleeps if s >= 1.0]
     assert len(heartbeat_sleeps) > 1, "Expected multiple heartbeat sleep chunks, not a single blocking sleep"
     # Counters were reseeded to 500 each after the wait; the two remaining pages were charged
@@ -309,46 +309,97 @@ def test_api_budget_no_throttle_when_some_tokens_have_headroom(sleep_mock, reque
     sleep_mock.assert_not_called()
 
 
-def test_rotate_authenticator_token_advances_the_active_token(rate_limit_mock_response):
+def _rate_limited_response(remaining, reset_at, status_code=403):
+    response = requests.Response()
+    response.status_code = status_code
+    response.headers["X-RateLimit-Remaining"] = str(remaining)
+    response.headers["X-RateLimit-Reset"] = str(int(reset_at))
+    response.headers["X-RateLimit-Limit"] = "5000"
+    return response
+
+
+def test_response_headers_zero_the_pool_of_the_rejected_token(rate_limit_mock_response):
+    """A 403 the server sends with `X-RateLimit-Remaining: 0` must spend the sending token's
+    pool even though its local counter was just seeded at 5000 — that drift is what used to
+    keep the connector hammering one exhausted token."""
     _, authenticator = _source_and_authenticator("token1,token2")
+    request = _prepared_request()
+    authenticator(request)
 
-    assert authenticator._active_token == "token1"
-    assert rotate_authenticator_token(authenticator) is True
-    assert authenticator._active_token == "token2"
+    assert _remaining(authenticator, "token1") > 0
+    authenticator.update_from_response(request, _rate_limited_response(0, 4070908800))
+
+    assert _remaining(authenticator, "token1") == 0
+    assert _remaining(authenticator, "token2") == 5000
 
 
-def test_rotate_authenticator_token_is_a_noop_with_a_single_token(rate_limit_mock_response):
+def test_secondary_rate_limit_leaves_the_pool_untouched(rate_limit_mock_response):
+    """A secondary limit (403 + Retry-After, no quota headers) does not spend the primary
+    quota, so the pool must survive it. Zeroing here would leave a single-token config with
+    nothing to rotate to and turn a retryable wait into a hard failure."""
+    _, authenticator = _source_and_authenticator("token1,token2")
+    request = _prepared_request()
+    authenticator(request)
+    response = requests.Response()
+    response.status_code = 403
+    response.headers["Retry-After"] = "120"
+    before = _remaining(authenticator, "token1")
+
+    authenticator.update_from_response(request, response)
+
+    assert _remaining(authenticator, "token1") == before
+
+
+def test_permission_403_does_not_park_a_healthy_token(rate_limit_mock_response):
+    """GitHub returns 403 for missing scopes and SSO too, with the quota headers intact. Those
+    must leave the token usable, or one unreadable repo would take the token out of service."""
+    _, authenticator = _source_and_authenticator("token1,token2")
+    request = _prepared_request()
+    authenticator(request)
+
+    authenticator.update_from_response(request, _rate_limited_response(4987, 4070908800))
+
+    assert _remaining(authenticator, "token1") == 4987
+
+
+def test_exhausted_token_reports_an_alternative_and_rotates(rate_limit_mock_response):
+    """`HttpClient` asks `has_alternative_token` before sleeping out a rate limit; answering
+    True is what turns a reset-window wait into a 0.1s retry on the next token."""
+    _, authenticator = _source_and_authenticator("token1,token2")
+    request = _prepared_request()
+    authenticator(request)
+    assert authenticator.has_alternative_token(request) is False
+
+    authenticator.update_from_response(request, _rate_limited_response(0, 4070908800))
+
+    assert authenticator.has_alternative_token(request) is True
+    next_request = _prepared_request()
+    authenticator(next_request)
+    assert next_request.headers["Authorization"] == "token token2"
+
+
+def test_single_token_reports_no_alternative(rate_limit_mock_response):
+    """With nothing to rotate to, the reset wait is the only correct response."""
+    _, authenticator = _source_and_authenticator("token1")
+    request = _prepared_request()
+    authenticator(request)
+
+    authenticator.update_from_response(request, _rate_limited_response(0, 4070908800))
+
+    assert authenticator.has_alternative_token(request) is False
+
+
+def test_manifest_declares_response_headers_on_every_quota_pool(rate_limit_mock_response):
+    """Without these fields the authenticator is seeded once from /rate_limit and never
+    reconciled, which is the drift CDK 7.26.0 fixed — guard against dropping them."""
     _, authenticator = _source_and_authenticator("token1")
 
-    assert rotate_authenticator_token(authenticator) is False
-    assert authenticator._active_token == "token1"
-
-
-def test_rotate_authenticator_token_prefers_a_public_cdk_hook(rate_limit_mock_response):
-    """The helper reaches into private state only as a fallback; a public rotation API on the
-    CDK authenticator takes precedence, so the follow-up swap is a no-op for callers."""
-    _, authenticator = _source_and_authenticator("token1,token2")
-    calls = []
-    authenticator.rotate_token = lambda: calls.append(1)
-
-    assert rotate_authenticator_token(authenticator) is True
-    assert calls == [1]
-    assert authenticator._active_token == "token1", "the public hook should own rotation"
-
-
-def test_backoff_strategy_rotates_instead_of_waiting_out_a_long_reset(rate_limit_mock_response):
-    _, authenticator = _source_and_authenticator("token1,token2")
-    stream = Organizations(organizations=["org1"], authenticator=authenticator)
-    strategy = stream.get_backoff_strategy()
-
-    assert strategy.get_waiting_time(15 * 60) == 1
-    assert authenticator._active_token == "token2"
-
-
-def test_backoff_strategy_waits_when_there_is_no_token_to_rotate_to(rate_limit_mock_response):
-    """With a single token, returning 1 would busy-retry against a live rate limit."""
-    _, authenticator = _source_and_authenticator("token1")
-    stream = Organizations(organizations=["org1"], authenticator=authenticator)
-    strategy = stream.get_backoff_strategy()
-
-    assert strategy.get_waiting_time(15 * 60) == 15 * 60
+    pools = {quota.name: quota for quota in authenticator._quotas}
+    assert set(pools) == {"rest", "graphql"}
+    for quota in pools.values():
+        assert quota.remaining_header == "X-RateLimit-Remaining"
+        assert quota.reset_header == "X-RateLimit-Reset"
+        assert quota.limit_header == "X-RateLimit-Limit"
+        # 403 is not exclusively a rate-limit code on GitHub, so no exhaustion codes here.
+        assert quota.exhaustion_status_codes == []
+        assert quota.is_response_aware
