@@ -156,6 +156,8 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 9. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
 10. Click **Set up source** and wait for the tests to complete.
 
+<!-- /env:oss -->
+
 <FieldAnchor field="num_worker">
 
 ### Sync concurrency
