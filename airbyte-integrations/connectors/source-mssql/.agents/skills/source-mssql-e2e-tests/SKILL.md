@@ -187,13 +187,20 @@ that some assertions rely on.
 - _Race on first `sqlcmd`_ → SQL Server 2022 takes around 15 seconds to
   accept connections cold. `start-backend.sh` polls until `SELECT 1`
   succeeds before returning.
-- _Catalog schema drift across major versions_ → the bulk-CDK schema
-  validator on `source-mssql:4.3.x` requires `is_file_based`,
+- _Configured-stream fields the validator rejects as null_ → the
+  bulk-CDK schema validator requires `is_file_based`, `cursor_field`,
   `generation_id`, `minimum_generation_id`, `sync_id`,
   `destination_object_name`, and `include_files` on every
-  `ConfiguredAirbyteStream`. On `4.4.x` they default. Catalog fixtures
-  used by this and dependent skills populate them so the same fixtures
-  work across both majors.
+  `ConfiguredAirbyteStream`; omitting them fails with
+  `Null value is not allowed. (code: 1021)`. This is not 4.3.x-only —
+  verified on `4.4.12` and `5.0.0` too. `discover` does not emit
+  `is_file_based`, so `make-catalog.sh` fills it in, and the catalog
+  fixtures shipped with this and dependent skills populate all of them.
+- _A failed `check` does not fail the harness_ → the CDK exits 0 even
+  when it emits `CONNECTION_STATUS` with `status: FAILED`, so `run.sh`
+  returns 0. Assert on the status message yourself (see
+  [Asserting on output](#asserting-on-output)) rather than on the exit
+  code when the repro hinges on `check`.
 
 ## Tear-down
 

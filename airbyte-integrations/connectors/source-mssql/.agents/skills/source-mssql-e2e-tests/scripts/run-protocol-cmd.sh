@@ -82,10 +82,34 @@ else
 fi
 set -e
 
+if [[ -n "${CONTROL_VERSION:-}" ]]; then
+  # The comparison report has no "- **Exit Code:**" line; it reports each
+  # version in a table and the overall verdict on the Result line. A
+  # regression is a failure even when the target's own exit code is 0,
+  # which is the case for `check` (the CDK exits 0 on a FAILED status).
+  RESULT_LINE="$(grep -m 1 -E '^\*\*Result:\*\*' "$OUT_DIR/report.md" 2>/dev/null || true)"
+  if [[ -z "$RESULT_LINE" ]]; then
+    echo "[run-protocol-cmd] no comparison verdict in $OUT_DIR/report.md" >&2
+    exit 1
+  fi
+  echo "[run-protocol-cmd] $RESULT_LINE" >&2
+  if [[ "$RESULT_LINE" == *"REGRESSION DETECTED"* ]]; then
+    exit 1
+  fi
+  TARGET_RC="$(
+    grep -m 1 -E '^\| Target \(' "$OUT_DIR/report.md" 2>/dev/null \
+      | awk -F '|' '{gsub(/[^0-9]/, "", $3); print $3}' || true
+  )"
+  exit "${TARGET_RC:-1}"
+fi
+
 CONNECTOR_RC="$(
-  grep -E '^- \*\*Exit Code:\*\*' "$OUT_DIR/report.md" 2>/dev/null \
+  { grep -E '^- \*\*Exit Code:\*\*' "$OUT_DIR/report.md" 2>/dev/null \
     | head -n 1 \
     | grep -oE '[0-9]+' \
-    | head -n 1
+    | head -n 1; } || true
 )"
+if [[ -z "$CONNECTOR_RC" ]]; then
+  echo "[run-protocol-cmd] no exit code in $OUT_DIR/report.md" >&2
+fi
 exit "${CONNECTOR_RC:-1}"

@@ -3,8 +3,8 @@ include = [
 ]
 
 [tasks.e2e-local]
-help = "Run the local e2e harness end-to-end (backend, fixtures, protocol command, teardown). Pass --control-version=<tag> for a prove-fix target-vs-control comparison. See .agents/skills/source-mssql-e2e-tests/SKILL.md."
-cmd = "${POE_PWD}/.agents/skills/source-mssql-e2e-tests/scripts/run.sh ${run_args}"
-args = [
-  { name = "run_args", positional = true, multiple = true, help = "Arguments forwarded to run.sh (e.g. --command=read --control-version=4.3.3)" }
-]
+help = "Run the local e2e harness end-to-end (backend, fixtures, protocol command, teardown). Arguments are forwarded to run.sh; pass --control-version=<tag> for a prove-fix target-vs-control comparison, and --help for the full list. See .agents/skills/source-mssql-e2e-tests/SKILL.md."
+# No `args` block: poe forwards the trailing CLI arguments verbatim. Declaring
+# them as a positional `multiple` arg instead makes poe's own parser claim the
+# leading --flags and reject the invocation.
+cmd = "${POE_PWD}/.agents/skills/source-mssql-e2e-tests/scripts/run.sh"

@@ -104,13 +104,18 @@ directly.
   script in the generic skill handles this: it inspects the backend's
   bridge IP and substitutes it into the config template before each
   invocation.
-- **Connector run on `4.3.x` rejects the catalog with `Validation error(s)`.**
-  Bulk-CDK on `4.3.x` requires `is_file_based`, `generation_id`,
+- **A connector run rejects the catalog with `Validation error(s)`.**
+  Bulk-CDK requires `is_file_based`, `cursor_field`, `generation_id`,
   `minimum_generation_id`, `sync_id`, `destination_object_name`, and
-  `include_files` to be present on every configured stream.
-  `4.4.x` made these nullable. The catalog fixtures shipped with the
-  CDC skill populate all of them so the same fixtures drive repros on
-  both major versions.
+  `include_files` on every configured stream, and rejects them as null
+  with `code: 1021`. This is not limited to `4.3.x` — `4.4.12` and
+  `5.0.0` reject them too. `discover` never emits `is_file_based`, so
+  `make-catalog.sh` fills it in; the catalog fixtures shipped with the
+  CDC skill populate all of them.
+- **A `check` that fails still exits 0.** The CDK emits
+  `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the harness
+  cannot surface it as a non-zero exit. Assert on the status message
+  when a repro hinges on `check`.
 - **Debezium engine starts but produces no records.** SQL Server CDC
   capture / cleanup are SQL Server Agent jobs. The backend container
   must be started with `MSSQL_AGENT_ENABLED=true` (the generic skill's

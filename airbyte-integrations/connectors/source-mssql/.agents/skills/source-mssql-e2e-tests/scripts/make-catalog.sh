@@ -10,9 +10,11 @@
 # derive it mechanically from a real discover instead.
 #
 # The configured streams carry `generation_id`, `minimum_generation_id`,
-# `sync_id`, `destination_object_name`, and `include_files` because the
-# bulk-CDK schema validator on source-mssql:4.3.x requires them; they
-# default on 4.4.x, so the same catalog works across both majors.
+# `sync_id`, `destination_object_name`, `include_files`, `cursor_field`,
+# and `stream.is_file_based` because the bulk-CDK schema validator
+# rejects them as null — verified on both 4.4.12 and 5.0.0. `discover`
+# does not emit `is_file_based`, so it is filled in here rather than
+# copied, and `cursor_field` is an empty list when there is no cursor.
 #
 # Env:
 #   STREAMS       comma-separated stream names to select (default: all)
@@ -59,8 +61,9 @@ jq -s \
       error("no discovered streams matched STREAMS=\($streams)")
     else
       {streams: [$sel[] | {
-          stream: .,
+          stream: (. + {is_file_based: (.is_file_based // false)}),
           sync_mode: $mode,
+          cursor_field: (if $cursor == "" then [] else [$cursor] end),
           destination_sync_mode: (if $mode == "incremental" then "append" else "overwrite" end),
           generation_id: 0,
           minimum_generation_id: 0,
@@ -68,7 +71,6 @@ jq -s \
           destination_object_name: .name,
           include_files: false
         }
-        + (if $cursor == "" then {} else {cursor_field: [$cursor]} end)
         + (if ((.source_defined_primary_key // []) | length) > 0
            then {primary_key: .source_defined_primary_key}
            else {} end)
