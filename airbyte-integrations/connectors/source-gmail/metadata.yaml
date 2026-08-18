@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f7833dac-fc18-4feb-a2a9-94b22001edc6
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   dockerRepository: airbyte/source-gmail
   githubIssueLabel: source-gmail
   icon: icon.svg
@@ -35,14 +35,17 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Gmail API reference
-      url: https://developers.google.com/gmail/api/reference/rest
+      url: https://developers.google.com/workspace/gmail/api/reference/rest
       type: api_reference
     - title: Gmail authentication
-      url: https://developers.google.com/gmail/api/auth/about-auth
+      url: https://developers.google.com/workspace/gmail/api/auth/scopes
       type: authentication_guide
     - title: Gmail API quotas
-      url: https://developers.google.com/gmail/api/reference/quota
+      url: https://developers.google.com/workspace/gmail/api/reference/quota
       type: rate_limits
     - title: Google Workspace Status
-      url: https://www.google.com/appsstatus/
+      url: https://www.google.com/appsstatus/dashboard/
       type: status_page
+    - title: Gmail API release notes
+      url: https://developers.google.com/workspace/gmail/release-notes
+      type: api_release_history
