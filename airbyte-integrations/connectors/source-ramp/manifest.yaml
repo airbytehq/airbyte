@@ -16,7 +16,7 @@ definitions:
         type: SessionTokenAuthenticator
         login_requester:
           type: HttpRequester
-          url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/token"
+          url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/token"
           http_method: POST
           authenticator:
             type: BasicHttpAuthenticator
@@ -68,7 +68,7 @@ streams:
         $ref: "#/definitions/linked/Paginator"
       requester:
         type: HttpRequester
-        url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/cards"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/cards"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -164,7 +164,7 @@ streams:
         $ref: "#/definitions/linked/Paginator"
       requester:
         type: HttpRequester
-        url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/transactions"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/transactions"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -367,7 +367,7 @@ streams:
         $ref: "#/definitions/linked/Paginator"
       requester:
         type: HttpRequester
-        url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/reimbursements"
+        url: "{{ config.get('api_url', 'https://api.ramp.com').rstrip('/') }}/developer/v1/reimbursements"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
