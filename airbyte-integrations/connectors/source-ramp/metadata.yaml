@@ -37,7 +37,7 @@ data:
   connectorTestSuitesOptions:
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-RAMP__SANDBOX_CREDS
+        - name: SECRET_SOURCE-RAMP-SANDBOX__CREDS
           fileName: config.json
           secretStore:
             type: GSM
