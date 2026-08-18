@@ -87,6 +87,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.3.4 | 2026-08-18 | [83821](https://github.com/airbytehq/airbyte/pull/83821) | Update dependencies |
 | 0.3.3 | 2026-08-04 | [83360](https://github.com/airbytehq/airbyte/pull/83360) | Update dependencies |
 | 0.3.2 | 2026-07-28 | [78563](https://github.com/airbytehq/airbyte/pull/78563) | Update dependencies |
 | 0.3.1 | 2026-07-23 | [82242](https://github.com/airbytehq/airbyte/pull/82242) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
