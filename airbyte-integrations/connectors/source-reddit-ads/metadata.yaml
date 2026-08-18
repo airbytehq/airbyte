@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c876992b-877e-4bb3-946b-4678c82bb7ac
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/source-reddit-ads
   githubIssueLabel: source-reddit-ads
   icon: icon.svg
