@@ -43,7 +43,7 @@
       },
       "attribution_spec": [
         {
-          "event_type": "OFFSITE_CONVERSIONS",
+          "event_type": "CLICK_THROUGH",
           "window_days": 7
         }
       ]

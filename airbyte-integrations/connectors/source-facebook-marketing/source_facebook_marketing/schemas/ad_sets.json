@@ -199,7 +199,7 @@
             "type": "string"
           },
           "window_days": {
-            "description": "The attribution window in days. Common values: 1, 7, or 28 depending on the event type.",
+            "description": "The attribution window in days. Supported values are 1 or 7, depending on the optimization goal and campaign objective.",
             "type": "integer"
           }
         }
