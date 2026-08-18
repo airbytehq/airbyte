@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c4654197-3155-4a8a-95e2-a1dd1f8cff5b
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/source-claude
   githubIssueLabel: source-claude
   icon: icon.svg
