@@ -1,7 +1,23 @@
-version: "7.24.0"
+version: "7.26.0"
 type: DeclarativeSource
 
 definitions:
+  # Config-derived Jinja fragments, hoisted so the two routers that expand wildcards and the
+  # two record filters that match against them cannot drift apart. `$ref` in value position
+  # resolves to the scalar before component construction, so these behave exactly like the
+  # literal strings they replace.
+  #
+  # `wildcard_organizations` lists the orgs named by a wildcard entry (`org/*`, `org/prefix*`).
+  # `wildcard_repository_filter` keeps a repo whose `full_name` matches any wildcard entry —
+  # and passes everything when config declares no wildcard at all, which is the legacy
+  # `Repositories(pattern=None)` behavior. That pass-all clause is inert for the resolver
+  # stream, whose partitions *are* the wildcard orgs: with no wildcards it has no partitions
+  # and the filter never runs.
+  wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+  wildcard_repository_filter: >-
+    {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
+       or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+
   requester_base:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
@@ -28,11 +44,31 @@ definitions:
           remaining_path: ["resources", "core", "remaining"]
           reset_path: ["resources", "core", "reset"]
           limit_path: ["resources", "core", "limit"]
+          # Reconcile the pool against every response, not just the initial /rate_limit
+          # seeding. GitHub returns these headers on every authenticated REST response, and
+          # the local counters drift whenever the token is shared with another client, when
+          # requests overlap under `concurrency_level`, or when a sync outlives its seeding.
+          remaining_header: "X-RateLimit-Remaining"
+          reset_header: "X-RateLimit-Reset"
+          limit_header: "X-RateLimit-Limit"
+          # No `exhaustion_status_codes`, deliberately. GitHub's 403 is not exclusively a
+          # rate-limit code: a secondary limit (403 + `Retry-After`, primary quota untouched)
+          # and a missing-scope denial both use it, and neither carries
+          # `X-RateLimit-Remaining: 0`. Listing 403 would zero the pool for those, which on a
+          # single-token config leaves nothing to rotate to and turns a retryable wait into
+          # "Rate limit is exceeded for all provided tokens." Primary exhaustion needs no
+          # status code here: GitHub reports it as `X-RateLimit-Remaining: 0`, which the
+          # header reconciliation above already picks up.
         - type: TokenQuota
           name: graphql
           remaining_path: ["resources", "graphql", "remaining"]
           reset_path: ["resources", "graphql", "reset"]
           limit_path: ["resources", "graphql", "limit"]
+          # /graphql answers with the same header names, scoped to the separate GraphQL
+          # point budget, so the pool reconciles the same way as `rest`.
+          remaining_header: "X-RateLimit-Remaining"
+          reset_header: "X-RateLimit-Reset"
+          limit_header: "X-RateLimit-Limit"
           matchers:
             - type: HttpRequestRegexMatcher
               url_path_pattern: "/graphql"
@@ -78,8 +114,11 @@ definitions:
   #
   # What differs per requester is only the terminal 403/409 handling, so the filters are
   # separate definitions composed into the two handlers at the end of this block.
-  # `DefaultErrorHandler` returns the first matching filter, which is why order matters
-  # and why every handler lists the rate-limit filters first.
+  # `DefaultErrorHandler` returns the first matching filter, which is why order matters:
+  # every handler lists `success_filter` first — it evaluates filters before checking
+  # `response.ok`, so a 200 carrying `Retry-After` would otherwise be classified
+  # RATE_LIMITED and have its records discarded — then the rate-limit filters, then the
+  # terminal 404/403/409/410 ones.
   #
   # DELIBERATE DIVERGENCE — 502/504 after retries. Both handlers leave 5xx to the CDK default
   # mapping, so a repository that keeps returning 502/504 is retried and then fails the stream.
@@ -104,25 +143,74 @@ definitions:
     - type: WaitUntilTimeFromHeader
       header: "X-RateLimit-Reset"
       min_wait: 60
-      # Restores the 60s floor the legacy strategy enforced (backoff_strategies.py:26),
-      # so a reset timestamp that is already in the past (or seconds away) doesn't turn
-      # into a tight retry loop against a quota that hasn't actually refilled.
-      # Trade-off: WaitUntilTimeFromHeaderBackoffStrategy also returns `min_wait` when the
-      # header is absent, and backoff_strategies are shared by every retryable response on
-      # the requester. So a headerless 5xx now waits 60s per attempt instead of the CDK's
-      # exponential backoff. Accepted deliberately: a slower retry on a rare 5xx beats
-      # burning the retry budget against a rate limit that hasn't reset (the legacy
-      # strategy floored that path at 60s too).
-      # NOTE: the legacy strategy also rotated tokens instead of waiting when the
-      # computed backoff exceeded 10 minutes (backoff_strategies.py:39-43). That
-      # *reactive* rotation has no declarative equivalent yet — the manifest
-      # authenticator only rotates *proactively*, when its own local quota counters hit
-      # zero. When GitHub rejects a request whose local counters still look healthy
-      # (token shared across connections, in-flight overcount under concurrency, or a
-      # secondary limit), the sync waits out the reset window instead of rotating.
-      # Follow-up: give RateLimitedMultipleTokenAuthenticator a public
-      # "mark this token exhausted from these response headers and rotate" hook in the
-      # CDK and call it from this error handler.
+      # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
+      # timestamp already in the past, or seconds away, doesn't turn into a tight retry
+      # loop against a quota that hasn't actually refilled.
+      #
+      # It does NOT land on exactly the same responses legacy floored. Measured:
+      #
+      #                                     here    legacy
+      #   403 + Retry-After: 30              30s      60s    <- floor missing
+      #   403 + X-RateLimit-Reset now+10     60s      60s
+      #   403 + reset already past           60s      60s
+      #   500 / timeout, no such headers     60s     expo    <- floor leaking
+      #
+      # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
+      # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
+      # `min_wait` outright when its header is *absent* rather than treating it as a floor
+      # on a computed wait, and backoff_strategies are shared by every retryable response
+      # on the requesters that inherit these handlers.
+      #
+      # Accepted deliberately, after measuring the alternatives:
+      #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
+      #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
+      #     strategies into one list -- its own docstring says the list "is not used to map
+      #     different strategies to different error conditions" -- and HttpClient takes the
+      #     first truthy one regardless of which branch matched. Byte-identical backoffs.
+      #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
+      #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
+      #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
+      #     refilled. That is what the floor exists to prevent.
+      #
+      # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
+      # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
+      # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
+      # With the header present but stale, max(negative, min_wait) already yields 60s, so
+      # the floor survives exactly where it belongs. Four other connectors combine these
+      # two strategies and would move the same way.
+      #
+      # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
+      # max_retries (5), on every stream that inherits these handlers.
+      # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
+      # authenticator's counters against every response (the `*_header` fields on the
+      # quota pools above), so a primary rate limit — which GitHub reports as
+      # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
+      # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
+      # spare token it retries in 0.1s on that token instead of waiting out this window.
+      # This covers the reactive rotation the legacy strategy did at the 10-minute mark
+      # (backoff_strategies.py) and applies to manifest and Python streams alike, since
+      # both share one authenticator.
+      # Still waited out, correctly: a secondary rate limit, where the token's counters
+      # stay positive. GitHub scopes secondary limits per account, so rotating to another
+      # token of the same account would only be rejected again.
+
+  # Short-circuit successful responses before any rate-limit filter sees them.
+  # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
+  # (default_error_handler.py::interpret_response) and returns on the first match, so
+  # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
+  # throttling on its own account — is classified RATE_LIMITED: its records are
+  # discarded and the request is retried until `max_retries` runs out, failing the
+  # stream. The guard has to live in its own filter rather than as a conjunct in the
+  # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
+  # (http_response_filter.py::_matches_filter) and the predicate context carries only
+  # the parsed body and the headers — no status code.
+  # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
+  # computing, retry later", which `contributor_activity` backs off on today and which
+  # must not become a success when that stream migrates onto one of these handlers.
+  success_filter:
+    type: HttpResponseFilter
+    http_codes: [200]
+    action: SUCCESS
 
   retry_after_rate_limit_filter:
     type: HttpResponseFilter
@@ -236,6 +324,7 @@ definitions:
     backoff_strategies:
       $ref: "#/definitions/rate_limit_backoff_strategies"
     response_filters:
+      - $ref: "#/definitions/success_filter"
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
@@ -250,6 +339,7 @@ definitions:
     backoff_strategies:
       $ref: "#/definitions/rate_limit_backoff_strategies"
     response_filters:
+      - $ref: "#/definitions/success_filter"
       - $ref: "#/definitions/retry_after_rate_limit_filter"
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
@@ -278,7 +368,8 @@ definitions:
       # access would raise Jinja's UndefinedError. InterpolatedString defaults `default` to
       # the template itself, so JinjaInterpolation.eval's UndefinedError guard just
       # re-evaluates the same failing expression and the error escapes, failing the sync.
-      # Rendering to "" is falsy, so DefaultPaginator stops paginating.
+      # On the last page there is no `next` link, so `regex_search` gets "" and returns None;
+      # CursorPaginationStrategy ends on `token if token else None`, so pagination stops.
       type: CursorPagination
       cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
 
@@ -313,13 +404,14 @@ definitions:
           field_path: []
         record_filter:
           type: RecordFilter
-          condition: >-
-            {{ record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+          condition:
+            $ref: "#/definitions/wildcard_repository_filter"
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
         type: ListPartitionRouter
-        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        values:
+          $ref: "#/definitions/wildcard_organizations"
         cursor_field: "organization"
     schema_loader:
       type: InlineSchemaLoader
@@ -428,7 +520,8 @@ definitions:
     partition_field: organization
     partition_routers:
       - type: ListPartitionRouter
-        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        values:
+          $ref: "#/definitions/wildcard_organizations"
         cursor_field: "organization"
       - type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -459,11 +552,8 @@ definitions:
           field_path: []
         record_filter:
           type: RecordFilter
-          # When config has no wildcard patterns, all org repos intentionally pass,
-          # preserving the legacy `Repositories(pattern=None)` behavior.
-          condition: >-
-            {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
-               or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+          condition:
+            $ref: "#/definitions/wildcard_repository_filter"
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
@@ -1596,6 +1686,12 @@ definitions:
               - "null"
               - string
 
+# Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
+# is per token, so this is conservative — a multi-token config could spend more than this
+# allows, and the /rate_limit probes are counted against it too. Left global on purpose,
+# because the CDK budget has no notion of which credential a request will be signed with, and
+# under-spending a secondary limit is much cheaper than tripping one. It also only covers
+# declarative requesters; the Python streams still spend the same GitHub budget outside it.
 api_budget:
   type: HTTPAPIBudget
   policies:

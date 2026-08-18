@@ -17,6 +17,72 @@
         "updated": "2030-10-01"
       },
       "stream_descriptor": {
+        "name": "clientcontacts"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "propertycontacts"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "promptquestions"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "promptanswergroups"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "promptanswers"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "majorservices"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
         "name": "taskcategories"
       }
     }

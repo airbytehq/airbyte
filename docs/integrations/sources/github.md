@@ -243,8 +243,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.42 | 2026-08-11 | [83804](https://github.com/airbytehq/airbyte/pull/83804) | Declarative migration Step 3 - move the assignees, branches, collaborators, issue_labels and tags streams to the manifest |
-| 2.1.41-rc.1 | 2026-08-11 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth, spec in manifest, and declarative Repositories stream |
+| 2.1.43 | 2026-08-18 | [83804](https://github.com/airbytehq/airbyte/pull/83804) | Declarative migration Step 3 - move the assignees, branches, collaborators, issue_labels and tags streams to the manifest |
+| 2.1.42 | 2026-08-18 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, and a request budget matching GitHub's 900-points/minute secondary rate limit |
+| 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
 | 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
 | 2.1.39 | 2026-08-04 | [83469](https://github.com/airbytehq/airbyte/pull/83469) | Update dependencies |
 | 2.1.38 | 2026-07-28 | [82893](https://github.com/airbytehq/airbyte/pull/82893) | Update dependencies |
