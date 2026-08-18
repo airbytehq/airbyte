@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1c5d8316-ed42-4473-8fbc-2626f03f070c
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.14
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg
@@ -38,14 +38,20 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: Linear API reference
-      url: https://developers.linear.app/docs/graphql/working-with-the-graphql-api
+      url: https://linear.app/developers/graphql
       type: api_reference
     - title: Linear authentication
-      url: https://developers.linear.app/docs/oauth/authentication
+      url: https://linear.app/developers/oauth-2-0-authentication
       type: authentication_guide
     - title: Linear rate limits
-      url: https://developers.linear.app/docs/graphql/working-with-the-graphql-api#rate-limiting
+      url: https://linear.app/developers/rate-limiting
       type: rate_limits
+    - title: Linear API deprecations
+      url: https://linear.app/developers/deprecations
+      type: api_deprecations
+    - title: Linear changelog
+      url: https://linear.app/changelog
+      type: api_release_history
     - title: Linear Status
-      url: https://status.linear.app/
+      url: https://linearstatus.com/
       type: status_page
