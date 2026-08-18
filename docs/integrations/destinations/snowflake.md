@@ -218,6 +218,17 @@ The final table contains these fields, in addition to the columns declared in yo
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
+### Table and column naming
+
+Snowflake identifiers aren't case-sensitive unless you quote them, so the connector uppercases the namespace, table, and column names it writes. A stream called `users` with a field called `created_at` becomes the table `USERS` with the column `CREATED_AT`.
+
+Two transformations change more than the case:
+
+- Snowflake rejects a small set of ANSI reserved words as column names, even when they're quoted. If a field is named `constraint`, `current_date`, `current_time`, `current_timestamp`, `current_user`, `localtime`, or `localtimestamp`, the connector prefixes the column with an underscore, so `current_date` becomes `_CURRENT_DATE`. Only exact matches are prefixed: `my_current_date` stays `MY_CURRENT_DATE`. For the full list of Snowflake restrictions, see [Reserved and limited keywords](https://docs.snowflake.com/en/sql-reference/reserved-keywords). Version 4.1.1 added this behavior; before that, a stream containing one of these fields failed with a SQL compilation error.
+- If a stream, namespace, or field name contains the `${` sequence, the connector replaces every `$`, `{`, and `}` in that name with underscores, because Snowflake's scripting language treats `${` as a variable reference. A field named `${foo}` becomes the column `__FOO_`.
+
+In **Legacy raw tables** mode, the connector doesn't transform column names. Record data stays in the `_airbyte_data` column with the original field names from the source.
+
 ## Data type map
 
 | Airbyte type                        | Snowflake type |
