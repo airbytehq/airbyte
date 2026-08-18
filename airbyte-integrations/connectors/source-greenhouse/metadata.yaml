@@ -32,7 +32,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "This release migrates all Greenhouse streams from Harvest v1 to Harvest v3 and replaces API-key authentication with OAuth client credentials. Users must update their source configuration, refresh schemas, and reset affected streams. See the [Greenhouse migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations) for details."
+        message: "This release migrates all Greenhouse streams from Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31, and replaces API-key authentication with OAuth client credentials. Users must update their source configuration, refresh schemas, and reset affected streams. See the [Greenhouse migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations) for details."
         upgradeDeadline: "2026-08-31"
         deadlineAction: "disable"
         scopedImpact:

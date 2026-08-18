@@ -2,7 +2,7 @@
 
 ## Version 1.0.0
 
-Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3. This is a breaking release: refresh the source schema and reset affected streams after upgrading.
+Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. This is a breaking release: refresh the source schema and reset affected streams after upgrading.
 
 ### Authentication
 
