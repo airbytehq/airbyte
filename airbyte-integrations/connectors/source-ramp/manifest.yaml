@@ -16,7 +16,7 @@ definitions:
         type: SessionTokenAuthenticator
         login_requester:
           type: HttpRequester
-          url: https://api.ramp.com/developer/v1/token
+          url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/token"
           http_method: POST
           authenticator:
             type: BasicHttpAuthenticator
@@ -68,7 +68,7 @@ streams:
         $ref: "#/definitions/linked/Paginator"
       requester:
         type: HttpRequester
-        url: https://api.ramp.com/developer/v1/cards
+        url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/cards"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -164,7 +164,7 @@ streams:
         $ref: "#/definitions/linked/Paginator"
       requester:
         type: HttpRequester
-        url: https://api.ramp.com/developer/v1/transactions
+        url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/transactions"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -367,7 +367,7 @@ streams:
         $ref: "#/definitions/linked/Paginator"
       requester:
         type: HttpRequester
-        url: https://api.ramp.com/developer/v1/reimbursements
+        url: "{{ config.get('api_url', 'https://api.ramp.com') }}/developer/v1/reimbursements"
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
@@ -581,6 +581,16 @@ spec:
         examples:
           - "2024-01-01T00:00:00Z"
         order: 2
+      api_url:
+        type: string
+        description: >-
+          Ramp API base URL. All production Ramp accounts use the default. Set
+          to https://demo-api.ramp.com only when testing against a Ramp
+          sandbox app.
+        title: API Base URL
+        default: https://api.ramp.com
+        airbyte_hidden: true
+        order: 3
     additionalProperties: true
 
 concurrency_level:
