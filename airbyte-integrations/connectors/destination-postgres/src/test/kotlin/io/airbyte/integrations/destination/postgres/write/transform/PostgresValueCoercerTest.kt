@@ -114,6 +114,43 @@ internal class PostgresValueCoercerTest {
     }
 
     @Test
+    fun testMapRemovesNullCharactersFromObjectKeys() {
+        // No NUL in any value, so this also covers the containsNullCharacter() pre-check
+        // noticing a key-only NUL.
+        val objectValue =
+            ObjectValue(
+                linkedMapOf(
+                    "key\u0000name" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nested\u0000key" to StringValue("v"))))
+                        )
+                )
+            )
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type = ObjectTypeWithoutSchema,
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        coercer.map(enrichedAirbyteValue)
+
+        assertEquals(
+            ObjectValue(
+                linkedMapOf(
+                    "keyname" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nestedkey" to StringValue("v"))))
+                        )
+                )
+            ),
+            enrichedAirbyteValue.abValue
+        )
+    }
+
+    @Test
     fun testValidateValidArray() {
         val arrayValue = ArrayValue(listOf(IntegerValue(1), IntegerValue(2), IntegerValue(3)))
         val airbyteValue =
