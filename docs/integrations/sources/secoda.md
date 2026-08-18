@@ -54,6 +54,10 @@ The resource catalog endpoint (`/api/v1/resource/catalog`) has a maximum limit o
 | `api_key` | Yes | | Your Secoda API access key. The key is case sensitive. |
 | `api_host` | No | `api.secoda.co` | API host for your workspace region: `api.secoda.co` (US), `eapi.secoda.co` (EU), or `aapi.secoda.co` (APAC). |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

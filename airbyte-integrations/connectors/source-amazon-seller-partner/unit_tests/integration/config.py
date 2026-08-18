@@ -56,5 +56,17 @@ class ConfigBuilder:
         self._config["failed_retry_wait_time_in_seconds"] = seconds
         return self
 
+    def with_account_type(self, account_type: str) -> ConfigBuilder:
+        self._config["account_type"] = account_type
+        return self
+
+    def with_report_stream_lookback_window_in_hours(self, hours: int) -> ConfigBuilder:
+        self._config["report_stream_lookback_window_in_hours"] = hours
+        return self
+
+    def with_report_options_list(self, options_list: list) -> ConfigBuilder:
+        self._config["report_options_list"] = options_list
+        return self
+
     def build(self) -> Dict[str, str]:
         return self._config

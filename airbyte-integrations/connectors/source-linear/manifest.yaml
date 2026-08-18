@@ -1384,6 +1384,28 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.linear.app/graphql
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Endpoint-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Complexity-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      response_filters:
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}"
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_type"]
@@ -1433,9 +1455,16 @@ streams:
 # floor((2500/3600) / 4) = 0 ≤ 2 triggers the low-rate-limit special case →
 # starting_concurrency = 4, step = 1. Empirical tuning will adjust against
 # the documented 2,500 req/hr ceiling.
+#
+# The user-facing `num_workers` config field (see spec below) overrides the
+# default at the connection level; users on the higher-ceiling OAuth tiers
+# (5,000 req/hr or workspace OAuth dynamic uplift) can raise it up to the
+# max_concurrency ceiling, while users on the 2,500 req/hr API-key tier
+# should generally stay at or below the default of 4 to avoid sustained
+# rate-limit pressure.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
   max_concurrency: 16
 
 spec:
@@ -1511,6 +1540,23 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$
         examples:
           - "2020-01-01T00:00:00.000Z"
+      num_workers:
+        type: integer
+        order: 2
+        title: Number of concurrent workers
+        description: >-
+          Number of worker threads used to read streams in parallel. Higher
+          values can speed up syncs but increase the risk of hitting Linear's
+          rate limits. The Linear API limits per-user requests by
+          authentication type: API key auth allows 2,500 requests/hour, OAuth
+          allows 5,000 requests/hour, and workspace OAuth scales dynamically
+          with paid seats. Stay at the default unless you are on OAuth and
+          have observed headroom in your rate-limit usage. See <a
+          href="https://linear.app/developers/rate-limiting">Linear API rate
+          limits</a> for details.
+        default: 4
+        minimum: 1
+        maximum: 10
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0

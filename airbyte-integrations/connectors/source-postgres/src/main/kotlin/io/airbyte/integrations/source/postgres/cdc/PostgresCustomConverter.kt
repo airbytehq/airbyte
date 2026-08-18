@@ -12,6 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.OffsetTime
@@ -31,14 +32,15 @@ import org.postgresql.jdbc.PgArray
 import org.postgresql.util.PGInterval
 
 class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn?> {
-    private val DATE_TYPES =
-        arrayOf<String?>("DATE", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ")
-    private val BIT_TYPES = arrayOf<String?>("BIT", "VARBIT")
-    private val MONEY_ITEM_TYPE = arrayOf<String?>("MONEY")
+    private val DATE_TYPES = setOf("DATE", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ")
+    private val BIT_TYPES = setOf("BIT", "VARBIT")
+    private val MONEY_ITEM_TYPE = "MONEY"
     private val GEOMETRICS_TYPES =
-        arrayOf<String?>("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH")
+        setOf("BOX", "CIRCLE", "LINE", "LSEG", "POINT", "POLYGON", "PATH")
+    // PostGIS-extension types; plugin-specific.
+    private val GIS_TYPES = setOf("GEOMETRY", "GEOGRAPHY")
     private val TEXT_TYPES =
-        arrayOf<String?>(
+        setOf(
             "VARCHAR",
             "VARBINARY",
             "BLOB",
@@ -51,9 +53,9 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
             "TSQUERY",
             "PG_LSN",
         )
-    private val NUMERIC_TYPES = arrayOf<String?>("NUMERIC", "DECIMAL")
+    private val NUMERIC_TYPES = setOf("NUMERIC", "DECIMAL")
     private val ARRAY_TYPES =
-        arrayOf<String?>(
+        setOf(
             "_NAME",
             "_NUMERIC",
             "_BYTEA",
@@ -79,43 +81,23 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
         registration: CustomConverter.ConverterRegistration<SchemaBuilder?>?
     ) {
         if (field == null || registration == null) return
-        if (
-            Arrays.stream<String?>(DATE_TYPES).anyMatch { s: String? ->
-                s.equals(field.typeName(), ignoreCase = true)
-            }
-        ) {
+        val upperType = field.typeName().uppercase()
+        if (DATE_TYPES.contains(upperType)) {
             registerDate(field, registration)
         } else if (
-            Arrays.stream<String?>(TEXT_TYPES).anyMatch { s: String? ->
-                s.equals(field.typeName(), ignoreCase = true)
-            } ||
-                Arrays.stream<String?>(GEOMETRICS_TYPES).anyMatch { s: String? ->
-                    s.equals(field.typeName(), ignoreCase = true)
-                } ||
-                Arrays.stream<String?>(BIT_TYPES).anyMatch { s: String? ->
-                    s.equals(field.typeName(), ignoreCase = true)
-                }
+            TEXT_TYPES.contains(upperType) ||
+                GEOMETRICS_TYPES.contains(upperType) ||
+                GIS_TYPES.contains(upperType) ||
+                BIT_TYPES.contains(upperType)
         ) {
             registerText(field, registration)
-        } else if (
-            Arrays.stream<String?>(MONEY_ITEM_TYPE).anyMatch { s: String? ->
-                s.equals(field.typeName(), ignoreCase = true)
-            }
-        ) {
+        } else if (MONEY_ITEM_TYPE == upperType) {
             registerMoney(field, registration)
-        } else if (BYTEA_TYPE.equals(field.typeName(), ignoreCase = true)) {
+        } else if (BYTEA_TYPE == upperType) {
             registerBytea(field, registration)
-        } else if (
-            Arrays.stream<String?>(NUMERIC_TYPES).anyMatch { s: String? ->
-                s.equals(field.typeName(), ignoreCase = true)
-            }
-        ) {
+        } else if (NUMERIC_TYPES.contains(upperType)) {
             registerNumber(field, registration)
-        } else if (
-            Arrays.stream<String?>(ARRAY_TYPES).anyMatch { s: String? ->
-                s.equals(field.typeName(), ignoreCase = true)
-            }
-        ) {
+        } else if (ARRAY_TYPES.contains(upperType)) {
             registerArray(field, registration)
         }
     }
@@ -479,7 +461,18 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
                 return DateTimeConverter.convertToDate(x)
             }
             "TIME" -> return resolveTime(field, x)
-            "INTERVAL" -> return convertInterval((x as PGInterval?)!!)
+            "INTERVAL" -> {
+                return when (x) {
+                    is PGInterval -> convertInterval(x)
+                    is Number -> convertInterval(microsecondsToPgInterval(x))
+                    else -> {
+                        log.warn {
+                            "Unexpected interval value type: ${x::class.java.name}. Falling back to string conversion."
+                        }
+                        x.toString()
+                    }
+                }
+            }
             else ->
                 throw IllegalArgumentException(
                     "Unknown field type  " + field.typeName().uppercase(),
@@ -509,6 +502,23 @@ class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn
 
         formatTimeValues(resultInterval, pgInterval)
         return resultInterval.toString()
+    }
+
+    internal fun microsecondsToPgInterval(value: Number): PGInterval {
+        // Debezium may surface interval defaults as microseconds; integer division below discards
+        // any sub-second remainder.
+        val duration = Duration.ofSeconds(value.toLong() / 1_000_000)
+
+        // Duration is a fixed-length amount and cannot be losslessly decomposed into calendar-aware
+        // months/years, so those PGInterval fields are intentionally set to zero.
+        return PGInterval(
+            0,
+            0,
+            duration.toDays().toInt(),
+            duration.toHoursPart(),
+            duration.toMinutesPart(),
+            duration.toSecondsPart().toDouble(),
+        )
     }
 
     private fun registerMoney(

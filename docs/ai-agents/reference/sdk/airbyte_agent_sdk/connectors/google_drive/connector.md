@@ -155,7 +155,11 @@ Classes
     ### Methods
 
     `download(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
-    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
         Common export formats:
         - application/pdf (all types)
         - text/plain (Docs)
@@ -182,8 +186,28 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
+        Common export formats:
+        - application/pdf (all types)
+        - text/plain (Docs)
+        - text/csv (Sheets)
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document (Docs to .docx)
+        - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet (Sheets to .xlsx)
+        - application/vnd.openxmlformats-officedocument.presentationml.presentation (Slides to .pptx)
+        Note: Export has a 10MB limit. For larger files, use the Drive UI.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, file_id: str, mime_type: str, path: str, range_header: str | None = None, **kwargs) ‑> Path`
-    :   Exports a Google Workspace file (Docs, Sheets, Slides, Drawings) to a specified format.
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
         Common export formats:
         - application/pdf (all types)
         - text/plain (Docs)
@@ -211,6 +235,22 @@ Classes
                 Returns:
                     str: Path to the downloaded file
 
+    `download_text(self, file_id: str, mime_type: str, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Exports a Google-NATIVE Workspace file (Docs, Sheets, Slides, Drawings --
+        mimeType `application/vnd.google-apps.*`) to a specified format. Use this ONLY for
+        those native types: exporting a binary file (PDF, image, uploaded .docx/.xlsx) returns
+        403 `fileNotExportable` -- for those use the `files` `download` action instead. If unsure
+        of a file's type, check its `mimeType` with `files.get` first.
+        Common export formats:
+        - application/pdf (all types)
+        - text/plain (Docs)
+        - text/csv (Sheets)
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document (Docs to .docx)
+        - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet (Sheets to .xlsx)
+        - application/vnd.openxmlformats-officedocument.presentationml.presentation (Slides to .pptx)
+        Note: Export has a 10MB limit. For larger files, use the Drive UI.
+         and return a JSON-safe UTF-8 text chunk.
+
 <a id="FilesQuery"></a>
 
 `FilesQuery(connector: GoogleDriveConnector)`
@@ -219,6 +259,34 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: FilesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.google_drive.models.AirbyteSearchResult[FilesSearchData]`
+    :   Search files records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (FilesSearchFilter):
+        - id: Unique identifier of the file in Google Drive.
+        - updated_at: Timestamp of the last modification to the file.
+        - file_name: Name of the file.
+        - file_path: Full path of the file within the synced Drive folder.
+        - mime_type: MIME type of the file.
+        - content: Extracted text content of the file.
+        
+        Args:
+            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
+                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            FilesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
 
     `create(self, name: str, mime_type: str | None = None, parents: list[str] | None = None, description: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_drive.models.File`
     :   Creates a new file or folder in Google Drive (metadata only, no content).
@@ -251,15 +319,19 @@ Classes
         Returns:
             dict[str, Any]
 
-    `download(self, file_id: str, alt: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
-    :   Downloads the binary content of a file. This works for non-Google Workspace files
-        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-        use the export action instead.
+    `download(self, file_id: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
         
         
                 Args:
                     file_id: The ID of the file to download
-                    alt: Must be set to 'media' to download file content
+                    alt: Applied automatically as 'media' by this action; you do not need to set it.
                     acknowledge_abuse: Whether the user is acknowledging the risk of downloading known malware or other abusive files
                     supports_all_drives: Whether the requesting application supports both My Drives and shared drives
                     range_header: Optional Range header for partial downloads (e.g., 'bytes=0-99')
@@ -268,15 +340,29 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
-    `download_local(self, file_id: str, alt: str, path: str, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> Path`
-    :   Downloads the binary content of a file. This works for non-Google Workspace files
-        (PDFs, images, zip files, etc.). For Google Docs, Sheets, Slides, or Drawings,
-        use the export action instead.
+    `download_base64(self, file_id: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
+         and return a JSON-safe base64 chunk.
+
+    `download_local(self, file_id: str, path: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> Path`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
          and save to file.
         
                 Args:
                     file_id: The ID of the file to download
-                    alt: Must be set to 'media' to download file content
+                    alt: Applied automatically as 'media' by this action; you do not need to set it.
                     acknowledge_abuse: Whether the user is acknowledging the risk of downloading known malware or other abusive files
                     supports_all_drives: Whether the requesting application supports both My Drives and shared drives
                     range_header: Optional Range header for partial downloads (e.g., 'bytes=0-99')
@@ -285,6 +371,16 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, file_id: str, alt: str | None = None, acknowledge_abuse: bool | None = None, supports_all_drives: bool | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the raw binary content of a file (PDF, image, zip, uploaded .docx/.xlsx, etc.).
+        The Drive `alt=media` query parameter is applied automatically by this action, so you
+        normally do NOT need to pass `alt` -- the response is the file's bytes. (Without
+        `alt=media` Drive returns file metadata JSON instead of content, so it is forced here.)
+        This only works for binary files: for Google Workspace files (Docs, Sheets, Slides,
+        Drawings) use the `files_export` action with a `mimeType` instead -- downloading them
+        directly returns 403.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, file_id: str, fields: str | None = None, supports_all_drives: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_drive.models.File`
     :   Gets a file's metadata by ID
@@ -417,48 +513,138 @@ Classes
 
     ### Static methods
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @GoogleDriveConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = GoogleDriveConnector(...)
         
-            @mcp.tool()
-            @GoogleDriveConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @GoogleDriveConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @GoogleDriveConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @GoogleDriveConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @GoogleDriveConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = GoogleDriveConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @GoogleDriveConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @GoogleDriveConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @GoogleDriveConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -503,7 +689,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'download']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -515,6 +701,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -525,6 +714,17 @@ Classes
                 action="get",
                 params=\{"id": "cus_123"\}
             )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
 
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
@@ -539,6 +739,18 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
 
 <a id="PermissionsQuery"></a>
 
