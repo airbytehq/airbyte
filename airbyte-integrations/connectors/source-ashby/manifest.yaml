@@ -180,12 +180,6 @@ streams:
                 type:
                   - "null"
                   - string
-          openings:
-            type:
-              - "null"
-              - array
-            items:
-              type: object
           source:
             type:
               - "null"
@@ -1387,10 +1381,6 @@ streams:
               - "null"
               - string
             format: date-time
-          compensation:
-            type:
-              - "null"
-              - object
           confidential:
             type:
               - "null"
@@ -1487,10 +1477,6 @@ streams:
             type:
               - "null"
               - array
-          location:
-            type:
-              - "null"
-              - object
           locationId:
             type:
               - "null"
@@ -1500,12 +1486,6 @@ streams:
               - "null"
               - string
             format: date-time
-          openings:
-            type:
-              - "null"
-              - array
-            items:
-              type: object
           status:
             type:
               - "null"
@@ -1839,12 +1819,6 @@ streams:
         $schema: http://json-schema.org/draft-07/schema#
         additionalProperties: true
         properties:
-          customFields:
-            type:
-              - "null"
-              - array
-            items:
-              type: object
           email:
             type:
               - "null"
