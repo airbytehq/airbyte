@@ -307,6 +307,26 @@ def test_successful_response_with_exhausted_quota_is_not_rate_limited(rate_limit
     assert listing.call_count == 1
 
 
+def test_successful_response_carrying_retry_after_is_not_rate_limited(rate_limit_mock_response, requests_mock):
+    """A 200 that merely carries `Retry-After` — GHE, a proxy or a CDN throttling on its own
+    account — must be delivered as-is. Response filters are evaluated before the CDK's success
+    check, so without the `http_codes: [200] -> SUCCESS` guard ahead of them the page would be
+    discarded and retried until `max_retries` ran out, failing the stream."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        headers={"Retry-After": "30"},
+        json=[_repo(2, "docker/compose")],
+    )
+
+    records, statuses, error = _read(config)
+
+    assert error is None
+    assert _names(records) == ["docker/compose"]
+    assert statuses[-1] == "COMPLETE"
+    assert listing.call_count == 1
+
+
 def test_plain_403_fails_stream(rate_limit_mock_response, requests_mock):
     """A plain 403 (bad scopes / SAML SSO) must fail the stream so `check` can surface it."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}

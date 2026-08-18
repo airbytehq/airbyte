@@ -129,6 +129,22 @@ definitions:
           # stay positive. GitHub scopes secondary limits per account, so rotating to another
           # token of the same account would only be rejected again.
       response_filters:
+        # Short-circuit successful responses before any rate-limit filter sees them.
+        # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
+        # (default_error_handler.py::interpret_response) and returns on the first match, so
+        # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
+        # throttling on its own account — is classified RATE_LIMITED: its records are
+        # discarded and the request is retried until `max_retries` runs out, failing the
+        # stream. The guard has to live in its own filter rather than as a conjunct in the
+        # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
+        # (http_response_filter.py::_matches_filter) and the predicate context carries only
+        # the parsed body and the headers — no status code.
+        # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
+        # computing, retry later", which `contributor_activity` backs off on today and which
+        # must not become a success when that stream migrates onto this requester.
+        - type: HttpResponseFilter
+          http_codes: [200]
+          action: SUCCESS
         - type: HttpResponseFilter
           predicate: "{{ 'Retry-After' in headers }}"
           action: RATE_LIMITED
