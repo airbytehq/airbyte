@@ -100,6 +100,10 @@ definitions:
       datetime_format: "%Y-%m-%d"
     is_client_side_incremental: true
 
+  ads_incremental_sync:
+    $ref: "#/definitions/semi_incremental_sync"
+    lookback_window: PT1S
+
   single_id_partition_router:
     - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
       $parameters:
@@ -364,7 +368,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+          filtering: '{{ {"modified_after": format_datetime(stream_interval.start_time, "%Y-%m-%d %H:%M:%S"), "secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) else {"modified_after": format_datetime(stream_interval.start_time, "%Y-%m-%d %H:%M:%S")}|string }}'
       record_selector:
         $ref: "#/definitions/record_selector"
         # This filter is needed because the API will at times return Smart+ Ad Records without a modify_time value.
@@ -378,7 +382,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/single_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/semi_incremental_sync"
+      $ref: "#/definitions/ads_incremental_sync"
 
   creative_assets_images_stream:
     type: DeclarativeStream
