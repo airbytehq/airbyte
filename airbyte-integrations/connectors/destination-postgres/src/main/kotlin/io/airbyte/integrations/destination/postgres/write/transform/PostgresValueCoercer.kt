@@ -147,6 +147,8 @@ private fun AirbyteValue.containsNullCharacter(): Boolean =
     }
 
 // Postgres text cannot contain null bytes. We remove them.
+// TODO: We don't currently set the metadata indicating that the data was modified (see
+//  ValidationResultHandler). Doing so properly would require substantial CDK changes.
 private fun AirbyteValue.stripNullCharacters(): AirbyteValue =
     when (this) {
         is StringValue -> StringValue(value.replace(NUL_STRING, ""))
