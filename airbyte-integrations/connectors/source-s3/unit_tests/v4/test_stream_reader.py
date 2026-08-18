@@ -291,26 +291,24 @@ def test_get_s3_client_without_config_raises_exception():
         SourceS3StreamReader().s3_client
 
 
-@pytest.mark.parametrize("endpoint", ["https://fake.com", "fake.com"])
-def test_s3_compatible_client_args_use_botocore_endpoint_contract(endpoint):
-    args = _get_s3_compatible_client_args(type("Config", (), {"endpoint": endpoint})())
+def _build_s3_client(endpoint: str):
+    # `construct` skips validation so that botocore's own endpoint handling is exercised.
+    config = Config.construct(bucket="test", streams=[], endpoint=endpoint)
+    return boto3.client(
+        "s3",
+        aws_access_key_id="dummy-access-key",
+        aws_secret_access_key="dummy-secret-key",
+        **_get_s3_compatible_client_args(config),
+    )
 
-    if endpoint.startswith("https://"):
-        client = boto3.client(
-            "s3",
-            aws_access_key_id="dummy-access-key",
-            aws_secret_access_key="dummy-secret-key",
-            **args,
-        )
-        assert client.meta.endpoint_url == endpoint
-    else:
-        with pytest.raises(ValueError, match=re.escape(f"Invalid endpoint: {endpoint}")):
-            boto3.client(
-                "s3",
-                aws_access_key_id="dummy-access-key",
-                aws_secret_access_key="dummy-secret-key",
-                **args,
-            )
+
+def test_s3_compatible_client_args_accept_an_endpoint_with_a_scheme():
+    assert _build_s3_client("https://fake.com").meta.endpoint_url == "https://fake.com"
+
+
+def test_s3_compatible_client_args_are_rejected_by_botocore_without_a_scheme():
+    with pytest.raises(ValueError, match=re.escape("Invalid endpoint: fake.com")):
+        _build_s3_client("fake.com")
 
 
 def test_cannot_set_wrong_config_type():

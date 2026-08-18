@@ -101,20 +101,14 @@ class Config(AbstractFileBasedSpec):
                 "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
             )
 
-        if is_cloud_environment():
-            endpoint = values.get("endpoint")
-            if endpoint:
-                if not endpoint.startswith("https://"):
-                    raise AirbyteTracedException(
-                        message='Field "Endpoint" must be a full URL starting with "https://".',
-                        internal_message=f"Endpoint must start with https://; received {endpoint!r}.",
-                        failure_type=FailureType.config_error,
-                    )
-        elif endpoint := values.get("endpoint"):
-            if not endpoint.startswith(("http://", "https://")):  # ignore-https-check
+        endpoint = values.get("endpoint")
+        if endpoint:
+            allowed_schemes = ("https://",) if is_cloud_environment() else ("http://", "https://")  # ignore-https-check
+            if not endpoint.startswith(allowed_schemes):
+                expected = " or ".join(f'"{scheme}"' for scheme in allowed_schemes)
                 raise AirbyteTracedException(
-                    message='Field "Endpoint" must be a full URL starting with "http://" or "https://".',
-                    internal_message=f"Endpoint must start with http:// or https://; received {endpoint!r}.",
+                    message=f'Field "Endpoint" must be a full URL starting with {expected}.',
+                    internal_message=f"Endpoint must start with one of {allowed_schemes}; received {endpoint!r}.",
                     failure_type=FailureType.config_error,
                 )
 
