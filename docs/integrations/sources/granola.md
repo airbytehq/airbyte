@@ -127,6 +127,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.13 | 2026-08-12 | [84276](https://github.com/airbytehq/airbyte/pull/84276) | Add acceptance test coverage and correct the configured catalog |
 | 0.2.12 | 2026-08-12 | [84278](https://github.com/airbytehq/airbyte/pull/84278) | Retry rate-limited and server-error responses with backoff honoring Retry-After |
 | 0.2.11 | 2026-08-11 | [83964](https://github.com/airbytehq/airbyte/pull/83964) | Update dependencies |
 | 0.2.10 | 2026-08-04 | [83481](https://github.com/airbytehq/airbyte/pull/83481) | Update dependencies |
