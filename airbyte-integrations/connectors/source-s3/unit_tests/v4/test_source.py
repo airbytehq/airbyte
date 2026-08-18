@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -60,6 +61,20 @@ class SourceTest(unittest.TestCase):
     def test_when_spec_then_v3_nested_fields_are_not_required(self) -> None:
         spec = self._source.spec()
         assert not spec.connectionSpecification["properties"]["provider"]["required"]
+
+    @patch("source_s3.v4.source.is_cloud_environment", return_value=True)
+    def test_when_cloud_spec_then_endpoint_requires_https_url(self, is_cloud_environment_mock) -> None:
+        endpoint = self._source.spec().connectionSpecification["properties"]["endpoint"]
+        pattern = re.compile(endpoint["pattern"])
+
+        assert endpoint["description"] == (
+            "Endpoint to an S3 compatible service. Leave empty to use AWS. "
+            "The custom endpoint must be a secure URL including the 'https://' prefix."
+        )
+        assert not pattern.fullmatch("my-s3-endpoint.com")
+        assert not pattern.fullmatch("http://x.com")
+        assert pattern.fullmatch("https://x.com")
+        assert pattern.fullmatch("")
 
     def test_make_default_stream_returns_throttled_stream(self) -> None:
         stream_config = FileBasedStreamConfig(name="s", validation_policy="Emit Record", format=CsvFormat())

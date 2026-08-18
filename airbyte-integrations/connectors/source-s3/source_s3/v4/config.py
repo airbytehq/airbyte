@@ -8,7 +8,7 @@ import dpath.util
 from pydantic.v1 import AnyUrl, Field, root_validator
 from pydantic.v1.error_wrappers import ValidationError
 
-from airbyte_cdk import is_cloud_environment
+from airbyte_cdk import AirbyteTracedException, FailureType, is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
@@ -70,8 +70,8 @@ class Config(AbstractFileBasedSpec):
     endpoint: Optional[str] = Field(
         default="",
         title="Endpoint",
-        description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
-        examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
+        description="Endpoint to an S3 compatible service. Leave empty to use AWS. The endpoint must be a full URL including the scheme.",
+        examples=["https://my-s3-endpoint.com"],
         order=4,
     )
 
@@ -104,8 +104,19 @@ class Config(AbstractFileBasedSpec):
         if is_cloud_environment():
             endpoint = values.get("endpoint")
             if endpoint:
-                if endpoint.startswith("http://"):  # ignore-https-check
-                    raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+                if not endpoint.startswith("https://"):
+                    raise AirbyteTracedException(
+                        message='Field "Endpoint" must be a full URL starting with "https://".',
+                        internal_message=f"Endpoint must start with https://; received {endpoint!r}.",
+                        failure_type=FailureType.config_error,
+                    )
+        elif endpoint := values.get("endpoint"):
+            if not endpoint.startswith(("http://", "https://")):  # ignore-https-check
+                raise AirbyteTracedException(
+                    message='Field "Endpoint" must be a full URL starting with "http://" or "https://".',
+                    internal_message=f"Endpoint must start with http:// or https://; received {endpoint!r}.",
+                    failure_type=FailureType.config_error,
+                )
 
         return values
 
