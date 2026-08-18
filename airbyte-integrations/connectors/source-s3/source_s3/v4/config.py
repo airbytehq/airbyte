@@ -70,8 +70,8 @@ class Config(AbstractFileBasedSpec):
     endpoint: Optional[str] = Field(
         default="",
         title="Endpoint",
-        description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
-        examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
+        description="Endpoint to an S3 compatible service. Leave empty to use AWS. The endpoint must include the URL scheme, for example https://my-s3-endpoint.com.",
+        examples=["https://my-s3-endpoint.com"],
         order=4,
     )
 
