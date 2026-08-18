@@ -132,7 +132,8 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 7. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
 8. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
 9. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- markdownlint-enable MD029 -->
 <!-- /env:cloud -->
@@ -152,7 +153,22 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 6. (Optional) Set the **CRM Search Lookback Window** in minutes to re-fetch data for CRM Search streams (e.g. contacts, companies, deals, tickets) for a specified number of minutes before the state from the previous sync. This helps capture missing records in CRM Search streams.
 7. (Optional) Set the **Property History Lookback Window** in minutes to re-fetch data for property history streams (`deals_property_history`, `contacts_property_history`, `companies_property_history`). This helps capture records that may be missed due to cursor drift caused by HubSpot calculated properties. A value of `43200` (30 days) is a reasonable starting point.
 8. (Optional) Enable **Treat dynamic number and boolean properties as strings** if your destination rejects records because HubSpot returns values that don't match the declared `number` or `boolean` type. See [Destination type conversion errors](#limitations--troubleshooting) in Troubleshooting for details.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) Set the **Number of concurrent threads** between 1 and 40. The default is 10. See [Sync concurrency](#sync-concurrency).
+10. Click **Set up source** and wait for the tests to complete.
+
+<FieldAnchor field="num_worker">
+
+### Sync concurrency
+
+**Number of concurrent threads** sets how many streams and partitions the connector reads at the same time. It accepts a value from 1 to 40, and defaults to 10.
+
+The connector paces its own requests to stay inside HubSpot's limits, at 5 requests per second for CRM search endpoints and 10 requests per second for everything else. More threads don't raise those ceilings, so they help most on streams whose runtime is dominated by HubSpot's response times rather than by the request budget. That includes streams that make extra requests behind each page or record, such as `deals` and the other CRM search streams, which fetch associations for every page, and `campaigns` and `marketing_emails`, which fetch details for every record.
+
+Lower the value if other integrations share the same HubSpot account and you see repeated 429 responses in your sync logs, or if you're close to your account's [daily request limit](#rate-limiting).
+
+Versions before 6.8.1 ignored this field and always used 10 threads, so upgrade before you tune it.
+
+</FieldAnchor>
 
 <FieldAnchor field="enable_experimental_streams">
 
