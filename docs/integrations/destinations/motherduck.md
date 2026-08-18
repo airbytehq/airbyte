@@ -132,6 +132,7 @@ If a batch can't be prepared as an Arrow table, the connector logs `Writing with
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.7 | 2026-08-18 | [78605](https://github.com/airbytehq/airbyte/pull/78605) | Update dependencies |
 | 0.2.6 | 2026-08-04 | [83694](https://github.com/airbytehq/airbyte/pull/83694) | Fix JSON column serialization being skipped for non-lowercase source property names, causing empty STRUCT failures |
 | 0.2.5 | 2026-07-22 | [82244](https://github.com/airbytehq/airbyte/pull/82244) | Fix sync failures on array fields containing empty objects by serializing JSON array columns before load |
 | 0.2.4 | 2026-07-14 | [81511](https://github.com/airbytehq/airbyte/pull/81511) | Fix silent data loss on multi-stream syncs by no longer discarding other streams' buffered records when one stream is flushed |
