@@ -2,6 +2,7 @@
   "credentials": {
     "auth_type": "client_credentials",
     "client_id": "bla",
-    "client_secret": "bla"
+    "client_secret": "bla",
+    "sub": 999999999
   }
 }

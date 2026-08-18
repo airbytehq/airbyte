@@ -16,15 +16,10 @@ _CONNECTOR_PATH = Path(__file__).parent.parent
 sys.path.append(str(_CONNECTOR_PATH))
 
 
-class LocalYamlDeclarativeSource(YamlDeclarativeSource):
-    def _read_and_parse_yaml_file(self, path_to_yaml_file):
-        return self._parse(Path(path_to_yaml_file).read_text())
-
-
 @pytest.fixture
 def get_source():
     def _get_source(config, state=None):
-        return LocalYamlDeclarativeSource(
+        return YamlDeclarativeSource(
             path_to_yaml=str(_CONNECTOR_PATH / "manifest.yaml"),
             catalog=CatalogBuilder().build(),
             config=config,
