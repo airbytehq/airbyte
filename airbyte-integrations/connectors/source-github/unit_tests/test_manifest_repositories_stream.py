@@ -89,6 +89,27 @@ def _read(config, state=None):
     return records, statuses, error
 
 
+def _error_messages(config, state=None):
+    """The user-facing failure text, which is what the platform surfaces.
+
+    `HttpClient` puts a matched filter's `error_message` on the exception's `message` and the
+    generic request dump on `internal_message` (http_client.py), and only the latter survives
+    into `str(exception)` once the concurrent source aggregates stream failures. Asserting on
+    the exception string therefore cannot tell a curated message from the CDK default -- read
+    the emitted TRACE errors instead.
+    """
+    catalog = _catalog()
+    source = SourceGithub(config=dict(config), catalog=catalog, state=state)
+    messages = []
+    try:
+        for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, state or []):
+            if message.type == Type.TRACE and message.trace.error:
+                messages.append(message.trace.error.message or "")
+    except Exception:  # noqa: BLE001 - the failure itself is asserted through the trace messages
+        pass
+    return messages
+
+
 def test_org_404_is_skipped_and_sync_completes(rate_limit_mock_response, requests_mock):
     """A 404 on one org (renamed/deleted) must not fail the sync for the remaining orgs."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["ghost-org/*", "airbytehq/*"]}
@@ -328,7 +349,9 @@ def test_successful_response_carrying_retry_after_is_not_rate_limited(rate_limit
 
 
 def test_plain_403_fails_stream(rate_limit_mock_response, requests_mock):
-    """A plain 403 (bad scopes / SAML SSO) must fail the stream so `check` can surface it."""
+    """A plain 403 (bad scopes / SAML SSO) must fail the stream so `check` can surface it, and it
+    must carry the curated guidance rather than a bare status code — asserting only `"403" in
+    error` would still pass if the scopes/SSO filter were dropped and the CDK default took over."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
     requests_mock.get("https://api.github.com/orgs/docker/repos", status_code=403, json={"message": "Must have admin rights"})
 
@@ -337,6 +360,40 @@ def test_plain_403_fails_stream(rate_limit_mock_response, requests_mock):
     assert records == []
     assert error is not None
     assert "403" in str(error)
+    # The curated guidance reaches the user as the TRACE error message, not as the exception
+    # string. Asserting only on the latter would still pass with the scopes/SSO filter deleted.
+    guidance = " ".join(_error_messages(config))
+    assert "GitHub denied access (HTTP 403)" in guidance
+    assert "repo, read:org, read:user, read:project, workflow" in guidance, "the curated scope list must survive"
+    assert "SAML SSO" in guidance
+
+
+def test_401_fails_fast_without_retrying(rate_limit_mock_response, requests_mock):
+    """The migrated stream deliberately does *not* inherit the legacy `401 -> RETRY` mapping.
+
+    `GITHUB_DEFAULT_ERROR_MAPPING` retried 401 five times, but git history shows that entry
+    arrived as a copy-paste artifact of the CDK v3 migration (401/403/404/409 all identical,
+    all messaged "Conflict."), and its sibling 403 was later fixed as a bug in #76090. The
+    manifest declares no 401 filter, so the CDK default applies: fail once, with an actionable
+    message. This test pins that contract, since retrying a bad credential only delays a config
+    error while burning rate-limit quota."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        status_code=401,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+    )
+
+    records, statuses, error = _read(config)
+
+    assert records == []
+    assert error is not None
+    assert listing.call_count == 1, "401 must not be retried; the legacy Python path still retries it 5 times"
+    guidance = " ".join(_error_messages(config))
+    assert "401" in guidance and "Unauthorized" in guidance, (
+        "the CDK default 401 message is the intended contract here, and it is more actionable "
+        'than the legacy mapping\'s literal "Conflict."'
+    )
 
 
 def test_record_filter_mixed_wildcard_and_explicit_config(rate_limit_mock_response, requests_mock):

@@ -43,6 +43,52 @@ def test_multiple_tokens(rate_limit_mock_response):
     assert ["token_1", "token_2", "token_3"] == list(authenticator._tokens)
 
 
+@pytest.mark.parametrize(
+    "credentials_config, expected_token",
+    [
+        pytest.param(
+            {"access_token": "root-token", "credentials": {"access_token": "oauth-token", "personal_access_token": "pat-token"}},
+            "root-token",
+            id="root_access_token_wins_over_both_credentials_keys",
+        ),
+        pytest.param(
+            {"credentials": {"access_token": "oauth-token", "personal_access_token": "pat-token"}},
+            "oauth-token",
+            id="credentials_access_token_wins_over_personal_access_token",
+        ),
+        pytest.param({"credentials": {"personal_access_token": "pat-token"}}, "pat-token", id="personal_access_token_last"),
+    ],
+)
+def test_token_precedence_matches_get_access_token(credentials_config, expected_token, rate_limit_mock_response):
+    """The manifest's `tokens` expression and `SourceGithub.get_access_token` must pick the same
+    token when more than one config key is populated, or the manifest streams would authenticate
+    as one identity while the Python streams authenticate as another — and the shared quota
+    counters would be tracking the wrong token. Only exercised when the keys *coexist*: a config
+    with a single key cannot tell a correct precedence chain from a broken one."""
+    config = {"repositories": ["org/repo"], **credentials_config}
+    source = SourceGithub(catalog=None, config=config, state=None)
+
+    authenticator = source._get_authenticator(config)
+
+    assert list(authenticator._tokens) == [expected_token]
+    assert SourceGithub.get_access_token(config)[1] == expected_token, "manifest and Python paths disagree on the token"
+
+
+def test_comma_separated_tokens_are_split_and_the_first_one_signs(rate_limit_mock_response):
+    """Multi-token configs are a comma-separated string. Rotation is driven by quota exhaustion
+    (covered separately), so consecutive requests must keep using the *same* token rather than
+    round-robin — spreading load across tokens would defeat the per-token quota accounting."""
+    _, authenticator = _source_and_authenticator(" token_1 ,token_2 , token_3 ")
+
+    assert list(authenticator._tokens) == ["token_1", "token_2", "token_3"]
+    signed = []
+    for _ in range(3):
+        request = _prepared_request()
+        authenticator(request)
+        signed.append(request.headers["Authorization"])
+    assert signed == ["token token_1"] * 3
+
+
 def test_authenticator_instance_is_shared_with_manifest_streams(rate_limit_mock_response, requests_mock):
     """The Python streams must charge the same quota counters as the declarative streams.
 
