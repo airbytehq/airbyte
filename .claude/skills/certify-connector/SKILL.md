@@ -139,8 +139,8 @@ Emit one row per competitor table with a verdict of `covered` (naming our stream
 **Recommended criteria:** N passed · M failed
 
 ## Blocking failures
-| ID | Criterion | Evidence | Group |
-|----|-----------|----------|-------|
+| ID | Criterion | Evidence | Group | Breaking? |
+|----|-----------|----------|-------|-----------|
 
 ## Unevaluated
 | ID | Criterion | Why it could not be checked |
@@ -155,8 +155,15 @@ Emit one row per competitor table with a verdict of `covered` (naming our stream
 |------------------|---------|------------|
 
 ## Proposed remediation plan
-Ordered work units with dependencies.
+Ordered work units with dependencies. Call out the consolidated breaking release, or state that
+nothing is breaking.
 ```
+
+**The `Breaking?` column is a determination, not a guess.** For every failed criterion carrying a
+⚠️ May be breaking flag in the register, run `breaking-change-evaluation` against the proposed fix and
+record `yes` / `no` / `avoidable with <config|state> migration`. Never leave it blank — an unfilled
+column reads as "not breaking" to whoever schedules the work, and that is how a connector ends up
+shipping an unannounced major.
 
 ---
 
@@ -187,19 +194,56 @@ Split out of the group when:
 
 - The owner class is `human` — it needs a different actor entirely
 - The work is R-2's undeclared-empty-streams bucket — it's investigation, not implementation
+- **The criterion is M-1** — it is in group `metadata` but must be the last PR in the epic, not the first.
+  Never let M-1 ride along in the `metadata` sub-issue; that would flip `supportLevel: certified` before
+  any remediation lands.
+- **The criterion carries a ⚠️ May be breaking flag** — those collapse into the single breaking release
+  described below, regardless of their group
+
+### Breaking changes: one release, not one per group
+
+Several criteria have remediations that are breaking changes under the existing policy — **S-1, S-2, S-3,
+I-1, I-2, A-1, X-1**, each flagged in the register. Whether a given connector's fix is actually breaking
+depends on the diff; run the `breaking-change-evaluation` skill to decide, and prefer a config or state
+migration that removes the break entirely.
+
+**Every fix that survives as breaking ships in one major release.** Do not let group boundaries split them:
+a connector needing S-1, S-2, and I-2 would otherwise produce three sub-issues in three groups at three
+different ordering steps — three major versions, three migration guides, three upgrade deadlines, three
+trips through `@airbytehq/breaking-change-reviewers`, for one certification.
+
+Mechanically:
+
+1. Evaluate all flagged criteria first and record which are genuinely breaking for this connector.
+2. Non-breaking fixes stay in their normal group and ordering position.
+3. Breaking fixes are pulled into **one `breaking` sub-issue** that lists every affected criterion, ships a
+   single major bump with one `releases.breakingChanges` entry and one migration guide covering all of
+   them, and carries the `breaking-change` label and `!` PR title.
+4. If exactly one criterion is breaking, leave it in its own group and flag it — no separate sub-issue
+   needed.
+
+State this in the epic body so the sequencing is visible before any work starts.
 
 ### Order
 
 Sub-issues carry an explicit dependency order. Later work assumes earlier work has landed:
 
-1. `metadata`, `auth`, `perf` — independent, parallelizable
+1. `metadata` (excluding M-1), `auth`, `perf`, `ux-spec` — independent, parallelizable
 2. `errors`, `schema` — before reliability, since both change what the standard tests observe
 3. `reliability` — R-1 must pass before R-2 and R-3 mean anything
 4. `incremental` — needs correct schemas and cursors in place
-5. `parity` — new streams land last so they inherit the corrected patterns
-6. `docs` — documents the final state
-7. `ux-review`, `auth-cloud`, `monitoring` — human work; **start in parallel, gate the final merge**
-8. **M-1** — flip `supportLevel` to certified. Always the last PR.
+5. `bugs`, `telemetry` — after the code is correct; O-1 triage against a connector still being changed
+   re-litigates itself, and telemetry describes settled behaviour
+6. `parity` — new streams land last so they inherit the corrected patterns
+7. `breaking` — the consolidated major release, after every schema, incremental, auth, and spec fix above
+   is known and batched. Skip if nothing is breaking.
+8. `docs` — documents the final state, including the migration guide if step 7 ran
+9. `ux-review`, `auth-cloud`, `monitoring` — human work; **start in parallel, gate the final merge**
+10. **M-1** — flip `supportLevel` to certified. Always the last PR, always its own sub-issue.
+
+Every group in the register has a position here except `gate` (G-1), which produces no sub-issue — a
+failed gate ends the evaluation. If any other group is missing from this list, the register and this skill
+have drifted; fix that before filing.
 
 ### Sub-issue body
 
