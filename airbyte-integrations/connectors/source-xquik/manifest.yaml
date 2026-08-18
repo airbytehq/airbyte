@@ -1,0 +1,533 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Replicate public X search results, user profiles, user timelines, and regional
+  trends through the Xquik API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - tweets_search
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    url_base: https://xquik.com/api/v1
+    http_method: GET
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: x-api-key
+        inject_into: header
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 2
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 409
+            - 424
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_name: cursor
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('next_cursor', '') }}"
+      stop_condition: "{{ not response.get('has_next_page', False) or not response.get('next_cursor') }}"
+
+  username_partition_router:
+    type: ListPartitionRouter
+    values: "{{ config.get('usernames', []) }}"
+    cursor_field: username
+
+  tweet_schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: "#/schemas/tweet"
+
+  streams:
+    tweets_search:
+      type: DeclarativeStream
+      name: tweets_search
+      description: Public tweets matching each configured advanced search query.
+      primary_key:
+        - id
+        - search_query
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /x/tweets/search
+          request_parameters:
+            q: "{{ stream_partition['search_query'] }}"
+            queryType: "{{ config['query_type'] }}"
+            limit: "{{ config['tweet_limit'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tweets
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['tweet_queries'] }}"
+          cursor_field: search_query
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: sinceTime
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_time_option:
+          type: RequestOption
+          field_name: untilTime
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - search_query
+              value: "{{ stream_partition['search_query'] }}"
+      schema_loader:
+        $ref: "#/definitions/tweet_schema_loader"
+
+    user_profiles:
+      type: DeclarativeStream
+      name: user_profiles
+      description: Public profiles for configured usernames or user IDs.
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/x/users/{{ stream_partition['username'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          $ref: "#/definitions/username_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - configured_username
+              value: "{{ stream_partition['username'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_profile"
+
+    user_tweets:
+      type: DeclarativeStream
+      name: user_tweets
+      description: Public timeline tweets for configured usernames or user IDs.
+      primary_key:
+        - id
+        - source_username
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "/x/users/{{ stream_partition['username'] }}/tweets"
+          request_parameters:
+            pageSize: "{{ config['page_size'] }}"
+            includeReplies: "{{ config['include_replies'] }}"
+            sinceDate: "{{ config['start_date'][:10] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tweets
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+        partition_router:
+          $ref: "#/definitions/username_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - source_username
+              value: "{{ stream_partition['username'] }}"
+      schema_loader:
+        $ref: "#/definitions/tweet_schema_loader"
+
+    trends:
+      type: DeclarativeStream
+      name: trends
+      description: Regional trends for each configured WOEID.
+      primary_key:
+        - woeid
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /x/trends
+          request_parameters:
+            woeid: "{{ stream_partition['woeid'] }}"
+            count: "{{ config['trend_count'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - trends
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['trend_woeids'] }}"
+          cursor_field: woeid
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - woeid
+              value: "{{ stream_partition['woeid'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trend"
+
+streams:
+  - $ref: "#/definitions/streams/tweets_search"
+  - $ref: "#/definitions/streams/user_profiles"
+  - $ref: "#/definitions/streams/user_tweets"
+  - $ref: "#/definitions/streams/trends"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - tweet_queries
+    additionalProperties: false
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Xquik API key from the API Keys page.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start Date
+        description: Earliest tweet creation time to replicate, in ISO 8601 UTC format.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2026-01-01T00:00:00Z"
+        order: 1
+      tweet_queries:
+        type: array
+        title: Tweet Search Queries
+        description: X advanced search queries. Each query maintains independent incremental state.
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: string
+          minLength: 1
+        examples:
+          -
+            - '"open source" lang:en'
+            - from:airbytehq
+        order: 2
+      usernames:
+        type: array
+        title: Usernames Or User IDs
+        description: X usernames without @, or numeric user IDs, for profile and timeline streams.
+        default: []
+        uniqueItems: true
+        items:
+          type: string
+          pattern: "^(?:[A-Za-z0-9_]{1,15}|[0-9]+)$"
+        order: 3
+      trend_woeids:
+        type: array
+        title: Trend WOEIDs
+        description: Regional Where On Earth IDs. Use 1 for worldwide trends.
+        default:
+          - 1
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: integer
+          minimum: 1
+        order: 4
+      query_type:
+        type: string
+        title: Search Result Type
+        description: Return the latest or top matching tweets.
+        enum:
+          - Latest
+          - Top
+        default: Latest
+        order: 5
+      tweet_limit:
+        type: integer
+        title: Tweets Per Query
+        description: Maximum tweets requested for each search query.
+        default: 100
+        minimum: 1
+        maximum: 10000
+        order: 6
+      page_size:
+        type: integer
+        title: User Timeline Page Size
+        description: Tweets requested per user timeline page.
+        default: 20
+        minimum: 1
+        maximum: 100
+        order: 7
+      include_replies:
+        type: boolean
+        title: Include Timeline Replies
+        description: Include replies in user timeline streams.
+        default: false
+        order: 8
+      trend_count:
+        type: integer
+        title: Trends Per Region
+        description: Maximum trends requested for each WOEID.
+        default: 30
+        minimum: 1
+        maximum: 50
+        order: 9
+
+metadata:
+  autoImportSchema:
+    tweets_search: false
+    user_profiles: false
+    user_tweets: false
+    trends: false
+  assist:
+    docsUrl: https://docs.xquik.com/api-reference/overview
+
+schemas:
+  tweet:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+      - text
+      - retweetCount
+      - replyCount
+      - likeCount
+      - quoteCount
+      - viewCount
+      - bookmarkCount
+    properties:
+      id:
+        type: string
+      text:
+        type: string
+      type:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      retweetCount:
+        type: integer
+      replyCount:
+        type: integer
+      likeCount:
+        type: integer
+      quoteCount:
+        type: integer
+      viewCount:
+        type: integer
+      bookmarkCount:
+        type: integer
+      isReply:
+        type:
+          - boolean
+          - "null"
+      isQuoteStatus:
+        type:
+          - boolean
+          - "null"
+      conversationId:
+        type:
+          - string
+          - "null"
+      author:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      media:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      entities:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      search_query:
+        type:
+          - string
+          - "null"
+      source_username:
+        type:
+          - string
+          - "null"
+
+  user_profile:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - id
+      - username
+      - name
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+      name:
+        type: string
+      configured_username:
+        type: string
+      description:
+        type:
+          - string
+          - "null"
+      followers:
+        type:
+          - integer
+          - "null"
+      following:
+        type:
+          - integer
+          - "null"
+      verified:
+        type:
+          - boolean
+          - "null"
+      isBlueVerified:
+        type:
+          - boolean
+          - "null"
+      profilePicture:
+        type:
+          - string
+          - "null"
+      coverPicture:
+        type:
+          - string
+          - "null"
+      location:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      statusesCount:
+        type:
+          - integer
+          - "null"
+      protected:
+        type:
+          - boolean
+          - "null"
+
+  trend:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    required:
+      - name
+      - woeid
+    properties:
+      name:
+        type: string
+      woeid:
+        type: integer
+      description:
+        type:
+          - string
+          - "null"
+      query:
+        type:
+          - string
+          - "null"
+      promotedContent:
+        type:
+          - string
+          - "null"
+      rank:
+        type:
+          - integer
+          - "null"
+      tweetVolume:
+        type:
+          - integer
+          - "null"
+      url:
+        type:
+          - string
+          - "null"

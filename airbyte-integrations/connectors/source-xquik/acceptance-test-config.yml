@@ -1,0 +1,16 @@
+# See https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference
+connector_image: airbyte/source-xquik:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: manifest.yaml
+  connection:
+    bypass_reason: Initial community contribution; Airbyte test credentials are not provisioned yet.
+  discovery:
+    bypass_reason: Initial community contribution; Airbyte test credentials are not provisioned yet.
+  basic_read:
+    bypass_reason: Initial community contribution; Airbyte test credentials are not provisioned yet.
+  incremental:
+    bypass_reason: Initial community contribution; Airbyte test credentials are not provisioned yet.
+  full_refresh:
+    bypass_reason: Initial community contribution; Airbyte test credentials are not provisioned yet.
