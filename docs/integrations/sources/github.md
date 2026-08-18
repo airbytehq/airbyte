@@ -176,10 +176,11 @@ This connector outputs the following incremental streams:
 - `issue_labels`
 - `organizations`
 - `pull_request_commits`
-- `repositories`
 - `tags`
 - `teams`
 - `users`
+
+5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
 
 ## IP allow list
 
@@ -215,6 +216,16 @@ In the event that limits are reached before all streams have been read, it is re
 When every configured token is rate-limited, the connector waits for the limit to reset rather than failing immediately. The wait is capped by the **Max Waiting Time (in minutes)** configuration option (default: 120 minutes, maximum: 240 minutes). Rate-limit exhaustion is classified as a transient error, so Airbyte will retry the sync according to your connection's retry behavior if the connector does exceed this wait.
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+#### Adding repositories or organizations to an existing connection
+
+Widening the **GitHub Repositories** field on a connection that has already synced does not backfill what the new repositories or organizations did in the past. The connector keeps one sync position per repository or organization, and a newly added one starts from the connection's current overall position instead of from your configured **Start date**. Anything created or last updated before that position is never emitted, and the sync reports no warning or error.
+
+For example, a connection syncing `docker/*` since 2026-01-01 that you widen to `docker/*, airbytehq/*` will pick up the `airbytehq` repositories updated after 2026-01-01, but not the ones whose last update is older than that.
+
+To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
+
+This currently affects the `repositories` stream. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
 
 #### Releases stream asset limit
 
