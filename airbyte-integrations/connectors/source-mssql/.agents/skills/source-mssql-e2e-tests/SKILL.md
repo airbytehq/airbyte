@@ -42,7 +42,9 @@ source-mssql-e2e-tests/
 │   ├── stop-backend.sh         # docker rm -f source-mssql-db-backend
 │   ├── apply-sql.sh            # docker cp + docker exec sqlcmd -i
 │   ├── render-config.sh        # jq the backend bridge IP into a config template
-│   └── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
+│   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
+│   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
+│   └── run.sh                  # one-shot: backend → fixtures → config → catalog → command → teardown
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
@@ -73,6 +75,42 @@ The skill expects all script paths relative to the skill root.
   not `latest`, for stable major-version behavior across CU patches.
 
 ## Usage
+
+### One-shot (preferred)
+
+`scripts/run.sh` performs the whole sequence — start backend, apply
+fixtures, render config, derive the configured catalog from a `discover`
+run, run the protocol command, tear down on exit — and exits with the
+connector's own exit code:
+
+```bash
+cd airbyte-integrations/connectors/source-mssql
+
+# Single version.
+poe e2e-local --command=read --test-version=5.0.0 \
+  --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+
+# Target vs. control comparison (prove-fix shape).
+poe e2e-local --command=read --test-version=dev --control-version=5.0.0 \
+  --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+```
+
+Build the target image first when using `--test-version=dev`, or pass
+`--build` to have `run.sh` run `:airbyteDocker` for you. Other options:
+`--step-name`, `--catalog` (skip discover-derived generation),
+`--sync-mode=incremental`, `--cursor-field`, `--streams`,
+`--config-template`, `--keep-backend`, and `--` to forward extra args to
+`airbyte-ops`.
+
+When `--control-version` is set, `run-protocol-cmd.sh` drops
+`--skip-compare=True` and passes `--control-image`, so the CLI runs both
+images and diffs their protocol output with the existing comparators
+(record counts, primary keys, per-record, schema). Both runs must see
+identical backend state — for CDC that means recreating the backend and
+capture instance between them, which the comparators cannot check for
+you.
+
+### Step by step
 
 ```bash
 SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
@@ -108,6 +146,24 @@ airbyte-ops cloud connector regression-test \
   --output-dir=$REPRO_OUT/<step-name> \
   <extra-args…>
 ```
+
+Setting `CONTROL_VERSION=<tag>` in the environment switches it to
+comparison mode instead:
+
+```
+airbyte-ops cloud connector regression-test \
+  --command=<command> \
+  --test-image=airbyte/source-mssql:<version> \
+  --control-image=airbyte/source-mssql:$CONTROL_VERSION \
+  --output-dir=$REPRO_OUT/<step-name> \
+  <extra-args…>
+```
+
+`make-catalog.sh <discover-output-dir> <output.json>` builds a
+`ConfiguredAirbyteCatalog` from the `CATALOG` message a `discover` run
+emitted, so `read` never uses a hand-written catalog that has drifted
+from the fixture. `STREAMS`, `SYNC_MODE`, and `CURSOR_FIELD` select and
+shape the streams; source-defined primary keys are preserved.
 
 ## Asserting on output
 

@@ -132,8 +132,21 @@ directly.
 
 The same `airbyte-ops cloud connector regression-test` command is used
 by `/ai-prove-fix` for comparison-style work (target image vs. control
-image). For per-bug repro driver scripts that's not normally needed —
-they all pass `--skip-compare=True` via the generic skill's
-`run-protocol-cmd.sh`. To reach for the comparison path manually, drop
-`--skip-compare=True` and supply both `--test-image` and
-`--control-image`; the CLI's `--help` covers the additional flags.
+image). Per-bug repro driver scripts don't normally need it and stay on
+the single-version path, which passes `--skip-compare=True`.
+
+For a prove-fix comparison, use the generic skill's one-shot entrypoint
+with a control version:
+
+```bash
+cd airbyte-integrations/connectors/source-mssql
+poe e2e-local --command=read --test-version=dev --control-version=5.0.0 \
+  --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+```
+
+That sets `CONTROL_VERSION` for `run-protocol-cmd.sh`, which then omits
+`--skip-compare=True` and passes `--control-image`, so the CLI runs both
+images and diffs their protocol output with the existing comparators.
+Both runs must observe identical backend state; for CDC, recreate the
+backend and the capture instance between them, or the diff is
+meaningless while still looking clean.

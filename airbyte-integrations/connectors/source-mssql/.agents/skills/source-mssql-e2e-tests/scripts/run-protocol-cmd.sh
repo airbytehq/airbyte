@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run an Airbyte protocol command against airbyte/source-mssql:<version>
-# via `airbyte-ops cloud connector regression-test --skip-compare=True`.
+# via `airbyte-ops cloud connector regression-test`.
 #
 # Usage:  run-protocol-cmd.sh <command> <step-name> <version> [extra-args…]
 #
@@ -9,20 +9,33 @@
 #   <version>     image tag, e.g. 4.4.2 / 4.3.4 / dev / latest
 #   [extra-args]  any additional flags forwarded verbatim
 #
+# Modes:
+#   Single-version (default): runs <version> alone with --skip-compare=True
+#     and returns the connector's own exit code (derived from report.md).
+#   Comparison (prove-fix): set CONTROL_VERSION=<tag> to compare <version>
+#     (--test-image) against airbyte/source-mssql:$CONTROL_VERSION
+#     (--control-image). --skip-compare is dropped so airbyte-ops runs both
+#     images and diffs their protocol output with the same comparators
+#     Path A uses (record counts, primary keys, per-record, schema).
+#
+#   Comparison mode assumes both runs see an identical backend fixture
+#   state. Reset the backend between runs — for CDC, recreate the capture
+#   instance too — or the diff is meaningless while still looking clean.
+#
 # Output:
-#   $REPRO_OUT/<step-name>/stdout.txt
-#   $REPRO_OUT/<step-name>/stderr.txt
-#   $REPRO_OUT/<step-name>/result.json   (small summary)
+#   $REPRO_OUT/<step-name>/…  (stdout.txt, stderr.txt, report.md, diff)
 #
 # Env:
-#   REPRO_OUT     parent output directory (default: /tmp/source-mssql-repro)
-#   AIRBYTE_OPS   command to invoke airbyte-ops. Default picks the binary
-#                 on $PATH (`airbyte-ops`) if `uv tool install
-#                 airbyte-internal-ops` was run, else falls back to
-#                 `uvx airbyte-internal-ops`.
+#   REPRO_OUT        parent output directory (default: /tmp/source-mssql-repro)
+#   CONTROL_VERSION  when set, enables comparison mode against this tag
+#   AIRBYTE_OPS      command to invoke airbyte-ops. Default picks the binary
+#                    on $PATH (`airbyte-ops`) if `uv tool install
+#                    airbyte-internal-ops` was run, else falls back to
+#                    `uvx airbyte-internal-ops`.
 set -euo pipefail
 
 REPRO_OUT="${REPRO_OUT:-/tmp/source-mssql-repro}"
+CONNECTOR_IMAGE="airbyte/source-mssql"
 if [[ -z "${AIRBYTE_OPS:-}" ]]; then
   if command -v airbyte-ops >/dev/null 2>&1; then
     AIRBYTE_OPS="airbyte-ops"
@@ -50,13 +63,23 @@ mkdir -p "$OUT_DIR"
 # script, then derive the connector's actual exit code from
 # `report.md` so the caller's `RC` is meaningful.
 set +e
-# shellcheck disable=SC2086
-$AIRBYTE_OPS cloud connector regression-test \
-  --skip-compare=True \
-  --command="$COMMAND" \
-  --test-image="airbyte/source-mssql:$VERSION" \
-  --output-dir="$OUT_DIR" \
-  "$@"
+if [[ -n "${CONTROL_VERSION:-}" ]]; then
+  # shellcheck disable=SC2086
+  $AIRBYTE_OPS cloud connector regression-test \
+    --command="$COMMAND" \
+    --test-image="$CONNECTOR_IMAGE:$VERSION" \
+    --control-image="$CONNECTOR_IMAGE:$CONTROL_VERSION" \
+    --output-dir="$OUT_DIR" \
+    "$@"
+else
+  # shellcheck disable=SC2086
+  $AIRBYTE_OPS cloud connector regression-test \
+    --skip-compare=True \
+    --command="$COMMAND" \
+    --test-image="$CONNECTOR_IMAGE:$VERSION" \
+    --output-dir="$OUT_DIR" \
+    "$@"
+fi
 set -e
 
 CONNECTOR_RC="$(

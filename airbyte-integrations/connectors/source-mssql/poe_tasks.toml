@@ -1,3 +1,10 @@
 include = [
     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
 ]
+
+[tasks.e2e-local]
+help = "Run the local e2e harness end-to-end (backend, fixtures, protocol command, teardown). Pass --control-version=<tag> for a prove-fix target-vs-control comparison. See .agents/skills/source-mssql-e2e-tests/SKILL.md."
+cmd = "${POE_PWD}/.agents/skills/source-mssql-e2e-tests/scripts/run.sh ${run_args}"
+args = [
+  { name = "run_args", positional = true, multiple = true, help = "Arguments forwarded to run.sh (e.g. --command=read --control-version=4.3.3)" }
+]
