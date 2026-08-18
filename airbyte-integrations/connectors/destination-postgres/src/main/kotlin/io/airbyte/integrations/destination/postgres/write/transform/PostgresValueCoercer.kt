@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.destination.postgres.write.transform
 
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
@@ -51,16 +54,24 @@ internal const val TIMESTAMP_MAX_EPOCH_SECONDS = 9223371331200L
 @Singleton
 class PostgresValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        // Object, array, and union values are written to jsonb columns, which reject NUL
+        // characters ("unsupported Unicode escape sequence"). Jackson emits NUL as a literal
+        // six-character escape rather than dropping it, so sanitizing the serialized text
+        // afterwards finds nothing — the value tree has to be cleaned before it is serialized.
+        val sanitized =
+            if (value.abValue.containsNullCharacter()) value.abValue.stripNullCharacters()
+            else value.abValue
+
         value.abValue =
             if (value.type is UnionType || value.type is UnknownType) {
                 // Don't serialize null values - keep them as NullValue
-                if (value.abValue is NullValue) {
-                    value.abValue
+                if (sanitized is NullValue) {
+                    sanitized
                 } else {
-                    StringValue(value.abValue.serializeToString())
+                    StringValue(sanitized.serializeToString())
                 }
             } else {
-                value.abValue
+                sanitized
             }
         return value
     }
@@ -127,3 +138,28 @@ class PostgresValueCoercer : ValueCoercer {
             }
         }
 }
+
+/**
+ * Cheap pre-check so the common (NUL-free) case walks the tree without allocating a sanitized copy
+ * of it.
+ */
+private fun AirbyteValue.containsNullCharacter(): Boolean =
+    when (this) {
+        is StringValue -> value.contains('\u0000')
+        is ArrayValue -> values.any { it.containsNullCharacter() }
+        is ObjectValue -> values.values.any { it.containsNullCharacter() }
+        else -> false
+    }
+
+private fun AirbyteValue.stripNullCharacters(): AirbyteValue =
+    when (this) {
+        is StringValue -> StringValue(value.replace("\u0000", ""))
+        is ArrayValue -> ArrayValue(values.map { it.stripNullCharacters() })
+        is ObjectValue ->
+            ObjectValue(
+                values.mapValuesTo(LinkedHashMap<String, AirbyteValue>(values.size)) { (_, v) ->
+                    v.stripNullCharacters()
+                }
+            )
+        else -> this
+    }
