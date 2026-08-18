@@ -262,7 +262,7 @@ We recommend running a full refresh after changing this setting on an existing c
 Snowflake has precision limits for numeric types:
 
 - **FLOAT**: Standard 64-bit floating point value.
-- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are rounded to 9 decimal places, rounding half away from zero, and flagged in `_airbyte_meta`.
+- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are rounded to 9 decimal places, rounding half away from zero. When rounding changes the value, `_airbyte_meta` records a `TRUNCATED` change with the reason `DESTINATION_FIELD_SIZE_LIMITATION`.
 - **NUMBER (INTEGER)**: Maximum 38 digits.
 
 When a value exceeds the bounds of these types, Airbyte nulls it out. Values within the minimum/maximum boundaries but with excessive precision are rounded. In both cases, the `_airbyte_meta` column contains a `changes` entry to reflect this.
