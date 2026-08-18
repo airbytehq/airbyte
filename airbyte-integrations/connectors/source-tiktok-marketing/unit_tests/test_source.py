@@ -12,6 +12,40 @@ from airbyte_cdk.models import ConnectorSpecification, Status
 from .conftest import get_source
 
 
+EXPECTED_REPORT_PRIMARY_KEYS = {
+    "ads_reports_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"]],
+    "ads_reports_by_country_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"], ["country_code"]],
+    "ad_groups_reports_daily": [["advertiser_id"], ["adgroup_id"], ["stat_time_day"]],
+    "ad_groups_reports_by_country_daily": [["advertiser_id"], ["adgroup_id"], ["stat_time_day"], ["country_code"]],
+    "advertisers_reports_daily": [["advertiser_id"], ["stat_time_day"]],
+    "campaigns_reports_daily": [["advertiser_id"], ["campaign_id"], ["stat_time_day"]],
+    "campaigns_audience_reports_daily": [["advertiser_id"], ["campaign_id"], ["stat_time_day"], ["gender"], ["age"]],
+    "ad_group_audience_reports_daily": [["advertiser_id"], ["adgroup_id"], ["stat_time_day"], ["gender"], ["age"]],
+    "ads_audience_reports_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"], ["gender"], ["age"]],
+    "advertisers_audience_reports_daily": [["advertiser_id"], ["stat_time_day"], ["gender"], ["age"]],
+    "campaigns_audience_reports_by_country_daily": [["advertiser_id"], ["campaign_id"], ["stat_time_day"], ["country_code"]],
+    "ad_group_audience_reports_by_country_daily": [["advertiser_id"], ["adgroup_id"], ["stat_time_day"], ["country_code"]],
+    "ads_audience_reports_by_country_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"], ["country_code"]],
+    "advertisers_audience_reports_by_country_daily": [["advertiser_id"], ["stat_time_day"], ["country_code"]],
+    "campaigns_audience_reports_by_platform_daily": [["advertiser_id"], ["campaign_id"], ["stat_time_day"], ["platform"]],
+    "ad_group_audience_reports_by_platform_daily": [["advertiser_id"], ["adgroup_id"], ["stat_time_day"], ["platform"]],
+    "ads_audience_reports_by_platform_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"], ["platform"]],
+    "advertisers_audience_reports_by_platform_daily": [["advertiser_id"], ["stat_time_day"], ["platform"]],
+    "ads_audience_reports_by_province_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"], ["province_id"]],
+    "ads_reports_hourly": [["advertiser_id"], ["ad_id"], ["stat_time_hour"]],
+    "ads_reports_by_country_hourly": [["advertiser_id"], ["ad_id"], ["stat_time_hour"], ["country_code"]],
+    "advertisers_reports_hourly": [["advertiser_id"], ["stat_time_hour"]],
+    "campaigns_reports_hourly": [["advertiser_id"], ["campaign_id"], ["stat_time_hour"]],
+    "ad_groups_reports_hourly": [["advertiser_id"], ["adgroup_id"], ["stat_time_hour"]],
+    "ad_groups_reports_by_country_hourly": [["advertiser_id"], ["adgroup_id"], ["stat_time_hour"], ["country_code"]],
+    "ads_reports_lifetime": [["advertiser_id"], ["ad_id"]],
+    "advertisers_reports_lifetime": [["advertiser_id"]],
+    "campaigns_reports_lifetime": [["advertiser_id"], ["campaign_id"]],
+    "ad_groups_reports_lifetime": [["advertiser_id"], ["adgroup_id"]],
+    "advertisers_audience_reports_lifetime": [["advertiser_id"], ["gender"], ["age"]],
+}
+
+
 @pytest.mark.parametrize(
     "config, stream_len",
     [
@@ -40,6 +74,15 @@ from .conftest import get_source
 def test_source_streams(config, stream_len):
     streams = get_source(config=config, state=None).streams(config=config)
     assert len(streams) == stream_len
+
+
+def test_report_stream_primary_keys():
+    config = {"access_token": "token", "environment": {"app_id": "1111", "secret": "secret"}, "start_date": "2021-04-01"}
+
+    discovered_catalog = get_source(config=config, state=None).discover(logger=None, config=config)
+    stream_primary_keys = {stream.name: stream.source_defined_primary_key for stream in discovered_catalog.streams}
+
+    assert {name: stream_primary_keys[name] for name in EXPECTED_REPORT_PRIMARY_KEYS} == EXPECTED_REPORT_PRIMARY_KEYS
 
 
 def test_source_spec(config):
