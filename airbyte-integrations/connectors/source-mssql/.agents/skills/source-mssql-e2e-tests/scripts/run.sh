@@ -114,8 +114,16 @@ if [[ "$COMMAND" == "read" ]]; then
     # comparison mode both images read the same catalog, so discover with
     # the control: a catalog the older image accepts is also accepted by
     # the target, but not necessarily the reverse.
+    set +e
     "$SCRIPTS/run-protocol-cmd.sh" discover "$STEP_NAME-catalog-discover" \
-      "${CONTROL_VERSION_ARG:-$TEST_VERSION}" "--config-path=$WORKING_CONFIG" || true
+      "${CONTROL_VERSION_ARG:-$TEST_VERSION}" "--config-path=$WORKING_CONFIG"
+    DISCOVER_RC=$?
+    set -e
+    if (( DISCOVER_RC != 0 )); then
+      echo "[run] catalog discover failed (exit $DISCOVER_RC); see" \
+        "$REPRO_OUT/$STEP_NAME-catalog-discover" >&2
+      exit "$DISCOVER_RC"
+    fi
     CATALOG="$REPRO_OUT/working/$STEP_NAME.catalog.json"
     STREAMS="$STREAMS" SYNC_MODE="$SYNC_MODE" CURSOR_FIELD="$CURSOR_FIELD" \
       "$SCRIPTS/make-catalog.sh" "$REPRO_OUT/$STEP_NAME-catalog-discover" "$CATALOG"

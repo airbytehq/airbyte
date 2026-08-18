@@ -31,6 +31,11 @@ fi
 DISCOVER_DIR="$1"
 OUTPUT="$2"
 
+case "$SYNC_MODE" in
+  full_refresh|incremental) ;;
+  *) echo "[make-catalog] SYNC_MODE must be full_refresh|incremental (got '$SYNC_MODE')" >&2; exit 2 ;;
+esac
+
 STDOUT_FILE="$(find "$DISCOVER_DIR" -name stdout.txt -type f 2>/dev/null | head -n 1)"
 if [[ -z "$STDOUT_FILE" ]]; then
   echo "[make-catalog] no stdout.txt under $DISCOVER_DIR — did discover run?" >&2
