@@ -252,7 +252,7 @@ The **Decimal Data Type** setting determines which Snowflake data type Airbyte u
 :::warning
 We recommend running a full refresh after changing this setting on an existing connection. Otherwise, on the next sync, Airbyte attempts to convert existing number columns in place. Because FLOAT and NUMBER(38,9) have different range and precision characteristics, this conversion can result in data loss, including reduced precision, truncated values, or values being set to NULL:
 
-- Switching to **NUMBER(38,9)**: Stored FLOAT values with more than 29 digits before the decimal point are set to NULL during the conversion. Because Snowflake converts the column in place, Airbyte does not process the individual rows, so no `_airbyte_meta` entry is added for these changes. Values that lost precision when they were originally loaded as FLOAT (rows flagged `TRUNCATED` in `_airbyte_meta`) remain imprecise, because the conversion cannot restore digits that were never stored. Only a full refresh re-syncs the original values from the source.
+- Switching to **NUMBER(38,9)**: Stored FLOAT values with more than 29 digits before the decimal point are set to NULL during the conversion, as are any `NaN` and infinity values in the column. Because Snowflake converts the column in place, Airbyte does not process the individual rows, so no `_airbyte_meta` entry is added for these changes. Values that lost precision when they were originally loaded as FLOAT (rows flagged `TRUNCATED` in `_airbyte_meta`) remain imprecise, because the conversion cannot restore digits that were never stored. Only a full refresh re-syncs the original values from the source.
 - Switching to **FLOAT**: Values silently become approximate again, and query results may differ slightly.
 
 :::
@@ -262,7 +262,7 @@ We recommend running a full refresh after changing this setting on an existing c
 Snowflake has precision limits for numeric types:
 
 - **FLOAT**: Standard 64-bit floating point value.
-- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are truncated and flagged in `_airbyte_meta`.
+- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are rounded to 9 decimal places, rounding half away from zero, and flagged in `_airbyte_meta`.
 - **NUMBER (INTEGER)**: Maximum 38 digits.
 
 When a value exceeds the bounds of these types, Airbyte nulls it out. Values within the minimum/maximum boundaries but with excessive precision are rounded. In both cases, the `_airbyte_meta` column contains a `changes` entry to reflect this.
@@ -330,7 +330,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
-| 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
+| 4.1.0           | 2026-08-18 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
 | 4.0.49          | 2026-08-05 | [83740](https://github.com/airbytehq/airbyte/pull/83740)   | Upgrade CDK to 1.0.21                                                                                                                                                                  |
 | 4.0.48          | 2026-07-23 | [82272](https://github.com/airbytehq/airbyte/pull/82272)   | Columns removed from the source schema are now preserved in the destination table instead of being dropped to prevent unintentional data loss due to source schema changes. |
 | 4.0.47          | 2026-07-23 | [82294](https://github.com/airbytehq/airbyte/pull/82294)   | Replace ALTER TABLE SWAP WITH with CREATE OR REPLACE TABLE CLONE COPY GRANTS to preserve table grants |
