@@ -1819,6 +1819,12 @@ streams:
         $schema: http://json-schema.org/draft-07/schema#
         additionalProperties: true
         properties:
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
           email:
             type:
               - "null"

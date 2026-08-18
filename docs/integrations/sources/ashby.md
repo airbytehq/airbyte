@@ -82,7 +82,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
-| 0.4.0 | 2026-08-18 | [84274](https://github.com/airbytehq/airbyte/pull/84274) | Declare additional documented API fields across 13 stream schemas, including typed interview event start/end times; refresh the source schema to pick up the new fields |
+| 1.0.0 | 2026-08-18 | [84274](https://github.com/airbytehq/airbyte/pull/84274) | Breaking release: declare documented API fields, including typed interview event start/end times; data-lake users must refresh affected streams or recreate affected tables |
 | 0.3.9 | 2026-08-18 | [78554](https://github.com/airbytehq/airbyte/pull/78554) | Update dependencies |
 | 0.3.8 | 2026-08-11 | [84215](https://github.com/airbytehq/airbyte/pull/84215) | Promoted release candidate to GA |
 | 0.3.8-rc.5 | 2026-08-11 | [84214](https://github.com/airbytehq/airbyte/pull/84214) | Revert the concurrency work from 0.3.8-rc.1 through 0.3.8-rc.3: remove the API budget, concurrency level, and `num_workers` option. |
