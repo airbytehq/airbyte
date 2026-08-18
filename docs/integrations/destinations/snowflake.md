@@ -220,7 +220,7 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 
 ### Table and column naming
 
-Snowflake identifiers aren't case-sensitive unless you quote them, so the connector uppercases the namespace, table, and column names it writes. A stream called `users` with a field called `created_at` becomes the table `USERS` with the column `CREATED_AT`.
+Snowflake identifiers aren't case-sensitive unless you quote them, so the connector writes the namespace, table, and column names in uppercase. A stream called `users` with a field called `created_at` becomes the table `USERS` with the column `CREATED_AT`.
 
 Two transformations change more than the case:
 
