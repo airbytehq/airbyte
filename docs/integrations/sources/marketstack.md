@@ -29,6 +29,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.63 | 2026-08-18 | [84664](https://github.com/airbytehq/airbyte/pull/84664) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [84005](https://github.com/airbytehq/airbyte/pull/84005) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83534](https://github.com/airbytehq/airbyte/pull/83534) | Update dependencies |
 | 0.0.60 | 2026-07-28 | [82999](https://github.com/airbytehq/airbyte/pull/82999) | Update dependencies |
 | 0.0.59 | 2026-07-21 | [82490](https://github.com/airbytehq/airbyte/pull/82490) | Update dependencies |
 | 0.0.58 | 2026-07-14 | [81902](https://github.com/airbytehq/airbyte/pull/81902) | Update dependencies |
