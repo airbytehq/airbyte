@@ -111,9 +111,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         the concurrent path.
         """
         effective_config = self._validate_and_transform_config(self._config or config)
-        # Manifest stream components interpolate from self._config, not the passed config arg.
-        if isinstance(self._config, dict):
-            self._config.update(effective_config)
+        self._sync_manifest_config(effective_config)
         concurrent_streams = super().streams(config=effective_config)
         concurrent_stream_names = {stream.name for stream in concurrent_streams}
 
@@ -229,6 +227,20 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             config=config,
         )
 
+    def _sync_manifest_config(self, config: Mapping[str, Any]) -> None:
+        """Push the transformed config into `self._config`, which manifest components read.
+
+        `ConcurrentDeclarativeSource.streams()` ignores its `config` argument and interpolates
+        from `self._config` (concurrent_declarative_source.py), so a config normalized here —
+        `api_url` defaulted, legacy `repository`/`branch` converted to arrays — would otherwise
+        never reach the manifest streams. Both entry points that transform the config call
+        this, so the two copies of the assignment cannot drift apart.
+
+        TODO: drop once the CDK lets a source hand `streams()` its own config.
+        """
+        if isinstance(self._config, dict):
+            self._config.update(config)
+
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)
         config = self._validate_repositories(config)
@@ -337,13 +349,14 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
-        max_waiting_time = config.get("max_waiting_time", 120) * 60
+        # `max_waiting_time` is deliberately absent from the stream kwargs: the wait bound lives
+        # on the shared authenticator, which reads the same config key through its own
+        # `max_wait_time` field. Passing it here would only be popped and discarded.
         organization_args = {
             "authenticator": authenticator,
             "organizations": organizations,
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
-            "max_waiting_time": max_waiting_time,
         }
         start_date = config.get("start_date")
         organization_args_with_start_date = {**organization_args, "start_date": start_date}
@@ -354,7 +367,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             "repositories": repositories,
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
-            "max_waiting_time": max_waiting_time,
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
@@ -365,10 +377,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
-        # Sync full config to CDK internal config so manifest streams can access it.
-        # YamlDeclarativeSource.streams() reads self._config, not the passed config arg.
-        if hasattr(self, "_config") and isinstance(self._config, dict):
-            self._config.update(config)
+        self._sync_manifest_config(config)
 
         python_streams = [
             IssueTimelineEvents(**repository_args),

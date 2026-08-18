@@ -2,6 +2,22 @@ version: "7.26.0"
 type: DeclarativeSource
 
 definitions:
+  # Config-derived Jinja fragments, hoisted so the two routers that expand wildcards and the
+  # two record filters that match against them cannot drift apart. `$ref` in value position
+  # resolves to the scalar before component construction, so these behave exactly like the
+  # literal strings they replace.
+  #
+  # `wildcard_organizations` lists the orgs named by a wildcard entry (`org/*`, `org/prefix*`).
+  # `wildcard_repository_filter` keeps a repo whose `full_name` matches any wildcard entry —
+  # and passes everything when config declares no wildcard at all, which is the legacy
+  # `Repositories(pattern=None)` behavior. That pass-all clause is inert for the resolver
+  # stream, whose partitions *are* the wildcard orgs: with no wildcards it has no partitions
+  # and the filter never runs.
+  wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+  wildcard_repository_filter: >-
+    {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
+       or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+
   requester_base:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
@@ -172,7 +188,8 @@ definitions:
       # access would raise Jinja's UndefinedError. InterpolatedString defaults `default` to
       # the template itself, so JinjaInterpolation.eval's UndefinedError guard just
       # re-evaluates the same failing expression and the error escapes, failing the sync.
-      # Rendering to "" is falsy, so DefaultPaginator stops paginating.
+      # On the last page there is no `next` link, so `regex_search` gets "" and returns None;
+      # CursorPaginationStrategy ends on `token if token else None`, so pagination stops.
       type: CursorPagination
       cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
 
@@ -207,13 +224,14 @@ definitions:
           field_path: []
         record_filter:
           type: RecordFilter
-          condition: >-
-            {{ record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+          condition:
+            $ref: "#/definitions/wildcard_repository_filter"
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
         type: ListPartitionRouter
-        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        values:
+          $ref: "#/definitions/wildcard_organizations"
         cursor_field: "organization"
     schema_loader:
       type: InlineSchemaLoader
@@ -322,7 +340,8 @@ definitions:
     partition_field: organization
     partition_routers:
       - type: ListPartitionRouter
-        values: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+        values:
+          $ref: "#/definitions/wildcard_organizations"
         cursor_field: "organization"
       - type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -353,11 +372,8 @@ definitions:
           field_path: []
         record_filter:
           type: RecordFilter
-          # When config has no wildcard patterns, all org repos intentionally pass,
-          # preserving the legacy `Repositories(pattern=None)` behavior.
-          condition: >-
-            {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
-               or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+          condition:
+            $ref: "#/definitions/wildcard_repository_filter"
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
@@ -985,6 +1001,12 @@ definitions:
                       - "null"
                       - string
 
+# Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
+# is per token, so this is conservative — a multi-token config could spend more than this
+# allows, and the /rate_limit probes are counted against it too. Left global on purpose,
+# because the CDK budget has no notion of which credential a request will be signed with, and
+# under-spending a secondary limit is much cheaper than tripping one. It also only covers
+# declarative requesters; the Python streams still spend the same GitHub budget outside it.
 api_budget:
   type: HTTPAPIBudget
   policies:

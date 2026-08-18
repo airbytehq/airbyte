@@ -57,10 +57,10 @@ class GithubStreamABC(HttpStream, ABC):
     stream_base_params = {}
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        # The wait bound belongs to the shared manifest authenticator, which reads the same
-        # `max_waiting_time` config key through its `max_wait_time` field. Setting it here would
-        # write a dead attribute onto an instance shared with every other stream.
-        kwargs.pop("max_waiting_time", None)
+        # No `max_waiting_time` handling here on purpose: the wait bound belongs to the shared
+        # manifest authenticator, which reads that config key through its own `max_wait_time`
+        # field. Setting it on the stream would write a dead attribute onto an authenticator
+        # instance shared with every other stream.
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
