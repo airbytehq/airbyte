@@ -3,12 +3,12 @@
 #
 
 import logging
-from typing import Optional, Union
+from typing import Optional, Protocol, Union
+from urllib.parse import urlparse
 
 import requests
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
@@ -16,6 +16,11 @@ from . import constants
 
 
 logger = logging.getLogger("airbyte")
+
+
+class GithubStreamProtocol(Protocol):
+    name: str
+    requires_repo_admin_access: bool
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
@@ -84,8 +89,26 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
     return False
 
 
+def is_stargazers_access_restriction(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
+    if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.FORBIDDEN:
+        try:
+            response_data = response_or_exception.json()
+        except ValueError:
+            logger.warning(
+                "is_stargazers_access_restriction received non-JSON 403 response (first 50 chars: %r).",
+                response_or_exception.text[:50],
+            )
+            return False
+        documentation_url = response_data.get("documentation_url") if isinstance(response_data, dict) else None
+        if not isinstance(documentation_url, str):
+            return False
+        documentation_url = documentation_url.lower()
+        return "/rest/activity/starring" in documentation_url or "/rest/activity/watching" in documentation_url
+    return False
+
+
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
-    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
+    def __init__(self, stream: GithubStreamProtocol, **kwargs):
         self.stream = stream
         super().__init__(**kwargs)
 
@@ -143,6 +166,40 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                         f"(HTTP {response_or_exception.status_code}). "
                         f"Waiting for the rate limit window to reset before retrying."
                     ),
+                )
+
+            status_code = response_or_exception.status_code
+            if self.stream.requires_repo_admin_access and (
+                status_code == requests.codes.NOT_FOUND
+                or (status_code == requests.codes.FORBIDDEN and is_stargazers_access_restriction(response_or_exception))
+            ):
+                response_url = response_or_exception.url
+                path_parts = urlparse(response_url).path.strip("/").split("/") if isinstance(response_url, str) else []
+                repos_index = path_parts.index("repos") if "repos" in path_parts else -1
+                repository = (
+                    "/".join(path_parts[repos_index + 1 : repos_index + 3])
+                    if repos_index >= 0 and len(path_parts) >= repos_index + 3
+                    else ""
+                )
+                repository_label = f" for repository `{repository}`" if repository else ""
+                deleted_repository_message = (
+                    "; a deleted or renamed repository would also return HTTP 404." if status_code == requests.codes.NOT_FOUND else "."
+                )
+                error_message = (
+                    f"Skipping `{self.stream.name}`{repository_label}: GitHub returned HTTP "
+                    f"{status_code} for this endpoint. Since June 30, 2026, GitHub "
+                    f"restricts the stargazers/watchers listing endpoints to repository admins and "
+                    f"collaborators, which is the most likely cause when the configured token neither "
+                    f"administers nor collaborates on the repository{deleted_repository_message} This stream "
+                    f"will emit no records when the token lacks that access. "
+                    f"Only aggregate star counts remain available through GraphQL, which this connector does "
+                    f"not currently expose. See "
+                    f"https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/"
+                )
+                self._logger.warning(error_message)
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
                 )
 
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):

@@ -225,6 +225,7 @@ If you use OAuth authentication method, the OAuth2.0 application requests the ne
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
 - For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+- Syncing [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers) requires repository administrator or collaborator access. Since June 30, 2026, GitHub restricts stargazers/watchers listing endpoints to repository admins and collaborators, so restricted responses for third-party and public repositories sync zero records with a log message instead of failing. Other 403 responses, such as missing token scopes or unauthorized SAML SSO, still fail. Only the aggregate `stargazerCount` remains available through GraphQL, which this connector does not currently expose. See the [GitHub changelog](https://github.blog/changelog/2026-06-30-upcoming-access-restrictions-to-public-api-endpoints-and-ui-views/).
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
@@ -241,6 +242,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.41 | 2026-08-17 | [84434](https://github.com/airbytehq/airbyte/pull/84434) | Report restricted Stargazers access accurately |
 | 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
 | 2.1.39 | 2026-08-04 | [83469](https://github.com/airbytehq/airbyte/pull/83469) | Update dependencies |
 | 2.1.38 | 2026-07-28 | [82893](https://github.com/airbytehq/airbyte/pull/82893) | Update dependencies |
