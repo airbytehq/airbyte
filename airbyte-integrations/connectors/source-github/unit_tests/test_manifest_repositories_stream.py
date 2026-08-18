@@ -368,6 +368,29 @@ def test_plain_403_fails_stream(rate_limit_mock_response, requests_mock):
     assert "SAML SSO" in guidance
 
 
+def test_403_mentioning_a_disabled_feature_still_fails_stream(rate_limit_mock_response, requests_mock):
+    """The repository listing must fail on 403 whatever the message says.
+
+    `disabled_feature_skip_filter` is deliberately absent from `strict_access_error_handler`: it
+    would run ahead of `forbidden_fail_filter`, so a 403 whose wording mentions a disabled feature
+    would be IGNOREd and `check` would report success for a token with bad scopes.
+    """
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/*"]}
+    requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        status_code=403,
+        json={"message": "Issues are disabled for this repo."},
+    )
+
+    records, statuses, error = _read(config)
+
+    assert records == []
+    assert error is not None
+    assert "403" in str(error)
+    guidance = " ".join(_error_messages(config))
+    assert "GitHub denied access (HTTP 403)" in guidance
+
+
 def test_401_fails_fast_without_retrying(rate_limit_mock_response, requests_mock):
     """The migrated stream deliberately does *not* inherit the legacy `401 -> RETRY` mapping.
 

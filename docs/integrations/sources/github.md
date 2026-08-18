@@ -220,6 +220,12 @@ Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/e
 
 The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
 
+#### Unreadable repositories and repeated server errors
+
+When a repository cannot be read for a reason that is specific to that repository, the connector logs a message and moves on to the next one, so a single bad repository does not fail the whole stream. This covers a repository that was deleted or renamed (`404`), one your token cannot access (`403`), one with no commits yet (`409`), and one where the feature backing the stream is turned off — for example the `issue_labels` stream on a repository with Issues disabled (`410`).
+
+Repeated server errors are treated differently as of version 2.1.43. If GitHub keeps answering `502 Bad Gateway` or `504 Gateway Timeout` for a repository after the connector has retried, the stream now fails instead of skipping that repository. Earlier versions logged a warning, skipped it, and reported the sync as successful — which meant a sync could complete with one repository's records silently missing. Only the following streams are affected so far: `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`. If a sync starts failing on one of these after upgrading, it is worth checking whether that repository was already being skipped before.
+
 #### Permissions and scopes
 
 If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
@@ -243,7 +249,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.43 | 2026-08-18 | [83804](https://github.com/airbytehq/airbyte/pull/83804) | Declarative migration Step 3 - move the assignees, branches, collaborators, issue_labels and tags streams to the manifest |
+| 2.1.43 | 2026-08-18 | [83804](https://github.com/airbytehq/airbyte/pull/83804) | Declarative migration Step 3 - move the assignees, branches, collaborators, issue_labels and tags streams to the manifest. For these five streams, a repository that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful |
 | 2.1.42 | 2026-08-18 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, and a request budget matching GitHub's 900-points/minute secondary rate limit |
 | 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
 | 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |

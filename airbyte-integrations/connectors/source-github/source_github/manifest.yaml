@@ -242,22 +242,40 @@ definitions:
 
   # GitHub answers 410 Gone when the feature backing an endpoint is turned off for the
   # repository ("Issues are disabled for this repo.", "Projects are disabled for this repo."),
-  # and the legacy handler skipped exactly those (errors_handlers.py::is_gone_with_feature_disabled,
-  # matching "is disabled"/"are disabled"). 410 is absent from the CDK default mapping, so without
-  # this filter such a response would be retried five times behind the 60s backoff floor and then
-  # fail the stream.
+  # and the legacy handler skipped exactly those (errors_handlers.py::is_gone_with_feature_disabled).
+  # 410 is absent from the CDK default mapping, so without this filter such a response would be
+  # retried five times behind the 60s backoff floor and then fail the stream.
+  #
   # This has to be a predicate rather than `http_codes: [410] + error_message_contains`:
   # HttpResponseFilter ORs its conditions, so combining them would skip *every* 410. The predicate
   # cannot see the status code, so it keys off GitHub's error envelope instead — the same
   # `response is mapping` guard the quota filter above uses, since a successful list response is a
   # JSON array and a successful single-repo response has no top-level `message`. `| string` keeps a
   # non-string `message` from raising inside the template.
+  #
+  # Because the status code is invisible here, the message match is deliberately narrower than
+  # legacy's bare "is disabled"/"are disabled": it must name a feature GitHub can actually turn off
+  # for a repository behind one of this connector's endpoints. Legacy could afford the loose match
+  # because it had already established `status_code == 410`; here the same loose match would also
+  # swallow a 401 "Your account is disabled" or any future error whose wording happens to mention
+  # something disabled, silently dropping the repository. Migrating a stream whose feature can be
+  # disabled per repository means adding that word to the list below — and the failure mode if it
+  # is forgotten is `gone_fail_filter` failing the stream with an actionable message, not a silent
+  # skip.
+  #
+  # Two escaping traps, both silent:
+  #   - `!= ''` rather than `is not none`. The CDK's `regex_search` filter returns an empty string
+  #     on no match, and InterpolatedBoolean's false-values list does not contain "None", so
+  #     `is not none` would render "True" for every response and skip everything.
+  #   - `\\b`, not `\b`. Jinja parses its own string literals with Python escapes, so a single
+  #     `\b` reaches `re` as a backspace character (0x08) and the pattern never matches — the
+  #     failure is a filter that quietly stops skipping, not an error.
   disabled_feature_skip_filter:
     type: HttpResponseFilter
     predicate: >-
       {{ response is mapping
-         and ('are disabled' in (response.get('message') or '') | string | lower
-              or 'is disabled' in (response.get('message') or '') | string | lower) }}
+         and ((response.get('message') or '') | string
+              | regex_search('(?i)\\b(issues|projects|discussions) (?:are|is) disabled\\b')) != '' }}
     action: IGNORE
     error_message: "Skipping this repository: GitHub reports the feature backing this stream is disabled for it (HTTP 410 Gone)."
 
@@ -329,7 +347,11 @@ definitions:
       - $ref: "#/definitions/primary_rate_limit_filter"
       - $ref: "#/definitions/secondary_rate_limit_filter"
       - $ref: "#/definitions/exhausted_quota_filter"
-      - $ref: "#/definitions/disabled_feature_skip_filter"
+      # No `disabled_feature_skip_filter` here, deliberately. The endpoints on this handler are
+      # the repository listing and resolution (`/orgs/{org}/repos`, `/repos/{owner}/{repo}`), which
+      # have no per-repository feature to disable and so never send that 410. Including it would
+      # let any error envelope mentioning a disabled feature match *before* `forbidden_fail_filter`
+      # and turn the 403 that `check` relies on into a silent skip.
       - $ref: "#/definitions/not_found_skip_filter"
       - $ref: "#/definitions/forbidden_fail_filter"
       - $ref: "#/definitions/gone_fail_filter"

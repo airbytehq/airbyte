@@ -229,6 +229,58 @@ def test_unexpected_410_fails_fast(sleep_mock, rate_limit_mock_response, request
     assert endpoint.call_count == 1
 
 
+@pytest.mark.parametrize(
+    ("status_code", "message"),
+    [
+        # Legacy required `status_code == 410` before it looked at the message at all
+        # (errors_handlers.py::is_gone_with_feature_disabled). The declarative predicate cannot see
+        # the status code, so it names the features instead. These messages mention something being
+        # disabled but no such feature, and so must not reach the IGNORE path.
+        (401, {"message": "Your account is disabled"}),
+        (500, {"message": "Search is disabled on this instance"}),
+    ],
+)
+@patch("time.sleep")
+def test_disabled_message_on_a_non_feature_error_is_not_skipped(sleep_mock, status_code, message, rate_limit_mock_response, requests_mock):
+    """`disabled_feature_skip_filter` must not become a catch-all for the word "disabled".
+
+    It runs ahead of every terminal filter in `skip_inaccessible_error_handler`, so a loose match
+    would turn an auth failure or a 5xx into a silently skipped repository on a sync that still
+    reports COMPLETE.
+    """
+    config = _config("docker/compose")
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    requests_mock.get("https://api.github.com/repos/docker/compose/tags", status_code=status_code, json=message)
+
+    records, statuses, error = _read(config, "tags")
+
+    assert records == []
+    assert statuses[-1] == "INCOMPLETE"
+    assert error is not None
+
+
+@pytest.mark.parametrize("message", ["Issues are disabled for this repo.", "Projects are disabled for this repo."])
+@patch("time.sleep")
+def test_410_naming_a_disabled_feature_is_skipped(sleep_mock, message, rate_limit_mock_response, requests_mock):
+    """The feature names the predicate matches are the ones GitHub actually sends for this case.
+
+    Pinned separately from `test_inaccessible_repository_is_skipped` so a change to the pattern
+    (adding a feature, or breaking the `\\b` escaping, which silently stops it matching) fails here
+    with the message that regressed rather than as one parametrized case among four.
+    """
+    config = _config("ghost/no-issues", "docker/compose")
+    _mock_repository_resolution(requests_mock, *config["repositories"])
+    endpoint = requests_mock.get("https://api.github.com/repos/ghost/no-issues/tags", status_code=410, json={"message": message})
+    requests_mock.get("https://api.github.com/repos/docker/compose/tags", json=[{"name": "v1"}])
+
+    records, statuses, error = _read(config, "tags")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert [record["repository"] for record in records] == ["docker/compose"]
+    assert endpoint.call_count == 1
+
+
 def test_success_response_mentioning_disabled_is_not_skipped(rate_limit_mock_response, requests_mock):
     """The disabled-feature filter has to key off GitHub's error envelope because a predicate
     cannot see the status code. A successful response must not match: list payloads are arrays,
