@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.8.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
@@ -30,6 +30,50 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    breakingChanges:
+      1.0.0:
+        message: "This release migrates all Greenhouse streams from Harvest v1 to Harvest v3 and replaces API-key authentication with OAuth client credentials. Users must update their source configuration, refresh schemas, and reset affected streams. See the [Greenhouse migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations) for details."
+        upgradeDeadline: "2026-08-31"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "applications"
+              - "applications_demographics_answers"
+              - "applications_interviews"
+              - "candidates"
+              - "close_reasons"
+              - "custom_fields"
+              - "degrees"
+              - "demographics_answers"
+              - "demographics_answer_options"
+              - "demographics_questions"
+              - "demographics_answers_answer_options"
+              - "demographics_question_sets"
+              - "demographics_question_sets_questions"
+              - "departments"
+              - "jobs"
+              - "jobs_openings"
+              - "interviews"
+              - "job_posts"
+              - "job_stages"
+              - "jobs_stages"
+              - "offers"
+              - "rejection_reasons"
+              - "scorecards"
+              - "sources"
+              - "users"
+              - "activity_feed"
+              - "approvals"
+              - "disciplines"
+              - "schools"
+              - "eeoc"
+              - "email_templates"
+              - "offices"
+              - "prospect_pools"
+              - "tags"
+              - "user_roles"
+              - "user_permissions"
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot

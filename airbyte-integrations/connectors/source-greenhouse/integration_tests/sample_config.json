@@ -1,3 +1,9 @@
 {
-  "api_key": "1234567890abcdefghijk"
+  "credentials": {
+    "auth_type": "client_credentials",
+    "client_id": "1234567890abcdefghijk",
+    "client_secret": "secret",
+    "sub": 123456789
+  },
+  "num_workers": 2
 }

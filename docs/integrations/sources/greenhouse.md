@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need the [Harvest API key](https://developers.greenhouse.io/harvest.html#authentication) with permissions to the resources Airbyte should be able to access.
+To set up the Greenhouse source connector, you'll need Greenhouse OAuth client credentials with permissions to the resources Airbyte should be able to access. You must also provide the numeric user ID of a Greenhouse Site Admin as the OAuth `sub` value.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -12,7 +12,7 @@ To set up the Greenhouse source connector, you'll need the [Harvest API key](htt
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Enter your [**Harvest API Key**](https://developers.greenhouse.io/harvest.html#authentication) that you obtained from Greenhouse.
+5. Select **OAuth client credentials** and enter the OAuth client ID, OAuth client secret, and the Site Admin user ID (`sub`) associated with the OAuth application.
 6. Click **Set up source**.
 
 ## Supported sync modes
@@ -67,6 +67,10 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
+## Migration from Harvest v1
+
+Version 1.0.0 migrates all streams to Harvest v3 and OAuth client-credentials authentication; review the [migration guide](./greenhouse-migrations.md) before upgrading.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -78,6 +82,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0 | 2026-08-31 | — | Breaking migration of all streams from Harvest v1 to v3 with OAuth client-credentials authentication. |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |

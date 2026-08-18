@@ -1,3 +1,7 @@
 {
-  "api_key": "bla"
+  "credentials": {
+    "auth_type": "client_credentials",
+    "client_id": "bla",
+    "client_secret": "bla"
+  }
 }
