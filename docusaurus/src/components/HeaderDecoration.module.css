@@ -9,11 +9,16 @@
   margin-bottom: 12px;
 }
 
+.connectorHeaderActions {
+  margin-top: 1.5rem;
+}
+
 .connectorIcon {
   max-height: 40px;
   max-width: 40px;
   float: left;
   margin-right: 10px;
+  margin-top: 1.5rem;
 }
 
 div.connectorMetadataCallout {
@@ -126,9 +131,15 @@ html[data-theme="dark"] .connectorMetadata .availability .unavailable {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
 }
 
 .metricIcon svg {
   height: 12px;
   width: auto;
+}
+
+.metricLabel {
+  font-size: 12px;
+  text-transform: capitalize;
 }

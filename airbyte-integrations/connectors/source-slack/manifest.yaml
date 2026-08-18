@@ -1,4 +1,4 @@
-version: 6.60.4
+version: 6.60.5
 type: DeclarativeSource
 
 definitions:
@@ -35,6 +35,29 @@ definitions:
       Default OAuth2.0 authorization: "#/definitions/access_token_auth"
       API Token Credentials: "#/definitions/api_token_auth"
 
+  slack_api_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+        action: RATE_LIMITED
+        failure_type: transient_error
+        error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied', 'access_denied', 'not_allowed_token_type', 'enterprise_is_restricted', 'team_access_not_granted'] }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived', 'thread_not_found', 'method_not_supported_for_channel_type'] }}"
+        action: IGNORE
+        error_message: "Slack channel or thread is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error', 'accesslimited', 'team_added_to_org'] }}"
+        action: RETRY
+        failure_type: transient_error
+        error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
+      - predicate: "{{ response.get('ok') is false }}"
+        action: FAIL
+        failure_type: system_error
+        error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
+
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
@@ -51,16 +74,39 @@ definitions:
     request_body_json: {}
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+        - type: "WaitTimeFromHeader"
+          header: "retry-after"
+        - type: "WaitTimeFromHeader"
+          header: "Retry-After"
       response_filters:
-        - error_message_contains: "invalid_auth"
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied', 'access_denied', 'not_allowed_token_type', 'enterprise_is_restricted', 'team_access_not_granted'] }}"
           action: FAIL
-          error_message: Authentication has failed, please update your credentials.
-        - http_codes: [429]
+          failure_type: config_error
+          error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived', 'thread_not_found', 'method_not_supported_for_channel_type'] }}"
+          action: IGNORE
+          error_message: "Slack channel or thread is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error', 'accesslimited', 'team_added_to_org'] }}"
           action: RETRY
-          error_message: Failed to perform a request due to rate limits.
+          failure_type: transient_error
+          error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
+        - http_codes: [429]
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: Rate limit exceeded for Slack API.
         - http_codes: [500, 503]
           action: RETRY
+          failure_type: transient_error
           error_message: Failed to perform a request due to internal server error.
+        - predicate: "{{ response.get('ok') is false }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
 
   selector:
     type: RecordSelector
@@ -92,19 +138,43 @@ definitions:
         $ref: "#/definitions/requester"
         error_handler:
           type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
           response_filters:
-            - error_message_contains: "invalid_auth"
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+              action: RATE_LIMITED
+              failure_type: transient_error
+              error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied', 'access_denied', 'not_allowed_token_type', 'enterprise_is_restricted', 'team_access_not_granted'] }}"
               action: FAIL
-              error_message: Authentication has failed, please update your credentials.
-            - http_codes: [429]
+              failure_type: config_error
+              error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived', 'thread_not_found', 'method_not_supported_for_channel_type'] }}"
+              action: IGNORE
+              error_message: "Slack channel or thread is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error', 'accesslimited', 'team_added_to_org'] }}"
               action: RETRY
-              error_message: Failed to perform a request due to rate limits.
+              failure_type: transient_error
+              error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
+            - http_codes: [429]
+              action: RATE_LIMITED
+              failure_type: transient_error
+              error_message: Rate limit exceeded for Slack API.
             - http_codes: [403, 400]
               action: FAIL
-              error_message: Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.
+              failure_type: config_error
+              error_message: Slack API users request denied or malformed (HTTP 403/400).
             - http_codes: [500, 503]
               action: RETRY
+              failure_type: transient_error
               error_message: Failed to perform a request due to internal server error.
+            - predicate: "{{ response.get('ok') is false }}"
+              action: FAIL
+              failure_type: system_error
+              error_message: "Slack API returned an unrecognized error: {{ response.get('error', 'unknown') }}."
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -134,7 +204,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           max_retries: 10
           backoff_strategies:
             - type: "WaitTimeFromHeader"
@@ -143,6 +213,7 @@ definitions:
               header: "Retry-After"
         request_parameters:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
+          exclude_archived: "{{ 'false' if config.get('include_archived_channels', false) else 'true' }}"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
@@ -150,6 +221,13 @@ definitions:
           condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
       paginator:
         $ref: "#/definitions/default_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 999
+          cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+          stop_condition: >-
+            {{ not response.get("response_metadata", {}).get("next_cursor", {})
+            }}
         $parameters:
           url_base: https://slack.com/api/
 
@@ -219,7 +297,7 @@ definitions:
           $ref: "#/definitions/authenticator"
         request_body_json: {}
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
@@ -240,6 +318,17 @@ definitions:
                 name: channels
                 path: conversations.list
                 extractor_field_path: channels
+              retriever:
+                $ref: "#/definitions/channels_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/channels_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    # Limit message/thread partitions to channels the bot can actually read.
+                    # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
+                    # non-member channels, which poisons the per-partition cursor. The
+                    # top-level channels stream and channel_members still see every channel.
+                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
             parent_key: id
             partition_field: channel
             request_option:
@@ -284,6 +373,16 @@ definitions:
       schema:
         $ref: "#/schemas/channel_messages"
 
+  channel_messages_with_replies_stream:
+    $ref: "#/definitions/channel_messages_stream"
+    retriever:
+      $ref: "#/definitions/channel_messages_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/channel_messages_stream/retriever/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.get('thread_ts') is not none and (record.get('reply_count') or 0) > 0) if config.get('threads_ignore_no_replies', false) else true }}"
+
   threads_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -312,7 +411,7 @@ definitions:
           $ref: "#/definitions/authenticator"
         request_body_json: {}
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           max_retries: 20
           backoff_strategies:
             - type: "WaitTimeFromHeader"
@@ -328,7 +427,7 @@ definitions:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/definitions/channel_messages_stream"
+              $ref: "#/definitions/channel_messages_with_replies_stream"
             # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
             # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
             # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
@@ -421,6 +520,11 @@ spec:
         default: false
         title: Include private channels
         description: Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels.
+      include_archived_channels:
+        type: boolean
+        default: false
+        title: Include archived channels
+        description: Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members. Enable this option if you need to sync data from archived channels.
       channel_filter:
         type: array
         default: []
@@ -432,6 +536,11 @@ spec:
         examples:
           - channel_one
           - channel_two
+      threads_ignore_no_replies:
+        type: boolean
+        default: false
+        title: Ignore messages with no replies in threads stream
+        description: When enabled, the threads stream will skip messages that have no replies (reply_count is 0, null, or absent), reducing the number of API calls. Disabled by default to make Threads stream contain unthreaded messages in its records.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack
@@ -464,7 +573,7 @@ spec:
               airbyte_secret: true
           order: 0
         - type: object
-          title: API Token
+          title: Bot Token
           required:
             - option_title
             - api_token
@@ -474,13 +583,13 @@ spec:
               const: API Token Credentials
             api_token:
               type: string
-              title: API Token
-              description: A Slack bot token. See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
+              title: Bot Token
+              description: A Slack bot token (xoxb-). See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
               airbyte_secret: true
           order: 1
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 10
         default: 2
@@ -508,7 +617,26 @@ spec:
       - option_title
     predicate_value: Default OAuth2.0 authorization
     oauth_config_specification:
-#      oauth_user_input_from_connector_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://slack.com/oauth/v2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}"
+        access_token_url: "https://slack.com/api/oauth.v2.access"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        scopes:
+          - scope: "channels:history"
+          - scope: "channels:join"
+          - scope: "channels:read"
+          - scope: "groups:read"
+          - scope: "groups:history"
+          - scope: "users:read"
+        scopes_join_strategy: comma
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -561,6 +689,18 @@ spec:
                   path: ["credentials", "option_title"]
                   value: "API Token Credentials"
               condition: "{{ config.get('api_token', False) }}"
+        - type: ConfigMigration
+          description: |
+            Stamps include_archived_channels=true on configs that pre-date v3.2.0
+            so existing connections continue to sync archived channels.
+            New connections will get false from the spec default.
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["include_archived_channels"]
+                  value: "{{ true }}"
+              condition: "{{ config.get('include_archived_channels') is none }}"
 
 concurrency_level:
   type: ConcurrencyLevel

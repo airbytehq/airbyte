@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 

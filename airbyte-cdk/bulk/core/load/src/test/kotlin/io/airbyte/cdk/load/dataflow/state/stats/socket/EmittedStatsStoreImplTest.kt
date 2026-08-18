@@ -233,8 +233,6 @@ class EmittedStatsStoreImplTest {
             return DestinationStream(
                 unmappedNamespace = namespace,
                 unmappedName = name,
-                importType = Append,
-                schema = io.airbyte.cdk.load.data.ObjectType(linkedMapOf()),
                 generationId = 1L,
                 minimumGenerationId = 1L,
                 syncId = 1L,

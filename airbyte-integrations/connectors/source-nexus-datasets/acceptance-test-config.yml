@@ -1,0 +1,17 @@
+connector_image: airbyte/source-nexus-datasets:dev
+#test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_nexus_datasets/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

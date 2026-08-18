@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
@@ -22,11 +21,9 @@ class NamespaceMapperTest {
         return DestinationStream(
             unmappedNamespace = unmappedNamespace,
             unmappedName = unmappedName,
-            importType = Append,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            schema = ObjectType(linkedMapOf()),
             namespaceMapper = namespaceMapper,
             tableSchema =
                 StreamTableSchema(

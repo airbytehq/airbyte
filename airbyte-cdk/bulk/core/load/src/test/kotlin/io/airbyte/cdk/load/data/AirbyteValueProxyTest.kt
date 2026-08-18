@@ -87,11 +87,9 @@ class AirbyteValueProxyTest {
         DestinationStream(
             unmappedNamespace = "namespace",
             unmappedName = "name",
-            importType = Append,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            schema = ALL_TYPES_SCHEMA,
             namespaceMapper = NamespaceMapper(),
             tableSchema =
                 io.airbyte.cdk.load.schema.model.StreamTableSchema(

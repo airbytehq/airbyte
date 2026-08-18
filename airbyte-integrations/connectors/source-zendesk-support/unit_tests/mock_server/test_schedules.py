@@ -16,6 +16,7 @@ import freezegun
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
@@ -60,12 +61,13 @@ class TestSchedulesStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        # Use a recent updated_at to pass the semi_incremental_stream record filter
-        recent_updated_at = "2025-01-01T00:00:00Z"
+        # Semi-incremental streams filter by updated_at, so we need a recent timestamp
+        recent_timestamp = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
         http_mocker.get(
             self._base_schedules_request(api_token_authenticator).build(),
             SchedulesResponseBuilder.schedules_response()
-            .with_record(SchedulesRecordBuilder.schedules_record().with_updated_at(recent_updated_at))
+            .with_record(SchedulesRecordBuilder.schedules_record().with_field(FieldPath("updated_at"), recent_timestamp))
             .build(),
         )
 
@@ -90,12 +92,15 @@ class TestSchedulesStreamFullRefresh(TestCase):
         # Use a recent updated_at to pass the semi_incremental_stream record filter
         recent_updated_at = "2025-01-01T00:00:00Z"
 
-        # Create records for page 1 with recent updated_at
-        record1 = SchedulesRecordBuilder.schedules_record().with_id(1001).with_updated_at(recent_updated_at)
-        record2 = SchedulesRecordBuilder.schedules_record().with_id(1002).with_updated_at(recent_updated_at)
+        # Semi-incremental streams filter by updated_at, so we need recent timestamps
+        recent_timestamp = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-        # Create record for page 2 with recent updated_at
-        record3 = SchedulesRecordBuilder.schedules_record().with_id(1003).with_updated_at(recent_updated_at)
+        # Create records for page 1
+        record1 = SchedulesRecordBuilder.schedules_record().with_id(1001).with_field(FieldPath("updated_at"), recent_timestamp)
+        record2 = SchedulesRecordBuilder.schedules_record().with_id(1002).with_field(FieldPath("updated_at"), recent_timestamp)
+
+        # Create record for page 2
+        record3 = SchedulesRecordBuilder.schedules_record().with_id(1003).with_field(FieldPath("updated_at"), recent_timestamp)
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(

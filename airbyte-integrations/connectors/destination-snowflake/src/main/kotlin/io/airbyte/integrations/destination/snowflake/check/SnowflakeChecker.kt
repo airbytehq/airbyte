@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
@@ -90,11 +89,6 @@ class SnowflakeChecker(
             DestinationStream(
                 unmappedNamespace = outputSchema,
                 unmappedName = tableName,
-                importType = Append,
-                schema =
-                    ObjectType(
-                        linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
-                    ),
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,

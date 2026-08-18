@@ -44,6 +44,7 @@ class TestUserIdentitiesStreamFullRefresh(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.user_identities_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
+            .with_any_query_params()
             .build(),
             UserIdentitiesResponseBuilder.user_identities_response()
             .with_record(UserIdentitiesRecordBuilder.user_identities_record())
@@ -81,6 +82,7 @@ class TestUserIdentitiesStreamIncremental(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.user_identities_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
+            .with_any_query_params()
             .build(),
             UserIdentitiesResponseBuilder.user_identities_response()
             .with_record(UserIdentitiesRecordBuilder.user_identities_record().with_field(FieldPath("updated_at"), cursor_value))
@@ -100,7 +102,10 @@ class TestUserIdentitiesStreamIncremental(TestCase):
         new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.user_identities_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
+            ZendeskSupportRequestBuilder.user_identities_endpoint(api_token_authenticator)
+            .with_start_time(state_cursor_value)
+            .with_any_query_params()
+            .build(),
             UserIdentitiesResponseBuilder.user_identities_response()
             .with_record(UserIdentitiesRecordBuilder.user_identities_record().with_field(FieldPath("updated_at"), new_cursor_value))
             .build(),

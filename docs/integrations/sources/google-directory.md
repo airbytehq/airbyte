@@ -63,6 +63,10 @@ At the end of this process, you should have JSON credentials to this Google Serv
 
 You should now be ready to use the Google Directory connector in Airbyte.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -70,6 +74,7 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.45 | 2025-07-07 | [62526](https://github.com/airbytehq/airbyte/pull/62526) | Add `group` and `email` fields to `group_members` stream |
 | 0.2.44 | 2025-05-17 | [60641](https://github.com/airbytehq/airbyte/pull/60641) | Update dependencies |
 | 0.2.43 | 2025-05-10 | [59799](https://github.com/airbytehq/airbyte/pull/59799) | Update dependencies |
 | 0.2.42 | 2025-05-03 | [59264](https://github.com/airbytehq/airbyte/pull/59264) | Update dependencies |

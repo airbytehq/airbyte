@@ -72,6 +72,19 @@ class ClickhouseAirbyteClientTest {
         coVerify { client.query(DUMMY_SENTENCE) }
     }
 
+    @Test
+    fun `test count table skips query when table is absent`() = runTest {
+        val tableName = TableName("namespace", "temporary_table")
+        coEvery { clickhouseAirbyteClient.tableExists(tableName) } returns false
+
+        val count = clickhouseAirbyteClient.countTable(tableName)
+
+        Assertions.assertNull(count)
+        coVerify(exactly = 1) { clickhouseAirbyteClient.tableExists(tableName) }
+        verify(exactly = 0) { clickhouseSqlGenerator.countTable(any(), any()) }
+        coVerify(exactly = 0) { client.query(any()) }
+    }
+
     private fun mockCHSchemaWithAirbyteColumns() {
         every { client.getTableSchema(any(), any()) } returns
             mockk {
@@ -113,12 +126,6 @@ class ClickhouseAirbyteClientTest {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
                     }
-                every { schema } returns
-                    mockk(relaxed = true) {
-                        every { isObject } returns true
-                        every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
-                    }
-                every { importType } returns Append
                 every { tableSchema } returns
                     mockk(relaxed = true) {
                         every { columnSchema } returns
@@ -126,6 +133,7 @@ class ClickhouseAirbyteClientTest {
                                 every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
                                 every { inputToFinalColumnNames } returns emptyMap()
                             }
+                        every { importType } returns Append
                         every { getPrimaryKey() } returns emptyList()
                         every { getCursor() } returns emptyList()
                     }
@@ -179,6 +187,7 @@ class ClickhouseAirbyteClientTest {
                         every { inputSchema } returns LinkedHashMap.newLinkedHashMap(0)
                         every { inputToFinalColumnNames } returns emptyMap()
                     }
+                every { importType } returns Append
                 every { getPrimaryKey() } returns emptyList()
                 every { getCursor() } returns emptyList()
             }
@@ -189,12 +198,6 @@ class ClickhouseAirbyteClientTest {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
                     }
-                every { schema } returns
-                    mockk(relaxed = true) {
-                        every { isObject } returns true
-                        every { asColumns() } returns LinkedHashMap.newLinkedHashMap(0)
-                    }
-                every { importType } returns Append
                 every { tableSchema } returns tableSchema1
             }
         clickhouseAirbyteClient.applyChangeset(
@@ -272,12 +275,6 @@ class ClickhouseAirbyteClientTest {
                         every { name } returns "my_table"
                         every { namespace } returns "my_namespace"
                     }
-                every { schema } returns
-                    mockk(relaxed = true) {
-                        every { isObject } returns true
-                        every { asColumns() } returns columns
-                    }
-                every { importType } returns Append
                 every { tableSchema } returns
                     mockk(relaxed = true) {
                         every { columnSchema } returns
@@ -288,6 +285,7 @@ class ClickhouseAirbyteClientTest {
                                 every { finalSchema } returns
                                     mapOf("field_1" to ColumnType("String", true))
                             }
+                        every { importType } returns Append
                         every { getPrimaryKey() } returns emptyList()
                         every { getCursor() } returns emptyList()
                     }

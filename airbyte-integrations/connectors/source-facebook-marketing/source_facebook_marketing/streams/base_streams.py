@@ -64,7 +64,8 @@ class FBMarketingStream(Stream, ABC):
     @cache
     def fields(self, **kwargs) -> List[str]:
         """
-        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
+        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema.
+        Fields listed in fields_exceptions are excluded to avoid 'Too much data was requested in batch' errors.
         """
         if self._fields:
             return self._fields
@@ -73,7 +74,9 @@ class FBMarketingStream(Stream, ABC):
             if self.configured_json_schema and self.configured_json_schema.get("properties")
             else self.get_json_schema()
         )
-        self._saved_fields = list(json_schema.get("properties", {}).keys())
+        all_fields = list(json_schema.get("properties", {}).keys())
+        # Exclude fields that are known to cause issues (e.g., 'Too much data was requested in batch' errors)
+        self._saved_fields = [field for field in all_fields if field not in self.fields_exceptions]
         return self._saved_fields
 
     @classmethod

@@ -76,10 +76,11 @@ class BigqueryDirectLoadSqlGenerator(
             } else {
                 emptyList()
             }
+        val createPrefix = if (replace) "CREATE TABLE" else "CREATE TABLE IF NOT EXISTS"
         val createTableStatement =
             listOf(
                 """
-                CREATE TABLE `$projectId`.$finalTableId (
+                $createPrefix `$projectId`.$finalTableId (
                   _airbyte_raw_id STRING NOT NULL,
                   _airbyte_extracted_at TIMESTAMP NOT NULL,
                   _airbyte_meta JSON NOT NULL,
