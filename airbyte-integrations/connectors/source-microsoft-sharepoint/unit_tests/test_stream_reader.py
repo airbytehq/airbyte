@@ -822,6 +822,24 @@ def test_get_site_drive_error_handling():
         assert "Failed to retrieve drives from sharepoint" in str(exc_info.value)
 
 
+def test_get_site_drive_propagates_traced_exception():
+    reader = SourceMicrosoftSharePointStreamReader()
+    reader._config = MagicMock(site_url="https://test-tenant.sharepoint.com/sites/specific")
+    reader._one_drive_client = MagicMock()
+    token_error_message = "Failed to acquire access token. Error: invalid_client. Error description: secret expired."
+    traced_exception = AirbyteTracedException(message=token_error_message)
+
+    with patch("source_microsoft_sharepoint.stream_reader.execute_query_with_retry") as mock_execute_query:
+        mock_execute_query.side_effect = traced_exception
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            reader._get_site_drive()
+
+    assert exc_info.value is traced_exception
+    assert token_error_message in str(exc_info.value)
+    assert "Error: None" not in str(exc_info.value)
+
+
 @pytest.mark.parametrize(
     "refresh_token, auth_type, search_scope, expected_methods_called",
     [

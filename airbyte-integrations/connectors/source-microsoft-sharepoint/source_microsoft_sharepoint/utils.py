@@ -69,7 +69,9 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
         try:
             return obj.execute_query()
         except Exception as ex:
-            if hasattr(ex, "response") and ex.response.status_code in (HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.SERVICE_UNAVAILABLE):
+            if isinstance(ex, AirbyteTracedException):
+                raise
+            elif hasattr(ex, "response") and ex.response.status_code in (HTTPStatus.TOO_MANY_REQUESTS, HTTPStatus.SERVICE_UNAVAILABLE):
                 current_time = datetime.now()
                 elapsed_time = (current_time - start_time).total_seconds()
 

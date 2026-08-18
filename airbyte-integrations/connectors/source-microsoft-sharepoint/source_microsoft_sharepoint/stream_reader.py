@@ -334,6 +334,8 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
 
             return drives
         except Exception as ex:
+            if isinstance(ex, AirbyteTracedException):
+                raise
             site = self.config.site_url if self.config.site_url else "default"
             raise AirbyteTracedException(
                 f"Failed to retrieve drives from sharepoint {site} site. Error: {str(ex)}", failure_type=FailureType.config_error

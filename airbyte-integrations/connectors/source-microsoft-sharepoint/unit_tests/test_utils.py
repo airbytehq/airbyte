@@ -79,6 +79,18 @@ def test_execute_query_success_before_max_retries():
     assert result == "success"
 
 
+def test_execute_query_propagates_traced_exception():
+    obj = Mock()
+    traced_exception = AirbyteTracedException(message="Failed to acquire access token")
+    obj.execute_query = Mock(side_effect=traced_exception)
+
+    with pytest.raises(AirbyteTracedException) as exception:
+        execute_query_with_retry(obj)
+
+    assert exception.value is traced_exception
+    assert exception.value.message == "Failed to acquire access token"
+
+
 def test_filter_http_urls():
     files = [
         Mock(download_url="https://example.com/file1.txt"),
