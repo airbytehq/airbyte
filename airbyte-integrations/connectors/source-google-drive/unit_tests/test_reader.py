@@ -1165,35 +1165,124 @@ def create_file_transfer_reader():
 
 
 @pytest.mark.parametrize(
-    "mime_type, extension",
+    "mime_type, extension, file_name, expect_export, expected_mime_type",
     [
-        ("application/vnd.google-apps.document", ".docx"),
-        ("application/vnd.google-apps.spreadsheet", ".xlsx"),
-        ("application/vnd.google-apps.presentation", ".pptx"),
-        ("application/vnd.google-apps.drawing", ".pdf"),
+        pytest.param(
+            "application/vnd.google-apps.document",
+            ".docx",
+            "Report",
+            True,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            id="Google Doc",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.spreadsheet",
+            ".xlsx",
+            "Budget",
+            True,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            id="Google Sheet",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.presentation",
+            ".pptx",
+            "Presentation",
+            True,
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            id="Google Presentation",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.drawing",
+            ".pdf",
+            "Drawing",
+            True,
+            "application/pdf",
+            id="Google Drawing",
+        ),
+        pytest.param("text/csv", "", "notes.csv", False, "text/csv", id="Binary file"),
     ],
 )
 @patch("source_google_drive.stream_reader.service_account")
 @patch("source_google_drive.stream_reader.build")
-def test_source_file_relative_path_appends_export_extension(mock_build_service, mock_service_account, mime_type, extension):
-    mock_build_service.return_value = _mock_listing_service(
-        [
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+def test_upload_paths_use_enumerated_export_extension(
+    mock_basedownload,
+    mock_build_service,
+    mock_service_account,
+    mime_type,
+    extension,
+    file_name,
+    expect_export,
+    expected_mime_type,
+    tmp_path,
+):
+    root_request = MagicMock()
+    root_request.execute.return_value = {
+        "files": [
+            {
+                "id": "docs-folder",
+                "mimeType": "application/vnd.google-apps.folder",
+                "name": "docs",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://drive.google.com/file/d/docs-folder",
+            }
+        ]
+    }
+    file_request = MagicMock()
+    file_request.execute.return_value = {
+        "files": [
             {
                 "id": "file-id",
                 "mimeType": mime_type,
-                "name": "Document",
+                "name": file_name,
                 "modifiedTime": "2021-01-01T00:00:00.000Z",
                 "createdTime": "2021-01-01T00:00:00.000Z",
                 "webViewLink": "https://drive.google.com/file/d/file-id",
             }
         ]
-    )
+    }
+    files_service = MagicMock()
+    files_service.list.side_effect = [root_request, file_request]
+    files_service.list_next.return_value = None
+    files_service.get.return_value.execute.return_value = {"size": 4}
+    mock_request = MagicMock()
+    files_service.export_media.return_value = mock_request
+    files_service.get_media.return_value = mock_request
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
 
-    file = next(iter(create_file_transfer_reader().get_matching_files(["*"], None, MagicMock())))
+    mock_downloader = MagicMock()
 
-    assert file.uri == "Document"
-    assert file.source_file_relative_path == f"Document{extension}"
-    assert file.export_extension == extension
+    def mock_next_chunk(num_retries):
+        handle = mock_basedownload.call_args[0][0]
+        status = MagicMock(resumable_progress=handle.tell(), total_size=4)
+        if handle.tell() > 0:
+            return status, True
+        handle.write(b"test")
+        return status, False
+
+    mock_downloader.next_chunk.side_effect = mock_next_chunk
+    mock_basedownload.return_value = mock_downloader
+
+    reader = create_file_transfer_reader()
+    file = next(iter(reader.get_matching_files(["**/*"], None, MagicMock())))
+    file_record_data, file_reference = reader.upload(file, str(tmp_path), MagicMock())
+
+    expected_relative_path = f"docs/{file_name}{extension}"
+    assert file_reference.staging_file_url.startswith(f"{tmp_path}/")
+    assert file_reference.staging_file_url.endswith(expected_relative_path)
+    assert file_reference.source_file_relative_path == expected_relative_path
+    assert file_record_data.file_name == f"{file_name}{extension}"
+    assert file_record_data.folder == "docs"
+    assert file.mime_type == expected_mime_type
+    if expect_export:
+        files_service.export_media.assert_called_once_with(fileId="file-id", mimeType=expected_mime_type)
+        files_service.get_media.assert_not_called()
+    else:
+        files_service.get_media.assert_called_once_with(fileId="file-id")
+        files_service.export_media.assert_not_called()
 
 
 @patch("source_google_drive.stream_reader.service_account")

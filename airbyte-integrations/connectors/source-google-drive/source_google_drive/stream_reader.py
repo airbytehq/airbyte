@@ -67,10 +67,17 @@ class GoogleDriveRemoteFile(RemoteFile):
     # Only populated for items in shared drives.
     drive_id: Optional[str] = None
     created_at: datetime
+    # Set during enumeration for Google-native documents in file-transfer mode; None otherwise.
     export_extension: Optional[str] = None
 
     @property
     def source_file_relative_path(self) -> str:
+        """Returns the source path used for file transfer.
+
+        The export extension is appended unconditionally, so `Report.docx` can become
+        `Report.docx.docx`. Different Drive files can resolve to the same path; duplicate
+        handling is tracked in https://github.com/airbytehq/oncall/issues/12872.
+        """
         return f"{self.uri}{self.export_extension or ''}"
 
     @property
