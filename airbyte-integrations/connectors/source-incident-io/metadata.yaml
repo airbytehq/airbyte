@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7926da90-399e-4f9f-9833-52d8dc3fcb29
-  dockerImageTag: 0.1.36
+  dockerImageTag: 0.1.37
   dockerRepository: airbyte/source-incident-io
   githubIssueLabel: source-incident-io
   icon: icon.svg
@@ -35,11 +35,17 @@ data:
     sl: 100
   externalDocumentationUrls:
     - title: incident.io API reference
-      url: https://api-docs.incident.io/
+      url: https://docs.incident.io/api-reference
       type: api_reference
-    - title: incident.io authentication
-      url: https://api-docs.incident.io/#section/Authentication
+    - title: incident.io API authentication
+      url: https://docs.incident.io/api-reference/introduction#authentication
       type: authentication_guide
+    - title: incident.io changelog
+      url: https://incident.io/changelog
+      type: api_release_history
+    - title: incident.io deprecated endpoints (OpenAPI)
+      url: https://docs.incident.io/openapi/deprecated-endpoints.json
+      type: api_deprecations
     - title: incident.io Status
       url: https://status.incident.io/
       type: status_page
