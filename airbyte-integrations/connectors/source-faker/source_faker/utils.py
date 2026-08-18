@@ -25,6 +25,11 @@ def now_millis():
     return int(datetime.datetime.now().timestamp() * 1000)
 
 
+def humanize_count(n: int) -> str:
+    """Return `n` formatted with thousands separators (e.g. `1000` -> `1,000`)."""
+    return str(n)
+
+
 def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
     emitted_at = int(datetime.datetime.now().timestamp() * 1000)
     estimate_message = AirbyteEstimateTraceMessage(
