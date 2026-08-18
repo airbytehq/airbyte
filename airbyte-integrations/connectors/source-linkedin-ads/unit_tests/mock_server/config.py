@@ -17,6 +17,7 @@ class ConfigBuilder:
             "account_ids": [],
             "lookback_window": 0,
             "ad_analytics_reports": [],
+            "ad_statistics_reports": [],
             "num_workers": 3,
         }
 
@@ -50,6 +51,10 @@ class ConfigBuilder:
 
     def with_ad_analytics_reports(self, reports: List[Dict[str, Any]]) -> "ConfigBuilder":
         self._config["ad_analytics_reports"] = reports
+        return self
+
+    def with_ad_statistics_reports(self, reports: List[Dict[str, Any]]) -> "ConfigBuilder":
+        self._config["ad_statistics_reports"] = reports
         return self
 
     def with_num_workers(self, num_workers: int) -> "ConfigBuilder":

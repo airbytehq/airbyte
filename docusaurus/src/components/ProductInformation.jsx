@@ -34,8 +34,6 @@ export const ProductInformation = ({ products }) => {
 
   const ossCommunity =
     products["oss-community"] || products["oss-*"] || products["all"];
-  const ossEnterprise =
-    products["oss-enterprise"] || products["oss-*"] || products["all"];
   const cloud = products["cloud"] || products["cloud-teams"] || products["all"];
   // cloud add-ons need to be specifically marked and are not part of the "all" shorthand
   const cloudPlus = products["cloud-plus"];
@@ -61,7 +59,6 @@ export const ProductInformation = ({ products }) => {
       <Badge available={cloudPlus || cloud || cloudTeams || enterpriseFlex}>
         Enterprise Flex
       </Badge>
-      <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
       {embedded && <Badge available={true}>Embedded</Badge>}
       <a
         href="https://airbyte.com/product/features"
