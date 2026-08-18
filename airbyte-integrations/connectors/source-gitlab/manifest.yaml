@@ -256,8 +256,9 @@ definitions:
           http_codes: [500]
         - type: HttpResponseFilter
           action: FAIL
+          failure_type: config_error
           http_codes: [404]
-          error_message: Groups and/or projects that you provide are invalid or you don't have permission to view it.
+          error_message: "A group or project in the connector configuration is invalid, deleted, or inaccessible to the configured token. GitLab response: {{ response.get('message', '404 Not Found') }}"
     request_parameters: "{{ parameters.get('request_parameters', {}) }}"
 
   # Selector
