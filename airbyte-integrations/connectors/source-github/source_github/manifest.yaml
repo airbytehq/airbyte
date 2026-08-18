@@ -107,15 +107,44 @@ definitions:
         - type: WaitUntilTimeFromHeader
           header: "X-RateLimit-Reset"
           min_wait: 60
-          # Restores the 60s floor the legacy strategy enforced (backoff_strategies.py:26),
-          # so a reset timestamp that is already in the past (or seconds away) doesn't turn
-          # into a tight retry loop against a quota that hasn't actually refilled.
-          # Trade-off: WaitUntilTimeFromHeaderBackoffStrategy also returns `min_wait` when the
-          # header is absent, and backoff_strategies are shared by every retryable response on
-          # this requester. So a headerless 5xx now waits 60s per attempt instead of the CDK's
-          # exponential backoff. Accepted deliberately: a slower retry on a rare 5xx beats
-          # burning the retry budget against a rate limit that hasn't reset (the legacy
-          # strategy floored that path at 60s too).
+          # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
+          # timestamp already in the past, or seconds away, doesn't turn into a tight retry
+          # loop against a quota that hasn't actually refilled.
+          #
+          # It does NOT land on exactly the same responses legacy floored. Measured:
+          #
+          #                                     here    legacy
+          #   403 + Retry-After: 30              30s      60s    <- floor missing
+          #   403 + X-RateLimit-Reset now+10     60s      60s
+          #   403 + reset already past           60s      60s
+          #   500 / timeout, no such headers     60s     expo    <- floor leaking
+          #
+          # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
+          # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
+          # `min_wait` outright when its header is *absent* rather than treating it as a floor
+          # on a computed wait, and backoff_strategies are shared by every retryable response
+          # on this requester.
+          #
+          # Accepted deliberately, after measuring the alternatives:
+          #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
+          #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
+          #     strategies into one list -- its own docstring says the list "is not used to map
+          #     different strategies to different error conditions" -- and HttpClient takes the
+          #     first truthy one regardless of which branch matched. Byte-identical backoffs.
+          #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
+          #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
+          #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
+          #     refilled. That is what the floor exists to prevent.
+          #
+          # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
+          # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
+          # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
+          # With the header present but stale, max(negative, min_wait) already yields 60s, so
+          # the floor survives exactly where it belongs. Four other connectors combine these
+          # two strategies and would move the same way.
+          #
+          # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
+          # max_retries (5), on every stream that inherits this requester.
           # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
           # authenticator's counters against every response (the `*_header` fields on the
           # quota pools above), so a primary rate limit — which GitHub reports as
