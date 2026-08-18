@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-pennylane
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.8@sha256:58d3593d8e816d4a346570570d5a42bb78e41de344f8c74c2a5c225acdc4c4d1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: b9e4a306-4e3b-4387-a01d-c00d03d8c28c
-  dockerImageTag: 0.3.41
+  dockerImageTag: 0.3.43
   dockerRepository: airbyte/source-pennylane
   githubIssueLabel: source-pennylane
   icon: icon.svg
