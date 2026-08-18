@@ -13,6 +13,9 @@ from .streams import Products, Purchases, Users
 
 DEFAULT_COUNT = 1_000
 
+# Default request rate budget for synthetic source operations.
+DEFAULT_RATE_LIMIT = 100
+
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -29,7 +32,7 @@ class SourceFaker(AbstractSource):
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
 
         return [
-            Products(count, seed, parallelism, records_per_slice, always_updated),
-            Users(count, seed, parallelism, records_per_slice, always_updated),
-            Purchases(count, seed, parallelism, records_per_slice, always_updated),
+            Products(count, seed, parallelism, records_per_slice, always_updated, rate_limit=DEFAULT_RATE_LIMIT),
+            Users(count, seed, parallelism, records_per_slice, always_updated, rate_limit=DEFAULT_RATE_LIMIT),
+            Purchases(count, seed, parallelism, records_per_slice, always_updated, rate_limit=DEFAULT_RATE_LIMIT),
         ]

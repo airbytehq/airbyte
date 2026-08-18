@@ -5,6 +5,7 @@
 import jsonschema
 import pytest
 from source_faker import SourceFaker
+from source_faker.source import DEFAULT_RATE_LIMIT
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, ConfiguredAirbyteCatalog, ConfiguredAirbyteStreamSerializer, Type
 
@@ -36,6 +37,13 @@ def schemas_are_valid():
 
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
+
+
+def test_streams_carry_default_rate_limit():
+    source = SourceFaker()
+    streams = source.streams({"count": 1, "parallelism": 1})
+
+    assert all(stream.rate_limit == DEFAULT_RATE_LIMIT for stream in streams)
 
 
 def test_source_streams():
