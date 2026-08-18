@@ -25,6 +25,10 @@ Auth Overview: https://developer.helpscout.com/mailbox-api/overview/authenticati
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | team_members | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -32,6 +36,17 @@ Auth Overview: https://developer.helpscout.com/mailbox-api/overview/authenticati
 
 | Version          | Date              | Pull Request                                         | Subject        |
 |------------------|-------------------|------------------------------------------------------|----------------|
+| 0.0.51 | 2026-08-18 | [84642](https://github.com/airbytehq/airbyte/pull/84642) | Update dependencies |
+| 0.0.50 | 2026-08-11 | [83981](https://github.com/airbytehq/airbyte/pull/83981) | Update dependencies |
+| 0.0.49 | 2026-08-04 | [83505](https://github.com/airbytehq/airbyte/pull/83505) | Update dependencies |
+| 0.0.48 | 2026-07-28 | [82462](https://github.com/airbytehq/airbyte/pull/82462) | Update dependencies |
+| 0.0.47 | 2026-07-14 | [81867](https://github.com/airbytehq/airbyte/pull/81867) | Update dependencies |
+| 0.0.46 | 2026-06-30 | [80494](https://github.com/airbytehq/airbyte/pull/80494) | Update dependencies |
+| 0.0.45 | 2026-06-16 | [79901](https://github.com/airbytehq/airbyte/pull/79901) | Update dependencies |
+| 0.0.44 | 2026-06-09 | [79350](https://github.com/airbytehq/airbyte/pull/79350) | Update dependencies |
+| 0.0.43 | 2026-06-02 | [78767](https://github.com/airbytehq/airbyte/pull/78767) | Update dependencies |
+| 0.0.42 | 2026-04-28 | [77284](https://github.com/airbytehq/airbyte/pull/77284) | Update dependencies |
+| 0.0.41 | 2026-04-21 | [76635](https://github.com/airbytehq/airbyte/pull/76635) | Update dependencies |
 | 0.0.40 | 2026-03-31 | [75736](https://github.com/airbytehq/airbyte/pull/75736) | Update dependencies |
 | 0.0.39 | 2026-03-24 | [74927](https://github.com/airbytehq/airbyte/pull/74927) | Update dependencies |
 | 0.0.38 | 2026-03-10 | [74681](https://github.com/airbytehq/airbyte/pull/74681) | Update dependencies |

@@ -16,6 +16,10 @@ Google Forms is a free online tool from Google that allows users to create custo
 | forms | `formId` | No pagination | ✅ |  ❌  |
 | form_responses | `responseId` | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -23,6 +27,19 @@ Google Forms is a free online tool from Google that allows users to create custo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.59 | 2026-08-18 | [84605](https://github.com/airbytehq/airbyte/pull/84605) | Update dependencies |
+| 0.0.58 | 2026-08-11 | [83955](https://github.com/airbytehq/airbyte/pull/83955) | Update dependencies |
+| 0.0.57 | 2026-08-04 | [83484](https://github.com/airbytehq/airbyte/pull/83484) | Update dependencies |
+| 0.0.56 | 2026-07-28 | [82940](https://github.com/airbytehq/airbyte/pull/82940) | Update dependencies |
+| 0.0.55 | 2026-07-21 | [82442](https://github.com/airbytehq/airbyte/pull/82442) | Update dependencies |
+| 0.0.54 | 2026-07-14 | [81850](https://github.com/airbytehq/airbyte/pull/81850) | Update dependencies |
+| 0.0.53 | 2026-06-30 | [81112](https://github.com/airbytehq/airbyte/pull/81112) | Update dependencies |
+| 0.0.52 | 2026-06-23 | [80521](https://github.com/airbytehq/airbyte/pull/80521) | Update dependencies |
+| 0.0.51 | 2026-06-16 | [79916](https://github.com/airbytehq/airbyte/pull/79916) | Update dependencies |
+| 0.0.50 | 2026-06-09 | [79376](https://github.com/airbytehq/airbyte/pull/79376) | Update dependencies |
+| 0.0.49 | 2026-06-02 | [78793](https://github.com/airbytehq/airbyte/pull/78793) | Update dependencies |
+| 0.0.48 | 2026-04-28 | [77293](https://github.com/airbytehq/airbyte/pull/77293) | Update dependencies |
+| 0.0.47 | 2026-04-21 | [76615](https://github.com/airbytehq/airbyte/pull/76615) | Update dependencies |
 | 0.0.46 | 2026-03-24 | [74933](https://github.com/airbytehq/airbyte/pull/74933) | Update dependencies |
 | 0.0.45 | 2026-03-10 | [74652](https://github.com/airbytehq/airbyte/pull/74652) | Update dependencies |
 | 0.0.44 | 2026-02-24 | [73928](https://github.com/airbytehq/airbyte/pull/73928) | Update dependencies |

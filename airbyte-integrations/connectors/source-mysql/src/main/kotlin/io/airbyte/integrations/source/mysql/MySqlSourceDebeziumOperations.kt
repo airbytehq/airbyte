@@ -19,7 +19,7 @@ import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
@@ -346,9 +347,9 @@ class MySqlSourceDebeziumOperations(
     ): Pair<MySqlSourceCdcPosition, String?> {
         stmt.executeQuery(query).use { rs: ResultSet ->
             if (!rs.next()) throw ConfigErrorException("No results for query: {{$query}}")
-            val file = Field("File", StringFieldType)
-            val pos = Field("Position", LongFieldType)
-            val gtids = Field("Executed_Gtid_Set", StringFieldType)
+            val file = EmittedField("File", StringFieldType)
+            val pos = EmittedField("Position", LongFieldType)
+            val gtids = EmittedField("Executed_Gtid_Set", StringFieldType)
             val mySqlSourceCdcPosition =
                 MySqlSourceCdcPosition(
                     fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
@@ -375,7 +376,7 @@ class MySqlSourceDebeziumOperations(
     }
 
     private fun queryPurgedIds(): MySqlGtidSet {
-        val purgedGtidField = Field("@@global.gtid_purged", StringFieldType)
+        val purgedGtidField = EmittedField("@@global.gtid_purged", StringFieldType)
         jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { stmt: Statement ->
                 val sql = "SELECT @@global.gtid_purged"
@@ -489,10 +490,16 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(
-                    MySqlSourceCdcBooleanConverter::class,
-                    MySqlSourceCdcTemporalConverter::class
-                )
+                .run {
+                    val converters =
+                        buildList<Class<out RelationalColumnCustomConverter>> {
+                            if (!configuration.treatTinyint1AsInteger) {
+                                add(MySqlSourceCdcBooleanConverter::class.java)
+                            }
+                            add(MySqlSourceCdcTemporalConverter::class.java)
+                        }
+                    withConverters(*converters.toTypedArray())
+                }
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }

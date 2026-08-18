@@ -66,6 +66,7 @@ Before you can use the service account to access Google Analytics data, you need
 7. (Optional) In the **Start Date** field, use the provided datepicker or enter a date programmatically in the format `YYYY-MM-DD`. All data added from this date onward will be replicated. Note that this setting is _not_ applied to custom Cohort reports.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
+10. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
 
 :::caution
 
@@ -75,7 +76,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-10. Click **Set up source** and wait for the tests to complete.
+11. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -86,7 +87,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
+4. Select **Service Account Key Authentication** from the dropdown list and enter the **Service Account JSON Key** from Step 1.
 5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
@@ -105,7 +106,8 @@ Many analyses and data investigations may require 24-48 hours to process informa
 7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past we should refresh the data in every run. Since attribution changes after the event date, and Google Analytics has a data processing latency this is key to keep up with consistent information. If you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days..
+10. (Optional) In the **Lookback window (Days)** field, specify how many days of past data to refresh on every run. Because attribution changes after the event date, and Google Analytics has data processing latency, this helps keep your data consistent. For example, setting this to 5 causes every sync to re-fetch data from the last bookmark date minus 5 days.
+11. (Optional) Enable **One Stream per Report** to create one stream per report covering all configured property IDs, instead of one stream per report per property. Recommended when syncing many properties. See the [One Stream per Report](#one-stream-per-report) section below &mdash; enabling it on an existing connection requires a full re-sync.
 
 :::caution
 
@@ -115,7 +117,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 
 :::
 
-11. Click **Set up source** and wait for the tests to complete.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -129,9 +131,9 @@ The Google Analytics 4 (GA4) source connector supports the following [sync modes
 
 ## Supported Streams
 
-This connector outputs the following incremental streams:
+This connector outputs the following streams:
 
-All preconfigured streams and custom streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
+Preconfigured and custom report streams use the Google Analytics Data API [`properties.runReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport) method. Each report stream represents a different combination of dimensions and metrics sent to the same API endpoint. Custom reports that specify pivots use the [`properties.runPivotReport`](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport) method instead.
 
 - Preconfigured streams:
   - daily_active_users
@@ -191,7 +193,13 @@ All preconfigured streams and custom streams use the Google Analytics Data API [
   - tech_platform_device_category_report
   - tech_operating_system_report
   - tech_os_with_version_report
+- Property metadata stream:
+  - `property_metadata`
 - Custom stream(s)
+
+The `property_metadata` stream is full-refresh and uses the Admin API [`properties.get`](https://developers.google.com/analytics/admin-rest/v1beta/properties/get) method. It emits one record for each configured property ID and includes a `property_id` field for joining with report streams.
+
+The `property_metadata` stream requires the Google Analytics Admin API (`analyticsadmin.googleapis.com`) to be enabled for the GCP project associated with the credentials; service-account users must enable it in their own project. If it is not enabled, this stream fails with a `403 SERVICE_DISABLED` error, while report streams continue to work.
 
 ## Connector-specific features
 
@@ -252,6 +260,46 @@ By specifying a cohort with a 7-day range and pivoting on the city dimension, th
 ]
 ```
 
+### One Stream per Report
+
+By default, the connector creates a separate stream for every combination of report and Property ID. With 57 built-in reports and 70 properties that is roughly 3,990 streams, which makes the catalog slow to load, the stream list hard to manage, and setup error-prone.
+
+Enabling **One Stream per Report** creates one stream per report instead, covering every configured property. Each record carries a `property_id` field, and `property_id` is part of the stream's primary key, so rows from different properties remain distinct in the destination. Each property also keeps its own incremental cursor, so they sync independently.
+
+Consolidated streams are named `<report_name>Consolidated` — for example, the `devices` report becomes `devicesConsolidated`. The per-property streams (`devices`, `devicesProperty5729978930`, and so on) are not created while this setting is enabled. The distinct name is deliberate: it guarantees the consolidated stream starts with a clean slate rather than inheriting the destination table and incremental cursor of the single-property stream it replaces.
+
+The stream's schema is the union of the field definitions across all configured properties. This matters if you use custom metrics, which are defined per property in GA4: a custom metric that exists on only some of your properties is still included in the schema, so its data is not dropped. If the same metric name is typed differently across properties, the type from the property listed first in **Property IDs** is used.
+
+:::caution
+
+Enabling or disabling this setting changes stream names, so data is written to new destination tables and incremental state resets. This is not a setting to toggle casually on an established connection.
+
+**Changing it on an existing connection requires a schema refresh.** The stream list you see in a connection is a snapshot of the last schema discovery, so the per-property streams keep appearing — and keep syncing nothing — until you refresh it. Follow these steps in order:
+
+1. Enable the setting on the source and save.
+2. Run **Refresh source schema** on each connection using this source. The per-property streams (`devices`, `devicesProperty5729978930`, and so on) are reported as removed, and the `<report_name>Consolidated` streams appear.
+3. Enable the consolidated streams you want and apply the changes.
+4. Run a sync. Because the consolidated streams are new, this is a full backfill covering every property.
+5. Once you have confirmed the backfill, you may drop the old per-property tables in your destination. Airbyte leaves them in place. Keep them if there is any chance you will revert &mdash; see below.
+
+Between steps 1 and 3 the connection still lists the old stream names, which no longer exist in the source. Syncs during that window return no records for them.
+
+**Reverting is supported and loses no data.** Disabling the setting restores the per-property streams under their original names once you refresh the schema again. Each one resumes from the cursor it held before you enabled the setting, so the period the setting was on is re-fetched on the next sync and no gap is left behind.
+
+The one exception is step 5. Deleting a destination table does not reset the stream's cursor, so if you dropped the old per-property tables and later revert, those streams resume from their old cursor and the recreated tables will be missing everything before it. Clear those streams when you revert, and they will backfill in full.
+
+:::
+
+:::caution
+
+**Adding a Property ID after enabling this setting.** New properties are added to the existing consolidated streams as new partitions, and a new partition starts from the stream's current cursor rather than from your **Start Date**. The new property's historical data is not backfilled and no error is raised. To backfill it, clear the affected streams after adding the Property ID.
+
+This does not apply when the setting is off, where a new Property ID produces new streams that backfill on their own.
+
+:::
+
+Syncs make the same number of API requests either way, so this setting reduces catalog size and destination table count rather than sync duration.
+
 ### Data Sampling and Data Request Intervals
 
 Data sampling in Google Analytics 4 refers to the process of estimating analytics data when the amount of data in an account exceeds Google's predefined compute thresholds. To mitigate the chances of data sampling being applied to the results, the **Data Request Interval** field allows users to specify the interval used when requesting data from the Google Analytics API.
@@ -273,6 +321,10 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -280,6 +332,30 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.0-rc.1 | 2026-08-11 | [83783](https://github.com/airbytehq/airbyte/pull/83783) | Add an opt-in **One Stream per Report** mode that combines all configured property IDs into one stream per report named `<report_name>Consolidated`, with schemas merged across properties. Off by default; existing connections are unchanged |
+| 2.10.2 | 2026-08-11 | [83343](https://github.com/airbytehq/airbyte/pull/83343) | Preserve nested `name` fields when resolving dynamic streams |
+| 2.10.1 | 2026-08-11 | [83952](https://github.com/airbytehq/airbyte/pull/83952) | Update dependencies |
+| 2.10.0 | 2026-07-30 | [83273](https://github.com/airbytehq/airbyte/pull/83273) | Add the `property_metadata` stream with GA4 property metadata from the Admin API |
+| 2.9.45 | 2026-07-28 | [82938](https://github.com/airbytehq/airbyte/pull/82938) | Update dependencies |
+| 2.9.44 | 2026-07-21 | [82436](https://github.com/airbytehq/airbyte/pull/82436) | Update dependencies |
+| 2.9.43 | 2026-07-14 | [81845](https://github.com/airbytehq/airbyte/pull/81845) | Update dependencies |
+| 2.9.42 | 2026-06-30 | [81086](https://github.com/airbytehq/airbyte/pull/81086) | Update dependencies |
+| 2.9.41 | 2026-06-23 | [80482](https://github.com/airbytehq/airbyte/pull/80482) | Update dependencies |
+| 2.9.40 | 2026-06-16 | [79881](https://github.com/airbytehq/airbyte/pull/79881) | Update dependencies |
+| 2.9.39 | 2026-06-09 | [79340](https://github.com/airbytehq/airbyte/pull/79340) | Update dependencies |
+| 2.9.38 | 2026-06-02 | [77618](https://github.com/airbytehq/airbyte/pull/77618) | Infer `auth_type` from credentials when missing to fix OAuth connection failures |
+| 2.9.37 | 2026-06-02 | [77243](https://github.com/airbytehq/airbyte/pull/77243) | Update dependencies |
+| 2.9.36 | 2026-05-27 | [77877](https://github.com/airbytehq/airbyte/pull/77877) | Update the connector runtime to the latest CDK version and reduce intermittent stream read hangs |
+| 2.9.35 | 2026-05-19 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Restore `default_concurrency` to 4 after c=6 rollout showed heartbeat timeout outliers |
+| 2.9.34 | 2026-05-18 | [78161](https://github.com/airbytehq/airbyte/pull/78161) | Promoted release candidate to GA |
+| 2.9.34-rc.2 | 2026-05-01 | [PR-pending](https://github.com/airbytehq/airbyte/pull/PR-pending) | Phase 1 step 3: bump `default_concurrency` 5 to 6 (tier-aware `api_budget` stays live) |
+| 2.9.34-rc.1 | 2026-04-29 | [77550](https://github.com/airbytehq/airbyte/pull/77550) | Phase 1 step 2: bump `default_concurrency` 4 to 5 and activate the tier-aware `api_budget` (Standard 10 req/s, Analytics 360 50 req/s on opt-in via `subscription_tier`) |
+| 2.9.33-rc.1 | 2026-04-23 | [76956](https://github.com/airbytehq/airbyte/pull/76956) | Add `concurrency_level` (default 4, max 16) and `subscription_tier` spec field (Standard or Analytics 360) for the Path B concurrency tuning rollout (RC); existing and tier-aware `api_budget` kept commented during tuning |
+| 2.9.31 | 2026-04-20 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Surface the GA4 API error message on 400 and 403 responses, and stop retrying permission errors |
+| 2.9.30 | 2026-04-14 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
+| 2.9.32 | 2026-04-21 | [76600](https://github.com/airbytehq/airbyte/pull/76600) | Update dependencies |
+| 2.9.31 | 2026-04-09 | [76185](https://github.com/airbytehq/airbyte/pull/76185) | Improve error messages for HTTP 400/403 responses; use predicate-based 403 handling to distinguish permission errors (config_error) from other 403s (retry) |
+| 2.9.30 | 2026-04-09 | [76190](https://github.com/airbytehq/airbyte/pull/76190) | Add access_token to extract_output and complete_oauth_output_specification to fix OAuth secretId 422 regression |
 | 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
 | 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
 | 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |

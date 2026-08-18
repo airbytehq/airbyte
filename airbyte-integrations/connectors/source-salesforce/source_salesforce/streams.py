@@ -105,11 +105,13 @@ class SalesforceStream(HttpStream, ABC):
         sobject_options: Mapping[str, Any] = None,
         schema: dict = None,
         start_date=None,
+        preserve_na_values: bool = False,
         **kwargs,
     ):
         self.stream_name = stream_name
         self.pk = pk
         self.sf_api = sf_api
+        self._preserve_na_values = preserve_na_values
         super().__init__(**kwargs)
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
@@ -693,7 +695,7 @@ class BulkSalesforceStream(SalesforceStream):
         download_retriever = SimpleRetriever(
             requester=download_requester,
             record_selector=RecordSelector(
-                extractor=ResponseToFileExtractor(parameters={}),
+                extractor=ResponseToFileExtractor(parameters={}, preserve_na_values=self._preserve_na_values),
                 record_filter=None,
                 transformations=[],
                 schema_normalization=TypeTransformer(TransformConfig.NoTransform),
@@ -895,11 +897,7 @@ class BulkSalesforceStream(SalesforceStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False)
         try:
-            yield from self._bulk_job_stream.stream_slices(
-                sync_mode=sync_mode,
-                cursor_field=cursor_field,
-                stream_state=stream_state,
-            )
+            yield from self._bulk_job_stream.retriever.stream_slicer.stream_slices()
         except BulkNotSupportedException:
             self.logger.warning(
                 "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
@@ -960,7 +958,7 @@ class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
             ),
             has_bulk_parent=True,
         )
-        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        yield from self._bulk_job_stream.retriever.stream_slicer.stream_slices()
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform

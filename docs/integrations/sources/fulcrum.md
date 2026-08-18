@@ -29,6 +29,10 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 | audio | record_id | DefaultPaginator | ✅ |  ❌  |
 | videos | record_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -36,6 +40,19 @@ Airbyte connector for Fulcrum would enable seamless data extraction from the Ful
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.63 | 2026-08-18 | [84592](https://github.com/airbytehq/airbyte/pull/84592) | Update dependencies |
+| 0.0.62 | 2026-08-11 | [83923](https://github.com/airbytehq/airbyte/pull/83923) | Update dependencies |
+| 0.0.61 | 2026-08-04 | [83447](https://github.com/airbytehq/airbyte/pull/83447) | Update dependencies |
+| 0.0.60 | 2026-07-28 | [82888](https://github.com/airbytehq/airbyte/pull/82888) | Update dependencies |
+| 0.0.59 | 2026-07-21 | [82400](https://github.com/airbytehq/airbyte/pull/82400) | Update dependencies |
+| 0.0.58 | 2026-07-14 | [81835](https://github.com/airbytehq/airbyte/pull/81835) | Update dependencies |
+| 0.0.57 | 2026-06-30 | [81075](https://github.com/airbytehq/airbyte/pull/81075) | Update dependencies |
+| 0.0.56 | 2026-06-23 | [80471](https://github.com/airbytehq/airbyte/pull/80471) | Update dependencies |
+| 0.0.55 | 2026-06-16 | [79873](https://github.com/airbytehq/airbyte/pull/79873) | Update dependencies |
+| 0.0.54 | 2026-06-09 | [79318](https://github.com/airbytehq/airbyte/pull/79318) | Update dependencies |
+| 0.0.53 | 2026-06-02 | [78709](https://github.com/airbytehq/airbyte/pull/78709) | Update dependencies |
+| 0.0.52 | 2026-04-28 | [77263](https://github.com/airbytehq/airbyte/pull/77263) | Update dependencies |
+| 0.0.51 | 2026-04-21 | [76607](https://github.com/airbytehq/airbyte/pull/76607) | Update dependencies |
 | 0.0.50 | 2026-03-31 | [75688](https://github.com/airbytehq/airbyte/pull/75688) | Update dependencies |
 | 0.0.49 | 2026-03-17 | [74955](https://github.com/airbytehq/airbyte/pull/74955) | Update dependencies |
 | 0.0.48 | 2026-02-24 | [73762](https://github.com/airbytehq/airbyte/pull/73762) | Update dependencies |

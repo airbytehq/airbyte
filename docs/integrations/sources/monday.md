@@ -79,6 +79,10 @@ If there are additional endpoints you'd like Airbyte to support, [create an issu
 
 The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -86,6 +90,21 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
+| 2.5.18 | 2026-08-11 | [84004](https://github.com/airbytehq/airbyte/pull/84004) | Update dependencies |
+| 2.5.17 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.5.16 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.5.14 — 2.5.15 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.5.15 | 2026-07-28 | [83007](https://github.com/airbytehq/airbyte/pull/83007) | Update dependencies |
+| 2.5.14 | 2026-07-21 | [82493](https://github.com/airbytehq/airbyte/pull/82493) | Update dependencies |
+| 2.5.13 | 2026-07-14 | [81908](https://github.com/airbytehq/airbyte/pull/81908) | Update dependencies |
+| 2.5.12 | 2026-06-30 | [81167](https://github.com/airbytehq/airbyte/pull/81167) | Update dependencies |
+| 2.5.11 | 2026-06-23 | [80562](https://github.com/airbytehq/airbyte/pull/80562) | Update dependencies |
+| 2.5.10 | 2026-06-16 | [78817](https://github.com/airbytehq/airbyte/pull/78817) | Update dependencies |
+| 2.5.9 | 2026-06-09 | [79605](https://github.com/airbytehq/airbyte/pull/79605) | Clean up cancelled RC; revert source to previous stable |
+| 2.5.9-rc.2 | 2026-05-28 | [78489](https://github.com/airbytehq/airbyte/pull/78489) | Reduce default concurrency to 4 and enable tier-aware HTTPAPIBudget rate limiting |
+| 2.5.9-rc.1 | 2026-05-26 | [78442](https://github.com/airbytehq/airbyte/pull/78442) | Add subscription_tier spec field and tier-aware HTTPAPIBudget for concurrency tuning (Path B) |
+| 2.5.8 | 2026-04-28 | [77302](https://github.com/airbytehq/airbyte/pull/77302) | Update dependencies |
+| 2.5.7 | 2026-04-21 | [76675](https://github.com/airbytehq/airbyte/pull/76675) | Update dependencies |
 | 2.5.6 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 2.5.5 | 2026-03-17 | [74325](https://github.com/airbytehq/airbyte/pull/74325) | Migrate to scopes object array format |
 | 2.5.4 | 2026-03-10 | [74620](https://github.com/airbytehq/airbyte/pull/74620) | Update dependencies |

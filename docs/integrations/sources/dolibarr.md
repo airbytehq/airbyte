@@ -38,6 +38,10 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 | Customer invoices payments list | ref | No pagination | ✅ |  ❌  |
 | Supplier invoices payments list | ref | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -45,6 +49,19 @@ Connector for the Dolibarr ERP/CRM REST API focused on GET operations
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 1.0.30 | 2026-08-18 | [84531](https://github.com/airbytehq/airbyte/pull/84531) | Update dependencies |
+| 1.0.29 | 2026-08-11 | [83898](https://github.com/airbytehq/airbyte/pull/83898) | Update dependencies |
+| 1.0.28 | 2026-08-04 | [83421](https://github.com/airbytehq/airbyte/pull/83421) | Update dependencies |
+| 1.0.27 | 2026-07-28 | [82881](https://github.com/airbytehq/airbyte/pull/82881) | Update dependencies |
+| 1.0.26 | 2026-07-21 | [82366](https://github.com/airbytehq/airbyte/pull/82366) | Update dependencies |
+| 1.0.25 | 2026-07-14 | [81758](https://github.com/airbytehq/airbyte/pull/81758) | Update dependencies |
+| 1.0.24 | 2026-06-30 | [81009](https://github.com/airbytehq/airbyte/pull/81009) | Update dependencies |
+| 1.0.23 | 2026-06-23 | [80391](https://github.com/airbytehq/airbyte/pull/80391) | Update dependencies |
+| 1.0.22 | 2026-06-16 | [79823](https://github.com/airbytehq/airbyte/pull/79823) | Update dependencies |
+| 1.0.21 | 2026-06-09 | [79263](https://github.com/airbytehq/airbyte/pull/79263) | Update dependencies |
+| 1.0.20 | 2026-06-02 | [78630](https://github.com/airbytehq/airbyte/pull/78630) | Update dependencies |
+| 1.0.19 | 2026-04-28 | [77261](https://github.com/airbytehq/airbyte/pull/77261) | Update dependencies |
+| 1.0.18 | 2026-04-21 | [76577](https://github.com/airbytehq/airbyte/pull/76577) | Update dependencies |
 | 1.0.17 | 2026-03-17 | [75082](https://github.com/airbytehq/airbyte/pull/75082) | Update dependencies |
 | 1.0.16 | 2026-03-10 | [74449](https://github.com/airbytehq/airbyte/pull/74449) | Update dependencies |
 | 1.0.15 | 2026-03-03 | [74192](https://github.com/airbytehq/airbyte/pull/74192) | Update dependencies |

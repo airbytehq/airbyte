@@ -33,6 +33,10 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 | surveys | id | No pagination | ✅ |  ✅  |
 | survey_responses | id | No pagination | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,19 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 
 | Version          | Date       | Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.1.59 | 2026-08-18 | [84523](https://github.com/airbytehq/airbyte/pull/84523) | Update dependencies |
+| 0.1.58 | 2026-08-11 | [83875](https://github.com/airbytehq/airbyte/pull/83875) | Update dependencies |
+| 0.1.57 | 2026-08-04 | [83386](https://github.com/airbytehq/airbyte/pull/83386) | Update dependencies |
+| 0.1.56 | 2026-07-28 | [82844](https://github.com/airbytehq/airbyte/pull/82844) | Update dependencies |
+| 0.1.55 | 2026-07-21 | [82353](https://github.com/airbytehq/airbyte/pull/82353) | Update dependencies |
+| 0.1.54 | 2026-07-14 | [81763](https://github.com/airbytehq/airbyte/pull/81763) | Update dependencies |
+| 0.1.53 | 2026-06-30 | [81004](https://github.com/airbytehq/airbyte/pull/81004) | Update dependencies |
+| 0.1.52 | 2026-06-23 | [80421](https://github.com/airbytehq/airbyte/pull/80421) | Update dependencies |
+| 0.1.51 | 2026-06-16 | [79787](https://github.com/airbytehq/airbyte/pull/79787) | Update dependencies |
+| 0.1.50 | 2026-06-09 | [79269](https://github.com/airbytehq/airbyte/pull/79269) | Update dependencies |
+| 0.1.49 | 2026-06-02 | [78659](https://github.com/airbytehq/airbyte/pull/78659) | Update dependencies |
+| 0.1.48 | 2026-04-28 | [77158](https://github.com/airbytehq/airbyte/pull/77158) | Update dependencies |
+| 0.1.47 | 2026-04-21 | [76537](https://github.com/airbytehq/airbyte/pull/76537) | Update dependencies |
 | 0.1.46 | 2026-03-31 | [75782](https://github.com/airbytehq/airbyte/pull/75782) | Update dependencies |
 | 0.1.45 | 2026-03-17 | [75104](https://github.com/airbytehq/airbyte/pull/75104) | Update dependencies |
 | 0.1.44 | 2026-02-24 | [73794](https://github.com/airbytehq/airbyte/pull/73794) | Update dependencies |

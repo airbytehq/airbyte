@@ -19,6 +19,10 @@ The Xsolla Airbyte Connector enables seamless integration between Xsolla and var
 | Bundles | item_id | DefaultPaginator | ✅ |  ❌  |
 | Reward Chains | reward_chain_id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -26,6 +30,19 @@ The Xsolla Airbyte Connector enables seamless integration between Xsolla and var
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.65 | 2026-08-18 | [84834](https://github.com/airbytehq/airbyte/pull/84834) | Update dependencies |
+| 0.0.64 | 2026-08-11 | [84183](https://github.com/airbytehq/airbyte/pull/84183) | Update dependencies |
+| 0.0.63 | 2026-08-04 | [83673](https://github.com/airbytehq/airbyte/pull/83673) | Update dependencies |
+| 0.0.62 | 2026-07-28 | [83166](https://github.com/airbytehq/airbyte/pull/83166) | Update dependencies |
+| 0.0.61 | 2026-07-21 | [82665](https://github.com/airbytehq/airbyte/pull/82665) | Update dependencies |
+| 0.0.60 | 2026-07-14 | [82074](https://github.com/airbytehq/airbyte/pull/82074) | Update dependencies |
+| 0.0.59 | 2026-06-30 | [81310](https://github.com/airbytehq/airbyte/pull/81310) | Update dependencies |
+| 0.0.58 | 2026-06-23 | [80715](https://github.com/airbytehq/airbyte/pull/80715) | Update dependencies |
+| 0.0.57 | 2026-06-16 | [80103](https://github.com/airbytehq/airbyte/pull/80103) | Update dependencies |
+| 0.0.56 | 2026-06-09 | [79562](https://github.com/airbytehq/airbyte/pull/79562) | Update dependencies |
+| 0.0.55 | 2026-06-02 | [79010](https://github.com/airbytehq/airbyte/pull/79010) | Update dependencies |
+| 0.0.54 | 2026-04-28 | [77451](https://github.com/airbytehq/airbyte/pull/77451) | Update dependencies |
+| 0.0.53 | 2026-04-21 | [76802](https://github.com/airbytehq/airbyte/pull/76802) | Update dependencies |
 | 0.0.52 | 2026-03-24 | [75378](https://github.com/airbytehq/airbyte/pull/75378) | Update dependencies |
 | 0.0.51 | 2026-02-24 | [73893](https://github.com/airbytehq/airbyte/pull/73893) | Update dependencies |
 | 0.0.50 | 2026-02-17 | [73503](https://github.com/airbytehq/airbyte/pull/73503) | Update dependencies |

@@ -18,6 +18,10 @@ Linkrunner is a Mobile Measurement Partner (MMP) that helps track user journeys 
 | campaigns | display_id | DefaultPaginator | ✅ |  ❌  |
 | attributed_users |  | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -35,6 +39,19 @@ Linkrunner is a Mobile Measurement Partner (MMP) that helps track user journeys 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.17 | 2026-08-18 | [84661](https://github.com/airbytehq/airbyte/pull/84661) | Update dependencies |
+| 0.0.16 | 2026-08-11 | [83998](https://github.com/airbytehq/airbyte/pull/83998) | Update dependencies |
+| 0.0.15 | 2026-08-04 | [83532](https://github.com/airbytehq/airbyte/pull/83532) | Update dependencies |
+| 0.0.14 | 2026-07-28 | [83012](https://github.com/airbytehq/airbyte/pull/83012) | Update dependencies |
+| 0.0.13 | 2026-07-21 | [82484](https://github.com/airbytehq/airbyte/pull/82484) | Update dependencies |
+| 0.0.12 | 2026-07-14 | [81911](https://github.com/airbytehq/airbyte/pull/81911) | Update dependencies |
+| 0.0.11 | 2026-06-30 | [81142](https://github.com/airbytehq/airbyte/pull/81142) | Update dependencies |
+| 0.0.10 | 2026-06-23 | [80567](https://github.com/airbytehq/airbyte/pull/80567) | Update dependencies |
+| 0.0.9 | 2026-06-16 | [79929](https://github.com/airbytehq/airbyte/pull/79929) | Update dependencies |
+| 0.0.8 | 2026-06-09 | [79420](https://github.com/airbytehq/airbyte/pull/79420) | Update dependencies |
+| 0.0.7 | 2026-06-02 | [78799](https://github.com/airbytehq/airbyte/pull/78799) | Update dependencies |
+| 0.0.6 | 2026-04-28 | [77294](https://github.com/airbytehq/airbyte/pull/77294) | Update dependencies |
+| 0.0.5 | 2026-04-21 | [76676](https://github.com/airbytehq/airbyte/pull/76676) | Update dependencies |
 | 0.0.4 | 2026-03-31 | [75709](https://github.com/airbytehq/airbyte/pull/75709) | Update dependencies |
 | 0.0.3 | 2026-03-17 | [74997](https://github.com/airbytehq/airbyte/pull/74997) | Update dependencies |
 | 0.0.2 | 2026-03-10 | [74423](https://github.com/airbytehq/airbyte/pull/74423) | Update dependencies |

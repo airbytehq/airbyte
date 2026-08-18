@@ -35,6 +35,10 @@ Docs : https://site.financialmodelingprep.com/developer/docs
 | Forex List |  | No pagination | ✅ |  ❌  |
 | Cryptocurrencies List |  | No pagination | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -42,6 +46,19 @@ Docs : https://site.financialmodelingprep.com/developer/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.60 | 2026-08-18 | [84597](https://github.com/airbytehq/airbyte/pull/84597) | Update dependencies |
+| 0.0.59 | 2026-08-11 | [83910](https://github.com/airbytehq/airbyte/pull/83910) | Update dependencies |
+| 0.0.58 | 2026-08-04 | [83427](https://github.com/airbytehq/airbyte/pull/83427) | Update dependencies |
+| 0.0.57 | 2026-07-28 | [82900](https://github.com/airbytehq/airbyte/pull/82900) | Update dependencies |
+| 0.0.56 | 2026-07-21 | [82411](https://github.com/airbytehq/airbyte/pull/82411) | Update dependencies |
+| 0.0.55 | 2026-07-14 | [81824](https://github.com/airbytehq/airbyte/pull/81824) | Update dependencies |
+| 0.0.54 | 2026-06-30 | [81056](https://github.com/airbytehq/airbyte/pull/81056) | Update dependencies |
+| 0.0.53 | 2026-06-23 | [80466](https://github.com/airbytehq/airbyte/pull/80466) | Update dependencies |
+| 0.0.52 | 2026-06-16 | [79837](https://github.com/airbytehq/airbyte/pull/79837) | Update dependencies |
+| 0.0.51 | 2026-06-09 | [79291](https://github.com/airbytehq/airbyte/pull/79291) | Update dependencies |
+| 0.0.50 | 2026-06-02 | [78675](https://github.com/airbytehq/airbyte/pull/78675) | Update dependencies |
+| 0.0.49 | 2026-04-28 | [77269](https://github.com/airbytehq/airbyte/pull/77269) | Update dependencies |
+| 0.0.48 | 2026-04-21 | [76583](https://github.com/airbytehq/airbyte/pull/76583) | Update dependencies |
 | 0.0.47 | 2026-03-31 | [75716](https://github.com/airbytehq/airbyte/pull/75716) | Update dependencies |
 | 0.0.46 | 2026-03-17 | [74642](https://github.com/airbytehq/airbyte/pull/74642) | Update dependencies |
 | 0.0.45 | 2026-02-24 | [73743](https://github.com/airbytehq/airbyte/pull/73743) | Update dependencies |

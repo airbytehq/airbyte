@@ -35,6 +35,10 @@ Integrate Adobe Commerce store data to your destination
 | tax_classes | class_id | DefaultPaginator | ✅ |  ❌  |
 | transactions | transaction_id | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -42,6 +46,19 @@ Integrate Adobe Commerce store data to your destination
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.24 | 2026-08-18 | [84506](https://github.com/airbytehq/airbyte/pull/84506) | Update dependencies |
+| 0.0.23 | 2026-08-11 | [83817](https://github.com/airbytehq/airbyte/pull/83817) | Update dependencies |
+| 0.0.22 | 2026-08-04 | [83348](https://github.com/airbytehq/airbyte/pull/83348) | Update dependencies |
+| 0.0.21 | 2026-07-28 | [82803](https://github.com/airbytehq/airbyte/pull/82803) | Update dependencies |
+| 0.0.20 | 2026-07-21 | [82314](https://github.com/airbytehq/airbyte/pull/82314) | Update dependencies |
+| 0.0.19 | 2026-07-14 | [81713](https://github.com/airbytehq/airbyte/pull/81713) | Update dependencies |
+| 0.0.18 | 2026-06-30 | [80972](https://github.com/airbytehq/airbyte/pull/80972) | Update dependencies |
+| 0.0.17 | 2026-06-23 | [80352](https://github.com/airbytehq/airbyte/pull/80352) | Update dependencies |
+| 0.0.16 | 2026-06-16 | [79762](https://github.com/airbytehq/airbyte/pull/79762) | Update dependencies |
+| 0.0.15 | 2026-06-09 | [79198](https://github.com/airbytehq/airbyte/pull/79198) | Update dependencies |
+| 0.0.14 | 2026-06-02 | [78553](https://github.com/airbytehq/airbyte/pull/78553) | Update dependencies |
+| 0.0.13 | 2026-04-28 | [77168](https://github.com/airbytehq/airbyte/pull/77168) | Update dependencies |
+| 0.0.12 | 2026-04-21 | [76511](https://github.com/airbytehq/airbyte/pull/76511) | Update dependencies |
 | 0.0.11 | 2026-03-17 | [74982](https://github.com/airbytehq/airbyte/pull/74982) | Update dependencies |
 | 0.0.10 | 2026-03-10 | [74535](https://github.com/airbytehq/airbyte/pull/74535) | Update dependencies |
 | 0.0.9 | 2026-02-10 | [73003](https://github.com/airbytehq/airbyte/pull/73003) | Update dependencies |

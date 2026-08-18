@@ -1,8 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 import logging
+from pathlib import Path
 
 import pytest
+import requests
+import yaml
 
 
 @pytest.mark.parametrize(
@@ -205,3 +209,94 @@ class TestSanitizeNumericFields:
             component.transform(record=record)
 
         assert any("Complex value encountered for field 'clicks'" in msg for msg in caplog.messages)
+
+
+def test_complete_oauth_output_specification_contains_refresh_and_access_token():
+    """Verify that complete_oauth_output_specification declares both refresh_token and access_token,
+    and that extract_output matches.
+
+    Both tokens must be listed so the platform correctly merges the OAuth response into the
+    connector config when users create sources via the public API with secretId.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11935
+    """
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+
+    oauth_spec = manifest["spec"]["advanced_auth"]["oauth_config_specification"]
+
+    # extract_output should list both refresh_token and access_token
+    extract_output = oauth_spec["oauth_connector_input_specification"]["extract_output"]
+    assert "refresh_token" in extract_output, "refresh_token must be in extract_output"
+    assert "access_token" in extract_output, "access_token must be in extract_output"
+
+    # complete_oauth_output_specification must match extract_output
+    output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
+    assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
+    assert "access_token" in output_props, "access_token must be in complete_oauth_output_specification"
+
+
+def _make_response(body: str, status_code: int = 403) -> requests.Response:
+    response = requests.Response()
+    response.status_code = status_code
+    response._content = body.encode("utf-8")
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+
+@pytest.mark.parametrize(
+    "response_or_exception,expected_backoff",
+    [
+        pytest.param(
+            _make_response(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics load quota exceeded. Learn about usage limits: https://developers.google.com/webmaster-tools/limits.",
+                        }
+                    }
+                )
+            ),
+            900.0,
+            id="load_quota_exceeded_returns_900",
+        ),
+        pytest.param(
+            _make_response(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": 403,
+                            "message": "Search Analytics QPS quota exceeded.",
+                        }
+                    }
+                )
+            ),
+            None,
+            id="qps_quota_exceeded_returns_none",
+        ),
+        pytest.param(
+            _make_response("not json at all", status_code=403),
+            None,
+            id="malformed_non_json_response_returns_none",
+        ),
+        pytest.param(
+            _make_response(json.dumps({"unexpected": "shape"}), status_code=500),
+            None,
+            id="unexpected_json_shape_returns_none",
+        ),
+        pytest.param(
+            requests.RequestException("connection error"),
+            None,
+            id="request_exception_returns_none",
+        ),
+        pytest.param(
+            None,
+            None,
+            id="none_returns_none",
+        ),
+    ],
+)
+def test_load_quota_backoff_strategy(components_module, response_or_exception, expected_backoff):
+    strategy = components_module.LoadQuotaBackoffStrategy()
+    assert strategy.backoff_time(response_or_exception=response_or_exception, attempt_count=0) == expected_backoff

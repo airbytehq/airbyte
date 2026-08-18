@@ -29,6 +29,10 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 | activity_types | id | DefaultPaginator | ✅ |  ❌  |
 | stages | id | DefaultPaginator | ✅ |  ❌  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -36,6 +40,19 @@ Capsule CRM connector  enables seamless data syncing from Capsule CRM to various
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.53 | 2026-08-18 | [84516](https://github.com/airbytehq/airbyte/pull/84516) | Update dependencies |
+| 0.0.52 | 2026-08-11 | [83881](https://github.com/airbytehq/airbyte/pull/83881) | Update dependencies |
+| 0.0.51 | 2026-08-04 | [83408](https://github.com/airbytehq/airbyte/pull/83408) | Update dependencies |
+| 0.0.50 | 2026-07-28 | [82862](https://github.com/airbytehq/airbyte/pull/82862) | Update dependencies |
+| 0.0.49 | 2026-07-21 | [82355](https://github.com/airbytehq/airbyte/pull/82355) | Update dependencies |
+| 0.0.48 | 2026-07-14 | [81776](https://github.com/airbytehq/airbyte/pull/81776) | Update dependencies |
+| 0.0.47 | 2026-06-30 | [81022](https://github.com/airbytehq/airbyte/pull/81022) | Update dependencies |
+| 0.0.46 | 2026-06-23 | [80423](https://github.com/airbytehq/airbyte/pull/80423) | Update dependencies |
+| 0.0.45 | 2026-06-16 | [79813](https://github.com/airbytehq/airbyte/pull/79813) | Update dependencies |
+| 0.0.44 | 2026-06-09 | [79272](https://github.com/airbytehq/airbyte/pull/79272) | Update dependencies |
+| 0.0.43 | 2026-06-02 | [78644](https://github.com/airbytehq/airbyte/pull/78644) | Update dependencies |
+| 0.0.42 | 2026-04-28 | [77175](https://github.com/airbytehq/airbyte/pull/77175) | Update dependencies |
+| 0.0.41 | 2026-04-21 | [76523](https://github.com/airbytehq/airbyte/pull/76523) | Update dependencies |
 | 0.0.40 | 2026-03-31 | [75681](https://github.com/airbytehq/airbyte/pull/75681) | Update dependencies |
 | 0.0.39 | 2026-03-17 | [74916](https://github.com/airbytehq/airbyte/pull/74916) | Update dependencies |
 | 0.0.38 | 2026-03-03 | [74215](https://github.com/airbytehq/airbyte/pull/74215) | Update dependencies |

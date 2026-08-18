@@ -72,6 +72,9 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 - [Payroll](https://apidocs.hibob.com/reference/get_payroll-history)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -80,6 +83,19 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.59 | 2026-08-18 | [84631](https://github.com/airbytehq/airbyte/pull/84631) | Update dependencies |
+| 0.2.58 | 2026-08-11 | [83988](https://github.com/airbytehq/airbyte/pull/83988) | Update dependencies |
+| 0.2.57 | 2026-08-04 | [83491](https://github.com/airbytehq/airbyte/pull/83491) | Update dependencies |
+| 0.2.56 | 2026-07-28 | [82974](https://github.com/airbytehq/airbyte/pull/82974) | Update dependencies |
+| 0.2.55 | 2026-07-21 | [82448](https://github.com/airbytehq/airbyte/pull/82448) | Update dependencies |
+| 0.2.54 | 2026-07-14 | [81871](https://github.com/airbytehq/airbyte/pull/81871) | Update dependencies |
+| 0.2.53 | 2026-06-30 | [81107](https://github.com/airbytehq/airbyte/pull/81107) | Update dependencies |
+| 0.2.52 | 2026-06-23 | [80513](https://github.com/airbytehq/airbyte/pull/80513) | Update dependencies |
+| 0.2.51 | 2026-06-16 | [79918](https://github.com/airbytehq/airbyte/pull/79918) | Update dependencies |
+| 0.2.50 | 2026-06-09 | [79353](https://github.com/airbytehq/airbyte/pull/79353) | Update dependencies |
+| 0.2.49 | 2026-06-02 | [78757](https://github.com/airbytehq/airbyte/pull/78757) | Update dependencies |
+| 0.2.48 | 2026-04-28 | [77270](https://github.com/airbytehq/airbyte/pull/77270) | Update dependencies |
+| 0.2.47 | 2026-04-21 | [76618](https://github.com/airbytehq/airbyte/pull/76618) | Update dependencies |
 | 0.2.46 | 2026-03-31 | [75735](https://github.com/airbytehq/airbyte/pull/75735) | Update dependencies |
 | 0.2.45 | 2026-03-24 | [75352](https://github.com/airbytehq/airbyte/pull/75352) | Update dependencies |
 | 0.2.44 | 2026-03-10 | [74683](https://github.com/airbytehq/airbyte/pull/74683) | Update dependencies |

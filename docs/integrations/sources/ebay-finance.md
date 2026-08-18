@@ -21,6 +21,10 @@ Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 | transactions |  | DefaultPaginator | ✅ |  ✅  |
 | payouts | payoutId | DefaultPaginator | ✅ |  ✅  |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -28,6 +32,19 @@ Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-08-18 | [84582](https://github.com/airbytehq/airbyte/pull/84582) | Update dependencies |
+| 0.0.45 | 2026-08-11 | [83933](https://github.com/airbytehq/airbyte/pull/83933) | Update dependencies |
+| 0.0.44 | 2026-08-04 | [83434](https://github.com/airbytehq/airbyte/pull/83434) | Update dependencies |
+| 0.0.43 | 2026-07-28 | [82919](https://github.com/airbytehq/airbyte/pull/82919) | Update dependencies |
+| 0.0.42 | 2026-07-21 | [82388](https://github.com/airbytehq/airbyte/pull/82388) | Update dependencies |
+| 0.0.41 | 2026-07-14 | [81815](https://github.com/airbytehq/airbyte/pull/81815) | Update dependencies |
+| 0.0.40 | 2026-06-30 | [81059](https://github.com/airbytehq/airbyte/pull/81059) | Update dependencies |
+| 0.0.39 | 2026-06-23 | [80455](https://github.com/airbytehq/airbyte/pull/80455) | Update dependencies |
+| 0.0.38 | 2026-06-16 | [79858](https://github.com/airbytehq/airbyte/pull/79858) | Update dependencies |
+| 0.0.37 | 2026-06-09 | [79323](https://github.com/airbytehq/airbyte/pull/79323) | Update dependencies |
+| 0.0.36 | 2026-06-02 | [78678](https://github.com/airbytehq/airbyte/pull/78678) | Update dependencies |
+| 0.0.35 | 2026-04-28 | [77198](https://github.com/airbytehq/airbyte/pull/77198) | Update dependencies |
+| 0.0.34 | 2026-04-21 | [76572](https://github.com/airbytehq/airbyte/pull/76572) | Update dependencies |
 | 0.0.33 | 2026-03-31 | [75781](https://github.com/airbytehq/airbyte/pull/75781) | Update dependencies |
 | 0.0.32 | 2026-03-17 | [75006](https://github.com/airbytehq/airbyte/pull/75006) | Update dependencies |
 | 0.0.31 | 2026-03-10 | [74445](https://github.com/airbytehq/airbyte/pull/74445) | Update dependencies |

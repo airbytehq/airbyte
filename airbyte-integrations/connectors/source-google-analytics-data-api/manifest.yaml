@@ -137,6 +137,103 @@ definitions:
               target_type: number
               current_type: TYPE_KILOMETERS
 
+    property_metadata:
+      type: DeclarativeStream
+      name: property_metadata
+      primary_key:
+        - property_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url_base: https://analyticsadmin.googleapis.com/v1beta
+          path: properties/{{ stream_partition.property_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: NoPagination
+        partition_router:
+          type: ListPartitionRouter
+          values: '{{ config["property_ids"] }}'
+          cursor_field: property_id
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - property_id
+              value: "{{ stream_partition.property_id | string }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            propertyType:
+              type:
+                - string
+                - "null"
+            parent:
+              type:
+                - string
+                - "null"
+            createTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            updateTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            displayName:
+              type:
+                - string
+                - "null"
+            industryCategory:
+              type:
+                - string
+                - "null"
+            timeZone:
+              type:
+                - string
+                - "null"
+            currencyCode:
+              type:
+                - string
+                - "null"
+            serviceLevel:
+              type:
+                - string
+                - "null"
+            deleteTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            expireTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            account:
+              type:
+                - string
+                - "null"
+            property_id:
+              type: string
+
   jwt_authenticator:
     type: JwtAuthenticator
     secret_key: "{{ json_loads(config['credentials']['credentials_json'])['private_key'] }}"
@@ -183,10 +280,23 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 30
       response_filters:
-        - predicate: ""
+        - type: HttpResponseFilter
+          http_codes: [400]
           action: FAIL
           failure_type: config_error
-          error_message: "Incorrect Property ID. Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id to find your Property ID."
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          predicate: "{{ response.error.status == 'PERMISSION_DENIED' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: RETRY
+          error_message: "{{ response.error.message }}"
+
+streams:
+  - $ref: "#/definitions/streams/property_metadata"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -856,7 +966,7 @@ dynamic_streams:
                 - totalRevenue
         - type: StreamConfig
           configs_pointer:
-            - property_ids
+            - "{{ 'single_stream_per_report' if config.get('single_stream_per_report') else 'property_ids' }}"
       components_mapping:
         # This mapping configures the base request body with dimensions, metrics, keepEmptyRows and quota settings,
         # conditionally update params for pivots and cohort
@@ -913,22 +1023,54 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "path"]
           value: >
+            {% if config.get('single_stream_per_report') %}
             {% if components_values.get("pivots") %}
+            "properties/{% raw %}{{ stream_partition.property_id }}{% endraw %}:runPivotReport"
+            {% else %}
+            "properties/{% raw %}{{ stream_partition.property_id }}{% endraw %}:runReport"
+            {% endif %}
+            {% elif components_values.get("pivots") %}
             "properties/{{ components_values['source_config_1'][1] }}:runPivotReport"
             {% else %}
             "properties/{{ components_values['source_config_1'][1] }}:runReport"
             {% endif %}
-        # This mapping defines path for the schema loader and paste property_id for each stream
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "partition_router"]
+          create_or_update: True
+          value: |
+            {% if config.get('single_stream_per_report') %}
+            type: ListPartitionRouter
+            values: "{{ config['property_ids'] }}"
+            cursor_field: property_id
+            {% endif %}
+        # This mapping defines path for the schema loader and paste property_id for each stream.
+        # Only applies when `single_stream_per_report` is disabled: in that mode each stream
+        # covers exactly one property, so its schema comes from that property's metadata
+        # endpoint. When the flag is enabled the `schema_loader` mapping further down replaces
+        # this whole component with one loader per property, and `source_config_1` holds the gate
+        # value rather than a property ID -- hence the condition, which keeps the two mappings
+        # mutually exclusive instead of letting this one compute a nonsense path first.
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "retriever", "requester", "path"]
+          condition: "{{ not config.get('single_stream_per_report', False) }}"
           value: "properties/{{ components_values['source_config_1'][1] }}/metadata"
         # NOTE: Yes, this is weird, but it exists solely for backward-compatibility.
         # When the config contains multiple property IDs, it keeps the
         # first stream as <report_name>, and names each additional stream
         # <report_name>Property<property_id>.
+        #
+        # When `single_stream_per_report` is enabled the stream covers every property, so it gets
+        # a `Consolidated` suffix instead. The suffix is required, not cosmetic: destination
+        # tables and incremental state are both keyed by stream name, so reusing `<report_name>`
+        # here would make the platform treat the consolidated stream as a continuation of the
+        # single-property stream. It would inherit that stream's cursor -- which only ever
+        # reflected the FIRST property's progress -- and every other property would silently
+        # resume from it instead of backfilling. A distinct name forces a full initial sync.
+        # Note `source_config_1` holds the gate value `(0, True)` when enabled, so its `[1]` is
+        # a boolean and must not be concatenated into a name.
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
-          value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
+          field_path: ["name"]
+          value: "{{ components_values['name'] ~ ('Consolidated' if config.get('single_stream_per_report') else ('Property' ~ components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else '')) }}"
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
         # it doesn't exist in this context yet as we populate the template
@@ -937,12 +1079,19 @@ dynamic_streams:
           field_path: ["transformations"]
           create_or_update: True
           value: >
-            {% set property_id = components_values['source_config_1'][1] %}
+            {% if config.get('single_stream_per_report') %}
               - type: AddFields
                 fields:
                   - path: [ "property_id" ]
-                    value: {{ property_id }}
+                    value: "{% raw %}{{ stream_partition.property_id }}{% endraw %}"
                     value_type: string
+            {% else %}
+              - type: AddFields
+                fields:
+                  - path: [ "property_id" ]
+                    value: {{ components_values['source_config_1'][1] }}
+                    value_type: string
+            {% endif %}
 
             {% set cohort = components_values.get("cohortSpec") %}
             {% if not (cohort and cohort.get("enabled") == "true") %}
@@ -1080,6 +1229,71 @@ dynamic_streams:
                     - path: [ "endDate" ]
                       value: "{{ {'type': ['null', 'string']} }}"
             {% endif %}
+        # ONE-STREAM-PER-REPORT ONLY: replace the single schema loader with one loader per
+        # property so their schemas are merged into a union.
+        #
+        # Why this is needed: a stream has exactly one schema, and a field missing from that
+        # schema gets no destination column and is silently dropped. GA4 metric fields are
+        # fetched live per property because each property can define its own custom metrics, so
+        # building the schema from a single property loses every custom metric that only exists
+        # on the others. Passing a LIST of schema loaders makes the CDK build a
+        # CompositeSchemaLoader, which merges their fields (see `composite_schema_loader.py`).
+        # Conflicts resolve first-wins, so if the same metric is typed differently across
+        # properties the earliest entry in `property_ids` decides.
+        #
+        # This costs no extra HTTP requests: the CDK forces `use_cache=True` on dynamic schema
+        # loaders and keys the cache by URL, shared across streams, so all report streams
+        # together still fetch each property's metadata only once.
+        #
+        # Must stay AFTER the two mappings above that write into `schema_loader.*` sub-paths --
+        # once `schema_loader` is a list those paths no longer exist.
+        #
+        # The `False` default on the condition is required: `InterpolatedBoolean.FALSE_VALUES`
+        # does not include `None`, so a bare `config.get(...)` on an absent key reads as TRUE.
+        #
+        # Sub-components are pulled from `stream_template_config` rather than written out
+        # literally, which keeps the authenticator, error handler and the 13-entry
+        # `types_mapping` in one place. `$ref` cannot be used inside an interpolated value --
+        # references are resolved before the resolver runs.
+        - type: ComponentMappingDefinition
+          field_path: ["schema_loader"]
+          create_or_update: True
+          condition: "{{ config.get('single_stream_per_report', False) }}"
+          value: |
+            {% set sl = stream_template_config['schema_loader'] %}
+            {% set cohort = components_values.get("cohortSpec") %}
+            {% for property_id in config["property_ids"] %}
+            - type: DynamicSchemaLoader
+              retriever:
+                type: SimpleRetriever
+                requester: {{ sl['retriever']['requester'] | tojson | replace('"PLACEHOLDER"', '"properties/' ~ property_id ~ '/metadata"') }}
+                record_selector: {{ sl['retriever']['record_selector'] | tojson }}
+              schema_filter:
+                type: RecordFilter
+                condition: {{ ('{{ record.keys() | list | first in ' ~ (components_values["metrics"] | tojson) ~ ' }}') | tojson }}
+              schema_transformations:
+            {% for dimension in components_values["dimensions"] %}
+                - type: AddFields
+                  fields:
+                    - path: ["{{ dimension }}"]
+                      value: "{% raw %}{{ {'type': ['null', 'string']} }}{% endraw %}"
+            {% endfor %}
+                - type: AddFields
+                  fields:
+                    - path: ["property_id"]
+                      value: "{% raw %}{{ {'type': ['string']} }}{% endraw %}"
+            {% if not (cohort and cohort.get("enabled") == "true") %}
+                - type: AddFields
+                  fields:
+                    - path: ["startDate"]
+                      value: "{% raw %}{{ {'type': ['null', 'string']} }}{% endraw %}"
+                - type: AddFields
+                  fields:
+                    - path: ["endDate"]
+                      value: "{% raw %}{{ {'type': ['null', 'string']} }}{% endraw %}"
+            {% endif %}
+              schema_type_identifier: {{ sl['schema_type_identifier'] | tojson }}
+            {% endfor %}
         # This adds a primary key to the stream.
         - type: ComponentMappingDefinition
           field_path: ["primary_key"]
@@ -1184,6 +1398,18 @@ spec:
           - - "1738294"
             - "5729978930"
         uniqueItems: true
+      single_stream_per_report:
+        title: One Stream per Report
+        description:
+          When enabled, each report produces one stream containing data from all configured
+          properties, distinguished by the property_id field. These streams take a Consolidated
+          suffix (for example, devicesConsolidated) and replace the per-property streams. If you
+          are changing this setting on an existing connection, refresh the source schema
+          afterwards to drop the old per-property streams and pick up the new ones, then clear
+          the new streams so every property backfills.
+        order: 2
+        type: boolean
+        default: false
       date_ranges_start_date:
         type: string
         title: Start Date
@@ -1196,7 +1422,7 @@ spec:
         pattern_descriptor: YYYY-MM-DD
         examples:
           - "2021-01-01"
-        order: 2
+        order: 3
       date_ranges_end_date:
         type: string
         title: End Date
@@ -1210,11 +1436,11 @@ spec:
         pattern_descriptor: YYYY-MM-DD
         examples:
           - "2021-01-31"
-        order: 3
+        order: 4
       custom_reports_array:
         title: Custom Reports
         description: You can add your Custom Analytics report by creating one.
-        order: 4
+        order: 5
         type: array
         items:
           title: Custom Report Config
@@ -2939,7 +3165,7 @@ spec:
         minimum: 1
         maximum: 364
         default: 1
-        order: 5
+        order: 6
       lookback_window:
         type: integer
         title: Lookback window (Days)
@@ -2958,7 +3184,7 @@ spec:
         minimum: 2
         maximum: 60
         default: 2
-        order: 6
+        order: 7
       keep_empty_rows:
         type: boolean
         title: Keep Empty Rows
@@ -2968,7 +3194,7 @@ spec:
           a filter. More information is available in <a href="https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport#request-body">the
           documentation</a>.
         default: false
-        order: 7
+        order: 8
       convert_conversions_event:
         type: boolean
         title: Convert `conversions:*` Metrics to Float
@@ -2977,7 +3203,21 @@ spec:
           to floats. This is beneficial for preventing data rounding when the API returns
           float values for any `conversions:*` fields.
         default: false
-        order: 8
+        order: 9
+      subscription_tier:
+        type: string
+        title: Subscription Plan/Tier
+        description:
+          Quota tier of the Google Analytics 4 properties being queried. Determines
+          the per-property rate-limit policy applied locally once the tier-aware
+          rate-limit budget is activated. Select "Analytics 360 Property" only if
+          all configured property IDs belong to an Analytics 360 subscription. See
+          https://developers.google.com/analytics/devguides/reporting/data/v1/quotas.
+        enum:
+          - Standard Property
+          - Analytics 360 Property
+        default: Standard Property
+        order: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -2992,6 +3232,7 @@ spec:
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
         extract_output:
           - refresh_token
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:
@@ -3028,16 +3269,53 @@ spec:
   config_normalization_rules:
     type: ConfigNormalizationRules
     transformations:
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "auth_type"]
+            value: "Client"
+        condition: "{{ config.get('credentials', {}).get('client_id') is not none and config.get('credentials', {}).get('auth_type') is none }}"
+      - type: ConfigAddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["credentials", "auth_type"]
+            value: "Service"
+        condition: "{{ config.get('credentials', {}).get('credentials_json') is not none and config.get('credentials', {}).get('auth_type') is none }}"
       - type: CustomConfigTransformation
         class_name: source_declarative_manifest.components.DimensionFilterConfigTransformation
 
+# GA4 Data API Core quotas (per property):
+#   Standard:       10 concurrent requests,  40,000 tokens/hour,  200,000 tokens/day
+#   Analytics 360:  50 concurrent requests, 400,000 tokens/hour, 2,000,000 tokens/day
+# https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 16
+
+# Original single-policy api_budget (pre-tuning). Superseded by the tier-aware
+# block below; kept commented for audit only.
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 10
+#           interval: PT1S
+#       matchers:
+#         - method: POST
+#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+
+# Tier-aware api_budget (Path B). Active during tuning and onward. The
+# `subscription_tier` spec field selects the per-property Core rate limit
+# applied locally (Standard 10 req/s, Analytics 360 50 req/s). See
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 10
+        - limit: "{{ {'Standard Property': 10, 'Analytics 360 Property': 50}[config.get('subscription_tier', 'Standard Property')] }}"
           interval: PT1S
       matchers:
         - method: POST

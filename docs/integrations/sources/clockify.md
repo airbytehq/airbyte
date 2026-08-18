@@ -2,6 +2,10 @@
 
 The Airbyte Source for [Clockify](https://clockify.me)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -9,6 +13,19 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.62 | 2026-08-18 | [84476](https://github.com/airbytehq/airbyte/pull/84476) | Update dependencies |
+| 0.4.61 | 2026-08-11 | [83876](https://github.com/airbytehq/airbyte/pull/83876) | Update dependencies |
+| 0.4.60 | 2026-08-04 | [83397](https://github.com/airbytehq/airbyte/pull/83397) | Update dependencies |
+| 0.4.59 | 2026-07-28 | [82861](https://github.com/airbytehq/airbyte/pull/82861) | Update dependencies |
+| 0.4.58 | 2026-07-21 | [82372](https://github.com/airbytehq/airbyte/pull/82372) | Update dependencies |
+| 0.4.57 | 2026-07-14 | [81771](https://github.com/airbytehq/airbyte/pull/81771) | Update dependencies |
+| 0.4.56 | 2026-06-30 | [81021](https://github.com/airbytehq/airbyte/pull/81021) | Update dependencies |
+| 0.4.55 | 2026-06-23 | [80417](https://github.com/airbytehq/airbyte/pull/80417) | Update dependencies |
+| 0.4.54 | 2026-06-16 | [79801](https://github.com/airbytehq/airbyte/pull/79801) | Update dependencies |
+| 0.4.53 | 2026-06-09 | [79260](https://github.com/airbytehq/airbyte/pull/79260) | Update dependencies |
+| 0.4.52 | 2026-06-02 | [78671](https://github.com/airbytehq/airbyte/pull/78671) | Update dependencies |
+| 0.4.51 | 2026-04-28 | [77172](https://github.com/airbytehq/airbyte/pull/77172) | Update dependencies |
+| 0.4.50 | 2026-04-21 | [76573](https://github.com/airbytehq/airbyte/pull/76573) | Update dependencies |
 | 0.4.49 | 2026-03-17 | [75105](https://github.com/airbytehq/airbyte/pull/75105) | Update dependencies |
 | 0.4.48 | 2026-03-10 | [74433](https://github.com/airbytehq/airbyte/pull/74433) | Update dependencies |
 | 0.4.47 | 2026-03-03 | [73828](https://github.com/airbytehq/airbyte/pull/73828) | Update dependencies |
@@ -72,9 +89,9 @@ The Airbyte Source for [Clockify](https://clockify.me)
 | 0.3.3 | 2024-04-19 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
 | 0.3.2 | 2024-04-15 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.3.1 | 2024-04-12 | [37135](https://github.com/airbytehq/airbyte/pull/37135) | schema descriptions |
-| 0.3.0   | 2023-08-27 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | ✨ Source Clockify: Migrate to LowCode CDK                                      |
-| 0.2.1   | 2023-08-01 | [27881](https://github.com/airbytehq/airbyte/pull/27881) | 🐛 Source Clockify: Source Clockify: Fix pagination logic                       |
-| 0.2.0   | 2023-08-01 | [27689](https://github.com/airbytehq/airbyte/pull/27689) | ✨ Source Clockify: Add Optional API Url parameter                              |
-| 0.1.0   | 2022-10-26 | [17767](https://github.com/airbytehq/airbyte/pull/17767) | 🎉 New Connector: Clockify [python cdk]                                         |
+| 0.3.0 | 2023-08-27 | [29899](https://github.com/airbytehq/airbyte/pull/29899) | ✨ Source Clockify: Migrate to LowCode CDK |
+| 0.2.1 | 2023-08-01 | [27881](https://github.com/airbytehq/airbyte/pull/27881) | 🐛 Source Clockify: Source Clockify: Fix pagination logic |
+| 0.2.0 | 2023-08-01 | [27689](https://github.com/airbytehq/airbyte/pull/27689) | ✨ Source Clockify: Add Optional API Url parameter |
+| 0.1.0 | 2022-10-26 | [17767](https://github.com/airbytehq/airbyte/pull/17767) | 🎉 New Connector: Clockify [python cdk] |
 
 </details>
