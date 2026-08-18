@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+#
 import base64
 from urllib.parse import parse_qs
 
