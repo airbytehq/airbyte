@@ -196,11 +196,12 @@ that some assertions rely on.
   verified on `4.4.12` and `5.0.0` too. `discover` does not emit
   `is_file_based`, so `make-catalog.sh` fills it in, and the catalog
   fixtures shipped with this and dependent skills populate all of them.
-- _A failed `check` does not fail the harness_ → the CDK exits 0 even
-  when it emits `CONNECTION_STATUS` with `status: FAILED`, so `run.sh`
-  returns 0. Assert on the status message yourself (see
+- _A failed `check` does not fail a single-version run_ → the CDK exits
+  0 even when it emits `CONNECTION_STATUS` with `status: FAILED`, so
+  `run.sh` returns 0. Assert on the status message yourself (see
   [Asserting on output](#asserting-on-output)) rather than on the exit
-  code when the repro hinges on `check`.
+  code when the repro hinges on `check`. Comparison mode does surface
+  it, because it reads the report's verdict rather than the exit code.
 
 ## Tear-down
 

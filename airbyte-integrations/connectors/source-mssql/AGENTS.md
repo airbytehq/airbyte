@@ -112,10 +112,11 @@ directly.
   `5.0.0` reject them too. `discover` never emits `is_file_based`, so
   `make-catalog.sh` fills it in; the catalog fixtures shipped with the
   CDC skill populate all of them.
-- **A `check` that fails still exits 0.** The CDK emits
-  `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the harness
-  cannot surface it as a non-zero exit. Assert on the status message
-  when a repro hinges on `check`.
+- **A `check` that fails still exits 0 in single-version mode.** The CDK
+  emits `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the
+  harness cannot surface it as a non-zero exit. Assert on the status
+  message when a repro hinges on `check`. Comparison mode reads the
+  report's verdict instead, so it does fail.
 - **Debezium engine starts but produces no records.** SQL Server CDC
   capture / cleanup are SQL Server Agent jobs. The backend container
   must be started with `MSSQL_AGENT_ENABLED=true` (the generic skill's
