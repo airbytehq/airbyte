@@ -133,6 +133,54 @@ def test_error_40067_not_on_global_requester():
     assert len(error_40067) == 0, "Error 40067 config_error should NOT be on the global requester"
 
 
+RETRY_ERROR_MESSAGES = {
+    "60001": "TikTok Marketing API is under service maintenance (error 60001).",
+    "50000": "TikTok Marketing API returned a server-side error (code 50000).",
+    "51041": "TikTok Marketing API returned a server-side error (code 51041).",
+    "51004": "TikTok Marketing API returned a server-side error (code 51004).",
+}
+RETRY_ERROR_HANDLER_LOCATIONS = {
+    "global": lambda manifest: manifest["definitions"]["requester"]["error_handler"]["response_filters"],
+    "daily_report": lambda manifest: manifest["definitions"]["report_daily_error_handler"]["response_filters"],
+    "pixel_instant_page_events": lambda manifest: manifest["definitions"]["pixel_instant_page_events"]["retriever"]["requester"][
+        "error_handler"
+    ]["response_filters"],
+    "pixel_events_statistics": lambda manifest: manifest["definitions"]["pixel_events_statistics"]["retriever"]["requester"][
+        "error_handler"
+    ]["response_filters"],
+}
+BANNED_RETRY_MESSAGE_PHRASES = (
+    "{{",
+    "the connector will retry automatically",
+    "you may need to re-sync",
+)
+
+
+@pytest.mark.parametrize("code,expected_message", RETRY_ERROR_MESSAGES.items())
+@pytest.mark.parametrize("location", RETRY_ERROR_HANDLER_LOCATIONS)
+def test_transient_retry_error_filters_have_stable_messages(location, code, expected_message):
+    manifest = _load_manifest()
+    filters = RETRY_ERROR_HANDLER_LOCATIONS[location](manifest)
+    matching_filters = [f for f in filters if f"code') == {code}" in f.get("predicate", "")]
+    assert len(matching_filters) == 1, f"Expected one handler for code {code} in {location}"
+    handler = matching_filters[0]
+    assert handler["action"] == "RETRY"
+    assert handler["failure_type"] == "transient_error"
+    assert handler["error_message"] == expected_message
+    assert not any(phrase in handler["error_message"].lower() for phrase in BANNED_RETRY_MESSAGE_PHRASES)
+
+
+@pytest.mark.parametrize("code,expected_message", RETRY_ERROR_MESSAGES.items())
+def test_transient_retry_error_messages_match_across_handlers(code, expected_message):
+    manifest = _load_manifest()
+    messages = []
+    for location, get_filters in RETRY_ERROR_HANDLER_LOCATIONS.items():
+        matching_filters = [f for f in get_filters(manifest) if f"code') == {code}" in f.get("predicate", "")]
+        assert len(matching_filters) == 1, f"Expected one handler for code {code} in {location}"
+        messages.append(matching_filters[0]["error_message"])
+    assert messages == [expected_message] * len(RETRY_ERROR_HANDLER_LOCATIONS)
+
+
 @pytest.mark.parametrize(
     "retriever_name",
     [
