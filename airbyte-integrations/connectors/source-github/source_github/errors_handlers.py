@@ -12,8 +12,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
-from . import constants
-
 
 logger = logging.getLogger("airbyte")
 
@@ -84,6 +82,16 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
     return False
 
 
+def is_response_body_unparseable(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
+    if not isinstance(response_or_exception, requests.Response) or not response_or_exception.text:
+        return False
+    try:
+        response_or_exception.json()
+    except ValueError:
+        return True
+    return False
+
+
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
@@ -142,6 +150,16 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                         f"GitHub rate limit hit for stream `{self.stream.name}` "
                         f"(HTTP {response_or_exception.status_code}). "
                         f"Waiting for the rate limit window to reset before retrying."
+                    ),
+                )
+
+            if response_or_exception.status_code == requests.codes.OK and is_response_body_unparseable(response_or_exception):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message=(
+                        f"Response body for stream `{self.stream.name}` with HTTP "
+                        f"{response_or_exception.status_code} status code is not valid JSON. Retrying."
                     ),
                 )
 
@@ -220,9 +238,15 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                     ),
                 )
 
-            self.stream.page_size = (
-                constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
-            )
+            if is_response_body_unparseable(response_or_exception):
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message=(
+                        f"GitHub GraphQL response for stream `{self.stream.name}` with HTTP "
+                        f"{response_or_exception.status_code} status code is not valid JSON. Retrying."
+                    ),
+                )
 
             if self._safe_json_get_errors(response_or_exception):
                 return ErrorResolution(
