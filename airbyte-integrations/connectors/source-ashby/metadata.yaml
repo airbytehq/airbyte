@@ -50,6 +50,7 @@ data:
       1.0.0:
         message: "This release declares item schemas for ten previously-untyped array columns across the `applications`, `candidates`, and `jobs` streams (`customFields`, `hiringTeam`, `emailAddresses`, `fileHandles`, `phoneNumbers`, `socialLinks`, and `tags`). This re-types those columns on data-lake destinations such as S3 Data Lake and Iceberg. Users must refresh the affected streams or recreate the affected tables after upgrading."
         upgradeDeadline: "2026-09-01"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
