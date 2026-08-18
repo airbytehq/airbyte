@@ -27,10 +27,28 @@ logger = logging.Logger("")
         ),
         pytest.param({"bucket": "test", "streams": [], "endpoint": "https://test.com"}, False, None, id="config-created-with-endpoint"),
         pytest.param(
+            {"bucket": "test", "streams": [], "endpoint": "HTTPS://test.com"},
+            True,
+            None,
+            id="uppercase-https-cloud-endpoint",
+        ),
+        pytest.param(
+            {"bucket": "test", "streams": [], "endpoint": "HtTpS://test.com"},
+            True,
+            None,
+            id="mixed-case-https-cloud-endpoint",
+        ),
+        pytest.param(
             {"bucket": "test", "streams": [], "endpoint": "http://test.com"},
             True,
             AirbyteTracedException,
             id="http-endpoint-error",
+        ),
+        pytest.param(
+            {"bucket": "test", "streams": [], "endpoint": "HTTP://test.com"},
+            True,
+            AirbyteTracedException,
+            id="uppercase-http-endpoint-error",
         ),
         pytest.param({"bucket": "test", "streams": [], "endpoint": "http://test.com"}, False, None, id="http-endpoint-error"),
         pytest.param(

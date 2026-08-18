@@ -73,7 +73,10 @@ class SourceTest(unittest.TestCase):
         )
         assert not pattern.fullmatch("my-s3-endpoint.com")
         assert not pattern.fullmatch("http://x.com")
+        assert not pattern.fullmatch("HTTP://x.com")
         assert pattern.fullmatch("https://x.com")
+        assert pattern.fullmatch("HTTPS://x.com")
+        assert pattern.fullmatch("HtTpS://x.com")
         assert pattern.fullmatch("")
 
     def test_make_default_stream_returns_throttled_stream(self) -> None:

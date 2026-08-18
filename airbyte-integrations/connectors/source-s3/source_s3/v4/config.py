@@ -104,7 +104,7 @@ class Config(AbstractFileBasedSpec):
         endpoint = values.get("endpoint")
         if endpoint:
             allowed_schemes = ("https://",) if is_cloud_environment() else ("http://", "https://")  # ignore-https-check
-            if not endpoint.startswith(allowed_schemes):
+            if not endpoint.casefold().startswith(allowed_schemes):
                 expected = " or ".join(f'"{scheme}"' for scheme in allowed_schemes)
                 raise AirbyteTracedException(
                     message=f'Field "Endpoint" must be a full URL starting with {expected}.',

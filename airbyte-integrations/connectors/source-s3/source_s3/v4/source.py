@@ -127,7 +127,7 @@ class SourceS3(FileBasedSource):
                 {
                     "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. "
                     "The custom endpoint must be a secure URL including the 'https://' prefix.",
-                    "pattern": "^$|^https://.+$",
+                    "pattern": "^$|^[Hh][Tt][Tt][Pp][Ss]://.+$",
                 }
             )
 
