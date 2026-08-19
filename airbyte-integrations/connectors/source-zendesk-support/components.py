@@ -1,11 +1,75 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import atexit
+import sys
+import time
+from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping
 
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+
+
+def _force_fail_pre_exit_sleep() -> None:
+    """DO NOT MERGE — workaround for an orchestrator race that loses connector trace messages.
+
+    The container orchestrator's MessageProcessor coroutine drains the source-message queue
+    (and is what calls `messageTracker.acceptFromSource`, populating the trace-derived
+    FailureReasons) on a coroutine separate from the SourceReader. When the source process
+    exits non-zero, SourceReader throws SourceException; structured concurrency in
+    `runJobs { coroutineScope { tasks.awaitAll() } }` then cancels MessageProcessor —
+    regardless of whether the queue has been drained. Anything still queued (very often
+    including the ERROR TRACE that was emitted right before exit) is silently dropped.
+
+    The 10-second sleep inside `LocalContainerAirbyteSource.exitValue` (waiting for the
+    exit-code file when the pipe closes first) is what intermittently saves us in
+    production: it delays SourceException long enough for MessageProcessor to drain.
+
+    This atexit hook recreates that delay deterministically: flush stdout/stderr so the
+    trace bytes are on the wire, then sleep so the orchestrator's reader has time to parse
+    them and MessageProcessor has time to call `acceptFromSource(...)` before the pipe
+    closes and SourceException tears down sibling coroutines.
+    """
+    try:
+        sys.stdout.flush()
+        sys.stderr.flush()
+    except Exception:  # noqa: BLE001 — best-effort flush, never block exit
+        pass
+    time.sleep(10)
+
+
+atexit.register(_force_fail_pre_exit_sleep)
+
+
+class ForceFailError(RuntimeError):
+    """Plain Python exception raised by `ForceFailExtractor` for pre-release testing.
+
+    DO NOT MERGE — inherits from `RuntimeError` rather than
+    `airbyte_cdk.utils.traced_exception.AirbyteTracedException` so the CDK has
+    to wrap a vanilla Python exception (no curated `failure_type`, no
+    user-facing `message`). This mirrors what the platform sees when a
+    connector hits an unhandled bug in the wild.
+    """
+
+
+@dataclass
+class ForceFailExtractor(RecordExtractor):
+    """Record extractor that force-fails every record extraction.
+
+    DO NOT MERGE — this extractor exists solely to produce a pre-release image
+    that fails every sync on the read path. The HTTP request, authentication,
+    and response are all left intact; the failure is raised when the platform
+    asks the connector to extract records from the response. Every stream's
+    `read` therefore fails with a `ForceFailError` (a plain `RuntimeError`
+    subclass).
+    """
+
+    parameters: InitVar[Mapping[str, Any]]
+
+    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+        raise ForceFailError("source-zendesk-support pre-release force-fail injection. DO NOT MERGE.")
 
 
 class ZendeskSupportExtractorEvents(RecordExtractor):
