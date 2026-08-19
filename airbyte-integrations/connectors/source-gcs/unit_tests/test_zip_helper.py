@@ -101,3 +101,33 @@ def test_filename_collision_shared_tmp_dir():
 
     assert contents_per_zip[0] == ["zip1_content"]
     assert contents_per_zip[1] == ["zip2_content"]
+
+
+def test_extracted_files_use_displayed_uri_over_signed_url():
+    """When the parent zip uses a signed URL as `uri` but has a clean
+    `displayed_uri`, extracted files must inherit the clean URI so that
+    Service Account credentials are not leaked into record metadata."""
+    signed_url = (
+        "https://storage.googleapis.com/bucket/archive.zip"
+        "?X-Goog-Credential=sa%40project.iam.gserviceaccount.com"
+        "&X-Goog-Signature=abc123"
+    )
+    displayed_uri = "https://storage.googleapis.com/bucket/archive.zip"
+
+    zip_bytes = _make_zip_bytes({"data.csv": "col\n1"})
+    blob = _make_blob(zip_bytes)
+
+    parent_file = GCSUploadableRemoteFile(
+        uri=signed_url,
+        blob=MagicMock(),
+        last_modified=datetime.today(),
+        displayed_uri=displayed_uri,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_dir_path:
+        files = list(ZipHelper(blob, parent_file, tmp_dir_path).get_gcs_remote_files())
+
+    assert len(files) == 1
+    assert files[0].displayed_uri == displayed_uri
+    assert "X-Goog-Credential" not in files[0].displayed_uri
+    assert "X-Goog-Signature" not in files[0].displayed_uri

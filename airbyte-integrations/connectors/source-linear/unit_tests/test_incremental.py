@@ -15,10 +15,13 @@ import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
+from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
 
 
@@ -184,3 +187,71 @@ def test_default_start_date_is_roughly_two_years_ago() -> None:
     delta = abs((parsed - expected).total_seconds())
     # +/- 2 days tolerance for leap years and clock drift.
     assert delta < 2 * 24 * 3600, f"expected ~2 years ago, got {gte!r} (delta={delta}s)"
+
+
+def test_flat_api_key_config_migrates_to_api_key_credentials() -> None:
+    """Existing flat API key configs must keep using API key auth."""
+    config = {"api_key": "test-api-key"}
+
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+
+    assert src._config["credentials"] == {
+        "auth_type": "API Key",
+        "api_key": "test-api-key",
+    }
+
+
+def test_flat_api_key_config_after_migration_can_build_auth_header() -> None:
+    """The migrated API key must be available to CHECK stream requests."""
+    config = {"api_key": "test-api-key"}
+
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+    streams = {s.name: s for s in src.streams(config=config)}
+    stream = streams["issues"]
+    partition = next(iter(stream.generate_partitions()))
+    headers = partition._retriever.requester._request_headers()
+
+    assert headers["Authorization"] == "test-api-key"
+
+
+@pytest.mark.parametrize(
+    "status_code, response_json, expected_action, expected_error_message",
+    [
+        pytest.param(
+            400,
+            {
+                "errors": [
+                    {"message": "Rate limit exceeded. Only 2500 requests are allowed per 1 hour.", "extensions": {"code": "RATELIMITED"}}
+                ]
+            },
+            ResponseAction.RATE_LIMITED,
+            "Rate limit exceeded for Linear API.",
+            id="graphql_ratelimited_error",
+        ),
+        pytest.param(
+            400,
+            {"errors": [{"message": "Invalid input.", "extensions": {"code": "BAD_USER_INPUT"}}]},
+            ResponseAction.FAIL,
+            "HTTP Status Code: 400. Error: Bad request. Please check your request parameters.",
+            id="graphql_non_rate_limit_bad_request",
+        ),
+    ],
+)
+def test_graphql_error_handler_response_action(
+    streams_by_name: Mapping[str, Any],
+    status_code: int,
+    response_json: Mapping[str, Any],
+    expected_action: ResponseAction,
+    expected_error_message: str,
+) -> None:
+    stream = streams_by_name["issues"]
+    retriever = next(iter(stream.generate_partitions()))._retriever
+    response = MagicMock(spec=Response, status_code=status_code)
+    response.ok = status_code == 200
+    response.headers = {"Content-Type": "application/json", "X-RateLimit-Requests-Reset": "1600000060000"}
+    response.json.return_value = response_json
+
+    result = retriever.requester.error_handler.interpret_response(response)
+
+    assert result.response_action == expected_action
+    assert result.error_message == expected_error_message

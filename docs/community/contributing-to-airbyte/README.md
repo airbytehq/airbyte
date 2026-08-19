@@ -4,20 +4,28 @@ description: "We love contributions to Airbyte, big or small."
 
 # Contributing to Airbyte
 
-Thank you for your interest in contributing! Contributions are very welcome. We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#dev-and-contribuions` channel](https://airbytehq.slack.com/archives/C054V9JFTC6).
+Thank you for your interest in contributing! Airbyte accepts community contributions to its open-source data replication connectors in the [`airbyte`](https://github.com/airbytehq/airbyte) repository. Airbyte Agents does not accept community code contributions.
+
+We appreciate first-time contributors and are happy to help you get started. Join our [Airbyte Community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#help-connector-development` channel](https://airbytehq.slack.com/archives/C027KKE4BCZ).
 
 If you're interacting in Slack, codebases, mailing lists, events, or any other Airbyte activity, you must follow the [Code of Conduct](/community/code-of-conduct). Please review it before getting started.
 
 ## Code Contributions
 
 Most of the issues that are open for contributions are tagged with [`good first issue`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
-If you are interested in an issue that isn't tagged, post a comment with your approach, and we'd be happy to assign it to you. If you submit a fix isn't linked to an issue you're assigned, there is chance Airbyte won't accept it.
+If you are interested in an issue, you can submit a PR and link to that issue. If you submit a PR that isn't linked to an issue, you must explain the following in your PR Description:
+
+- The problem you've identified
+- How your PR solves the problem
+- Your design decisions
+
+Without this information, we have a harder time understanding the PR's benefits and are more likely to close it without merging.
 
 ### Contributions we accept
 
-- Fixes and enhancements to existing API source connectors
+- Fixes and enhancements to existing API connectors
 - New streams and features for existing connectors using the Connector Builder/YAML
-- New API source connectors built with the Connector Builder
+- New API connectors built with the Connector Builder
 - Migrations of an existing connector from Python to the Connector Builder/YAML
 
 Airbyte evaluates contributions outside this scope on a case-by-case basis. Reach out to the Airbyte team before starting to ensure the team can accept your idea.
@@ -30,7 +38,8 @@ Airbyte is revamping its core Java destinations codebase. We're not reviewing/ac
 
 ### Contributions we don't accept
 
-- Platform contributions. In mid-2025, Airbyte stopping accepting community contributions to the Airbyte platform. Continue reporting issues through GitHub so we can investigate and prioritize fixes and improvements.
+- Data replication platform contributions: in mid-2025, Airbyte stopped accepting community contributions to the data replication platform. Continue reporting issues through GitHub so we can investigate and prioritize fixes and improvements.
+- Airbyte Agents contributions: for bugs or feature requests related to Airbyte Agents, if you're a paid customer, use the [Support Center](https://support.airbyte.com/hc/en-us/requests/new), and if you're a free user, use the [`#airbyte-agents`](https://airbytehq.slack.com/archives/C0B1CUSEQKT) channel in Slack.
 
 ### Standard contribution workflow
 
@@ -73,12 +82,6 @@ Guidelines for connector contributions included in the [Connector Development Gu
 We welcome all pull requests that clarify concepts, fix typos and grammar, and improve the structure of Airbyte's documentation. Check the [Updating Documentation](writing-docs.md) guide for details on submitting documentation changes.
 
 For examples of good connector docs, see the [Salesforce source connector](/integrations/sources/salesforce) and [Snowflake destination connector](/integrations/destinations/snowflake) docs.
-
-## Community Content
-
-We welcome contributions as new tutorials / showcases / articles, or as enhancements to any of the existing guides on our tutorials page. Head to this repo dedicated to community content: [Write for the Community](https://github.com/airbytehq/write-for-the-community).
-
-Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
 ## Engage with the Community
 

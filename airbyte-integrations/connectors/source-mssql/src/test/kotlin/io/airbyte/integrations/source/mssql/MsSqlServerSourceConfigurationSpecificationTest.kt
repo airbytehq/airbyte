@@ -126,6 +126,64 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         Assertions.assertEquals(emptySet<String>(), config.namespaces)
     }
 
+    /**
+     * Verifies that a legacy config using the flat root `username`/`password` fields (no
+     * `authentication` block) still parses and resolves to a [SqlPasswordAuthentication]. This is
+     * the soft back-compat path.
+     */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_LEGACY_SQL_AUTH)
+    fun testLegacySqlAuthBackCompat() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        Assertions.assertNull(pojo.clientId)
+        Assertions.assertEquals("sa", pojo.username)
+        Assertions.assertEquals("Password123!", pojo.password)
+
+        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
+        val auth = config.authentication
+        Assertions.assertTrue(
+            auth is SqlPasswordAuthentication,
+            auth::class.toString(),
+        )
+        auth as SqlPasswordAuthentication
+        Assertions.assertEquals("sa", auth.username)
+        Assertions.assertEquals("Password123!", auth.password)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_AUTH_SERVICE_PRINCIPAL)
+    fun testAuthBlockServicePrincipal() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        Assertions.assertEquals("tenant-uuid", pojo.tenantId)
+        Assertions.assertEquals("client-uuid", pojo.clientId)
+        Assertions.assertEquals("client-secret-value", pojo.clientSecret)
+
+        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
+        Assertions.assertEquals(
+            ActiveDirectoryServicePrincipalAuthentication(
+                tenantId = "tenant-uuid",
+                clientId = "client-uuid",
+                clientSecret = "client-secret-value",
+            ),
+            config.authentication,
+        )
+    }
+
+    /** Entra ID auth with ssl_mode=unencrypted must be rejected by the factory. */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_AUTH_ENTRA_UNENCRYPTED)
+    fun testEntraIdAuthRejectsUnencrypted() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val ex =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                MsSqlServerSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
+            }
+        Assertions.assertTrue(
+            ex.message?.contains("Microsoft Entra ID authentication requires an encrypted") == true,
+            "Unexpected error message: ${ex.message}",
+        )
+    }
+
     companion object {
 
         const val CONFIG_JSON: String =
@@ -250,6 +308,58 @@ class MsSqlServerSourceConfigurationSpecificationTest {
   "replication_method": {
     "method": "CDC"
   }
+}
+"""
+
+        const val CONFIG_JSON_LEGACY_SQL_AUTH: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  }
+}
+"""
+
+        const val CONFIG_JSON_AUTH_SERVICE_PRINCIPAL: String =
+            """
+{
+  "host": "server.database.windows.net",
+  "port": 1433,
+  "database": "master",
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  },
+  "tenant_id": "tenant-uuid",
+  "client_id": "client-uuid",
+  "client_secret": "client-secret-value"
+}
+"""
+
+        const val CONFIG_JSON_AUTH_ENTRA_UNENCRYPTED: String =
+            """
+{
+  "host": "server.database.windows.net",
+  "port": 1433,
+  "database": "master",
+  "ssl_mode": {
+    "mode": "unencrypted"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  },
+  "client_id": "client-uuid",
+  "client_secret": "client-secret-value"
 }
 """
     }
