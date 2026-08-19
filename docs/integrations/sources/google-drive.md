@@ -245,11 +245,11 @@ One record will be emitted for each document. Keep in mind that large files can 
 
 Before parsing, the connector exports Google-native files:
 
-| Google file type | Exported as |
-| :--------------- | :---------- |
-| Google Docs      | Word (`docx`) |
-| Google Slides    | PDF |
-| Google Drawings  | PDF |
+| Google file type | Exported as    |
+| :--------------- | :------------- |
+| Google Docs      | Word (`docx`)  |
+| Google Slides    | PDF            |
+| Google Drawings  | PDF            |
 
 Google Sheets aren't exported when you sync records, so the connector can't parse them. To replicate Google Sheets from Drive, use the **Copy Raw Files** delivery method, which exports them as `xlsx`, or use the [Google Sheets source](/integrations/sources/google-sheets) instead.
 
@@ -277,18 +277,18 @@ Copy raw files without parsing their contents. Bits are copied into the destinat
 
 Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
 
-Google-native files can't be copied byte for byte, so the connector exports them and transfers the exported file, adding the new extension to the file name.
+Google-native files can't be copied byte for byte, so the connector exports them and transfers the exported file, adding the new extension to the filename.
 
-| Google file type | Transferred as |
-| :--------------- | :------------- |
-| Google Docs      | Word (`docx`)  |
-| Google Sheets    | Excel (`xlsx`) |
+| Google file type | Transferred as      |
+| :--------------- | :------------------ |
+| Google Docs      | Word (`docx`)       |
+| Google Sheets    | Excel (`xlsx`)      |
 | Google Slides    | PowerPoint (`pptx`) |
-| Google Drawings  | PDF            |
+| Google Drawings  | PDF                 |
 
 The connector appends the extension to the name as it appears in Drive, so a Google Doc named `Report.docx` arrives in the destination as `Report.docx.docx`.
 
-Glob patterns match the name in Drive, before the extension is appended. Google-native files usually have no extension in Drive, so a Google Doc named `Report` matches `**` or `**/Report`, but not `**/*.docx`.
+Glob patterns match the name in Drive, before the extension is appended. Google-native files typically have no extension in Drive, so a Google Doc named `Report` matches `**` or `**/Report`, but not `**/*.docx`.
 
 </FieldAnchor>
 
@@ -338,7 +338,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 ## Rate limits
 
-The connector reads from the Google Drive API, which enforces [per-project and per-user quotas](https://developers.google.com/workspace/drive/api/guides/limits) measured in quota units. Listing a folder costs 100 units per request, and downloading a file costs 200 units. Large folders and file transfer syncs consume quota quickly, so a project running several Drive syncs at once can hit the per-minute quota and receive `403: User rate limit exceeded` or `429: Rate limit exceeded` responses. If this happens, reduce the number of concurrent syncs or request a quota increase in your Google Cloud project.
+The connector reads from the Google Drive API, which enforces [per-project and per-user quotas](https://developers.google.com/workspace/drive/api/guides/limits) measured in quota units. Listing a folder costs 100 units per request, and downloading a file costs 200 units. Large folders and file transfer syncs consume quota quickly, so concurrent Drive syncs can hit the per-minute quota and receive `403: User rate limit exceeded` or `429: Rate limit exceeded` responses. If this happens, reduce the number of concurrent syncs or request a quota increase in your Google Cloud project.
 
 Syncs that use the **Replicate Permissions ACL** delivery method also call the Admin SDK Directory API, which has [its own quotas](https://developers.google.com/admin-sdk/directory/v1/limits).
 
