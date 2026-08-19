@@ -15,9 +15,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +62,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.debezium.connector.mongodb.MongoUtils;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -73,8 +76,10 @@ import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class MongoDbCdcInitializerTest {
 
@@ -173,6 +178,7 @@ class MongoDbCdcInitializerTest {
   private MongoCursor<Document> findCursor;
   private ChangeStreamIterable<BsonDocument> changeStreamIterable;
   private MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector;
+  private MockedStatic<MongoUtils> mockedMongoUtils;
 
   @BeforeEach
   void setUp() {
@@ -209,6 +215,20 @@ class MongoDbCdcInitializerTest {
 
     mongoDbDebeziumStateUtil = spy(new MongoDbDebeziumStateUtil());
     cdcInitializer = new MongoDbCdcInitializer(mongoDbDebeziumStateUtil);
+
+    // Mock Debezium's MongoUtils.openChangeStream to return our mock change stream.
+    // This is needed because getMostRecentResumeToken now uses Debezium's pipeline
+    // (via MongoUtils.openChangeStream) instead of a custom pipeline.
+    mockedMongoUtils = mockStatic(MongoUtils.class);
+    mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+        .thenReturn(changeStreamIterable);
+  }
+
+  @AfterEach
+  void tearDown() {
+    if (mockedMongoUtils != null) {
+      mockedMongoUtils.close();
+    }
   }
 
   private void setupSingleDatabase() {
@@ -633,6 +653,29 @@ class MongoDbCdcInitializerTest {
         .withCursorField(new ArrayList<>())
         .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
         .withPrimaryKey(new ArrayList<>());
+  }
+
+  /**
+   * Verifies that the initializer uses Debezium's change stream pipeline (via
+   * MongoUtils.openChangeStream) for initial resume token retrieval. This prevents the "101-record"
+   * pattern caused by pipeline mismatch between initial token retrieval and Debezium's CDC streaming.
+   *
+   * Without the fix, getMostRecentResumeTokenForDatabases used a custom pipeline that differed from
+   * Debezium's. With the fix, getMostRecentResumeToken uses MongoUtils.openChangeStream to ensure
+   * pipeline consistency.
+   */
+  @Test
+  void testInitializerUsesDebeziumPipelineForInitialResumeToken() {
+    setupSingleDatabase();
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+    cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG);
+    // Since isValidResumeToken is stubbed (not calling MongoUtils internally),
+    // any invocation of MongoUtils.openChangeStream must come from getMostRecentResumeToken.
+    // This verifies the fix aligns initial resume token retrieval with Debezium's pipeline.
+    mockedMongoUtils.verify(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()), atLeastOnce());
   }
 
   private List<AutoCloseableIterator<AirbyteMessage>> filterTraceIterator(List<AutoCloseableIterator<AirbyteMessage>> iterators) {
