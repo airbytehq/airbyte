@@ -4,7 +4,7 @@ const visit = require("unist-util-visit").visit;
 
 const generateMetaTags = (connectorName) => {
   return {
-    title: `${connectorName} Connector | Airbyte Documentation`,
+    title: `${connectorName} Connector | Airbyte Docs`,
     description: `Connect ${connectorName} to our ETL/ELT platform for streamlined data integration, automated syncing, and powerful data insights.`,
   };
 };
