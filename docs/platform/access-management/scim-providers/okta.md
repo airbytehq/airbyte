@@ -54,6 +54,10 @@ If Okta offers password synchronization for the application, turn it off. Airbyt
 If **Test API Credentials** returns `401` when you enter the bearer token as-is, try prefixing the value with `Bearer `. Airbyte expects the `Authorization: Bearer <token>` header.
 :::
 
+## Review attribute mappings
+
+Before you assign people to the app, open the **Mappings** tab and remove mappings for attributes Airbyte doesn't accept. See [Supported user attributes](../scim#supported-user-attributes). An unsupported mapping causes provisioning to fail for the user, not just that field.
+
 ## Assign people to the app
 
 Assign the people who should access Airbyte on the **Assignments** tab. You can assign people individually or assign an Okta group. Assignment triggers provisioning: enabling **Create Users** alone doesn't provision anyone.

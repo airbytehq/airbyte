@@ -91,11 +91,21 @@ When you re-enable SCIM, Airbyte reconciles any users your IdP had already deact
 
 Airbyte implements SCIM 2.0 with the core `User` and `Group` schemas.
 
+### Supported user attributes
+
+Airbyte uses a strict allowlist for SCIM user attributes. If your IdP sends an attribute outside this list, Airbyte rejects the entire request with HTTP `400` and `scimType: invalidValue`. The `schemas` array must contain exactly the core User schema. Schema extensions, such as the enterprise user extension, cause the entire request to fail.
+
+- `userName`, `externalId`, and `active`.
+- `emails`: `value`, `type`, `primary`, and `display`.
+- `name`: `formatted`, `givenName`, `familyName`, `middleName`, `honorificPrefix`, and `honorificSuffix`.
+- `displayName`, `nickName`, `profileUrl`, `title`, `userType`, `preferredLanguage`, `locale`, and `timezone`.
+- `id`, `meta`, `groups`, and `password` are accepted but ignored by Airbyte.
+
+Each user needs a `userName` and at least one email. Provide no more than one primary email. If no primary email is provided, provide exactly one `work` email.
+
 Users:
 
 - Create, update, deactivate, reactivate, and delete users.
-- Supported user attributes are `userName`, `externalId`, `active`, `emails`, `name` (including `givenName`, `familyName`, `formatted`, `middleName`, and honorific prefixes and suffixes), `displayName`, `nickName`, `profileUrl`, `title`, `userType`, `preferredLanguage`, `locale`, and `timezone`.
-- Every user needs a `userName` and at least one email. Airbyte uses the primary email, or the single work email if none is primary.
 - Group membership is read-only on the user resource. Change membership on the group.
 
 Groups:

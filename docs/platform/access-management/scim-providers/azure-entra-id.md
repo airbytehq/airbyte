@@ -44,17 +44,7 @@ Airbyte shows the SCIM base URL after setup, but it shows the bearer token only 
 
 ## Review attribute mappings
 
-Before you start provisioning, review the **Mappings** for users and groups. Entra ID's default mappings can send attributes that Airbyte does not support. Airbyte returns `400` for unsupported attributes or invalid values.
-
-Trim the mappings to the supported attributes listed in [SCIM provisioning](../scim#what-your-identity-provider-can-manage). In particular, make sure your mappings use:
-
-- `userName`
-- `externalId`, when you need it
-- `active`
-- `emails`
-- Supported `name` fields
-- `displayName` for groups
-- `members` for groups
+Before you start provisioning, review the **Mappings** for users and groups. Entra ID's default mappings commonly include `addresses` and `phoneNumbers`, which Airbyte doesn't accept, so delete those mappings. Remove any other mappings for unsupported attributes. See [Supported user attributes](../scim#supported-user-attributes). An unsupported mapping causes provisioning to fail for the user, not just that field.
 
 Airbyte does not support nested groups. Group members must be users that Entra ID provisions into the same Airbyte organization.
 
