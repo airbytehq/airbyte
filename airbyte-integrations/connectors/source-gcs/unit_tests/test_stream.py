@@ -34,8 +34,13 @@ def test_transform_record(zip_file, mocked_reader, logger):
     assert transformed_record["_ab_source_file_url"] != csv_file.displayed_uri
 
 
-def test_transform_record_service_account_sanitized():
-    """When sanitize_signed_urls is enabled, displayed_uri strips credentials from signed URLs."""
+def test_transform_record_service_account_uses_canonical_https_url():
+    """Service Account auth sets _ab_source_file_url to the canonical HTTPS path.
+
+    As of 0.10.29, the stream reader sets displayed_uri to the clean HTTPS URL
+    (no credentials, no query string) for Service Account auth. transform_record
+    prefers displayed_uri over uri, so _ab_source_file_url is always credential-free.
+    """
     stream = GCSStream(
         config=Mock(),
         catalog_schema=Mock(),
@@ -47,30 +52,25 @@ def test_transform_record_service_account_sanitized():
         errors_collector=Mock(),
         cursor=Mock(),
     )
-    signed_url = (
-        "https://storage.googleapis.com/my-bucket/data.csv"
-        "?X-Goog-Algorithm=GOOG4-RSA-SHA256"
-        "&X-Goog-Credential=sa%40project.iam.gserviceaccount.com"
-        "&X-Goog-Signature=abc123"
-    )
-    displayed_uri = "https://storage.googleapis.com/my-bucket/data.csv"
+    canonical_url = "https://storage.googleapis.com/my-bucket/data.csv"
     last_updated = datetime.today().isoformat()
 
     sa_file = GCSUploadableRemoteFile(
-        uri=signed_url,
+        uri="gs://my-bucket/data.csv",
         blob=MagicMock(),
         last_modified=last_updated,
-        displayed_uri=displayed_uri,
+        displayed_uri=canonical_url,
     )
     record = stream.transform_record({"field1": 1}, sa_file, last_updated)
 
-    assert record["_ab_source_file_url"] == displayed_uri
+    assert record["_ab_source_file_url"] == canonical_url
     assert "X-Goog-Credential" not in record["_ab_source_file_url"]
     assert "X-Goog-Signature" not in record["_ab_source_file_url"]
+    assert "X-Goog-Algorithm" not in record["_ab_source_file_url"]
 
 
-def test_transform_record_service_account_default_preserves_signed_url():
-    """When sanitize_signed_urls is disabled (default), the full signed URL is used."""
+def test_transform_record_oauth_uses_gs_uri():
+    """OAuth auth sets _ab_source_file_url to the gs:// URI (displayed_uri is None)."""
     stream = GCSStream(
         config=Mock(),
         catalog_schema=Mock(),
@@ -82,20 +82,15 @@ def test_transform_record_service_account_default_preserves_signed_url():
         errors_collector=Mock(),
         cursor=Mock(),
     )
-    signed_url = (
-        "https://storage.googleapis.com/my-bucket/data.csv"
-        "?X-Goog-Algorithm=GOOG4-RSA-SHA256"
-        "&X-Goog-Credential=sa%40project.iam.gserviceaccount.com"
-        "&X-Goog-Signature=abc123"
-    )
+    gs_uri = "gs://my-bucket/data.csv"
     last_updated = datetime.today().isoformat()
 
-    sa_file = GCSUploadableRemoteFile(
-        uri=signed_url,
+    oauth_file = GCSUploadableRemoteFile(
+        uri=gs_uri,
         blob=MagicMock(),
         last_modified=last_updated,
         displayed_uri=None,
     )
-    record = stream.transform_record({"field1": 1}, sa_file, last_updated)
+    record = stream.transform_record({"field1": 1}, oauth_file, last_updated)
 
-    assert record["_ab_source_file_url"] == signed_url
+    assert record["_ab_source_file_url"] == gs_uri

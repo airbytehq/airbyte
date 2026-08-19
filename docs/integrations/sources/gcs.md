@@ -246,7 +246,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.29 | 2026-08-19 | [84891](https://github.com/airbytehq/airbyte/pull/84891) | Fix spurious Parquet columns caused by signed URL query parameters in Service Account auth |
+| 0.10.29 | 2026-08-19 | [84891](https://github.com/airbytehq/airbyte/pull/84891) | Fix spurious Parquet columns from signed URL query parameters (Service Account auth); `_ab_source_file_url` now contains the clean canonical HTTPS path instead of a signed URL; `sanitize_signed_urls` option is deprecated (no-op) |
 | 0.10.28 | 2026-08-18 | [84572](https://github.com/airbytehq/airbyte/pull/84572) | Update dependencies |
 | 0.10.27 | 2026-08-11 | [83924](https://github.com/airbytehq/airbyte/pull/83924) | Update dependencies |
 | 0.10.26 | 2026-08-04 | [83471](https://github.com/airbytehq/airbyte/pull/83471) | Update dependencies |

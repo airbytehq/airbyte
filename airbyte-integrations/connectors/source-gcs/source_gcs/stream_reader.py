@@ -104,26 +104,17 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
+                        # gs:// URI keeps query parameters out of the CDK Parquet
+                        # parser, which would otherwise interpret them as Hive
+                        # partition columns (issue #80940).  For Service Account
+                        # auth, displayed_uri carries the canonical HTTPS path so
+                        # the Cursor state key is byte-identical to the pre-fix
+                        # value (signed-URL path, percent-encoded, no query string).
+                        uri = f"gs://{blob.bucket.name}/{blob.name}"
                         if self.config.credentials.auth_type == "Client":
-                            uri = f"gs://{blob.bucket.name}/{blob.name}"
                             displayed_uri = None
                         else:
-                            # Use gs:// as the internal URI so the CDK Parquet
-                            # parser never sees signed-URL query parameters
-                            # (e.g. ?X-Goog-Algorithm=...) as Hive partition
-                            # columns, which was producing spurious destination
-                            # columns (GitHub issue #80940).
-                            #
-                            # displayed_uri preserves the canonical HTTPS path
-                            # (no credentials, no query string) so that the
-                            # Cursor's incremental state key is unchanged from
-                            # the pre-fix behaviour — existing connections will
-                            # not re-read already-synced files after upgrading.
-                            uri = f"gs://{blob.bucket.name}/{blob.name}"
-                            displayed_uri = (
-                                f"https://storage.googleapis.com/{blob.bucket.name}/"
-                                f"{urllib.parse.quote(blob.name, safe='/~')}"
-                            )
+                            displayed_uri = f"https://storage.googleapis.com/{blob.bucket.name}/{urllib.parse.quote(blob.name, safe='/~')}"
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,
