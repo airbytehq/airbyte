@@ -126,6 +126,32 @@ def test_get_matching_files_service_account_uses_gs_uri(logger):
     assert "X-Goog-Signature" not in files[0].displayed_uri
 
 
+def test_get_matching_files_service_account_percent_encodes_blob_name(logger):
+    """Blob names with special characters must be percent-encoded in displayed_uri.
+
+    generate_signed_url percent-encodes the resource path (safe="/~"), so the
+    pre-fix cursor state key for a blob named e.g. "my file.parquet" was
+    "https://storage.googleapis.com/bucket/my%20file.parquet". displayed_uri
+    must match that encoding so existing incremental history is preserved.
+    """
+    blob = _make_mock_blob("my-bucket", "folder/my file #1.parquet")
+
+    reader = SourceGCSStreamReader()
+    reader._gcs_client = MagicMock()
+    reader._gcs_client.get_bucket.return_value.list_blobs.return_value = [blob]
+    reader._config = Config(
+        credentials=ServiceAccountCredentials(service_account='{"type": "service_account"}', auth_type="Service"),
+        bucket="my-bucket",
+        streams=[],
+    )
+
+    files = list(reader.get_matching_files(["**/*.parquet"], None, logger))
+
+    assert len(files) == 1
+    assert files[0].uri == "gs://my-bucket/folder/my file #1.parquet"
+    assert files[0].displayed_uri == "https://storage.googleapis.com/my-bucket/folder/my%20file%20%231.parquet"
+
+
 def test_get_matching_files_oauth_uses_gs_uri(logger):
     """OAuth (Client) auth also produces gs:// URIs — unchanged by the fix."""
     from source_gcs.config import OAuthCredentials

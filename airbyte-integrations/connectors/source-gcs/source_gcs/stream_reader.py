@@ -120,7 +120,10 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                             # the pre-fix behaviour — existing connections will
                             # not re-read already-synced files after upgrading.
                             uri = f"gs://{blob.bucket.name}/{blob.name}"
-                            displayed_uri = f"https://storage.googleapis.com/{blob.bucket.name}/{blob.name}"
+                            displayed_uri = (
+                                f"https://storage.googleapis.com/{blob.bucket.name}/"
+                                f"{urllib.parse.quote(blob.name, safe='/~')}"
+                            )
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,
