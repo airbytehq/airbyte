@@ -87,9 +87,7 @@ class MySqlSourceDebeziumOperationsTest {
         assertFalse(
             MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart(null, available, purged)
         )
-        assertFalse(
-            MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart("", available, purged)
-        )
+        assertFalse(MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart("", available, purged))
         assertTrue(
             MySqlSourceDebeziumOperations.purgedGtidsAbortWarmStart(
                 "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-10",

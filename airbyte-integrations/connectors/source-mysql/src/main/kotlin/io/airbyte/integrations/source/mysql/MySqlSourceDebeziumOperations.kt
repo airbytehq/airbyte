@@ -599,8 +599,8 @@ class MySqlSourceDebeziumOperations(
 
         /**
          * Missing or unusable saved GTIDs must not run GTID purge/containment checks. Those checks
-         * treat an empty saved set as "every server GTID is unseen" and abort when `gtid_purged`
-         * is nonempty.
+         * treat an empty saved set as "every server GTID is unseen" and abort when `gtid_purged` is
+         * nonempty.
          */
         internal fun usesBinlogFallback(savedGtidSet: String?): Boolean =
             savedGtidSet.isNullOrBlank()
