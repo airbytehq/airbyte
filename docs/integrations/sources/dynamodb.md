@@ -82,6 +82,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.3.12 | 2026-05-09 | [airbytehq/airbyte#76947](https://github.com/airbytehq/airbyte/issues/76947) | Stop masking `reserved_attribute_names` (was incorrectly marked as secret) |
 | 0.3.11 | 2025-07-10 | [62916](https://github.com/airbytehq/airbyte/pull/62916) | Add gradle docker plugins |
 | 0.3.10 | 2025-06-14 | [61601](https://github.com/airbytehq/airbyte/pull/61601) | fix(source-dynamodb): Replace ListNode with Iterator for lazyness #61600 |
 | 0.3.9 | 2025-02-12 | [53202](https://github.com/airbytehq/airbyte/pull/53202) | fixed IRSA by adding STS to classpath of connector. |
