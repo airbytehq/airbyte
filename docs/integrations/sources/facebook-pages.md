@@ -114,6 +114,28 @@ This error occurs when the Facebook Graph API considers the total response data 
 - **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
 - **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
 
+### Reach metrics missing from Page Insights and Post Insights
+
+Meta retired the `page_impressions_*_unique` and `post_impressions_*_unique` metrics. Because the Graph API
+rejects an entire Insights request when any single requested metric is invalid, requesting them returned
+`(#100) The value must be a valid insights metric` and broke both insights streams — and, since the connection
+check queries `page_insights`, source setup as well. See
+[Meta's deprecated metrics list](https://developers.facebook.com/docs/platforminsights/page/deprecated-metrics/).
+
+Starting from version 2.1.2 the connector no longer requests them. Only total reach has a replacement; the paid,
+viral, non-viral, fan and organic reach breakdowns were retired with no equivalent and are permanently
+unavailable from the API.
+
+| Stream | No longer emitted | Replacement |
+| :--- | :--- | :--- |
+| `page_insights` | `page_impressions_unique` | `page_total_media_view_unique` |
+| `page_insights` | `page_impressions_paid_unique`, `page_impressions_viral_unique`, `page_impressions_nonviral_unique` | none |
+| `post_insights` | `post_impressions_unique` | `post_total_media_view_unique` |
+| `post_insights` | `post_impressions_paid_unique`, `post_impressions_fan_unique`, `post_impressions_organic_unique`, `post_impressions_viral_unique`, `post_impressions_nonviral_unique` | none |
+
+The stream schemas are unchanged, so no schema refresh is needed. Rows for the removed metrics simply stop
+arriving; clear the affected streams if you prefer a consistent history in your destination.
+
 ### Product catalogs field not available
 
 Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
@@ -144,6 +166,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.2 | 2026-08-17 | [84408](https://github.com/airbytehq/airbyte/pull/84408) | Remove Page/Post Insights metrics deprecated by Meta and request `page_total_media_view_unique` / `post_total_media_view_unique` instead; fail fast with Meta's own message on invalid-metric errors. |
 | 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
 | 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
 | 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |

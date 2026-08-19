@@ -3403,11 +3403,10 @@ definitions:
     lookback_window: P{{ config.get('look_back_window', 3) }}D
     start_datetime:
       type: MinMaxDatetime
-      datetime: >-
-        {%- set today = today_utc() - duration('P1D') -%}
-        {%- set user_start_date = config.get('start_date', today.strftime('%Y-%m-%d')) -%}
-        {%- set sixty_days_ago = today - duration('P60D') -%}
-        "{{ max(user_start_date, sixty_days_ago.strftime('%Y-%m-%d')) }}"
+      datetime: "{{ config.get('start_date', (today_utc() - duration('P1D')).strftime('%Y-%m-%d')) }}"
+      # Amazon Ads Sponsored Brands reports have a 60-day data retention limit.
+      # https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types
+      min_datetime: "{{ today_utc() - duration('P60D') }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ today_utc() }}"

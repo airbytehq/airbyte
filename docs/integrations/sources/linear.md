@@ -134,6 +134,12 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.14 | 2026-08-18 | [84676](https://github.com/airbytehq/airbyte/pull/84676) | Update dependencies |
+| 0.2.13 | 2026-08-11 | [84025](https://github.com/airbytehq/airbyte/pull/84025) | Update dependencies |
+| 0.2.12 | 2026-08-04 | [83528](https://github.com/airbytehq/airbyte/pull/83528) | Update dependencies |
+| 0.2.11 | 2026-07-28 | [82981](https://github.com/airbytehq/airbyte/pull/82981) | Update dependencies |
+| 0.2.10 | 2026-07-21 | [82509](https://github.com/airbytehq/airbyte/pull/82509) | Update dependencies |
+| 0.2.9 | 2026-07-14 | [81930](https://github.com/airbytehq/airbyte/pull/81930) | Update dependencies |
 | 0.2.8 | 2026-06-30 | [81147](https://github.com/airbytehq/airbyte/pull/81147) | Update dependencies |
 | 0.2.7 | 2026-06-23 | [80554](https://github.com/airbytehq/airbyte/pull/80554) | Update dependencies |
 | 0.2.6 | 2026-06-16 | [79947](https://github.com/airbytehq/airbyte/pull/79947) | Update dependencies |
