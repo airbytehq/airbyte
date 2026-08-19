@@ -76,12 +76,10 @@ The skill expects all script paths relative to the skill root.
 
 ## Usage
 
-### One-shot (preferred)
-
-`scripts/run.sh` performs the whole sequence — start backend, apply
-fixtures, render config, derive the configured catalog from a `discover`
-run, run the protocol command, tear down on exit — and exits with the
-connector's own exit code:
+`scripts/run.sh` is the only supported entrypoint. It performs the whole
+sequence — start backend, apply fixtures, render config, derive the
+configured catalog from a `discover` run, run the protocol command, tear
+down on exit — and exits with the connector's own exit code:
 
 ```bash
 cd airbyte-integrations/connectors/source-mssql
@@ -102,7 +100,7 @@ Build the target image first when using `--test-version=dev`, or pass
 `--config-template`, `--keep-backend`, and `--` to forward extra args to
 `airbyte-ops`.
 
-When `--control-version` is set, `run-protocol-cmd.sh` drops
+When `--control-version` is set, `run.sh` drops
 `--skip-compare=True` and passes `--control-image`, so the CLI runs both
 images and diffs their protocol output with the existing comparators
 (record counts, primary keys, per-record, schema). Both runs must see
@@ -110,60 +108,12 @@ identical backend state — for CDC that means recreating the backend and
 capture instance between them, which the comparators cannot check for
 you.
 
-### Step by step
-
-```bash
-SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
-export REPRO_OUT=/tmp/source-mssql-repro
-
-# 1. Start the backend (ACCEPT_EULA, MSSQL_AGENT_ENABLED=true).
-"$SKILL/scripts/start-backend.sh"
-
-# 2. Apply a SQL fixture.
-"$SKILL/scripts/apply-sql.sh" "$SKILL/fixtures/sql/00-init-base.sql"
-
-# 3. Render a working config from a template, substituting the backend IP.
-"$SKILL/scripts/render-config.sh" \
-  "$SKILL/fixtures/configs/base.template.json" \
-  "$REPRO_OUT/working/base.json"
-
-# 4. Run a protocol command. Output lands under $REPRO_OUT/check-baseline/.
-"$SKILL/scripts/run-protocol-cmd.sh" check baseline 4.4.2 \
-  --config-path="$REPRO_OUT/working/base.json"
-
-# 5. Tear down.
-"$SKILL/scripts/stop-backend.sh"
-```
-
-`run-protocol-cmd.sh <command> <step-name> <version> [extra-args…]`
-maps to:
-
-```
-airbyte-ops cloud connector regression-test \
-  --skip-compare=True \
-  --command=<command> \
-  --test-image=airbyte/source-mssql:<version> \
-  --output-dir=$REPRO_OUT/<step-name> \
-  <extra-args…>
-```
-
-Setting `CONTROL_VERSION=<tag>` in the environment switches it to
-comparison mode instead:
-
-```
-airbyte-ops cloud connector regression-test \
-  --command=<command> \
-  --test-image=airbyte/source-mssql:<version> \
-  --control-image=airbyte/source-mssql:$CONTROL_VERSION \
-  --output-dir=$REPRO_OUT/<step-name> \
-  <extra-args…>
-```
-
-`make-catalog.sh <discover-output-dir> <output.json>` builds a
-`ConfiguredAirbyteCatalog` from the `CATALOG` message a `discover` run
-emitted, so `read` never uses a hand-written catalog that has drifted
-from the fixture. `STREAMS`, `SYNC_MODE`, and `CURSOR_FIELD` select and
-shape the streams; source-defined primary keys are preserved.
+The other scripts under `scripts/` are `run.sh`'s internals. Invoke them
+directly only from the composing
+[`source-mssql-e2e-cdc-tests`](../source-mssql-e2e-cdc-tests/SKILL.md)
+skill, which needs to interleave CDC setup between the steps; for
+everything else drive them through `run.sh` so there is a single
+ordering of the sequence.
 
 ## Asserting on output
 
@@ -174,8 +124,8 @@ Inline assertions in driver scripts. Suggested helpers:
 - Connector-side log shape: `grep -c '<expected substring>' $REPRO_OUT/<step>/stderr.txt`.
 - Connection status: `jq -e 'select(.type == "CONNECTION_STATUS" and .connectionStatus.status == "SUCCEEDED")' $REPRO_OUT/<step>/stdout.txt`.
 
-`run-protocol-cmd.sh` accepts `--enable-debug-logs=True` as an extra arg
-to set `LOG_LEVEL=DEBUG` on the connector container. That surfaces the
+Pass `-- --enable-debug-logs=True` to `run.sh` to set `LOG_LEVEL=DEBUG`
+on the connector container. That surfaces the
 Debezium "Adding table … to the list of capture schema tables" lines
 that some assertions rely on.
 
@@ -194,8 +144,9 @@ that some assertions rely on.
   `ConfiguredAirbyteStream`; omitting them fails with
   `Null value is not allowed. (code: 1021)`. This is not 4.3.x-only —
   verified on `4.4.12` and `5.0.0` too. `discover` does not emit
-  `is_file_based`, so `make-catalog.sh` fills it in, and the catalog
-  fixtures shipped with this and dependent skills populate all of them.
+  `is_file_based`, so the catalog `run.sh` derives fills it in, and the
+  catalog fixtures shipped with this and dependent skills populate all of
+  them.
 - _A failed `check` does not fail a single-version run_ → the CDK exits
   0 even when it emits `CONNECTION_STATUS` with `status: FAILED`, so
   `run.sh` returns 0. Assert on the status message yourself (see
@@ -205,11 +156,12 @@ that some assertions rely on.
 
 ## Tear-down
 
-`stop-backend.sh` is idempotent: `docker rm -f` is a no-op if the
-container doesn't exist. To wipe everything:
+`run.sh` removes the backend container in an `EXIT` trap, so a run leaves
+nothing behind unless you passed `--keep-backend`. After a
+`--keep-backend` run, or to also discard the collected artifacts:
 
 ```bash
-"$SKILL/scripts/stop-backend.sh"
-rm -rf "$REPRO_OUT"
-unset REPRO_OUT
+SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
+"$SKILL/scripts/stop-backend.sh"   # idempotent; docker rm -f no-ops when absent
+rm -rf "${REPRO_OUT:-/tmp/source-mssql-repro}"
 ```
