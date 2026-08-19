@@ -286,6 +286,10 @@ Google-native files can't be copied byte for byte, so the connector exports them
 | Google Slides    | PowerPoint (`pptx`) |
 | Google Drawings  | PDF            |
 
+The connector appends the extension to the name as it appears in Drive, so a Google Doc named `Report.docx` arrives in the destination as `Report.docx.docx`.
+
+Glob patterns match the name in Drive, before the extension is appended. Google-native files usually have no extension in Drive, so a Google Doc named `Report` matches `**` or `**/Report`, but not `**/*.docx`.
+
 </FieldAnchor>
 
 #### Preserve Sub-Directories in File Paths
@@ -349,7 +353,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.31 | 2026-08-18 | [83838](https://github.com/airbytehq/airbyte/pull/83838) | Resolve Google-native export extensions before computing file-transfer paths |
+| 0.5.31 | 2026-08-19 | [83838](https://github.com/airbytehq/airbyte/pull/83838) | Resolve Google-native export extensions before computing file-transfer paths |
 | 0.5.30 | 2026-08-18 | [84602](https://github.com/airbytehq/airbyte/pull/84602) | Update dependencies |
 | 0.5.29 | 2026-08-11 | [84223](https://github.com/airbytehq/airbyte/pull/84223) | Update CDK to ^7.25.1 |
 | 0.5.28 | 2026-08-11 | [83966](https://github.com/airbytehq/airbyte/pull/83966) | Update dependencies |
