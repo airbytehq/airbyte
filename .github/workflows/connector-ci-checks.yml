@@ -515,6 +515,19 @@ jobs:
         run: |
           uv tool install airbyte-internal-ops
 
+      - name: Check for release-block marker
+        if: matrix.connector
+        shell: bash
+        run: |
+          BLOCK_FILE="airbyte-integrations/connectors/${{ matrix.connector }}/release-block.yaml"
+          if [[ -f "$BLOCK_FILE" ]]; then
+            echo "::warning::Release blocked for ${{ matrix.connector }}. Publishing will be skipped while release-block.yaml exists."
+            echo ""
+            echo "--- release-block.yaml contents ---"
+            cat "$BLOCK_FILE"
+            echo "---"
+          fi
+
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
