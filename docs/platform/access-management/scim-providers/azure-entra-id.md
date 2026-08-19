@@ -15,8 +15,10 @@ You need:
 
 - Organization admin permissions in Airbyte.
 - Permission to manage enterprise applications in Entra ID.
-- SCIM enabled for your Airbyte organization.
-- A verified email domain in Airbyte for every domain you plan to provision.
+- [SCIM enabled for your Airbyte organization](../scim#enable-scim-in-airbyte).
+- A [verified email domain in Airbyte](../sso-providers/azure-entra-id#part-3-domain-verification) for every domain you plan to provision.
+
+Before you configure Entra ID, [enable SCIM in Airbyte](../scim#enable-scim-in-airbyte) and copy the SCIM base URL and bearer token.
 
 ## Create or reuse an enterprise application
 
@@ -67,5 +69,3 @@ Entra ID owns group names and membership. Airbyte owns permissions assigned to g
 Use Entra ID's provisioning state to deactivate a user when you want to remove their organization access through SCIM; Airbyte also accepts SCIM `DELETE /Users/{id}`, but that is a protocol operation rather than a button in Entra ID.
 
 When a user is deactivated, Airbyte removes their organization permissions, workspace permissions, and group memberships in that organization. Reactivating the user restores only baseline organization-member access. Entra ID must provision group membership again.
-
-<!-- Review against a live Entra ID tenant: confirm the exact enterprise-application creation flow, **Provisioning** menu labels, **Mappings** controls, scoping controls, and start-provisioning action. Microsoft can change these labels and the available application types. -->

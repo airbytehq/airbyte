@@ -60,13 +60,11 @@ Before you enable SCIM, review your existing Airbyte user groups and delete or r
 
 5. Paste the base URL and token into your IdP. Follow the guide for your provider.
 
-```mdx-code-block
-import DocCardList from '@theme/DocCardList';
-
-<DocCardList />
-```
+For provider-specific instructions, see [Set up SCIM using Okta](scim-providers/okta) or [Set up SCIM using Entra ID](scim-providers/azure-entra-id).
 
 Airbyte continues to display the base URL in the SCIM section after setup, but not the token.
+
+6. Return to Airbyte and assign permissions to each group. Your IdP owns group names and membership, but an organization admin must assign group permissions in Airbyte. Without those permissions, group members receive only organization member access. See [User groups](user-groups).
 
 ## Manage the bearer token
 
