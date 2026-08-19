@@ -58,13 +58,11 @@ Before you enable SCIM, review your existing Airbyte user groups and delete or r
     The bearer token grants your IdP the ability to create, modify, and deactivate users in your organization. Treat it like a password and store it in a secrets manager or password manager.
     :::
 
-5. Paste the base URL and token into your IdP. Follow the guide for your provider.
+5. Paste the base URL and token into your IdP, then configure provisioning there. See [Set up SCIM using Okta](scim-providers/okta) or [Set up SCIM using Entra ID](scim-providers/azure-entra-id).
 
-For provider-specific instructions, see [Set up SCIM using Okta](scim-providers/okta) or [Set up SCIM using Entra ID](scim-providers/azure-entra-id).
+6. Come back to Airbyte and assign permissions to each group your IdP provisioned. Your IdP owns group names and membership, but only an organization admin can give a group permissions, and until you do, its members have organization member access and nothing more. See [User groups](user-groups).
 
 Airbyte continues to display the base URL in the SCIM section after setup, but not the token.
-
-6. Return to Airbyte and assign permissions to each group. Your IdP owns group names and membership, but an organization admin must assign group permissions in Airbyte. Without those permissions, group members receive only organization member access. See [User groups](user-groups).
 
 ## Manage the bearer token
 
