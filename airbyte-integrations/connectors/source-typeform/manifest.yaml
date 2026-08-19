@@ -1904,6 +1904,27 @@ spec:
       - auth_type
     predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://api.typeform.com/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&response_type=code"
+        access_token_url: "https://api.typeform.com/oauth/token"
+        scopes:
+          - scope: "responses:read"
+          - scope: "forms:read"
+          - scope: "accounts:read"
+          - scope: "workspaces:read"
+          - scope: "images:read"
+          - scope: "themes:read"
+          - scope: "hooks:read"
+          - scope: "hooks:write"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         properties:
