@@ -23,6 +23,8 @@ The Granola API connector has 2 streams: `notes` (incremental with `created_at` 
 | notes | medium | top-level parent | created_at | created_at | incremental |  |
 | detailed_notes | medium | child | none | none | deferred_child |  |
 
+The `notes` cursor slices on second-granular date-times (`%Y-%m-%dT%H:%M:%SZ` with `cursor_granularity: PT1S`) because the API's `created_before=<date>` excludes that whole day, which used to drop notes created on a slice boundary date. `cursor_datetime_formats` retains `%Y-%m-%d` so date-only state from earlier versions still parses.
+
 ### Future incremental stream candidates
 
 - **Child streams (1 streams):** `detailed_notes` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
