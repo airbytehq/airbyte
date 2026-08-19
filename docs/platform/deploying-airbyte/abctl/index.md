@@ -23,7 +23,7 @@ You use abctl to run Airbyte on a machine that isn't running a Kubernetes cluste
 
 abctl uses [kind](https://kind.sigs.k8s.io/) to create a [Kubernetes](https://kubernetes.io/) cluster inside a [Docker](https://www.docker.com/) container. Then, it uses [Helm](https://helm.sh/) to install the latest Airbyte and [NGINX Ingress Controller](https://docs.nginx.com/nginx-ingress-controller/) Helm charts. It also helps you manage and understand that infrastructure.
 
-![](abctl-diagram.png)
+![Diagram showing abctl using Docker, kind, and Helm to run Airbyte](abctl-diagram.png)
 
 ## Before you start
 

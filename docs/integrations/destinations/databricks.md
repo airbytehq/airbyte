@@ -31,11 +31,11 @@ Gather the following information from your Databricks workspace.
 1. Open your Databricks workspace.
 2. Navigate to your SQL warehouse:
 
-   ![](/.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
+   ![Databricks workspace page with the SQL warehouse selected](/.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
 
 3. Open the **Connection Details** tab:
 
-   ![](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+   ![Databricks SQL warehouse Connection Details tab showing the server hostname, HTTP path, and port](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
 4. Note the **Server Hostname**, **HTTP Path**, and **Port** values. The default port is `443`.
 
@@ -53,11 +53,11 @@ Create a [service principal](https://docs.databricks.com/en/dev-tools/auth/oauth
 
 1. In your Databricks workspace, click your profile icon in the top-right corner and go to **Settings** > **Developer** > **Access tokens** > **Manage**.
 
-   ![](/.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
+   ![Databricks Developer settings with the access token management controls](/.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
 
 2. Click **Generate new token**. Enter a description and an expiration period (leave blank for no expiration):
 
-   ![](/.gitbook/assets/destination/databricks/databricks_generate_token.png)
+   ![Databricks dialog for entering a description and expiration period for a new token](/.gitbook/assets/destination/databricks/databricks_generate_token.png)
 
 ## Step 2: Set up the Databricks destination in Airbyte
 

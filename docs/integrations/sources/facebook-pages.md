@@ -25,7 +25,7 @@ The Facebook Pages source connector is currently only compatible with v24 of the
 
 After all the steps, it should look something like this:
 
-![](/.gitbook/assets/facebook-pages-1.png)
+![Facebook dialog showing the generated access token after completing the setup steps](/.gitbook/assets/facebook-pages-1.png)
 
 5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
 6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.

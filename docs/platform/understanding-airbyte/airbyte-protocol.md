@@ -470,7 +470,7 @@ The state for an actor is emitted as a black box by the Source. When emitted it 
 This section will step through how state is used to allow a Source to pick up where it left off. A Source takes state as an input. A Source should be able to take that input and use it to determine where it left off the last time. The contents of the Source is a black box to the Protocol. The Protocol provides an envelope for the Source to put its state in and then passes the state back in that envelope. The Protocol never needs to know anything about the contents of the state. Thus, the Source can track state however makes most sense to it.
 
 Here is an example of the lifecycle of state in reference to the Source.
-![](/.gitbook/assets/source-state-example.png)
+![Diagram of source state advancing across successive Airbyte syncs](/.gitbook/assets/source-state-example.png)
 
 -- [link](https://whimsical.com/state-ESb6dLBnBYKLSJR2a7iMxi) to source image
 
@@ -484,7 +484,7 @@ While this example, demonstrates a success case, we can see how this process hel
 
 The previous section, for the sake of clarity, looked exclusively at the life cycle of state relative to the Source. In reality knowing that a record was emitted from the Source is NOT enough guarantee to know that we can skip sending the record in future syncs. For example, imagine the Source successfully emits the record, but the Destination fails. If we skip that record in the next sync, it means it never truly made it to its destination. This insight means, that a State should only ever be passed to a Source in the next run if it was both emitted from the Source and the Destination.
 
-![](/.gitbook/assets/sync-state-example.png)
+![Diagram showing source and destination state checkpoints at two points during a sync](/.gitbook/assets/sync-state-example.png)
 
 This image looks at two time points during an example sync. At T1 the Source has emitted 3 records and 2 state messages. If the Sync were to fail now, the next sync should start at the beginning because no records have been saved to the destination.
 

@@ -1,3 +1,7 @@
+---
+unlisted: true
+---
+
 # Low-code
 
 This doc is currently used for changelog purposes only internally, so that we can make sure that the source stays

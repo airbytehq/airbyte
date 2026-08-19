@@ -20,7 +20,7 @@ Several types of mapping are possible in Airbyte, and you can combine them toget
 
 Hashing is an **irreversible** process that protects sensitive data by obscuring it. Airbyte supports MD5, SHA-256, and SHA-512 hashing methods. Support for MD2, SHA-1, and SHA-384 is only available [through the API](https://reference.airbyte.com).
 
-![](images/mapping-hash.png)
+![Mapping configuration for hashing a field](images/mapping-hash.png)
 
 There are many reasons you might want to hash data.
 
@@ -31,7 +31,7 @@ There are many reasons you might want to hash data.
 
 Encryption is a **reversible** process that protects sensitive data by obscuring it. Airbyte supports RSA encryption using an encryption key you generate yourself.
 
-![](images/mapping-encrypt.png)
+![Mapping configuration for encrypting a field](images/mapping-encrypt.png)
 
 There are many reasons you might want to encrypt data.
 
@@ -58,7 +58,7 @@ This is an example of the public key format Airbyte expects, but make sure you g
 
 Renaming fields helps you ensure clarity, consistency, and compatibility in your destination data. 
 
-![](images/mapping-rename.png)
+![Mapping configuration for renaming a field](images/mapping-rename.png)
 
 There are many reasons you might want to rename fields.
 
@@ -70,7 +70,7 @@ There are many reasons you might want to rename fields.
 
 Filtering rows is how you ensure you only sync relevant, high-quality, and meaningful data to your destination. 
 
-![](images/mapping-filter.png)
+![Mapping configuration for filtering rows](images/mapping-filter.png)
 
 There are many reasons you might want to filter rows.
 

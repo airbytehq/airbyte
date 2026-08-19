@@ -1,4 +1,6 @@
-# Requirements for Airbyte Partner Connectors: Bulk and Publish Destinations
+---
+title: Partner Connector Requirements
+---
 
 ## Welcome
 

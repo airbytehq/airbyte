@@ -22,7 +22,7 @@ export const EntityRelationshipDiagram = ({}) => {
   return (
     <div className={styles.entityRelatonshipdDiagram}>
       <a href={erdUrl} target="_blank">
-        <img src={erdBG} />
+        <img src={erdBG} alt="Entity relationship diagram" />
       </a>
     </div>
   );

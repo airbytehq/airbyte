@@ -148,7 +148,7 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 | Field                                                                                                                                         | Description                                                                                                                                                               |
 |:----------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2` |
-| [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
+| [SSH Tunnel Method](https://docs.airbyte.com/platform/cloud/managing-airbyte-cloud/configuring-connections#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
 | Drop CASCADE (Optional)                                                                                                                       | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
 
 ## Output schema
@@ -253,7 +253,7 @@ If your Redshift cluster is in a private VPC, you may need to:
    Airbyte to your Redshift cluster (if they exist in separate VPCs).
 2. Configure an SSH Bastion Host (see [Step 2](#optional-ssh-bastion-host)) to tunnel through to the private cluster.
 3. For Airbyte Cloud, ensure
-   the [Airbyte IP addresses](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#allow-list-ip-addresses)
+   the [Airbyte IP addresses](https://docs.airbyte.com/platform/cloud/managing-airbyte-cloud/configuring-connections#allow-list-ip-addresses)
    are allowed in your Redshift cluster's security group and network policy.
 
 ### 'S3 access denied' during staging
