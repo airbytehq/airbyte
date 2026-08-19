@@ -6765,6 +6765,18 @@
             "title": "Version",
             "description": "Version/fingerprint for the docs source."
           },
+          "content_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Revision",
+            "description": "Fingerprint of the full docs content, prose included. Changes whenever the docs content changes."
+          },
           "freshness": {
             "$ref": "#/components/schemas/SkillFreshness",
             "description": "Runtime freshness state for this metadata."
