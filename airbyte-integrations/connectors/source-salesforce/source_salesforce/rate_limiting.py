@@ -8,6 +8,7 @@ import logging
 import re
 import sys
 from typing import TYPE_CHECKING, Any, Mapping, Optional, Union
+from urllib.parse import urlparse
 
 import backoff
 import requests
@@ -60,9 +61,20 @@ _RETRYABLE_400_STATUS_CODES = {
 }
 logger = logging.getLogger("airbyte")
 
+# `nextRecordsUrl` is under /query/ even for `queryAll` requests, see
+# https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_queryall.htm
+_QUERY_LOCATOR_PATH_PATTERN = re.compile(r"/services/data/v\d{2}\.\d/query/[^/]+$")
+
 
 class BulkNotSupportedException(Exception):
     pass
+
+
+class QueryLocatorExpiredException(Exception):
+    """
+    Raised when a `nextRecordsUrl` request is rejected with INVALID_SESSION_ID. A query locator belongs to the session that created it, so
+    the same URL cannot be resumed under a new session and the query has to be restarted instead of retried.
+    """
 
 
 class SalesforceErrorHandler(ErrorHandler):
@@ -112,6 +124,9 @@ class SalesforceErrorHandler(ErrorHandler):
                                 FailureType.config_error,
                                 AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
                             )
+                    if self._is_query_locator_request(response):
+                        # Retrying this URL can only fail again, so the caller restarts the query instead
+                        raise QueryLocatorExpiredException(response.request.url)
                     return ErrorResolution(
                         ResponseAction.RETRY,
                         FailureType.transient_error,
@@ -168,6 +183,11 @@ class SalesforceErrorHandler(ErrorHandler):
             FailureType.system_error,
             f"An error occurred: {response.content.decode()}",
         )
+
+    @staticmethod
+    def _is_query_locator_request(response: requests.Response) -> bool:
+        """Matches on the path only so that a SOQL query string cannot produce a false positive."""
+        return response.request.method == "GET" and bool(_QUERY_LOCATOR_PATH_PATTERN.search(urlparse(response.url).path))
 
     @staticmethod
     def _is_bulk_job_status_check(response: requests.Response) -> bool:

@@ -255,6 +255,16 @@ Salesforce access tokens expire after a configurable session timeout, which defa
 
 If you still encounter `INVALID_SESSION_ID` errors, verify that the connector is running version 2.7.20 or later.
 
+### Session expiry during REST pagination
+
+Streams that cannot use the Bulk API, for example objects containing compound fields such as addresses, are read through the REST `queryAll` endpoint and paginated with `nextRecordsUrl`. A query locator belongs to the session that created it, so once that session is invalidated the locator cannot be resumed under a new one and `nextRecordsUrl` keeps returning `INVALID_SESSION_ID` however many times the token is refreshed.
+
+This matters with Refresh Token Rotation enabled, because each token exchange ends the previous session, so every proactive refresh invalidates any locator that is open at that moment. Prior to version 2.8.2 the stream exhausted its retries and failed the sync, so a REST stream whose read outlived the 30 minute refresh interval could not complete. Without RTR the previous session survives a token refresh, which is why this went unnoticed for a long time.
+
+Two things were wrong before version 2.8.2. REST streams authenticated with a token captured when the stream was built, so they could neither trigger nor observe a refresh, and a locator whose session had been invalidated was retried rather than restarted.
+
+Starting in 2.8.2 REST streams read their token from the same provider the Bulk path uses, and a request rejected with `INVALID_SESSION_ID` mid-pagination restarts the query after the last record read instead of retrying the dead locator. To make that resume position well defined, this version also orders those queries by primary key. Streams without a replication key were already ordered that way; streams with one, including when they are read in full refresh mode, were not, so their queries now carry an `ORDER BY` they did not have before.
+
 ### Refresh Token Rotation (RTR)
 
 Salesforce's [Refresh Token Rotation](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_enable_refresh_token_rotation.htm&language=en_US&type=5) makes refresh tokens **single-use**: each `refresh_token` exchange returns a new refresh token and **immediately invalidates the previous one** — there is no grace period or overlap window. Starting in version 2.8.0, the connector captures the rotated token on every token exchange (initial login and the mid-sync refreshes described above) and persists it back to the connection configuration, so syncs continue to work with RTR enabled.
@@ -316,6 +326,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.2 | 2026-08-12 | [84302](https://github.com/airbytehq/airbyte/pull/84302) | Let REST streams refresh their access token, and restart the query instead of retrying an expired `nextRecordsUrl`, when the session is invalidated mid-pagination |
 | 2.8.1 | 2026-08-05 | [82784](https://github.com/airbytehq/airbyte/pull/82784) | Fail fast when the refresh token is rejected instead of retrying the token endpoint from every stream |
 | 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
