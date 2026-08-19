@@ -27,8 +27,9 @@ skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
 
 - [`source-mssql-e2e-tests`](.agents/skills/source-mssql-e2e-tests/SKILL.md) —
   the generic harness. Stands up a SQL Server 2022 container
-  (`source-mssql-db-backend`), applies SQL fixtures via `sqlcmd`, and runs
-  one Airbyte protocol command (`spec` / `check` / `discover` / `read`)
+  (`source-mssql-db-backend`), applies SQL fixtures via `sqlcmd`, and
+  sweeps the Airbyte protocol commands (`spec` → `check` → `discover` →
+  `read`, or just one of them)
   against `airbyte/source-mssql:<tag>` using the
   [`airbyte-internal-ops`](https://github.com/airbytehq/airbyte-ops-mcp)
   CLI's `airbyte-ops cloud connector regression-test --skip-compare=True`.
@@ -146,7 +147,7 @@ with a control version:
 
 ```bash
 cd airbyte-integrations/connectors/source-mssql
-poe e2e-local --command=read --test-version=dev --control-version=5.0.0 \
+poe e2e-local --test-version=dev --control-version=5.0.0 \
   --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
 ```
 

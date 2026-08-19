@@ -1,6 +1,6 @@
 ---
 name: source-mssql-e2e-tests
-description: Stand up a local SQL Server 2022 backend, apply SQL fixtures, and run airbyte-ops protocol commands (spec / check / discover / read) against airbyte/source-mssql:<tag> for ad-hoc end-to-end testing. Use when you need a deterministic, throwaway local environment for any source-mssql test or repro that is not CDC-specific.
+description: Stand up a local SQL Server 2022 backend, apply SQL fixtures, and sweep the Airbyte protocol commands (spec → check → discover → read) against airbyte/source-mssql:<tag> for ad-hoc end-to-end testing. Use when you need a deterministic, throwaway local environment for any source-mssql test or repro that is not CDC-specific.
 ---
 
 # source-mssql-e2e-tests
@@ -14,8 +14,9 @@ SQL fixtures, and runs Airbyte protocol commands against any
 ## When to use this skill
 
 - Reproducing a non-CDC bug against `source-mssql` locally.
-- Running `spec` / `check` / `discover` / `read` against any
-  `airbyte/source-mssql:<tag>` for connector development.
+- Sweeping `spec` → `check` → `discover` → `read`, or running one of
+  them, against any `airbyte/source-mssql:<tag>` for connector
+  development.
 - As the building block for the
   [`source-mssql-e2e-cdc-tests`](../source-mssql-e2e-cdc-tests/SKILL.md)
   skill, which adds CDC enable plus worked-example fixtures on top.
@@ -44,7 +45,7 @@ source-mssql-e2e-tests/
 │   ├── render-config.sh        # jq the backend bridge IP into a config template
 │   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
 │   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
-│   └── run.sh                  # one-shot: backend → fixtures → config → catalog → command → teardown
+│   └── run.sh                  # one-shot: backend → fixtures → config → spec/check/discover → catalog → read → teardown
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
@@ -61,10 +62,14 @@ The skill expects all script paths relative to the skill root.
   `render-config.sh`. Override via `BACKEND_NAME=…` only for parallel
   test isolation; don't use customer connection names.
 - Working directory for rendered configs and run output:
-  `${REPRO_OUT:-/tmp/source-mssql-repro}`. Each `regression-test` run
-  writes `stdout.txt` and `stderr.txt` under
-  `$REPRO_OUT/<step-name>/`. Use a fresh subdirectory per step so
-  artifacts don't get clobbered.
+  `${REPRO_OUT:-/tmp/source-mssql-repro}`. A `run.sh` invocation writes
+  everything under `$REPRO_OUT/<step-name>/`: the rendered `config.json`,
+  the derived `configured_catalog.json`, and one subdirectory per
+  protocol command (`spec/`, `check/`, `discover/`, `read/`) holding that
+  command's `stdout.txt`, `stderr.txt`, `report.md`, and `report.html`.
+  This is the same layout the ops repo's `connector-regression-test.yml`
+  workflow uses under `/tmp/regression_test_artifacts`, so CI can upload
+  it per command.
 - Both containers (the SQL Server backend and the connector launched by
   `airbyte-ops`) share Docker's default `bridge` network. The connector
   resolves the backend by its bridge IP, which `render-config.sh`
@@ -77,36 +82,51 @@ The skill expects all script paths relative to the skill root.
 ## Usage
 
 `scripts/run.sh` is the only supported entrypoint. It performs the whole
-sequence — start backend, apply fixtures, render config, derive the
-configured catalog from a `discover` run, run the protocol command, tear
-down on exit — and exits with the connector's own exit code:
+sequence — start the backend, apply the fixtures, render the config, run
+`spec` → `check` → `discover`, derive the configured catalog from that
+`discover`'s output, run `read`, tear down on exit:
 
 ```bash
 cd airbyte-integrations/connectors/source-mssql
 
-# Single version.
-poe e2e-local --command=read --test-version=5.0.0 \
+# Single version, full sweep.
+poe e2e-local --test-version=5.0.0 \
   --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
 
 # Target vs. control comparison (prove-fix shape).
-poe e2e-local --command=read --test-version=dev --control-version=5.0.0 \
+poe e2e-local --test-version=dev --control-version=5.0.0 \
   --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+
+# One command only.
+poe e2e-local --command=read --test-version=5.0.0
 ```
+
+The sweep runs every command against the one backend and reports each
+result rather than stopping at the first failure, then prints a summary
+table and exits non-zero if any command failed — separating an
+infrastructure failure (`ERROR`, no verdict was produced) from a failed
+test verdict (`FAIL`), as the ops workflow's final-status step does. Under
+CI the table is also appended to `$GITHUB_STEP_SUMMARY`. A run limited to
+one command instead exits with the connector's own exit code, so a repro
+can still assert on it.
 
 Build the target image first when using `--test-version=dev`, or pass
 `--build` to have `run.sh` run `:airbyteDocker` for you. Other options:
+`--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--step-name`, `--catalog` (skip discover-derived generation),
 `--sync-mode=incremental`, `--cursor-field`, `--streams`,
 `--config-template`, `--keep-backend`, and `--` to forward extra args to
-`airbyte-ops`.
+`airbyte-ops`. Per-command timeouts match the workflow's (30/30/60/180
+minutes) and are overridable with
+`TIMEOUT_MINUTES_{SPEC,CHECK,DISCOVER,READ}`.
 
 When `--control-version` is set, `run.sh` drops
-`--skip-compare=True` and passes `--control-image`, so the CLI runs both
-images and diffs their protocol output with the existing comparators
-(record counts, primary keys, per-record, schema). Both runs must see
-identical backend state — for CDC that means recreating the backend and
-capture instance between them, which the comparators cannot check for
-you.
+`--skip-compare=True` and passes `--control-image`, so every command in
+the sweep runs both images and diffs their protocol output with the
+existing comparators (record counts, primary keys, per-record, schema).
+Both runs must see identical backend state — a full-refresh sweep is
+read-only, but for CDC that means recreating the backend and capture
+instance between them, which the comparators cannot check for you.
 
 The other scripts under `scripts/` are `run.sh`'s internals. Invoke them
 directly only from the composing
@@ -120,9 +140,12 @@ ordering of the sequence.
 Inline assertions in driver scripts. Suggested helpers:
 
 - Exit code: check `$?` immediately after the call.
-- AirbyteMessage shape: `jq -e 'select(.type == "RECORD")' $REPRO_OUT/<step>/stdout.txt`.
-- Connector-side log shape: `grep -c '<expected substring>' $REPRO_OUT/<step>/stderr.txt`.
-- Connection status: `jq -e 'select(.type == "CONNECTION_STATUS" and .connectionStatus.status == "SUCCEEDED")' $REPRO_OUT/<step>/stdout.txt`.
+- AirbyteMessage shape: `jq -e 'select(.type == "RECORD")' $REPRO_OUT/<step>/read/stdout.txt`.
+- Connector-side log shape: `grep -c '<expected substring>' $REPRO_OUT/<step>/read/stderr.txt`.
+- Connection status: `jq -e 'select(.type == "CONNECTION_STATUS" and .connectionStatus.status == "SUCCEEDED")' $REPRO_OUT/<step>/check/stdout.txt`.
+
+In comparison mode each command's directory holds `target/` and
+`control/` subdirectories, and the raw output is under those.
 
 Pass `-- --enable-debug-logs=True` to `run.sh` to set `LOG_LEVEL=DEBUG`
 on the connector container. That surfaces the
@@ -148,8 +171,8 @@ that some assertions rely on.
   catalog fixtures shipped with this and dependent skills populate all of
   them.
 - _A failed `check` does not fail a single-version run_ → the CDK exits
-  0 even when it emits `CONNECTION_STATUS` with `status: FAILED`, so
-  `run.sh` returns 0. Assert on the status message yourself (see
+  0 even when it emits `CONNECTION_STATUS` with `status: FAILED`, so the
+  `check` step passes. Assert on the status message yourself (see
   [Asserting on output](#asserting-on-output)) rather than on the exit
   code when the repro hinges on `check`. Comparison mode does surface
   it, because it reads the report's verdict rather than the exit code.
