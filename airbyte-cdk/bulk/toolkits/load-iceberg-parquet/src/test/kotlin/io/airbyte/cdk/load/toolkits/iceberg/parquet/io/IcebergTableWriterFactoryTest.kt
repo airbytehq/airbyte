@@ -125,6 +125,7 @@ internal class IcebergTableWriterFactoryTest {
             every { schema() } returns tableSchema
             every { sortOrder() } returns SortOrder.unsorted()
             every { spec() } returns tableSpec
+            every { updateProperties() } returns mockk(relaxed = true)
         }
 
         val factory = IcebergTableWriterFactory()
@@ -141,6 +142,21 @@ internal class IcebergTableWriterFactoryTest {
             )
         assertNotNull(writer)
         assertEquals(UnpartitionedDeltaWriter::class.java, writer.javaClass)
+
+        val positionalWriter =
+            factory.create(
+                table = table,
+                generationId = "ab-generation-id-${Random.nextLong(100)}-e",
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(primaryKeyIds.map { it.toString() }),
+                        cursor = primaryKeyIds.map { it.toString() }
+                    ),
+                schema = tableSchema,
+                positionalDeleteRef = "staging",
+                positionalDeleteState = PositionalDeleteResolutionState(),
+            )
+        assertEquals(UnpartitionedPositionDeltaWriter::class.java, positionalWriter.javaClass)
     }
 
     @Test
