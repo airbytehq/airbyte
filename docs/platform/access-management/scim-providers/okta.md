@@ -5,7 +5,7 @@ products: cloud-teams
 
 # Set up SCIM using Okta
 
-This guide shows you how to configure SCIM provisioning for the existing Airbyte Okta application. It assumes that you already set up SSO with Okta. For SSO setup, see [Set up single sign on using Okta](../sso-providers/okta).
+Okta doesn't support adding SCIM provisioning to a custom OIDC app integration. Use your existing OIDC app for SSO and create a second, provisioning-only app for SCIM. For more information about this requirement, see [Okta's support article about configuring SCIM for a custom OIDC app](https://support.okta.com/help/s/article/configure-scim-for-a-custom-oidc-app). For SSO setup, see [Set up single sign on using Okta](../sso-providers/okta).
 
 ## Before you start
 
@@ -18,48 +18,63 @@ You need:
 
 Before you configure Okta, [enable SCIM in Airbyte](../scim#enable-scim-in-airbyte) and copy the SCIM base URL and bearer token.
 
-## Configure the Okta application
+## Create the provisioning-only app
 
-Use Okta's [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm) for adding SCIM provisioning to an app integration, or its [SCIM integration guide](https://developer.okta.com/docs/guides/scim-provisioning-integration-connect/main/) for adding a private or template SCIM integration. The names can vary by Okta edition.
+In Okta, create a second app integration for SCIM. Keep your existing OIDC app for SSO; the SCIM app doesn't need to provide working SSO.
 
-When you configure provisioning for the existing Airbyte application, use these values:
+1. In the Okta Admin Console, go to **Applications** > **Applications** and click **Browse App Catalog**.
 
-- **SCIM connector base URL**: The **SCIM base URL** from Airbyte.
-- **Unique identifier field**: `userName`.
-- **Authentication mode**: HTTP Header.
-- **HTTP Header**: The Airbyte **Bearer token**.
+2. Search for `SCIM 2.0`, select **SCIM 2.0 Test App (Header Auth)**, and click **Add Integration**.
 
-Enable the provisioning capabilities that you need:
+3. Name the app, for example, `Airbyte SCIM`. You can hide the app from users because it is only used for provisioning.
 
-- Push new users.
-- Push profile updates.
-- Push groups.
+4. Under **Sign-On Options**, select **SAML** or **SWA**. These settings don't affect SSO, which continues to use your OIDC app.
+
+5. Click **Done**.
+
+For Okta's current application flow, see the [SCIM integration guide](https://developer.okta.com/docs/guides/scim-provisioning-integration-connect/main/). You can also see Okta's [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm).
+
+## Configure the API integration
+
+On the new app, open the **Provisioning** tab and configure the API integration.
+
+1. Click **Configure API Integration**.
+
+2. Select **Enable API integration**.
+
+3. Set **Base URL** to the **SCIM base URL** shown in Airbyte.
+
+4. Set **API Token** to the Airbyte **Bearer token**.
+
+5. Click **Test API Credentials**, then click **Save**.
 
 If Okta offers password synchronization for the application, turn it off. Airbyte ignores passwords sent through SCIM.
 
-## Test the connector
+:::note
+If **Test API Credentials** returns `401` when you enter the bearer token as-is, try prefixing the value with `Bearer `. Airbyte expects the `Authorization: Bearer <token>` header.
+:::
 
-After you enter the base URL and bearer token, use Okta's connector test action to test the configuration. Resolve any connection or authentication errors before you enable provisioning.
+## Assign people to the app
 
-## Enable user provisioning
+Assign the people who should access Airbyte on the **Assignments** tab. You can assign people individually or assign an Okta group. Assignment triggers provisioning: enabling **Create Users** alone doesn't provision anyone.
 
-When the connector test succeeds:
+An assigned, active user becomes an organization member in Airbyte.
 
-1. In Okta, open the Airbyte application's **Provisioning** settings.
+## Enable provisioning actions
 
-2. Under **To App**, enable **Create users**, **Update users**, and **Deactivate users** as needed.
+After you assign people to the app:
 
-3. Assign the people who should access Airbyte to the application.
+1. Open the **Provisioning** tab and, under **To App**, click **Edit**.
 
-4. Save the provisioning settings.
+2. Enable the actions you need: **Create Users**, **Update User Attributes**, and **Deactivate Users**.
 
-Okta sends changes for the people assigned to the application. An assigned, active user becomes an organization member in Airbyte.
+3. Save your changes.
 
 ## Push groups
 
-If you enabled **Push groups**, select the groups you want Okta to provision to Airbyte. Okta owns the group name and membership after provisioning. Airbyte owns permissions assigned to the group.
+Assigning an Okta group to the app provisions its members as users, but it doesn't create the group in Airbyte. To create a group in Airbyte, use Okta's **Push Groups** workflow.
 
-Group members must be users provisioned into the same Airbyte organization. For group behavior and permissions, see [User groups](../user-groups).
+Okta owns the group name and membership after provisioning. Airbyte owns permissions assigned to the group. Group members must be users provisioned into the same Airbyte organization. For group behavior and permissions, see [User groups](../user-groups).
 
 ## Deactivate and delete users
 
