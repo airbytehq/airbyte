@@ -5,6 +5,14 @@
   font-weight: bold;
 }
 
+.connectorLink {
+  color: var(--ifm-color-content);
+}
+
+.connectorLink:hover {
+  color: var(--ifm-color-primary);
+}
+
 .connectorIconBackground {
   background-color: var(--icon-background);
   border-radius: 6px;
