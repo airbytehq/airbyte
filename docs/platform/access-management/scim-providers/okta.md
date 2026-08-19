@@ -28,7 +28,7 @@ In Okta, create a second app integration for SCIM. Keep your existing OIDC app f
 
 3. Name the app, for example, `Airbyte SCIM`. You can hide the app from users because it is only used for provisioning.
 
-4. Under **Sign-On Options**, select **SWA**. The provisioning app is never used for sign-in: SCIM authenticates with the bearer token, and Airbyte SSO stays on your OIDC app, so SWA avoids configuring SAML settings that Airbyte can't use and doesn't affect SSO or provisioning.
+4. Under **Sign-On Options**, select **SWA**. This app is never used for sign-in, because SCIM authenticates with the bearer token and SSO stays on your OIDC app. **SWA** just avoids configuring SAML settings that Airbyte can't use.
 
 5. Click **Done**.
 
