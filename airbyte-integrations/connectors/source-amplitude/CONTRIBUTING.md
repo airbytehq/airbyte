@@ -1,27 +1,25 @@
-# source-amplitude: Unique Behaviors
+# Contributing to source-amplitude
 
-## 1. Matrix-Style API Response Extraction
-
-Amplitude's Dashboard REST API (Average Session Length, Active Users) does not return records as individual objects. Instead, it returns parallel arrays: `xValues` contains dates and `series` contains nested value arrays. The connector uses custom extractors (`AverageSessionLengthRecordExtractor`, `ActiveUsersRecordExtractor`) to zip these arrays together and construct individual records.
-
-For Active Users specifically, the `series` field is a 2D matrix (one row per metric label like "1 Day Active", "7 Day Active"), and the extractor transposes this matrix with `zip(*series)` before pairing with dates.
-
-**Why this matters:** What looks like a single API response actually requires matrix transposition and array zipping to produce usable records. Adding a new analytics stream that uses this response format requires a custom extractor rather than a standard DpathExtractor.
-
-## 2. Hard Export Size Limit with Timeout Fallback
-
-Amplitude's API enforces a 4GB export size limit, returning HTTP 400 when exceeded. Additionally, large data volumes can trigger HTTP 504 timeouts. Amplitude's own documentation recommends using their Amazon S3 destination for large exports instead of the REST API. The connector surfaces these as config errors with guidance to shorten the `request_time_range` interval.
-
-**Why this matters:** Syncs that work fine for small date ranges can suddenly fail when the date range grows large enough to exceed 4GB or trigger a timeout, with no way to resume from where it left off within that range.
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
 ## Incremental Stream Considerations
 
-The Amplitude API supports incremental data export via the Export API with date-based windowing. The connector uses Python custom components referenced from the manifest via `custom_components_mapping`. All streams are defined in Python code. The connector already supports incremental sync for its primary data export streams (events, active_users, average_sessions, annotations, cohorts).
+**Connector type:** Hybrid (manifest.yaml + Python custom components for record extraction/transformation)
 
-**Connector type:** Python custom components (hybrid manifest + Python)
+**Analysis status:** Complete. All 6 streams analyzed. 3 use incremental sync with `DatetimeBasedCursor`; 3 are full-refresh due to API limitations.
 
-**Analysis status:** Streams are Python-defined via custom components. Full stream-by-stream analysis requires Python code review. The connector's primary high-volume streams appear to already support incremental sync.
+### Incremental Streams
 
-### Future incremental stream candidates
+| Stream | Cursor Field | API Filter | Notes |
+|--------|-------------|------------|-------|
+| active_users | `date` | `start`/`end` date params | Amplitude Active Users API with date range |
+| average_session_length | `date` | `start`/`end` date params | Amplitude Average Session Length API |
+| events | `server_upload_time` | `start`/`end` date params | Amplitude Export API with date-based windowing |
 
-- **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+### Full-Refresh Streams (Not Actionable)
+
+| Stream | Reason | Evidence |
+|--------|--------|----------|
+| annotations | No date filtering support | Amplitude Annotations API; no `incremental_sync` in manifest |
+| cohorts | No date filtering support | Amplitude Cohorts API returns all cohorts; no `modified_since` or date param |
+| events_list | No date filtering support | Amplitude Events List API returns all event types; no date param |
