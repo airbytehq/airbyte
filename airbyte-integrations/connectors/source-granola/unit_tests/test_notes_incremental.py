@@ -50,19 +50,11 @@ _EXPECTED_SLICE_BOUNDS = [
 ]
 
 
-def _get_source(state):
-    return YamlDeclarativeSource(
-        path_to_yaml=str(_MANIFEST_PATH),
-        catalog=CatalogBuilder().build(),
-        config=_CONFIG,
-        state=state,
-    )
-
-
-def _read_notes(mocker, state=None):
+def _read_notes(state=None):
     state = state or StateBuilder().build()
     catalog = CatalogBuilder().with_stream("notes", SyncMode.incremental).build()
-    return read(_get_source(state), _CONFIG, catalog, state)
+    source = YamlDeclarativeSource(path_to_yaml=str(_MANIFEST_PATH), catalog=catalog, config=_CONFIG, state=state)
+    return read(source, _CONFIG, catalog, state)
 
 
 def _requested_slice_bounds(mocker):
@@ -88,7 +80,7 @@ def _slice_response(request, context):
 def test_slice_bounds_are_contiguous_second_granular_datetimes():
     with requests_mock.Mocker() as mocker:
         mocker.get(_NOTES_URL, json={"notes": [], "hasMore": False})
-        _read_notes(mocker)
+        _read_notes()
         requested = _requested_slice_bounds(mocker)
 
     expected = {(after.lower(), before.lower()) for after, before in _EXPECTED_SLICE_BOUNDS}
@@ -99,7 +91,7 @@ def test_slice_bounds_are_contiguous_second_granular_datetimes():
 def test_boundary_day_records_are_emitted():
     with requests_mock.Mocker() as mocker:
         mocker.get(_NOTES_URL, json=_slice_response)
-        output = _read_notes(mocker)
+        output = _read_notes()
 
     emitted = {message.record.data["id"] for message in output.records}
     assert emitted == {note["id"] for note in _BOUNDARY_NOTES} | {_MID_SLICE_NOTE["id"]}
@@ -112,7 +104,7 @@ def test_date_only_and_datetime_state_both_resume(state_value):
 
     with requests_mock.Mocker() as mocker:
         mocker.get(_NOTES_URL, json=_slice_response)
-        output = _read_notes(mocker, state)
+        output = _read_notes(state)
         requested = _requested_slice_bounds(mocker)
 
     assert output.errors == []
