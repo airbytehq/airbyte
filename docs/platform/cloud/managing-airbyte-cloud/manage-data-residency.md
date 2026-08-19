@@ -75,4 +75,4 @@ resource "airbyte_workspace" "my_workspace" {
 }
 ```
 
-These IDs are the same for every Cloud organization. The API's `/regions` endpoints only list self-managed regions, so they don't return the managed region IDs above.
+These IDs are the same for every Cloud organization and are not secrets (they’re the same identifiers used by the Cloud UI region selector). The API's `/regions` endpoints only list self-managed regions, so they don't return the managed region IDs above.
