@@ -169,7 +169,7 @@ To understand which secrets are required for a connector, consult the `metadata.
 
 ### Fetching and Listing Connector Secrets Locally
 
-To view a list of secrets, or to fetch them locally, you can use the `airbyte-internal-ops` CLI via `uvx`. The canonical CLI reference lives at [airbyte_ops_mcp/cli/secrets](https://airbytehq.github.io/airbyte-ops-mcp/airbyte_ops_mcp/cli/secrets.html).
+To view a list of secrets, or to fetch them locally, you can use the `airbyte-internal-ops` CLI via `uvx`. The canonical CLI reference lives at [airbyte_ops_mcp/cli/secrets](https://airbytehq.github.io/airbyte-ops/airbyte_ops_mcp/cli/secrets.html).
 
 - `uvx airbyte-internal-ops secrets --help` - Gives general usage instructions for the `secrets` CLI functions.
 - `uvx airbyte-internal-ops secrets list` - Lists the secrets available for the given connector, along with a GSM deep link to each available secret.
