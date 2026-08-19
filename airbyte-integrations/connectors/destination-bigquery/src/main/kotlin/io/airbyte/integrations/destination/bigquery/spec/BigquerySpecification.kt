@@ -105,7 +105,65 @@ class BigquerySpecification : ConfigurationSpecification() {
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
+
+    @get:JsonSchemaTitle("Per-stream table configuration")
+    @get:JsonPropertyDescription(
+        """Optional overrides for the destination dataset and table name, time-unit partitioning, and clustering of individual streams. A configuration with no namespace matches that stream name in any namespace.""",
+    )
+    @get:JsonProperty("stream_configurations")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9}""")
+    val streamConfigurations: List<BigqueryStreamConfiguration>? = null
 }
+
+data class BigqueryStreamConfiguration(
+    @get:JsonSchemaTitle("Stream name")
+    @get:JsonPropertyDescription(
+        "The effective destination stream name after Airbyte's stream-name mapping.",
+    )
+    @JsonProperty("stream_name")
+    val streamName: String = "",
+    @get:JsonSchemaTitle("Stream namespace")
+    @get:JsonPropertyDescription(
+        "Optional destination namespace used to disambiguate streams with the same name.",
+    )
+    @JsonProperty("stream_namespace")
+    val streamNamespace: String? = null,
+    @get:JsonSchemaTitle("Destination dataset")
+    @get:JsonPropertyDescription(
+        "Optional BigQuery dataset override. The connector creates the dataset when permitted.",
+    )
+    @JsonProperty("destination_dataset")
+    val destinationDataset: String? = null,
+    @get:JsonSchemaTitle("Destination table")
+    @get:JsonPropertyDescription(
+        "Optional final-table name override. The table suffix is appended after this value.",
+    )
+    @JsonProperty("destination_table")
+    val destinationTable: String? = null,
+    @get:JsonSchemaTitle("Table suffix")
+    @get:JsonPropertyDescription("Optional suffix appended to the destination table name.")
+    @JsonProperty("table_suffix")
+    val tableSuffix: String? = null,
+    @get:JsonSchemaTitle("Partitioning field")
+    @get:JsonPropertyDescription(
+        "Optional top-level DATE, TIMESTAMP, or DATETIME field used for time-unit partitioning.",
+    )
+    @JsonProperty("partitioning_field")
+    val partitioningField: String? = null,
+    @get:JsonSchemaTitle("Partitioning granularity")
+    @get:JsonPropertyDescription(
+        "Partition granularity. HOUR is supported for TIMESTAMP and DATETIME fields; DATE fields support DAY, MONTH, and YEAR.",
+    )
+    @JsonProperty("partitioning_granularity")
+    val partitioningGranularity: PartitioningGranularity? = null,
+    @get:JsonSchemaTitle("Clustering fields")
+    @get:JsonPropertyDescription(
+        "One to four top-level fields used for clustering, in clustering sort order.",
+    )
+    @get:JsonSchemaInject(json = """{"minItems": 1, "maxItems": 4}""")
+    @JsonProperty("clustering_fields")
+    val clusteringFields: List<String>? = null,
+)
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -212,6 +270,13 @@ enum class TransformationPriority(@get:JsonValue val transformationPriority: Str
 enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
+}
+
+enum class PartitioningGranularity(@get:JsonValue val value: String) {
+    HOUR("HOUR"),
+    DAY("DAY"),
+    MONTH("MONTH"),
+    YEAR("YEAR"),
 }
 
 @Singleton

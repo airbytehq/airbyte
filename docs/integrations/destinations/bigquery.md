@@ -137,6 +137,42 @@ partitioning column are used to prune the partitions and reduce the query cost. 
 **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the
 produced tables.)
 
+### Per-stream table configuration
+
+You can override the final dataset and table layout for individual streams by setting
+`stream_configurations` in the destination's advanced configuration. For example:
+
+```json
+{
+  "stream_configurations": [
+    {
+      "stream_name": "orders",
+      "stream_namespace": "sales",
+      "destination_dataset": "analytics",
+      "destination_table": "fact_orders",
+      "table_suffix": "_v2",
+      "partitioning_field": "created_at",
+      "partitioning_granularity": "MONTH",
+      "clustering_fields": ["customer_id", "status"]
+    }
+  ]
+}
+```
+
+`stream_namespace` is optional. When present, it matches the effective destination namespace after
+Airbyte's namespace mapping. When omitted, the configuration matches the named stream in any
+namespace; a namespace-specific entry takes precedence.
+
+The partitioning field must be a top-level `DATE`, `TIMESTAMP`, or `DATETIME` field. Supported
+granularities are `HOUR`, `DAY`, `MONTH`, and `YEAR`, except that `DATE` fields don't support
+`HOUR`. You may provide one to four top-level clustering fields in clustering sort order.
+
+Changing an existing table's partitioning or clustering configuration causes the connector to
+recreate that table and copy its existing data. Changing the destination dataset or table directs
+subsequent syncs to the new location; it doesn't delete the previous table. Each source stream still
+has one destination table within a connection—this configuration routes streams independently but
+doesn't duplicate a single stream to multiple tables.
+
 ### Legacy Raw Tables schema
 
 If you enable the `Legacy raw tables` option, the connector will write tables in this format.
