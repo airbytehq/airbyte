@@ -345,9 +345,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -909,9 +906,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -1405,9 +1399,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -1992,9 +1983,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -2512,9 +2500,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -3220,9 +3205,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -3788,9 +3770,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
