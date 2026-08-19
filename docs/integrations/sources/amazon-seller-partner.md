@@ -209,6 +209,8 @@ The connector automatically shows only the streams compatible with your configur
 - Order Items
 - Financial Events
 - Financial Event Groups
+- Fulfillment Inbound Shipments
+- Fulfillment Inbound Shipment Items
 - All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
 - All Brand Analytics streams
 
@@ -442,6 +444,12 @@ Lower the **Financial Events Max Results Per Page** setting in your connector co
 4. Save and retry the sync.
 
 You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
+
+### Fulfillment Inbound shipment items pagination
+
+The `FbaInboundShipmentItems` stream reads items per shipment via the [getShipmentItemsByShipmentId](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) operation. Amazon's API model defines no pagination request parameter for this operation, although its response can include a `NextToken` value. If Amazon truncates the item list of a single shipment, the connector cannot request the remaining items for that shipment. If you observe incomplete item lists for very large shipments, [contact Airbyte Support](https://support.airbyte.com).
+
+Also note that Amazon selects inbound shipments by the shipment's last-update time, and item-quantity updates do not always advance it (see [amzn/selling-partner-api-models#2594](https://github.com/amzn/selling-partner-api-models/issues/2594)). Prefer a generous **Inbound Rolling Days** window over a narrow one if you rely on item quantities staying current.
 
 ## IP allow list
 

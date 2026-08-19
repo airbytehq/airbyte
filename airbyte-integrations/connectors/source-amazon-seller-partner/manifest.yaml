@@ -1136,7 +1136,6 @@ definitions:
             field_name: NextToken
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
             stop_condition: "{{ not response.get('payload', {}).get('NextToken') }}"
       schema_loader:
@@ -1165,8 +1164,6 @@ definitions:
           http_method: GET
           request_headers:
             content-type: "application/json"
-          request_parameters:
-            MarketplaceId: '{{ config["marketplace_id"] }}'
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
