@@ -13,6 +13,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.SQLRuntimeException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
@@ -357,6 +358,20 @@ abstract class JdbcDestinationHandler<DestinationState>(
                         ),
                 )
             } catch (e: Exception) {
+                // Check exception chain for permission denied errors,
+                // which indicate a user configuration issue (not a system error).
+                val isPermissionDenied =
+                    generateSequence<Throwable>(e) { it.cause }
+                        .any {
+                            it.message?.contains("permission denied", ignoreCase = true) == true
+                        }
+                if (isPermissionDenied) {
+                    throw ConfigErrorException(
+                        "Database permission denied in namespace " +
+                            "\"${streamConfig?.id?.rawNamespace}\".",
+                        e,
+                    )
+                }
                 throw RuntimeException(e)
             }
         }
