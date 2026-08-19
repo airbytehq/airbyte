@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 19, 2026
+
+Connections
+
+- When a connector test or schema refresh hits an unexpected internal error, the job now fails immediately with a clear error message instead of appearing to run until it times out.
+
 ## August 12, 2026
 
 Connections
