@@ -107,7 +107,25 @@ class Users(Stream, IncrementalMixin):
         yield generate_estimate(self.name, self.count, median_record_byte_size)
 
         loop_offset = 0
-        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+        try:
+            pool = Pool(initializer=self.generator.prepare, processes=self.parallelism)
+        except OSError:
+            # Fallback to sequential generation when system cannot fork
+            while loop_offset < self.count:
+                records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
+                self.generator.prepare()
+                for i in range(loop_offset, loop_offset + records_remaining_this_loop):
+                    user = self.generator.generate(i)
+                    updated_at = user.record.data["updated_at"]
+                    loop_offset += 1
+                    yield user
+                if records_remaining_this_loop == 0:
+                    break
+                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
+            return
+
+        with pool:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
                 users = pool.map(self.generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
