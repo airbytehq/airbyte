@@ -32,7 +32,7 @@ In Okta, create a second app integration for SCIM. Keep your existing OIDC app f
 
 5. Click **Done**.
 
-For Okta's current application flow, see the [SCIM integration guide](https://developer.okta.com/docs/guides/scim-provisioning-integration-connect/main/). You can also see Okta's [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm).
+For Okta's current application flow, see Okta's [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm) and [Configure provisioning for an app integration](https://help.okta.com/oie/en-us/content/topics/provisioning/lcm/lcm-provision-application.htm).
 
 ## Configure the API integration
 
