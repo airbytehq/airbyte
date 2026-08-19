@@ -61,6 +61,7 @@ interface TableSchemaEvolutionClient {
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
     ) {
+        ensureMetaColumnsExist(stream, tableName)
         val (actualSchema) = discoverSchema(tableName)
         val (expectedSchema) = computeSchema(stream, columnNameMapping)
         val columnChangeset = computeChangeset(actualSchema, expectedSchema)
@@ -72,6 +73,26 @@ interface TableSchemaEvolutionClient {
             columnChangeset,
         )
     }
+
+    /**
+     * Ensure that the Airbyte meta columns (`_airbyte_raw_id`, `_airbyte_extracted_at`,
+     * `_airbyte_meta`, `_airbyte_generation_id`, plus any destination-specific extras) exist on
+     * [tableName], adding any missing ones.
+     *
+     * Destinations whose [discoverSchema]/[computeSchema] exclude the `_airbyte_*` columns are
+     * blind to their absence in the schema diff, so a table created by a connector version that
+     * predates some meta column (e.g. tables created before `_airbyte_generation_id` existed) would
+     * never be repaired, and inserts/merges referencing that column would fail. This hook runs
+     * before schema discovery so such tables are repaired first. Default: no-op, for destinations
+     * that either include meta columns in the schema diff or handle this some other way.
+     *
+     * Note: the truncate stream loaders call [TableOperationsClient.getGenerationId] BEFORE
+     * [ensureSchemaMatches], i.e. before this hook has repaired the table. Implementations of
+     * `getGenerationId` must therefore return 0 (not throw) for a missing generation-id column; a
+     * generation id of 0 routes truncate syncs down the temp-table/overwrite path, which recreates
+     * the table with the full schema — correct truncate semantics.
+     */
+    suspend fun ensureMetaColumnsExist(stream: DestinationStream, tableName: TableName) {}
 
     /**
      * Query the destination and discover the schema of an existing table. If this method includes

@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.component
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -104,6 +106,63 @@ class TableSchemaEvolutionClientTest {
                     ),
             ),
             changeset,
+        )
+    }
+
+    @Test
+    fun testDefaultEnsureMetaColumnsExistIsNoop() = runTest {
+        // The default impl must not touch any other member (they all throw NotImplementedError).
+        defaultClientImpl.ensureMetaColumnsExist(
+            mockk<DestinationStream>(),
+            TableName("namespace", "name"),
+        )
+    }
+
+    @Test
+    fun testEnsureSchemaMatchesInvokesEnsureMetaColumnsExistBeforeDiscovery() = runTest {
+        val calls = mutableListOf<String>()
+        val client =
+            object : TableSchemaEvolutionClient {
+                override suspend fun ensureMetaColumnsExist(
+                    stream: DestinationStream,
+                    tableName: TableName
+                ) {
+                    calls.add("ensureMetaColumnsExist")
+                }
+
+                override suspend fun discoverSchema(tableName: TableName): TableSchema {
+                    calls.add("discoverSchema")
+                    return TableSchema(emptyMap())
+                }
+
+                override fun computeSchema(
+                    stream: DestinationStream,
+                    columnNameMapping: ColumnNameMapping
+                ): TableSchema {
+                    calls.add("computeSchema")
+                    return TableSchema(emptyMap())
+                }
+
+                override suspend fun applyChangeset(
+                    stream: DestinationStream,
+                    columnNameMapping: ColumnNameMapping,
+                    tableName: TableName,
+                    expectedColumns: TableColumns,
+                    columnChangeset: ColumnChangeset,
+                ) {
+                    calls.add("applyChangeset")
+                }
+            }
+
+        client.ensureSchemaMatches(
+            mockk<DestinationStream>(),
+            TableName("namespace", "name"),
+            ColumnNameMapping(emptyMap()),
+        )
+
+        assertEquals(
+            listOf("ensureMetaColumnsExist", "discoverSchema", "computeSchema", "applyChangeset"),
+            calls,
         )
     }
 }
