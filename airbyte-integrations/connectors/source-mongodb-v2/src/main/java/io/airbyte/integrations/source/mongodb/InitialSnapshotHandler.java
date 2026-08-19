@@ -27,8 +27,10 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bson.*;
@@ -67,7 +69,9 @@ public class InitialSnapshotHandler {
           final var collectionName = airbyteStream.getStream().getName();
           final var namespace = airbyteStream.getStream().getNamespace();
           final var collection = database.getCollection(collectionName);
-          final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
+          final var fieldNames = removePathCollisions(
+              CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList(), collectionName);
+          final var fields = Projections.fields(Projections.include(fieldNames));
           final var idTypes = aggregateIdField(collection);
           if (idTypes.size() > 1) {
             LOGGER.warn("The _id fields in this collection are not consistently typed, which may lead to data loss (collection = {}).",
@@ -118,6 +122,26 @@ public class InitialSnapshotHandler {
    * @param collection Collection to aggregate the _id types of.
    * @return List of bson types (as strings) that the _id field contains.
    */
+  static List<String> removePathCollisions(final List<String> fieldNames, final String collectionName) {
+    final Set<String> result = new LinkedHashSet<>(fieldNames);
+    for (final String field : fieldNames) {
+      if (field.contains(".")) {
+        for (final String other : fieldNames) {
+          if (!field.equals(other) && field.startsWith(other + ".")) {
+            LOGGER.warn(
+                "Removing field '{}' from projection for collection '{}' because it conflicts with parent field '{}'. "
+                    + "MongoDB does not allow projecting both a field and its sub-path. "
+                    + "Data from the nested path is still included via the parent field.",
+                field, collectionName, other);
+            result.remove(field);
+            break;
+          }
+        }
+      }
+    }
+    return new ArrayList<>(result);
+  }
+
   private List<String> aggregateIdField(final MongoCollection<Document> collection) {
     final List<String> idTypes = new ArrayList<>();
     /*
