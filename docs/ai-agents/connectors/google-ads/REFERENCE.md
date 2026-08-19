@@ -22,7 +22,7 @@ The Google-Ads connector supports the following entities and actions.
 
 ### Accessible Customers List
 
-Returns resource names of customers directly accessible by the user authenticating the call. No customer_id is required for this endpoint.
+Returns resource names of customers directly accessible by the user authenticating the call. This does not traverse customer_client manager hierarchies and therefore does not establish access to manager-only client accounts. No customer_id is required for this endpoint, and Google ignores login-customer-id for this call.
 
 #### CLI
 
@@ -59,7 +59,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 ### Accounts List
 
-Retrieves customer account details using GAQL query.
+Generic GAQL search carrier. Use accounts.list for any supported GAQL FROM resource, including views without a dedicated modeled entity; the entity name describes this connector action, not the GAQL resource. The customer must be directly accessible to the OAuth identity. This connector exposes no login-customer-id input or header, so do not use it for client accounts reachable only through a manager. Google Ads API v19+ fixes search pages at 10,000 rows and does not accept pageSize. When meta.next_page_token is non-null, repeat the same customer_id and byte-for-byte identical query with that token in pageToken.
 
 #### CLI
 
@@ -104,8 +104,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | Google Ads Query Language (GAQL) query |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 
@@ -294,8 +293,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | GAQL query for campaigns |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 
@@ -461,8 +459,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `campaign.bidding_strategy_type` | `string` | Bidding strategy type |
 | `campaign.campaign_budget` | `string` | Campaign budget resource name |
 | `campaign_budget.amount_micros` | `integer` | Campaign budget amount in micros |
-| `campaign.start_date` | `string` | Campaign start date |
-| `campaign.end_date` | `string` | Campaign end date |
+| `campaign.start_date_time` | `string` | Campaign start date |
+| `campaign.end_date_time` | `string` | Campaign end date |
 | `campaign.serving_status` | `string` | Campaign serving status |
 | `campaign.resource_name` | `string` | Resource name of the campaign |
 | `campaign.labels` | `array` | Labels applied to the campaign |
@@ -502,8 +500,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].campaign.bidding_strategy_type` | `string` | Bidding strategy type |
 | `data[].campaign.campaign_budget` | `string` | Campaign budget resource name |
 | `data[].campaign_budget.amount_micros` | `integer` | Campaign budget amount in micros |
-| `data[].campaign.start_date` | `string` | Campaign start date |
-| `data[].campaign.end_date` | `string` | Campaign end date |
+| `data[].campaign.start_date_time` | `string` | Campaign start date |
+| `data[].campaign.end_date_time` | `string` | Campaign end date |
 | `data[].campaign.serving_status` | `string` | Campaign serving status |
 | `data[].campaign.resource_name` | `string` | Resource name of the campaign |
 | `data[].campaign.labels` | `array` | Labels applied to the campaign |
@@ -575,8 +573,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | GAQL query for ad groups |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 
@@ -841,8 +838,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | GAQL query for ad group ads |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 
@@ -1027,8 +1023,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | GAQL query for campaign labels |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 
@@ -1255,8 +1250,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | GAQL query for ad group labels |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 
@@ -1483,8 +1477,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `query` | `string` | No | GAQL query for ad group ad labels |
-| `pageToken` | `string` | No | Token for pagination |
-| `pageSize` | `integer` | No | Number of results per page (max 10000) |
+| `pageToken` | `string` | No | Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical. |
 | `customer_id` | `string` | Yes | Google Ads customer ID (10 digits, no dashes) |
 
 

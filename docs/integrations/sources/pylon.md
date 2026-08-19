@@ -92,6 +92,18 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.0.20 | 2026-08-18 | [84722](https://github.com/airbytehq/airbyte/pull/84722) | Update dependencies |
+| 0.0.19 | 2026-08-11 | [84079](https://github.com/airbytehq/airbyte/pull/84079) | Update dependencies |
+| 0.0.18 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.0.17 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.0.15 — 0.0.16 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.0.16 | 2026-07-28 | [83064](https://github.com/airbytehq/airbyte/pull/83064) | Update dependencies |
+| 0.0.15 | 2026-07-21 | [82527](https://github.com/airbytehq/airbyte/pull/82527) | Update dependencies |
+| 0.0.14 | 2026-07-14 | [81963](https://github.com/airbytehq/airbyte/pull/81963) | Update dependencies |
+| 0.0.13 | 2026-06-30 | [81204](https://github.com/airbytehq/airbyte/pull/81204) | Update dependencies |
+| 0.0.12 | 2026-06-23 | [80608](https://github.com/airbytehq/airbyte/pull/80608) | Update dependencies |
+| 0.0.11 | 2026-06-16 | [80004](https://github.com/airbytehq/airbyte/pull/80004) | Update dependencies |
+| 0.0.10 | 2026-06-09 | [79462](https://github.com/airbytehq/airbyte/pull/79462) | Update dependencies |
+| 0.0.9 | 2026-06-02 | [78905](https://github.com/airbytehq/airbyte/pull/78905) | Update dependencies |
 | 0.0.8 | 2026-05-07 | [76083](https://github.com/airbytehq/airbyte/pull/76083) | Switch the Issues stream to `POST /issues/search` cursored on `updated_at` for true incremental sync. State migration rewinds the issues cursor to the configured Start Date (or 30 days ago if unset) on the first sync after upgrade. |
 | 0.0.7 | 2026-04-28 | [77394](https://github.com/airbytehq/airbyte/pull/77394) | Update dependencies |
 | 0.0.6 | 2026-04-21 | [76721](https://github.com/airbytehq/airbyte/pull/76721) | Update dependencies |
