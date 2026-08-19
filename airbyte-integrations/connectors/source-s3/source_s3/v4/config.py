@@ -8,9 +8,10 @@ import dpath.util
 from pydantic.v1 import AnyUrl, Field, root_validator
 from pydantic.v1.error_wrappers import ValidationError
 
-from airbyte_cdk import AirbyteTracedException, FailureType, is_cloud_environment
+from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 
 
 class S3FileBasedStreamConfig(FileBasedStreamConfig):
@@ -106,11 +107,7 @@ class Config(AbstractFileBasedSpec):
             allowed_schemes = ("https://",) if is_cloud_environment() else ("http://", "https://")  # ignore-https-check
             if not endpoint.casefold().startswith(allowed_schemes):
                 expected = " or ".join(f'"{scheme}"' for scheme in allowed_schemes)
-                raise AirbyteTracedException(
-                    message=f'Field "Endpoint" must be a full URL starting with {expected}.',
-                    internal_message=f"Endpoint must start with one of {allowed_schemes}; received {endpoint!r}.",
-                    failure_type=FailureType.config_error,
-                )
+                raise ConfigValidationError(f'Field "Endpoint" must be a full URL starting with {expected}.')
 
         return values
 
