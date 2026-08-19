@@ -8,7 +8,7 @@ import json
 import logging
 import tempfile
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime
 from io import IOBase, StringIO
 from typing import Iterable, List, Optional
 
@@ -104,12 +104,14 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        if self.config.credentials.auth_type == "Client":
-                            uri = f"gs://{blob.bucket.name}/{blob.name}"
-                            displayed_uri = None
-                        else:
-                            uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
-                            displayed_uri = uri.split("?")[0] if self.config.sanitize_signed_urls else None
+                        # Always use gs:// URIs. Signed HTTPS URLs contain query
+                        # parameters (e.g. ?X-Goog-Algorithm=...) that the CDK
+                        # Parquet parser mistakes for Hive partition columns,
+                        # producing spurious columns in the destination table.
+                        # The authenticated GCS client in open_file handles both
+                        # OAuth and Service Account credentials transparently.
+                        uri = f"gs://{blob.bucket.name}/{blob.name}"
+                        displayed_uri = None
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,

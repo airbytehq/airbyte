@@ -86,64 +86,66 @@ def test_compound_extension_detected_as_zip(blob_name, expected_is_zip):
     assert blob_name.endswith(".zip") == expected_is_zip
 
 
-def _make_mock_blob(bucket_name: str, blob_name: str, signed_url: str) -> MagicMock:
+def _make_mock_blob(bucket_name: str, blob_name: str) -> MagicMock:
     blob = MagicMock()
     blob.name = blob_name
     blob.bucket.name = bucket_name
     blob.updated = datetime.datetime.now(tz=pytz.utc)
-    blob.generate_signed_url.return_value = signed_url
     return blob
 
 
-@pytest.mark.parametrize(
-    "sanitize_value,expected_displayed_uri",
-    [
-        pytest.param(
-            True,
-            "https://storage.googleapis.com/my-bucket/data.csv",
-            id="sanitize_true_strips_query_params",
-        ),
-        pytest.param(
-            False,
-            None,
-            id="sanitize_false_preserves_signed_url",
-        ),
-        pytest.param(
-            None,
-            None,
-            id="sanitize_none_preserves_signed_url",
-        ),
-    ],
-)
-def test_get_matching_files_sanitize_signed_urls(logger, sanitize_value, expected_displayed_uri):
-    signed_url = (
-        "https://storage.googleapis.com/my-bucket/data.csv"
-        "?X-Goog-Algorithm=GOOG4-RSA-SHA256"
-        "&X-Goog-Credential=sa%40project.iam.gserviceaccount.com"
-        "&X-Goog-Signature=abc123"
-    )
-    blob = _make_mock_blob("my-bucket", "data.csv", signed_url)
+def test_get_matching_files_service_account_uses_gs_uri(logger):
+    """Service Account auth must produce gs:// URIs, never signed HTTPS URLs.
+
+    Signed URLs contain query parameters (e.g. ?X-Goog-Algorithm=...) that
+    the CDK Parquet parser mistakes for Hive partition columns, creating
+    spurious columns in the destination (GitHub issue #80940).
+    """
+    blob = _make_mock_blob("my-bucket", "data.csv")
 
     reader = SourceGCSStreamReader()
     reader._gcs_client = MagicMock()
     reader._gcs_client.get_bucket.return_value.list_blobs.return_value = [blob]
-
-    config_kwargs = dict(
+    reader._config = Config(
         credentials=ServiceAccountCredentials(service_account='{"type": "service_account"}', auth_type="Service"),
         bucket="my-bucket",
         streams=[],
     )
-    if sanitize_value is not None:
-        config_kwargs["sanitize_signed_urls"] = sanitize_value
-    reader._config = Config(**config_kwargs)
 
     files = list(reader.get_matching_files(["**/*.csv"], None, logger))
 
     assert len(files) == 1
-    assert files[0].displayed_uri == expected_displayed_uri
-    if sanitize_value:
-        assert "X-Goog-Credential" not in (files[0].displayed_uri or "")
-        assert "X-Goog-Signature" not in (files[0].displayed_uri or "")
+    assert files[0].uri == "gs://my-bucket/data.csv"
+    assert files[0].displayed_uri is None
+    blob.generate_signed_url.assert_not_called()
+    assert "X-Goog-Algorithm" not in files[0].uri
+
+
+def test_get_matching_files_oauth_uses_gs_uri(logger):
+    """OAuth (Client) auth also produces gs:// URIs — unchanged by the fix."""
+    from source_gcs.config import OAuthCredentials
+
+    blob = _make_mock_blob("my-bucket", "data.csv")
+
+    reader = SourceGCSStreamReader()
+    reader._gcs_client = MagicMock()
+    reader._gcs_client.get_bucket.return_value.list_blobs.return_value = [blob]
+    reader._config = Config(
+        credentials=OAuthCredentials(
+            client_id="id",
+            client_secret="secret",
+            access_token="token",
+            refresh_token="refresh",
+            auth_type="Client",
+        ),
+        bucket="my-bucket",
+        streams=[],
+    )
+
+    files = list(reader.get_matching_files(["**/*.csv"], None, logger))
+
+    assert len(files) == 1
+    assert files[0].uri == "gs://my-bucket/data.csv"
 
 
 @pytest.mark.skipif(_GzipDecoder is None, reason="google-resumable-media _GzipDecoder not available")
@@ -334,13 +336,13 @@ def test_open_file_does_not_use_raw_download(logger, uri, content_encoding, mime
     blob.open.assert_not_called()
 
 
-def test_signed_url_does_not_use_raw_download(logger):
-    """Signed HTTP URLs (Service auth) bypass the gzip fix even if blob has Content-Encoding: gzip."""
+def test_https_uri_does_not_use_raw_download(logger):
+    """HTTPS URIs bypass the Content-Encoding gzip fix (which only applies to gs://)."""
     blob = MagicMock()
     blob.content_encoding = "gzip"
 
     file = MagicMock(spec=GCSUploadableRemoteFile)
-    file.uri = "https://storage.googleapis.com/bucket/file.csv?X-Goog-Signature=abc"
+    file.uri = "https://storage.googleapis.com/bucket/file.csv"
     file.blob = blob
     file.mime_type = "csv"
 
@@ -348,7 +350,7 @@ def test_signed_url_does_not_use_raw_download(logger):
     reader._gcs_client = MagicMock()
     reader._config = MagicMock()
 
-    # The signed URL hits the real network, so smart_open raises OSError.
+    # The HTTPS URI hits the real network, so smart_open raises OSError.
     # The key assertion is that blob.open(raw_download=True) is never called.
     with pytest.raises(OSError):
         reader.open_file(file, FileReadMode.READ, "utf-8", logger)
