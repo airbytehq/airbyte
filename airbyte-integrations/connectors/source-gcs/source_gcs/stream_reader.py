@@ -104,14 +104,23 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        # Always use gs:// URIs. Signed HTTPS URLs contain query
-                        # parameters (e.g. ?X-Goog-Algorithm=...) that the CDK
-                        # Parquet parser mistakes for Hive partition columns,
-                        # producing spurious columns in the destination table.
-                        # The authenticated GCS client in open_file handles both
-                        # OAuth and Service Account credentials transparently.
-                        uri = f"gs://{blob.bucket.name}/{blob.name}"
-                        displayed_uri = None
+                        if self.config.credentials.auth_type == "Client":
+                            uri = f"gs://{blob.bucket.name}/{blob.name}"
+                            displayed_uri = None
+                        else:
+                            # Use gs:// as the internal URI so the CDK Parquet
+                            # parser never sees signed-URL query parameters
+                            # (e.g. ?X-Goog-Algorithm=...) as Hive partition
+                            # columns, which was producing spurious destination
+                            # columns (GitHub issue #80940).
+                            #
+                            # displayed_uri preserves the canonical HTTPS path
+                            # (no credentials, no query string) so that the
+                            # Cursor's incremental state key is unchanged from
+                            # the pre-fix behaviour — existing connections will
+                            # not re-read already-synced files after upgrading.
+                            uri = f"gs://{blob.bucket.name}/{blob.name}"
+                            displayed_uri = f"https://storage.googleapis.com/{blob.bucket.name}/{blob.name}"
 
                         remote_file = GCSUploadableRemoteFile(
                             uri=uri,

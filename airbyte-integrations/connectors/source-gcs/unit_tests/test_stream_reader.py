@@ -95,11 +95,12 @@ def _make_mock_blob(bucket_name: str, blob_name: str) -> MagicMock:
 
 
 def test_get_matching_files_service_account_uses_gs_uri(logger):
-    """Service Account auth must produce gs:// URIs, never signed HTTPS URLs.
+    """Service Account auth must produce gs:// URIs so the CDK Parquet parser
+    never sees signed-URL query parameters as Hive partition columns (issue #80940).
 
-    Signed URLs contain query parameters (e.g. ?X-Goog-Algorithm=...) that
-    the CDK Parquet parser mistakes for Hive partition columns, creating
-    spurious columns in the destination (GitHub issue #80940).
+    displayed_uri is set to the canonical HTTPS path (no credentials, no query
+    string) so the Cursor incremental state key is identical to the pre-fix
+    behaviour — existing connections will not re-read already-synced files.
     """
     blob = _make_mock_blob("my-bucket", "data.csv")
 
@@ -115,10 +116,14 @@ def test_get_matching_files_service_account_uses_gs_uri(logger):
     files = list(reader.get_matching_files(["**/*.csv"], None, logger))
 
     assert len(files) == 1
+    # gs:// URI — no query params — prevents spurious Parquet partition columns
     assert files[0].uri == "gs://my-bucket/data.csv"
-    assert files[0].displayed_uri is None
-    blob.generate_signed_url.assert_not_called()
     assert "X-Goog-Algorithm" not in files[0].uri
+    blob.generate_signed_url.assert_not_called()
+    # displayed_uri preserves the canonical HTTPS path used as the cursor state key
+    assert files[0].displayed_uri == "https://storage.googleapis.com/my-bucket/data.csv"
+    assert "X-Goog-Credential" not in files[0].displayed_uri
+    assert "X-Goog-Signature" not in files[0].displayed_uri
 
 
 def test_get_matching_files_oauth_uses_gs_uri(logger):
