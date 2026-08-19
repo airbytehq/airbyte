@@ -4,7 +4,7 @@
 
 Web app
 
-- Pinning chats no longer stops at 50. Every chat you pin now shows up in the pinned group in the sidebar and reads as pinned in the chat header, and pinning or unpinning takes effect immediately instead of waiting for the list to refresh.
+- Pinning chats no longer stops at 50. Every chat you pin now shows up in the pinned group in the sidebar and reads as pinned in the chat header. Pinning and unpinning also take effect immediately, without waiting for the list to refresh.
 
 SDK
 
@@ -12,7 +12,7 @@ SDK
 
 Connectors
 
-- Google Ads queries now page through large result sets correctly, so your agents get complete results instead of stopping after the first page. The connector also explains that it can only read accounts your sign-in has direct access to, not accounts reachable only through a manager account, so agents stop retrying requests that can't succeed.
+- Google Ads queries now page through large result sets correctly, so your agents return complete results instead of stopping after the first page. The connector also documents that it only reads accounts your sign-in has direct access to. Agents no longer retry accounts that are reachable only through a manager account.
 
 Other
 
