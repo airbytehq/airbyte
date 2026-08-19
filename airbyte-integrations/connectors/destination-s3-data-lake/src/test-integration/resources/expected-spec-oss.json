@@ -223,6 +223,15 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "merge_on_read_delete_encoding" : {
+        "type" : "string",
+        "enum" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL" ],
+        "description" : "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes but may change in a future version. Choose EQUALITY to always use equality deletes, or POSITIONAL for readers that do not support equality-delete files.",
+        "title" : "Merge-on-Read Delete Encoding",
+        "default" : "AUTOMATIC",
+        "examples" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL" ],
+        "order" : 9
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
