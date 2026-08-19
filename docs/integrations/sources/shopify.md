@@ -282,10 +282,10 @@ This most often affects the metafield streams and `discount_codes`, where many c
 
 Two things that do not help:
 
-- **Lowering GraphQL BULK Date Range in Days.** A collision means one cursor value already exceeds the checkpoint threshold, and no date range can subdivide a single value.
+- **Lowering GraphQL BULK Date Range in Days.** A collision means the sync could not get past a single cursor value, and no date range can subdivide a single value.
 - **Clearing the stream.** The cluster is in your source data, so a fresh sync reaches it again.
 
-If the stream still collides at 1,000,000, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) — the affected cursor value is in the sync logs, on the line reading `Stream <stream_name>, continue from checkpoint:`.
+If the stream still collides at 1,000,000, or if raising the value does not change the behavior, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) — the affected cursor value is in the sync logs, on the line reading `Stream <stream_name>, continue from checkpoint:`.
 
 ### Troubleshooting
 
