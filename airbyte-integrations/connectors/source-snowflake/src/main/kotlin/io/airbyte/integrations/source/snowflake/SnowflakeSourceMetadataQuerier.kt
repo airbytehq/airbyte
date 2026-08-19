@@ -121,6 +121,59 @@ class SnowflakeSourceMetadataQuerier(
         return tableName to metadata
     }
 
+    /**
+     * Lazily computes privilege-checked column metadata for all tables in a single batch.
+     *
+     * Instead of checking privileges per-table on each [fields] call (N+1 pattern), this processes
+     * all tables upfront when first accessed. For sources with hundreds of streams, this avoids
+     * hundreds of sequential Snowflake queries during discovery.
+     */
+    val memoizedPrivilegeCheckedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
+        if (!base.config.checkPrivileges) {
+            return@lazy memoizedColumnMetadata
+        }
+        val totalTables = memoizedColumnMetadata.size
+        if (totalTables == 0) {
+            return@lazy memoizedColumnMetadata
+        }
+        log.info { "Checking access privileges for $totalTables table(s) in batch." }
+        val result = mutableMapOf<TableName, List<ColumnMetadata>>()
+        var checkedCount = 0
+        for ((table, columnMetadata) in memoizedColumnMetadata) {
+            checkedCount++
+            if (columnMetadata.isEmpty()) {
+                result[table] = columnMetadata
+                continue
+            }
+            if (checkedCount % 50 == 0 || checkedCount == totalTables) {
+                log.info { "Privilege check progress: $checkedCount / $totalTables tables." }
+            }
+            val resultsFromSelectMany: List<ColumnMetadata>? =
+                queryColumnMetadata(
+                    base.conn,
+                    selectLimit0(table, columnMetadata.map { it.name }),
+                )
+            if (resultsFromSelectMany != null) {
+                result[table] = resultsFromSelectMany
+            } else {
+                log.info {
+                    "Not all columns of $table might be accessible, " +
+                        "trying each column individually."
+                }
+                result[table] =
+                    columnMetadata.flatMap {
+                        queryColumnMetadata(
+                            base.conn,
+                            selectLimit0(table, listOf(it.name)),
+                        )
+                            ?: listOf()
+                    }
+            }
+        }
+        log.info { "Privilege check complete for $totalTables table(s)." }
+        return@lazy result
+    }
+
     override fun fields(
         streamID: StreamIdentifier,
     ): List<Field> {
@@ -129,21 +182,10 @@ class SnowflakeSourceMetadataQuerier(
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
-        val columnMetadata: List<ColumnMetadata> = memoizedColumnMetadata[table] ?: listOf()
-        if (columnMetadata.isEmpty() || !base.config.checkPrivileges) {
-            return columnMetadata
+        if (base.config.checkPrivileges) {
+            return memoizedPrivilegeCheckedColumnMetadata[table] ?: listOf()
         }
-        val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(base.conn, selectLimit0(table, columnMetadata.map { it.name }))
-        if (resultsFromSelectMany != null) {
-            return resultsFromSelectMany
-        }
-        log.info {
-            "Not all columns of $table might be accessible, trying each column individually."
-        }
-        return columnMetadata.flatMap {
-            queryColumnMetadata(base.conn, selectLimit0(table, listOf(it.name))) ?: listOf()
-        }
+        return memoizedColumnMetadata[table] ?: listOf()
     }
 
     /**
@@ -166,7 +208,7 @@ class SnowflakeSourceMetadataQuerier(
         conn: Connection,
         sql: String,
     ): List<ColumnMetadata>? {
-        log.info { "Querying $sql for catalog discovery." }
+        log.debug { "Querying $sql for catalog discovery." }
         conn.createStatement().use { stmt: Statement ->
             try {
                 stmt.fetchSize = 1
@@ -194,7 +236,12 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             } catch (e: SQLException) {
-                throw RuntimeException("Column name discovery query failed: ${e.message}", e)
+                log.info {
+                    "Failed to query $sql: " +
+                        "sqlState = '${e.sqlState ?: ""}', " +
+                        "errorCode = ${e.errorCode}, ${e.message}"
+                }
+                return null
             }
         }
     }
