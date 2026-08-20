@@ -32,10 +32,11 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 | Employee Attendance Muster | employeeId, attendanceDate | None | ✅ |  ✅  |
 | Employee Attendance Swipes |  | None | ✅ |  ✅  |
 
-The Leave and Attendance streams use employee-scoped endpoints and make approximately one
-request per employee for each 31-day date slice, so extending `start_date` multiplies the
-request count by roughly `ceil(number of days / 31)` per stream and may require API
-rate-limit planning for larger workforces. The default covers only the last 31 days.
+The date-ranged Leave and Attendance streams use employee-scoped endpoints and make
+approximately one request per employee for each 31-day date slice, so extending
+`start_date` multiplies the request count by roughly `ceil(number of days / 31)` per
+date-ranged stream and may require API rate-limit planning for larger workforces. Leave
+Balances adds one request per employee. The default covers only the last 31 days.
 Attendance Summary returns an aggregate for each requested date slice and uses its `endDate`
 field as the incremental cursor; Leave Transactions, Attendance Muster, and Attendance
 Swipes use their API date fields for incremental sync.
