@@ -103,7 +103,7 @@ From
 
 Airbyte Postgres destination creates final tables and their corresponding columns using Quoted identifiers, preserving the case sensitivity. Special characters in table and column names are replaced with underscores.
 
-When using the legacy "Raw tables only" mode, raw table and schema names are lowercased, and column names are left exactly as the source sent them.
+When using the legacy "Raw tables only" mode, raw table and schema names are lowercased. Raw tables have a fixed set of Airbyte columns, so your source's field names aren't used as column names at all. They're preserved as-is inside the `_airbyte_data` JSONB payload.
 
 :::
 
@@ -283,7 +283,7 @@ names get a numeric suffix (`my_field_1`), and colliding table names get a short
 The connector adapts some values to what Postgres accepts:
 
 - Null bytes (`\u0000`) are removed before the record is written. Postgres rejects them in `text`,
-  `varchar`, and `jsonb` values, and a record containing one would otherwise fail the whole batch.
+  `varchar`, and `jsonb` values, so a record containing one would otherwise fail to write.
   Starting with version 3.0.17, the connector removes them everywhere they can appear: in top-level
   string values, in strings nested inside objects and arrays, and in the keys of JSON objects. If
   removing a null byte makes two keys in the same object identical, the last value wins. This edit
