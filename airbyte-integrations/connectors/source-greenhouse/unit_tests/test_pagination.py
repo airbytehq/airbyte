@@ -45,7 +45,7 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
         if len(application_requests) == 1:
             assert request.qs == {
                 "per_page": ["500"],
-                "created_at": ["gte|1970-01-01t00:00:00.000z"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z"],
             }
             context.status_code = 200
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/applications?cursor=cursor-2>; rel="next"'
@@ -127,7 +127,7 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
     read(source, config=CONFIG, catalog=catalog)
 
-    assert application_requests[0].qs["created_at"] == ["gte|2024-01-01t00:00:00.000z"]
+    assert application_requests[0].qs["updated_at"] == ["gte|2024-01-01t00:00:00.000z"]
 
 
 def test_child_cursor_pagination_suppresses_parent_filter(requests_mock, get_source):
@@ -207,4 +207,4 @@ def test_manifest_child_state_migration_reaches_parent_request(requests_mock, ge
     read(source, config=CONFIG, catalog=catalog)
 
     assert interview_requests[0].qs["application_ids"] == ["42"]
-    assert parent_requests[0].qs["created_at"] == ["gte|2024-01-01t00:00:00.000z"]
+    assert parent_requests[0].qs["updated_at"] == ["gte|2024-01-01t00:00:00.000z"]

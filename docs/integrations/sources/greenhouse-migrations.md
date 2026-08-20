@@ -12,7 +12,7 @@ Harvest v3 uses OAuth 2.0 Authorization Code authentication and refresh tokens i
 
 All 36 streams now use their Harvest v3 collection endpoints. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
 
-- `applications` uses `created_at` instead of `applied_at` and exposes flat job, stage, recruiter, coordinator, and source identifiers.
+- `applications` uses `updated_at` for incremental state instead of `applied_at` and exposes flat job, stage, recruiter, coordinator, and source identifiers.
 - `candidates` no longer embeds applications and uses `private`, `preferred_name`, `last_activity_at`, and linked user identifiers.
 - `applications_interviews` uses flat schedule, organizer, and interview identifiers.
 - `jobs_openings`, `offers`, and `users` use v3 relationship identifiers instead of the v1 nested objects.
@@ -22,7 +22,7 @@ The complete field-level comparison is reflected in the connector's v3 schemas. 
 
 ### Pagination and incremental state
 
-Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. Existing application state is migrated from `applied_at` to `created_at`, including partitioned application child-stream state.
+Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. Existing application state is migrated from `applied_at` to `updated_at`, including partitioned application child-stream state.
 
 ### Rate limits
 

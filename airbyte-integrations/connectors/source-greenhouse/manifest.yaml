@@ -25,7 +25,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            created_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             response_filters:
@@ -51,7 +51,7 @@ definitions:
           type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: created_at
+        cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"

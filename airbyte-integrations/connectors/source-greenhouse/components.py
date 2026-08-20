@@ -68,7 +68,7 @@ class ApplicationCursorStateMigration(StateMigration):
     @classmethod
     def _rename_applied_at(cls, value: Any) -> Any:
         if isinstance(value, Mapping):
-            return {("created_at" if key == "applied_at" else key): cls._rename_applied_at(item) for key, item in value.items()}
+            return {("updated_at" if key == "applied_at" else key): cls._rename_applied_at(item) for key, item in value.items()}
         if isinstance(value, list):
             return [cls._rename_applied_at(item) for item in value]
         return value
