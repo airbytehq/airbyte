@@ -555,6 +555,16 @@ definitions:
                   - 404
                 action: IGNORE
                 error_message: "Skipping a creative's post that is deleted or not readable by the authenticated user; the videos it references will not be synced."
+              # A creative's `content.reference` can also be an urn:li:adInMailContent
+              # (Message Ads), which is not a post URN - the Posts API rejects it with
+              # 400 INVALID_URN_TYPE - and an explicitly null reference would produce a
+              # request for `posts/None`, also rejected as a malformed URN. Skip both:
+              # neither can reference a video. The predicate only matches 400s whose
+              # message points at the URN, so genuine request errors still fail loudly.
+              - type: HttpResponseFilter
+                predicate: "{{ response.get('status') == 400 and 'URN' in ((response.get('message') or '') | upper) }}"
+                action: IGNORE
+                error_message: "Skipping a creative reference that is not a fetchable post URN (e.g. urn:li:adInMailContent from Message Ads); it cannot reference a video."
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -613,6 +623,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: videos/{{ stream_slice.get('video_urn') | replace(':', '%3A') }}
           http_method: GET
+          # The same video is fetched once per referencing post; the HTTP cache collapses
+          # those duplicate GETs into one API call (a record is still emitted per reference).
+          use_cache: true
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
@@ -2154,6 +2167,7 @@ metadata:
     conversions: false
     lead_forms: false
     lead_form_responses: false
+    videos: false
     ad_campaign_analytics: false
     ad_creative_analytics: false
     ad_impression_device_analytics: false
@@ -3330,12 +3344,12 @@ schemas:
           - "null"
           - integer
       thumbnail:
-        description: File identifier to retrieve the thumbnail file.
+        description: Public URL of the video thumbnail image.
         type:
           - "null"
           - string
       captions:
-        description: File identifier to retrieve the caption file.
+        description: Public URL of the video caption file.
         type:
           - "null"
           - string
