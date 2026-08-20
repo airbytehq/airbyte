@@ -47,6 +47,86 @@ def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
     sleep_mock.assert_not_called()
 
 
+def test_check_connection_fails_fast_when_the_server_reports_a_rate_limit(requests_mock):
+    """The other rate-limit path: the local counters look healthy, the request goes out, and
+    GitHub rejects it with a reset an hour away. That wait belongs to the error handler, not to
+    the authenticator, so `max_waiting_time: 0` could not reach it until the manifest gained
+    `max_waiting_time_in_seconds` (CDK #1123). Without the cap this check sleeps ~3600s."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        status_code=403,
+        headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 3600)},
+        json={"message": "API rate limit exceeded for user ID 1."},
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+    source = SourceGithub(config=dict(config))
+
+    with patch("time.sleep") as sleep_mock:
+        ok, message = source.check_connection(logging.getLogger("airbyte"), dict(config))
+
+    assert ok is False
+    assert "rate limit" in message.lower()
+    assert sleep_mock.call_count == 0 or max(call.args[0] for call in sleep_mock.call_args_list) < 60
+
+
+def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
+    """The cap must bound `check` without turning an ordinary sync-time rate limit into a
+    failure: a two-minute wait is well inside the default 120-minute budget, so it is slept."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {
+                "status_code": 403,
+                "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 120)},
+                "json": {"message": "API rate limit exceeded for user ID 1."},
+            },
+            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+        ],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+
+    with patch("time.sleep") as sleep_mock:
+        organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+    assert max(call.args[0] for call in sleep_mock.call_args_list) > 60
+
+
+def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_mock):
+    """GHES ships with HTTP API rate limiting off and answers /rate_limit with 404. Quota
+    seeding runs before the first stream request, so that 404 used to fail every command;
+    `unavailable_status_codes: [404]` seeds the token untracked instead (CDK #1121)."""
+    api_url = "https://github.example.com/api/v3"
+    requests_mock.get(f"{api_url}/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
+    requests_mock.get(
+        f"{api_url}/orgs/org/repos",
+        json=[{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "api_url": api_url}
+
+    organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+
+
+def test_rate_limit_404_on_github_dot_com_is_not_swallowed_into_a_broken_sync(requests_mock):
+    """The opt-in is scoped to the quota endpoint, so a 404 from a stream still means what it
+    always meant — the org does not exist — and resolution yields nothing rather than pretending
+    it succeeded."""
+    requests_mock.get("https://api.github.com/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
+    requests_mock.get("https://api.github.com/orgs/org/repos", status_code=404, json={"message": "Not Found"})
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+
+    organizations, repositories = _resolve(config)
+
+    assert repositories == []
+    assert organizations == []
+
+
 def test_resolution_raises_on_no_tokens():
     config = {"credentials": {}, "repositories": ["org/repo"]}
     with pytest.raises(AirbyteTracedException, match="No authentication tokens found"):

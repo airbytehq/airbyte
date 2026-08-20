@@ -252,11 +252,17 @@ def test_primary_rate_limit_rotates_instead_of_waiting_out_the_reset(sleep_mock,
     pools against response headers), `HttpClient` then asks `has_alternative_token` and retries
     on the spare token immediately instead of sleeping until `X-RateLimit-Reset`.
 
-    The reset matches the one the /rate_limit fixture seeds: a response describing an older
-    window than the one the authenticator holds is ignored on purpose, and in production both
-    values come from the same GitHub quota window."""
+    The reset the 403 carries matches the one /rate_limit seeded, because a response describing
+    an older window than the authenticator holds is ignored on purpose; in production both come
+    from the same GitHub quota window."""
     config = {"credentials": {"personal_access_token": "token1,token2"}, "repositories": ["rotationorg/*"]}
-    seeded_reset = 4070908800
+    # A real quota window, re-seeding /rate_limit over the fixture's year-2099 value: the
+    # response's reset has to belong to the window the authenticator holds for the reconciliation
+    # to accept its zero, and the wait it implies has to sit under the manifest's
+    # `max_waiting_time_in_seconds` cap, which is what rotation is being measured against.
+    seeded_reset = int(time.time()) + 3600
+    quota = {"remaining": 5000, "reset": seeded_reset, "limit": 5000}
+    requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
     tokens_used = []
 
     def respond(request, context):

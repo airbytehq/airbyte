@@ -1,4 +1,4 @@
-version: "7.26.0"
+version: "7.28.0"
 type: DeclarativeSource
 
 definitions:
@@ -38,6 +38,21 @@ definitions:
         request_headers:
           Accept: "application/vnd.github+json"
           X-GitHub-Api-Version: "2022-11-28"
+        # GitHub Enterprise Server ships with HTTP API rate limiting disabled, and an instance
+        # in that state answers `GET /rate_limit` with 404 {"message": "Rate limiting is not
+        # enabled."}. Seeding runs before the first stream request, so without this the whole
+        # connection died on a generic "Resource not found" — every command, not just sync.
+        # Listed statuses seed that token's pools as untracked instead: no exhaustion waits, no
+        # proactive throttling, no rotation on exhaustion, while requests are still signed and
+        # tokens still rotate. Only 404, deliberately. An untracked token stays untracked for
+        # the whole sync (the endpoint is never consulted for it again), so a status the
+        # endpoint can also return transiently would cost quota tracking for the entire run.
+        # 401/403 must never be listed — a revoked credential would then read as "quota
+        # tracking unavailable" instead of as an auth failure. GitHub documents 404 as a
+        # possible response for this endpoint but never states that it means rate limiting is
+        # off; that mapping comes from GHES responses in the wild, which is exactly why the CDK
+        # leaves it to the connector.
+        unavailable_status_codes: [404]
       quotas:
         - type: TokenQuota
           name: rest
@@ -102,11 +117,28 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
+        # Both strategies are capped by the same budget the authenticator uses, so
+        # "Max Waiting Time" now bounds every rate-limit wait rather than only the ones the
+        # authenticator decides before sending. `check_connection` resolves the manifest with
+        # `max_waiting_time: 0`, which turns both caps into "never wait" and makes an
+        # interactive check fail in seconds with the rate-limit message instead of sleeping
+        # until the reset. A sync keeps the user's configured budget.
+        # The `is not none` test is load-bearing twice over. `config.get('max_waiting_time', 120)`
+        # would substitute the default only when the key is absent, so a present-but-null value
+        # (reachable via the API or Terraform) reaches the multiplication as None; and the
+        # shorter `or 120` would read check's deliberate 0 as falsy and hand it 120 minutes,
+        # which is the whole behaviour this cap exists to prevent. An unresolvable cap raises a
+        # system error mid-retry rather than a bare Jinja failure, so a mistake here is loud.
         - type: WaitTimeFromHeader
           header: "Retry-After"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 }}"
         - type: WaitUntilTimeFromHeader
           header: "X-RateLimit-Reset"
           min_wait: 60
+          # The cap is compared against the computed wait, not the raw reset timestamp, and it
+          # is applied after `min_wait` — so during check, where the cap is 0, even the 60s
+          # floor is refused.
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 }}"
           # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
           # timestamp already in the past, or seconds away, doesn't turn into a tight retry
           # loop against a quota that hasn't actually refilled.
@@ -1207,7 +1239,7 @@ spec:
         default: 120
         minimum: 1
         maximum: 240
-        description: Max time (in minutes) the connector will wait when all API tokens are rate-limited before failing. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
+        description: Max time (in minutes) the connector will wait on a rate limit before failing — both when all API tokens are already known to be exhausted and when GitHub rejects a request and asks the connector to wait. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
         order: 5
       num_workers:
         type: integer
