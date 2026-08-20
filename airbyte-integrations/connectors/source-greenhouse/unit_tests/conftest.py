@@ -5,9 +5,8 @@ import sys
 from pathlib import Path
 
 import pytest
-import yaml
 
-from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -21,13 +20,11 @@ sys.path.append(str(_CONNECTOR_PATH))
 @pytest.fixture
 def get_source():
     def _get_source(config, state=None):
-        manifest = yaml.safe_load((_CONNECTOR_PATH / "manifest.yaml").read_text())
-        manifest.pop("advanced_auth")
-        return ConcurrentDeclarativeSource(
+        return YamlDeclarativeSource(
+            path_to_yaml=str(_CONNECTOR_PATH / "manifest.yaml"),
             catalog=CatalogBuilder().build(),
             config=copy.deepcopy(config),
             state=state or StateBuilder().build(),
-            source_config=manifest,
         )
 
     return _get_source

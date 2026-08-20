@@ -1879,66 +1879,65 @@ spec:
           - 2
           - 3
         order: 1
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value}}
+        scope: >-
+          harvest:applications:list harvest:approval_flows:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interviews:list harvest:job_interview_stages:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_pools:list harvest:rejection_reasons:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
+        access_token_url: https://auth.greenhouse.io/token
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: application/x-www-form-urlencoded
+        access_token_params:
+          grant_type: authorization_code
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+      complete_oauth_output_specification:
+        required:
+          - refresh_token
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
     additionalProperties: true
-
-advanced_auth:
-  auth_flow_type: oauth2.0
-  predicate_key:
-    - credentials
-    - auth_type
-  predicate_value: Client
-  oauth_config_specification:
-    oauth_connector_input_specification:
-      consent_url: >-
-        https://auth.greenhouse.io/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value}}
-      scope: >-
-        harvest:applications:list harvest:approval_flows:list harvest:candidate_tags:list harvest:candidates:list harvest:close_reasons:list harvest:custom_field_options:list harvest:custom_fields:list harvest:demographic_answer_options:list harvest:demographic_answers:list harvest:demographic_question_sets:list harvest:demographic_questions:list harvest:departments:list harvest:eeoc:list harvest:email_templates:list harvest:interviews:list harvest:job_interview_stages:list harvest:job_posts:list harvest:jobs:list harvest:notes:list harvest:offers:list harvest:offices:list harvest:openings:list harvest:prospect_pools:list harvest:rejection_reasons:list harvest:scorecards:list harvest:sources:list harvest:user_job_permissions:list harvest:user_roles:list harvest:users:list
-      access_token_url: https://auth.greenhouse.io/token
-      access_token_headers:
-        Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
-        Content-Type: application/x-www-form-urlencoded
-      access_token_params:
-        grant_type: authorization_code
-        code: "{{ auth_code_value }}"
-        redirect_uri: "{{ redirect_uri_value }}"
-    complete_oauth_output_specification:
-      required:
-        - refresh_token
-      properties:
-        refresh_token:
-          type: string
-          path_in_connector_config:
-            - credentials
-            - refresh_token
-        access_token:
-          type: string
-          path_in_connector_config:
-            - credentials
-            - access_token
-    complete_oauth_server_input_specification:
-      required:
-        - client_id
-        - client_secret
-      properties:
-        client_id:
-          type: string
-        client_secret:
-          type: string
-    complete_oauth_server_output_specification:
-      required:
-        - client_id
-        - client_secret
-      properties:
-        client_id:
-          type: string
-          path_in_connector_config:
-            - credentials
-            - client_id
-        client_secret:
-          type: string
-          path_in_connector_config:
-            - credentials
-            - client_secret
 
 metadata:
   autoImportSchema:
