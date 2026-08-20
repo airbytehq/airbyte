@@ -117,42 +117,36 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
-        # These caps exist for `check` only, and are why an interactive check answers in
-        # seconds instead of sleeping out a rate limit. `check_connection` resolves the manifest
-        # with `max_waiting_time: 0`, which is the sentinel below: the cap becomes 1s, every
-        # wait exceeds it, and the CDK raises the rate-limit error immediately.
+        # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
+        # rate-limit wait rather than only the ones the authenticator decides before sending.
+        # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap
+        # 1s: an interactive check then fails in seconds with the rate-limit message instead of
+        # sleeping until the reset. A sync keeps the user's budget.
         #
-        # A sync gets 86400s, which is "no cap" in practice — GitHub's primary window is at most
-        # an hour. That is deliberate, and it is not the same thing as the connector waiting
-        # without limit: the *proactive* wait, where the authenticator already knows every token
-        # is spent, is still bounded by `max_wait_time` on the authenticator above, which is the
-        # only thing the legacy implementation ever bounded (master streams.py:61 assigned
-        # `max_waiting_time` to `authenticator.max_time`, consumed only by the all-tokens-
-        # exhausted branch of `process_token`). Legacy handled *this* path — the server rejecting
-        # a request the counters thought was fine — by rotating tokens, never by giving up.
+        # REQUIRES a CDK carrying airbytehq/airbyte-python-cdk#1126. Before that fix `HttpClient`
+        # asks the authenticator for a spare credential only *after* a strategy returns a wait,
+        # and a cap raises instead of returning — so a budget shorter than the distance to the
+        # reset ends the stream rather than rotating onto a healthy token (measured on 7.28.0:
+        # 30min budget against a 60min reset failed with a second token idle). With #1126 the
+        # rotation question is asked first and the cap only governs waits that are actually
+        # taken. `test_short_wait_budget_does_not_cost_token_rotation` is the tripwire: it is
+        # xfail-strict until the repin, and turns red the moment the fix is available.
         #
-        # Interpolating the user's budget here instead would break that rotation. The cap is
-        # evaluated inside the strategy and raises, while `HttpClient` only asks the
-        # authenticator whether a spare token could serve the retry *after* it has a wait value
-        # — so a budget shorter than the reset distance stops the stream before rotation is ever
-        # considered (measured: 30min budget against a 60min reset failed with a healthy second
-        # token idle, where the default 120min rotated in 0.1s). It would also fail an ordinary
-        # headerless 5xx at the spec's minimum of 1 minute, since the CDK compares with `>=` and
-        # the `min_wait: 60` floor below would equal that budget exactly.
-        #
-        # Follow-up upstream: have `HttpClient` consult `has_alternative_token` before a
-        # strategy's cap raises. With that, the user's budget could bound this path too without
-        # costing rotation, and these sentinels could go.
+        # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach
+        # the multiplication as None, and a falsy test would read check's deliberate 0 as absent
+        # and hand it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`,
+        # so a user on the spec's minimum of 1 minute would otherwise get a 60s cap equal to the
+        # `min_wait: 60` floor below, and every headerless 5xx would fail instead of retrying.
         - type: WaitTimeFromHeader
           header: "Retry-After"
-          max_waiting_time_in_seconds: "{{ 1 if config.get('max_waiting_time') == 0 else 86400 }}"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
         - type: WaitUntilTimeFromHeader
           header: "X-RateLimit-Reset"
           min_wait: 60
           # The cap is compared against the computed wait, not the raw reset timestamp, and it
           # is applied after `min_wait` — so during check, where the cap is 1s, even the 60s
           # floor below is refused.
-          max_waiting_time_in_seconds: "{{ 1 if config.get('max_waiting_time') == 0 else 86400 }}"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
           # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
           # timestamp already in the past, or seconds away, doesn't turn into a tight retry
           # loop against a quota that hasn't actually refilled.
@@ -1253,7 +1247,7 @@ spec:
         default: 120
         minimum: 1
         maximum: 240
-        description: Max time (in minutes) the connector will wait when all API tokens are rate-limited before failing. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
+        description: Max time (in minutes) the connector will wait on a rate limit before failing — both when all API tokens are already known to be exhausted and when GitHub rejects a request and asks the connector to wait. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
         order: 5
       num_workers:
         type: integer
