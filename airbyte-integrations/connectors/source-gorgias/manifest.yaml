@@ -92,6 +92,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: customers
           http_method: GET
+          request_parameters:
+            order_by: updated_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -129,6 +131,7 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_data_feed: true
         cursor_field: updated_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -228,6 +231,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: events
           http_method: GET
+          request_parameters:
+            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -265,6 +270,7 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_data_feed: true
         cursor_field: created_datetime
         end_datetime:
           type: MinMaxDatetime
@@ -630,6 +636,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: satisfaction-surveys
           http_method: GET
+          request_parameters:
+            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -667,6 +675,7 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_data_feed: true
         cursor_field: created_datetime
         end_datetime:
           type: MinMaxDatetime
@@ -831,6 +840,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: tickets
           http_method: GET
+          request_parameters:
+            order_by: updated_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -868,6 +879,7 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_data_feed: true
         cursor_field: updated_datetime
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -898,6 +910,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: messages
           http_method: GET
+          request_parameters:
+            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -935,6 +949,7 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
+        is_data_feed: true
         cursor_field: created_datetime
         end_datetime:
           type: MinMaxDatetime

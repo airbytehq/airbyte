@@ -1,0 +1,107 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
+"""Regression tests for Gorgias incremental data-feed pagination."""
+
+import requests_mock
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.state_builder import StateBuilder
+from _helpers import get_source
+
+
+_BASE_CONFIG = {
+    "username": "test-username",
+    "password": "test-password",
+    "domain_name": "test-domain",
+    "start_date": "2026-01-01T00:00:00Z",
+}
+_BASE_URL = "https://test-domain.gorgias.com/api"
+_CURSOR = "2026-08-10T00:00:00.000000+0000"
+
+
+def _record(record_id: int, cursor: str) -> dict:
+    return {"id": record_id, "updated_datetime": cursor, "created_datetime": cursor}
+
+
+def _read(stream_name: str, state: list):
+    source = get_source(config=_BASE_CONFIG, state=state)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.incremental).build()
+    return read(source, _BASE_CONFIG, catalog, state)
+
+
+def _stream_state(stream_name: str, cursor_field: str = "updated_datetime") -> list:
+    return StateBuilder().with_stream_state(stream_name, {cursor_field: _CURSOR}).build()
+
+
+def _latest_cursor_value(output, stream_name: str, cursor_field: str):
+    for message in reversed(output.state_messages):
+        stream_state = message.state.stream
+        if stream_state and stream_state.stream_descriptor.name == stream_name:
+            return getattr(stream_state.stream_state, cursor_field, None)
+    return None
+
+
+def test_tickets_incremental_data_feed_filters_records_and_stops_pagination():
+    page_1 = {
+        "data": [
+            _record(1, "2026-08-12T00:00:00.000000+0000"),
+            _record(2, "2026-08-11T00:00:00.000000+0000"),
+        ],
+        "meta": {"next_cursor": "page-2"},
+    }
+    page_2 = {
+        "data": [
+            _record(3, "2026-08-10T00:00:00.000000+0000"),
+            _record(4, "2026-08-09T00:00:00.000000+0000"),
+        ],
+        "meta": {"next_cursor": "page-3"},
+    }
+    page_3 = {
+        "data": [_record(5, "2026-08-08T00:00:00.000000+0000")],
+        "meta": {"next_cursor": None},
+    }
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/tickets", [{"json": page_1}, {"json": page_2}, {"json": page_3}])
+        output = _read("tickets", _stream_state("tickets"))
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == [1, 2, 3]
+    ticket_requests = [request for request in mocker.request_history if request.path == "/api/tickets"]
+    assert len(ticket_requests) == 2
+    assert ticket_requests[0].qs["order_by"] == ["updated_datetime:desc"]
+    assert _latest_cursor_value(output, "tickets", "updated_datetime") == "2026-08-12T00:00:00.000000+0000"
+
+
+def test_messages_incremental_data_feed_filters_records_and_stops_pagination():
+    page_1 = {
+        "data": [
+            _record(1, "2026-08-12T00:00:00.000000+0000"),
+            _record(2, "2026-08-10T00:00:00.000000+0000"),
+        ],
+        "meta": {"next_cursor": "page-2"},
+    }
+    page_2 = {
+        "data": [
+            _record(3, "2026-08-09T00:00:00.000000+0000"),
+            _record(4, "2026-08-08T00:00:00.000000+0000"),
+        ],
+        "meta": {"next_cursor": "page-3"},
+    }
+    page_3 = {
+        "data": [_record(5, "2026-07-10T00:00:00.000000+0000")],
+        "meta": {"next_cursor": None},
+    }
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/messages", [{"json": page_1}, {"json": page_2}, {"json": page_3}])
+        output = _read("messages", _stream_state("messages", "created_datetime"))
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == [1, 2]
+    message_requests = [request for request in mocker.request_history if request.path == "/api/messages"]
+    assert len(message_requests) == 2
+    assert message_requests[0].qs["order_by"] == ["created_datetime:desc"]
+    assert _latest_cursor_value(output, "messages", "created_datetime") == "2026-08-12T00:00:00.000000+0000"
