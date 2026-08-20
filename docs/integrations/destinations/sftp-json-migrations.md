@@ -1,4 +1,4 @@
-# SFTP JSON Migration Guide
+# SFTP-JSON Migration Guide
 
 ## Upgrading to 1.0.0
 
@@ -23,4 +23,8 @@ Version 1.0.0 introduces SSH key authentication alongside the existing password 
 
 ### Host key checking security note
 
-The default host key checking mode (`auto_add`) accepts unknown host keys with a warning on first connection. This is convenient but does **not** protect against man-in-the-middle attacks. For production deployments, consider using `strict` mode with a pinned host key. See the [connector documentation](https://docs.airbyte.com/integrations/destinations/sftp-json) for details.
+The default host key checking mode (`auto_add`) loads the system's `~/.ssh/known_hosts` file and **rejects** connections to hosts whose keys are not already registered. If connecting to a new host for the first time, you must either:
+1. Add the host key to `~/.ssh/known_hosts` via `ssh-keyscan`, or
+2. Use `strict` mode with a pinned host key in the connector configuration.
+
+See the [connector documentation](https://docs.airbyte.com/integrations/destinations/sftp-json) for details.

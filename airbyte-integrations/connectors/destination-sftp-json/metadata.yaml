@@ -34,6 +34,7 @@ data:
           but you must re-save your connection configuration in the UI to use the
           new credential format. See the [migration guide](https://docs.airbyte.com/integrations/destinations/sftp-json-migrations).
         upgradeDeadline: "2026-11-20"
+        deadlineAction: auto_upgrade
   supportLevel: community
   tags:
     - language:python

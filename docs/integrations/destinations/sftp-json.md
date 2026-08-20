@@ -40,9 +40,15 @@ The connector supports two authentication methods:
 
 ### Host Key Checking
 
-By default, the connector uses `auto_add` mode, which accepts and logs a warning for unknown server host keys on first connection. **This does not protect against man-in-the-middle (MITM) attacks.** An attacker who can intercept the initial connection could present their own key, and the connector would accept it.
+By default, the connector uses `auto_add` mode, which loads the system's known hosts file (`~/.ssh/known_hosts`) and **rejects** connections to any host whose key is not already present. This provides security against man-in-the-middle attacks but requires that the host key is pre-registered.
 
-For production environments where MITM protection is important, use `strict` mode and supply the server's expected host key. You can obtain the host key by running:
+To register a host key for the first time:
+
+```bash
+ssh-keyscan -t ed25519 your-sftp-host.example.com >> ~/.ssh/known_hosts
+```
+
+For environments where managing `known_hosts` is impractical, use `strict` mode and supply the server's expected host key directly in the connector configuration. You can obtain the host key by running:
 
 ```bash
 ssh-keyscan -t ed25519 your-sftp-host.example.com
