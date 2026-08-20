@@ -3046,6 +3046,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The organization skill registry is temporarily unavailable; retrying is safe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -3184,6 +3194,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The organization skill registry is temporarily unavailable; retrying is safe.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3338,6 +3358,16 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The organization skill registry is temporarily unavailable; retrying is safe.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5590,7 +5620,7 @@
         "type": "object",
         "required": ["code", "message"],
         "title": "ContextStoreInactivityWarning",
-        "description": "Structured warning attached to a search response when the Context Store was inactivity-paused.\n\nEmitted when a search reactivates an inactivity-disabled source (or when a prior search already\nreactivated it and table creation has not yet returned the streams to READY). The timestamps are\nthe durable transition clocks; ``stale_since`` is the preserved last cache update, so the data\nmay be stale until the next update completes."
+        "description": "Structured warning attached when Context Store lifecycle limits a search response.\n\nEmitted when a search reactivates an inactivity-disabled source (or when a prior search already\nreactivated it and table creation has not yet returned the streams to READY), or when semantic\nretrieval is unavailable while base-table fallback remains usable. The timestamps are the\ndurable transition clocks; ``stale_since`` is the preserved last cache update."
       },
       "CronExpressionDescribeRequest": {
         "properties": {
@@ -6734,6 +6764,18 @@
             "type": "string",
             "title": "Version",
             "description": "Version/fingerprint for the docs source."
+          },
+          "content_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Revision",
+            "description": "Fingerprint of the full docs content, prose included. Changes whenever the docs content changes."
           },
           "freshness": {
             "$ref": "#/components/schemas/SkillFreshness",

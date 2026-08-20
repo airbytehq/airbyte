@@ -60,6 +60,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.68 | 2026-08-18 | [84696](https://github.com/airbytehq/airbyte/pull/84696) | Update dependencies |
+| 0.3.67 | 2026-08-13 | [84389](https://github.com/airbytehq/airbyte/pull/84389) | No-op version bump to validate the new autopilot release-immediately checkbox workflow |
 | 0.3.66 | 2026-08-11 | [84043](https://github.com/airbytehq/airbyte/pull/84043) | Update dependencies |
 | 0.3.65 | 2026-08-04 | [83560](https://github.com/airbytehq/airbyte/pull/83560) | Update dependencies |
 | 0.3.64 | 2026-07-28 | [83032](https://github.com/airbytehq/airbyte/pull/83032) | Update dependencies |
