@@ -4,6 +4,7 @@ import json
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Any, Dict, List, NamedTuple, Optional
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
 import requests_mock as rm
@@ -277,9 +278,15 @@ class TestCampaignValuesReportsRecords(TestCase):
         )
 
         catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
-        output = read(get_source(config=config), config=config, catalog=catalog)
+        with (
+            patch("airbyte_cdk.sources.streams.http.rate_limiting.time") as rate_limiting_time,
+            patch("airbyte_cdk.sources.streams.call_rate.time") as call_rate_time,
+        ):
+            output = read(get_source(config=config), config=config, catalog=catalog)
 
         assert output.records == []
         assert output.errors
         assert "greater than max waiting time" in output.get_formatted_error_message()
+        rate_limiting_time.sleep.assert_not_called()
+        call_rate_time.sleep.assert_not_called()
         http_mocker.assert_number_of_calls(report_request, 1)
