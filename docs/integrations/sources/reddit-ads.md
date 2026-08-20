@@ -72,16 +72,17 @@ All three streams support full refresh and incremental sync, and all read from t
 
 ## Sync behavior and limitations
 
-- **Report metrics use micro-units.** Reddit returns `spend`, `cpc`, `cpv`, `ecpm`, and the `*_ecpa` conversion metrics multiplied by 1,000,000, and the `*_total_value` and `*_avg_value` conversion metrics multiplied by 100. The connector loads these values unchanged, so divide them in your destination before reporting on currency amounts.
+- **Report metrics use micro-units.** Reddit returns `spend`, `cpc`, `cpv`, `ecpm`, and the `conversion_*_ecpa` metrics multiplied by 1,000,000, and the `conversion_*_total_value` metrics multiplied by 100. The connector loads these values unchanged, so divide them in your destination before reporting on currency amounts.
 - **Recent report data changes after it lands.** Reddit says metrics can take up to 6 hours to stabilize, and conversion data keeps updating as events arrive. The `campaign_report` stream re-reads a 7-hour window on each sync to pick up late updates, but rows for the last day or two can still change after they're synced.
 - **Report history has a limit.** Delivery data goes back 24 months, and reach and frequency data start in June 2024. If you set `start_time` earlier than 24 months ago, `campaign_report` still starts 24 months before the current sync, because Reddit rejects requests for older report data. The `ad` and `campaign` streams aren't clamped.
+- **Reports are campaign-level only.** `campaign_report` breaks metrics down by campaign and date, so ad group and ad metrics aren't available in this connector.
 - **`start_time` filtering happens after the fetch.** For `ad` and `campaign`, the Reddit API has no server-side filter on `modified_at`, so the connector requests every record in the ad account on each sync and discards those modified before your cursor value. Sync duration scales with the size of the account, not with the amount of new data.
 
 ## Performance considerations
 
-Reddit applies rate limits per authorized user and per endpoint group, so sources that use the same Reddit user share those limits. The report endpoint this connector calls for `campaign_report` allows 60 requests per minute (the `ads-reporting` group); the campaign and ad read endpoints belong to a separate group with its own quota. The connector retries `429` and `5xx` responses up to 10 times with exponential backoff, and waits 60 seconds between report retries. For the full list of policies, see Reddit's [rate limiting](https://ads-api.reddit.com/docs/v3/api/reddit-advertising-api) documentation.
+Reddit applies rate limits per authorized user and per endpoint group, so sources that use the same Reddit user share those limits. The report endpoint this connector calls for `campaign_report` allows 60 requests per minute (the `ads-reporting` group); the campaign and ad read endpoints belong to a separate group with its own quota. `campaign_report` requests three days of report data per call, so a long backfill makes many report calls in sequence. The connector retries `429` and `5xx` responses up to 10 times with exponential backoff, and waits 60 seconds between report retries. For the full list of policies, see Reddit's [rate limiting](https://ads-api.reddit.com/docs/v3/api/reddit-advertising-api) documentation.
 
-Access tokens are valid for one hour or one day, depending on what Reddit returns. The connector reuses a token until it expires, then refreshes it. If a request still fails with `401`, the connector refreshes the token and retries that request.
+The connector reuses an access token until it expires, then refreshes it. If a request still fails with `401`, the connector refreshes the token and retries that request. If Reddit returns a new refresh token during a refresh, the connector saves it to the source configuration, so you don't have to rotate it yourself.
 
 ## Configuration
 
@@ -116,7 +117,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.0.6 | 2026-08-18 | [84725](https://github.com/airbytehq/airbyte/pull/84725) | Update dependencies |
 | 0.0.5 | 2026-08-11 | [84089](https://github.com/airbytehq/airbyte/pull/84089) | Update dependencies |
 | 0.0.4 | 2026-08-04 | [83603](https://github.com/airbytehq/airbyte/pull/83603) | Update dependencies |
-| 0.0.3 | 2026-07-30 | [83266](https://github.com/airbytehq/airbyte/pull/83266) | Stop refreshing the access token before every request, and refresh it before retrying a 401. Make `start_time` optional, apply it to all three streams, and default it to 24 months before the sync; clamp `campaign_report` to Reddit's 24-month reporting window |
+| 0.0.3 | 2026-08-04 | [83266](https://github.com/airbytehq/airbyte/pull/83266) | Stop refreshing the access token before every request, and refresh it before retrying a 401. Make `start_time` optional, apply it to all three streams, and default it to 24 months before the sync; clamp `campaign_report` to Reddit's 24-month reporting window |
 | 0.0.2 | 2026-07-28 | [83100](https://github.com/airbytehq/airbyte/pull/83100) | Update dependencies |
 | 0.0.1 | 2026-07-27 | [81399](https://github.com/airbytehq/airbyte/pull/81399) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
