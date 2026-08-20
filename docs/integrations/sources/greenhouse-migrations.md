@@ -26,7 +26,7 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 | Stream | Removed in v3 | Renamed in v3 |
 |---|---|---|
 | activity_feed | `activities`, `emails`, `notes` | |
-| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `rejection_reason`, `source` | `applied_at` -> `created_at` |
+| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `rejection_reason`, `source` | `applied_at` -> `updated_at` |
 | applications_interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
 | approvals | `approver_groups`, `requested_by_user_id` | |
 | candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |
