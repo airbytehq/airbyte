@@ -1068,8 +1068,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: views/{{ stream_partition.view_id }}/items
           http_method: GET
-          request_parameters:
-            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1115,7 +1113,6 @@ definitions:
                 $ref: "#/definitions/streams/views"
       incremental_sync:
         type: DatetimeBasedCursor
-        is_data_feed: true
         cursor_field: created_datetime
         end_datetime:
           type: MinMaxDatetime
