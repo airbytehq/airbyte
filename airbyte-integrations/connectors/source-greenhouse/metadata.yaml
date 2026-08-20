@@ -88,20 +88,13 @@ data:
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
-        - name: greenhouse_config_users_only_dev_null
-          id: 2234aee5-c67b-48f7-8c6d-45a1e0303ea1
         - name: greenhouse_config_dev_null
           id: 2bcce6b2-2c89-46a4-9980-82a299266774
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-GREENHOUSE_USERS_ONLY__CREDS
-          fileName: config_users_only.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-GREENHOUSE__CREDS
-          fileName: config.json
+        - name: SECRET_SOURCE-GREENHOUSE__CREDS_OAUTH
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
