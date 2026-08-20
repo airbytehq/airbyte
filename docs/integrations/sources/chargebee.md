@@ -111,7 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.46 | 2026-08-20 | [79639](https://github.com/airbytehq/airbyte/pull/79639) | Fix pagination skipping records by sorting on immutable `created_at` instead of mutable `updated_at` |
+| 0.10.46 | 2026-08-20 | [79639](https://github.com/airbytehq/airbyte/pull/79639) | Fix pagination skipping records by sorting on an immutable key instead of mutable `updated_at` — `created_at` where supported, `date` for `invoice` and `transaction` |
 | 0.10.45 | 2026-08-18 | [84510](https://github.com/airbytehq/airbyte/pull/84510) | Update dependencies |
 | 0.10.44 | 2026-08-11 | [83885](https://github.com/airbytehq/airbyte/pull/83885) | Update dependencies |
 | 0.10.43 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
