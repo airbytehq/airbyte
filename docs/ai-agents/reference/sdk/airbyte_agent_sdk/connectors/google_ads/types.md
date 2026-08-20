@@ -345,9 +345,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -909,9 +906,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -1407,9 +1401,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -1840,7 +1831,7 @@ Classes
 
     ### Class variables
 
-    `adGroup: str`
+    `ad_group: str`
     :   The type of the None singleton.
 
     `label: str`
@@ -1990,9 +1981,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -2514,9 +2502,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -2885,7 +2870,7 @@ Classes
 
     ### Class variables
 
-    `updateMask: str`
+    `update_mask: str`
     :   The type of the None singleton.
 
     ### Methods
@@ -2907,13 +2892,13 @@ Classes
 
     ### Class variables
 
-    `cpcBidMicros: str`
+    `cpc_bid_micros: str`
     :   The type of the None singleton.
 
     `name: str`
     :   The type of the None singleton.
 
-    `resourceName: str`
+    `resource_name: str`
     :   The type of the None singleton.
 
     `status: str`
@@ -3220,9 +3205,6 @@ Classes
     `customer_id: str`
     :   The type of the None singleton.
 
-    `page_size: int`
-    :   The type of the None singleton.
-
     `page_token: str`
     :   The type of the None singleton.
 
@@ -3483,6 +3465,9 @@ Classes
     `campaign_campaign_budget: Any`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: Any`
+    :   Campaign end date
+
     `campaign_id: Any`
     :   Campaign ID
 
@@ -3509,6 +3494,9 @@ Classes
 
     `campaign_serving_status: Any`
     :   Campaign serving status
+
+    `campaign_start_date_time: Any`
+    :   Campaign start date
 
     `campaign_status: Any`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -3670,6 +3658,9 @@ Classes
     `campaign_campaign_budget: list[str]`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: list[str]`
+    :   Campaign end date
+
     `campaign_id: list[int]`
     :   Campaign ID
 
@@ -3696,6 +3687,9 @@ Classes
 
     `campaign_serving_status: list[str]`
     :   Campaign serving status
+
+    `campaign_start_date_time: list[str]`
+    :   Campaign start date
 
     `campaign_status: list[str]`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -3776,9 +3770,6 @@ Classes
     ### Class variables
 
     `customer_id: str`
-    :   The type of the None singleton.
-
-    `page_size: int`
     :   The type of the None singleton.
 
     `page_token: str`
@@ -3902,6 +3893,9 @@ Classes
     `campaign_campaign_budget: str | None`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: str | None`
+    :   Campaign end date
+
     `campaign_id: int | None`
     :   Campaign ID
 
@@ -3928,6 +3922,9 @@ Classes
 
     `campaign_serving_status: str | None`
     :   Campaign serving status
+
+    `campaign_start_date_time: str | None`
+    :   Campaign start date
 
     `campaign_status: str | None`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -4014,6 +4011,9 @@ Classes
     `campaign_campaign_budget: Literal['asc', 'desc']`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: Literal['asc', 'desc']`
+    :   Campaign end date
+
     `campaign_id: Literal['asc', 'desc']`
     :   Campaign ID
 
@@ -4040,6 +4040,9 @@ Classes
 
     `campaign_serving_status: Literal['asc', 'desc']`
     :   Campaign serving status
+
+    `campaign_start_date_time: Literal['asc', 'desc']`
+    :   Campaign start date
 
     `campaign_status: Literal['asc', 'desc']`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -4109,6 +4112,9 @@ Classes
     `campaign_campaign_budget: str`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: str`
+    :   Campaign end date
+
     `campaign_id: str`
     :   Campaign ID
 
@@ -4135,6 +4141,9 @@ Classes
 
     `campaign_serving_status: str`
     :   Campaign serving status
+
+    `campaign_start_date_time: str`
+    :   Campaign start date
 
     `campaign_status: str`
     :   Campaign status (ENABLED, PAUSED, REMOVED)
@@ -4203,7 +4212,7 @@ Classes
 
     ### Class variables
 
-    `updateMask: str`
+    `update_mask: str`
     :   The type of the None singleton.
 
     ### Methods
@@ -4228,7 +4237,7 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
-    `resourceName: str`
+    `resource_name: str`
     :   The type of the None singleton.
 
     `status: str`
@@ -4282,7 +4291,7 @@ Classes
     `name: str`
     :   The type of the None singleton.
 
-    `textLabel: airbyte_agent_sdk.connectors.google_ads.types.LabelsCreateParamsOperationsItemCreateTextlabel`
+    `text_label: airbyte_agent_sdk.connectors.google_ads.types.LabelsCreateParamsOperationsItemCreateTextlabel`
     :   The type of the None singleton.
 
 <a id="LabelsCreateParamsOperationsItemCreateTextlabel"></a>
@@ -4296,7 +4305,7 @@ Classes
 
     ### Class variables
 
-    `backgroundColor: str`
+    `background_color: str`
     :   The type of the None singleton.
 
     `description: str`

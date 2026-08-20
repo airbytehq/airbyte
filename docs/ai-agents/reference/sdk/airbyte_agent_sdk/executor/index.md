@@ -28,6 +28,39 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="DownloadChunkResult"></a>
+
+`DownloadChunkResult(content: str, encoding: "Literal['utf-8', 'base64']", bytes_returned: int, range_requested: str, next_range_header: str | None, has_more: bool, content_type: str | None = None)`
+:   JSON-safe result for a bounded download byte range.
+
+    ### Instance variables
+
+    `bytes_returned: int`
+    :   The type of the None singleton.
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `content_type: str | None`
+    :   The type of the None singleton.
+
+    `encoding: Literal['utf-8', 'base64']`
+    :   The type of the None singleton.
+
+    `has_more: bool`
+    :   The type of the None singleton.
+
+    `next_range_header: str | None`
+    :   The type of the None singleton.
+
+    `range_requested: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `to_dict(self) ‑> dict[str, typing.Any]`
+    :
+
 <a id="EntityNotFoundError"></a>
 
 `EntityNotFoundError(*args, **kwargs)`
@@ -103,7 +136,8 @@ Classes
         success: True if execution completed successfully, False if it failed
         data: Response data from the execution
             - dict[str, Any] for standard operations (GET, LIST, CREATE, etc.)
-            - AsyncIterator[bytes] for download operations (streaming file content)
+            - AsyncIterator[bytes] for streaming download operations
+            - dict[str, Any] for structured download chunks
         error: Error message if success=False, None otherwise
         meta: Optional metadata extracted from response (e.g., pagination info)
     
@@ -334,11 +368,11 @@ Classes
             finally:
                 await executor.close()
 
-    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
+    `execute(self, *args: ExecutionConfig | str, config_or_entity: ExecutionConfig | str | None = None, config: ExecutionConfig | None = None, params: dict[str, Any] | None = None, entity: str | None = None, action: str | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
-        Accepts either an :class:`ExecutionConfig` or positional ``(entity, action)``
-        strings with an optional ``params`` keyword argument.
+        Accepts either an :class:`ExecutionConfig`, positional ``(entity, action)``
+        strings, or keyword ``entity=...``/``action=...`` strings.
         
         Flow:
         1. Use provided connector_id or look up from workspace_name + definition_id
@@ -346,7 +380,10 @@ Classes
         3. Parse the response into ExecutionResult
         
         Args:
-            config_or_entity: ExecutionConfig object *or* entity name string
+            config_or_entity: Backward-compatible alias for either an
+                ExecutionConfig object or entity name string.
+            config: ExecutionConfig object
+            entity: Entity name string, or an ExecutionConfig when passed positionally
             action: Action string (required when entity is a string)
             params: Optional parameters dict (only with string form)
             select_fields: Optional allowlist of dot-notation fields to include
@@ -381,6 +418,12 @@ Classes
         
             # Shorthand form:
             result = await executor.execute("customers", "list", params=\{"limit": 10\})
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect hosted connector metadata and readiness.
+
+    `read_skill_docs(self, id: str, section: str | None = None) ‑> dict[str, typing.Any]`
+    :   Read hosted skill docs by skill ID.
 
 <a id="InvalidParameterError"></a>
 
