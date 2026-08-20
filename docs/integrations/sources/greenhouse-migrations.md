@@ -49,7 +49,6 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 | users | `departments`, `offices` | `disabled` -> `deactivated`, `primary_email_address` -> `primary_email` |
 
 Refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
-Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
 
 ### Pagination and incremental state
 
