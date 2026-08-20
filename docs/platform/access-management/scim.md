@@ -83,7 +83,7 @@ Click **Disable SCIM** to stop your IdP from provisioning. Airbyte invalidates t
 - SCIM-mapped groups remain undeletable in Airbyte while their mapping exists.
 - Nobody loses access.
 
-To resume provisioning, enable SCIM again with the same identity provider. Airbyte issues a new token, which you must paste into your IdP.
+To resume provisioning, enable SCIM again with the same identity provider. Disabling SCIM doesn't reset that choice, so you can't switch identity providers yourself; contact Airbyte Support if you need to switch providers. Airbyte issues a new token, which you must paste into your IdP.
 
 When you re-enable SCIM, Airbyte reconciles any users your IdP had already deactivated: those users lose their permissions and group memberships in this organization, the same way they would have if they were deactivated while SCIM was enabled.
 
