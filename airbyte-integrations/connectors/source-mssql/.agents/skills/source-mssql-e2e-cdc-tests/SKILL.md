@@ -40,7 +40,8 @@ source-mssql-e2e-cdc-tests/
 │   ├── repro-11451.sh                # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+
 │   ├── repro-12094.sh                # airbytehq/oncall#12094 — schema-history bloat
 │   ├── repro-12162.sh                # airbytehq/oncall#12162 — whitespace in stream name
-│   └── extract-state.py              # uv-PEP-723; pulls STATE messages out of stdout.txt
+│   ├── canary-resume.sh               # snapshot-then-changes state replay canary
+│   └── (state extraction lives in ../source-mssql-e2e-tests/scripts/)
 └── fixtures/
     ├── configs/
     │   └── cdc.template.json
@@ -49,6 +50,8 @@ source-mssql-e2e-cdc-tests/
     │   └── order-items-cdc.json
     └── sql/
         ├── 00-init-cdc.sql
+        ├── canary-resume-seed.sql
+        ├── canary-resume-mutate.sql
         ├── repro-11451-lsn-cleanup.sql
         ├── repro-12094-schema-history.sql
         └── repro-12162-spaces-in-name.sql
@@ -71,8 +74,9 @@ source-mssql-e2e-cdc-tests/
 - Assertions are inline in driver scripts: `grep -c '<substring>'` on
   `stderr.txt`, `jq -e` on `stdout.txt`, exit-non-zero on miss.
 - The repro-11451 driver captures and uses Airbyte STATE messages. The
-  `extract-state.py` helper is `uv`-PEP-723 standalone; run with
-  `./scripts/extract-state.py <stdout.txt>` or pipe stdin.
+  generic skill's `extract-state.py` helper is `uv`-PEP-723 standalone;
+  run with `../source-mssql-e2e-tests/scripts/extract-state.py
+<stdout.txt>` or pipe stdin.
 
 ## Usage
 
@@ -88,6 +92,7 @@ export REPRO_OUT=/tmp/source-mssql-repro
 "$SKILL/scripts/repro-12162.sh"
 "$SKILL/scripts/repro-12094.sh"
 "$SKILL/scripts/repro-11451.sh"
+"$SKILL/scripts/canary-resume.sh"
 
 # 3. (After fix) verify by retargeting `dev` or a fixed version.
 VERSION=dev "$SKILL/scripts/repro-12162.sh"
@@ -160,6 +165,15 @@ past a saved offset on geo-replicas with aggressive cleanup. The
 saved-offset-rejection guard then fires even though the data is
 still present. Investigation lives at
 [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451).
+
+### Snapshot-then-changes CDC canary
+
+`scripts/canary-resume.sh` proves the generic harness's replay protocol:
+it reads the seeded `resume_canary` table, saves the first STATE, applies
+one update, one delete, and one insert, then reads again from that state.
+The driver asserts that the second read contains exactly those three
+record IDs and that the Debezium global `commit_lsn` advances between the
+two saved states.
 
 ## Authoring a new repro
 

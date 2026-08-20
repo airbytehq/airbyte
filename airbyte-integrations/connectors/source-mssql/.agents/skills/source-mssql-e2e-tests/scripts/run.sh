@@ -17,6 +17,7 @@
 # Usage:
 #   run.sh [--command=all] [--fixture=PATH]… [--test-version=dev]
 #          [--control-version=TAG] [--skip-read] [--step-name=NAME]
+#          [--state=PATH] [--mutate=PATH]… [--replay]
 #          [--catalog=PATH] [--sync-mode=full_refresh|incremental]
 #          [--cursor-field=NAME] [--streams=a,b] [--config-template=PATH]
 #          [--build] [--keep-backend] [-- extra airbyte-ops args…]
@@ -25,6 +26,11 @@
 #               (spec|check|discover|read) runs just that one.
 #   --skip-read runs spec/check/discover only, like the workflow's
 #               skip_read_action input.
+#   --state passes a saved state file to the read as --state-path.
+#   --mutate runs a SQL fixture via apply-sql.sh, or an executable,
+#              between replay reads. Repeat for multiple mutations.
+#   --replay runs a second read after the first read passes, replaying
+#             the first read's extracted state after the mutations.
 #
 # Passing --control-version switches airbyte-ops into comparison mode, so
 # every command in the sweep emits the target-vs-control diff that Path B
@@ -60,6 +66,9 @@ FIXTURES=()
 TEST_VERSION="dev"
 CONTROL_VERSION_ARG=""
 SKIP_READ=false
+STATE_PATH=""
+MUTATIONS=()
+REPLAY=false
 STEP_NAME=""
 CATALOG=""
 SYNC_MODE="full_refresh"
@@ -85,6 +94,9 @@ while [[ $# -gt 0 ]]; do
     --test-version=*)    TEST_VERSION="${1#*=}" ;;
     --control-version=*) CONTROL_VERSION_ARG="${1#*=}" ;;
     --skip-read)         SKIP_READ=true ;;
+    --state=*)           STATE_PATH="${1#*=}" ;;
+    --mutate=*)          MUTATIONS+=("${1#*=}") ;;
+    --replay)            REPLAY=true ;;
     --step-name=*)       STEP_NAME="${1#*=}" ;;
     --catalog=*)         CATALOG="${1#*=}" ;;
     --sync-mode=*)       SYNC_MODE="${1#*=}" ;;
@@ -106,6 +118,10 @@ case "$COMMAND" in
   spec|check|discover|read) COMMANDS=("$COMMAND") ;;
   *) echo "[run] --command must be all|spec|check|discover|read (got '$COMMAND')" >&2; exit 2 ;;
 esac
+if [[ "$REPLAY" == true && -n "$CONTROL_VERSION_ARG" ]]; then
+  echo "[run] --replay cannot be combined with --control-version: comparison runs control and target in one airbyte-ops invocation, so the backend/capture state cannot be reset between replay reads." >&2
+  exit 2
+fi
 if [[ "$SKIP_READ" == true ]]; then
   REQUESTED=()
   for cmd in "${COMMANDS[@]}"; do
@@ -136,6 +152,7 @@ if [[ "$TEST_VERSION" == "dev" ]] && { [[ "$BUILD" == true ]] \
     --configure-on-demand
 fi
 
+# shellcheck disable=SC2329
 cleanup() {
   if [[ "$KEEP_BACKEND" == true ]]; then
     echo "[run] --keep-backend: leaving the backend up; stop it with scripts/stop-backend.sh" >&2
@@ -161,38 +178,113 @@ mkdir -p "$ARTIFACTS_DIR"
 "$SCRIPTS/render-config.sh" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
 
 declare -A STATUS=() RC=() NOTE=()
+EXECUTED_STEPS=()
 
 run_step() {
-  local cmd="$1"; shift
-  local out_dir="$ARTIFACTS_DIR/$cmd"
+  local cmd="$1"
+  local step_name="$2"
+  shift 2
+  local out_dir="$ARTIFACTS_DIR/$step_name"
   local mins="${TIMEOUT_MINUTES[$cmd]}"
   local -a limit=()
   command -v timeout >/dev/null 2>&1 && limit=(timeout "${mins}m")
 
-  echo "[run] $cmd" >&2
+  echo "[run] $step_name ($cmd)" >&2
   set +e
   REPRO_OUT="$ARTIFACTS_DIR" CONTROL_VERSION="$CONTROL_VERSION_ARG" \
-    ${limit[@]+"${limit[@]}"} "$SCRIPTS/run-protocol-cmd.sh" "$cmd" "$cmd" \
+    ${limit[@]+"${limit[@]}"} "$SCRIPTS/run-protocol-cmd.sh" "$cmd" "$step_name" \
     "$TEST_VERSION" "$@" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}
   local rc=$?
   set -e
 
-  RC["$cmd"]="$rc"
+  RC["$step_name"]="$rc"
+  EXECUTED_STEPS+=("$step_name")
   # A missing report means the run never got far enough to produce a
   # verdict, which is the local equivalent of the workflow's
   # internal_failure: an infrastructure problem, not a test result.
   if (( rc == 124 )); then
-    STATUS["$cmd"]=internal
-    NOTE["$cmd"]="timed out after ${mins}m"
+    STATUS["$step_name"]=internal
+    NOTE["$step_name"]="timed out after ${mins}m"
   elif [[ ! -f "$out_dir/report.md" ]]; then
-    STATUS["$cmd"]=internal
-    NOTE["$cmd"]="no report.md — the run produced no verdict"
+    STATUS["$step_name"]=internal
+    NOTE["$step_name"]="no report.md — the run produced no verdict"
   elif (( rc == 0 )); then
-    STATUS["$cmd"]=pass
+    STATUS["$step_name"]=pass
   else
-    STATUS["$cmd"]=fail
+    STATUS["$step_name"]=fail
     if grep -qE '^\*\*Result:\*\*.*Both versions failed' "$out_dir/report.md" 2>/dev/null; then
-      NOTE["$cmd"]="both versions failed — inconclusive"
+      NOTE["$step_name"]="both versions failed — inconclusive"
+    fi
+  fi
+}
+
+record_internal_step() {
+  local step_name="$1"
+  local rc="$2"
+  local note="$3"
+  RC["$step_name"]="$rc"
+  STATUS["$step_name"]=internal
+  NOTE["$step_name"]="$note"
+  EXECUTED_STEPS+=("$step_name")
+}
+
+run_mutations() {
+  local mutation
+  for mutation in "${MUTATIONS[@]}"; do
+    echo "[run] mutate $mutation" >&2
+    if [[ "$mutation" == *.sql ]]; then
+      "$SCRIPTS/apply-sql.sh" "$mutation"
+    elif [[ -x "$mutation" ]]; then
+      "$mutation"
+    else
+      echo "[run] mutation is neither a .sql file nor executable: $mutation" >&2
+      return 2
+    fi
+  done
+}
+
+replay_reads() {
+  local first_step="$1"
+  local first_out="$ARTIFACTS_DIR/$first_step/stdout.txt"
+  local state_1="$ARTIFACTS_DIR/state-1.json"
+  local state_2="$ARTIFACTS_DIR/state-2.json"
+  local mutation_rc
+
+  if [[ "${STATUS[$first_step]:-}" != pass ]]; then
+    record_internal_step read-2 1 "replay skipped because $first_step did not pass"
+    return
+  fi
+
+  set +e
+  "$SCRIPTS/extract-state.py" "$first_out" > "$state_1"
+  local extract_rc=$?
+  set -e
+  if (( extract_rc != 0 )); then
+    record_internal_step read-2 "$extract_rc" "replay skipped because $first_step emitted no STATE"
+    return
+  fi
+
+  set +e
+  run_mutations
+  mutation_rc=$?
+  set -e
+  if (( mutation_rc != 0 )); then
+    record_internal_step read-2 "$mutation_rc" "replay skipped because a mutation failed"
+    return
+  fi
+
+  run_step read read-2 "--config-path=$WORKING_CONFIG" "--catalog-path=$CATALOG" \
+    "--state-path=$state_1"
+
+  if [[ "${STATUS[read-2]:-}" == pass ]]; then
+    set +e
+    "$SCRIPTS/extract-state.py" "$ARTIFACTS_DIR/read-2/stdout.txt" > "$state_2"
+    extract_rc=$?
+    set -e
+    if (( extract_rc != 0 )); then
+      STATUS[read-2]=internal
+      RC[read-2]="$extract_rc"
+      NOTE[read-2]="read passed but emitted no STATE"
     fi
   fi
 }
@@ -200,10 +292,10 @@ run_step() {
 for cmd in "${COMMANDS[@]}"; do
   case "$cmd" in
     spec)
-      run_step spec
+      run_step spec spec
       ;;
     check|discover)
-      run_step "$cmd" "--config-path=$WORKING_CONFIG"
+      run_step "$cmd" "$cmd" "--config-path=$WORKING_CONFIG"
       ;;
     read)
       # The workflow generates the configured catalog from the discover
@@ -218,16 +310,8 @@ for cmd in "${COMMANDS[@]}"; do
           # No discover in this invocation (a bare --command=read), so
           # run one just for the catalog.
           DISCOVER_DIR="$ARTIFACTS_DIR/catalog-discover"
-          set +e
-          REPRO_OUT="$ARTIFACTS_DIR" "$SCRIPTS/run-protocol-cmd.sh" \
-            discover catalog-discover "$TEST_VERSION" \
-            "--config-path=$WORKING_CONFIG"
-          DISCOVER_RC=$?
-          set -e
-          if (( DISCOVER_RC != 0 )); then
-            STATUS[read]=internal
-            RC[read]="$DISCOVER_RC"
-            NOTE[read]="catalog discover failed — see $DISCOVER_DIR"
+          run_step discover catalog-discover "--config-path=$WORKING_CONFIG"
+          if [[ "${STATUS[catalog-discover]:-}" != pass ]]; then
             continue
           fi
         fi
@@ -237,14 +321,22 @@ for cmd in "${COMMANDS[@]}"; do
         CATALOG_RC=$?
         set -e
         if (( CATALOG_RC != 0 )); then
-          STATUS[read]=internal
-          RC[read]="$CATALOG_RC"
-          NOTE[read]="could not derive a configured catalog from $DISCOVER_DIR"
+          record_internal_step read "$CATALOG_RC" \
+            "could not derive a configured catalog from $DISCOVER_DIR"
           continue
         fi
         CATALOG="$CONFIGURED_CATALOG_PATH"
       fi
-      run_step read "--config-path=$WORKING_CONFIG" "--catalog-path=$CATALOG"
+      READ_STEP="read"
+      READ_ARGS=("--config-path=$WORKING_CONFIG" "--catalog-path=$CATALOG")
+      [[ -n "$STATE_PATH" ]] && READ_ARGS+=("--state-path=$STATE_PATH")
+      if [[ "$REPLAY" == true ]]; then
+        READ_STEP="read-1"
+      fi
+      run_step read "$READ_STEP" "${READ_ARGS[@]}"
+      if [[ "$REPLAY" == true ]]; then
+        replay_reads "$READ_STEP"
+      fi
       ;;
   esac
 done
@@ -257,19 +349,23 @@ INTERNAL_FAILURE=false
 ALL_PASSED=true
 SUMMARY="| Command | Result |
 |---------|--------|"
-for cmd in spec check discover read; do
+for step_name in "${EXECUTED_STEPS[@]}"; do
   cell=""
-  case "${STATUS[$cmd]:-}" in
-    "")       [[ "$COMMAND" == all ]] && cell="_(skipped)_" ;;
+  case "${STATUS[$step_name]:-}" in
+    "")       cell="_(skipped)_" ;;
     pass)     cell="PASS" ;;
     fail)     cell="FAIL"; ALL_PASSED=false ;;
     internal) cell="ERROR"; ALL_PASSED=false; INTERNAL_FAILURE=true ;;
   esac
   [[ -z "$cell" ]] && continue
-  [[ -n "${NOTE[$cmd]:-}" ]] && cell="$cell (${NOTE[$cmd]})"
+  [[ -n "${NOTE[$step_name]:-}" ]] && cell="$cell (${NOTE[$step_name]})"
   SUMMARY+="
-| \`${cmd^^}\` | $cell |"
+| \`${step_name^^}\` | $cell |"
 done
+if [[ "$COMMAND" == all && "$SKIP_READ" == true ]]; then
+  SUMMARY+="
+| \`READ\` | _(skipped)_ |"
+fi
 SUMMARY+="
 
 Artifacts: \`$ARTIFACTS_DIR/<command>/\` (\`report.md\`, \`stdout.txt\`, \`stderr.txt\`)."
@@ -278,7 +374,7 @@ echo "$SUMMARY" >&2
 # CI gets the same table in the run summary without the workflow having
 # to reconstruct it from parsed output.
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
-  printf '## `%s` regression sweep\n\n%s\n' "$CONNECTOR" "$SUMMARY" \
+  printf "## \`%s\` regression sweep\n\n%s\n" "$CONNECTOR" "$SUMMARY" \
     >> "$GITHUB_STEP_SUMMARY"
 fi
 
@@ -290,7 +386,8 @@ fi
 # repro scripts can assert on it; a sweep has more than one, so it
 # reports pass/fail like the workflow's job status.
 if [[ "$SINGLE_COMMAND" == true ]]; then
-  exit "${RC[${COMMANDS[0]}]:-1}"
+  LAST_STEP="${EXECUTED_STEPS[${#EXECUTED_STEPS[@]}-1]:-}"
+  exit "${RC[$LAST_STEP]:-1}"
 fi
 [[ "$ALL_PASSED" == true ]] || exit 1
 exit 0
