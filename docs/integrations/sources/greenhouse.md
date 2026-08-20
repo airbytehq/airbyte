@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need a Greenhouse OAuth application with permissions to the resources Airbyte should be able to access. The authorizing Greenhouse user must have Site Admin privileges because every Harvest v3 list endpoint requires a Site Admin authorizer. The OAuth consent flow exchanges the application credentials for a refresh token.
+To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 application. Greenhouse issues these only to partners: email partner-support@greenhouse.io to request a client ID and client secret and to register your redirect URI. For Airbyte Cloud the redirect URI is `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte it is `<your-airbyte-url>/auth_flow`. The authorizing Greenhouse user must be a Site Admin, because every v3 list endpoint returns 403 otherwise.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -12,9 +12,20 @@ To set up the Greenhouse source connector, you'll need a Greenhouse OAuth applic
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Select **OAuth (Authorization Code + refresh token)** and enter the OAuth client ID and OAuth client secret associated with the OAuth application.
-6. Click **Authenticate** and complete the OAuth consent flow.
-7. Click **Set up source**.
+5. Enter the **OAuth client ID** and **OAuth client secret** from your Greenhouse OAuth application.
+6. Click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token in **Refresh token**.
+7. If your deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**:
+   1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=<space-separated scopes>` in a browser and approve the request.
+   2. Within 1 minute (the authorization code TTL), exchange the `code` query parameter:
+      ```bash
+      curl -X POST 'https://auth.greenhouse.io/token?grant_type=authorization_code&code=<code>&redirect_uri=<registered_redirect_uri>' -u '<client_id>:<client_secret>' --data ''
+      ```
+   3. Copy `refresh_token` from the response into the **Refresh token** field.
+8. Click **Set up source**.
+
+:::warning
+Greenhouse refresh tokens live for 24 hours and rotate on every refresh. A connection that stays idle longer than 24 hours cannot refresh and must be reauthenticated by repeating steps 6-7.
+:::
 
 ## Supported sync modes
 
