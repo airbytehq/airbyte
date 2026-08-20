@@ -51,8 +51,6 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             .set_path("/{{tenant_id}}/oauth2/v2.0/token")
             .build()
         )
-        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES)
-
         oauth_connector_input_specification = OauthConnectorInputSpecification(
             consent_url=consent_url,
             access_token_url=access_token_url,
@@ -66,7 +64,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
                 "client_secret": "{{ client_secret_value }}",
                 "grant_type": "authorization_code",
             },
-            scope=scopes,
+            scopes=[{"scope": s} for s in SourceMicrosoftSharePoint.SCOPES],
         )
 
         return ConnectorSpecification(
