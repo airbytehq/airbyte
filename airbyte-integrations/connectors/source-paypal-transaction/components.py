@@ -6,7 +6,7 @@ import base64
 import logging
 from dataclasses import InitVar, dataclass
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import backoff
 import requests
