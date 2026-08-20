@@ -18,7 +18,34 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 - `jobs_openings`, `offers`, and `users` use v3 relationship identifiers instead of the v1 nested objects.
 - `offices.location` is a string in v3 rather than the v1 object.
 
-The complete field-level comparison is reflected in the connector's v3 schemas. Refresh the schema in every destination and reset streams whose records or fields are used downstream.
+#### Removed and renamed top-level fields
+
+| Stream | Removed in v3 | Renamed in v3 |
+|---|---|---|
+| activity_feed | `activities`, `emails`, `notes` | |
+| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `rejection_reason`, `source` | `applied_at` -> `created_at` |
+| applications_interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
+| approvals | `approver_groups`, `requested_by_user_id` | |
+| candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |
+| custom_fields | `custom_field_options`, `departments`, `offices` | `priority` -> `sort_order` |
+| degrees, disciplines, schools | | `priority` -> `sort_order` |
+| demographics_answer_options, demographics_answers_answer_options, demographics_questions, demographics_question_sets_questions | `translations` | |
+| departments | `child_department_external_ids`, `child_ids`, `parent_department_external_id` | |
+| email_templates | `cc`, `from`, `type`, `user` | |
+| interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
+| job_posts | `external`, `location` | |
+| job_stages, jobs_stages | `interviews` | `priority` -> `sort_order` |
+| jobs | `departments`, `hiring_team`, `keyed_custom_fields`, `offices`, `openings` | flattened to `department_id`, `office_ids` |
+| jobs_openings | `close_reason`, `keyed_custom_fields`, `status` | |
+| offers | `keyed_custom_fields`, `opening`, `sent_at`, `starts_at` | |
+| offices | `child_ids`, `child_office_external_ids`, `parent_office_external_id` | `primary_contact_user_id` -> `primary_in_house_contact_user_id`; `location` object -> string |
+| prospect_pools | `prospect_stages` | |
+| scorecards | `attributes`, `candidate_id`, `interview`, `interview_step`, `overall_recommendation`, `questions`, `ratings` | `interviewer` -> `interviewer_id`, `submitted_by` -> `submitter_id` |
+| user_permissions | `user_role_id` | |
+| user_roles | `type` | |
+| users | `departments`, `offices` | `disabled` -> `deactivated`, `primary_email_address` -> `primary_email` |
+
+Refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
 Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
 
 ### Pagination and incremental state
