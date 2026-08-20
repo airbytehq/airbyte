@@ -423,6 +423,254 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Employee Qualifications Details"
+    Employee Leave Balances:
+      type: DeclarativeStream
+      name: Employee Leave Balances
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave/v2/employee/{{ stream_partition['employee_id'] }}/years/{{ config.get('year', now_utc().strftime('%Y')) }}/balance
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"domain\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: employeeId
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/Employees"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/Employee Leave Balances"
+    Employee Leave Transactions:
+      type: DeclarativeStream
+      name: Employee Leave Transactions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave/v2/employee/{{ stream_partition['employee_id'] }}/transactions
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"domain\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: employeeId
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/Employees"
+        incremental_sync:
+          type: DatetimeBasedCursor
+          cursor_field: fromDate
+          cursor_datetime_formats:
+            - "%Y-%m-%d"
+          datetime_format: "%Y-%m-%d"
+          start_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ config.get('start_date', '2020-01-01') }}"
+            datetime_format: "%Y-%m-%d"
+          start_time_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          end_time_option:
+            type: RequestOption
+            field_name: end
+            inject_into: request_parameter
+          end_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            datetime_format: "%Y-%m-%d"
+          step: P31D
+          cursor_granularity: P1D
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/Employee Leave Transactions"
+    Employee Attendance Summary:
+      type: DeclarativeStream
+      name: Employee Attendance Summary
+      primary_key: []
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attendance/v2/employee/{{ stream_partition['employee_id'] }}/insights
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"domain\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: employeeId
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/Employees"
+        incremental_sync:
+          type: DatetimeBasedCursor
+          cursor_field: endDate
+          cursor_datetime_formats:
+            - "%Y-%m-%d"
+          datetime_format: "%Y-%m-%d"
+          start_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ config.get('start_date', '2020-01-01') }}"
+            datetime_format: "%Y-%m-%d"
+          start_time_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          end_time_option:
+            type: RequestOption
+            field_name: end
+            inject_into: request_parameter
+          end_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            datetime_format: "%Y-%m-%d"
+          step: P31D
+          cursor_granularity: P1D
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/Employee Attendance Summary"
+    Employee Attendance Muster:
+      type: DeclarativeStream
+      primary_key: []
+      name: Employee Attendance Muster
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attendance/v2/employee/{{ stream_partition['employee_id'] }}/muster
+          http_method: GET
+          request_headers:
+            x-greythr-domain: "{{ config[\"domain\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - records
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: employeeId
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/Employees"
+        incremental_sync:
+          type: DatetimeBasedCursor
+          cursor_field: summary.attendanceDate
+          cursor_datetime_formats:
+            - "%Y-%m-%d"
+          datetime_format: "%Y-%m-%d"
+          start_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ config.get('start_date', '2020-01-01') }}"
+            datetime_format: "%Y-%m-%d"
+          start_time_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          end_time_option:
+            type: RequestOption
+            field_name: end
+            inject_into: request_parameter
+          end_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            datetime_format: "%Y-%m-%d"
+          step: P31D
+          cursor_granularity: P1D
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/Employee Attendance Muster"
+    Employee Attendance Swipes:
+      type: DeclarativeStream
+      name: Employee Attendance Swipes
+      primary_key: punchDateTime
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attendance/v2/employee/{{ stream_partition['employee_id'] }}/swipes
+          http_method: GET
+          request_parameters:
+            systemSwipes: "true"
+          request_headers:
+            x-greythr-domain: "{{ config[\"domain\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: employeeId
+              partition_field: employee_id
+              stream:
+                $ref: "#/definitions/streams/Employees"
+        incremental_sync:
+          type: DatetimeBasedCursor
+          cursor_field: attendanceDate
+          cursor_datetime_formats:
+            - "%Y-%m-%d"
+          datetime_format: "%Y-%m-%d"
+          start_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ config.get('start_date', '2020-01-01') }}"
+            datetime_format: "%Y-%m-%d"
+          start_time_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          end_time_option:
+            type: RequestOption
+            field_name: end
+            inject_into: request_parameter
+          end_datetime:
+            type: MinMaxDatetime
+            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            datetime_format: "%Y-%m-%d"
+          step: P31D
+          cursor_granularity: P1D
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/Employee Attendance Swipes"
   base_requester:
     type: HttpRequester
     url_base: "{{ config['base_url'] }}"
@@ -461,6 +709,11 @@ streams:
   - $ref: "#/definitions/streams/Employee PF & ESI details"
   - $ref: "#/definitions/streams/Employee Qualifications Details"
   - $ref: "#/definitions/streams/Users List"
+  - $ref: "#/definitions/streams/Employee Leave Balances"
+  - $ref: "#/definitions/streams/Employee Leave Transactions"
+  - $ref: "#/definitions/streams/Employee Attendance Summary"
+  - $ref: "#/definitions/streams/Employee Attendance Muster"
+  - $ref: "#/definitions/streams/Employee Attendance Swipes"
 
 spec:
   type: Spec
@@ -492,6 +745,17 @@ spec:
         type: string
         order: 2
         title: Username
+      year:
+        type: string
+        description: Leave year used by the leave balance endpoint. Defaults to the current year.
+        order: 4
+        title: Leave Year
+      start_date:
+        type: string
+        description: Inclusive start date for date-ranged Leave and Attendance streams (YYYY-MM-DD).
+        order: 5
+        title: Start Date
+        default: "2020-01-01"
     additionalProperties: true
 
 metadata:
@@ -1016,4 +1280,313 @@ schemas:
         type:
           - number
           - "null"
+    additionalProperties: true
+  Employee Leave Balances:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      leaveTypeCategory:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          code:
+            type:
+              - string
+              - "null"
+          sortOrder:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+      balance:
+        type:
+          - number
+          - "null"
+      ob:
+        type:
+          - number
+          - "null"
+      grant:
+        type:
+          - number
+          - "null"
+      availed:
+        type:
+          - number
+          - "null"
+      applied:
+        type:
+          - number
+          - "null"
+      lapsed:
+        type:
+          - number
+          - "null"
+      deducted:
+        type:
+          - number
+          - "null"
+      encashed:
+        type:
+          - number
+          - "null"
+      employee:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          employeeNo:
+            type:
+              - string
+              - "null"
+          leftOrg:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+    additionalProperties: true
+  Employee Leave Transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - number
+          - "null"
+      employee:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      leaveTypeCategory:
+        type:
+          - object
+          - number
+          - "null"
+        additionalProperties: true
+      leaveTransactionType:
+        type:
+          - object
+          - number
+          - "null"
+        additionalProperties: true
+      fromDate:
+        type:
+          - string
+          - "null"
+      toDate:
+        type:
+          - string
+          - "null"
+      fromSession:
+        type:
+          - string
+          - number
+          - "null"
+      toSession:
+        type:
+          - string
+          - number
+          - "null"
+      days:
+        type:
+          - number
+          - "null"
+      remarks:
+        type:
+          - string
+          - "null"
+      cancelled:
+        type:
+          - boolean
+          - "null"
+      cancelId:
+        type:
+          - number
+          - "null"
+      postedDate:
+        type:
+          - string
+          - "null"
+      reason:
+        type:
+          - string
+          - "null"
+      children:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      processId:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  Employee Attendance Summary:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      averages:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      days:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      status:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+      startDate:
+        type:
+          - string
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      employee:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+    additionalProperties: true
+  Employee Attendance Muster:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      employee:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      summary:
+        type:
+          - object
+          - "null"
+        properties:
+          attendanceDate:
+            type:
+              - string
+              - "null"
+          shift:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+          leave:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+        additionalProperties: true
+      exceptions:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+    additionalProperties: true
+  Employee Attendance Swipes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      employee:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      attendanceDate:
+        type:
+          - string
+          - "null"
+      punchDateTime:
+        type:
+          - string
+          - "null"
+      inOutIndicator:
+        type:
+          - string
+          - "null"
+      doorName:
+        type:
+          - string
+          - "null"
+      systemSwipe:
+        type:
+          - boolean
+          - "null"
+      swipeCaptureType:
+        type:
+          - string
+          - "null"
+      shift:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+      receivedOn:
+        type:
+          - string
+          - "null"
+      accessCardNo:
+        type:
+          - string
+          - "null"
+      latitude:
+        type:
+          - number
+          - "null"
+      longitude:
+        type:
+          - number
+          - "null"
+      deviceId:
+        type:
+          - number
+          - string
+          - "null"
+      deviceName:
+        type:
+          - string
+          - "null"
+      autoDetect:
+        type:
+          - boolean
+          - "null"
+      autoDetection:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
     additionalProperties: true

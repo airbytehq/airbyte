@@ -9,6 +9,8 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 | `base_url` | `string` | Base URL. https://api.greythr.com |  |
 | `password` | `string` | Password.  |  |
 | `username` | `string` | Username.  |  |
+| `year` | `string` | Leave year used by the leave balance stream. Defaults to the current year. | Current year |
+| `start_date` | `string` | Inclusive start date for date-ranged Leave and Attendance streams (YYYY-MM-DD). | 2020-01-01 |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -24,6 +26,17 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 | Employee PF &amp; ESI details | employeeId | DefaultPaginator | ✅ |  ❌  |
 | Employee Qualifications Details |  | DefaultPaginator | ✅ |  ❌  |
 | Users List |  | DefaultPaginator | ✅ |  ❌  |
+| Employee Leave Balances |  | None | ✅ |  ❌  |
+| Employee Leave Transactions | id | None | ✅ |  ✅  |
+| Employee Attendance Summary |  | None | ✅ |  ✅  |
+| Employee Attendance Muster |  | None | ✅ |  ✅  |
+| Employee Attendance Swipes | punchDateTime | None | ✅ |  ✅  |
+
+The Leave and Attendance streams that use employee-scoped endpoints make one request per
+employee and may require API rate-limit planning for larger workforces. Attendance Summary
+returns an aggregate for each requested date slice and uses its `endDate` field as the
+incremental cursor; Leave Transactions, Attendance Muster, and Attendance Swipes use their
+API date fields for incremental sync.
 
 ## IP allow list
 
@@ -36,6 +49,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-08-20 | | Add Leave and Attendance streams |
 | 0.0.62 | 2026-08-18 | [84603](https://github.com/airbytehq/airbyte/pull/84603) | Update dependencies |
 | 0.0.61 | 2026-08-11 | [83973](https://github.com/airbytehq/airbyte/pull/83973) | Update dependencies |
 | 0.0.60 | 2026-08-04 | [83482](https://github.com/airbytehq/airbyte/pull/83482) | Update dependencies |
