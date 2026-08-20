@@ -105,3 +105,66 @@ def test_messages_incremental_data_feed_filters_records_and_stops_pagination():
     assert len(message_requests) == 2
     assert message_requests[0].qs["order_by"] == ["created_datetime:desc"]
     assert _latest_cursor_value(output, "messages", "created_datetime") == "2026-08-12T00:00:00.000000+0000"
+
+
+def test_tags_incremental_data_feed_filters_records_and_stops_pagination():
+    page_1 = {
+        "data": [
+            _record(1, "2026-08-12T00:00:00.000000+0000"),
+            _record(2, "2026-08-11T00:00:00.000000+0000"),
+        ],
+        "meta": {"next_cursor": "page-2"},
+    }
+    page_2 = {
+        "data": [
+            _record(3, "2026-08-09T00:00:00.000000+0000"),
+            _record(4, "2026-08-08T00:00:00.000000+0000"),
+        ],
+        "meta": {"next_cursor": "page-3"},
+    }
+    page_3 = {
+        "data": [_record(5, "2026-08-07T00:00:00.000000+0000")],
+        "meta": {"next_cursor": None},
+    }
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/tags", [{"json": page_1}, {"json": page_2}, {"json": page_3}])
+        output = _read("tags", _stream_state("tags", "created_datetime"))
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == [1, 2]
+    tag_requests = [request for request in mocker.request_history if request.path == "/api/tags"]
+    assert len(tag_requests) == 2
+    assert tag_requests[0].qs["order_by"] == ["created_datetime:desc"]
+    assert _latest_cursor_value(output, "tags", "created_datetime") == "2026-08-12T00:00:00.000000+0000"
+
+
+def test_integrations_client_side_incremental_filters_records_without_stopping_pagination():
+    pages = [
+        {
+            "data": [
+                _record(1, "2026-08-12T00:00:00.000000+0000"),
+                _record(2, "2026-08-10T00:00:00.000000+0000"),
+            ],
+            "meta": {"next_cursor": "page-2"},
+        },
+        {
+            "data": [_record(3, "2026-08-09T00:00:00.000000+0000")],
+            "meta": {"next_cursor": "page-3"},
+        },
+        {
+            "data": [_record(4, "2026-08-08T00:00:00.000000+0000")],
+            "meta": {"next_cursor": None},
+        },
+    ]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/integrations", [{"json": page} for page in pages])
+        output = _read("integrations", _stream_state("integrations"))
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == [1, 2]
+    integration_requests = [request for request in mocker.request_history if request.path == "/api/integrations"]
+    assert len(integration_requests) == 3
+    assert "order_by" not in integration_requests[0].qs
+    assert _latest_cursor_value(output, "integrations", "updated_datetime") == ("2026-08-12T00:00:00.000000+0000")
