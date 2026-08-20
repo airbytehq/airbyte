@@ -10,7 +10,7 @@ replicates the transcript from the paged `GET /v1/notes/{note_id}/transcript` en
 """
 
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
@@ -59,7 +59,7 @@ def _segment(text: str) -> Dict[str, Any]:
     }
 
 
-def _transcript_response(text: str, cursor: str = None) -> HttpResponse:
+def _transcript_response(text: str, cursor: Optional[str] = None) -> HttpResponse:
     body = {"transcript": [_segment(text)], "hasMore": cursor is not None, "cursor": cursor}
     return HttpResponse(body=json.dumps(body), status_code=200)
 
