@@ -54,7 +54,7 @@ Field-level schemas come from the connector, and the `replay_session_activity` f
 
 ## Incremental syncs
 
-All streams support incremental sync. `replay_session_activity`, `replay_session_summary`, `replay_metrics`, and `replicate_session_activity` request data in one-day windows, because Reprise caps each API response at 100 MB. Within each window, the connector pages through results 10,000 rows at a time.
+All streams support incremental sync. `replay_session_activity`, `replay_session_summary`, `replay_metrics`, and `replicate_session_activity` request data in one-day windows, and within each window the connector pages through results 10,000 rows at a time. Reprise separately caps each API response at 100 MB.
 
 Incremental runs re-request a trailing window so that late-arriving rows are picked up:
 
