@@ -299,6 +299,7 @@ class TestDisplayReportStreams:
             "sponsored_products_adgroups_report_stream",
             "sponsored_products_keywords_report_stream",
             "sponsored_products_targets_report_stream",
+            "sponsored_products_search_terms_report_stream",
             "sponsored_products_productads_report_stream",
             "sponsored_products_asins_keywords_report_stream",
             "sponsored_products_asins_targets_report_stream",
@@ -325,7 +326,7 @@ class TestDisplayReportStreams:
             )
             output = self._read(config, stream_name)
             number_of_records += len(output.records)
-        assert number_of_records == 7
+        assert number_of_records == 8
 
     def test_given_known_error_when_read_brands_v3_report_then_skip_report(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
@@ -435,6 +436,7 @@ class TestDisplayReportStreams:
             "sponsored_products_adgroups_report_stream_daily",
             "sponsored_products_keywords_report_stream_daily",
             "sponsored_products_targets_report_stream_daily",
+            "sponsored_products_search_terms_report_stream_daily",
             "sponsored_products_productads_report_stream_daily",
             "sponsored_products_asins_keywords_report_stream_daily",
             "sponsored_products_asins_targets_report_stream_daily",
@@ -573,6 +575,7 @@ _ALL_DAILY_STREAMS = [
     "sponsored_products_adgroups_report_stream_daily",
     "sponsored_products_keywords_report_stream_daily",
     "sponsored_products_targets_report_stream_daily",
+    "sponsored_products_search_terms_report_stream_daily",
     "sponsored_products_productads_report_stream_daily",
     "sponsored_products_asins_keywords_report_stream_daily",
     "sponsored_products_asins_targets_report_stream_daily",
