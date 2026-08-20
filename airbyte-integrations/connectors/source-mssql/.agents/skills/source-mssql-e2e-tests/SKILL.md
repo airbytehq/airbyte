@@ -180,11 +180,11 @@ TABLE` guarded by an existence check, as `00-init-base.sql` does.
    `--fixture` is repeatable and applies in the order given, so
    number-prefix anything that must follow the init fixture.
 3. Keep it out of the repo while investigating. `--fixture` takes any
-   path: write scratch fixtures under
-   `${REPRO_OUT:-/tmp/source-mssql-repro}` or in `fixtures/sql/.tmp/`,
-   which the repo root's `.tmp` rule already ignores. Committing one
-   under the connector directory makes CI treat it as a connector change
-   and require a `dockerImageTag` bump.
+   path: write scratch fixtures in `fixtures/sql/.tmp/`, which the local
+   `.gitignore` ignores, or anywhere outside the tree, such as
+   `${REPRO_OUT:-/tmp/source-mssql-repro}`. Committing one under the
+   connector directory makes CI treat it as a connector change and require
+   a `dockerImageTag` bump.
 4. Reproduce against the known-bad version first
    (`poe e2e-local --command=read --test-version=<bad> --fixture=…`) and
    assert on the output rather than the exit code (see
