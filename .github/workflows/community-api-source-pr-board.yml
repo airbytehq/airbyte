@@ -1,10 +1,14 @@
+# Community PRs touching a certified API source land in Status "Community PR
+# Review"; community PRs that add a connector directory not present on master
+# land in Status "New Connector PRs", which takes precedence when both apply.
+#
 # Live synchronization is the default; scheduled runs always write. A
 # workflow_dispatch run can opt into log-only mode with dry_run=true, and the
 # max_writes input can cap a live run (0 means unlimited). Disable the workflow
 # from the Actions UI to stop synchronization entirely. The Octavia Bot app must
 # have org-level Projects: write permission for live synchronization.
 
-name: Community API source PR board sync
+name: Community connector PR board sync
 
 on:
   schedule:
@@ -30,7 +34,7 @@ concurrency:
 
 jobs:
   reconcile:
-    name: Reconcile community API source PRs
+    name: Reconcile community connector PRs
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -53,7 +57,7 @@ jobs:
             dry_run=false
           fi
           echo "dry_run=$dry_run" >> "$GITHUB_OUTPUT"
-          echo "::notice::Community API source PR board sync mode: $( [[ "$dry_run" == "true" ]] && echo DRY-RUN || echo LIVE WRITE )"
+          echo "::notice::Community connector PR board sync mode: $( [[ "$dry_run" == "true" ]] && echo DRY-RUN || echo LIVE WRITE )"
 
       # ---------- Authentication ----------
       - name: Authenticate as Octavia Bot
@@ -102,10 +106,28 @@ jobs:
           fi
           echo "path=$output" >> "$GITHUB_OUTPUT"
 
+      - name: Build existing connector set
+        id: existing-connectors
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/existing-connectors.json"
+          find airbyte-integrations/connectors -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+            | sort -u \
+            | jq -R . | jq -sc . > "$output"
+          count="$(jq 'length' "$output")"
+          echo "Existing connector directory count: $count"
+          if [[ "$count" -eq 0 ]]; then
+            echo "::error::No connector directories were found; refusing a silent no-op."
+            exit 1
+          fi
+          echo "path=$output" >> "$GITHUB_OUTPUT"
+
       - name: Reconcile project board
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           CERTIFIED_SOURCES_PATH: ${{ steps.certified-sources.outputs.path }}
+          EXISTING_CONNECTORS_PATH: ${{ steps.existing-connectors.outputs.path }}
           DRY_RUN: ${{ steps.mode.outputs.dry_run }}
           MAX_WRITES: ${{ inputs.max_writes || '0' }}
         with:
@@ -126,6 +148,9 @@ jobs:
             const certifiedSources = new Set(
               JSON.parse(fs.readFileSync(process.env.CERTIFIED_SOURCES_PATH, 'utf8')),
             );
+            const existingConnectors = new Set(
+              JSON.parse(fs.readFileSync(process.env.EXISTING_CONNECTORS_PATH, 'utf8')),
+            );
             const counts = {
               evaluated: 0,
               qualified: 0,
@@ -133,9 +158,11 @@ jobs:
               statusSet: 0,
               draft: 0,
               notCommunity: 0,
-              noCertifiedApiSourceChange: 0,
+              notQualifying: 0,
               statusAlreadySet: 0,
               writeCapReached: 0,
+              certifiedApiSource: 0,
+              newConnector: 0,
             };
             const failures = [];
             const projectNumber = 137;
@@ -184,16 +211,22 @@ jobs:
                 'Check the project configuration and that the app token has org-level Projects read/write permission.',
               );
             }
-            const statusOption = project.field.options.find(
-              (option) => option.name === 'Community PR Review',
+            const findStatusOption = (name) => {
+              const option = project.field.options.find((candidate) => candidate.name === name);
+              if (!option) {
+                throw new Error(
+                  `Project "${project.title}" has no Status option named exactly "${name}". ` +
+                  'Check the project configuration and that the app token has org-level Projects read/write permission.',
+                );
+              }
+              return option;
+            };
+            const certifiedStatusOption = findStatusOption('Community PR Review');
+            const newConnectorStatusOption = findStatusOption('New Connector PRs');
+            core.info(
+              `Resolved project "${project.title}" with options ` +
+              `"${certifiedStatusOption.name}" and "${newConnectorStatusOption.name}"`,
             );
-            if (!statusOption) {
-              throw new Error(
-                `Project "${project.title}" has no Status option named exactly "Community PR Review". ` +
-                'Check the project configuration and that the app token has org-level Projects read/write permission.',
-              );
-            }
-            core.info(`Resolved project "${project.title}" with option "${statusOption.name}"`);
 
             const pullRequestsQuery = `
               query($owner: String!, $name: String!, $cursor: String) {
@@ -268,17 +301,33 @@ jobs:
               }
             `;
 
+            const connectorNameFromPath = (path) => {
+              const match = (path ?? '').match(/^airbyte-integrations\/connectors\/([^/]+)\//);
+              return match ? match[1] : null;
+            };
             const matchesCertifiedSource = (path) => {
-              if (!path) return false;
-              const match = path.match(/^airbyte-integrations\/connectors\/([^/]+)(?:\/|$)/);
-              return match && certifiedSources.has(match[1]);
+              const connector = connectorNameFromPath(path);
+              return Boolean(connector) && certifiedSources.has(connector);
+            };
+            const matchesNewConnector = (path) => {
+              const connector = connectorNameFromPath(path);
+              return Boolean(connector) && !existingConnectors.has(connector);
+            };
+            const classify = (files) => {
+              if (files.some((file) => matchesNewConnector(file.path))) {
+                return { kind: 'new-connector', statusOption: newConnectorStatusOption };
+              }
+              if (files.some((file) => matchesCertifiedSource(file.path))) {
+                return { kind: 'certified-api-source', statusOption: certifiedStatusOption };
+              }
+              return null;
             };
             const getAllFiles = async (pr) => {
               const files = [...(pr.files?.nodes ?? [])];
               const initialPageInfo = pr.files?.pageInfo ?? {};
               let cursor = initialPageInfo.endCursor ?? null;
               let hasNextPage = pr.changedFiles > 100 || Boolean(initialPageInfo.hasNextPage);
-              while (!files.some((file) => matchesCertifiedSource(file.path)) && hasNextPage) {
+              while (!files.some((file) => matchesNewConnector(file.path)) && hasNextPage) {
                 const result = await github.graphql(additionalFilesQuery, {
                   ...repositoryVariables,
                   number: pr.number,
@@ -311,24 +360,26 @@ jobs:
               core.info(`Dry-run: max_writes=${maxWrites} is configured but ignored.`);
             }
             let projectTitle = project.title;
-            let statusOptionName = statusOption.name;
             const writeSummary = async () => {
               const mode = dryRun ? 'DRY-RUN' : 'LIVE';
               await core.summary
-                .addHeading('Community API source PR board sync')
+                .addHeading('Community connector PR board sync')
                 .addTable([
                   [{ data: 'Metric', header: true }, { data: 'Count', header: true }],
                   ['Mode', mode],
                   ['Project', projectTitle],
-                  ['Status option', statusOptionName],
+                  ['Status option (certified API source)', certifiedStatusOption.name],
+                  ['Status option (new connector)', newConnectorStatusOption.name],
                   ['Max writes', dryRun ? `Ignored${writeCapDescription}` : (maxWrites > 0 ? String(maxWrites) : 'Unlimited')],
                   ['Evaluated', String(counts.evaluated)],
                   ['Qualified', String(counts.qualified)],
+                  ['Qualified: certified API source change', String(counts.certifiedApiSource)],
+                  ['Qualified: new connector', String(counts.newConnector)],
                   [dryRun ? 'Would add' : 'Added', String(counts.added)],
                   [dryRun ? 'Would set Status' : 'Status-set', String(counts.statusSet)],
                   ['Skipped: draft', String(counts.draft)],
                   ['Skipped: not-community', String(counts.notCommunity)],
-                  ['Skipped: no-certified-api-source-change', String(counts.noCertifiedApiSourceChange)],
+                  ['Skipped: no-qualifying-connector-change', String(counts.notQualifying)],
                   ['Skipped: status-already-set', String(counts.statusAlreadySet)],
                   ['Skipped: write cap reached', String(counts.writeCapReached)],
                 ])
@@ -363,12 +414,16 @@ jobs:
                   }
                   try {
                     const files = await getAllFiles(pr);
-                    if (!files.some((file) => matchesCertifiedSource(file.path))) {
-                      counts.noCertifiedApiSourceChange += 1;
-                      core.info(`PR ${pr.number}: skipped (no-certified-api-source-change)`);
+                    const classification = classify(files);
+                    if (!classification) {
+                      counts.notQualifying += 1;
+                      core.info(`PR ${pr.number}: skipped (no-qualifying-connector-change)`);
                       continue;
                     }
+                    const statusOption = classification.statusOption;
                     counts.qualified += 1;
+                    counts[classification.kind === 'new-connector' ? 'newConnector' : 'certifiedApiSource'] += 1;
+                    core.info(`PR ${pr.number}: qualified (${classification.kind})`);
                     if (writeCapReached()) {
                       counts.writeCapReached += 1;
                       core.info(`PR ${pr.number}: skipped (write cap reached${writeCapDescription})`);
