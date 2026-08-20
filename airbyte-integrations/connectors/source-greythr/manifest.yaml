@@ -451,23 +451,23 @@ definitions:
               partition_field: employee_id
               stream:
                 $ref: "#/definitions/streams/Employees"
-        transformations:
-          - type: AddFields
-            fields:
-              - type: AddedFieldDefinition
-                path:
-                  - employeeId
-                value: "{{ record['employee']['id'] }}"
-                value_type: integer
-              - type: AddedFieldDefinition
-                path:
-                  - leaveTypeCategoryId
-                value: "{{ record['leaveTypeCategory']['id'] }}"
-                value_type: integer
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/Employee Leave Balances"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employeeId
+              value: "{{ stream_partition['employee_id'] }}"
+              value_type: integer
+            - type: AddedFieldDefinition
+              path:
+                - leaveTypeCategoryId
+              value: "{{ record['leaveTypeCategory']['id'] }}"
+              value_type: integer
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Leave Balances"
     Employee Leave Transactions:
       type: DeclarativeStream
       name: Employee Leave Transactions
@@ -551,42 +551,42 @@ definitions:
               partition_field: employee_id
               stream:
                 $ref: "#/definitions/streams/Employees"
-        transformations:
-          - type: AddFields
-            fields:
-              - type: AddedFieldDefinition
-                path:
-                  - employeeId
-                value: "{{ record['employee']['id'] }}"
-                value_type: integer
-        incremental_sync:
-          type: DatetimeBasedCursor
-          cursor_field: endDate
-          cursor_datetime_formats:
-            - "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employeeId
+              value: "{{ stream_partition['employee_id'] }}"
+              value_type: integer
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date or (now_utc() - duration('P31D')).strftime('%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
-          start_datetime:
-            type: MinMaxDatetime
-            datetime: "{{ config.start_date or (now_utc() - duration('P31D')).strftime('%Y-%m-%d') }}"
-            datetime_format: "%Y-%m-%d"
-          start_time_option:
-            type: RequestOption
-            field_name: start
-            inject_into: request_parameter
-          end_time_option:
-            type: RequestOption
-            field_name: end
-            inject_into: request_parameter
-          end_datetime:
-            type: MinMaxDatetime
-            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-            datetime_format: "%Y-%m-%d"
-          step: P31D
-          cursor_granularity: P1D
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/Employee Attendance Summary"
+        start_time_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        step: P31D
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Attendance Summary"
     Employee Attendance Muster:
       type: DeclarativeStream
       primary_key:
@@ -615,46 +615,46 @@ definitions:
               partition_field: employee_id
               stream:
                 $ref: "#/definitions/streams/Employees"
-        transformations:
-          - type: AddFields
-            fields:
-              - type: AddedFieldDefinition
-                path:
-                  - employeeId
-                value: "{{ record['employee']['id'] }}"
-                value_type: integer
-              - type: AddedFieldDefinition
-                path:
-                  - attendanceDate
-                value: "{{ record['summary']['attendanceDate'] }}"
-        incremental_sync:
-          type: DatetimeBasedCursor
-          cursor_field: attendanceDate
-          cursor_datetime_formats:
-            - "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employeeId
+              value: "{{ stream_partition['employee_id'] }}"
+              value_type: integer
+            - type: AddedFieldDefinition
+              path:
+                - attendanceDate
+              value: "{{ record['summary']['attendanceDate'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: attendanceDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date or (now_utc() - duration('P31D')).strftime('%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
-          start_datetime:
-            type: MinMaxDatetime
-            datetime: "{{ config.start_date or (now_utc() - duration('P31D')).strftime('%Y-%m-%d') }}"
-            datetime_format: "%Y-%m-%d"
-          start_time_option:
-            type: RequestOption
-            field_name: start
-            inject_into: request_parameter
-          end_time_option:
-            type: RequestOption
-            field_name: end
-            inject_into: request_parameter
-          end_datetime:
-            type: MinMaxDatetime
-            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-            datetime_format: "%Y-%m-%d"
-          step: P31D
-          cursor_granularity: P1D
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/Employee Attendance Muster"
+        start_time_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        step: P31D
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Attendance Muster"
     Employee Attendance Swipes:
       type: DeclarativeStream
       name: Employee Attendance Swipes
@@ -683,42 +683,42 @@ definitions:
               partition_field: employee_id
               stream:
                 $ref: "#/definitions/streams/Employees"
-        transformations:
-          - type: AddFields
-            fields:
-              - type: AddedFieldDefinition
-                path:
-                  - employeeId
-                value: "{{ record['employee']['id'] }}"
-                value_type: integer
-        incremental_sync:
-          type: DatetimeBasedCursor
-          cursor_field: attendanceDate
-          cursor_datetime_formats:
-            - "%Y-%m-%d"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - employeeId
+              value: "{{ stream_partition['employee_id'] }}"
+              value_type: integer
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: attendanceDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date or (now_utc() - duration('P31D')).strftime('%Y-%m-%d') }}"
           datetime_format: "%Y-%m-%d"
-          start_datetime:
-            type: MinMaxDatetime
-            datetime: "{{ config.start_date or (now_utc() - duration('P31D')).strftime('%Y-%m-%d') }}"
-            datetime_format: "%Y-%m-%d"
-          start_time_option:
-            type: RequestOption
-            field_name: start
-            inject_into: request_parameter
-          end_time_option:
-            type: RequestOption
-            field_name: end
-            inject_into: request_parameter
-          end_datetime:
-            type: MinMaxDatetime
-            datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-            datetime_format: "%Y-%m-%d"
-          step: P31D
-          cursor_granularity: P1D
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/Employee Attendance Swipes"
+        start_time_option:
+          type: RequestOption
+          field_name: start
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: end
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          datetime_format: "%Y-%m-%d"
+        step: P31D
+        cursor_granularity: P1D
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Employee Attendance Swipes"
   base_requester:
     type: HttpRequester
     url_base: "{{ config['base_url'] }}"
