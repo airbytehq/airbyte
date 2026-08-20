@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.doAnswer
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -36,7 +36,8 @@ class SnowflakeSourceMetadataQuerierTest {
 
     @Test
     fun `fields returns empty when privilege probe fails with SQLException`() {
-        val table = TableName(catalog = "DB", schema = "PUBLIC", name = "V_WITH_SESSION_VAR", type = "VIEW")
+        val table =
+            TableName(catalog = "DB", schema = "PUBLIC", name = "V_WITH_SESSION_VAR", type = "VIEW")
         val dbmd = mock(DatabaseMetaData::class.java)
         val conn = mock(Connection::class.java)
         val stmt = mock(Statement::class.java)
@@ -63,13 +64,13 @@ class SnowflakeSourceMetadataQuerierTest {
                     )
                 )
             )
-        `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW")))
-            .thenReturn(tablesRs)
-        `when`(dbmd.getColumns("DB", "PUBLIC", null, null))
-            .thenReturn(columnsRs)
+        `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW"))).thenReturn(tablesRs)
+        `when`(dbmd.getColumns("DB", "PUBLIC", null, null)).thenReturn(columnsRs)
 
         val streamId =
-            StreamIdentifier.from(StreamDescriptor().withNamespace("PUBLIC").withName("V_WITH_SESSION_VAR"))
+            StreamIdentifier.from(
+                StreamDescriptor().withNamespace("PUBLIC").withName("V_WITH_SESSION_VAR")
+            )
         val fields = querier.fields(streamId)
 
         assertTrue(fields.isEmpty())
@@ -110,10 +111,8 @@ class SnowflakeSourceMetadataQuerierTest {
                     ),
                 )
             )
-        `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW")))
-            .thenReturn(tablesRs)
-        `when`(dbmd.getColumns("DB", "PUBLIC", null, null))
-            .thenReturn(columnsRs)
+        `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW"))).thenReturn(tablesRs)
+        `when`(dbmd.getColumns("DB", "PUBLIC", null, null)).thenReturn(columnsRs)
 
         val colAResultSet = queryMetadataResultSet("COL_A", "COL_A")
         doAnswer { invocation ->
@@ -150,8 +149,10 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(config.checkPrivileges).thenReturn(false)
         val lowerSchemaRs = emptyResultSet()
         val upperSchemaRs = emptyResultSet()
-        `when`(dbmd.getTables("DB", "myschema", null, arrayOf("TABLE", "VIEW"))).thenReturn(lowerSchemaRs)
-        `when`(dbmd.getTables("DB", "MYSCHEMA", null, arrayOf("TABLE", "VIEW"))).thenReturn(upperSchemaRs)
+        `when`(dbmd.getTables("DB", "myschema", null, arrayOf("TABLE", "VIEW")))
+            .thenReturn(lowerSchemaRs)
+        `when`(dbmd.getTables("DB", "MYSCHEMA", null, arrayOf("TABLE", "VIEW")))
+            .thenReturn(upperSchemaRs)
 
         querier.memoizedTableNames
 
@@ -171,7 +172,8 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(config.namespaces).thenReturn(setOf("DB"))
         `when`(config.checkPrivileges).thenReturn(false)
         val publicSchemaRs = emptyResultSet()
-        `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW"))).thenReturn(publicSchemaRs)
+        `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW")))
+            .thenReturn(publicSchemaRs)
 
         querier.memoizedTableNames
 
@@ -199,11 +201,17 @@ class SnowflakeSourceMetadataQuerierTest {
         verify(dbmd, times(6)).getTables(anyString(), anyString(), eq(null), any())
     }
 
-    private fun baseQuerier(conn: Connection, config: JdbcSourceConfiguration): JdbcMetadataQuerier {
+    private fun baseQuerier(
+        conn: Connection,
+        config: JdbcSourceConfiguration
+    ): JdbcMetadataQuerier {
         val jdbcConnectionFactory = mock(JdbcConnectionFactory::class.java)
         `when`(jdbcConnectionFactory.get()).thenReturn(conn)
         return JdbcMetadataQuerier(
-            constants = DefaultJdbcConstants(namespaceKind = DefaultJdbcConstants.NamespaceKind.CATALOG_AND_SCHEMA),
+            constants =
+                DefaultJdbcConstants(
+                    namespaceKind = DefaultJdbcConstants.NamespaceKind.CATALOG_AND_SCHEMA
+                ),
             config = config,
             selectQueryGenerator = SnowflakeSourceOperations(),
             fieldTypeMapper = SnowflakeSourceOperations(),
@@ -254,15 +262,17 @@ class SnowflakeSourceMetadataQuerierTest {
             `when`(rs.getInt("ORDINAL_POSITION")).thenReturn(first.ordinal ?: 1)
         } else {
             `when`(rs.getString("COLUMN_NAME")).thenReturn(first.name).thenReturn(second.name)
-            `when`(rs.getString("TYPE_NAME")).thenReturn(first.type.typeName).thenReturn(second.type.typeName)
-            `when`(rs.getInt("DATA_TYPE")).thenReturn(first.type.typeCode).thenReturn(second.type.typeCode)
-            `when`(rs.getInt("COLUMN_SIZE"))
-                .thenReturn(100)
-                .thenReturn(100)
-            `when`(rs.getInt("DECIMAL_DIGITS"))
-                .thenReturn(0)
-                .thenReturn(0)
-            `when`(rs.getInt("ORDINAL_POSITION")).thenReturn(first.ordinal ?: 1).thenReturn(second.ordinal ?: 2)
+            `when`(rs.getString("TYPE_NAME"))
+                .thenReturn(first.type.typeName)
+                .thenReturn(second.type.typeName)
+            `when`(rs.getInt("DATA_TYPE"))
+                .thenReturn(first.type.typeCode)
+                .thenReturn(second.type.typeCode)
+            `when`(rs.getInt("COLUMN_SIZE")).thenReturn(100).thenReturn(100)
+            `when`(rs.getInt("DECIMAL_DIGITS")).thenReturn(0).thenReturn(0)
+            `when`(rs.getInt("ORDINAL_POSITION"))
+                .thenReturn(first.ordinal ?: 1)
+                .thenReturn(second.ordinal ?: 2)
         }
         `when`(rs.getString("IS_NULLABLE")).thenReturn("YES")
         return rs
