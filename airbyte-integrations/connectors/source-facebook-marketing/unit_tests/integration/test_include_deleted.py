@@ -179,6 +179,7 @@ class TestIncludeDeleted(TestCase):
             "bid_constraints",
             "adlabels",
             "learning_stage_info",
+            "attribution_spec",
         ]
 
         http_mocker.get(
@@ -187,6 +188,7 @@ class TestIncludeDeleted(TestCase):
         )
         output = self._read(config().with_ad_set_statuses(self.statuses), "ad_sets")
         assert len(output.records) == 1
+        assert output.records[0].record.data["attribution_spec"] == [{"event_type": "CLICK_THROUGH", "window_days": 7}]
 
         account_state = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state")[self.account_id]
         assert self.filter_statuses_flag in account_state, f"State should include `filter_statuses` flag to track new records in the past."
