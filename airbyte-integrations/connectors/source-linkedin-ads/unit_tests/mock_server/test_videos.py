@@ -172,9 +172,7 @@ class TestVideosStream(TestCase):
         )
         http_mocker.get(
             _creatives_request(111111111),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_creative_record(2001, 111111111, "urn:li:share:1000001")]
-            ),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "urn:li:share:1000001")]),
         )
         http_mocker.get(
             LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
@@ -251,9 +249,7 @@ class TestVideosStream(TestCase):
         )
         http_mocker.get(
             _creatives_request(111111111),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [_create_creative_record(2001, 111111111, "urn:li:share:1000001")]
-            ),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_creative_record(2001, 111111111, "urn:li:share:1000001")]),
         )
         http_mocker.get(
             LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
