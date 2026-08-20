@@ -17,6 +17,7 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 - `applications_interviews` uses flat schedule, organizer, and interview identifiers.
 - `jobs_openings`, `offers`, and `users` use v3 relationship identifiers instead of the v1 nested objects.
 - `offices.location` is a string in v3 rather than the v1 object.
+- `activity_feed` changes record grain. In v1 it returned one row per candidate whose only columns were the `activities`, `emails`, and `notes` arrays, and the stream had no primary key. It now reads `GET /v3/notes` and emits one flat row per note, with `id` as the primary key. Every existing column is replaced and the row count grows to the number of notes per candidate - drop and re-create the destination table for this stream rather than refreshing the schema in place.
 
 #### Removed and renamed top-level fields
 

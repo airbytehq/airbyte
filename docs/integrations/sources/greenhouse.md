@@ -38,7 +38,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 ## Supported Streams
 
-- [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
+- [Activity Feed](https://harvestdocs.greenhouse.io/reference/get_v3-notes)
 - [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
 - [Applications Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
 - [Applications Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
