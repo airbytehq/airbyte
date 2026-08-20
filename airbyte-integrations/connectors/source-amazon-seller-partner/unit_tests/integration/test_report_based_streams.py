@@ -1386,17 +1386,32 @@ class TestVendorJsonReportsFullRefresh:
         [
             pytest.param(
                 "GET_VENDOR_TRAFFIC_REPORT",
-                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_traffic_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_net_pure_product_margin_report",
             ),
             pytest.param(
                 "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
-                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_real_time_inventory_report",
             ),
         ],
@@ -1434,17 +1449,32 @@ class TestVendorJsonReportsFullRefresh:
         [
             pytest.param(
                 "GET_VENDOR_TRAFFIC_REPORT",
-                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_traffic_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_net_pure_product_margin_report",
             ),
             pytest.param(
                 "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
-                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_real_time_inventory_report",
             ),
         ],
@@ -1492,19 +1522,34 @@ class TestVendorJsonReportsIncremental:
             pytest.param(
                 "GET_VENDOR_TRAFFIC_REPORT",
                 "endDate",
-                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_traffic_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
                 "endDate",
-                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_net_pure_product_margin_report",
             ),
             pytest.param(
                 "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
                 "endTime",
-                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_real_time_inventory_report",
             ),
         ],
@@ -1537,6 +1582,88 @@ class TestVendorJsonReportsIncremental:
 
         output = self._read(stream_name, config(), state=initial_state)
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                "endTime",
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_off_midnight_state_when_incremental_read_then_report_window_is_day_aligned(
+        self, stream_name: str, cursor_field: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        """Regression test for the off-midnight window drift (oncall #13097).
+
+        These P1D vendor streams replace the shared creation requester's ``request_body_json``
+        wholesale, so before the fix they sent no ``dataStartTime``/``dataEndTime`` at all while
+        still labelling every record with the raw, off-midnight slice end. The window must now be a
+        single day-aligned calendar day derived from the slice start day, and the emitted cursor
+        value must be day-aligned too so destination deduplication compares stable per-day values.
+
+        The mocked create-report matcher only matches the day-aligned body, so a missing or drifted
+        window would produce zero records and fail the assertions below.
+        """
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: "2023-01-29T13:27:00Z"}).build()
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).without_amz_date().build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(
+            stream_name, config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z")), state=initial_state
+        )
+
+        assert len(output.records) > 0
+        assert all(record.record.data.get(cursor_field) == "2023-01-29T23:59:59Z" for record in output.records)
 
 
 @freezegun.freeze_time(NOW.isoformat())
