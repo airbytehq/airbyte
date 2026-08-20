@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the Goldcast so
 ## Prerequisites
 
 - A [Goldcast Pro plan](https://www.goldcast.io/pricing) or higher. The Starter plan does not allow API access.
-- A Goldcast API token. Follow [Goldcast's guide](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to create one. The token is case sensitive.
+- A Goldcast API token. Follow [Goldcast's guide](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to create one. The token is case-sensitive.
 
 ## Setup guide
 
@@ -50,9 +50,9 @@ Incremental modes are not supported as the Goldcast API does not contain a curso
 
 ## Supported Streams
 
-The Goldcast source connector can sync the following tables. See the [Goldcast API documentation](https://apidocs.goldcast.io/) for details on each endpoint.
+The Goldcast source connector can sync the following streams. See the [Goldcast API documentation](https://apidocs.goldcast.io/) for details on each endpoint.
 
-### Main Tables
+### Main streams
 
 - [organizations](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization)
 
