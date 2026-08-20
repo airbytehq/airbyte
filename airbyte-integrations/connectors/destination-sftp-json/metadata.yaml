@@ -10,7 +10,7 @@ data:
     - suite: integrationTests
   connectorType: destination
   definitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
-  dockerImageTag: 0.3.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-sftp-json
   documentationUrl: https://docs.airbyte.com/integrations/destinations/sftp-json
   githubIssueLabel: destination-sftp-json
@@ -23,6 +23,17 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          Version 1.0.0 replaces the top-level `password` configuration field with
+          a `credentials` block that supports both SSH password and SSH key
+          authentication. Existing connections using the legacy `password` field
+          will continue to work (the connector auto-converts to the new format),
+          but you must re-save your connection configuration in the UI to use the
+          new credential format. See the [migration guide](https://docs.airbyte.com/integrations/destinations/sftp-json-migrations).
+        upgradeDeadline: "2026-11-20"
   supportLevel: community
   tags:
     - language:python

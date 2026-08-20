@@ -8,7 +8,6 @@ import errno
 import io
 import json
 from typing import Dict, List, Mapping, Optional, TextIO
-from urllib.parse import quote
 
 import paramiko
 
@@ -84,15 +83,27 @@ class SftpClient:
         self,
         host: str,
         username: str,
-        credentials: Mapping[str, str],
         destination_path: str,
+        credentials: Optional[Mapping[str, str]] = None,
+        password: Optional[str] = None,
         port: int = 22,
         host_key_checking: Optional[Mapping[str, str]] = None,
     ):
         self.host = host
         self.port = port
         self.username = username
-        self.credentials = credentials
+        # Accept the legacy top-level ``password`` field for backward
+        # compatibility with configs created before the ``credentials`` block
+        # was introduced.  When both are supplied, ``credentials`` wins.
+        if credentials is not None:
+            self.credentials: Mapping[str, str] = credentials
+        elif password is not None:
+            self.credentials = {
+                "auth_method": self.PASSWORD_AUTH,
+                "auth_user_password": password,
+            }
+        else:
+            raise ValueError("Either 'credentials' or 'password' must be provided.")
         self.destination_path = destination_path
         # Defaults to "auto_add" (trust on first use) for backward compatibility.
         self.host_key_checking: Mapping[str, str] = host_key_checking or {"mode": self.HOST_KEY_AUTO_ADD}
@@ -182,15 +193,8 @@ class SftpClient:
         return f"{self.destination_path}/airbyte_json_{stream}.jsonl"
 
     def _open(self, stream: str, mode: str = "a+") -> paramiko.SFTPFile:
-        uri = self._get_uri(stream)
+        path = self._get_path(stream)
         return self.sftp.open(path, mode=mode)
-
-    def _get_uri(self, stream: str) -> str:
-        username = quote(self.username, safe="")
-        password = quote(self.password, safe="")
-        host = quote(self.host, safe="")
-        path = quote(self._get_path(stream), safe="/")
-        return f"sftp://{username}:{password}@{host}:{self.port}/{path}"
 
     def close(self):
         for file in self._files.values():

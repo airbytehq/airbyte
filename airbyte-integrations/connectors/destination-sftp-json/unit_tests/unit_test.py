@@ -8,7 +8,6 @@ import io
 import paramiko
 import pytest
 from destination_sftp_json.client import HostKeyError, SftpClient, SshKeyError, _load_host_key, _load_private_key
-from smart_open.ssh import parse_uri
 
 
 @pytest.fixture
@@ -169,16 +168,39 @@ def test_load_host_key_empty():
     with pytest.raises(HostKeyError):
         _load_host_key("ssh-rsa", "   ")
 
-def test_get_uri(client):
-    uri = client._get_uri("mystream2")
-    assert uri == "sftp://sample-username:sample-password@sample-host:22//sample/path/airbyte_json_mystream2.jsonl"
+
+def test_legacy_password_fallback():
+    """A legacy config with a top-level 'password' (no 'credentials') should still work."""
+    client = SftpClient(
+        host="sample-host",
+        username="sample-username",
+        password="sample-password",
+        destination_path="/sample/path",
+    )
+    assert client.credentials == {
+        "auth_method": "SSH_PASSWORD_AUTH",
+        "auth_user_password": "sample-password",
+    }
 
 
-def test_get_uri_escapes_reserved_characters():
-    client = SftpClient("sample-host", "sample-username", "sample#password", "/sample/path", port=2222)
+def test_credentials_takes_precedence_over_password():
+    """When both 'credentials' and 'password' are supplied, 'credentials' wins."""
+    creds = {"auth_method": "SSH_KEY_AUTH", "auth_ssh_key": "some-key"}
+    client = SftpClient(
+        host="sample-host",
+        username="sample-username",
+        credentials=creds,
+        password="ignored",
+        destination_path="/sample/path",
+    )
+    assert client.credentials == creds
 
-    uri = client._get_uri("mystream")
 
-    assert uri == "sftp://sample-username:sample%23password@sample-host:2222//sample/path/airbyte_json_mystream.jsonl"
-    assert parse_uri(uri)["password"] == "sample#password"
-    assert parse_uri(uri)["port"] == 2222
+def test_missing_credentials_and_password_raises():
+    """Omitting both 'credentials' and 'password' must raise ValueError."""
+    with pytest.raises(ValueError, match="credentials"):
+        SftpClient(
+            host="sample-host",
+            username="sample-username",
+            destination_path="/sample/path",
+        )
