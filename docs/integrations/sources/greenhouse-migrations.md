@@ -6,7 +6,7 @@ Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 be
 
 ### Authentication
 
-Harvest v3 uses OAuth 2.0 client credentials instead of Harvest API keys. Configure the OAuth client ID and client secret issued by Greenhouse, and enter the numeric ID of a Greenhouse Site Admin as `sub`. The Site Admin user must have access to the resources that the source should read.
+Harvest v3 uses OAuth 2.0 Authorization Code authentication and refresh tokens instead of Harvest API keys. In Airbyte Cloud, enter the OAuth client ID and client secret and click **Authenticate** to complete the consent flow. In self-managed Airbyte, use the consent flow to mint a refresh token and provide it with the client ID and client secret. Reauthentication is required after upgrading to 1.0.0.
 
 ### Stream and schema changes
 

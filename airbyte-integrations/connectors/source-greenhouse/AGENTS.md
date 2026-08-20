@@ -4,7 +4,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Harvest v3 stream behavior
 
-This connector uses Greenhouse Harvest v3 with OAuth client credentials. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. Applications state is migrated from `applied_at` to `created_at` during the 1.0.0 upgrade.
+This connector uses Greenhouse Harvest v3 with OAuth Authorization Code authentication and rotating refresh tokens. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The `refresh_token_updater` persists each rotated refresh token. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. Applications state is migrated from `applied_at` to `created_at` during the 1.0.0 upgrade.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|

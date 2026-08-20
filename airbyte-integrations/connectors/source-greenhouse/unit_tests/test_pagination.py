@@ -12,10 +12,10 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 CONFIG = {
     "credentials": {
-        "auth_type": "client_credentials",
+        "auth_type": "Client",
         "client_id": "test-client",
         "client_secret": "test-secret",
-        "sub": 42,
+        "refresh_token": "test-refresh-token",
     }
 }
 
@@ -62,7 +62,7 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
     assert len(token_requests) == 1
 
 
-def test_oauth_client_credentials_token_request_shape(requests_mock, get_source):
+def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     token_requests = _register_token(requests_mock)
     requests_mock.get(
         "https://harvest.greenhouse.io/v3/applications",
@@ -75,10 +75,10 @@ def test_oauth_client_credentials_token_request_shape(requests_mock, get_source)
 
     request = token_requests[0]
     assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"test-client:test-secret").decode()
-    assert parse_qs(request.text) == {
-        "grant_type": ["client_credentials"],
-        "sub": ["42"],
-    }
+    token_params = parse_qs(request.text)
+    assert token_params["grant_type"] == ["refresh_token"]
+    assert token_params["refresh_token"] == ["test-refresh-token"]
+    assert "sub" not in token_params
 
 
 def test_manifest_application_state_migration_reaches_request(requests_mock, get_source):

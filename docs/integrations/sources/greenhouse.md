@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need Greenhouse OAuth client credentials with permissions to the resources Airbyte should be able to access. You must also provide the numeric user ID of a Greenhouse Site Admin as the OAuth `sub` value.
+To set up the Greenhouse source connector, you'll need a Greenhouse OAuth application with permissions to the resources Airbyte should be able to access. The OAuth consent flow exchanges the application credentials for a refresh token.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -12,8 +12,9 @@ To set up the Greenhouse source connector, you'll need Greenhouse OAuth client c
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Select **OAuth client credentials** and enter the OAuth client ID, OAuth client secret, and the Site Admin user ID (`sub`) associated with the OAuth application.
-6. Click **Set up source**.
+5. Select **OAuth (Authorization Code + refresh token)** and enter the OAuth client ID and OAuth client secret associated with the OAuth application.
+6. Click **Authenticate** and complete the OAuth consent flow.
+7. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -69,7 +70,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates all streams from Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth client credentials; review the [migration guide](./greenhouse-migrations.md) before upgrading.
+Version 1.0.0 migrates all streams from Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.
 
 ## IP allow list
 
@@ -82,7 +83,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of all streams from Harvest v1 to v3 because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth client-credentials authentication is required. |
+| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of all streams from Harvest v1 to v3 because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
