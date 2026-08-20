@@ -68,13 +68,16 @@ class LinkedInAdsRequestBuilder:
         return builder
 
     @classmethod
-    def videos_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
-        # The videos endpoint is filtered by the sponsored account that owns the media library:
-        # videos?q=associatedAccount&associatedAccount=urn:li:sponsoredAccount:{account_id}&count=500
-        builder = cls("/videos")
-        builder._query_params["q"] = "associatedAccount"
-        builder._query_params["associatedAccount"] = f"urn:li:sponsoredAccount:{account_id}"
-        return builder
+    def posts_endpoint(cls, post_urn: str) -> "LinkedInAdsRequestBuilder":
+        # GET /rest/posts/{urn} with the URN colons percent-encoded, mirroring the manifest's
+        # `posts/{{ stream_slice.get('post_urn') | replace(':', '%3A') }}` path.
+        return cls(f"/posts/{post_urn.replace(':', '%3A')}")
+
+    @classmethod
+    def video_endpoint(cls, video_urn: str) -> "LinkedInAdsRequestBuilder":
+        # GET /rest/videos/{urn} with the URN colons percent-encoded, mirroring the manifest's
+        # `videos/{{ stream_slice.get('video_urn') | replace(':', '%3A') }}` path.
+        return cls(f"/videos/{video_urn.replace(':', '%3A')}")
 
     @classmethod
     def ad_analytics_endpoint(cls) -> "LinkedInAdsRequestBuilder":

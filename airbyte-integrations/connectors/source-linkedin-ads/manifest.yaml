@@ -523,6 +523,85 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/lead_form_responses"
+    # Internal parent stream for `videos`; not exposed in the `streams` list.
+    # Resolves each creative's sponsored-content reference (urn:li:share / urn:li:ugcPost)
+    # to the underlying post, and keeps only the posts whose media is a video.
+    # Creatives without a `content.reference` (e.g. text ads) produce no partition.
+    videos_creative_posts:
+      type: DeclarativeStream
+      name: videos_creative_posts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: posts/{{ stream_slice.get('post_urn') | replace(':', '%3A') }}
+          http_method: GET
+          request_headers:
+            Linkedin-Version: "202601"
+            X-Restli-Protocol-Version: 2.0.0
+          error_handler:
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            response_filters:
+              # A creative can reference a post that was deleted (404) or that the
+              # authenticated user is not allowed to read (403, e.g. missing
+              # r_organization_social when authenticating with a raw access token).
+              # Skip those posts rather than failing the whole videos sync.
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                  - 404
+                action: IGNORE
+                error_message: "Skipping a creative's post that is deleted or not readable by the authenticated user; the videos it references will not be synced."
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+          record_filter:
+            type: RecordFilter
+            # Keep only video posts. Image posts (urn:li:image) and legacy assets
+            # uploaded through the deprecated Assets API (urn:li:digitalmediaAsset)
+            # are not retrievable through the Videos API.
+            condition: "{{ 'urn:li:video:' in (((record.get('content') or {}).get('media') or {}).get('id') or '') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: content/reference
+              partition_field: post_urn
+              stream:
+                $ref: "#/definitions/streams/creatives"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: http://json-schema.org/draft-07/schema#
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - string
+            content:
+              type:
+                - "null"
+                - object
+    # Fetches each ad video individually (GET /rest/videos/{videoUrn}). The Videos API
+    # also exposes a `q=associatedAccount` finder listing an account's whole media
+    # library in one call, but LinkedIn gates that finder at the application level:
+    # a token holding r_ads - the permission the API docs list for this API - still
+    # receives 403 ACCESS_DENIED ("Not enough permissions to access:
+    # partnerApiVideosExternal.FINDER-associatedAccount.<version>") unless LinkedIn has
+    # granted the application access. GET by URN works with plain r_ads, so the stream
+    # resolves the videos actually referenced by the account's creatives instead.
     videos:
       type: DeclarativeStream
       name: videos
@@ -532,18 +611,23 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: videos
+          path: videos/{{ stream_slice.get('video_urn') | replace(':', '%3A') }}
           http_method: GET
-          request_parameters:
-            q: associatedAccount
-            associatedAccount: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
-            count: "500"
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            response_filters:
+              # The video may have been deleted since the post was published (404), or
+              # belong to an organization the authenticated user cannot read (403).
+              - type: HttpResponseFilter
+                http_codes:
+                  - 403
+                  - 404
+                action: IGNORE
+                error_message: "Skipping a video that is deleted or not readable by the authenticated user."
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
@@ -551,26 +635,16 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - elements
+            field_path: []
           schema_normalization: Default
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: start
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: id
-              partition_field: account_id
+              parent_key: content/media/id
+              partition_field: video_urn
               stream:
-                $ref: "#/definitions/streams/accounts"
+                $ref: "#/definitions/streams/videos_creative_posts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3216,8 +3290,8 @@ schemas:
       - object
     title: "Videos"
     description: |
-      Videos uploaded to a sponsored account's media library, including their duration and other media metadata.
-      These media assets can be referenced by creatives in sponsored video ads.
+      Videos referenced by the sponsored accounts' ad creatives, including their duration and other media metadata.
+      Joinable with the creatives stream through the post referenced in creative.content.reference.
       For details: https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api
     additionalProperties: true
     properties:

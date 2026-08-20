@@ -158,7 +158,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Conversions](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account)
 - [Lead forms](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#lead-forms-1)
 - [Lead form responses](https://learn.microsoft.com/en-us/linkedin/marketing/lead-sync/leadsync?view=li-lms-2024-06&tabs=http#get-lead-form-responses)
-- [Videos](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api#find-by-associated-account)
+- [Videos](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/videos-api#get-a-video)
 - [Ad Analytics by Campaign](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Impression Device](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
@@ -221,7 +221,14 @@ The **Lead forms** and **Lead form responses** streams support Full Refresh sync
 
 ### Videos
 
-The **Videos** stream returns the videos stored in each sponsored account's media library, including the video `duration` (in milliseconds). It supports Full Refresh sync mode only, as the LinkedIn API does not expose a modification timestamp usable for filtering. Note that legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) are not returned by this stream.
+The **Videos** stream returns the videos referenced by each sponsored account's ad creatives, including the video `duration` (in milliseconds). For every creative, the connector resolves the sponsored-content post the creative references and then fetches the video that post embeds, so the stream covers the videos actually used in ads and can be joined with the **Creatives** stream through the creative's `content.reference`. It supports Full Refresh sync mode only, as the LinkedIn API does not expose a modification timestamp usable for filtering.
+
+Keep in mind the following limitations:
+
+- A video used by several creatives or posts is emitted once per reference; deduplicate on the primary key `id` if you need one row per video.
+- Legacy media assets uploaded through the deprecated Assets API (`urn:li:digitalmediaAsset:` URNs) cannot be retrieved through the Videos API and are skipped.
+- Posts or videos that were deleted, or that the authenticated user is not allowed to read, are skipped with a log message rather than failing the sync.
+- The stream intentionally does not use the Videos API `associatedAccount` finder (the account's whole media library): LinkedIn gates that finder at the application level, and applications holding only the `r_ads` scope receive `403 ACCESS_DENIED` from it. Fetching each video by URN works with the standard scopes this connector already requests.
 
 ## IP allow list
 

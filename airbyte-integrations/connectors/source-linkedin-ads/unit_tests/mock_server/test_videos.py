@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import datetime, timezone
-from typing import List
 from unittest import TestCase
 
 import freezegun
@@ -9,7 +9,7 @@ import freezegun
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
@@ -19,7 +19,16 @@ from .response_builder import LinkedInAdsPaginatedResponseBuilder
 
 _NOW = datetime.now(timezone.utc)
 _STREAM_NAME = "videos"
-_PAGE_SIZE = 500
+_ACCOUNTS_PAGE_SIZE = 500
+
+# What LinkedIn returns on a video or post the authenticated user cannot read.
+_FORBIDDEN_BODY = json.dumps(
+    {
+        "message": "Accessing this video resource is forbidden. Please check your permissions for this resource",
+        "status": 403,
+    }
+)
+_NOT_FOUND_BODY = json.dumps({"message": "Could not find entity", "status": 404, "code": "NOT_FOUND"})
 
 
 def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
@@ -34,32 +43,54 @@ def _create_account_record(account_id: int, name: str = "Test Account") -> dict:
     }
 
 
-def _create_video_record(video_id: str, account_id: int, asset_name: str = "Test Video") -> dict:
+def _create_creative_record(creative_id: int, account_id: int, post_urn: str = None) -> dict:
+    record = {
+        "id": f"urn:li:sponsoredCreative:{creative_id}",
+        "account": f"urn:li:sponsoredAccount:{account_id}",
+        "campaign": f"urn:li:sponsoredCampaign:{creative_id}",
+        "isServing": True,
+        "createdAt": "2024-01-01T00:00:00+0000",
+        "lastModifiedAt": "2024-06-01T00:00:00+0000",
+    }
+    if post_urn is not None:
+        record["content"] = {"reference": post_urn}
+    return record
+
+
+def _create_post_record(post_urn: str, media_urn: str) -> dict:
+    return {
+        "id": post_urn,
+        "author": "urn:li:organization:2414183",
+        "lifecycleState": "PUBLISHED",
+        "publishedAt": 1717200000000,
+        "content": {"media": {"id": media_urn, "title": "Test media"}},
+    }
+
+
+def _create_video_record(video_id: str, duration: int = 30000) -> dict:
     return {
         "id": f"urn:li:video:{video_id}",
-        "owner": f"urn:li:organization:{account_id}",
-        "duration": 30000,
+        "owner": "urn:li:organization:2414183",
+        "duration": duration,
         "aspectRatioWidth": 16,
         "aspectRatioHeight": 9,
         "downloadUrl": f"https://example.com/{video_id}.mp4",
         "downloadUrlExpiresAt": 1735689600000,
         "thumbnail": f"urn:li:image:{video_id}-thumb",
         "status": "AVAILABLE",
-        "mediaLibraryMetadata": {
-            "associatedAccount": f"urn:li:sponsoredAccount:{account_id}",
-            "assetName": asset_name,
-            "mediaLibraryStatus": "ACTIVE",
-        },
     }
 
 
 def _accounts_request():
-    return LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(_PAGE_SIZE).build()
+    return LinkedInAdsRequestBuilder.accounts_endpoint().with_q("search").with_page_size(_ACCOUNTS_PAGE_SIZE).build()
 
 
-def _full_page_of_videos(account_id: int) -> List[dict]:
-    """Exactly `_PAGE_SIZE` records, which is what makes OffsetIncrement ask for another page."""
-    return [_create_video_record(f"FULL{index:04d}", account_id) for index in range(_PAGE_SIZE)]
+def _creatives_request(account_id: int):
+    return LinkedInAdsRequestBuilder.creatives_endpoint(account_id).with_any_query_params().build()
+
+
+def _single_object_response(record: dict) -> HttpResponse:
+    return HttpResponse(body=json.dumps(record), status_code=200)
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -67,68 +98,19 @@ class TestVideosStream(TestCase):
     """
     Tests for the LinkedIn Ads 'videos' stream.
 
-    Unlike the other account substreams, this one uses:
-    - OffsetIncrement pagination injecting `start` as a request parameter (not `pageToken`)
-    - full refresh only — the Videos API exposes no modification timestamp to filter on
-    - a `q=associatedAccount` filter rather than a path-scoped account
+    The stream resolves each creative's sponsored-content reference to its post
+    (GET /rest/posts/{urn}), keeps the posts whose media is a video, and fetches each
+    video individually (GET /rest/videos/{urn}). It deliberately avoids the Videos API
+    `q=associatedAccount` finder, which LinkedIn gates at the application level and
+    which returns 403 ACCESS_DENIED to applications holding only r_ads.
     """
 
     @HttpMocker()
-    def test_full_refresh_with_multiple_parent_accounts(self, http_mocker: HttpMocker):
+    def test_full_refresh_resolves_videos_from_creative_posts(self, http_mocker: HttpMocker):
         """
-        Given: Two parent accounts, each with videos in its media library
+        Given: Creatives referencing a video post, an image post, and no post at all
         When: Running a full refresh sync
-        Then: The connector fetches videos per account and preserves the video URNs
-        """
-        config = ConfigBuilder().build()
-
-        http_mocker.get(
-            _accounts_request(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [
-                    _create_account_record(111111111, "Account 1"),
-                    _create_account_record(222222222, "Account 2"),
-                ]
-            ),
-        )
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.videos_endpoint(111111111).with_count(_PAGE_SIZE).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(
-                [
-                    _create_video_record("AAA111", 111111111, "Video 1"),
-                    _create_video_record("BBB222", 111111111, "Video 2"),
-                ]
-            ),
-        )
-        http_mocker.get(
-            LinkedInAdsRequestBuilder.videos_endpoint(222222222).with_count(_PAGE_SIZE).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_video_record("CCC333", 222222222, "Video 3")]),
-        )
-
-        output = read(
-            get_source(config=config),
-            config=config,
-            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
-        )
-
-        assert len(output.records) == 3
-        assert {record.record.data["id"] for record in output.records} == {
-            "urn:li:video:AAA111",
-            "urn:li:video:BBB222",
-            "urn:li:video:CCC333",
-        }
-        assert all(record.record.stream == _STREAM_NAME for record in output.records)
-
-    @HttpMocker()
-    def test_offset_pagination_requests_next_page(self, http_mocker: HttpMocker):
-        """
-        Given: A first page returning exactly `count` records, then a shorter page
-        When: Running a full refresh sync
-        Then: The connector asks for the next offset and returns records from both pages
-
-        This is the behaviour that distinguishes `videos` from the other substreams, which
-        paginate on `pageToken`. A regression here would silently truncate every account's
-        media library at 500 videos.
+        Then: Only the video referenced by the video post is fetched and emitted
         """
         config = ConfigBuilder().build()
 
@@ -137,42 +119,26 @@ class TestVideosStream(TestCase):
             LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
         )
         http_mocker.get(
-            LinkedInAdsRequestBuilder.videos_endpoint(111111111).with_count(_PAGE_SIZE).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page(_full_page_of_videos(111111111)),
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [
+                    _create_creative_record(2001, 111111111, "urn:li:share:1000001"),
+                    _create_creative_record(2002, 111111111, "urn:li:ugcPost:1000002"),
+                    _create_creative_record(2003, 111111111),  # text ad: no content.reference, no post request
+                ]
+            ),
         )
         http_mocker.get(
-            LinkedInAdsRequestBuilder.videos_endpoint(111111111).with_count(_PAGE_SIZE).with_start(_PAGE_SIZE).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_video_record("LAST999", 111111111, "Last Video")]),
-        )
-
-        output = read(
-            get_source(config=config),
-            config=config,
-            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
-        )
-
-        assert len(output.records) == _PAGE_SIZE + 1
-        assert "urn:li:video:LAST999" in {record.record.data["id"] for record in output.records}
-
-    @HttpMocker()
-    def test_media_library_metadata_is_preserved(self, http_mocker: HttpMocker):
-        """
-        Given: A video carrying the nested `mediaLibraryMetadata` object
-        When: Running a full refresh sync
-        Then: The nested object and its declared properties survive record processing
-
-        `mediaLibraryMetadata` is the only nested object in the schema, and it is what ties an
-        asset to a sponsored account, so it must not be flattened away or dropped.
-        """
-        config = ConfigBuilder().build()
-
-        http_mocker.get(
-            _accounts_request(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            _single_object_response(_create_post_record("urn:li:share:1000001", "urn:li:video:AAA111")),
         )
         http_mocker.get(
-            LinkedInAdsRequestBuilder.videos_endpoint(111111111).with_count(_PAGE_SIZE).build(),
-            LinkedInAdsPaginatedResponseBuilder.single_page([_create_video_record("AAA111", 111111111, "Launch teaser")]),
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:ugcPost:1000002").build(),
+            _single_object_response(_create_post_record("urn:li:ugcPost:1000002", "urn:li:image:BBB222")),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.video_endpoint("urn:li:video:AAA111").build(),
+            _single_object_response(_create_video_record("AAA111", duration=45500)),
         )
 
         output = read(
@@ -183,9 +149,127 @@ class TestVideosStream(TestCase):
 
         assert len(output.records) == 1
         record = output.records[0].record.data
-        assert record["mediaLibraryMetadata"] == {
-            "associatedAccount": "urn:li:sponsoredAccount:111111111",
-            "assetName": "Launch teaser",
-            "mediaLibraryStatus": "ACTIVE",
-        }
-        assert record["duration"] == 30000
+        assert record["id"] == "urn:li:video:AAA111"
+        assert record["duration"] == 45500
+        assert output.records[0].record.stream == _STREAM_NAME
+        assert not output.errors
+
+    @HttpMocker()
+    def test_legacy_asset_reference_is_ignored(self, http_mocker: HttpMocker):
+        """
+        Given: A creative whose post references a legacy Assets API media (urn:li:digitalmediaAsset)
+        When: Running a full refresh sync
+        Then: No videos request is made and the sync completes without records or errors
+
+        Legacy assets are not retrievable through the Videos API; this is the documented
+        limitation of the stream.
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [_create_creative_record(2001, 111111111, "urn:li:share:1000001")]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            _single_object_response(_create_post_record("urn:li:share:1000001", "urn:li:digitalmediaAsset:LEGACY1")),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+        )
+
+        assert len(output.records) == 0
+        assert not output.errors
+        assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_deleted_post_is_skipped_without_failing_the_sync(self, http_mocker: HttpMocker):
+        """
+        Given: Two creatives, one referencing a deleted post (404) and one a live video post
+        When: Running a full refresh sync
+        Then: The deleted post is skipped and the other creative's video still syncs
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [
+                    _create_creative_record(2001, 111111111, "urn:li:share:1000001"),
+                    _create_creative_record(2002, 111111111, "urn:li:share:1000002"),
+                ]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            HttpResponse(body=_NOT_FOUND_BODY, status_code=404),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000002").build(),
+            _single_object_response(_create_post_record("urn:li:share:1000002", "urn:li:video:CCC333")),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.video_endpoint("urn:li:video:CCC333").build(),
+            _single_object_response(_create_video_record("CCC333")),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+        )
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "urn:li:video:CCC333"
+        assert not output.errors
+
+    @HttpMocker()
+    def test_forbidden_video_is_skipped_without_failing_the_sync(self, http_mocker: HttpMocker):
+        """
+        Given: A video post whose video the authenticated user cannot read (403)
+        When: Running a full refresh sync
+        Then: The video is skipped and the sync completes without failing
+        """
+        config = ConfigBuilder().build()
+
+        http_mocker.get(
+            _accounts_request(),
+            LinkedInAdsPaginatedResponseBuilder.single_page([_create_account_record(111111111, "Account 1")]),
+        )
+        http_mocker.get(
+            _creatives_request(111111111),
+            LinkedInAdsPaginatedResponseBuilder.single_page(
+                [_create_creative_record(2001, 111111111, "urn:li:share:1000001")]
+            ),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.posts_endpoint("urn:li:share:1000001").build(),
+            _single_object_response(_create_post_record("urn:li:share:1000001", "urn:li:video:AAA111")),
+        )
+        http_mocker.get(
+            LinkedInAdsRequestBuilder.video_endpoint("urn:li:video:AAA111").build(),
+            HttpResponse(body=_FORBIDDEN_BODY, status_code=403),
+        )
+
+        output = read(
+            get_source(config=config),
+            config=config,
+            catalog=CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build(),
+        )
+
+        assert len(output.records) == 0
+        assert not output.errors
+        assert not any(log.log.level == "ERROR" for log in output.logs)

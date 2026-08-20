@@ -171,7 +171,7 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 | custom_statistics_report | medium | child | end_date | end_date | incremental |  |
 | lead_form_responses | medium | child | none | none | deferred_child |  |
 | lead_forms | medium | child | none | none | deferred_child |  |
-| videos | medium | child | none | none | deferred_child | Media-library assets per account; `/videos` exposes no modification timestamp, so incremental is not available |
+| videos | medium | child | none | none | deferred_child | Videos referenced by ad creatives, resolved creative -> post -> video by URN (the account-level finder is application-gated); `/videos` exposes no modification timestamp, so incremental is not available |
 
 ### Future incremental stream candidates
 
