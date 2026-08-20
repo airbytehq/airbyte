@@ -128,13 +128,6 @@ Both runs must see identical backend state — a full-refresh sweep is
 read-only, but for CDC that means recreating the backend and capture
 instance between them, which the comparators cannot check for you.
 
-The other scripts under `scripts/` are `run.sh`'s internals. Invoke them
-directly only from the composing
-[`source-mssql-e2e-cdc-tests`](../source-mssql-e2e-cdc-tests/SKILL.md)
-skill, which needs to interleave CDC setup between the steps; for
-everything else drive them through `run.sh` so there is a single
-ordering of the sequence.
-
 ## Asserting on output
 
 Inline assertions in driver scripts. Suggested helpers:
