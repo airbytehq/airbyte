@@ -29,7 +29,7 @@ def test_migrate(components_module):
 def test_application_cursor_state_migration_renames_global_cursor(components_module):
     state = {"applied_at": "2024-01-01T00:00:00.000Z"}
 
-    assert components_module.ApplicationCursorStateMigration().migrate(state) == {"created_at": "2024-01-01T00:00:00.000Z"}
+    assert components_module.ApplicationCursorStateMigration().migrate(state) == {"updated_at": "2024-01-01T00:00:00.000Z"}
 
 
 def test_application_cursor_state_migration_renames_partition_cursor(components_module):
@@ -46,7 +46,7 @@ def test_application_cursor_state_migration_renames_partition_cursor(components_
         "states": [
             {
                 "partition": {"application_id": 42},
-                "cursor": {"created_at": "2024-01-01T00:00:00.000Z"},
+                "cursor": {"updated_at": "2024-01-01T00:00:00.000Z"},
             }
         ]
     }
@@ -67,7 +67,7 @@ def test_application_cursor_state_migration_renames_child_parent_state(component
         "states": [
             {
                 "partition": {"application_id": 42},
-                "parent_state": {"applications": {"created_at": "2024-01-01T00:00:00.000Z"}},
+                "parent_state": {"applications": {"updated_at": "2024-01-01T00:00:00.000Z"}},
                 "cursor": {"updated_at": "2024-01-02T00:00:00.000Z"},
             }
         ]

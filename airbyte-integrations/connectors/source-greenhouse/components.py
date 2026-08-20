@@ -38,17 +38,6 @@ class GreenhouseStateMigration(LegacyToPerPartitionStateMigration):
 
 
 class ApplicationCursorStateMigration(StateMigration):
-    config: Config
-    declarative_stream: DeclarativeStreamModel
-
-    def __init__(
-        self,
-        config: Config | None = None,
-        declarative_stream: DeclarativeStreamModel | None = None,
-    ):
-        self._config = config
-        self._declarative_stream = declarative_stream
-
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return self._contains_applied_at(stream_state)
 
