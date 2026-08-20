@@ -438,7 +438,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.9.6 | 2026-08-20 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
+| 5.9.6 | 2026-08-20 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |
 | 5.9.4 | 2026-08-11 | [83818](https://github.com/airbytehq/airbyte/pull/83818) | Update dependencies |
 | 5.9.3 | 2026-08-07 | [77620](https://github.com/airbytehq/airbyte/pull/77620) | Pass configured Report Options to the report creation request for GET_LEDGER_DETAIL_VIEW_DATA and GET_LEDGER_SUMMARY_VIEW_DATA |
