@@ -59,14 +59,17 @@ source-mssql-e2e-cdc-tests/
 
 ## Conventions
 
-- All driver scripts assume the generic skill's backend is running and
-  apply CDC fixtures on top of it. Re-applying any fixture is safe
-  (every step is idempotent).
+- The `repro-*.sh` drivers assume the generic skill's backend is already
+  running and apply CDC fixtures on top of it. `canary-resume.sh` instead
+  goes through the generic `run.sh`, which owns the backend lifecycle
+  itself. Re-applying any fixture is safe (every step is idempotent).
 - Configured catalogs populate the bulk-CDK-required fields
   (`is_file_based`, `generation_id`, `minimum_generation_id`,
   `sync_id`, `destination_object_name`, `include_files`) so the same
   fixtures drive repros across `source-mssql:4.3.x` and `4.4.x`.
-- Driver scripts default `VERSION=4.4.2`. Override with
+- `repro-*.sh` drivers default `VERSION=4.4.2` (`repro-11451.sh` pins its
+  own baseline / target pair) and `canary-resume.sh` defaults
+  `VERSION=5.0.0`. Override with
   `VERSION=4.3.4 ./scripts/repro-12162.sh` to test against an earlier
   version, or `VERSION=dev` after a local
   `./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker`
@@ -80,29 +83,50 @@ source-mssql-e2e-cdc-tests/
 
 ## Usage
 
+Every driver script here is a standalone entrypoint that does its own
+assertions and exits non-zero on failure. Two shapes ship: the canary
+drives the generic skill's `run.sh` and needs no setup, while the
+`repro-*.sh` drivers call the protocol wrapper directly and expect a
+running backend.
+
 ```bash
-SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-cdc-tests
-GENERIC=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
-export REPRO_OUT=/tmp/source-mssql-repro
+cd airbyte-integrations/connectors/source-mssql
+CDC=.agents/skills/source-mssql-e2e-cdc-tests
+GENERIC=.agents/skills/source-mssql-e2e-tests
 
-# 1. Bring up the backend (once per session).
+# Replay canary. Recreates the backend, then leaves it up.
+"$CDC/scripts/canary-resume.sh"
+
+# Per-bug repros. The backend goes up once per session; each driver
+# applies 00-init-cdc.sql plus its own fixture on top.
 "$GENERIC/scripts/start-backend.sh"
+"$CDC/scripts/repro-12162.sh"
+"$CDC/scripts/repro-12094.sh"
+"$CDC/scripts/repro-11451.sh"
 
-# 2. Run any worked example. Each driver does its own assertions.
-"$SKILL/scripts/repro-12162.sh"
-"$SKILL/scripts/repro-12094.sh"
-"$SKILL/scripts/repro-11451.sh"
-"$SKILL/scripts/canary-resume.sh"
-
-# 3. (After fix) verify by retargeting `dev` or a fixed version.
-VERSION=dev "$SKILL/scripts/repro-12162.sh"
-
-# 4. Tear down.
-"$GENERIC/scripts/stop-backend.sh"
-rm -rf "$REPRO_OUT"
+# (After a fix) verify by retargeting `dev` or a fixed version.
+VERSION=dev "$CDC/scripts/repro-12162.sh"
 ```
 
-A driver script is responsible for:
+The canary is also reachable straight from the generic entrypoint, which
+is the shape to copy when varying flags — CDC needs nothing beyond a CDC
+init fixture, a CDC config template, and a CDC catalog:
+
+```bash
+poe e2e-local --command=read --replay --test-version=5.0.0 \
+  --step-name=canary-resume \
+  --fixture=$CDC/fixtures/sql/00-init-cdc.sql \
+  --fixture=$CDC/fixtures/sql/canary-resume-seed.sql \
+  --mutate=$CDC/fixtures/sql/canary-resume-mutate.sql \
+  --config-template=$CDC/fixtures/configs/cdc.template.json \
+  --catalog=$CDC/fixtures/catalogs/resume-canary-cdc.json \
+  --keep-backend
+```
+
+Artifacts land under `${REPRO_OUT:-/tmp/source-mssql-repro}/<step-name>/`
+with the layout the generic skill documents.
+
+A `repro-*.sh` driver is responsible for:
 
 1. Calling
    `$GENERIC/scripts/apply-sql.sh fixtures/sql/<00-init-cdc.sql + per-bug.sql>`.
@@ -113,6 +137,15 @@ A driver script is responsible for:
    `--catalog-path` / `--state-path` / `--enable-debug-logs=True`.
 4. Asserting on `$REPRO_OUT/<step-name>/stdout.txt` or `stderr.txt`.
    Exit `0` on PASS, non-zero with a `FAIL:` message on FAIL.
+
+## Tear-down
+
+Both shapes leave the backend running, so tear down explicitly:
+
+```bash
+"$GENERIC/scripts/stop-backend.sh"   # idempotent
+rm -rf "${REPRO_OUT:-/tmp/source-mssql-repro}"
+```
 
 ## Worked examples
 
