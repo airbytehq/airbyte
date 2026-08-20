@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
@@ -77,6 +78,46 @@ class MySqlSourceDebeziumOperationsTest {
     }
 
     @Test
+    fun `string null gtids are stripped from the warm-start offset`() {
+        val sanitized = sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":"null"}""")
+        assertFalse(sanitized.has("gtids"))
+        assertEquals("binlog.000001", sanitized["file"].asText())
+        assertEquals(4, sanitized["pos"].asLong())
+    }
+
+    @Test
+    fun `json null gtids are stripped from the warm-start offset`() {
+        val sanitized = sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":null}""")
+        assertFalse(sanitized.has("gtids"))
+    }
+
+    @Test
+    fun `blank gtids are stripped from the warm-start offset`() {
+        val sanitized = sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":"   "}""")
+        assertFalse(sanitized.has("gtids"))
+    }
+
+    @Test
+    fun `non-text gtids are stripped from the warm-start offset`() {
+        val sanitized = sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":123}""")
+        assertFalse(sanitized.has("gtids"))
+    }
+
+    @Test
+    fun `missing gtids stay missing on the warm-start offset`() {
+        val sanitized = sanitizeOffset("""{"file":"binlog.000001","pos":4}""")
+        assertFalse(sanitized.has("gtids"))
+        assertEquals("binlog.000001", sanitized["file"].asText())
+    }
+
+    @Test
+    fun `real gtid set is left on the warm-start offset`() {
+        val sanitized =
+            sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":"uuid:1-10"}""")
+        assertEquals("uuid:1-10", sanitized["gtids"].asText())
+    }
+
+    @Test
     fun `empty saved gtid plus purged set does not abort warm start`() {
         val available = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-100"
         val purged = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:1-50"
@@ -105,12 +146,24 @@ class MySqlSourceDebeziumOperationsTest {
     }
 
     private fun parseSavedGtids(offsetJson: String): String? {
+        return MySqlSourceDebeziumOperations.parseSavedOffset(offsetState(offsetJson)).gtidSet
+    }
+
+    private fun sanitizeOffset(offsetJson: String): JsonNode {
+        val offset = offsetState(offsetJson).offset
+        return MySqlSourceDebeziumOperations.offsetWithoutUnusableGtids(offset)
+            .wrapped
+            .values
+            .first()
+    }
+
+    private fun offsetState(
+        offsetJson: String
+    ): MySqlSourceDebeziumOperations.Companion.UnvalidatedDeserializedState {
         val key = Jsons.objectNode().put("server", "test")
         val value = Jsons.readTree(offsetJson)
-        val state =
-            MySqlSourceDebeziumOperations.Companion.UnvalidatedDeserializedState(
-                DebeziumOffset(mapOf(key to value)),
-            )
-        return MySqlSourceDebeziumOperations.parseSavedOffset(state).gtidSet
+        return MySqlSourceDebeziumOperations.Companion.UnvalidatedDeserializedState(
+            DebeziumOffset(mapOf(key to value)),
+        )
     }
 }

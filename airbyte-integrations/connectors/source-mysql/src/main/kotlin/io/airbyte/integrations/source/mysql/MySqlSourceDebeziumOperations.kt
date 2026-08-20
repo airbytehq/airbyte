@@ -266,7 +266,12 @@ class MySqlSourceDebeziumOperations(
                 "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server. Server has $existingLogFiles"
             )
         }
-        return ValidDebeziumWarmStartState(debeziumState.offset, debeziumState.schemaHistory)
+        // Parse already treated the saved GTIDs as absent. Drop them from the offset
+        // Debezium will load so a literal "null" (or blank) value is not written back.
+        return ValidDebeziumWarmStartState(
+            offsetWithoutUnusableGtids(debeziumState.offset),
+            debeziumState.schemaHistory,
+        )
     }
 
     private fun abortCdcSync(reason: String): InvalidDebeziumWarmStartState =
@@ -589,12 +594,34 @@ class MySqlSourceDebeziumOperations(
         internal fun parseSavedOffset(debeziumState: UnvalidatedDeserializedState): SavedOffset {
             val position: MySqlSourceCdcPosition = position(debeziumState.offset)
             val gtidSet: String? =
-                debeziumState.offset.wrapped.values
-                    .first()["gtids"]
-                    ?.takeIf { it.isTextual }
-                    ?.asText()
-                    ?.takeIf { it.isNotBlank() && it != "null" }
+                usableSavedGtidSet(debeziumState.offset.wrapped.values.first()["gtids"])
             return SavedOffset(position, gtidSet)
+        }
+
+        /**
+         * A saved `gtids` value is usable only when it is a nonempty text GTID set. JSON null, the
+         * string `"null"`, blanks, and non-text nodes are treated as absent.
+         */
+        internal fun usableSavedGtidSet(gtids: JsonNode?): String? =
+            gtids?.takeIf { it.isTextual }?.asText()?.takeIf { it.isNotBlank() && it != "null" }
+
+        /**
+         * Remove unusable `gtids` from the offset handed to Debezium. Parse already ignores those
+         * values, but CdcPartitionsCreator writes the wrapped map verbatim. Leaving `"null"` in
+         * place can make engine startup fail after a successful binlog-file warm start.
+         */
+        internal fun offsetWithoutUnusableGtids(offset: DebeziumOffset): DebeziumOffset {
+            if (offset.wrapped.size != 1) {
+                throw ConfigErrorException("Expected exactly 1 key in $offset")
+            }
+            val (key, value) = offset.wrapped.entries.first()
+            val valueNode = value as? ObjectNode ?: return offset
+            if (!valueNode.has("gtids") || usableSavedGtidSet(valueNode["gtids"]) != null) {
+                return offset
+            }
+            val sanitized = valueNode.deepCopy()
+            sanitized.remove("gtids")
+            return DebeziumOffset(mapOf(key to sanitized))
         }
 
         /**
