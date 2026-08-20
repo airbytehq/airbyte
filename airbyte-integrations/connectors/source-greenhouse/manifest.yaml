@@ -2440,7 +2440,11 @@ schemas:
         description: Default value applied when a new parent record is created without an explicit value for this field. Shape varies by `value_type` (string for text/url, number for currency/number, option id for single_select, ISO 8601 for date).
         type:
         - 'null'
+        - string
+        - number
+        - boolean
         - object
+        - array
       description:
         description: Helper text shown beneath the field label in the UI. Plain text, no markup.
         type:
