@@ -472,7 +472,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            demographic_question_ids: "{{ stream_partition.parent_id if not next_page_token }}"
+            demographic_question_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -490,8 +490,12 @@ definitions:
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
@@ -551,7 +555,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            demographic_question_set_ids: "{{ stream_partition.parent_id if not next_page_token }}"
+            demographic_question_set_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -569,8 +573,12 @@ definitions:
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
@@ -676,7 +684,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            job_ids: "{{ stream_partition.parent_id if not next_page_token }}"
+            job_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -694,8 +702,12 @@ definitions:
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
@@ -1135,7 +1147,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            candidate_ids: "{{ stream_partition.parent_id if not next_page_token }}"
+            candidate_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1144,8 +1156,12 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
@@ -1181,7 +1197,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            job_ids: "{{ stream_partition.parent_id if not next_page_token }}"
+            job_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1190,8 +1206,12 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
@@ -1537,7 +1557,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            user_ids: "{{ stream_partition.parent_id if not next_page_token }}"
+            user_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1546,8 +1566,12 @@ definitions:
             type: DpathExtractor
             field_path: []
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
+          type: GroupingPartitionRouter
+          group_size: 50
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
