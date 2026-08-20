@@ -5,12 +5,13 @@ data:
   allowedHosts:
     hosts:
       - harvest.greenhouse.io
+      - auth.greenhouse.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.1@sha256:f71ff70e2761f634c080233f6d718bb4bcf96fa310351d56e98ba58d43ab1c9f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.7.25
+  dockerImageTag: 0.8.1
   dockerRepository: airbyte/source-greenhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
@@ -28,6 +29,14 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   supportLevel: community
   tags:
     - language:manifest-only
@@ -54,12 +63,12 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Greenhouse Harvest API
-      url: https://developers.greenhouse.io/harvest.html
+      url: https://harvestdocs.greenhouse.io/
       type: api_reference
     - title: Greenhouse authentication
-      url: https://developers.greenhouse.io/harvest.html#authentication
+      url: https://harvestdocs.greenhouse.io/docs/authentication
       type: authentication_guide
     - title: Greenhouse rate limits
-      url: https://developers.greenhouse.io/harvest.html#throttling
+      url: https://harvestdocs.greenhouse.io/docs/api-rate-limiting
       type: rate_limits
 metadataSpecVersion: "1.0"

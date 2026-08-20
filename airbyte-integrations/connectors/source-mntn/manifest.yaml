@@ -1,0 +1,1320 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  MNTN is a platform that lets brands of any size create and launch TV
+  commercials on shows, movies, and live sports.
+
+check:
+  type: CheckStream
+  stream_names:
+    - CampaignDetails
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['api_key'] }}"
+        inject_into:
+          type: RequestOption
+          field_name: key
+          inject_into: request_parameter
+
+streams:
+  - type: DeclarativeStream
+    name: CampaignDetails
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api3.mountain.com/apidata?
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: key
+            inject_into: request_parameter
+        request_parameters:
+          end: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          data: >-
+            campaigninfo.id,campaigninfo.name,campaigninfo.status,campaigninfo.budget,campaigninfo.starttime,campaigninfo.endtime,campaigninfo.goalvalue,campaigninfo.goaltype
+          begin: "{{ config['start_time'] }}"
+          format: JSON
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+    primary_key: ID
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          ID:
+            type: string
+          Name:
+            type:
+              - string
+              - "null"
+          Status:
+            type:
+              - string
+              - "null"
+          Budget:
+            type:
+              - string
+              - "null"
+          StartTime:
+            type:
+              - string
+              - "null"
+          EndTime:
+            type:
+              - string
+              - "null"
+          GoalValue:
+            type:
+              - string
+              - "null"
+          GoalType:
+            type:
+              - string
+              - "null"
+        required:
+          - ID
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: CreativeDetails
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api3.mountain.com/apidata?
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: key
+            inject_into: request_parameter
+        request_parameters:
+          data: >-
+            creativeinfo.id,creativeinfo.name,creativeinfo.creativegroupid,creativeinfo.creativegroupname,creativeinfo.active,creativeinfo.templatecreativeid,creativeinfo.templatecreativename,creativeinfo.clickUrl,graph.day
+          format: JSON
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+    primary_key:
+      - ID
+      - Day
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          ID:
+            type: string
+          Name:
+            type:
+              - string
+              - "null"
+          CreativeGroupID:
+            type:
+              - string
+              - "null"
+          CreativeGroupName:
+            type:
+              - string
+              - "null"
+          Active:
+            type:
+              - string
+              - "null"
+          TemplateCreativeID:
+            type:
+              - string
+              - "null"
+          TemplateCreativeName:
+            type:
+              - string
+              - "null"
+          ClickUrl:
+            type:
+              - string
+              - "null"
+          Day:
+            type: string
+        required:
+          - ID
+          - Day
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: Day
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: end
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: begin
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%m-%d-%Y"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: Campaign
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api3.mountain.com/apidata?
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: key
+            inject_into: request_parameter
+        request_parameters:
+          data: >-
+            campaigninfo.id,campaigninfo.name,graph.day,graph.averageordervalue,graph.averagepageviewspervisitor,graph.classicvisits,graph.completedviewrate,graph.completedviews,graph.conversionassistordervalue,graph.conversionassists,graph.conversionattributionpercentage,graph.conversionrate,graph.conversions,graph.costpercompletedview,graph.costpervisit,graph.cpa,graph.cpm,graph.ctvimpressions,graph.existingsitevisitors,graph.existingusersreached,graph.frequency,graph.goalachievement,graph.impressions,graph.impressionconversionrate,graph.impressionvisitrate,graph.ipm,graph.lasttouchordervalue,graph.lasttouchaverageordervalue,graph.lasttouchconversionassistordervalue,graph.lasttouchconversionassists,graph.lasttouchconversionrate,graph.lasttouchconversions,graph.lasttouchcostpervisit,graph.lasttouchcpa,graph.lasttouchexistingsitevisitors,graph.lasttouchimpressionconversionrate,graph.lasttouchimpressionvisitrate,graph.lasttouchnewsitevisitors,graph.lasttouchroas,graph.lasttouchroi,graph.lasttouchsiteconversions,graph.lasttouchsiteordervalue,graph.lasttouchsitevisitors,graph.lasttouchuserconversionrate,graph.lasttouchuservisitrate,graph.lasttouchvisitassists,graph.lasttouchvisitconversionrate,graph.lasttouchvisitrate,graph.lasttouchvisits,graph.multi-touchimpressions,graph.multi-touchspend,graph.newsitevisitors,graph.newusersreached,graph.ordervalue,graph.ordervalueattributionpercentage,graph.pageviews,graph.percentageofconversions,graph.percentageofordervalue,graph.percentageofvisitors,graph.roas,graph.roi,graph.siteconversions,graph.siteordervalue,graph.sitevisitors,graph.spend,graph.tvcommercialsaired,graph.tvspend,graph.userconversionrate,graph.usersreached,graph.uservisitrate,graph.viewableimpressionrate,graph.viewableimpressions,graph.visitassists,graph.visitconversionrate,graph.visitrate,graph.visits
+          format: JSON
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+    primary_key:
+      - ID
+      - Day
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          ID:
+            type: string
+          Name:
+            type:
+              - string
+              - "null"
+          Day:
+            type: string
+          AverageOrderValue:
+            type:
+              - string
+              - "null"
+          AveragePageViewsPerVisitor:
+            type:
+              - string
+              - "null"
+          ClassicVisits:
+            type:
+              - string
+              - "null"
+          CompletedViewRate:
+            type:
+              - string
+              - "null"
+          CompletedViews:
+            type:
+              - string
+              - "null"
+          ConversionAssistOrderValue:
+            type:
+              - string
+              - "null"
+          ConversionAssists:
+            type:
+              - string
+              - "null"
+          ConversionAttributionPercentage:
+            type:
+              - string
+              - "null"
+          ConversionRate:
+            type:
+              - string
+              - "null"
+          Conversions:
+            type:
+              - string
+              - "null"
+          CostPerCompletedView:
+            type:
+              - string
+              - "null"
+          CostPerVisit:
+            type:
+              - string
+              - "null"
+          CPA:
+            type:
+              - string
+              - "null"
+          CPM:
+            type:
+              - string
+              - "null"
+          CtvImpressions:
+            type:
+              - string
+              - "null"
+          ExistingSiteVisitors:
+            type:
+              - string
+              - "null"
+          ExistingUsersReached:
+            type:
+              - string
+              - "null"
+          Frequency:
+            type:
+              - string
+              - "null"
+          GoalAchievement:
+            type:
+              - string
+              - "null"
+          Impressions:
+            type:
+              - string
+              - "null"
+          ImpressionConversionRate:
+            type:
+              - string
+              - "null"
+          ImpressionVisitRate:
+            type:
+              - string
+              - "null"
+          IPM:
+            type:
+              - string
+              - "null"
+          LastTouchOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchAverageOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchConversionAssistOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchConversionAssists:
+            type:
+              - string
+              - "null"
+          LastTouchConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchConversions:
+            type:
+              - string
+              - "null"
+          LastTouchCostPerVisit:
+            type:
+              - string
+              - "null"
+          LastTouchCPA:
+            type:
+              - string
+              - "null"
+          LastTouchExistingSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchImpressionConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchImpressionVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchNewSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchROAS:
+            type:
+              - string
+              - "null"
+          LastTouchROI:
+            type:
+              - string
+              - "null"
+          LastTouchSiteConversions:
+            type:
+              - string
+              - "null"
+          LastTouchSiteOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchUserConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchUserVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisitAssists:
+            type:
+              - string
+              - "null"
+          LastTouchVisitConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisits:
+            type:
+              - string
+              - "null"
+          Multi-TouchImpressions:
+            type:
+              - string
+              - "null"
+          Multi-TouchSpend:
+            type:
+              - string
+              - "null"
+          NewSiteVisitors:
+            type:
+              - string
+              - "null"
+          NewUsersReached:
+            type:
+              - string
+              - "null"
+          OrderValue:
+            type:
+              - string
+              - "null"
+          OrderValueAttributionPercentage:
+            type:
+              - string
+              - "null"
+          PageViews:
+            type:
+              - string
+              - "null"
+          PercentageOfConversions:
+            type:
+              - string
+              - "null"
+          PercentageOfOrderValue:
+            type:
+              - string
+              - "null"
+          PercentageOfVisitors:
+            type:
+              - string
+              - "null"
+          ROAS:
+            type:
+              - string
+              - "null"
+          ROI:
+            type:
+              - string
+              - "null"
+          SiteConversions:
+            type:
+              - string
+              - "null"
+          SiteOrderValue:
+            type:
+              - string
+              - "null"
+          SiteVisitors:
+            type:
+              - string
+              - "null"
+          Spend:
+            type:
+              - string
+              - "null"
+          TVCommercialsAired:
+            type:
+              - string
+              - "null"
+          TVSpend:
+            type:
+              - string
+              - "null"
+          UserConversionRate:
+            type:
+              - string
+              - "null"
+          UsersReached:
+            type:
+              - string
+              - "null"
+          UserVisitRate:
+            type:
+              - string
+              - "null"
+          ViewableImpressionRate:
+            type:
+              - string
+              - "null"
+          ViewableImpressions:
+            type:
+              - string
+              - "null"
+          VisitAssists:
+            type:
+              - string
+              - "null"
+          VisitConversionRate:
+            type:
+              - string
+              - "null"
+          VisitRate:
+            type:
+              - string
+              - "null"
+          Visits:
+            type:
+              - string
+              - "null"
+        required:
+          - ID
+          - Day
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: Day
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: end
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: begin
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%m-%d-%Y"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: Creative
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api3.mountain.com/apidata?
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: key
+            inject_into: request_parameter
+        request_parameters:
+          data: >-
+            creativeinfo.id,graph.averageordervalue,graph.averagepageviewspervisitor,graph.classicvisits,graph.completedviewrate,graph.completedviews,graph.conversionassistordervalue,graph.conversionassists,graph.conversionattributionpercentage,graph.conversionrate,graph.conversions,graph.costpercompletedview,graph.costpervisit,graph.cpa,graph.cpm,graph.ctvimpressions,graph.day,graph.existingsitevisitors,graph.existingusersreached,graph.frequency,graph.impressions,graph.impressionconversionrate,graph.impressionvisitrate,graph.ipm,graph.lasttouchordervalue,graph.lasttouchaverageordervalue,graph.lasttouchconversionassistordervalue,graph.lasttouchconversionassists,graph.lasttouchconversionrate,graph.lasttouchconversions,graph.lasttouchcostpervisit,graph.lasttouchcpa,graph.lasttouchexistingsitevisitors,graph.lasttouchimpressionconversionrate,graph.lasttouchimpressionvisitrate,graph.lasttouchnewsitevisitors,graph.lasttouchroas,graph.lasttouchroi,graph.lasttouchsiteconversions,graph.lasttouchsiteordervalue,graph.lasttouchsitevisitors,graph.lasttouchuserconversionrate,graph.lasttouchuservisitrate,graph.lasttouchvisitassists,graph.lasttouchvisitconversionrate,graph.lasttouchvisitrate,graph.lasttouchvisits,graph.multi-touchimpressions,graph.multi-touchspend,graph.newsitevisitors,graph.newusersreached,graph.ordervalue,graph.ordervalueattributionpercentage,graph.pageviews,graph.percentageofconversions,graph.percentageofordervalue,graph.percentageofvisitors,graph.roas,graph.roi,graph.siteconversions,graph.siteordervalue,graph.sitevisitors,graph.spend,graph.tvcommercialsaired,graph.tvspend,graph.userconversionrate,graph.usersreached,graph.uservisitrate,graph.viewableimpressionrate,graph.viewableimpressions,graph.visitassists,graph.visitconversionrate,graph.visitrate,graph.visits
+          format: JSON
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+    primary_key:
+      - ID
+      - Day
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          ID:
+            type: string
+          AverageOrderValue:
+            type:
+              - string
+              - "null"
+          AveragePageViewsPerVisitor:
+            type:
+              - string
+              - "null"
+          ClassicVisits:
+            type:
+              - string
+              - "null"
+          CompletedViewRate:
+            type:
+              - string
+              - "null"
+          CompletedViews:
+            type:
+              - string
+              - "null"
+          ConversionAssistOrderValue:
+            type:
+              - string
+              - "null"
+          ConversionAssists:
+            type:
+              - string
+              - "null"
+          ConversionAttributionPercentage:
+            type:
+              - string
+              - "null"
+          ConversionRate:
+            type:
+              - string
+              - "null"
+          Conversions:
+            type:
+              - string
+              - "null"
+          CostPerCompletedView:
+            type:
+              - string
+              - "null"
+          CostPerVisit:
+            type:
+              - string
+              - "null"
+          CPA:
+            type:
+              - string
+              - "null"
+          CPM:
+            type:
+              - string
+              - "null"
+          CtvImpressions:
+            type:
+              - string
+              - "null"
+          Day:
+            type: string
+          ExistingSiteVisitors:
+            type:
+              - string
+              - "null"
+          ExistingUsersReached:
+            type:
+              - string
+              - "null"
+          Frequency:
+            type:
+              - string
+              - "null"
+          Impressions:
+            type:
+              - string
+              - "null"
+          ImpressionConversionRate:
+            type:
+              - string
+              - "null"
+          ImpressionVisitRate:
+            type:
+              - string
+              - "null"
+          IPM:
+            type:
+              - string
+              - "null"
+          LastTouchOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchAverageOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchConversionAssistOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchConversionAssists:
+            type:
+              - string
+              - "null"
+          LastTouchConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchConversions:
+            type:
+              - string
+              - "null"
+          LastTouchCostPerVisit:
+            type:
+              - string
+              - "null"
+          LastTouchCPA:
+            type:
+              - string
+              - "null"
+          LastTouchExistingSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchImpressionConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchImpressionVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchNewSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchROAS:
+            type:
+              - string
+              - "null"
+          LastTouchROI:
+            type:
+              - string
+              - "null"
+          LastTouchSiteConversions:
+            type:
+              - string
+              - "null"
+          LastTouchSiteOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchUserConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchUserVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisitAssists:
+            type:
+              - string
+              - "null"
+          LastTouchVisitConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisits:
+            type:
+              - string
+              - "null"
+          Multi-TouchImpressions:
+            type:
+              - string
+              - "null"
+          Multi-TouchSpend:
+            type:
+              - string
+              - "null"
+          NewSiteVisitors:
+            type:
+              - string
+              - "null"
+          NewUsersReached:
+            type:
+              - string
+              - "null"
+          OrderValue:
+            type:
+              - string
+              - "null"
+          OrderValueAttributionPercentage:
+            type:
+              - string
+              - "null"
+          PageViews:
+            type:
+              - string
+              - "null"
+          PercentageOfConversions:
+            type:
+              - string
+              - "null"
+          PercentageOfOrderValue:
+            type:
+              - string
+              - "null"
+          PercentageOfVisitors:
+            type:
+              - string
+              - "null"
+          ROAS:
+            type:
+              - string
+              - "null"
+          ROI:
+            type:
+              - string
+              - "null"
+          SiteConversions:
+            type:
+              - string
+              - "null"
+          SiteOrderValue:
+            type:
+              - string
+              - "null"
+          SiteVisitors:
+            type:
+              - string
+              - "null"
+          Spend:
+            type:
+              - string
+              - "null"
+          TVCommercialsAired:
+            type:
+              - string
+              - "null"
+          TVSpend:
+            type:
+              - string
+              - "null"
+          UserConversionRate:
+            type:
+              - string
+              - "null"
+          UsersReached:
+            type:
+              - string
+              - "null"
+          UserVisitRate:
+            type:
+              - string
+              - "null"
+          ViewableImpressionRate:
+            type:
+              - string
+              - "null"
+          ViewableImpressions:
+            type:
+              - string
+              - "null"
+          VisitAssists:
+            type:
+              - string
+              - "null"
+          VisitConversionRate:
+            type:
+              - string
+              - "null"
+          VisitRate:
+            type:
+              - string
+              - "null"
+          Visits:
+            type:
+              - string
+              - "null"
+        required:
+          - ID
+          - Day
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: Day
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: end
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: begin
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%m-%d-%Y"
+      partition_field_end: ""
+      partition_field_start: ""
+  - type: DeclarativeStream
+    name: Advertiser
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api3.mountain.com/apidata?
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: key
+            inject_into: request_parameter
+        request_parameters:
+          data: >-
+            advertiserinfo.id,graph.day,graph.averageordervalue,graph.averagepageviewspervisitor,graph.classicvisits,graph.completedviewrate,graph.completedviews,graph.conversionassistordervalue,graph.conversionassists,graph.conversionattributionpercentage,graph.conversionrate,graph.conversions,graph.costpercompletedview,graph.costpervisit,graph.cpa,graph.cpm,graph.ctvimpressions,graph.existingsitevisitors,graph.existingusersreached,graph.frequency,graph.impressions,graph.impressionconversionrate,graph.impressionvisitrate,graph.ipm,graph.lasttouchordervalue,graph.lasttouchaverageordervalue,graph.lasttouchconversionassistordervalue,graph.lasttouchconversionassists,graph.lasttouchconversionrate,graph.lasttouchconversions,graph.lasttouchcostpervisit,graph.lasttouchcpa,graph.lasttouchexistingsitevisitors,graph.lasttouchimpressionconversionrate,graph.lasttouchimpressionvisitrate,graph.lasttouchnewsitevisitors,graph.lasttouchroas,graph.lasttouchroi,graph.lasttouchsiteconversions,graph.lasttouchsiteordervalue,graph.lasttouchsitevisitors,graph.lasttouchuserconversionrate,graph.lasttouchuservisitrate,graph.lasttouchvisitassists,graph.lasttouchvisitconversionrate,graph.lasttouchvisitrate,graph.lasttouchvisits,graph.multi-touchimpressions,graph.multi-touchspend,graph.newsitevisitors,graph.newusersreached,graph.ordervalue,graph.ordervalueattributionpercentage,graph.pageviews,graph.percentageofconversions,graph.percentageofordervalue,graph.percentageofvisitors,graph.roas,graph.roi,graph.siteconversions,graph.siteordervalue,graph.sitevisitors,graph.spend,graph.tvcommercialsaired,graph.tvspend,graph.userconversionrate,graph.usersreached,graph.uservisitrate,graph.viewableimpressionrate,graph.viewableimpressions,graph.visitassists,graph.visitconversionrate,graph.visitrate,graph.visits
+          format: JSON
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - rows
+    primary_key:
+      - ID
+      - Day
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          ID:
+            type: string
+          Day:
+            type: string
+          AverageOrderValue:
+            type:
+              - string
+              - "null"
+          AveragePageViewsPerVisitor:
+            type:
+              - string
+              - "null"
+          ClassicVisits:
+            type:
+              - string
+              - "null"
+          CompletedViewRate:
+            type:
+              - string
+              - "null"
+          CompletedViews:
+            type:
+              - string
+              - "null"
+          ConversionAssistOrderValue:
+            type:
+              - string
+              - "null"
+          ConversionAssists:
+            type:
+              - string
+              - "null"
+          ConversionAttributionPercentage:
+            type:
+              - string
+              - "null"
+          ConversionRate:
+            type:
+              - string
+              - "null"
+          Conversions:
+            type:
+              - string
+              - "null"
+          CostPerCompletedView:
+            type:
+              - string
+              - "null"
+          CostPerVisit:
+            type:
+              - string
+              - "null"
+          CPA:
+            type:
+              - string
+              - "null"
+          CPM:
+            type:
+              - string
+              - "null"
+          CtvImpressions:
+            type:
+              - string
+              - "null"
+          ExistingSiteVisitors:
+            type:
+              - string
+              - "null"
+          ExistingUsersReached:
+            type:
+              - string
+              - "null"
+          Frequency:
+            type:
+              - string
+              - "null"
+          Impressions:
+            type:
+              - string
+              - "null"
+          ImpressionConversionRate:
+            type:
+              - string
+              - "null"
+          ImpressionVisitRate:
+            type:
+              - string
+              - "null"
+          IPM:
+            type:
+              - string
+              - "null"
+          LastTouchOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchAverageOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchConversionAssistOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchConversionAssists:
+            type:
+              - string
+              - "null"
+          LastTouchConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchConversions:
+            type:
+              - string
+              - "null"
+          LastTouchCostPerVisit:
+            type:
+              - string
+              - "null"
+          LastTouchCPA:
+            type:
+              - string
+              - "null"
+          LastTouchExistingSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchImpressionConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchImpressionVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchNewSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchROAS:
+            type:
+              - string
+              - "null"
+          LastTouchROI:
+            type:
+              - string
+              - "null"
+          LastTouchSiteConversions:
+            type:
+              - string
+              - "null"
+          LastTouchSiteOrderValue:
+            type:
+              - string
+              - "null"
+          LastTouchSiteVisitors:
+            type:
+              - string
+              - "null"
+          LastTouchUserConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchUserVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisitAssists:
+            type:
+              - string
+              - "null"
+          LastTouchVisitConversionRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisitRate:
+            type:
+              - string
+              - "null"
+          LastTouchVisits:
+            type:
+              - string
+              - "null"
+          Multi-TouchImpressions:
+            type:
+              - string
+              - "null"
+          Multi-TouchSpend:
+            type:
+              - string
+              - "null"
+          NewSiteVisitors:
+            type:
+              - string
+              - "null"
+          NewUsersReached:
+            type:
+              - string
+              - "null"
+          OrderValue:
+            type:
+              - string
+              - "null"
+          OrderValueAttributionPercentage:
+            type:
+              - string
+              - "null"
+          PageViews:
+            type:
+              - string
+              - "null"
+          PercentageOfConversions:
+            type:
+              - string
+              - "null"
+          PercentageOfOrderValue:
+            type:
+              - string
+              - "null"
+          PercentageOfVisitors:
+            type:
+              - string
+              - "null"
+          ROAS:
+            type:
+              - string
+              - "null"
+          ROI:
+            type:
+              - string
+              - "null"
+          SiteConversions:
+            type:
+              - string
+              - "null"
+          SiteOrderValue:
+            type:
+              - string
+              - "null"
+          SiteVisitors:
+            type:
+              - string
+              - "null"
+          Spend:
+            type:
+              - string
+              - "null"
+          TVCommercialsAired:
+            type:
+              - string
+              - "null"
+          TVSpend:
+            type:
+              - string
+              - "null"
+          UserConversionRate:
+            type:
+              - string
+              - "null"
+          UsersReached:
+            type:
+              - string
+              - "null"
+          UserVisitRate:
+            type:
+              - string
+              - "null"
+          ViewableImpressionRate:
+            type:
+              - string
+              - "null"
+          ViewableImpressions:
+            type:
+              - string
+              - "null"
+          VisitAssists:
+            type:
+              - string
+              - "null"
+          VisitConversionRate:
+            type:
+              - string
+              - "null"
+          VisitRate:
+            type:
+              - string
+              - "null"
+          Visits:
+            type:
+              - string
+              - "null"
+        required:
+          - ID
+          - Day
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P1D
+      cursor_field: Day
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_time'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: end
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: begin
+        inject_into: request_parameter
+      cursor_granularity: P1D
+      cursor_datetime_formats:
+        - "%m-%d-%Y"
+      partition_field_end: ""
+      partition_field_start: ""
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_time
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_time:
+        type: string
+        order: 1
+        title: start_time
+        default: "2023-01-01"
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    Campaign:
+      isStale: false
+      hasRecords: true
+      streamHash: 64b38ccf0e4343cc517d4c36acb5c846a690a341
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Creative:
+      isStale: false
+      hasRecords: true
+      streamHash: 16efab71173aa93e1e19330f0eafcc4d2854bc9c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    stream_0:
+      streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
+    Advertiser:
+      isStale: false
+      hasRecords: true
+      streamHash: 664ba486cefec1f05091f4e37a7bf7c3a5fb079a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    CampaignDetails:
+      isStale: false
+      hasRecords: true
+      streamHash: ca30acf953ed3afc97cfe21c93f4c94e9b7dd363
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    CreativeDetails:
+      isStale: false
+      hasRecords: true
+      streamHash: 6513a25a892ba9de10fe1c1d468f928c27d61c00
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    Campaign: true
+    Creative: true
+    Advertiser: true
+    CampaignDetails: true
+    CreativeDetails: true

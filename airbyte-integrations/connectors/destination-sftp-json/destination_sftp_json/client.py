@@ -8,6 +8,7 @@ import errno
 import io
 import json
 from typing import Dict, List, Mapping, Optional, TextIO
+from urllib.parse import quote
 
 import paramiko
 
@@ -180,8 +181,15 @@ class SftpClient:
         return f"{self.destination_path}/airbyte_json_{stream}.jsonl"
 
     def _open(self, stream: str, mode: str = "a+") -> paramiko.SFTPFile:
-        path = self._get_path(stream)
+        uri = self._get_uri(stream)
         return self.sftp.open(path, mode=mode)
+
+    def _get_uri(self, stream: str) -> str:
+        username = quote(self.username, safe="")
+        password = quote(self.password, safe="")
+        host = quote(self.host, safe="")
+        path = quote(self._get_path(stream), safe="/")
+        return f"sftp://{username}:{password}@{host}:{self.port}/{path}"
 
     def close(self):
         for file in self._files.values():

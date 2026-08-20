@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
@@ -8,7 +7,7 @@ import sys
 from destination_sftp_json import DestinationSftpJson
 
 
-def run():
+def run() -> None:
     DestinationSftpJson().run(sys.argv[1:])
 
 
