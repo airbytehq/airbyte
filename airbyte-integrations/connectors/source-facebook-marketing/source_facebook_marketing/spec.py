@@ -392,6 +392,16 @@ class ConnectorConfig(BaseConfig):
         airbyte_hidden=True,
     )
 
+    verbatim_custom_insight_stream_names: bool = Field(
+        description=(
+            "Names each custom insight stream exactly as configured, instead of prepending `Custom` and converting the "
+            "result to snake case. Requires every custom insight name to match `^custom_[a-z0-9]+(_[a-z0-9]+)*$`, so a "
+            "configured name is the stream name a client sees."
+        ),
+        default=False,
+        airbyte_hidden=True,
+    )
+
     client_id: Optional[str] = Field(
         description="The Client Id for your OAuth app",
         airbyte_secret=True,
