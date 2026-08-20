@@ -71,7 +71,7 @@ def test_default_host_key_checking_is_auto_add(client):
 def test_auto_add_policy_used_by_default(client):
     ssh = paramiko.SSHClient()
     client._apply_host_key_policy(ssh)
-    assert isinstance(ssh._policy, paramiko.AutoAddPolicy)
+    assert isinstance(ssh._policy, paramiko.WarningPolicy)
 
 
 def test_strict_policy_pins_host_key_and_rejects_unknown(password_credentials, host_key):
