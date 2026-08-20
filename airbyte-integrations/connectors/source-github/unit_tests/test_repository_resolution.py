@@ -117,6 +117,44 @@ def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock
     assert organizations == ["org"]
 
 
+def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
+    """A budget below the distance to the reset must not stop a sync that had a spare token.
+
+    The wait cap is evaluated inside the backoff strategy and raises, while `HttpClient` only
+    asks the authenticator for an alternative credential once it holds a wait value — so
+    interpolating the user's budget into the cap made a 30-minute budget fail against a
+    60-minute reset with a healthy second token idle. The cap is scoped to `check` for that
+    reason, and this pins it.
+    """
+    reset_at = int(time.time()) + 3600
+    quota = {"remaining": 5000, "reset": reset_at, "limit": 5000}
+    requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {
+                "status_code": 403,
+                "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(reset_at)},
+                "json": {"message": "API rate limit exceeded for user ID 1."},
+            },
+            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+        ],
+    )
+    config = {
+        "credentials": {"personal_access_token": "token1,token2"},
+        "repositories": ["org/*"],
+        "max_waiting_time": 30,
+    }
+
+    with patch("time.sleep") as sleep_mock:
+        organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+    # The 0.1s rotation retry, not a wait for the reset and not a failure.
+    assert max(call.args[0] for call in sleep_mock.call_args_list) < 60
+
+
 def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_mock):
     """GHES ships with HTTP API rate limiting off and answers /rate_limit with 404. Quota
     seeding runs before the first stream request, so that 404 used to fail every command;
