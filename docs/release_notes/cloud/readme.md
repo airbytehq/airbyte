@@ -2,6 +2,17 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 20, 2026
+
+Connections
+
+- When Airbyte provides its own OAuth application for a connector, the source and destination setup forms no longer show the manual authentication option. This prevents confusion by hiding fields that asked for developer credentials you don't need.
+
+Platform
+
+- If your organization manages users through your identity provider with SCIM, workspace settings now show a SCIM badge and no longer allow you to add or change workspace members directly in Airbyte. This keeps your membership consistent with your identity provider.
+- If you store audit logs in your own bucket on the Enterprise Flex plan, Airbyte now organizes those log files into folders by organization and date, making them easier to browse and manage.
+
 ## August 12, 2026
 
 Connections
