@@ -8,6 +8,17 @@ check:
     - users
 
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+        max_waiting_time_in_seconds: 300
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+          - 403
+        action: IGNORE
   streams:
     applications:
       type: DeclarativeStream
@@ -27,12 +38,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -84,12 +90,7 @@ definitions:
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
             application_ids: "{{ stream_partition.application_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -150,12 +151,7 @@ definitions:
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
             application_ids: "{{ stream_partition.application_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -210,12 +206,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -260,12 +251,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -300,12 +286,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -341,12 +322,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             custom_field_key: "{{ 'degree' if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -382,12 +358,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -432,12 +403,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -472,12 +438,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -513,12 +474,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             demographic_question_ids: "{{ stream_partition.parent_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -561,12 +517,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -602,12 +553,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             demographic_question_set_ids: "{{ stream_partition.parent_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -650,12 +596,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -691,12 +632,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -742,12 +678,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             job_ids: "{{ stream_partition.parent_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -791,12 +722,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -842,12 +768,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -893,12 +814,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -948,12 +864,7 @@ definitions:
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
             job_ids: "{{ stream_partition.job_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1008,12 +919,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1058,12 +964,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1099,12 +1000,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1149,12 +1045,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1246,12 +1137,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             candidate_ids: "{{ stream_partition.parent_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1297,12 +1183,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             job_ids: "{{ stream_partition.parent_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1348,12 +1229,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             custom_field_key: "{{ 'discipline' if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1391,12 +1267,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             custom_field_key: "{{ 'school_name' if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1435,12 +1306,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             submitted_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1486,12 +1352,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1536,12 +1397,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1576,12 +1432,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1615,12 +1466,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1658,12 +1504,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1698,12 +1539,7 @@ definitions:
             per_page: "{{ 500 if not next_page_token }}"
             user_ids: "{{ stream_partition.parent_id if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: IGNORE
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
