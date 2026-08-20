@@ -167,6 +167,37 @@ on the connector container. That surfaces the
 Debezium "Adding table … to the list of capture schema tables" lines
 that some assertions rely on.
 
+## Authoring a fixture
+
+Nothing here generates fixtures: `apply-sql.sh` only applies what you
+write, so encoding the reported symptom is the manual step.
+
+1. Write the smallest condition that produces the symptom. Data- and
+   schema-shaped bugs get SQL; a config-shaped bug gets a
+   `--config-template` variant and no SQL at all.
+2. Keep it idempotent and re-appliable — `CREATE DATABASE` / `CREATE
+TABLE` guarded by an existence check, as `00-init-base.sql` does.
+   `--fixture` is repeatable and applies in the order given, so
+   number-prefix anything that must follow the init fixture.
+3. Keep it out of the repo while investigating. `--fixture` takes any
+   path: write scratch fixtures under
+   `${REPRO_OUT:-/tmp/source-mssql-repro}` or in `fixtures/sql/.tmp/`,
+   which the repo root's `.tmp` rule already ignores. Committing one
+   under the connector directory makes CI treat it as a connector change
+   and require a `dockerImageTag` bump.
+4. Reproduce against the known-bad version first
+   (`poe e2e-local --command=read --test-version=<bad> --fixture=…`) and
+   assert on the output rather than the exit code (see
+   [Asserting on output](#asserting-on-output)).
+5. Prove the fix with `--test-version=dev` after `:airbyteDocker`, or
+   with `--control-version=<bad>` for the comparison shape `/ai-prove-fix`
+   uses.
+6. Only commit a fixture once it earns re-running as a regression check.
+   Promoting one means flipping its assertion from "symptom still
+   present" to "behavior correct" — the shape
+   `source-mssql-e2e-cdc-tests/scripts/canary-resume.sh` uses. Anything
+   still asserting the presence of an unfixed bug is scratch.
+
 ## Common gotchas
 
 - _No SQL Server Agent_ → CDC capture / cleanup jobs never run, and
