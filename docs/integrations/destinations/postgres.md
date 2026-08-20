@@ -202,9 +202,9 @@ following [sync modes](/platform/using-airbyte/core-concepts/sync-modes/):
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-Deduplication requires a primary key. If a stream is set to a deduplicating sync mode but has no
-primary key, the sync fails. In legacy "raw tables only" mode, deduplication isn't possible at all,
-so the connector falls back to appending and logs a warning.
+If a deduplicating stream's primary key or cursor field doesn't exist in the stream's schema, the
+sync fails with a configuration error. In legacy "raw tables only" mode, deduplication isn't
+possible at all, so the connector falls back to appending and logs a warning.
 
 ## Schema map
 
@@ -274,8 +274,9 @@ distinct tables and columns, but the resulting names aren't the ones your source
 
 The connector also replaces each character that isn't a letter, digit, or underscore with an
 underscore, and prefixes a name that begins with a digit with an underscore. Names that only differ
-by those replaced characters (`my.field` and `my-field`, for example) collide, and the sync fails
-when Postgres rejects the duplicate.
+by those replaced characters collide after this transformation — `my.field` and `my-field` both
+become `my_field`, for example. Airbyte resolves the collision instead of failing: colliding column
+names get a numeric suffix (`my_field_1`), and colliding table names get a short hash suffix.
 
 ### Value limitations
 
