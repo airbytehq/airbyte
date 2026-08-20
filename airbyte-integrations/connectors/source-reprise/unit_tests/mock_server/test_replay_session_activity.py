@@ -7,6 +7,12 @@ from unittest import TestCase
 
 import freezegun
 from conftest import get_source
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.helpers import (
     NOW,
     config,
@@ -15,12 +21,6 @@ from mock_server.helpers import (
     login_request,
     login_response,
 )
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.state_builder import StateBuilder
 
 
 _STREAM_NAME = "replay_session_activity"
@@ -69,9 +69,7 @@ class TestReplaySessionActivity(TestCase):
         assert output.most_recent_state.stream_state.__dict__ == {"since_created_at": "2026-08-20 07:45:12"}
 
     @HttpMocker()
-    def test_given_state_when_read_then_three_day_lookback_is_applied_and_window_is_sliced_per_day(
-        self, http_mocker: HttpMocker
-    ) -> None:
+    def test_given_state_when_read_then_three_day_lookback_is_applied_and_window_is_sliced_per_day(self, http_mocker: HttpMocker) -> None:
         # State is 2026-08-20 10:00:00; lookback_window P3D pulls the start back to
         # 2026-08-17 10:00:00 (still above the configured start_time floor), and step P1D
         # then cuts that window into four requests.

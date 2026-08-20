@@ -6,6 +6,11 @@ from unittest import TestCase
 
 import freezegun
 from conftest import get_source
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.mock_http import HttpMocker
 from mock_server.helpers import (
     NOW,
     PAGE_SIZE,
@@ -15,11 +20,6 @@ from mock_server.helpers import (
     login_request,
     login_response,
 )
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
 
 
 _STREAM_NAME = "replay_change_feed"
