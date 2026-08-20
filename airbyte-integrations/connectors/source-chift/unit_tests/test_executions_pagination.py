@@ -76,11 +76,11 @@ def _mock_auth_and_parent(http_mocker: HttpMocker) -> None:
     )
 
 
-def _read(config: dict):
+def _read(config: dict, sync_mode: SyncMode = SyncMode.full_refresh):
     return read(
         get_source(config),
         config=config,
-        catalog=CatalogBuilder().with_stream("executions", SyncMode.full_refresh).build(),
+        catalog=CatalogBuilder().with_stream("executions", sync_mode).build(),
     )
 
 
@@ -98,6 +98,25 @@ class TestExecutionsPagination(TestCase):
         ids = [record.record.data["id"] for record in output.records]
         assert len(ids) == 120, f"expected 120 records, got {len(ids)}"
         assert len(set(ids)) == 120, f"expected no duplicates, got {len(ids) - len(set(ids))}"
+
+    @HttpMocker()
+    def test_cursor_accepts_rfc3339_utc_timestamps(self, http_mocker: HttpMocker):
+        """Chift only promises `format: date-time` (RFC 3339) for `start`. Without the `%z`
+        fallback formats a Z-suffixed value is skipped by the cursor ("Skipping cursor update")
+        and state never advances, silently degrading incremental to a rolling full re-read."""
+        _mock_auth_and_parent(http_mocker)
+        record = _execution(1)
+        record["start"] = "2026-07-15T10:00:00Z"
+        http_mocker.get(_executions_request(), _items([record]))
+
+        output = _read(_CONFIG, sync_mode=SyncMode.incremental)
+
+        assert len(output.records) == 1
+        assert output.errors == []
+        partition_states = getattr(output.state_messages[-1].state.stream.stream_state, "states", [])
+        assert partition_states and partition_states[0]["cursor"] == {
+            "start": "2026-07-15T10:00:00"
+        }, f"cursor did not observe the Z-suffixed value; state: {partition_states}"
 
     @HttpMocker()
     def test_sync_runs_without_start_date(self, http_mocker: HttpMocker):

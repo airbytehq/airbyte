@@ -2,10 +2,10 @@
 
 """Guards the two objects whose keys are defined by the integration, not by Chift's contract.
 
-A V2 destination materialises exactly the declared stream schema: a property that is not declared
-inside a declared object is dropped, and nothing is recorded in `_airbyte_meta.changes[]`. Both
-objects below therefore have to stay schemaless, so the destination serialises them to a JSON
-string and every key survives.
+Chift's OpenAPI declares both objects free-form. On destinations that materialize declared
+nested shapes (S3/GCS Avro and Parquet), a property that is not declared inside a declared
+object is dropped silently, with nothing recorded in `_airbyte_meta.changes[]`. Both objects
+below therefore have to stay schemaless, so the whole object survives as a JSON string.
 
 These tests fail if a future edit re-introduces an enumerated property list.
 """
@@ -37,14 +37,15 @@ def display_condition(schemas: dict) -> dict:
     "fixture_name, reason",
     [
         ("connections_data", "the connection payload differs per integration"),
-        ("display_condition", "a JSONLogic expression tree has an open-ended operator set"),
+        ("display_condition", "a condition expression tree has an open-ended operator set"),
     ],
 )
 def test_object_is_schemaless(fixture_name: str, reason: str, request) -> None:
     schema = request.getfixturevalue(fixture_name)
 
     assert "properties" not in schema, (
-        f"`{fixture_name}` must stay schemaless because {reason}; enumerating its keys makes a V2 "
-        f"destination drop every key not listed. Got: {sorted(schema.get('properties', {}))}"
+        f"`{fixture_name}` must stay schemaless because {reason}; enumerating its keys makes "
+        f"schematizing destinations (S3/GCS Avro and Parquet) drop every key not listed. "
+        f"Got: {sorted(schema.get('properties', {}))}"
     )
     assert "object" in schema["type"], f"expected an object type, got {schema['type']!r}"

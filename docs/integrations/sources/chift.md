@@ -11,11 +11,12 @@ Chift is a tool that allows for the integration of financial data into SaaS prod
 | `start_date` | `string` | Start Date. Only `executions` started on or after this date are synced. Optional; defaults to the epoch, which syncs everything. | `1970-01-01T00:00:00` |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | consumers | consumerid | No pagination | ✅ |  ❌  |
 | connections | connectionid | No pagination | ✅ |  ❌  |
-| syncs |  | No pagination | ✅ |  ❌  |
+| syncs | syncid | No pagination | ✅ |  ❌  |
 | executions | id | Page increment | ✅ |  ✅  |
 
 ## IP allow list
@@ -29,7 +30,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-08-17 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size`. Declare `connections.data` and `target_field.display_condition` schemaless so V2 destinations stop dropping their integration-defined keys — see the [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations) |
+| 0.1.0 | 2026-08-20 | [77576](https://github.com/airbytehq/airbyte/pull/77576) | Add `executions` stream, incremental on `start` and paginated on `page`/`size`. Declare `connections.data` and `target_field.display_condition` schemaless, matching Chift's contract, so schematizing destinations (S3/GCS Avro/Parquet) stop dropping their integration-defined keys - see the [migration guide](https://docs.airbyte.com/integrations/sources/chift-migrations) |
 | 0.0.24 | 2026-08-18 | [84529](https://github.com/airbytehq/airbyte/pull/84529) | Update dependencies |
 | 0.0.23 | 2026-08-11 | [83887](https://github.com/airbytehq/airbyte/pull/83887) | Update dependencies |
 | 0.0.22 | 2026-08-04 | [83399](https://github.com/airbytehq/airbyte/pull/83399) | Update dependencies |

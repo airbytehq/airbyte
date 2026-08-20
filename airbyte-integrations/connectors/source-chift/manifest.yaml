@@ -118,6 +118,11 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f"
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%dT%H:%M:%S"
+          # The contract only promises `format: date-time` (RFC 3339): without the `%z` forms a
+          # Z-suffixed or offset value is skipped by the cursor ("Skipping cursor update") and
+          # state never advances, silently degrading incremental to a rolling full re-read.
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
     connections:
       type: DeclarativeStream
       name: connections
@@ -207,7 +212,12 @@ spec:
         type: string
         order: 3
         title: Start Date
+        description: >-
+          Only `executions` started on or after this date are synced. Optional; defaults to
+          1970-01-01T00:00:00, which syncs everything.
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        examples:
+          - "2026-01-01T00:00:00"
       client_secret:
         type: string
         order: 1
@@ -546,11 +556,12 @@ schemas:
                           - string
                           - "null"
                       display_condition:
-                        # A JSONLogic expression tree. The previous schema enumerated two
-                        # operators (`!` and `in`) and one nesting shape; every other operator
-                        # — `and`, `!=`, `>`, `some` — and any deeper nesting was dropped
-                        # silently by a V2 destination. Left schemaless so the whole expression
-                        # survives as a JSON string.
+                        # A condition expression tree with an open-ended operator set; Chift's
+                        # OpenAPI declares it free-form. The previous schema enumerated two
+                        # operators (`!` and `in`) and one nesting shape; on destinations that
+                        # materialize declared nested shapes (S3/GCS Avro and Parquet) every
+                        # other operator and any deeper nesting was dropped silently. Left
+                        # schemaless so the whole expression survives as a JSON string.
                         type:
                           - object
                           - "null"
@@ -668,11 +679,11 @@ schemas:
           - string
           - "null"
       data:
-        # Connection payload differs per integration, so these keys are not part of a fixed
-        # contract. A V2 destination materialises exactly the declared schema and drops
-        # undeclared properties without recording anything in `_airbyte_meta.changes[]`, so
-        # enumerating them would be correct only for the integrations that happen to be listed.
-        # Left schemaless: the destination serialises it to a JSON string and every key survives.
+        # Connection payload differs per integration; Chift's own OpenAPI declares it free-form
+        # (`additionalProperties: true`, no fixed properties). Destinations that materialize
+        # declared nested shapes (S3/GCS Avro and Parquet) build the column strictly from the
+        # enumerated keys and drop the rest silently, with nothing recorded in
+        # `_airbyte_meta.changes[]`. Left schemaless: the whole object survives as a JSON string.
         type:
           - object
           - "null"

@@ -3,8 +3,8 @@
 ## Upgrading to 0.1.0
 
 This release adds the `executions` stream and, alongside it, stops two objects from silently
-losing data on typed destinations. That second part is breaking for anyone reading those objects
-as nested columns.
+losing data on schematizing destinations (S3 and GCS in Avro or Parquet format). That second
+part is breaking for anyone reading those objects as nested columns.
 
 ### What changed
 
@@ -16,13 +16,17 @@ schema enumerated a fixed subset of them:
 | `connections.data` | an object with a single `folder_id` property | a schemaless object |
 | `syncs.mappings[].sub_mappings[].target_field.display_condition` | an object enumerating the `!` and `in` operators and one nesting shape | a schemaless object |
 
-Airbyte's V2 destinations materialise exactly the declared stream schema. An undeclared property
-inside a declared object is dropped, and the loss is not recorded in `_airbyte_meta.changes[]` —
-so every key outside those subsets was disappearing with no signal at all. `display_condition` is
-a JSONLogic expression tree, so its operator set is open-ended by nature and could never be
-enumerated correctly.
+Chift's own OpenAPI contract declares both objects free-form (`additionalProperties: true`, no
+fixed properties), so enumerating a key subset misrepresented the contract. On destinations that
+materialize declared nested shapes - S3 and GCS in Avro or Parquet format - the object column was
+built strictly from the enumerated keys: every other key was dropped silently, and the loss was
+not recorded in `_airbyte_meta.changes[]`. `display_condition` is a condition expression tree
+whose operator set is open-ended by nature, so it could never be enumerated correctly.
 
 A schemaless object is serialised to a JSON string instead, which preserves every key.
+Destinations that already store whole objects as JSON or VARIANT columns (BigQuery, Snowflake,
+Iceberg-based) keep the same column contents as before; for them this release only changes the
+declared catalog shape.
 
 ### What you need to do
 
