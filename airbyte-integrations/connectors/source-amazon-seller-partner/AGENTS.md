@@ -119,9 +119,11 @@ per-day values.
 
 **Why this matters:** adding a report stream by copying an existing one is the common path, and the
 missing window is invisible — the sync succeeds and returns records, they are just labelled with a
-date the report did not cover. Streams whose window is deliberately multi-day or monthly (for
-example `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) must still set the window explicitly, just not
-day-aligned.
+date the report did not cover. Two deliberate exceptions: streams whose window is multi-day or
+monthly (for example `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`) set the window explicitly but not
+day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INVENTORY_REPORT`,
+`GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
+intentionally send no window at all.
 
 ## Incremental Stream Considerations
 

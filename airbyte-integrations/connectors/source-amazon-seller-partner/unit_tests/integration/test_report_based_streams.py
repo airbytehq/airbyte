@@ -1420,6 +1420,7 @@ class TestVendorJsonReportsFullRefresh:
     def test_given_report_when_read_then_return_records(self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker) -> None:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
         http_mocker.post(
             _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
             _create_report_response(_REPORT_ID),
@@ -1563,6 +1564,7 @@ class TestVendorJsonReportsIncremental:
 
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
         http_mocker.post(
             _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
             _create_report_response(_REPORT_ID),
@@ -1640,9 +1642,9 @@ class TestVendorJsonReportsIncremental:
 
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
-        http_mocker.get(_get_reports_request().without_amz_date().build(), _get_reports_response())
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
         http_mocker.post(
-            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).without_amz_date().build(),
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
             _create_report_response(_REPORT_ID),
         )
         http_mocker.get(
@@ -1658,12 +1660,14 @@ class TestVendorJsonReportsIncremental:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(
-            stream_name, config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z")), state=initial_state
-        )
+        output = self._read(stream_name, config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z")), state=initial_state)
 
-        assert len(output.records) > 0
+        assert not output.errors
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
         assert all(record.record.data.get(cursor_field) == "2023-01-29T23:59:59Z" for record in output.records)
+        # The day-aligned cursor is what stops the drift from recurring: the next slice starts at
+        # 2023-01-30T00:00:00Z (cursor_granularity is PT1S), so every later slice is day-aligned too.
+        assert output.most_recent_state.stream_state.__dict__[cursor_field] == "2023-01-29T23:59:59Z"
 
 
 @freezegun.freeze_time(NOW.isoformat())

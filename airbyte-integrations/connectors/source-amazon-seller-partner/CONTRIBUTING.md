@@ -106,7 +106,10 @@ drift off midnight whenever a sync ends mid-day and Amazon rounds an off-midnigh
 every calendar day it spans. The cursor value emitted by `AddFields` must be day-aligned to match.
 
 **Why this matters:** the failure is silent — syncs succeed and return records, they are just
-attributed to a date the report did not cover.
+attributed to a date the report did not cover. The full-refresh snapshot and forecast streams
+(`GET_VENDOR_INVENTORY_REPORT`, `GET_VENDOR_FORECASTING_FRESH_REPORT`,
+`GET_VENDOR_FORECASTING_RETAIL_REPORT`) are the deliberate exception — they have no cursor and send
+no window on purpose.
 
 ## Incremental Stream Considerations
 
