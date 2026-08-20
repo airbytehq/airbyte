@@ -126,3 +126,28 @@ def test_read_records_passes_through_record_without_cursor(mocker):
     )
     records = list(stream.read_records(SyncMode.incremental))
     assert records == [{"Name": "NoCursorHere"}]
+
+
+def test_read_records_passes_through_record_with_null_cursor(mocker):
+    # A record carrying an explicit null cursor value should be yielded, not crash the stream.
+    stream = _incremental_stream_with_module(_module_with_fields("Modified_Time"))
+    mocker.patch(
+        "source_zoho_crm.streams.HttpStream.read_records",
+        Mock(return_value=[{"Modified_Time": None}, {"Modified_Time": "2026-02-01T00:00:00+00:00"}]),
+    )
+    records = list(stream.read_records(SyncMode.incremental))
+    assert len(records) == 2
+    assert stream.state == {"Modified_Time": "2026-02-01T00:00:00+00:00"}
+
+
+def test_read_records_tolerates_state_keyed_by_other_cursor(mocker):
+    # State saved under a different cursor key must not crash a module whose cursor resolves differently.
+    stream = _incremental_stream_with_module(_module_with_fields("Action_Performed_Time"))
+    stream.state = {"Modified_Time": "2026-01-01T00:00:00+00:00"}
+    mocker.patch(
+        "source_zoho_crm.streams.HttpStream.read_records",
+        Mock(return_value=[{"Action_Performed_Time": "2026-02-01T00:00:00+00:00"}]),
+    )
+    records = list(stream.read_records(SyncMode.incremental))
+    assert len(records) == 1
+    assert stream.state == {"Action_Performed_Time": "2026-02-01T00:00:00+00:00"}

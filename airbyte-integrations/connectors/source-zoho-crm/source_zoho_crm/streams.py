@@ -20,7 +20,7 @@ from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
 
-def parse_iso(value):
+def parse_iso(value: Any) -> Any:
     if not isinstance(value, str):
         return value
     return date_parser.isoparse(value)
@@ -107,10 +107,10 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         cursor_field = self.cursor_field
         for record in super().read_records(*args, **kwargs):
-            if cursor_field not in record:
+            if record.get(cursor_field) is None:
                 yield record
                 continue
-            current_cursor_value = parse_iso(self.state[cursor_field])
+            current_cursor_value = parse_iso(self.state.get(cursor_field) or self._start_datetime)
             latest_cursor_value = parse_iso(record[cursor_field])
             new_cursor_value = max(latest_cursor_value, current_cursor_value)
             self.state = {cursor_field: new_cursor_value.isoformat("T", "seconds")}
@@ -120,6 +120,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         last_modified = stream_state.get(self.cursor_field, self._start_datetime)
+        # since API filters inclusively, we add 1 sec to prevent duplicate reads
         last_modified_dt = parse_iso(last_modified)
         last_modified_dt += datetime.timedelta(seconds=1)
         last_modified = last_modified_dt.isoformat("T", "seconds")

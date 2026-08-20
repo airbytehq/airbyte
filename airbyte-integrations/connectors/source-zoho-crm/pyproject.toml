@@ -18,6 +18,7 @@ include = "source_zoho_crm"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 airbyte-cdk = "^1"
+python-dateutil = "^2.8"
 
 [tool.poetry.scripts]
 source-zoho-crm = "source_zoho_crm.run:run"
