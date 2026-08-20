@@ -68,6 +68,10 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
+## Refresh token lifetime
+
+Greenhouse refresh tokens expire 24 hours after they are issued and rotate on every use. Keep each Greenhouse connection on a sync frequency of less than 24 hours so the connector refreshes the token before it expires. If a connection is paused, disabled, or fails for longer than 24 hours, the refresh token expires and syncs fail with "Refresh token is invalid or expired." Recover by opening **Sources > your Greenhouse source > Settings** and clicking **Authenticate** to repeat the OAuth consent flow.
+
 ## Migration from Harvest v1 before the v1/v2 sunset
 
 Version 1.0.0 migrates all streams from Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.

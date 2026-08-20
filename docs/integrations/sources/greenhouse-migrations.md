@@ -27,3 +27,5 @@ Harvest v3 returns opaque cursor URLs in the `Link` response header. The connect
 ### Rate limits
 
 The connector uses Greenhouse's v3 rate-limit headers and a fixed 30-second budget. Existing connections may take longer or process fewer concurrent requests while the connector stays within the documented account limit.
+
+Greenhouse refresh tokens expire after 24 hours of non-use and rotate on every refresh, so set every Greenhouse connection to sync more often than once a day. A connection left paused, disabled, or failing for more than 24 hours requires re-running the consent flow from the source settings.
