@@ -1094,6 +1094,10 @@ definitions:
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+                max_waiting_time_in_seconds: 300
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
