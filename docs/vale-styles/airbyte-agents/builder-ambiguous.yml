@@ -1,0 +1,15 @@
+extends: existence
+message: "'%s' is ambiguous. Use 'Connector Builder' (the low-code connector tool) or 'Automation Builder' (the Airbyte Agents tool) as appropriate."
+link: https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs
+level: suggestion
+ignorecase: false
+# Match a word + 'Builder' so the full product name is part of the match
+# text. That lets us use `exceptions` (which filter on the match itself) to
+# silence the two canonical product names. Vale's RE2 engine has no
+# lookbehind, so this is the cleanest way to allow 'Connector Builder' and
+# 'Automation Builder' while flagging every other 'X Builder' usage.
+tokens:
+  - '[A-Za-z]+ Builder\b'
+exceptions:
+  - 'Automation Builder'
+  - 'Connector Builder'

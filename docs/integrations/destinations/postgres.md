@@ -46,7 +46,8 @@ You'll need the following information to configure the Postgres destination:
 #### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
-may need to allow access from the IP you're using to expose Airbyte.
+may need to allow access from the IP you're using to expose Airbyte. If you're using Airbyte Cloud,
+add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your allowlist.
 
 ## Step 1: Set up Postgres
 
@@ -181,14 +182,15 @@ Mode**; otherwise, the connection will fail.
 ## Supported sync modes
 
 The Postgres destination connector supports the
-following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
-| Namespaces                     | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Schema map
 
@@ -286,6 +288,10 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 For vendor-specific limitations and known issues, see the [Postgres Troubleshooting Guide](postgres/postgres-troubleshooting.md#vendor-specific-connector-limitations).
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Postgres schema.
+
 ## Changelog
 
 <details>
@@ -293,16 +299,21 @@ For vendor-specific limitations and known issues, see the [Postgres Troubleshoot
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
-| 3.0.10  | 2026-02-04 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
+| 3.0.16 | 2026-03-31 | [75902](https://github.com/airbytehq/airbyte/pull/75902) | Fix silent error swallowing in COPY flush and sanitize null bytes in raw JSON data |
+| 3.0.15  | 2026-08-07 | [83235](https://github.com/airbytehq/airbyte/pull/83235)   | Fail sync on transient DB errors.                                                                                                             |
+| 3.0.14  | 2026-07-30 | [82273](https://github.com/airbytehq/airbyte/pull/82273)   | Remove column DROP logic during schema evolution; upgrade CDK to 1.0.20                                                                                                                |
+| 3.0.13  | 2026-04-17 | [76409](https://github.com/airbytehq/airbyte/pull/76409)   | Upgrade CDK to 1.0.9.                                                                                                                                                                  |
+| 3.0.12  | 2026-03-26 | [75481](https://github.com/airbytehq/airbyte/pull/75481)   | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert.                                                                    |
+| 3.0.11  | 2026-02-25 | [74040](https://github.com/airbytehq/airbyte/pull/74040)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches.                                                                                                                          |
+| 3.0.10  | 2026-02-09 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Update to latest CDK with `DestStream` changes; remove unused Java CDK dependencies.                                                                                                   |
 | 3.0.9   | 2026-01-28 | [72292](https://github.com/airbytehq/airbyte/pull/72292)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |
 | 3.0.8 | 2026-01-28 | [72412](https://github.com/airbytehq/airbyte/pull/72412) | Promoting release candidate 3.0.8-rc1 to a main version. |
 | 3.0.8-rc1 | 2026-01-22 | [71183](https://github.com/airbytehq/airbyte/pull/71183) | Refactor schema utilities to follow CDK pattern.                                                                                                                                       |
 | 3.0.7 | 2026-01-20 | [71745](https://github.com/airbytehq/airbyte/pull/71745)    | Improve error message for dependent views/rules with CASCADE option guidance.                                                                                                          |
 | 3.0.6 | 2026-01-06 | [71146](https://github.com/airbytehq/airbyte/pull/71146)    | Fix: Only apply CASCADE to DROP COLUMN, not ALTER COLUMN TYPE during schema changes.                                                                                                   |
 | 3.0.5 | 2025-12-12 | [70895](https://github.com/airbytehq/airbyte/pull/70895)    | Update CDK to 0.1.86.                                                                                                                                                                  |
-| 3.0.5-rc.1 | 2025-12-09 | [70338](https://github.com/airbytehq/airbyte/pull/70338)    | Update CDK to 0.1.86.                                                                                                                                                                  |
-| 3.0.4   | 2025-12-05 | [70355](https://github.com/airbytehq/airbyte/pull/70355)   | Fix: Force Append mode when "Raw tables only" mode is enabled, bypassing Dedupe mode to avoid errors.                                                                                  |
+| 3.0.5-rc.1 | 2025-12-09 | [70338](https://github.com/airbytehq/airbyte/pull/70338)    | Update CDK to 0.1.84 and fix API changes.                                                                                                                                              |
+| 3.0.4   | 2025-12-05 | [70364](https://github.com/airbytehq/airbyte/pull/70364)   | Fix: Force Append mode when "Raw tables only" mode is enabled, bypassing Dedupe mode to avoid errors.                                                                                  |
 | 3.0.3   | 2025-12-04 | [70347](https://github.com/airbytehq/airbyte/pull/70347)   | Fix index recreation on non-existent columns in raw tables mode.                                                                                                                       |
 | 3.0.2   | 2025-12-04 | [70337](https://github.com/airbytehq/airbyte/pull/70337)   | Refactor: Move raw tables mode check to index creation for better code clarity.                                                                                                        |
 | 3.0.1   | 2025-12-04 | [70326](https://github.com/airbytehq/airbyte/pull/70326)   | Fix `PSQLException` when running in legacy "Raw tables only" mode.                                                                                                                     |

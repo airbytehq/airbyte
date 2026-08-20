@@ -12,7 +12,7 @@ import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.StringFieldType
 import io.airbyte.cdk.discover.TestMetaFieldDecorator
@@ -37,8 +37,8 @@ class FeedBootstrapTest {
 
     @Inject lateinit var metaFieldDecorator: TestMetaFieldDecorator
 
-    val k = Field("k", IntFieldType)
-    val v = Field("v", StringFieldType)
+    val k = EmittedField("k", IntFieldType)
+    val v = EmittedField("v", StringFieldType)
     val stream: Stream =
         Stream(
             id = StreamIdentifier.from(StreamDescriptor().withName("tbl").withNamespace("ns")),
