@@ -111,7 +111,13 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
     def applications_callback(request, context):
         application_requests.append(request)
         context.status_code = 200
-        return [{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}]
+        return [
+            {
+                "id": 1,
+                "created_at": "2024-01-01T00:00:00.000Z",
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            }
+        ]
 
     requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
 
@@ -125,9 +131,12 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
     )
     source = get_source(CONFIG, state=state)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    read(source, config=CONFIG, catalog=catalog)
+    output = read(source, config=CONFIG, catalog=catalog)
 
     assert application_requests[0].qs["updated_at"] == ["gte|2024-01-01t00:00:00.000z"]
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [1]
+    assert vars(output.most_recent_state.stream_state) == {"updated_at": "2024-01-01T00:00:00.000Z"}
 
 
 def test_child_cursor_pagination_suppresses_parent_filter(requests_mock, get_source):
