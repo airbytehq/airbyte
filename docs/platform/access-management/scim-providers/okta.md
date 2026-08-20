@@ -58,15 +58,11 @@ On the new app, open the **Provisioning** tab and go to **Settings** > **Integra
 
 4. Under **Authentication Mode**, select **HTTP Header**.
 
-5. Enter the Airbyte bearer token in the **Authorization** field.
+5. Enter the Airbyte bearer token by itself in the **Authorization** field. Okta adds the `Bearer ` prefix when it sends the header.
 
 6. Click **Test API Credentials**, then click **Save**.
 
 If Okta offers password synchronization for the application, turn it off. Airbyte ignores passwords sent through SCIM.
-
-:::note
-If **Test API Credentials** returns `401` when you enter the bare token in **Authorization**, try prefixing it with `Bearer `. Airbyte expects `Authorization: Bearer <token>` on the wire. Okta's HTTP Header mode determines how the value is sent, so test the form that works in your organization.
-:::
 
 ## Review attribute mappings
 
