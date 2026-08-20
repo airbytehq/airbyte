@@ -114,6 +114,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.52 | 2026-08-18 | [78564](https://github.com/airbytehq/airbyte/pull/78564) | Update dependencies |
 | 0.1.51 | 2026-08-13 | [84344](https://github.com/airbytehq/airbyte/pull/84344) | Update the CDK to remediate CVE-2025-68664 in the langchain dependency |
 | 0.1.50 | 2026-07-02 | [81382](https://github.com/airbytehq/airbyte/pull/81382) | Upgrade pillow from 11.x to 12.3.0 to resolve security vulnerabilities GHSA-cfh3-3jmp-rvhc, GHSA-pwv6-vv43-88gr, GHSA-whj4-6x5x-4v2j, GHSA-xg8h-j46f-w952 |
 | 0.1.49 | 2026-07-02 | [81396](https://github.com/airbytehq/airbyte/pull/81396) | Bump aiohttp to >= 3.13.3 to resolve GHSA-6mq8-rvhq-8wgg |
