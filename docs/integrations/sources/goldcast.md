@@ -62,7 +62,7 @@ Incremental modes are not supported as the Goldcast API does not contain a curso
 
 ## Supported Streams
 
-The Goldcast source connector can sync the following tables. It can also sync custom queries using GAQL.
+The Goldcast source connector can sync the following tables.
 
 ### Main Tables
 
@@ -72,7 +72,7 @@ Link to Goldcast API documentation [here](https://apidocs.goldcast.io/).
 
 - [events](https://apidocs.goldcast.io/#tag/Event/operation/List%20events)
 
-- [event_members](https://apidocs.goldcast.io/#tag/Event-Members/operation/List%20event%20members)
+- [event_members](https://apidocs.goldcast.io/#tag/Event-members/operation/List%20event%20members)
 
 This is a child stream of the events stream representing users associated to events.
 
@@ -82,9 +82,9 @@ This is a child stream of the events stream, scoped to webinar-type events only.
 
 - [tracks](https://apidocs.goldcast.io/#tag/Tracks/operation/List%20tracks)
 
-- [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-Item/operation/List%20agenda%20item)
+- [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-item/operation/List%20agenda%20item)
 
-- [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-Groups/operation/List%20discussion%20groups)
+- [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-groups/operation/List%20discussion%20groups)
 
 ## IP allow list
 
@@ -97,7 +97,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.26 | 2026-07-30 | [83237](https://github.com/airbytehq/airbyte/pull/83237) | Fix connector broken by Goldcast's API changes: list streams now request `limit`/`offset` pagination and extract records from the `results` envelope, and the `webinars` stream is scoped to webinar-type events only to avoid errors on other event types |
+| 0.2.26 | 2026-08-20 | [83237](https://github.com/airbytehq/airbyte/pull/83237) | Fix connector broken by Goldcast's API changes: list streams now request `limit`/`offset` pagination and extract records from the `results` envelope, and the `webinars` stream is scoped to webinar-type events only to avoid errors on other event types |
 | 0.2.25 | 2026-06-02 | [78729](https://github.com/airbytehq/airbyte/pull/78729) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59909](https://github.com/airbytehq/airbyte/pull/59909) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59258](https://github.com/airbytehq/airbyte/pull/59258) | Update dependencies |

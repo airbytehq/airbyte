@@ -91,3 +91,30 @@ class TestGoldcastApiFormat(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "web-0001"
+
+    @HttpMocker()
+    def test_event_members_paginates_within_its_parent_partition(self, http_mocker: HttpMocker):
+        """`event_members` carries its partition in the URL's own query string, so the paginator has to
+        add `limit`/`offset` alongside `event=` rather than replace it."""
+        http_mocker.get(
+            HttpRequest(url=_EVENTS_URL, query_params={"limit": str(_PAGE_SIZE)}),
+            _envelope([_event(1)]),
+        )
+        members_url = f"{_BASE}/event/event-members"
+        full_page = [{"id": f"mem-{i:04d}", "event": "evt-0001"} for i in range(_PAGE_SIZE)]
+        http_mocker.get(
+            HttpRequest(url=members_url, query_params={"event": "evt-0001", "limit": str(_PAGE_SIZE)}),
+            _envelope(full_page, count=_PAGE_SIZE + 1),
+        )
+        http_mocker.get(
+            HttpRequest(
+                url=members_url,
+                query_params={"event": "evt-0001", "limit": str(_PAGE_SIZE), "offset": str(_PAGE_SIZE)},
+            ),
+            _envelope([{"id": "mem-9999", "event": "evt-0001"}], count=_PAGE_SIZE + 1),
+        )
+
+        output = _read("event_members")
+
+        assert len(output.records) == _PAGE_SIZE + 1
+        assert "mem-9999" in {record.record.data["id"] for record in output.records}
