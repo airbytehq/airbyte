@@ -58,7 +58,7 @@ The connector authenticates with [token-based authentication](https://docs.oracl
 7. Click on **Reports** and add all the dropdown entities with either `full` or `view` access level.
 8. Click on **Lists** and add all the dropdown entities with either `full` or `view` access level.
 
-The connector only exposes record types this role can read. It logs a warning and skips any record type that returns an `INSUFFICIENT_PERMISSION` error, so a narrower role means fewer streams rather than a failed sync. Revisit these permissions when you rename or customize a record type in NetSuite.
+The role decides which record types you can actually read, but it doesn't shape the stream list: a record type the role can't read still appears as a stream, and syncing it logs an `INSUFFICIENT_PERMISSION` error and returns no records. Revisit these permissions when you rename or customize a record type in NetSuite.
 
 #### Step 2.5: Setup User
 
@@ -96,7 +96,7 @@ You have copied next parameters
 2. On the source setup page, select **NetSuite** from the Source type dropdown and enter a name for this connector.
 3. Enter your **Realm (Account Id)**, **Consumer Key**, **Consumer Secret**, **Token Key (Token Id)**, and **Token Secret**.
 4. Enter a **Start Date** as `YYYY-MM-DDTHH:mm:ssZ`, for example `2017-01-25T00:00:00Z`. Incremental streams read from this point on their first sync.
-5. Optionally set **Object Types** to the API names of the record types you want, such as `customer` or `salesorder`. Leave it empty to sync every record type the role can read.
+5. Optionally set **Object Types** to the API names of the record types you want, such as `customer` or `salesorder`. Leave it empty to expose every record type in the account's metadata catalog.
 6. Optionally set **Window in Days**. The default is 30.
 7. Click **Set up source**.
 
@@ -119,12 +119,9 @@ The NetSuite source connector supports the following [sync modes](https://docs.a
 
 ## Supported streams
 
-The connector generates one stream per record type, so the stream list depends on the account rather than on a fixed catalog. Two things determine what you get:
+The connector generates one stream per record type, so the stream list depends on the account rather than on a fixed catalog. It comes from the account's metadata catalog, narrowed to the **Object Types** you listed if you set that field. The token's role doesn't narrow the list, only what each stream can actually return. See **Setup guide** » **Step 2.4** and **Step 2.5**.
 
-- The record types the token's role can read. See **Setup guide** » **Step 2.4** and **Step 2.5**.
-- The **Object Types** field, if you set it.
-
-Schemas come from the account's metadata catalog, which means custom fields and customized record types are included. Every field is typed as nullable because NetSuite schemas don't declare nullability. If a record type's schema comes back without a `properties` key three times in a row, the connector logs a warning and skips that stream.
+Schemas come from the account's metadata catalog, which means custom fields and customized record types are included. Every field is typed as nullable because NetSuite schemas don't declare nullability. Occasionally the catalog returns a record type with no fields at all; the connector refetches that schema a few times, then logs a warning and leaves the stream out of the catalog.
 
 Sync mode support is per stream and depends on the record type's own fields:
 
@@ -139,7 +136,7 @@ Sync mode support is per stream and depends on the record type's own fields:
 NetSuite can't sort records in a response, so the connector filters each request to a date range instead of paging through an ordered result set. Two consequences are worth knowing before you plan downstream pipelines:
 
 - **Incremental syncs are accurate to the day, not to the second.** NetSuite's record query filter accepts bare dates only, and it resolves them in the account's own time zone. To avoid missing records on accounts behind UTC, the connector opens each sync's first window 12 hours before the stored cursor and then truncates to a date. Expect a sync to re-request records it has already read near the cursor. Records older than the cursor are dropped before they're emitted, so this overlap doesn't duplicate data.
-- **The connector detects your account's date format.** NetSuite expects date literals in the format the account prefers. The connector tries `MM/DD/YYYY`, `YYYY-MM-DD`, `DD/MM/YYYY`, and `DD.MM.YYYY` in that order, and reissues the same request under the next format when NetSuite rejects one. You don't need to configure this, but the first sync of a stream logs a warning for each rejected format.
+- **The connector detects your account's date format.** NetSuite expects date literals in the format the account prefers. The connector tries `MM/DD/YYYY`, `YYYY-MM-DD`, `DD/MM/YYYY`, and `DD.MM.YYYY` in that order, and reissues the same request under the next format when NetSuite rejects one. You don't need to configure this, but the accepted format isn't remembered between syncs, so every sync logs a warning for each format it has to discard.
 
 ## Performance considerations
 
@@ -151,13 +148,16 @@ NetSuite governs REST concurrency at the account level, and that limit is shared
 
 ### A record type is missing from the stream list
 
-The connector skips record types it can't read or describe. Check the sync logs for the record type's name:
+A record type is left out of the catalog only when the metadata catalog returns no fields for it. The discovery log says `schema is not available` for that record type; retry discovery later.
 
-- `INSUFFICIENT_PERMISSION`: the token's role lacks access to that record type. Add it under **Setup** » **Users/Roles** » **Manage Roles**, then refresh the schema.
+If you set **Object Types**, only the record types you listed are considered, so remove the field or add the record type to it.
+
+### A stream syncs successfully but returns no records
+
+This is usually a permissions problem rather than an empty record type, because the stream list doesn't reflect what the role can read. Check the sync logs for the stream's name:
+
+- `INSUFFICIENT_PERMISSION`: the token's role lacks access to that record type. Add it under **Setup** » **Users/Roles** » **Manage Roles**.
 - `USER_ERROR`: the record type is readable by administrators only.
-- `schema is not available`: the metadata catalog returned no fields for that record type after three attempts. Retry discovery later.
-
-If you set **Object Types**, only those record types are considered, so remove the field or add the record type to the list.
 
 ### Setup fails right after you enter credentials
 
