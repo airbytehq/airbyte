@@ -51,7 +51,7 @@ if [[ -z "$STATE_1_OFFSET" || -z "$STATE_2_OFFSET" ]]; then
   echo "FAIL: could not find commit_lsn in replay states." >&2
   exit 1
 fi
-if ! python - "$STATE_1_OFFSET" "$STATE_2_OFFSET" <<'PY'
+if ! python3 - "$STATE_1_OFFSET" "$STATE_2_OFFSET" <<'PY'
 import sys
 
 if int(sys.argv[2].replace(":", ""), 16) <= int(sys.argv[1].replace(":", ""), 16):

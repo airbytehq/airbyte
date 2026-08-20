@@ -122,6 +122,10 @@ if [[ "$REPLAY" == true && -n "$CONTROL_VERSION_ARG" ]]; then
   echo "[run] --replay cannot be combined with --control-version: comparison runs control and target in one airbyte-ops invocation, so the backend/capture state cannot be reset between replay reads." >&2
   exit 2
 fi
+if [[ "$REPLAY" != true && ${#MUTATIONS[@]} -gt 0 ]]; then
+  echo "[run] --mutate requires --replay: mutations are only applied between replay reads." >&2
+  exit 2
+fi
 if [[ "$SKIP_READ" == true ]]; then
   REQUESTED=()
   for cmd in "${COMMANDS[@]}"; do
@@ -352,7 +356,6 @@ SUMMARY="| Command | Result |
 for step_name in "${EXECUTED_STEPS[@]}"; do
   cell=""
   case "${STATUS[$step_name]:-}" in
-    "")       cell="_(skipped)_" ;;
     pass)     cell="PASS" ;;
     fail)     cell="FAIL"; ALL_PASSED=false ;;
     internal) cell="ERROR"; ALL_PASSED=false; INTERNAL_FAILURE=true ;;
@@ -368,7 +371,7 @@ if [[ "$COMMAND" == all && "$SKIP_READ" == true ]]; then
 fi
 SUMMARY+="
 
-Artifacts: \`$ARTIFACTS_DIR/<command>/\` (\`report.md\`, \`stdout.txt\`, \`stderr.txt\`)."
+Artifacts: \`$ARTIFACTS_DIR/<step>/\` (\`report.md\`, \`stdout.txt\`, \`stderr.txt\`)."
 
 echo "$SUMMARY" >&2
 # CI gets the same table in the run summary without the workflow having
