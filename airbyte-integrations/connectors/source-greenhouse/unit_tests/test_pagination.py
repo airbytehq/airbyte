@@ -75,7 +75,7 @@ def test_oauth_refresh_token_request_shape(requests_mock, get_source):
 
     request = token_requests[0]
     assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"test-client:test-secret").decode()
-    token_params = parse_qs(request.text)
+    token_params = parse_qs(request.query)
     assert token_params["grant_type"] == ["refresh_token"]
     assert token_params["refresh_token"] == ["test-refresh-token"]
     assert "sub" not in token_params

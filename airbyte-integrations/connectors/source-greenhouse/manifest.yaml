@@ -1743,6 +1743,7 @@ definitions:
       refresh_request_headers:
         Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
         Content-Type: application/x-www-form-urlencoded
+      send_refresh_request_as_query_params: true
       refresh_token_error_status_codes:
         - 400
         - 401
