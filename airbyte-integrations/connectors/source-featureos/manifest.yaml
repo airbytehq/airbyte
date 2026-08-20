@@ -1,0 +1,552 @@
+version: 7.10.0
+
+type: DeclarativeSource
+
+description: "FeatureOS : https://featureos.app/"
+
+check:
+  type: CheckStream
+  stream_names:
+    - feature_requests
+
+streams:
+  - type: DeclarativeStream
+    name: organization_info
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.featureos.app/api/v3/organizations/info
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: API-KEY
+            inject_into: header
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          success:
+            type:
+              - boolean
+              - "null"
+          organization:
+            type:
+              - object
+              - "null"
+          form:
+            type:
+              - object
+              - "null"
+          status_info:
+            type:
+              - array
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: boards
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.featureos.app/api/v3/buckets
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: API-KEY
+            inject_into: header
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - buckets
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          default:
+            type:
+              - boolean
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+          read_only:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: tags
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api.featureos.app/api/v3/tags
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: API-KEY
+            inject_into: header
+        request_parameters:
+          per_page: "{{ config.get('per_page', 30) }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - integer
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          private:
+            type:
+              - boolean
+              - "null"
+          source_type:
+            type:
+              - string
+              - "null"
+          source_id:
+            type:
+              - integer
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: feature_requests
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          inject_on_first_request: true
+      requester:
+        type: HttpRequester
+        url: https://api.featureos.app/api/v3/feature_requests
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: API-KEY
+            inject_into: header
+        request_headers:
+          ALLOW-PRIVATE: "{{ 'true' if config.get('allow_private', false) else 'false' }}"
+        request_parameters:
+          per_page: "{{ config.get('per_page', 30) }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - feature_requests
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d"
+      start_datetime: "2020-01-01"
+      start_time_option:
+        type: RequestOption
+        field_name: from_date
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - integer
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          preview:
+            type:
+              - string
+              - "null"
+          description_html:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          approval_status:
+            type:
+              - string
+              - "null"
+          submitter:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+          bucket:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          assignee:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              profile_picture:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  url:
+                    type:
+                      - string
+                      - "null"
+          votes_count:
+            type:
+              - integer
+              - "null"
+          downvotes_count:
+            type:
+              - integer
+              - "null"
+          comments_count:
+            type:
+              - integer
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                color:
+                  type:
+                    - string
+                    - "null"
+          custom_status:
+            type:
+              - object
+              - "null"
+            properties:
+              title:
+                type:
+                  - string
+                  - "null"
+              value:
+                type:
+                  - string
+                  - "null"
+              color:
+                type:
+                  - string
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+              percentage:
+                type:
+                  - number
+                  - "null"
+          merged:
+            type:
+              - boolean
+              - "null"
+          merged_posts_count:
+            type:
+              - integer
+              - "null"
+          child_posts:
+            type:
+              - array
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  documentation_url: https://developers.featureos.app/
+  connection_specification:
+    type: object
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Your FeatureOS API key. Generate it from FeatureOS organization
+          settings.
+        title: API Key
+        name: api_key
+        airbyte_secret: true
+      allow_private:
+        type: boolean
+        description: >-
+          Sets the ALLOW-PRIVATE header for post endpoints when syncing private
+          board data.
+        title: Allow Private Boards
+        default: false
+      per_page:
+        type: integer
+        description: Page size for endpoints that support per_page, such as posts and tags.
+        title: Page Size
+        default: 30
+        minimum: 1
+        maximum: 100
+      bucket_id:
+        type:
+          - integer
+          - "null"
+        description: Optional board ID filter for feature_requests.
+        title: Board ID
+      approval_status:
+        type:
+          - string
+          - "null"
+        description: Optional post approval filter.
+        title: Approval Status
+        enum:
+          - approved
+          - pending
+      submitter_emails:
+        type: array
+        description: Optional list of submitter emails to filter posts.
+        title: Submitter Emails
+        items:
+          type: string
+        default: []
+      interactor_emails:
+        type: array
+        description: Optional list of interactor emails to filter posts.
+        title: Interactor Emails
+        items:
+          type: string
+        default: []
+      tag_ids:
+        type: array
+        description: Optional list of tag IDs to filter posts.
+        title: Tag IDs
+        items:
+          type: integer
+        default: []
+      states:
+        type: array
+        description: Optional list of post status slugs to filter posts.
+        title: Post States
+        items:
+          type: string
+        default: []
+      start_date:
+        type:
+          - string
+          - "null"
+        description: >-
+          Earliest record timestamp to sync incrementally. ISO-8601 recommended;
+          defaults to 2020-01-01T00:00:00Z when omitted.
+        title: Start Date
+      sort:
+        type:
+          - string
+          - "null"
+        description: Optional sort mode for feature_requests.
+        title: Post Sort
+        enum:
+          - top
+          - latest_created_at
+          - oldest_created_at
+          - latest_updated_at
+          - oldest_updated_at
+      board_privacy:
+        type:
+          - string
+          - "null"
+        description: Optional privacy filter for boards.
+        title: Board Privacy
+        enum:
+          - public
+          - private
+      board_sort:
+        type:
+          - string
+          - "null"
+        description: Optional alphabetical sort direction for boards.
+        title: Board Sort
+        enum:
+          - asc
+          - desc
+      tag_source_type:
+        type:
+          - string
+          - "null"
+        description: Optional source type filter for tags.
+        title: Tag Source Type
+        enum:
+          - feature_request
+          - bucket
+      tag_source_id:
+        type:
+          - integer
+          - "null"
+        description: Optional board ID when tag_source_type is bucket.
+        title: Tag Source ID
+      tag_privacy:
+        type:
+          - string
+          - "null"
+        description: Optional privacy filter for tags.
+        title: Tag Privacy
+        enum:
+          - public
+          - private
+
+metadata:
+  assist:
+    docsUrl: https://developers.featureos.app/
+  autoImportSchema:
+    organization_info: true
+    boards: true
+    tags: true
+    feature_requests: true
+    comments: true
+    subscribers: true
+    upvoters: true
