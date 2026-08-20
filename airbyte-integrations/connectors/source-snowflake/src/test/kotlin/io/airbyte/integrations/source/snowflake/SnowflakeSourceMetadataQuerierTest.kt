@@ -11,17 +11,21 @@ import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
+import java.sql.ResultSetMetaData
 import java.sql.SQLException
 import java.sql.Statement
 import java.sql.Types
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -34,7 +38,7 @@ class SnowflakeSourceMetadataQuerierTest {
         val table = TableName(catalog = "DB", schema = "PUBLIC", name = "V_WITH_SESSION_VAR", type = "VIEW")
         val dbmd = mock(DatabaseMetaData::class.java)
         val conn = mock(Connection::class.java)
-        val stmt = mock(java.sql.Statement::class.java)
+        val stmt = mock(Statement::class.java)
         val config = mock(JdbcSourceConfiguration::class.java)
         val base = baseQuerier(conn, config)
         val querier = SnowflakeSourceMetadataQuerier(base, schema = "PUBLIC")
@@ -43,20 +47,21 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(conn.createStatement()).thenReturn(stmt)
         `when`(config.namespaces).thenReturn(setOf("DB"))
         `when`(config.checkPrivileges).thenReturn(true)
-        `when`(stmt.executeQuery(ArgumentMatchers.anyString())).thenThrow(SQLException("session variable error"))
-
+        `when`(stmt.executeQuery(anyString())).thenThrow(SQLException("session variable error"))
         `when`(dbmd.getTables("DB", "PUBLIC", null, arrayOf("TABLE", "VIEW")))
             .thenReturn(tableResultSet(table))
         `when`(dbmd.getColumns("DB", "PUBLIC", null, null))
             .thenReturn(
                 columnResultSet(
                     table,
-                    JdbcMetadataQuerier.ColumnMetadata(
-                        name = "C1",
-                        label = "C1",
-                        type = SystemType("VARCHAR", Types.VARCHAR, 100, 0),
-                        nullable = true,
-                        ordinal = 1,
+                    listOf(
+                        JdbcMetadataQuerier.ColumnMetadata(
+                            name = "C1",
+                            label = "C1",
+                            type = SystemType("VARCHAR", Types.VARCHAR, 100, 0),
+                            nullable = true,
+                            ordinal = 1,
+                        )
                     )
                 )
             )
@@ -88,29 +93,31 @@ class SnowflakeSourceMetadataQuerierTest {
             .thenReturn(
                 columnResultSet(
                     table,
-                    JdbcMetadataQuerier.ColumnMetadata(
-                        name = "COL_A",
-                        label = "COL_A",
-                        type = SystemType("VARCHAR", Types.VARCHAR, 100, 0),
-                        nullable = true,
-                        ordinal = 1,
-                    ),
-                    JdbcMetadataQuerier.ColumnMetadata(
-                        name = "COL_B",
-                        label = "COL_B",
-                        type = SystemType("VARCHAR", Types.VARCHAR, 100, 0),
-                        nullable = true,
-                        ordinal = 2,
-                    ),
+                    listOf(
+                        JdbcMetadataQuerier.ColumnMetadata(
+                            name = "COL_A",
+                            label = "COL_A",
+                            type = SystemType("VARCHAR", Types.VARCHAR, 100, 0),
+                            nullable = true,
+                            ordinal = 1,
+                        ),
+                        JdbcMetadataQuerier.ColumnMetadata(
+                            name = "COL_B",
+                            label = "COL_B",
+                            type = SystemType("VARCHAR", Types.VARCHAR, 100, 0),
+                            nullable = true,
+                            ordinal = 2,
+                        ),
+                    )
                 )
             )
 
         val multiSql = "SELECT \"COL_A\", \"COL_B\" FROM \"PUBLIC\".\"V_PARTIAL\" LIMIT ?"
         val colASql = "SELECT \"COL_A\" FROM \"PUBLIC\".\"V_PARTIAL\" LIMIT ?"
         val colBSql = "SELECT \"COL_B\" FROM \"PUBLIC\".\"V_PARTIAL\" LIMIT ?"
-        `when`(stmt.executeQuery(multiSql)).thenThrow(SQLException("session var missing"))
-        `when`(stmt.executeQuery(colASql)).thenReturn(queryMetadataResultSet("COL_A", "COL_A"))
-        `when`(stmt.executeQuery(colBSql)).thenThrow(SQLException("no privilege"))
+        `when`(stmt.executeQuery(eq(multiSql))).thenThrow(SQLException("session variable error"))
+        `when`(stmt.executeQuery(eq(colASql))).thenReturn(queryMetadataResultSet("COL_A", "COL_A"))
+        `when`(stmt.executeQuery(eq(colBSql))).thenThrow(SQLException("no privilege"))
 
         val streamId =
             StreamIdentifier.from(StreamDescriptor().withNamespace("PUBLIC").withName("V_PARTIAL"))
@@ -158,7 +165,7 @@ class SnowflakeSourceMetadataQuerierTest {
     }
 
     @Test
-    fun `table discovery scales as namespaces times distinct schema variants`() {
+    fun `table discovery scales as namespaces times schema variants`() {
         val dbmd = mock(DatabaseMetaData::class.java)
         val conn = mock(Connection::class.java)
         val config = mock(JdbcSourceConfiguration::class.java)
@@ -168,30 +175,26 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(conn.metaData).thenReturn(dbmd)
         `when`(config.namespaces).thenReturn(setOf("db1", "DB2"))
         `when`(config.checkPrivileges).thenReturn(false)
-        `when`(dbmd.getTables(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.isNull(), ArgumentMatchers.any()))
-            .thenReturn(emptyResultSet())
+        `when`(dbmd.getTables(anyString(), anyString(), eq(null), any())).thenReturn(emptyResultSet())
 
         querier.memoizedTableNames
 
-        // namespacesToTry = [db1, DB2, DB1, DB2] => 3 distinct calls over namespace values due to duplicate DB2
-        // schemasToTry = [myschema, MYSCHEMA] => 2 calls per namespace value in iteration
-        verify(dbmd, times(8)).getTables(
-            ArgumentMatchers.anyString(),
-            ArgumentMatchers.anyString(),
-            ArgumentMatchers.isNull(),
-            ArgumentMatchers.any(),
-        )
+        // namespacesToTry = [db1, DB2, DB1, DB2] and schemasToTry = [myschema, MYSCHEMA]
+        verify(dbmd, times(8)).getTables(anyString(), anyString(), eq(null), any())
     }
 
-    private fun baseQuerier(conn: Connection, config: JdbcSourceConfiguration): JdbcMetadataQuerier =
-        JdbcMetadataQuerier(
+    private fun baseQuerier(conn: Connection, config: JdbcSourceConfiguration): JdbcMetadataQuerier {
+        val jdbcConnectionFactory = mock(JdbcConnectionFactory::class.java)
+        `when`(jdbcConnectionFactory.get()).thenReturn(conn)
+        return JdbcMetadataQuerier(
             constants = DefaultJdbcConstants(namespaceKind = DefaultJdbcConstants.NamespaceKind.CATALOG_AND_SCHEMA),
             config = config,
             selectQueryGenerator = SnowflakeSourceOperations(),
             fieldTypeMapper = SnowflakeSourceOperations(),
             checkQueries = JdbcCheckQueries(),
-            conn = conn,
+            jdbcConnectionFactory = jdbcConnectionFactory,
         )
+    }
 
     private fun emptyResultSet(): ResultSet {
         val rs = mock(ResultSet::class.java)
@@ -201,7 +204,7 @@ class SnowflakeSourceMetadataQuerierTest {
 
     private fun tableResultSet(table: TableName): ResultSet {
         val rs = mock(ResultSet::class.java)
-        `when`(rs.next()).thenReturn(true, false)
+        `when`(rs.next()).thenReturn(true).thenReturn(false)
         `when`(rs.getString("TABLE_CAT")).thenReturn(table.catalog)
         `when`(rs.getString("TABLE_SCHEM")).thenReturn(table.schema)
         `when`(rs.getString("TABLE_NAME")).thenReturn(table.name)
@@ -211,26 +214,47 @@ class SnowflakeSourceMetadataQuerierTest {
 
     private fun columnResultSet(
         table: TableName,
-        vararg columns: JdbcMetadataQuerier.ColumnMetadata,
+        columns: List<JdbcMetadataQuerier.ColumnMetadata>,
     ): ResultSet {
         val rs = mock(ResultSet::class.java)
-        `when`(rs.next()).thenReturn(*((Array(columns.size) { true }) + false))
-        `when`(rs.getString("TABLE_CAT")).thenReturn(*Array(columns.size) { table.catalog })
-        `when`(rs.getString("TABLE_SCHEM")).thenReturn(*Array(columns.size) { table.schema })
-        `when`(rs.getString("TABLE_NAME")).thenReturn(*Array(columns.size) { table.name })
-        `when`(rs.getString("COLUMN_NAME")).thenReturn(*columns.map { it.name }.toTypedArray())
-        `when`(rs.getString("TYPE_NAME")).thenReturn(*columns.map { it.type.typeName }.toTypedArray())
-        `when`(rs.getInt("DATA_TYPE")).thenReturn(*columns.map { it.type.typeCode }.toTypedArray())
-        `when`(rs.getInt("COLUMN_SIZE")).thenReturn(*columns.map { it.type.precision ?: 0 }.toTypedArray())
-        `when`(rs.getInt("DECIMAL_DIGITS")).thenReturn(*columns.map { it.type.scale ?: 0 }.toTypedArray())
+        if (columns.isEmpty()) {
+            `when`(rs.next()).thenReturn(false)
+            return rs
+        }
+
+        val first = columns.first()
+        val second = columns.getOrNull(1)
+
+        `when`(rs.next()).thenReturn(true).thenReturn(second != null).thenReturn(false)
+        `when`(rs.getString("TABLE_CAT")).thenReturn(table.catalog)
+        `when`(rs.getString("TABLE_SCHEM")).thenReturn(table.schema)
+        `when`(rs.getString("TABLE_NAME")).thenReturn(table.name)
+        if (second == null) {
+            `when`(rs.getString("COLUMN_NAME")).thenReturn(first.name)
+            `when`(rs.getString("TYPE_NAME")).thenReturn(first.type.typeName)
+            `when`(rs.getInt("DATA_TYPE")).thenReturn(first.type.typeCode)
+            `when`(rs.getInt("COLUMN_SIZE")).thenReturn(first.type.typeParams?.precision ?: 0)
+            `when`(rs.getInt("DECIMAL_DIGITS")).thenReturn(first.type.typeParams?.scale ?: 0)
+            `when`(rs.getInt("ORDINAL_POSITION")).thenReturn(first.ordinal ?: 1)
+        } else {
+            `when`(rs.getString("COLUMN_NAME")).thenReturn(first.name).thenReturn(second.name)
+            `when`(rs.getString("TYPE_NAME")).thenReturn(first.type.typeName).thenReturn(second.type.typeName)
+            `when`(rs.getInt("DATA_TYPE")).thenReturn(first.type.typeCode).thenReturn(second.type.typeCode)
+            `when`(rs.getInt("COLUMN_SIZE"))
+                .thenReturn(first.type.typeParams?.precision ?: 0)
+                .thenReturn(second.type.typeParams?.precision ?: 0)
+            `when`(rs.getInt("DECIMAL_DIGITS"))
+                .thenReturn(first.type.typeParams?.scale ?: 0)
+                .thenReturn(second.type.typeParams?.scale ?: 0)
+            `when`(rs.getInt("ORDINAL_POSITION")).thenReturn(first.ordinal ?: 1).thenReturn(second.ordinal ?: 2)
+        }
         `when`(rs.getString("IS_NULLABLE")).thenReturn("YES")
-        `when`(rs.getInt("ORDINAL_POSITION")).thenReturn(*columns.map { it.ordinal ?: 1 }.toTypedArray())
         return rs
     }
 
     private fun queryMetadataResultSet(columnName: String, columnLabel: String): ResultSet {
         val rs = mock(ResultSet::class.java)
-        val rsmd = mock(java.sql.ResultSetMetaData::class.java)
+        val rsmd = mock(ResultSetMetaData::class.java)
         `when`(rs.metaData).thenReturn(rsmd)
         `when`(rsmd.columnCount).thenReturn(1)
         `when`(rsmd.getColumnName(1)).thenReturn(columnName)
@@ -239,7 +263,7 @@ class SnowflakeSourceMetadataQuerierTest {
         `when`(rsmd.getColumnType(1)).thenReturn(Types.VARCHAR)
         `when`(rsmd.getPrecision(1)).thenReturn(100)
         `when`(rsmd.getScale(1)).thenReturn(0)
-        `when`(rsmd.isNullable(1)).thenReturn(java.sql.ResultSetMetaData.columnNullable)
+        `when`(rsmd.isNullable(1)).thenReturn(ResultSetMetaData.columnNullable)
         return rs
     }
 }
