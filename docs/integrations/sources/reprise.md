@@ -1,6 +1,16 @@
 # Reprise
 Reprise, an enterprise-grade software platform that allows sales, marketing, and pre-sales teams to build custom, interactive product tours and fully functional cloned software environments
 
+## Prerequisites
+
+Access to the Reprise Data API must be included in your subscription. The connector reads five Tinybird pipes provisioned by Reprise for your workspace - confirm with Reprise support that all five exist before setting up a connection:
+
+- `replay_session_activity` (the only pipe covered by the public [HTML Environment Data API docs](https://reprise.zendesk.com/hc/en-us/articles/18940321925659))
+- `replay_session_summary`
+- `replay_metrics`
+- `replay_change_feed`
+- `replicate_session_activity`
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -26,6 +36,6 @@ Reprise, an enterprise-grade software platform that allows sales, marketing, and
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2026-08-18 | | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
+| 0.0.1 | 2026-08-18 | [84883](https://github.com/airbytehq/airbyte/pull/84883) | Initial release by [@Ella6882](https://github.com/Ella6882) via Connector Builder |
 
 </details>
