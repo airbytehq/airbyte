@@ -70,7 +70,13 @@ def _recording_callback(recorded_timeframes: List[Dict[str, str]]):
 
 def _time_of(timestamp: str) -> time:
     """The time of day a report timestamp carries, whatever offset notation it uses."""
-    return datetime.fromisoformat(timestamp).time()
+    return _parse_iso(timestamp).time()
+
+
+def _parse_iso(timestamp: str) -> datetime:
+    if len(timestamp) >= 5 and timestamp[-5] in {"+", "-"} and timestamp[-2:] != ":":
+        timestamp = f"{timestamp[:-2]}:{timestamp[-2:]}"
+    return datetime.fromisoformat(timestamp)
 
 
 def _days_covered(timeframes: List[Dict[str, str]]) -> List[date]:
@@ -83,8 +89,8 @@ def _days_covered(timeframes: List[Dict[str, str]]) -> List[date]:
     """
     days: List[date] = []
     for timeframe in timeframes:
-        first = datetime.fromisoformat(timeframe["start"]).date()
-        last = datetime.fromisoformat(timeframe["end"]).date()
+        first = _parse_iso(timeframe["start"]).date()
+        last = _parse_iso(timeframe["end"]).date()
         days.extend(first + timedelta(days=offset) for offset in range((last - first).days + 1))
     return days
 
@@ -214,3 +220,27 @@ class TestCampaignValuesReportsRecords(TestCase):
         # The period ran to the end of 2024-06-14, and `date` is the midnight that closes it, so
         # the row says "everything up to, and not including, 2024-06-15".
         assert record["date"] == "2024-06-15T00:00:00+00:00"
+
+    @HttpMocker()
+    def test_daily_quota_retry_after_fails_fast(self, http_mocker: HttpMocker):
+        config = _config()
+        http_mocker.get(KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(), metrics_response([_METRIC_ID]))
+        http_mocker._mocker.post(
+            f"{_BASE_URL}/campaign-values-reports",
+            text=json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
+            status_code=429,
+            headers={"Retry-After": "73473"},
+        )
+
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(get_source(config=config), config=config, catalog=catalog)
+
+        assert output.records == []
+        assert output.errors
+        assert "greater than max waiting time" in output.get_formatted_error_message()
+        report_requests = [
+            request
+            for request in http_mocker._mocker.request_history
+            if request.url.split("?", 1)[0] == f"{_BASE_URL}/campaign-values-reports"
+        ]
+        assert len(report_requests) == 1
