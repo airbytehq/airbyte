@@ -2,7 +2,7 @@
 
 NetSuite is Oracle's cloud business management suite, covering ERP and financials, CRM, and ecommerce.
 
-This connector reads NetSuite record types through [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html). It discovers streams at runtime from the account's record metadata catalog, so the streams you see depend on the record types the connector's role can read.
+This connector reads NetSuite record types through [SuiteTalk REST Web Services](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/chapter_1540391670.html). It discovers streams at runtime from the account's record metadata catalog, so the streams you see depend on the account rather than on a fixed list.
 
 ## Prerequisites
 
