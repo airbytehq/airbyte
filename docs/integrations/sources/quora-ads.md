@@ -24,6 +24,8 @@ Visit https://www.quora.com/ads/api9169a6d6e9b42452d500a61717d87d15d5fa49ec5b530
 | adset_summary | date.adSetId | DefaultPaginator | ✅ |  ✅  |
 | ad_summary | date.adId | DefaultPaginator | ✅ |  ✅  |
 | accounts | accountId | No pagination | ✅ |  ❌  |
+| lead_gen_forms | id | No pagination | ✅ |  ❌  |
+| recent_leads | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 

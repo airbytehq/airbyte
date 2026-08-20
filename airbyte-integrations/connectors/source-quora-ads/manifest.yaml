@@ -15,642 +15,402 @@ check:
     - account
 
 definitions:
-  linked:
-    HttpRequester:
-      error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            max_retries: 4
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                error_message: >-
-                  Quora rate limit reached (2000 requests/hour per OAuth client
-                  per ad account, shared across all reporting endpoints) —
-                  retrying with backoff.
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 60
-          - type: DefaultErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 7
-      authenticator:
-        type: OAuthAuthenticator
-        scopes:
-          - ads_read
-        client_id: "{{ config[\"client_id\"] }}"
-        grant_type: refresh_token
-        client_secret: "{{ config[\"client_secret\"] }}"
-        refresh_token: "{{ config[\"client_refresh_token\"] }}"
-        expires_in_name: expires_in
-        access_token_name: access_token
-        refresh_request_body: {}
-        refresh_token_updater:
-          access_token_config_path:
-            - oauth_access_token
-          refresh_token_config_path:
-            - client_refresh_token
-          token_expiry_date_config_path:
-            - oauth_token_expiry_date
-        token_refresh_endpoint: https://www.quora.com/_/oauth/token
-    SimpleRetriever:
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
+  streams:
+    account:
+      type: DeclarativeStream
+      name: account
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/report_paginator"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{ config["account_id"] }}
+          http_method: GET
+          request_parameters:
+            fields: >-
+              accountId,accountName,accountCurrency,clicks,conversions,conversionRate,costPerLead,formCompletionRate,impressions,leadsGenerated,spend
+            conversionTypes: >-
+              {{ (["Generic"] + (config.get("conversion_types") or [])) | unique
+              | join(",") }}
+            attributionWindows: >-
+              {{ (config.get("attribution_windows") or
+              ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - date
+        - accountId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/account"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ stream_interval.start_time }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1D
+        cursor_field: date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        end_time_option:
           type: RequestOption
-          field_name: offset
+          field_name: endDate
           inject_into: request_parameter
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 25
+        lookback_window: P28D
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_granularity: P1D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    ad_summary:
+      type: DeclarativeStream
+      name: ad_summary
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/report_paginator"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{ config["account_id"] }}
+          http_method: GET
+          request_parameters:
+            level: AD
+            fields: >-
+              accountCurrency,adId,adName,adSetId,adSetName,bidAmount,campaignId,campaignName,clicks,conversions,conversionRate,costPerLead,cpc,ctr,formCompletionRate,impressions,landingURL,leadsGenerated,spend,status
+            conversionTypes: >-
+              {{ (["Generic"] + (config.get("conversion_types") or [])) | unique
+              | join(",") }}
+            attributionWindows: >-
+              {{ (config.get("attribution_windows") or
+              ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - date
+        - adId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ad_summary"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ stream_interval.start_time }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1D
+        cursor_field: date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        lookback_window: P28D
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_granularity: P1D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    adset_summary:
+      type: DeclarativeStream
+      name: adset_summary
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/report_paginator"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{ config["account_id"] }}
+          http_method: GET
+          request_parameters:
+            level: AD_SET
+            fields: >-
+              accountCurrency,adSetId,adSetName,bidAmount,campaignId,campaignName,clicks,conversions,conversionRate,costPerLead,cpc,ctr,formCompletionRate,impressions,leadsGenerated,spend,status
+            conversionTypes: >-
+              {{ (["Generic"] + (config.get("conversion_types") or [])) | unique
+              | join(",") }}
+            attributionWindows: >-
+              {{ (config.get("attribution_windows") or
+              ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - date
+        - adSetId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/adset_summary"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ stream_interval.start_time }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1D
+        cursor_field: date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        lookback_window: P28D
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_granularity: P1D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    campaign_summary:
+      type: DeclarativeStream
+      name: campaign_summary
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/report_paginator"
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/{{ config["account_id"] }}
+          http_method: GET
+          request_parameters:
+            level: CAMPAIGN
+            fields: >-
+              accountCurrency,campaignId,campaignName,clicks,conversions,conversionRate,costPerLead,cpc,ctr,dailyBudget,formCompletionRate,impressions,leadsGenerated,lifetimeBudget,spend,status
+            conversionTypes: >-
+              {{ (["Generic"] + (config.get("conversion_types") or [])) | unique
+              | join(",") }}
+            attributionWindows: >-
+              {{ (config.get("attribution_windows") or
+              ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - date
+        - campaignId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_summary"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ stream_interval.start_time }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        step: P1D
+        cursor_field: date
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
+        end_time_option:
+          type: RequestOption
+          field_name: endDate
+          inject_into: request_parameter
+        lookback_window: P28D
+        start_time_option:
+          type: RequestOption
+          field_name: startDate
+          inject_into: request_parameter
+        cursor_granularity: P1D
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - accountId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    lead_gen_forms:
+      type: DeclarativeStream
+      name: lead_gen_forms
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account/{{ config["account_id"] }}/lead-gen-forms
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_gen_forms"
+    recent_leads:
+      type: DeclarativeStream
+      name: recent_leads
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /account/{{ config["account_id"] }}/recent-leads
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: form_id
+              stream:
+                $ref: "#/definitions/streams/lead_gen_forms"
+              request_option:
+                type: RequestOption
+                field_name: form_id
+                inject_into: request_parameter
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/recent_leads"
+  report_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_name: offset
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 25
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.quora.com/ads/v0
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          max_retries: 4
+          response_filters:
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 429
+              error_message: >-
+                Quora rate limit reached (2000 requests/hour per OAuth client
+                per ad account, shared across all reporting endpoints) —
+                retrying with backoff.
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 60
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 7
+    authenticator:
+      type: OAuthAuthenticator
+      scopes:
+        - ads_read
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      expires_in_name: expires_in
+      access_token_name: access_token
+      refresh_request_body: {}
+      refresh_token_updater:
+        access_token_config_path:
+          - oauth_access_token
+        refresh_token_config_path:
+          - client_refresh_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+      token_refresh_endpoint: https://www.quora.com/_/oauth/token
 
 streams:
-  - type: DeclarativeStream
-    name: account
-    retriever:
-      type: SimpleRetriever
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        http_method: GET
-        request_parameters:
-          fields: >-
-            accountId,accountName,accountCurrency,clicks,conversions,conversionRate,costPerLead,formCompletionRate,impressions,leadsGenerated,spend
-          conversionTypes: >-
-            {{ (["Generic"] + (config.get("conversion_types") or [])) | unique |
-            join(",") }}
-          attributionWindows: >-
-            {{ (config.get("attribution_windows") or
-            ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
-        url: https://api.quora.com/ads/v0/accounts/{{ config["account_id"] }}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-    primary_key:
-      - date
-      - accountId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        properties:
-          clicks:
-            type:
-              - number
-              - "null"
-          impressions:
-            type:
-              - number
-              - "null"
-          leadsGenerated:
-            type:
-              - number
-              - "null"
-          spend:
-            type:
-              - number
-              - "null"
-          accountId:
-            type: number
-          accountName:
-            type:
-              - string
-              - "null"
-          accountCurrency:
-            type:
-              - string
-              - "null"
-          conversions:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          conversionRate:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          date:
-            type: string
-        required:
-          - date
-          - accountId
-        additionalProperties: true
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - date
-            value: "{{ stream_interval.start_time }}"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      step: P1D
-      cursor_field: date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config[\"start_date\"] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%d"
-      end_time_option:
-        type: RequestOption
-        field_name: endDate
-        inject_into: request_parameter
-      lookback_window: P28D
-      start_time_option:
-        type: RequestOption
-        field_name: startDate
-        inject_into: request_parameter
-      cursor_granularity: P1D
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-  - type: DeclarativeStream
-    name: campaign_summary
-    retriever:
-      type: SimpleRetriever
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        http_method: GET
-        request_parameters:
-          level: CAMPAIGN
-          fields: >-
-            accountCurrency,campaignId,campaignName,clicks,conversions,conversionRate,costPerLead,cpc,ctr,dailyBudget,formCompletionRate,impressions,leadsGenerated,lifetimeBudget,spend,status
-          conversionTypes: >-
-            {{ (["Generic"] + (config.get("conversion_types") or [])) | unique |
-            join(",") }}
-          attributionWindows: >-
-            {{ (config.get("attribution_windows") or
-            ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
-        url: https://api.quora.com/ads/v0/accounts/{{ config["account_id"] }}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-    primary_key:
-      - date
-      - campaignId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        properties:
-          clicks:
-            type:
-              - number
-              - "null"
-          cpc:
-            type:
-              - number
-              - "null"
-          ctr:
-            type:
-              - number
-              - "null"
-          impressions:
-            type:
-              - number
-              - "null"
-          leadsGenerated:
-            type:
-              - number
-              - "null"
-          spend:
-            type:
-              - number
-              - "null"
-          accountCurrency:
-            type:
-              - string
-              - "null"
-          campaignId:
-            type: number
-          campaignName:
-            type:
-              - string
-              - "null"
-          dailyBudget:
-            type:
-              - number
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          conversions:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          conversionRate:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          date:
-            type: string
-        required:
-          - date
-          - campaignId
-        additionalProperties: true
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - date
-            value: "{{ stream_interval.start_time }}"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      step: P1D
-      cursor_field: date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config[\"start_date\"] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%d"
-      end_time_option:
-        type: RequestOption
-        field_name: endDate
-        inject_into: request_parameter
-      lookback_window: P28D
-      start_time_option:
-        type: RequestOption
-        field_name: startDate
-        inject_into: request_parameter
-      cursor_granularity: P1D
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-  - type: DeclarativeStream
-    name: adset_summary
-    retriever:
-      type: SimpleRetriever
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        http_method: GET
-        request_parameters:
-          level: AD_SET
-          fields: >-
-            accountCurrency,adSetId,adSetName,bidAmount,campaignId,campaignName,clicks,conversions,conversionRate,costPerLead,cpc,ctr,formCompletionRate,impressions,leadsGenerated,spend,status
-          conversionTypes: >-
-            {{ (["Generic"] + (config.get("conversion_types") or [])) | unique |
-            join(",") }}
-          attributionWindows: >-
-            {{ (config.get("attribution_windows") or
-            ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
-        url: https://api.quora.com/ads/v0/accounts/{{ config["account_id"] }}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-    primary_key:
-      - date
-      - adSetId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        properties:
-          clicks:
-            type:
-              - number
-              - "null"
-          cpc:
-            type:
-              - number
-              - "null"
-          ctr:
-            type:
-              - number
-              - "null"
-          impressions:
-            type:
-              - number
-              - "null"
-          leadsGenerated:
-            type:
-              - number
-              - "null"
-          spend:
-            type:
-              - number
-              - "null"
-          accountCurrency:
-            type:
-              - string
-              - "null"
-          adSetId:
-            type: number
-          adSetName:
-            type:
-              - string
-              - "null"
-          bidAmount:
-            type:
-              - number
-              - "null"
-          campaignId:
-            type:
-              - number
-              - "null"
-          campaignName:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          conversions:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          conversionRate:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          date:
-            type: string
-        required:
-          - date
-          - adSetId
-        additionalProperties: true
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - date
-            value: "{{ stream_interval.start_time }}"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      step: P1D
-      cursor_field: date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config[\"start_date\"] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%d"
-      end_time_option:
-        type: RequestOption
-        field_name: endDate
-        inject_into: request_parameter
-      lookback_window: P28D
-      start_time_option:
-        type: RequestOption
-        field_name: startDate
-        inject_into: request_parameter
-      cursor_granularity: P1D
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-  - type: DeclarativeStream
-    name: ad_summary
-    retriever:
-      type: SimpleRetriever
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        http_method: GET
-        request_parameters:
-          level: AD
-          fields: >-
-            accountCurrency,adId,adName,adSetId,adSetName,bidAmount,campaignId,campaignName,clicks,conversions,conversionRate,costPerLead,cpc,ctr,formCompletionRate,impressions,landingURL,leadsGenerated,spend,status
-          conversionTypes: >-
-            {{ (["Generic"] + (config.get("conversion_types") or [])) | unique |
-            join(",") }}
-          attributionWindows: >-
-            {{ (config.get("attribution_windows") or
-            ["CLICK_28_DAY","VIEW_1_DAY"]) | join(",") }}
-        url: https://api.quora.com/ads/v0/accounts/{{ config["account_id"] }}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-    primary_key:
-      - date
-      - adId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        properties:
-          clicks:
-            type:
-              - number
-              - "null"
-          impressions:
-            type:
-              - number
-              - "null"
-          leadsGenerated:
-            type:
-              - number
-              - "null"
-          spend:
-            type:
-              - number
-              - "null"
-          accountCurrency:
-            type:
-              - string
-              - "null"
-          adId:
-            type: number
-          adName:
-            type:
-              - string
-              - "null"
-          adSetId:
-            type:
-              - number
-              - "null"
-          adSetName:
-            type:
-              - string
-              - "null"
-          bidAmount:
-            type:
-              - number
-              - "null"
-          campaignId:
-            type:
-              - number
-              - "null"
-          campaignName:
-            type:
-              - string
-              - "null"
-          landingURL:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          conversions:
-            type:
-              - object
-              - "null"
-            properties:
-              Generic:
-                type:
-                  - number
-                  - "null"
-          conversionRate:
-            type:
-              - object
-              - "null"
-            properties: {}
-          date:
-            type: string
-        required:
-          - date
-          - adId
-        additionalProperties: true
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - date
-            value: "{{ stream_interval.start_time }}"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      step: P1D
-      cursor_field: date
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ config[\"start_date\"] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%d"
-      end_time_option:
-        type: RequestOption
-        field_name: endDate
-        inject_into: request_parameter
-      lookback_window: P28D
-      start_time_option:
-        type: RequestOption
-        field_name: startDate
-        inject_into: request_parameter
-      cursor_granularity: P1D
-      cursor_datetime_formats:
-        - "%Y-%m-%d"
-  - type: DeclarativeStream
-    name: accounts
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        error_handler:
-          $ref: "#/definitions/linked/HttpRequester/error_handler"
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        http_method: GET
-        url: https://api.quora.com/ads/v0/accounts/
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-    primary_key:
-      - accountId
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        properties:
-          accountId:
-            type: number
-          accountName:
-            type:
-              - string
-              - "null"
-        required:
-          - accountId
-        additionalProperties: true
+  - $ref: "#/definitions/streams/account"
+  - $ref: "#/definitions/streams/campaign_summary"
+  - $ref: "#/definitions/streams/adset_summary"
+  - $ref: "#/definitions/streams/ad_summary"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/lead_gen_forms"
+  - $ref: "#/definitions/streams/recent_leads"
 
 spec:
   type: Spec
@@ -770,32 +530,34 @@ spec:
           "{{ redirect_uri_key }}": "{{ redirect_uri_value }}"
           grant_type: authorization_code
         extract_output:
-          - access_token
           - refresh_token
+          - access_token
         state:
           min: 32
           max: 44
       complete_oauth_output_specification:
-        required:
-          - refresh_token
+        type: object
+        additionalProperties: false
         properties:
           refresh_token:
             type: string
             path_in_connector_config:
               - client_refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - oauth_access_token
       complete_oauth_server_input_specification:
-        required:
-          - client_id
-          - client_secret
+        type: object
+        additionalProperties: false
         properties:
           client_id:
             type: string
           client_secret:
             type: string
       complete_oauth_server_output_specification:
-        required:
-          - client_id
-          - client_secret
+        type: object
+        additionalProperties: false
         properties:
           client_id:
             type: string
@@ -811,59 +573,538 @@ metadata:
   testedStreams:
     account:
       hasRecords: true
-      streamHash: 98e39a7769b65f5fb35c061cb7363d4e443d72e1
+      streamHash: 1924dfc750e31c99b7493d92e9d77ebed7062abb
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: false
     ad_summary:
       hasRecords: true
-      streamHash: 0466b18231c1941403127966870610d01c70bbe0
+      streamHash: d8d66cf8694c31574da81b6985d7c9084cbac5fc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: true
     adset_summary:
       hasRecords: true
-      streamHash: 4a1e81c1c680e167a4189747dc6a829968f54e46
+      streamHash: a2a8e045f9c5c24e776bdfda1d8111bc69f8e2ab
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: false
     campaign_summary:
       hasRecords: true
-      streamHash: 64a2f320b1056d293d804be1c843c75ed6249ccc
+      streamHash: 8086b7f7519d4f511e69db396a341d28f9ccadb3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: false
-    accounts:
-      streamHash: 611aed967e2ed72c7eef3541bc7f56a83827c5a0
-      isStale: false
-      hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
-      primaryKeysAreUnique: true
   autoImportSchema:
-    account: true
-    ad_summary: true
-    adset_summary: true
-    campaign_summary: true
-    accounts: true
-  applied_migrations:
-    - from_version: 7.0.4
-      to_version: "*"
-      migration: HttpRequesterUrlBaseToUrl
-      migrated_at: "2026-08-20T03:54:46.117776+00:00"
-    - from_version: 7.0.4
-      to_version: "*"
-      migration: HttpRequesterPathToUrl
-      migrated_at: "2026-08-20T03:54:46.118943+00:00"
+    account: false
+    accounts: false
+    ad_summary: false
+    adset_summary: false
+    campaign_summary: false
+    lead_gen_forms: false
+    recent_leads: false
+
+schemas:
+  account:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountCurrency:
+        type:
+          - string
+          - "null"
+      accountId:
+        type: number
+      accountName:
+        type:
+          - string
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      conversionRate:
+        type:
+          - object
+          - "null"
+        description: Conversion rate keyed by conversion type, same keys as `conversions`.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      conversions:
+        type:
+          - object
+          - "null"
+        description: >-
+          Conversion counts keyed by conversion type. Keys are whichever values
+          are selected in `conversion_types` — Quora returns `Generic` only
+          unless others are requested.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      costPerLead:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+        format: date
+      formCompletionRate:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      leadsGenerated:
+        type:
+          - number
+          - "null"
+      spend:
+        type:
+          - number
+          - "null"
+    required:
+      - date
+      - accountId
+  accounts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountId:
+        type: number
+      accountName:
+        type:
+          - string
+          - "null"
+    required:
+      - accountId
+  ad_summary:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountCurrency:
+        type:
+          - string
+          - "null"
+      adId:
+        type: number
+      adName:
+        type:
+          - string
+          - "null"
+      adSetId:
+        type:
+          - number
+          - "null"
+      adSetName:
+        type:
+          - string
+          - "null"
+      bidAmount:
+        type:
+          - number
+          - "null"
+      campaignId:
+        type:
+          - number
+          - "null"
+      campaignName:
+        type:
+          - string
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      conversionRate:
+        type:
+          - object
+          - "null"
+        description: Conversion rate keyed by conversion type, same keys as `conversions`.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      conversions:
+        type:
+          - object
+          - "null"
+        description: >-
+          Conversion counts keyed by conversion type. Keys are whichever values
+          are selected in `conversion_types` — Quora returns `Generic` only
+          unless others are requested.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      costPerLead:
+        type:
+          - number
+          - "null"
+      cpc:
+        type:
+          - number
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+        format: date
+      formCompletionRate:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      landingURL:
+        type:
+          - string
+          - "null"
+      leadsGenerated:
+        type:
+          - number
+          - "null"
+      spend:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - date
+      - adId
+  adset_summary:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountCurrency:
+        type:
+          - string
+          - "null"
+      adSetId:
+        type: number
+      adSetName:
+        type:
+          - string
+          - "null"
+      bidAmount:
+        type:
+          - number
+          - "null"
+      campaignId:
+        type:
+          - number
+          - "null"
+      campaignName:
+        type:
+          - string
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      conversionRate:
+        type:
+          - object
+          - "null"
+        description: Conversion rate keyed by conversion type, same keys as `conversions`.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      conversions:
+        type:
+          - object
+          - "null"
+        description: >-
+          Conversion counts keyed by conversion type. Keys are whichever values
+          are selected in `conversion_types` — Quora returns `Generic` only
+          unless others are requested.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      costPerLead:
+        type:
+          - number
+          - "null"
+      cpc:
+        type:
+          - number
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+        format: date
+      formCompletionRate:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      leadsGenerated:
+        type:
+          - number
+          - "null"
+      spend:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - date
+      - adSetId
+  campaign_summary:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accountCurrency:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type: number
+      campaignName:
+        type:
+          - string
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      conversionRate:
+        type:
+          - object
+          - "null"
+        description: Conversion rate keyed by conversion type, same keys as `conversions`.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      conversions:
+        type:
+          - object
+          - "null"
+        description: >-
+          Conversion counts keyed by conversion type. Keys are whichever values
+          are selected in `conversion_types` — Quora returns `Generic` only
+          unless others are requested.
+        additionalProperties:
+          type:
+            - number
+            - "null"
+        properties:
+          Generic:
+            type:
+              - number
+              - "null"
+      costPerLead:
+        type:
+          - number
+          - "null"
+      cpc:
+        type:
+          - number
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      dailyBudget:
+        type:
+          - number
+          - "null"
+      date:
+        type: string
+        format: date
+      formCompletionRate:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      leadsGenerated:
+        type:
+          - number
+          - "null"
+      lifetimeBudget:
+        type:
+          - number
+          - "null"
+      spend:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - date
+      - campaignId
+  lead_gen_forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  recent_leads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      ad_id:
+        type:
+          - number
+          - "null"
+      creation_time:
+        type:
+          - number
+          - "null"
+        description: >-
+          Lead creation time in MICROseconds since the Unix epoch (16 digits) —
+          divide by 1e6 before casting to a timestamp downstream.
+      field_data:
+        type:
+          - object
+          - "null"
+        description: >-
+          PII. Lead-submitted contact details; exact keys depend on how the lead
+          gen form was configured, so treat this as an open map rather than a
+          fixed shape.
+        additionalProperties: true
+        properties:
+          business_email:
+            type:
+              - string
+              - "null"
+          city:
+            type:
+              - string
+              - "null"
+          company_name:
+            type:
+              - string
+              - "null"
+          company_size:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          first_name:
+            type:
+              - string
+              - "null"
+          job_title:
+            type:
+              - string
+              - "null"
+          last_name:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          user_email:
+            type:
+              - string
+              - "null"
+          zipcode:
+            type:
+              - string
+              - "null"
+      form_id:
+        type:
+          - number
+          - "null"
+      form_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+    required:
+      - id
 
 concurrency_level:
   type: ConcurrencyLevel
