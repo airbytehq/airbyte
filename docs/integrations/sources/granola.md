@@ -8,36 +8,34 @@ This page contains the setup guide and reference information for the [Granola](h
 
 ## Prerequisites
 
-You need one of the following API keys:
+You need a Granola API key from a workspace on a **Business** or **Enterprise** plan. Granola offers two kinds of keys:
 
-- **Personal API key (Beta)**: available to any workspace member on a **Business** or **Enterprise** plan. On Enterprise plans, a workspace administrator must enable user-scoped API key creation in **Settings > Workspace > General**.
-- **Enterprise API key**: available to workspace administrators on an **Enterprise** plan.
+- **Personal API key**: any workspace member can create one. The key belongs to that member and inherits their access.
+- **Workspace API key**: only workspace administrators can create one. The key belongs to the workspace, doesn't expire, and keeps working after the person who created it leaves.
 
-The API endpoints and connector behavior are the same for both key types. The difference is the scope of data each key can access. See [Data access by key type](#data-access-by-key-type) for details.
+The API endpoints and connector behavior are the same for both. The difference is which notes the key can read. See [Data access by key type](#data-access-by-key-type) for details.
 
 ## Setup guide
 
 ### Generate an API key
 
-Granola supports two API key types. Choose the one that matches your plan and access needs.
-
-#### Personal API key (Beta)
+#### Personal API key
 
 1. Open the Granola desktop app.
 2. Go to **Settings > Connectors > API keys > Create new key**.
-3. Select **Personal API key** and click **Generate API Key**.
-4. Copy the generated API key and store it securely.
+3. Select the note access scopes the key includes: **Personal notes**, **Public notes**, or both.
+4. Click **Generate API Key**.
+5. Copy the generated API key and store it securely.
 
 :::note
-On Enterprise plans, a workspace administrator must enable Personal API key creation with the **Allow user-scoped API keys** toggle in **Settings > Workspace > General** before members can create Personal API keys.
+On Enterprise plans, a workspace administrator controls which scopes members can use in **Settings > Workspace > General > API access for members**. If a scope is disabled there, members can't create keys with it, and the connector can't read the notes that scope covers.
 :::
 
-#### Enterprise API key
+#### Workspace API key
 
-1. Log in to your Granola workspace as an administrator.
-2. Go to **Settings > Connectors > API keys > Create new key**.
-3. Select **Enterprise API key** and click **Generate API Key**.
-4. Copy the generated API key and store it securely.
+1. Open the Granola desktop app as a workspace administrator.
+2. Go to **Settings > Connectors > Workspace API keys > Create new key**.
+3. Copy the generated API key and store it securely.
 
 ### Set up the Granola connector in Airbyte
 
@@ -70,7 +68,7 @@ The Granola source connector supports the following streams:
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows. The connector uses the `created_after` and `created_before` query parameters for these windows.
+For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows. The connector uses the `created_after` and `created_before` query parameters for these windows. Because the cursor is the creation date, edits to an existing note aren't picked up by later incremental syncs. Run a full refresh if you need to capture changes to notes you already synced.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 
@@ -82,18 +80,22 @@ The connector always requests transcript data for this stream. Syncing `detailed
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
+Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. The connector doesn't fall back to Granola's paged transcript endpoint, so those notes fail to sync in this stream. Long recordings, such as multi-hour meetings, are the most likely to hit this limit.
+
 ### Data access by key type
 
-The set of notes returned by the API depends on the type of API key you use:
+The set of notes the connector can read depends on the key you configure:
 
 | Key type | Data scope |
 | :--- | :--- |
-| **Personal API key** | Notes you own, notes shared with you, and notes in private folders shared with you. For more information, refer to the [Granola Personal API documentation](https://docs.granola.ai/help-center/sharing/integrations/personal-api). |
-| **Enterprise API key** | All notes in the Team space that workspace members can read. Private notes and private folders are excluded. For more information, refer to the [Granola Enterprise API documentation](https://docs.granola.ai/help-center/sharing/integrations/enterprise-api). |
+| **Personal API key** | The scopes selected when the key was created. **Personal notes** covers notes you own, notes shared directly with you, and notes in private folders shared with you. **Public notes** covers notes visible to everyone in the workspace, such as notes in the Team space. |
+| **Workspace API key** | Public notes in the workspace, plus notes in spaces where an administrator turned on **Allow Granola API access**. Private notes and folders that weren't shared this way are excluded. |
+
+Notes in Granola are private by default, so a key with only **Public notes** access returns nothing until notes are placed in a folder that everyone in the workspace can see. If a sync returns no records, check the key's scopes first. For more information, refer to the [Granola API documentation](https://docs.granola.ai/help-center/sharing/integrations/granola-api).
 
 ## Performance considerations
 
-The Granola API enforces rate limits. For Enterprise API keys, limits are applied per workspace. For Personal API keys, limits are applied per user.
+The Granola API enforces rate limits. Depending on the key's access scope, limits apply per user or per workspace.
 
 | Metric | Value |
 | :--- | :--- |
@@ -101,7 +103,7 @@ The Granola API enforces rate limits. For Enterprise API keys, limits are applie
 | Time window | 5 seconds |
 | Sustained rate | 5 requests per second (300/minute) |
 
-The connector uses the API's burst limit to manage request volume and retries requests when a `429 Too Many Requests` response is received.
+The connector throttles itself to the documented burst limit of 25 requests per 5 seconds. If Granola still returns `429 Too Many Requests`, or a `5xx` server error, the connector retries the request up to 5 times. It waits for the interval in the `Retry-After` response header when Granola sends one, up to 60 seconds, and otherwise backs off exponentially.
 
 ## IP allow list
 
@@ -115,7 +117,7 @@ For programmatic configuration, use these parameter names:
 
 | Field | Required | Description |
 | :--- | :---: | :--- |
-| `api_key` | Yes | Granola API key. Use a Personal API key for your own notes or an Enterprise API key for workspace Team space notes. |
+| `api_key` | Yes | Granola API key. Use a personal API key for notes your own account can read, or a workspace API key for the workspace's shared notes. |
 | `start_date` | No | Earliest note creation date to replicate, in `YYYY-MM-DD` format. Defaults to two years before the sync runs. |
 
 ## Changelog
@@ -125,6 +127,10 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.2.13 | 2026-08-18 | [84623](https://github.com/airbytehq/airbyte/pull/84623) | Update dependencies |
+| 0.2.12 | 2026-08-12 | [84278](https://github.com/airbytehq/airbyte/pull/84278) | Retry rate-limited and server-error responses with backoff honoring Retry-After |
+| 0.2.11 | 2026-08-11 | [83964](https://github.com/airbytehq/airbyte/pull/83964) | Update dependencies |
+| 0.2.10 | 2026-08-04 | [83481](https://github.com/airbytehq/airbyte/pull/83481) | Update dependencies |
 | 0.2.9 | 2026-07-28 | [82970](https://github.com/airbytehq/airbyte/pull/82970) | Update dependencies |
 | 0.2.8 | 2026-07-21 | [82437](https://github.com/airbytehq/airbyte/pull/82437) | Update dependencies |
 | 0.2.7 | 2026-07-14 | [81869](https://github.com/airbytehq/airbyte/pull/81869) | Update dependencies |
