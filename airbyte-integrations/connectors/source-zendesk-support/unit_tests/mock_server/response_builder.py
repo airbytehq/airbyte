@@ -241,10 +241,23 @@ class TicketMetricsRecordBuilder(ZendeskSupportRecordBuilder):
 class TicketsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def tickets_record(cls) -> "TicketsRecordBuilder":
-        record_template = cls.extract_record("tickets", __file__, NestedPath(["results", 0]))
-        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+        record_template = cls.extract_record("tickets", __file__, NestedPath(["tickets", 0]))
+        # The tickets stream reads the Incremental Ticket Export endpoint and cursors on
+        # `generated_timestamp`, so `with_cursor` must write that field (not `updated_at`).
+        return cls(record_template, FieldPath("id"), FieldPath("generated_timestamp"))
 
     def with_id(self, id: int) -> "TicketsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
+class TicketsSearchRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def tickets_search_record(cls) -> "TicketsSearchRecordBuilder":
+        record_template = cls.extract_record("tickets_search", __file__, NestedPath(["results", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("updated_at"))
+
+    def with_id(self, id: int) -> "TicketsSearchRecordBuilder":
         self._record["id"] = id
         return self
 
@@ -559,9 +572,19 @@ class TicketMetricsResponseBuilder(HttpResponseBuilder):
 
 class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def tickets_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsResponseBuilder":
+    def tickets_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketsResponseBuilder":
         return cls(
             find_template("tickets", __file__),
+            FieldPath("tickets"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
+class TicketsSearchResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def tickets_search_response(cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None) -> "TicketsSearchResponseBuilder":
+        return cls(
+            find_template("tickets_search", __file__),
             FieldPath("results"),
             CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
@@ -1045,6 +1068,17 @@ class TicketMetricEventsRecordBuilder(ZendeskSupportRecordBuilder):
         return self
 
 
+class TicketEventsRecordBuilder(ZendeskSupportRecordBuilder):
+    @classmethod
+    def ticket_events_record(cls) -> "TicketEventsRecordBuilder":
+        record_template = cls.extract_record("ticket_events", __file__, NestedPath(["ticket_events", 0]))
+        return cls(record_template, FieldPath("id"), FieldPath("timestamp"))
+
+    def with_id(self, id: int) -> "TicketEventsRecordBuilder":
+        self._record["id"] = id
+        return self
+
+
 class TicketSkipsRecordBuilder(ZendeskSupportRecordBuilder):
     @classmethod
     def ticket_skips_record(cls) -> "TicketSkipsRecordBuilder":
@@ -1203,6 +1237,16 @@ class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
         return cls(
             find_template("ticket_metric_events", __file__),
             FieldPath("ticket_metric_events"),
+            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+        )
+
+
+class TicketEventsResponseBuilder(HttpResponseBuilder):
+    @classmethod
+    def ticket_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketEventsResponseBuilder":
+        return cls(
+            find_template("ticket_events", __file__),
+            FieldPath("ticket_events"),
             EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
         )
 

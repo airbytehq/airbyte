@@ -178,6 +178,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                   |
 |:-----------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 2.2.20     | 2026-07-10 | [81536](https://github.com/airbytehq/airbyte/pull/81536)   | Add connectorIPCOptions to enable speed mode                                                                              |
 | 2.2.19     | 2026-06-30 | [80269](https://github.com/airbytehq/airbyte/pull/80269)   | Extract shared value coercion into MSSQLValueCoercer; enable acceptance tests                                             |
 | 2.2.18     | 2026-06-09 | [79602](https://github.com/airbytehq/airbyte/pull/79602)   | Fix bulk load — schema-qualified staging tables, always serialize booleans as 0/1                                         |
 | 2.2.17     | 2026-06-08 | [79154](https://github.com/airbytehq/airbyte/pull/79154)   | Nullify timestamp-without-timezone values before 1753-01-01 instead of failing the sync                                   |

@@ -51,6 +51,6 @@ data:
     - language:manifest-only
   externalDocumentationUrls:
     - title: Goldcast API documentation
-      url: https://www.goldcast.io/api-docs
+      url: https://apidocs.goldcast.io/
       type: api_reference
 metadataSpecVersion: "1.0"

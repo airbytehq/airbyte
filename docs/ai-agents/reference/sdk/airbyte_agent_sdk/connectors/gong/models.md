@@ -2539,7 +2539,7 @@ Classes
 
     ### Class variables
 
-    `access_token: str | None`
+    `access_token: str`
     :   Your Gong OAuth2 Access Token.
 
     `client_id: str | None`
