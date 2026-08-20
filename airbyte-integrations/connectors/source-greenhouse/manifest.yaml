@@ -1651,13 +1651,13 @@ concurrency_level:
 
 api_budget:
   type: HTTPAPIBudget
-  ratelimit_reset_header: X-RateLimit-Reset
   ratelimit_remaining_header: X-RateLimit-Remaining
   status_codes_for_ratelimit_hit: [429]
   policies:
-    - type: FixedWindowCallRatePolicy
-      period: PT30S
-      call_limit: 50
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT30S
       matchers: []
 
 spec:
