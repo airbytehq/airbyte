@@ -17,9 +17,11 @@ To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code 
 7. If your deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**:
    1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=<space-separated scopes>` in a browser and approve the request.
    2. Within 1 minute (the authorization code TTL), exchange the `code` query parameter:
+
       ```bash
       curl -X POST 'https://auth.greenhouse.io/token?grant_type=authorization_code&code=<code>&redirect_uri=<registered_redirect_uri>' -u '<client_id>:<client_secret>' --data ''
       ```
+
    3. Copy `refresh_token` from the response into the **Refresh token** field.
 8. Click **Set up source**.
 
