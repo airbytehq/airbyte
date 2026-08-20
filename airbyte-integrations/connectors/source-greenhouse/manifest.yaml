@@ -1977,6 +1977,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_fields:
         type:
         - 'null'
@@ -2005,6 +2006,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       location_address:
         description: Free-form location string captured on the application (typically from the job post's location question).
         type:
@@ -2044,6 +2046,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       source_id:
         description: Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
         type:
@@ -2068,6 +2071,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   applications_demographics_answers:
     type:
     - 'null'
@@ -2084,6 +2088,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       demographic_answer_option_id:
         description: Id of the `demographic_answer_option` the applicant selected. `null` when the applicant skipped the question, when the question is multi-select and this row carries only the free-form text, or when the option has since been hard-deleted. For multi-select questions one row is returned per chosen option.
         type:
@@ -2107,6 +2112,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   applications_interviews:
     type:
     - 'null'
@@ -2119,11 +2125,13 @@ schemas:
         type:
         - 'null'
         - string
+        format: date
       all_day_start_on:
         description: Start date of an all-day interview, in `YYYY-MM-DD`. Set instead of `starts_at`/`ends_at` when the underlying calendar event is an all-day event. `null` for time-bounded interviews.
         type:
         - 'null'
         - string
+        format: date
       application_id:
         description: Id of the application this interview is scheduled against. Use it to look up the candidate.
         type:
@@ -2134,15 +2142,18 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       created_at:
         type:
         - 'null'
         - string
+        format: date-time
       ends_at:
         description: "Interview end time, in ISO 8601. `null` when `starts_at` is also `null`, and for all-day events \u2014 see `all_day_end_on`."
         type:
         - 'null'
         - string
+        format: date-time
       external_event_id:
         description: Id of the calendar event on the organizer's calendar (Google Calendar event id, Outlook event id, etc.). Use this to correlate an interview with the event on the external calendar. `null` for interviews not yet pushed to an external calendar.
         type:
@@ -2177,11 +2188,13 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       starts_at:
         description: "Interview start time, in ISO 8601. `null` for interviews that have not yet been scheduled (for example, assigned take-home tests or interviews awaiting candidate availability) and for all-day events \u2014 see `all_day_start_on`."
         type:
         - 'null'
         - string
+        format: date-time
       status:
         description: Lifecycle status of the interview. `to_be_scheduled` is the pre-schedule placeholder; `scheduled` is on the calendar; `awaiting_feedback` is past with scorecards outstanding; `complete` is past with all scorecards in; `collect_feedback` and `skipped` are alternative terminal states; `to_be_sent`, `sent`, and `received` are used for take-home tests sent through Greenhouse.
         type:
@@ -2191,6 +2204,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       video_conferencing_url:
         description: Join URL for the interview's video conference, auto-populated by Greenhouse's Zoom, Google Meet, or Microsoft Teams integrations when one is attached during scheduling. `null` when no video conferencing was added.
         type:
@@ -2235,6 +2249,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_fields:
         type:
         - 'null'
@@ -2270,6 +2285,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       last_name:
         type:
         - 'null'
@@ -2348,6 +2364,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       website_addresses:
         description: Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
         type:
@@ -2377,6 +2394,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -2390,6 +2408,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   custom_fields:
     type:
     - 'null'
@@ -2416,6 +2435,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       default_value:
         description: Default value applied when a new parent record is created without an explicit value for this field. Shape varies by `value_type` (string for text/url, number for currency/number, option id for single_select, ISO 8601 for date).
         type:
@@ -2494,6 +2514,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       updated_by_id:
         description: Id of the Greenhouse user who last edited the field definition, or `null` if no edit has been recorded.
         type:
@@ -2530,6 +2551,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_field_id:
         description: Id of the parent custom field this option belongs to. Only fields with `value_type` of `single_select` or `multi_select` carry options.
         type:
@@ -2558,6 +2580,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   demographics_answers:
     type:
     - 'null'
@@ -2574,6 +2597,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       demographic_answer_option_id:
         description: Id of the `demographic_answer_option` the applicant selected. `null` when the applicant skipped the question, when the question is multi-select and this row carries only the free-form text, or when the option has since been hard-deleted. For multi-select questions one row is returned per chosen option.
         type:
@@ -2597,6 +2621,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   demographics_answer_options:
     type:
     - 'null'
@@ -2613,6 +2638,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       decline_to_answer:
         description: '`true` when this option represents a structured `I don''t wish to answer` choice; prefer this flag over matching on `name` when classifying declines. `null` on custom-organization options where the flag was never set; treat `null` as not a decline.'
         type:
@@ -2646,6 +2672,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   demographics_questions:
     type:
     - 'null'
@@ -2667,6 +2694,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       demographic_question_set_id:
         description: Id of the `demographic_question_set` this question belongs to. A set is what gets attached to a job post or candidate survey; questions are scoped to one set and never shared across sets. `null` for legacy questions not yet associated with a set.
         type:
@@ -2695,6 +2723,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   demographics_answers_answer_options:
     type:
     - 'null'
@@ -2711,6 +2740,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       decline_to_answer:
         description: '`true` when this option represents a structured `I don''t wish to answer` choice; prefer this flag over matching on `name` when classifying declines. `null` on custom-organization options where the flag was never set; treat `null` as not a decline.'
         type:
@@ -2744,6 +2774,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   demographics_question_sets:
     type:
     - 'null'
@@ -2760,6 +2791,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       description:
         description: External-facing copy shown to applicants above the questions on a job post or candidate survey, explaining why the organization is collecting this data. Required once any question in the set is marked `required`; otherwise optional.
         type:
@@ -2783,6 +2815,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   demographics_question_sets_questions:
     type:
     - 'null'
@@ -2804,6 +2837,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       demographic_question_set_id:
         description: Id of the `demographic_question_set` this question belongs to. A set is what gets attached to a job post or candidate survey; questions are scoped to one set and never shared across sets. `null` for legacy questions not yet associated with a set.
         type:
@@ -2832,6 +2866,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   departments:
     type:
     - 'null'
@@ -2843,6 +2878,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       external_id:
         description: Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
         type:
@@ -2866,6 +2902,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   jobs:
     type:
     - 'null'
@@ -2878,6 +2915,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       confidential:
         description: "If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset \u2014 this flag cannot be set on new jobs and is preserved for jobs that already had it enabled."
         type:
@@ -2892,6 +2930,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_fields:
         type:
         - 'null'
@@ -2934,6 +2973,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       requisition_id:
         description: Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
         type:
@@ -2948,6 +2988,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   jobs_openings:
     type:
     - 'null'
@@ -2970,10 +3011,12 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       created_at:
         type:
         - 'null'
         - string
+        format: date-time
       custom_fields:
         type:
         - 'null'
@@ -2997,6 +3040,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       opening_id:
         description: Partner-supplied external identifier for the opening (e.g. an HRIS or ATS position id). Free-form string, not required to be unique across the organization, and `null` when no external id has been set. Distinct from the Greenhouse `id`.
         type:
@@ -3012,10 +3056,12 @@ schemas:
         type:
         - 'null'
         - string
+        format: date
       updated_at:
         type:
         - 'null'
         - string
+        format: date-time
   interviews:
     type:
     - 'null'
@@ -3028,11 +3074,13 @@ schemas:
         type:
         - 'null'
         - string
+        format: date
       all_day_start_on:
         description: Start date of an all-day interview, in `YYYY-MM-DD`. Set instead of `starts_at`/`ends_at` when the underlying calendar event is an all-day event. `null` for time-bounded interviews.
         type:
         - 'null'
         - string
+        format: date
       application_id:
         description: Id of the application this interview is scheduled against. Use it to look up the candidate.
         type:
@@ -3043,15 +3091,18 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       created_at:
         type:
         - 'null'
         - string
+        format: date-time
       ends_at:
         description: "Interview end time, in ISO 8601. `null` when `starts_at` is also `null`, and for all-day events \u2014 see `all_day_end_on`."
         type:
         - 'null'
         - string
+        format: date-time
       external_event_id:
         description: Id of the calendar event on the organizer's calendar (Google Calendar event id, Outlook event id, etc.). Use this to correlate an interview with the event on the external calendar. `null` for interviews not yet pushed to an external calendar.
         type:
@@ -3086,11 +3137,13 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       starts_at:
         description: "Interview start time, in ISO 8601. `null` for interviews that have not yet been scheduled (for example, assigned take-home tests or interviews awaiting candidate availability) and for all-day events \u2014 see `all_day_start_on`."
         type:
         - 'null'
         - string
+        format: date-time
       status:
         description: Lifecycle status of the interview. `to_be_scheduled` is the pre-schedule placeholder; `scheduled` is on the calendar; `awaiting_feedback` is past with scorecards outstanding; `complete` is past with all scorecards in; `collect_feedback` and `skipped` are alternative terminal states; `to_be_sent`, `sent`, and `received` are used for take-home tests sent through Greenhouse.
         type:
@@ -3100,6 +3153,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       video_conferencing_url:
         description: Join URL for the interview's video conference, auto-populated by Greenhouse's Zoom, Google Meet, or Microsoft Teams integrations when one is attached during scheduling. `null` when no video conferencing was added.
         type:
@@ -3126,6 +3180,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       demographic_question_set_id:
         description: Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
         type:
@@ -3141,6 +3196,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3180,6 +3236,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: uri
       questions:
         description: Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
         type:
@@ -3254,6 +3311,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   job_stages:
     type:
     - 'null'
@@ -3270,6 +3328,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3293,6 +3352,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   jobs_stages:
     type:
     - 'null'
@@ -3309,6 +3369,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3332,6 +3393,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   offers:
     type:
     - 'null'
@@ -3353,6 +3415,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_fields:
         type:
         - 'null'
@@ -3376,16 +3439,19 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       sent_on:
         description: Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
         type:
         - 'null'
         - string
+        format: date
       starts_on:
         description: Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
         type:
         - 'null'
         - string
+        format: date
       status:
         description: Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
         type:
@@ -3395,6 +3461,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       version:
         description: "Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes \u2014 typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application."
         type:
@@ -3411,6 +3478,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3445,6 +3513,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   scorecards:
     type:
     - 'null'
@@ -3466,6 +3535,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3480,6 +3550,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       interviewer_id:
         description: Id of the Greenhouse user who participated in the interview and to whom this scorecard is assigned. Each interviewer on a multi-interviewer interview gets their own scorecard.
         type:
@@ -3525,6 +3596,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       submitter_id:
         description: Id of the Greenhouse user who actually submitted the scorecard. Usually the same as `interviewer_id`, but differs when an admin submits a scorecard on another interviewer's behalf.
         type:
@@ -3534,6 +3606,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   sources:
     type:
     - 'null'
@@ -3545,6 +3618,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3574,6 +3648,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   users:
     type:
     - 'null'
@@ -3590,6 +3665,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_fields:
         type:
         - 'null'
@@ -3694,6 +3770,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   activity_feed:
     type:
     - 'null'
@@ -3725,6 +3802,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       email_attachment_file_names:
         description: File names of attachments on the logged email, when the source captured them. Only populated when `type` is `EMAIL`.
         type:
@@ -3772,6 +3850,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       user_id:
         description: Id of the Greenhouse user who authored the note. `null` for notes generated by the system rather than a specific user.
         type:
@@ -3803,6 +3882,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -3831,6 +3911,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       version:
         description: Monotonically increasing revision counter for this approval flow. Job approval flows increment when system fields (e.g., department, requisition id, openings) or custom fields marked as triggering re-approval change after the flow has started. Use this together with an approver's `version_sent` to tell whether a pending approver is responding to the current version or a stale request. Offer approval flows attached to a specific `offer_id` are always version 1.
         type:
@@ -3852,6 +3933,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_field_id:
         description: Id of the parent custom field this option belongs to. Only fields with `value_type` of `single_select` or `multi_select` carry options.
         type:
@@ -3880,6 +3962,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   schools:
     type:
     - 'null'
@@ -3896,6 +3979,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       custom_field_id:
         description: Id of the parent custom field this option belongs to. Only fields with `value_type` of `single_select` or `multi_select` carry options.
         type:
@@ -3924,6 +4008,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   eeoc:
     type:
     - 'null'
@@ -3945,6 +4030,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       disability_status:
         description: Self-identified disability status under Section 503. `id` and `description` are `null` when the candidate skipped the question. The fixed enum values for `description` are `Yes, I have a disability, or have had one in the past`, `No, I do not have a disability and have not had one in the past`, and `I do not want to answer`.
         type:
@@ -3996,10 +4082,12 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       updated_at:
         type:
         - 'null'
         - string
+        format: date-time
       veteran_status:
         description: Self-identified protected-veteran status under VEVRAA. `id` and `description` are `null` when the candidate skipped the question. The fixed enum values for `description` are `I am not a protected veteran`, `I identify as one or more of the classifications of a protected veteran`, and `I don't wish to answer`.
         type:
@@ -4040,6 +4128,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       default:
         description: If `true`, this template is the organization's default for its `email_type` and is preselected in any workflow that auto-attaches a template (e.g. candidate auto-replies, scorecard reminders). At most one template per `email_type` can be the default.
         type:
@@ -4093,6 +4182,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       user_id:
         description: Id of the Greenhouse user who owns this personal template. `null` for organization-wide templates, which are owned by the organization and available to every user who can send the template's `email_type`.
         type:
@@ -4109,6 +4199,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       external_id:
         description: Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
         type:
@@ -4142,6 +4233,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   prospect_pools:
     type:
     - 'null'
@@ -4158,6 +4250,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       department_ids:
         description: Ids of departments this pool is restricted to. Empty when the pool is not restricted by department; combined with `office_ids` and `job_ids`, an empty array on all three means the pool is unrestricted (available org-wide).
         type:
@@ -4203,6 +4296,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   tags:
     type:
     - 'null'
@@ -4214,6 +4308,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -4227,6 +4322,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   user_roles:
     type:
     - 'null'
@@ -4238,6 +4334,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -4256,6 +4353,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
   user_permissions:
     type:
     - 'null'
@@ -4272,6 +4370,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       id:
         type:
         - 'null'
@@ -4290,6 +4389,7 @@ schemas:
         type:
         - 'null'
         - string
+        format: date-time
       user_id:
         description: "Id of the user receiving access to the job. References a `/v3/users` row. Site admins are never represented here \u2014 they have implicit access to every non-confidential job \u2014 so a user with a site admin role will not appear in this list."
         type:

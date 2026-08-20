@@ -19,6 +19,7 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 - `offices.location` is a string in v3 rather than the v1 object.
 
 The complete field-level comparison is reflected in the connector's v3 schemas. Refresh the schema in every destination and reset streams whose records or fields are used downstream.
+Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
 
 ### Pagination and incremental state
 
