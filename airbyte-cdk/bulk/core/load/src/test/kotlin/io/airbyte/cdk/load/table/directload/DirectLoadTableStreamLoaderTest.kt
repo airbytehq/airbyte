@@ -103,8 +103,8 @@ class DirectLoadTableStreamLoaderTest {
     @Test
     fun `DedupTruncateStreamLoader performUpsertWithTemporaryTable drops temp table after overwrite`() =
         runTest {
-            // When temp table already exists with matching generation ID,
-            // shouldCheckRealTableGeneration=false, so performUpsertWithTemporaryTable is called.
+            // The real table holds an older generation, so performUpsertWithTemporaryTable is
+            // called.
             val initialStatus =
                 DirectLoadInitialStatus(
                     realTable = DirectLoadTableStatus(isEmpty = false),
@@ -256,8 +256,7 @@ class DirectLoadTableStreamLoaderTest {
 
     @Test
     fun `DedupTruncateStreamLoader performDirectUpsert also drops temp table`() = runTest {
-        // When no temp table exists initially, shouldCheckRealTableGeneration=true.
-        // When real table doesn't exist, shouldUpsertDirectly=true.
+        // When the real table doesn't exist, shouldUpsertDirectly=true.
         // This triggers the performDirectUpsert path.
         val initialStatus =
             DirectLoadInitialStatus(
