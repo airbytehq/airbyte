@@ -4,26 +4,14 @@ This page contains the setup guide and reference information for the Goldcast so
 
 ## Prerequisites
 
-- A [Goldcast Pro plan](https://www.goldcast.io/pricing) at least
-<!-- env:oss -->
-- A Goldcast API Token generated [here](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast)
-  <!-- /env:oss -->
+- A [Goldcast Pro plan](https://www.goldcast.io/pricing) or higher. The Starter plan does not allow API access.
+- A Goldcast API token. Follow [Goldcast's guide](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast) to create one. The token is case sensitive.
 
 ## Setup guide
 
-<!-- env:oss -->
+<!-- env:cloud -->
 
-### Step 1: (For Airbyte Open Source) Setup a Goldcast Account
-
-Setup and account in [Goldcast](https://www.goldcast.io/) and makr sure you have a [Goldcast Pro plan](https://www.goldcast.io/pricing) is required. The Starter plan does not allow for API access.
-
-
-### Step 2: (For Airbyte Open Source) Obtain an access token
-
-A simple access token is all that is needed to access Goldcast API. This token is generated [here](https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast).
-
-
-#### For Airbyte Cloud:
+### For Airbyte Cloud
 
 To set up Goldcast as a source in Airbyte Cloud:
 
@@ -31,14 +19,14 @@ To set up Goldcast as a source in Airbyte Cloud:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Goldcast** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **access_key** you obtained from Goldcast.
+5. Enter the **Access Key** (the API token you created in Goldcast).
 6. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
-#### For Airbyte Open Source:
+### For Airbyte Open Source
 
 To set up Goldcast as a source in Airbyte Open Source:
 
@@ -46,7 +34,7 @@ To set up Goldcast as a source in Airbyte Open Source:
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Goldcast** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **access_key** you obtained from Goldcast.
+5. Enter the **Access Key** (the API token you created in Goldcast).
 6. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
@@ -62,13 +50,11 @@ Incremental modes are not supported as the Goldcast API does not contain a curso
 
 ## Supported Streams
 
-The Goldcast source connector can sync the following tables.
+The Goldcast source connector can sync the following tables. See the [Goldcast API documentation](https://apidocs.goldcast.io/) for details on each endpoint.
 
 ### Main Tables
 
-Link to Goldcast API documentation [here](https://apidocs.goldcast.io/).
-
-- [organization](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization)
+- [organizations](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization)
 
 - [events](https://apidocs.goldcast.io/#tag/Event/operation/List%20events)
 
@@ -85,6 +71,8 @@ This is a child stream of the events stream, scoped to webinar-type events only.
 - [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-item/operation/List%20agenda%20item)
 
 - [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-groups/operation/List%20discussion%20groups)
+
+The connector requests list endpoints with `limit`/`offset` pagination, 100 records per page.
 
 ## IP allow list
 
