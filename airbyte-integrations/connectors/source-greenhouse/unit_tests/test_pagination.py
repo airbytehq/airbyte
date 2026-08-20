@@ -66,6 +66,37 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
     assert len(token_requests) == 1
 
 
+def test_applications_retries_429_and_completes(requests_mock, get_source):
+    _register_token(requests_mock)
+    application_requests = []
+
+    def applications_callback(request, context):
+        application_requests.append(request)
+        if len(application_requests) == 1:
+            context.status_code = 429
+            context.headers["X-RateLimit-Remaining"] = "0"
+            context.headers["Retry-After"] = "1"
+            return {"message": "Too Many Requests"}
+        context.status_code = 200
+        context.headers["X-RateLimit-Remaining"] = "50"
+        return [
+            {
+                "id": 1,
+                "created_at": "2024-01-01T00:00:00.000Z",
+                "updated_at": "2024-01-01T00:00:00.000Z",
+            }
+        ]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert [record.record.data["id"] for record in output.records] == [1]
+    assert len(application_requests) == 2
+
+
 def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     token_requests = _register_token(requests_mock)
     requests_mock.get(
