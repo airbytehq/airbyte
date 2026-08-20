@@ -5,7 +5,7 @@ products: cloud-teams
 
 # Set up SCIM using Okta
 
-Okta doesn't support adding SCIM provisioning to a custom OIDC app integration. Use your existing OIDC app for SSO and create a second, provisioning-only app for SCIM. For more information about this requirement, see [Okta's support article about configuring SCIM for a custom OIDC app](https://support.okta.com/help/s/article/configure-scim-for-a-custom-oidc-app). For SSO setup, see [Set up single sign on using Okta](../sso-providers/okta).
+Okta doesn't support adding SCIM provisioning to an OIDC app integration. Use your existing OIDC app for SSO and create a second, provisioning-only custom SWA app for SCIM. For more information, see Okta's [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm). For SSO setup, see [Set up single sign on using Okta](../sso-providers/okta).
 
 ## Before you start
 
@@ -13,6 +13,7 @@ You need:
 
 - Organization admin permissions in Airbyte.
 - Administrator permissions in Okta.
+- Provisioning enabled for your Okta organization. If **SCIM** doesn't appear in the **Provisioning** field on your app's settings page, contact Okta Support to activate the feature.
 - [SCIM enabled for your Airbyte organization](../scim#enable-scim-in-airbyte).
 - A [verified email domain in Airbyte](../sso-providers/okta#part-2-domain-verification) for every domain you plan to provision.
 
@@ -20,38 +21,51 @@ Before you configure Okta, [enable SCIM in Airbyte](../scim#enable-scim-in-airby
 
 ## Create the provisioning-only app
 
-In Okta, create a second app integration for SCIM. Keep your existing OIDC app for SSO; the SCIM app doesn't need to provide working SSO.
+In Okta, create a second custom app integration for SCIM. Keep your existing OIDC app for SSO; this app is used only for provisioning.
 
-1. In the Okta Admin Console, go to **Applications** > **Applications** and click **Browse App Catalog**.
+1. In the Okta Admin Console, go to **Applications** > **Applications** and click **Create App Integration**.
 
-2. Search for `SCIM 2.0`, select **SCIM 2.0 Test App (Header Auth)**, and click **Add Integration**.
+2. Select **SWA - Secure Web Authentication** as the sign-on method, then click **Next**.
 
-3. Name the app, for example, `Airbyte SCIM`. On the **General** tab under **App Settings**, set **Application visibility** to **Do not display application icon to users**. Users sign in through your separate OIDC app, so hiding this provisioning-only app avoids confusion in their Okta dashboard.
+3. Under **General App Settings**, configure the app:
 
-4. Under **Sign-On Options**, select **SWA**. This app is never used for sign-in, because SCIM authenticates with the bearer token and SSO stays on your OIDC app. **SWA** just avoids configuring SAML settings that Airbyte can't use.
+   - Set **App name** to a name such as `Airbyte SCIM`.
+   - Set **App's login page URL** to your Airbyte URL. This app is never used for sign-in, so the value only needs to be a valid URL.
+   - Set **App visibility** to **Do not display application icon to users**. Users sign in through your separate OIDC app, so hiding this provisioning-only app avoids confusion in their Okta dashboard.
+   - Under **App type**, select the option for an internal application.
 
-5. Click **Done**.
+4. Click **Finish**.
 
-For Okta's current application flow, see Okta's [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm) and [Configure provisioning for an app integration](https://help.okta.com/oie/en-us/content/topics/provisioning/lcm/lcm-provision-application.htm).
+For details, see Okta's [SWA app integration documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_swa.htm) and [SCIM provisioning documentation](https://help.okta.com/oie/en-us/content/topics/apps/apps_app_integration_wizard_scim.htm).
 
-## Configure the API integration
+## Enable SCIM provisioning
 
-On the new app, open the **Provisioning** tab and configure the API integration.
+On the new app, open the **General** tab and, under **App Settings**, click **Edit**.
 
-1. Click **Configure API Integration**.
+1. Set **Provisioning** to **SCIM**.
 
-2. Select **Enable API integration**.
+2. Click **Save**.
 
-3. Set **Base URL** to the **SCIM base URL** shown in Airbyte.
+## Configure the SCIM connection
 
-4. Set **API Token** to the Airbyte **Bearer token**.
+On the new app, open the **Provisioning** tab and go to **Settings** > **Integration**. Click **Edit**.
 
-5. Click **Test API Credentials**, then click **Save**.
+1. Set **SCIM connector base URL** to the **SCIM base URL** shown in Airbyte.
+
+2. Set the unique identifier field for users to `userName`.
+
+3. Under **Supported provisioning actions**, select **Push New Users**, **Push Profile Updates**, and **Push Groups**. Leave **Import New Users and Profile Updates** off because Airbyte isn't a profile source for Okta.
+
+4. Under **Authentication Mode**, select **HTTP Header**.
+
+5. Enter the Airbyte bearer token in the **Authorization** field.
+
+6. Click **Test API Credentials**, then click **Save**.
 
 If Okta offers password synchronization for the application, turn it off. Airbyte ignores passwords sent through SCIM.
 
 :::note
-If **Test API Credentials** returns `401` when you enter the bearer token as-is, try prefixing the value with `Bearer `. Airbyte expects the `Authorization: Bearer <token>` header.
+If **Test API Credentials** returns `401` when you enter the bare token in **Authorization**, try prefixing it with `Bearer `. Airbyte expects `Authorization: Bearer <token>` on the wire. Okta's HTTP Header mode determines how the value is sent, so test the form that works in your organization.
 :::
 
 ## Review attribute mappings
