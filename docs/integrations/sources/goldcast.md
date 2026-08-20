@@ -62,29 +62,29 @@ Incremental modes are not supported as the Goldcast API does not contain a curso
 
 ## Supported Streams
 
-The Goldcast source connector can sync the following tables. It can also sync custom queries using GAQL.
+The Goldcast source connector can sync the following tables.
 
 ### Main Tables
 
-Link to Goldcast API documentation [here](https://customapi.goldcast.io/swagger-ui/#/).
+Link to Goldcast API documentation [here](https://apidocs.goldcast.io/).
 
-- [organization](https://customapi.goldcast.io/swagger-ui/#/Organization/List%20organization)
+- [organization](https://apidocs.goldcast.io/#tag/Organization/operation/List%20organization)
 
-- [events](https://customapi.goldcast.io/swagger-ui/#/Event/List%20events)
+- [events](https://apidocs.goldcast.io/#tag/Event/operation/List%20events)
 
-- [event_members](https://customapi.goldcast.io/swagger-ui/#/Event%20members/List%20event%20members)
+- [event_members](https://apidocs.goldcast.io/#tag/Event-members/operation/List%20event%20members)
 
 This is a child stream of the events stream representing users associated to events.
 
-- [webinars](https://customapi.goldcast.io/swagger-ui/#/Webinars/Retrieve%20webinars)
+- [webinars](https://apidocs.goldcast.io/#tag/Webinars/operation/Retrieve%20webinars)
 
-This is a child stream of the events stream indicating webinars that belong to the parent event.
+This is a child stream of the events stream, scoped to webinar-type events only.
 
-- [tracks](https://customapi.goldcast.io/swagger-ui/#/Tracks/List%20tracks)
+- [tracks](https://apidocs.goldcast.io/#tag/Tracks/operation/List%20tracks)
 
-- [agenda_items](https://customapi.goldcast.io/swagger-ui/#/Agenda%20item/List%20agenda%20item)
+- [agenda_items](https://apidocs.goldcast.io/#tag/Agenda-item/operation/List%20agenda%20item)
 
-- [discussion_groups](https://customapi.goldcast.io/swagger-ui/#/Discussion%20groups/List%20discussion%20groups)
+- [discussion_groups](https://apidocs.goldcast.io/#tag/Discussion-groups/operation/List%20discussion%20groups)
 
 ## IP allow list
 
@@ -97,6 +97,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.26 | 2026-08-20 | [83237](https://github.com/airbytehq/airbyte/pull/83237) | Fix connector broken by Goldcast's API changes: list streams now request `limit`/`offset` pagination and extract records from the `results` envelope, and the `webinars` stream is scoped to webinar-type events only to avoid errors on other event types |
 | 0.2.25 | 2026-06-02 | [78729](https://github.com/airbytehq/airbyte/pull/78729) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59909](https://github.com/airbytehq/airbyte/pull/59909) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59258](https://github.com/airbytehq/airbyte/pull/59258) | Update dependencies |
