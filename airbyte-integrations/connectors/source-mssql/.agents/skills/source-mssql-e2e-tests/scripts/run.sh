@@ -206,11 +206,13 @@ for cmd in "${COMMANDS[@]}"; do
       run_step "$cmd" "--config-path=$WORKING_CONFIG"
       ;;
     read)
-      # A read needs a catalog, and a catalog needs a discover that
-      # produced one. When discover already failed in this sweep — which is
-      # the correct outcome for, say, an invalid config — read did not run,
-      # so it is neither a verdict nor an infrastructure failure.
-      if [[ -n "${STATUS[discover]:-}" && "${STATUS[discover]}" != pass ]]; then
+      # A derived catalog needs a discover that produced one. When discover
+      # already failed in this sweep — which is the correct outcome for, say,
+      # an invalid config — read did not run, so it is neither a verdict nor
+      # an infrastructure failure. An explicit --catalog needs no discover,
+      # so that case still runs.
+      if [[ -z "$CATALOG" && -n "${STATUS[discover]:-}" \
+        && "${STATUS[discover]}" != pass ]]; then
         STATUS[read]=skipped
         NOTE[read]="discover did not produce a catalog"
         continue
