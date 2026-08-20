@@ -17,6 +17,29 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 from unit_tests.conftest import get_source
 
 
+_MANIFEST_PATH = Path(__file__).parent.parent.parent / "manifest.yaml"
+
+# Metrics the removed V2 `sponsored_brands_video_report_stream` returned, under their V3 names.
+# `vtr` became `viewabilityRate` and `vctr` became `viewClickThroughRate`. Amazon does not offer
+# every one of them on every Sponsored Brands report type, so the expectations differ per stream.
+_V2_VIDEO_METRICS = {
+    "video5SecondViewRate",
+    "video5SecondViews",
+    "videoCompleteViews",
+    "videoFirstQuartileViews",
+    "videoMidpointViews",
+    "videoThirdQuartileViews",
+    "videoUnmutes",
+    "viewabilityRate",
+}
+
+_SPONSORED_BRANDS_VIDEO_METRICS = {
+    "sponsored_brands_campaigns_report_stream": _V2_VIDEO_METRICS | {"viewableImpressions", "viewClickThroughRate"},
+    "sponsored_brands_adgroups_report_stream": _V2_VIDEO_METRICS,
+    "sponsored_brands_ads_report_stream": _V2_VIDEO_METRICS | {"viewableImpressions"},
+}
+
+
 # Fixture for the configuration with a valid region value
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
@@ -169,6 +192,50 @@ class TestDisplayReportStreams:
         assert "cost" in created_report_request["configuration"]["columns"]
         assert len(output.records) == 1
         assert output.records[0].record.data["cost"] == 4.56
+
+    def test_given_file_when_read_brands_ads_report_then_return_video_metrics(
+        self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
+    ):
+        report_id = "report-id-brands-ads"
+        download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
+        requests_mock.post(
+            "https://advertising-api.amazon.com/reporting/reports",
+            json={"reportId": report_id, "status": "PENDING"},
+            status_code=202,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        requests_mock.get(
+            f"https://advertising-api.amazon.com/reporting/reports/{report_id}",
+            json={"status": "COMPLETED", "url": download_url},
+            status_code=200,
+            request_headers={"Authorization": "Bearer test-access-token"},
+        )
+        # Reporting v3 returns numeric ids; the stream schema declares `adId` as integer.
+        report_data = gzip.compress(b'[{"adId": 275827446150944, "cost": 1.5, "videoCompleteViews": 42, "video5SecondViews": 90}]')
+        requests_mock.get(download_url, content=report_data, status_code=200)
+
+        output = self._read(config, "sponsored_brands_ads_report_stream", SyncMode.incremental)
+        created_report_request = next(
+            request.json() for request in requests_mock.request_history if request.url.endswith("/reporting/reports")
+        )
+        configuration = created_report_request["configuration"]
+
+        assert configuration["reportTypeId"] == "sbAds"
+        assert configuration["groupBy"] == ["ads"]
+        assert "adId" in configuration["columns"]
+        assert len(output.records) == 1
+        assert output.records[0].record.data["videoCompleteViews"] == 42
+
+    @pytest.mark.parametrize("stream_name, expected_metrics", sorted(_SPONSORED_BRANDS_VIDEO_METRICS.items()))
+    def test_sponsored_brands_reports_request_video_metrics(self, stream_name: str, expected_metrics: set) -> None:
+        """The V2 `sponsored_brands_video_report_stream` was removed in 6.0.0; its metrics live on
+        these V3 report types and must stay in the requested column lists."""
+        manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+        for name in (stream_name, f"{stream_name}_daily"):
+            columns = set(
+                manifest["definitions"]["streams"][name]["retriever"]["creation_requester"]["request_body_json"]["configuration"]["columns"]
+            )
+            assert expected_metrics <= columns, f"{name} is missing {sorted(expected_metrics - columns)}"
 
     def test_given_file_when_read_display_report_then_return_records(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
@@ -359,6 +426,7 @@ class TestDisplayReportStreams:
             "sponsored_brands_v3_report_stream_daily",
             "sponsored_brands_campaigns_report_stream_daily",
             "sponsored_brands_adgroups_report_stream_daily",
+            "sponsored_brands_ads_report_stream_daily",
             "sponsored_display_campaigns_report_stream_daily",
             "sponsored_display_adgroups_report_stream_daily",
             "sponsored_display_productads_report_stream_daily",
@@ -415,6 +483,7 @@ class TestDisplayReportStreams:
             "sponsored_brands_v3_report_stream_daily",
             "sponsored_brands_campaigns_report_stream_daily",
             "sponsored_brands_adgroups_report_stream_daily",
+            "sponsored_brands_ads_report_stream_daily",
             "sponsored_display_campaigns_report_stream_daily",
             "sponsored_display_targets_report_stream_daily",
             "sponsored_products_campaigns_report_stream_daily",
@@ -492,12 +561,11 @@ class TestDisplayReportStreams:
         assert output.most_recent_state.stream_state.states[0]["cursor"]["reportDate"] is not None
 
 
-_MANIFEST_PATH = Path(__file__).parent.parent.parent / "manifest.yaml"
-
 _ALL_DAILY_STREAMS = [
     "sponsored_brands_v3_report_stream_daily",
     "sponsored_brands_campaigns_report_stream_daily",
     "sponsored_brands_adgroups_report_stream_daily",
+    "sponsored_brands_ads_report_stream_daily",
     "sponsored_display_campaigns_report_stream_daily",
     "sponsored_display_adgroups_report_stream_daily",
     "sponsored_display_productads_report_stream_daily",
@@ -523,3 +591,69 @@ def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
         f"{stream_name}: 'date' field is missing from the schema's 'properties' block. "
         "It may be misplaced at the schema root level due to a YAML indentation error."
     )
+
+
+# Bump deliberately when adding or removing a report stream. A silent drop here would empty the
+# guard tests below, and pytest reports an empty parameter set as SKIPPED rather than FAILED.
+_EXPECTED_REPORT_STREAM_COUNT = 32
+
+
+def _report_stream_configurations() -> list:
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    configurations = []
+    for name, stream in manifest["definitions"]["streams"].items():
+        configuration = stream.get("retriever", {}).get("creation_requester", {}).get("request_body_json", {}).get("configuration")
+        if configuration and "reportTypeId" in configuration:
+            configurations.append((name, configuration, manifest["schemas"][stream["schema_loader"]["schema"]["$ref"].split("/")[-1]]))
+    return configurations
+
+
+def test_report_stream_discovery_covers_every_report_stream() -> None:
+    """Kept standalone on purpose: `_report_stream_configurations()` is evaluated at import time by
+    the `@pytest.mark.parametrize` decorators below, so asserting inside it turns a count change into
+    a collection error that takes down every test in this module - including the finer column and
+    schema guards that would have named the actual regression.
+    """
+    configurations = _report_stream_configurations()
+    assert len(configurations) == _EXPECTED_REPORT_STREAM_COUNT, (
+        f"expected {_EXPECTED_REPORT_STREAM_COUNT} report stream configurations, found {len(configurations)}: "
+        "a manifest restructuring may have moved `creation_requester`/`request_body_json` and silently "
+        "narrowed the report-column guard tests"
+    )
+
+
+# `transformation_report_add_fields` (manifest.yaml) injects these into every report record, so they
+# are the only schema properties that legitimately have no matching requested column.
+_INJECTED_REPORT_FIELDS = {"profileId", "reportDate"}
+
+
+@pytest.mark.parametrize("stream_name, configuration, schema", _report_stream_configurations())
+def test_requested_report_columns_and_schema_properties_match_exactly(stream_name: str, configuration: dict, schema: dict) -> None:
+    """The requested column list and the schema must stay in lockstep in both directions.
+
+    A column requested from Amazon but absent from the schema is invisible during discovery and is
+    dropped by destinations that enforce the catalog. A property with no requested column means the
+    column was dropped from the request and the stream silently stopped emitting that metric. Tying
+    the two together means a column can only be removed by also removing its property, which makes
+    the loss show up as a schema diff in review.
+    """
+    columns = set(configuration["columns"])
+    properties = set(schema["properties"]) - _INJECTED_REPORT_FIELDS
+    undeclared = sorted(columns - properties)
+    unrequested = sorted(properties - columns)
+    assert not undeclared, f"{stream_name}: requested but not declared in schema: {undeclared}"
+    assert not unrequested, f"{stream_name}: declared in schema but never requested: {unrequested}"
+
+
+@pytest.mark.parametrize("stream_name, configuration, schema", _report_stream_configurations())
+def test_report_date_columns_match_time_unit(stream_name: str, configuration: dict, schema: dict) -> None:
+    """Amazon pairs the date columns with `timeUnit`: DAILY reports carry `date`, SUMMARY reports
+    carry `startDate`/`endDate`. Mixing them makes the report request fail.
+    See https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns
+    """
+    columns = set(configuration["columns"])
+    if configuration["timeUnit"] == "DAILY":
+        assert "date" in columns, f"{stream_name}: DAILY report is missing the `date` column"
+        assert not {"startDate", "endDate"} & columns, f"{stream_name}: DAILY report requests SUMMARY-only date columns"
+    else:
+        assert "date" not in columns, f"{stream_name}: SUMMARY report requests the DAILY-only `date` column"
