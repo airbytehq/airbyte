@@ -4,7 +4,7 @@
 import base64
 from urllib.parse import parse_qs
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -26,7 +26,11 @@ def _register_token(requests_mock):
     def token_callback(request, context):
         token_requests.append(request)
         context.status_code = 200
-        return {"access_token": "access-token", "expires_at": "2030-01-01T00:00:00+0000"}
+        return {
+            "access_token": "access-token",
+            "expires_at": "2030-01-01T00:00:00+0000",
+            "refresh_token": "rotated-refresh-token",
+        }
 
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
     return token_requests
@@ -79,6 +83,25 @@ def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     assert token_params["grant_type"] == ["refresh_token"]
     assert token_params["refresh_token"] == ["test-refresh-token"]
     assert "sub" not in token_params
+
+
+def test_oauth_rotated_refresh_token_is_persisted(requests_mock, get_source):
+    _register_token(requests_mock)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    control_messages = output.get_message_by_types([Type.CONTROL])
+    assert control_messages, "expected a CONNECTOR_CONFIG control message persisting the rotated refresh token"
+    updated_credentials = control_messages[-1].control.connectorConfig.config["credentials"]
+    assert updated_credentials["refresh_token"] == "rotated-refresh-token"
+    assert updated_credentials["access_token"] == "access-token"
+    assert updated_credentials["token_expiry_date"]
 
 
 def test_manifest_application_state_migration_reaches_request(requests_mock, get_source):
