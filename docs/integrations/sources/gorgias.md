@@ -47,7 +47,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.1.51 | 2026-08-20 | [84XXX](https://github.com/airbytehq/airbyte/pull/84XXX) | Incremental syncs on events, tickets, customers, messages, and satisfaction surveys now stop reading once they reach previously-synced data instead of re-reading full history. |
+| 0.1.51 | 2026-08-20 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs on events, tickets, customers, messages, and satisfaction surveys now stop reading once they reach previously-synced data instead of re-reading full history. |
 | 0.1.50 | 2026-08-18 | [84643](https://github.com/airbytehq/airbyte/pull/84643) | Update dependencies |
 | 0.1.49 | 2026-08-11 | [83969](https://github.com/airbytehq/airbyte/pull/83969) | Update dependencies |
 | 0.1.48 | 2026-08-04 | [83514](https://github.com/airbytehq/airbyte/pull/83514) | Update dependencies |
