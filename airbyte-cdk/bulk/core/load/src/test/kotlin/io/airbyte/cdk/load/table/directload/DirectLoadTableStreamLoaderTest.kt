@@ -112,6 +112,7 @@ class DirectLoadTableStreamLoaderTest {
                 )
 
             coEvery { tableOperationsClient.getGenerationId(tempTableName) } returns 1L
+            coEvery { tableOperationsClient.getGenerationId(realTableName) } returns 0L
 
             val loader =
                 DirectLoadTableDedupTruncateStreamLoader(
