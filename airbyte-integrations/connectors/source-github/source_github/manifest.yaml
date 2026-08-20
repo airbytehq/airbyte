@@ -129,16 +129,30 @@ definitions:
         # shorter `or 120` would read check's deliberate 0 as falsy and hand it 120 minutes,
         # which is the whole behaviour this cap exists to prevent. An unresolvable cap raises a
         # system error mid-retry rather than a bare Jinja failure, so a mistake here is loud.
+        # The `+ 1` keeps the budget inclusive. The CDK raises at `>=`, so a user on the spec's
+        # minimum of 1 minute would otherwise get a 60s cap that exactly equals the `min_wait`
+        # floor below — and every headerless 5xx, which falls back to that floor, would fail the
+        # stream instead of retrying (measured: max_waiting_time=1 turned a transient 500 into a
+        # failed sync). It does not weaken check, whose cap resolves to 1s and still refuses the
+        # 60s floor.
+        # Known trade-off: the cap is evaluated inside the strategy, so it raises before
+        # HttpClient asks the authenticator whether another token could serve the retry. With a
+        # budget shorter than the distance to the reset, a rate-limited request therefore stops
+        # the stream instead of rotating onto a healthy token (measured: budget 30min against a
+        # 60min reset fails with a spare token idle, while the default 120min rotates in 0.1s).
+        # Unreachable on github.com at the default budget, since a reset is at most an hour out.
+        # A CDK fix would consult has_alternative_token before the cap raises; there is no
+        # manifest-level way to reorder them.
         - type: WaitTimeFromHeader
           header: "Retry-After"
-          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 }}"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
         - type: WaitUntilTimeFromHeader
           header: "X-RateLimit-Reset"
           min_wait: 60
           # The cap is compared against the computed wait, not the raw reset timestamp, and it
           # is applied after `min_wait` — so during check, where the cap is 0, even the 60s
           # floor is refused.
-          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 }}"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
           # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
           # timestamp already in the past, or seconds away, doesn't turn into a tight retry
           # loop against a quota that hasn't actually refilled.

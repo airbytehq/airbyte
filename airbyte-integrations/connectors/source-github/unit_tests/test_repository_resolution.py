@@ -95,6 +95,28 @@ def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
     assert max(call.args[0] for call in sleep_mock.call_args_list) > 60
 
 
+def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock):
+    """The wait cap must not turn ordinary transient errors into failures. A headerless 5xx falls
+    back to the `min_wait: 60` floor, and the CDK raises at `>=`, so a user on the spec's minimum
+    Max Waiting Time of 1 minute would hit a 60s cap that exactly equals that floor. Measured
+    before the `+ 1` in the manifest: a single 500 failed the whole resolution."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {"status_code": 500, "json": {"message": "Server Error"}},
+            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+        ],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "max_waiting_time": 1}
+
+    with patch("time.sleep"):
+        organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+
+
 def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_mock):
     """GHES ships with HTTP API rate limiting off and answers /rate_limit with 404. Quota
     seeding runs before the first stream request, so that 404 used to fail every command;
