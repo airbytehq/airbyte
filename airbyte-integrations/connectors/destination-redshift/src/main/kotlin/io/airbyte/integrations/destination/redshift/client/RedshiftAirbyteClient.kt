@@ -50,7 +50,12 @@ class RedshiftAirbyteClient(
 
     override suspend fun createNamespace(namespace: String) {
         try {
-            execute(sqlGenerator.createNamespace(namespace))
+            // Skip CREATE SCHEMA when the schema already exists. On Redshift, CREATE SCHEMA
+            // IF NOT EXISTS still requires CREATE ON DATABASE even for an existing schema, so
+            // users with only USAGE+CREATE on a pre-created schema would fail check/sync.
+            if (!namespaceExists(namespace)) {
+                execute(sqlGenerator.createNamespace(namespace))
+            }
         } catch (e: SQLException) {
             // Swallow race condition where concurrent connections both try CREATE SCHEMA
             if (e.message?.contains("already exists") != true) {
