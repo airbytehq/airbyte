@@ -1739,7 +1739,8 @@ definitions:
       client_secret: "{{ config['credentials']['client_secret'] }}"
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
       access_token_name: access_token
-      expires_in_name: expires_in
+      expires_in_name: expires_at
+      token_expiry_date_format: "%Y-%m-%dT%H:%M:%S%z"
       refresh_request_headers:
         Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
         Content-Type: application/x-www-form-urlencoded

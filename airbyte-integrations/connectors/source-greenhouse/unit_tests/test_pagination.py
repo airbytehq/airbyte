@@ -26,7 +26,7 @@ def _register_token(requests_mock):
     def token_callback(request, context):
         token_requests.append(request)
         context.status_code = 200
-        return {"access_token": "access-token", "expires_in": 3600}
+        return {"access_token": "access-token", "expires_at": "2030-01-01T00:00:00+0000"}
 
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
     return token_requests
