@@ -1,23 +1,35 @@
+# The JDK the runtime is jlink'd from, and the OS the runtime is copied into.
+# These two are coupled and must stay on the same libc and OS generation: the linked
+# runtime is a native binary built against the JDK image's libc. Swapping JDK_IMAGE for a
+# musl (Alpine) JDK while RUNTIME_IMAGE stays glibc produces an image that builds cleanly
+# and fails at exec time. Change them together.
 # https://hub.docker.com/_/amazoncorretto/tags?name=21-al2023
-ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023
+ARG JDK_IMAGE=docker.io/amazoncorretto:21-al2023
+ARG RUNTIME_IMAGE=docker.io/amazonlinux:2023
 
 # Build a trimmed Java runtime. Connectors only ever run Java, so shipping a full JDK
-# costs ~230MB per image for tooling that is never used.
+# costs ~230MB per image for compilers and tooling that are never invoked.
 #
-# The module list is maintained by hand and is deliberately generous: jdeps cannot infer
+# The module list is maintained by hand and is deliberately generous. jdeps cannot infer
 # it, because JDBC drivers, crypto providers and SSH backends are all loaded reflectively
-# at runtime. Adding a module is cheap; removing one breaks connectors in ways that only
-# surface against a live source. Validate against real sources before trimming further.
-FROM ${BASE_IMAGE} AS jre-builder
+# at runtime, so a missing module does not fail the build -- it throws NoClassDefFoundError
+# later, on whichever code path happens to need it, sometimes only for users on a specific
+# auth or SSL configuration. Adding a module is cheap. Validate against live sources before
+# removing one.
+#
+# The jdk.jcmd/jdk.jfr/jdk.attach modules are not needed to run a connector. They are kept
+# deliberately so that a connector stuck in production can still be thread-dumped, heap-
+# dumped and profiled; a runtime you cannot diagnose is not worth the megabytes saved.
+FROM ${JDK_IMAGE} AS jre-builder
 # jlink --strip-debug shells out to objcopy, which the Corretto image does not ship.
 RUN dnf install -y binutils && dnf clean all
 RUN jlink \
-      --add-modules java.base,java.sql,java.naming,java.management,java.instrument,java.logging,java.xml,java.desktop,java.security.jgss,java.security.sasl,java.transaction.xa,java.net.http,java.compiler,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.zipfs,jdk.management,jdk.net \
+      --add-modules java.base,java.sql,java.sql.rowset,java.naming,java.management,java.instrument,java.logging,java.xml,java.xml.crypto,java.scripting,java.desktop,java.security.jgss,java.security.sasl,java.transaction.xa,java.net.http,java.compiler,java.rmi,jdk.crypto.ec,jdk.crypto.cryptoki,jdk.unsupported,jdk.zipfs,jdk.management,jdk.management.agent,jdk.net,jdk.jcmd,jdk.jfr,jdk.attach \
       --strip-debug --no-man-pages --no-header-files --compress=zip-6 \
       --output /jre && \
     /jre/bin/java --version
 
-FROM docker.io/amazonlinux:2023
+FROM ${RUNTIME_IMAGE}
 
 # Install dependencies
 RUN set -o xtrace && \
