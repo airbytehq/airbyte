@@ -1195,7 +1195,13 @@ definitions:
               - type: HttpResponseFilter
                 http_codes:
                   - 403
-                action: IGNORE
+                action: FAIL
+                failure_type: config_error
+                error_message: >-
+                  Greenhouse returned 403 for /v3/users. All Harvest v3 list endpoints
+                  require the connection to be authorized by a Greenhouse user with Site
+                  Admin privileges. Re-run the Authenticate step signed in to Greenhouse
+                  as a Site Admin.
         record_selector:
           type: RecordSelector
           extractor:
@@ -1828,6 +1834,7 @@ spec:
     properties:
       credentials:
         title: Authentication
+        description: The authorizing Greenhouse user must have Site Admin privileges because every Harvest v3 list endpoint requires a Site Admin authorizer.
         type: object
         required:
           - auth_type

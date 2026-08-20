@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need a Greenhouse OAuth application with permissions to the resources Airbyte should be able to access. The OAuth consent flow exchanges the application credentials for a refresh token.
+To set up the Greenhouse source connector, you'll need a Greenhouse OAuth application with permissions to the resources Airbyte should be able to access. The authorizing Greenhouse user must have Site Admin privileges because every Harvest v3 list endpoint requires a Site Admin authorizer. The OAuth consent flow exchanges the application credentials for a refresh token.
 
 ## Set up the Greenhouse connector in Airbyte
 
