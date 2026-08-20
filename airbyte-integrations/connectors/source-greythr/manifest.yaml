@@ -618,7 +618,7 @@ definitions:
     Employee Attendance Swipes:
       type: DeclarativeStream
       name: Employee Attendance Swipes
-      primary_key: punchDateTime
+      primary_key: []
       retriever:
         type: SimpleRetriever
         requester:

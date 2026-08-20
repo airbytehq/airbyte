@@ -30,7 +30,7 @@ The GreytHR Connector for Airbyte allows seamless integration with the GreytHR p
 | Employee Leave Transactions | id | None | ✅ |  ✅  |
 | Employee Attendance Summary |  | None | ✅ |  ✅  |
 | Employee Attendance Muster |  | None | ✅ |  ✅  |
-| Employee Attendance Swipes | punchDateTime | None | ✅ |  ✅  |
+| Employee Attendance Swipes |  | None | ✅ |  ✅  |
 
 The Leave and Attendance streams that use employee-scoped endpoints make one request per
 employee and may require API rate-limit planning for larger workforces. Attendance Summary
