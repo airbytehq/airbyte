@@ -1908,8 +1908,9 @@ spec:
         type: string
         title: Secret Key
         description: >-
-          Stripe API key (usually starts with 'sk_live_'; find yours <a
-          href="https://dashboard.stripe.com/apikeys">here</a>).
+          Stripe API key. Secret keys start with 'sk_live_' or 'sk_test_' and restricted
+          keys start with 'rk_live_' or 'rk_test_'; find yours <a
+          href="https://dashboard.stripe.com/apikeys">here</a>.
         airbyte_secret: true
         order: 1
       start_date:
@@ -1965,7 +1966,7 @@ spec:
         description: >-
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
           API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
-          calls per second for test/sandbox tokens and 100 for production tokens.
+          calls per second for sandbox keys ('sk_test_'/'rk_test_') and 100 for live keys ('sk_live_'/'rk_live_').
       api_retention_streams:
         type: array
         title: Streams with API Data Retention Validation
@@ -2030,7 +2031,7 @@ spec:
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 4 if '_test_' in config['client_secret'] else 10) }}"
   max_concurrency: 100
 
 api_budget:
@@ -2050,8 +2051,9 @@ api_budget:
       rates:
         # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
         # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
-        # Sandbox secret keys begin with 'sk_test_', this is how we check which limit to use if live or sandbox account.
-        - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config['client_secret'] else 100) }}"
+        # Sandbox keys contain '_test_' ('sk_test_' secret keys and 'rk_test_' restricted keys),
+        # the '_test_' segment determines whether the account is sandbox or live.
+        - limit: "{{ config.get('call_rate_limit', 25 if '_test_' in config['client_secret'] else 100) }}"
           interval: PT1S
       matchers: []
   # Tell the CDK to recognize 429 as rate limit hit and back off accordingly
