@@ -105,13 +105,16 @@ The sweep runs every command against the one backend and reports each
 result rather than stopping at the first failure, then prints a summary
 table and exits non-zero if any command failed — separating an
 infrastructure failure (`ERROR`, no verdict was produced) from a failed
-test verdict (`FAIL`), as the ops workflow's final-status step does. Under
+test verdict (`FAIL`), as the ops workflow's final-status step does. A
+`read` whose `discover` failed earlier in the sweep is reported `SKIPPED`,
+not `ERROR` — an invalid-config case is expected to fail `discover`, and
+there is then no catalog for `read` to use. Under
 CI the table is also appended to `$GITHUB_STEP_SUMMARY`. A run limited to
 one command instead exits with the connector's own exit code, so a repro
 can still assert on it.
 
 Build the target image first when using `--test-version=dev`, or pass
-`--build` to have `run.sh` run `:airbyteDocker` for you. Other options:
+`--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--step-name`, `--catalog` (skip discover-derived generation),
 `--sync-mode=incremental`, `--cursor-field`, `--streams`,
