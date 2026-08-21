@@ -36,7 +36,6 @@
 # SOURCE CONNECTORS
 # -----------------------------------------------------------------------------
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
-/airbyte-integrations/connectors/source-linear/ @airbytehq/dev-apis
 
 # -----------------------------------------------------------------------------
 # DESTINATION CONNECTORS (certified + JDK-based only)
