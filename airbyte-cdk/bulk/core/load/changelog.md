@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.0.25 — 2026-08-19
+
+[#84897](https://github.com/airbytehq/airbyte/pull/84897) — Add `ensureMetaColumnsExist` hook to `TableSchemaEvolutionClient`; the default `ensureSchemaMatches` invokes it before schema discovery so destinations can repair tables created by pre-direct-load connector versions that lack some `_airbyte_*` meta columns.
+
 ### 1.0.24 — 2026-08-10
 
 [#83806](https://github.com/airbytehq/airbyte/pull/83806) — Fix: honor the configured Azure Blob `endpointDomainName` and target the matching Entra authority host.
