@@ -54,6 +54,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Candidates](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) \(Incremental\)
 - [Close Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons)
 - [Custom Fields](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields)
+- [Custom Field Options](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
 - [Degrees](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
 - [Departments](https://harvestdocs.greenhouse.io/reference/get_v3-departments)
 - [Disciplines](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)

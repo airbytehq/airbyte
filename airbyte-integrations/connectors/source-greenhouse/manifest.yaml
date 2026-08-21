@@ -290,6 +290,41 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/custom_fields"
+    custom_field_options:
+      type: DeclarativeStream
+      name: custom_field_options
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://harvest.greenhouse.io/v3/custom_field_options
+          http_method: GET
+          request_parameters:
+            per_page: "{{ 500 if not next_page_token }}"
+          error_handler:
+            $ref: "#/definitions/error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_field_options"
     degrees:
       type: DeclarativeStream
       name: degrees
@@ -1614,6 +1649,7 @@ streams:
   - $ref: "#/definitions/streams/candidates"
   - $ref: "#/definitions/streams/close_reasons"
   - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/custom_field_options"
   - $ref: "#/definitions/streams/degrees"
   - $ref: "#/definitions/streams/demographics_answers"
   - $ref: "#/definitions/streams/demographics_answer_options"
@@ -1802,6 +1838,7 @@ metadata:
     candidates: false
     close_reasons: false
     custom_fields: false
+    custom_field_options: false
     degrees: false
     demographics_answers: false
     demographics_answer_options: false
@@ -2516,6 +2553,52 @@ schemas:
         type:
         - 'null'
         - string
+  custom_field_options:
+    type:
+    - 'null'
+    - object
+    $schema: https://json-schema.org/draft-07/schema
+    additionalProperties: true
+    properties:
+      active:
+        description: "`true` while the option is selectable. Set to `false` after deletion -- historical selections are preserved so the value still resolves on existing records."
+        type:
+        - 'null'
+        - boolean
+      created_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
+      custom_field_id:
+        description: Id of the parent custom field this option belongs to. Only fields with `value_type` of `single_select` or `multi_select` carry options.
+        type:
+        - 'null'
+        - integer
+      external_id:
+        description: Caller-supplied identifier from the partner's source system (typically an HRIS row id). Persisted verbatim and not interpreted by Greenhouse.
+        type:
+        - 'null'
+        - string
+      id:
+        type:
+        - 'null'
+        - integer
+      name:
+        description: Display label shown in dropdowns. Unique among active options on the same parent custom field.
+        type:
+        - 'null'
+        - string
+      sort_order:
+        description: Display position within the parent custom field's dropdown. Alias of `priority` in V1/V2.
+        type:
+        - 'null'
+        - integer
+      updated_at:
+        type:
+        - 'null'
+        - string
+        format: date-time
   degrees:
     type:
     - 'null'

@@ -30,7 +30,7 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 | applications_interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
 | approvals | `approver_groups`, `requested_by_user_id` | |
 | candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |
-| custom_fields | `custom_field_options`, `departments`, `offices` | `priority` -> `sort_order` |
+| custom_fields | `departments`, `offices` | `priority` -> `sort_order` |
 | degrees, disciplines, schools | | `priority` -> `sort_order` |
 | demographics_answer_options, demographics_answers_answer_options, demographics_questions, demographics_question_sets_questions | `translations` | |
 | departments | `child_department_external_ids`, `child_ids`, `parent_department_external_id` | |
@@ -49,6 +49,8 @@ All 36 streams now use their Harvest v3 collection endpoints. The v3 response sc
 | users | `departments`, `offices` | `disabled` -> `deactivated`, `primary_email_address` -> `primary_email` |
 
 Refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
+
+`custom_fields.custom_field_options` is not removed in v3, only relocated: Harvest v3 serves it from `GET /v3/custom_field_options`. Enable the new `custom_field_options` stream and join it back to `custom_fields` on `custom_field_id` to rebuild the nested v1 array.
 
 ### Pagination and incremental state
 

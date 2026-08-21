@@ -115,6 +115,32 @@ def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_so
     assert any("harvest:<resource>:list" in trace.trace.error.message for trace in output.errors)
 
 
+def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, get_source):
+    _register_token(requests_mock)
+    option_requests = []
+
+    def options_callback(request, context):
+        option_requests.append(request)
+        if len(option_requests) == 1:
+            assert request.qs == {"per_page": ["500"]}
+            context.status_code = 200
+            context.headers["Link"] = '<https://harvest.greenhouse.io/v3/custom_field_options?cursor=cursor-2>; rel="next"'
+            return [{"id": 1, "custom_field_id": 10, "name": "Full-time"}]
+
+        assert parse_qs(request.query) == {"cursor": ["cursor-2"]}
+        context.status_code = 200
+        return [{"id": 2, "custom_field_id": 10, "name": "Part-time"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/custom_field_options", json=options_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("custom_field_options", SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert [record.record.data["id"] for record in output.records] == [1, 2]
+    assert len(option_requests) == 2
+
+
 def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     token_requests = _register_token(requests_mock)
     requests_mock.get(
