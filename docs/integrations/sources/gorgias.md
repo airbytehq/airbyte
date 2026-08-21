@@ -54,7 +54,7 @@ The following streams use `created_datetime` as their incremental cursor. Their 
 
 Run a full refresh of the affected stream to capture these changes.
 
-The `satisfaction-surveys` stream is also creation-cursor based. Updates to a survey's `score` or `scored_datetime` after creation are not captured by an incremental sync; run a full refresh of that stream.
+The `account`, `satisfaction-surveys`, `views`, and `views_items` streams read their full history on every sync, so post-creation changes such as a survey's `score` and `scored_datetime` are captured.
 
 The connector does not capture deletions as deletion events. Tickets expose `trashed` and tags expose `deleted_datetime`, but there is no deletion stream, so deleted records are not captured as deletion events.
 
@@ -67,7 +67,7 @@ The incremental sync `end_datetime` is evaluated when the sync starts. Records c
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.1.51 | 2026-08-20 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental sync improvements and known limitations are documented in the [Incremental sync limitations](#incremental-sync-limitations) section. |
+| 0.1.51 | 2026-08-20 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs now avoid re-reading previously-synced data across the applicable Gorgias streams using cursor-aware pagination, server-side date filtering, or client-side filtering. See [Incremental sync limitations](#incremental-sync-limitations) for what an incremental sync no longer picks up. |
 | 0.1.50 | 2026-08-18 | [84643](https://github.com/airbytehq/airbyte/pull/84643) | Update dependencies |
 | 0.1.49 | 2026-08-11 | [83969](https://github.com/airbytehq/airbyte/pull/83969) | Update dependencies |
 | 0.1.48 | 2026-08-04 | [83514](https://github.com/airbytehq/airbyte/pull/83514) | Update dependencies |
