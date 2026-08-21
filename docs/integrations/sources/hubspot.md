@@ -164,7 +164,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 **Number of concurrent threads** sets how many streams and partitions the connector reads at the same time. It accepts a value from 1 to 40, and defaults to 10.
 
-The connector paces its own requests to stay inside HubSpot's limits, at 5 requests per second for CRM search endpoints and 10 requests per second for everything else. More threads don't raise those ceilings, so they help most on streams whose runtime is dominated by HubSpot's response times rather than by the request budget. That includes streams that make extra requests behind each page or record, such as `deals` and the other CRM search streams, which fetch associations for every page, and `campaigns` and `marketing_emails`, which fetch details for every record.
+The connector paces its own requests to stay inside HubSpot's limits: 5 requests per second for CRM search endpoints, and 10 per second for everything else. More threads don't raise those ceilings, so they help most on streams whose runtime is dominated by HubSpot's response times rather than by the request budget. That includes streams that make extra requests behind each page or record, such as `deals` and the other CRM search streams, which fetch associations for every page, and `campaigns` and `marketing_emails`, which fetch details for every record.
 
 Lower the value if other integrations share the same HubSpot account and you see repeated 429 responses in your sync logs, or if you're close to your account's [daily request limit](#rate-limiting).
 
