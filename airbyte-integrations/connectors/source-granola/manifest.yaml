@@ -150,6 +150,19 @@ definitions:
           http_method: GET
           request_parameters:
             page_size: "100"
+          # A note listed by the parent stream can be deleted, unshared, or fall out of
+          # the API key's scope before its transcript partition runs, and Granola answers
+          # 404 on this path. Skip that note instead of failing every remaining transcript.
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: >-
+                  Skipping a note in note_transcripts because Granola no longer returns a
+                  transcript for it. The note was likely deleted or unshared during the sync.
         record_selector:
           type: RecordSelector
           extractor:
@@ -307,6 +320,27 @@ schemas:
               - "null"
               - string
             description: Source of the speaker (microphone or speaker).
+          attribution:
+            type:
+              - "null"
+              - string
+            description: >-
+              Who the segment is attributed to: "me" for the note's owner, "them" for
+              other meeting participants. Omitted when the attribution is unknown.
+          diarization_label:
+            type:
+              - "null"
+              - string
+            description: >-
+              Diarized anonymous speaker label, such as "Speaker A". Present only on iOS
+              transcripts when diarization is available.
+          name:
+            type:
+              - "null"
+              - string
+            description: >-
+              Resolved name of the identified speaker, such as "Alice Smith". Present
+              only when a speaker could be identified.
       text:
         type:
           - "null"

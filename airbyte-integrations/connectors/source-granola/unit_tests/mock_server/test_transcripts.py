@@ -16,7 +16,7 @@ from unittest import TestCase
 import freezegun
 from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import Level, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -92,6 +92,10 @@ class TestOversizedTranscripts(TestCase):
         assert output.errors == []
         assert _record_ids(output) == ["note-small"]
         http_mocker.assert_number_of_calls(oversized_request, 1)
+        # The CDK emits an IGNORE filter's message at INFO, so the docs tell operators to
+        # grep for it rather than watch for a warning.
+        skip_logs = [message.log for message in output.logs if "transcript is too large" in message.log.message]
+        assert [log.level for log in skip_logs] == [Level.INFO]
 
     @HttpMocker()
     def test_note_transcripts_follows_the_transcript_cursor(self, http_mocker: HttpMocker):
@@ -109,6 +113,20 @@ class TestOversizedTranscripts(TestCase):
         assert all(message.record.data["note_id"] == "note-large" for message in output.records)
         http_mocker.assert_number_of_calls(first_page, 1)
         http_mocker.assert_number_of_calls(second_page, 1)
+
+    @HttpMocker()
+    def test_note_transcripts_skips_notes_without_a_transcript(self, http_mocker: HttpMocker):
+        """A 404 on the transcript endpoint skips that note instead of failing the stream."""
+        http_mocker.get(_notes_request(), _notes_response("note-a", "note-gone"))
+        http_mocker.get(GranolaRequestBuilder.transcript_endpoint("note-a").build(), _transcript_response("note-a text"))
+        missing = GranolaRequestBuilder.transcript_endpoint("note-gone").build()
+        http_mocker.get(missing, HttpResponse(body=json.dumps({"code": "NOT_FOUND"}), status_code=404))
+
+        output = _read("note_transcripts")
+
+        assert output.errors == []
+        assert [message.record.data["note_id"] for message in output.records] == ["note-a"]
+        http_mocker.assert_number_of_calls(missing, 1)
 
     @HttpMocker()
     def test_note_transcripts_requests_a_transcript_per_note(self, http_mocker: HttpMocker):

@@ -81,13 +81,15 @@ The connector always requests transcript data for this stream. Syncing `detailed
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
-Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. The connector logs a warning and skips those notes in this stream instead of failing the sync. Sync the `note_transcripts` stream to replicate their transcripts.
+Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. The connector skips those notes in this stream instead of failing the sync, so a note with an oversized transcript produces no `detailed_notes` record at all, including its summary, attendees, and calendar metadata. Each skip is logged at INFO level rather than as a warning, so search the sync logs for `transcript is too large` to see which notes were skipped. Sync the `note_transcripts` stream to replicate their transcripts.
 
 ### Note transcripts
 
 The `note_transcripts` stream retrieves each note's transcript from the [`GET /v1/notes/{note_id}/transcript`](https://docs.granola.ai/api-reference/get-transcript) endpoint, one record per transcript segment. Each record carries the segment's speaker, text, and start and end times, plus the `note_id` of the note it belongs to. Because this endpoint is paged, it returns transcripts of any size, including those `detailed_notes` can't return inline.
 
-The stream has no primary key, so records are appended rather than deduplicated. It requests transcripts for every note returned by the `notes` stream, which adds at least one request per note to the sync.
+The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes created since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. Transcripts longer than 100 segments cost an additional request per page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
+
+If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
 
 ### Data access by key type
 
@@ -142,7 +144,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 0.3.0 | 2026-08-20 | [84907](https://github.com/airbytehq/airbyte/pull/84907) | Add note_transcripts stream for paged transcripts and skip oversized transcripts in detailed_notes instead of failing the sync |
+| 0.3.0 | 2026-08-20 | [84907](https://github.com/airbytehq/airbyte/pull/84907) | Add note_transcripts stream for transcripts of any size. Notes whose transcript is too large to return inline are now skipped in detailed_notes, producing no record for those notes, instead of failing the sync |
 | 0.2.14 | 2026-08-21 | [84898](https://github.com/airbytehq/airbyte/pull/84898) | Stop dropping notes created on a 30-day incremental slice boundary date |
 | 0.2.13 | 2026-08-18 | [84623](https://github.com/airbytehq/airbyte/pull/84623) | Update dependencies |
 | 0.2.12 | 2026-08-12 | [84278](https://github.com/airbytehq/airbyte/pull/84278) | Retry rate-limited and server-error responses with backoff honoring Retry-After |
