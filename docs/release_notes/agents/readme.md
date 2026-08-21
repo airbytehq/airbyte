@@ -1,5 +1,23 @@
 # Airbyte Agents release notes
 
+## August 19, 2026
+
+Web app
+
+- Pinning chats no longer stops at 50. Every chat you pin now shows up in the pinned group in the sidebar and reads as pinned in the chat header. Pinning and unpinning also take effect immediately, without waiting for the list to refresh.
+
+SDK
+
+- Google Ads list methods no longer take a page size, because Google fixes each page of results at its own size and rejects the setting. To get the next page, pass the page token from the previous response along with the same query.
+
+Connectors
+
+- Google Ads queries now page through large result sets correctly, so your agents return complete results instead of stopping after the first page. The connector also documents that it only reads accounts your sign-in has direct access to. Agents no longer retry accounts that are reachable only through a manager account.
+
+Other
+
+- When your agents match customers or companies across your connected apps, they now know which fields they can actually query and start from email addresses before trying other identifiers. Expect fewer failed lookups and quicker answers.
+
 ## August 12, 2026
 
 Web app
