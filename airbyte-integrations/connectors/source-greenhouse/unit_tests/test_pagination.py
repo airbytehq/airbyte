@@ -4,7 +4,7 @@
 import base64
 from urllib.parse import parse_qs
 
-from airbyte_cdk.models import SyncMode, Type
+from airbyte_cdk.models import FailureType, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -95,6 +95,24 @@ def test_applications_retries_429_and_completes(requests_mock, get_source):
 
     assert [record.record.data["id"] for record in output.records] == [1]
     assert len(application_requests) == 2
+
+
+def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source):
+    _register_token(requests_mock)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/offices",
+        status_code=403,
+        json={"message": "Forbidden"},
+    )
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("offices", SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
+
+    assert output.errors
+    assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
+    assert any("Site Admin" in trace.trace.error.message for trace in output.errors)
+    assert any("harvest:<resource>:list" in trace.trace.error.message for trace in output.errors)
 
 
 def test_oauth_refresh_token_request_shape(requests_mock, get_source):
