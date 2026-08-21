@@ -311,3 +311,38 @@ def test_manifest_flat_child_state_migration_reaches_request(requests_mock, get_
         "per_page": ["500"],
         "updated_at": ["gte|2024-01-01t00:00:00.000z"],
     }
+
+
+@pytest.mark.parametrize(
+    "status_code, message",
+    [
+        (400, "Bad Request Params"),
+        (401, "Unauthorized"),
+    ],
+)
+def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(
+    status_code, message, requests_mock, get_source
+):
+    def token_callback(request, context):
+        context.status_code = status_code
+        return {
+            "message": message,
+            "errors": [
+                "Refresh token expired at 2026-01-01T00:00:00Z. The user must re-authorize consent"
+            ],
+        }
+
+    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
+
+    messages = [trace.trace.error.message for trace in output.errors]
+    assert any("Please re-authenticate" in text for text in messages), messages
+    assert all(
+        trace.trace.error.failure_type == FailureType.config_error for trace in output.errors
+    ), [
+        (trace.trace.error.failure_type, trace.trace.error.message)
+        for trace in output.errors
+    ]
