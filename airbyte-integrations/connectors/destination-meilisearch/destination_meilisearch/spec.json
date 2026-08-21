@@ -1,0 +1,43 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/meilisearch",
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Meilisearch",
+    "type": "object",
+    "required": ["host"],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the Meilisearch instance, including protocol (e.g. http://localhost:7700).",
+        "type": "string",
+        "order": 0
+      },
+      "api_key": {
+        "title": "API Key",
+        "airbyte_secret": true,
+        "description": "Meilisearch API Key with read and write access. Leave blank if the instance has no key configured. See the <a href=\"https://www.meilisearch.com/docs/learn/security/master_api_keys\">docs</a>.",
+        "type": "string",
+        "order": 1
+      },
+      "batch_size": {
+        "title": "Batch Size",
+        "description": "Number of records to buffer before flushing them to Meilisearch in a single indexing task.",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1000,
+        "order": 2
+      },
+      "update_method": {
+        "title": "Update Method",
+        "description": "How to write documents that share a primary key. 'replace' fully overwrites the stored document; 'merge' performs a partial update, keeping fields not present in the incoming record.",
+        "type": "string",
+        "enum": ["replace", "merge"],
+        "default": "replace",
+        "order": 3
+      }
+    }
+  }
+}

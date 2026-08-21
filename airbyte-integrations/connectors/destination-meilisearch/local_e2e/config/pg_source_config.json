@@ -1,0 +1,11 @@
+{
+  "host": "postgres",
+  "port": 5432,
+  "database": "sales",
+  "schemas": ["public"],
+  "username": "postgres",
+  "password": "e2e-password",
+  "ssl_mode": { "mode": "disable" },
+  "tunnel_method": { "tunnel_method": "NO_TUNNEL" },
+  "replication_method": { "method": "Standard" }
+}
