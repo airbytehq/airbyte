@@ -2,7 +2,7 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Greenhouse migration guide
 
-## Version 1.0.0
+## Upgrading to 1.0.0
 
 Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. This is a breaking release: refresh the source schema and reset affected streams after upgrading.
 
@@ -14,7 +14,7 @@ Greenhouse issues OAuth client credentials to partners on request by email. Star
 
 ### Stream and schema changes
 
-All 36 streams now use their Harvest v3 collection endpoints. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
+All 37 streams now use their Harvest v3 collection endpoints. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
 
 - `applications` uses `updated_at` for incremental state instead of `applied_at` and exposes flat job, stage, recruiter, coordinator, and source identifiers.
 - `candidates` no longer embeds applications and uses `private`, `preferred_name`, `last_activity_at`, and linked user identifiers.
@@ -62,8 +62,10 @@ In v3, `applications_demographics_answers` reads the same flat collection as `de
 
 ### Rate limits
 
-The connector uses Greenhouse's v3 rate-limit headers and a moving 30-second window. Existing connections may take longer or process fewer concurrent requests while the connector stays within the documented account limit.
+The connector uses Greenhouse's v3 rate-limit headers and a moving 30-second window. Existing connections may take longer or process fewer concurrent requests while the connector uses its own conservative default request budget.
 
 Greenhouse refresh tokens expire after 24 hours of non-use and rotate on every refresh, so set every Greenhouse connection to sync more often than once a day. A connection left paused, disabled, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+
+## Connector upgrade guide
 
 <MigrationGuide />
