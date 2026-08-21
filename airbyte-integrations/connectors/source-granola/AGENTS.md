@@ -25,6 +25,12 @@ The Granola API connector has 2 streams: `notes` (incremental with `created_at` 
 | notes | medium | top-level parent | created_at | created_at | incremental |  |
 | detailed_notes | medium | child | none | none | deferred_child |  |
 
+### Slice bounds must stay second-granular
+
+`GET /v1/notes` treats `created_before=<date>` as excluding that entire day — `created_after=2025-11-10&created_before=2025-11-10` returns zero records even when notes exist on that day. Day-truncated slice bounds (`datetime_format: "%Y-%m-%d"` with `cursor_granularity: P1D`) therefore silently dropped every note created on a slice boundary date, and `detailed_notes` lost the same notes because it partitions from `notes`. The cursor now uses `datetime_format: "%Y-%m-%dT%H:%M:%SZ"` with `cursor_granularity: PT1S`, which the vendor [OpenAPI spec](https://docs.granola.ai/api-reference/openapi.json) supports (`created_after`/`created_before` are `anyOf` date or date-time). Do not revert the bounds to date-only granularity.
+
+`cursor_datetime_formats` keeps `"%Y-%m-%d"` so date-only cursor state written by versions up to 0.2.13 still parses; removing it would break resumption for existing connections.
+
 ### Future incremental stream candidates
 
 - **Child streams (1 streams):** `detailed_notes` — partitioned via `SubstreamPartitionRouter`. A follow-up session should evaluate incremental support.
