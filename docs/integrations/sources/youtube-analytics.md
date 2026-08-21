@@ -91,15 +91,25 @@ YouTube API Services are provided by Google. For information about how Google ha
 
 When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
 
-## Performance considerations
+## Rate limits and quota
 
-The YouTube Reporting API has the following quota limits:
+The YouTube Reporting API has a quota of 60 requests per minute per Google API
+project. This quota is shared by every Airbyte connection that uses the same OAuth
+client. If you run multiple YouTube connections, divide the quota among them by
+setting `requests_per_minute` for each connection. The default is 30 requests per
+minute per connection. Lower this value if you experience repeated `429` rate limit
+errors.
 
-- Free requests per day: 20,000
-- Free requests per 100 seconds: 100
-- Free requests per minute: 60
+You can configure the following options:
 
-The connector retrieves bulk report data from YouTube's reporting jobs, which minimizes API quota usage compared to making individual queries for each metric.
+- `requests_per_minute`: The maximum requests per minute for this connection. Set
+  this value to a portion of the shared project quota when multiple connections
+  use the same OAuth client.
+- `num_workers`: The number of worker threads to use for the sync. The default is
+  2.
+
+The connector retrieves bulk report data from YouTube's reporting jobs, which
+minimizes API quota usage compared to making individual queries for each metric.
 
 ## IP allow list
 
@@ -112,6 +122,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                             |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 1.4.0 | 2026-08-21 | PR_NUMBER | Configure rate limits and concurrency |
 | 1.3.2 | 2026-08-18 | [84816](https://github.com/airbytehq/airbyte/pull/84816) | Update dependencies |
 | 1.3.1 | 2026-08-11 | [82653](https://github.com/airbytehq/airbyte/pull/82653) | Update dependencies |
 | 1.3.0 | 2026-08-03 | [83286](https://github.com/airbytehq/airbyte/pull/83286) | Add new `report_types` stream, fix `check` failures, and explain 401s caused by a Google account with no YouTube channel |
