@@ -1,11 +1,12 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-"""Guards for two stream properties the HubSpot API returns but the schemas used to omit.
+"""Guards for stream properties the HubSpot API returns but the schemas used to omit.
 
-V2 destinations materialise exactly the declared stream schema: an undeclared property is
-dropped and does not appear in `_airbyte_meta.changes[]`, so the loss is silent. These tests
-pin the two declarations, and pin them as *nullable* like every sibling, so that neither the
-declaration nor its backward-compatible nullability can be dropped without a test failing.
+Schematizing destinations (S3/GCS with Avro or Parquet output) build records strictly from
+the declared stream schema: an undeclared property is dropped and does not appear in
+`_airbyte_meta.changes[]`, so the loss is silent. These tests pin the declarations, and pin
+them as *nullable* like every sibling, so that neither the declaration nor its
+backward-compatible nullability can be dropped without a test failing.
 """
 
 from pathlib import Path
@@ -30,19 +31,27 @@ def owners_team(manifest: dict) -> dict:
     return manifest["schemas"]["owners"]["properties"]["teams"]["items"]["properties"]
 
 
+@pytest.fixture(scope="module")
+def owners_archived_team(manifest: dict) -> dict:
+    return manifest["schemas"]["owners_archived"]["properties"]["teams"]["items"]["properties"]
+
+
 def test_marketing_emails_declares_testing_is_ab_variation(marketing_emails_testing: dict) -> None:
     assert "isAbVariation" in marketing_emails_testing, (
         "`marketing_emails.testing.isAbVariation` is returned by /marketing/v3/emails; without the "
-        "declaration a V2 destination drops it silently"
+        "declaration a schematizing destination (S3/GCS Avro/Parquet) drops it silently"
     )
     assert marketing_emails_testing["isAbVariation"]["type"] == ["null", "boolean"]
 
 
-def test_owners_declares_team_primary(owners_team: dict) -> None:
-    assert (
-        "primary" in owners_team
-    ), "`owners.teams[].primary` is returned by the Owners API; without the declaration a V2 destination drops it silently"
-    assert owners_team["primary"]["type"] == ["null", "boolean"]
+@pytest.mark.parametrize("fixture_name", ["owners_team", "owners_archived_team"])
+def test_owners_declares_team_primary(fixture_name: str, request) -> None:
+    team = request.getfixturevalue(fixture_name)
+    assert "primary" in team, (
+        "`teams[].primary` is returned by the Owners API for both active and archived owners; "
+        "without the declaration a schematizing destination (S3/GCS Avro/Parquet) drops it silently"
+    )
+    assert team["primary"]["type"] == ["null", "boolean"]
 
 
 @pytest.mark.parametrize(
@@ -50,6 +59,7 @@ def test_owners_declares_team_primary(owners_team: dict) -> None:
     [
         ("marketing_emails_testing", "isAbVariation"),
         ("owners_team", "primary"),
+        ("owners_archived_team", "primary"),
     ],
 )
 def test_added_property_is_nullable_like_its_siblings(fixture_name: str, added_property: str, request) -> None:
