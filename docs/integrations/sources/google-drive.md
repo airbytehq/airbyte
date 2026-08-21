@@ -95,7 +95,7 @@ To set up Google Drive as a source in Airbyte Cloud:
 
 <!-- /env:oss -->
 
-6. For **Folder Link**, enter the link to the Google Drive folder. To get the link, navigate to the folder you want to sync in the Google Drive UI, and copy the current URL.
+6. For **Folder Link**, enter the link to the Google Drive folder. To get the link, navigate to the folder you want to sync in the Google Drive UI, and copy the current URL. The link usually looks like `https://drive.google.com/drive/folders/MY-FOLDER-ID`, but other Drive folder URLs work too, such as `https://drive.google.com/drive/u/0/folders/MY-FOLDER-ID`. To sync everything in the account's My Drive instead of one folder, use `https://drive.google.com/drive/my-drive`.
 7. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
 8. Click **Set up source** and wait for the tests to complete.
 
@@ -239,11 +239,19 @@ There are currently no options for JSONL parsing.
 
 ### Document File Type Format
 
-The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
+The Document file type format is a special format that allows you to extract text from Markdown, TXT, PDF, Word, PowerPoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern must be a Markdown (`md`), plain text (`txt`), PDF (`pdf`), Word (`docx`), or PowerPoint (`pptx`) file, or a Google Doc, Google Slides, or Google Drawings file that the connector exports to one of those formats. Files of any other type cause a parsing error for that file.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
-Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
+Before parsing, the connector exports Google-native files:
+
+| Google file type | Exported as    |
+| :--------------- | :------------- |
+| Google Docs      | Word (`docx`)  |
+| Google Slides    | PDF            |
+| Google Drawings  | PDF            |
+
+Google Sheets aren't exported when you sync records, so the connector can't parse them. To replicate Google Sheets from Drive, use the **Copy Raw Files** delivery method, which exports them as `xlsx`, or use the [Google Sheets source](/integrations/sources/google-sheets) instead.
 
 #### Parsing via Unstructured.io Python Library
 
@@ -259,15 +267,28 @@ The raw file replication feature has the following requirements and limitations:
 - **Supported Airbyte Versions:**
   - Cloud: All Workspaces
   - OSS / Enterprise: `v1.2.0` or later
-- **Max File Size:** `1GB` per file
+- **Max File Size:** 1,500,000,000 bytes (about 1.5 GB) per file. The connector fails the sync when a matched file is larger than this.
 - **Supported Destinations:**
   - S3: `v1.4.0` or later
 
 :::
 
-Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source. Recommended for use with unstructured text data, non-text and compressed files.
+Copy raw files without parsing their contents. Bits are copied into the destination exactly as they appeared in the source, except for Google-native files, which the connector must export first. Recommended for use with unstructured text data, non-text and compressed files.
 
 Format options will not be taken into account. Instead, files will be transferred to the file-based destination without parsing underlying data.
+
+Google-native files can't be copied byte for byte, so the connector exports them and transfers the exported file, adding the new extension to the filename.
+
+| Google file type | Transferred as      |
+| :--------------- | :------------------ |
+| Google Docs      | Word (`docx`)       |
+| Google Sheets    | Excel (`xlsx`)      |
+| Google Slides    | PowerPoint (`pptx`) |
+| Google Drawings  | PDF                 |
+
+The connector appends the extension to the name as it appears in Drive, so a Google Doc named `Report.docx` arrives in the destination as `Report.docx.docx`.
+
+Glob patterns match the name in Drive, before the extension is appended. Google-native files typically have no extension in Drive, so a Google Doc named `Report` matches `**` or `**/Report`, but not `**/*.docx`.
 
 </FieldAnchor>
 
@@ -315,6 +336,12 @@ By default, this stream is enabled and retrieves information about **users and g
 - Ensure the **Google Admin SDK API** is enabled.
 - The authenticated user must have the necessary Google Admin Directory permissions.
 
+## Rate limits
+
+The connector reads from the Google Drive API, which enforces [per-project and per-user quotas](https://developers.google.com/workspace/drive/api/guides/limits) measured in quota units. Listing a folder costs 100 units per request, and downloading a file costs 200 units. Large folders and file transfer syncs consume quota quickly, so concurrent Drive syncs can hit the per-minute quota and receive `403: User rate limit exceeded` or `429: Rate limit exceeded` responses. If this happens, reduce the number of concurrent syncs or request a quota increase in your Google Cloud project.
+
+Syncs that use the **Replicate Permissions ACL** delivery method also call the Admin SDK Directory API, which has [its own quotas](https://developers.google.com/admin-sdk/directory/v1/limits).
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -326,7 +353,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.31 | 2026-08-18 | [83838](https://github.com/airbytehq/airbyte/pull/83838) | Resolve Google-native export extensions before computing file-transfer paths |
+| 0.5.31 | 2026-08-19 | [83838](https://github.com/airbytehq/airbyte/pull/83838) | Resolve Google-native export extensions before computing file-transfer paths |
 | 0.5.30 | 2026-08-18 | [84602](https://github.com/airbytehq/airbyte/pull/84602) | Update dependencies |
 | 0.5.29 | 2026-08-11 | [84223](https://github.com/airbytehq/airbyte/pull/84223) | Update CDK to ^7.25.1 |
 | 0.5.28 | 2026-08-11 | [83966](https://github.com/airbytehq/airbyte/pull/83966) | Update dependencies |
