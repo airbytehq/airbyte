@@ -14,18 +14,18 @@ definitions:
       - type: WaitTimeFromHeader
         header: Retry-After
         max_waiting_time_in_seconds: 300
-      response_filters:
-        - type: HttpResponseFilter
-          http_codes:
-            - 403
-          action: FAIL
-          failure_type: config_error
-          error_message: >-
-            Greenhouse returned 403 for this Harvest v3 list endpoint. Every v3 list
-            endpoint requires the connection to be authorized by a Greenhouse user with
-            Site Admin privileges and requires the matching harvest:<resource>:list OAuth
-            scope. Re-run the Authenticate step signed in to Greenhouse as a Site Admin
-            and confirm the OAuth grant includes every scope this connector requests.
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes:
+          - 403
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Greenhouse returned 403 for this Harvest v3 list endpoint. Every v3 list
+          endpoint requires the connection to be authorized by a Greenhouse user with
+          Site Admin privileges and requires the matching harvest:<resource>:list OAuth
+          scope. Re-run the Authenticate step signed in to Greenhouse as a Site Admin
+          and confirm the OAuth grant includes every scope this connector requests.
   streams:
     applications:
       type: DeclarativeStream
