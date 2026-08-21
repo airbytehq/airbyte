@@ -342,6 +342,46 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
     assert user_requests[1].qs == {"cursor": ["cursor-2"]}
 
 
+def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(
+    requests_mock, get_source
+):
+    _register_token(requests_mock)
+    candidate_requests = []
+    note_requests = []
+
+    def candidates_callback(request, context):
+        candidate_requests.append(request)
+        context.status_code = 200
+        return [{"id": 42, "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    def notes_callback(request, context):
+        note_requests.append(request)
+        context.status_code = 200
+        return [
+            {
+                "id": 101,
+                "candidate_id": 42,
+                "application_id": None,
+                "body": "Candidate contacted",
+                "type": "NOTE",
+            }
+        ]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/candidates", json=candidates_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/notes", json=notes_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert candidate_requests
+    assert len(note_requests) == 1
+    assert note_requests[0].qs == {"per_page": ["500"], "candidate_ids": ["42"]}
+    assert [record.record.data["id"] for record in output.records] == [101]
+    assert output.records[0].record.data["candidate_id"] == 42
+
+
 @pytest.mark.parametrize(
     "status_code, message",
     [
