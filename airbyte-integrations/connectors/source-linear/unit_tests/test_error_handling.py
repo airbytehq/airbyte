@@ -95,6 +95,13 @@ def _graphql_error(code: str, *, message: str = "GraphQL error.", user_message: 
         ),
         pytest.param(
             200,
+            {"errors": [{"message": "GraphQL error without extensions."}]},
+            ResponseAction.FAIL,
+            FailureType.system_error,
+            id="graphql_error_without_extensions",
+        ),
+        pytest.param(
+            200,
             {"data": {"issues": {"nodes": []}}},
             ResponseAction.SUCCESS,
             None,
@@ -121,3 +128,5 @@ def test_graphql_error_classification(
 
     if response_json.get("errors", [{}])[0].get("extensions", {}).get("code") == "AUTHENTICATION_ERROR":
         assert "You need to authenticate to access this operation." in result.error_message
+    if response_json.get("errors") and "extensions" not in response_json["errors"][0]:
+        assert result.error_message == "Linear returned an error: GraphQL error without extensions."
