@@ -7,6 +7,7 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 |-------|------|-------------|---------------|
 | `access_token` | `string` | Float Access Token. API token obtained from your Float Account Settings page |  |
 | `start_date` | `datetime` | Start Date. | |
+| `end_date` | `string` | End Date (YYYY-MM-DD). Used by the reports streams. Defaults to today if not set. | |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -27,6 +28,16 @@ Float.com enables teams to plan and allocate resources effectively, manage team 
 | milestones | milestone_id | DefaultPaginator | ✅ |  ❌  |
 | tasks | task_id | DefaultPaginator | ✅ |  ❌  |
 | logged-time | logged_time_id | DefaultPaginator | ✅ |  ✅  |
+| reports-people | people_id | No pagination | ✅ |  ❌  |
+| reports-projects | project_id | No pagination | ✅ |  ❌  |
+
+### Report streams
+
+`reports-people` and `reports-projects` return one aggregated row per person or project covering the whole configured `start_date`..`end_date` window, as computed at sync time. They are snapshots, not history: because the underlying schedule keeps changing, the same row will come back with different numbers on the next sync. To make each snapshot interpretable, every record carries the `start_date` and `end_date` it was computed for.
+
+Use **full refresh | overwrite** for these streams. With **append** you accumulate one snapshot per sync, which is only useful if you keep the `end_date` field to tell the snapshots apart.
+
+Set `end_date` on or after `start_date`. Float does not document how it handles an inverted range, so the results are unspecified rather than empty.
 
 ## IP allow list
 
@@ -39,6 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.0 | 2026-08-18 | [79087](https://github.com/airbytehq/airbyte/pull/79087) | Add reports-people and reports-projects streams |
 | 0.0.57 | 2026-08-18 | [84594](https://github.com/airbytehq/airbyte/pull/84594) | Update dependencies |
 | 0.0.56 | 2026-08-11 | [83947](https://github.com/airbytehq/airbyte/pull/83947) | Update dependencies |
 | 0.0.55 | 2026-08-04 | [83470](https://github.com/airbytehq/airbyte/pull/83470) | Update dependencies |
