@@ -70,7 +70,8 @@ public class InitialSnapshotHandler {
           LOGGER.info("***collection: {}", collection);
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
           LOGGER.info("***fields: {}", fields);
-          final var idTypes = aggregateIdField(collection);
+          LOGGER.info("*** override id type validation");
+          /*final var idTypes = aggregateIdField(collection);
           if (idTypes.size() > 1) {
             LOGGER.warn("The _id fields in this collection are not consistently typed, which may lead to data loss (collection = {}).",
                 collectionName);
@@ -83,7 +84,7 @@ public class InitialSnapshotHandler {
               throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED
                   + " (collection = " + collectionName + "). type: " + idType);
             }
-          });
+          });*/
 
           // find the existing state, if there is one, for this stream
           final Optional<MongoDbStreamState> existingState =
