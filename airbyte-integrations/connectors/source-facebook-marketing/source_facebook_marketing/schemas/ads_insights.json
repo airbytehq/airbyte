@@ -396,6 +396,10 @@
       "description": "Actions on the video retention graph",
       "$ref": "ads_histogram_stats.json"
     },
+    "video_thruplay_watched_actions": {
+      "description": "Actions where the video was played to completion, or for at least 15 seconds",
+      "$ref": "ads_action_stats.json"
+    },
     "video_time_watched_actions": {
       "description": "Actions where time was spent watching the video",
       "$ref": "ads_action_stats.json"

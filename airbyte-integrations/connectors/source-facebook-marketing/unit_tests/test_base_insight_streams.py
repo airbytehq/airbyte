@@ -662,8 +662,8 @@ class TestBaseInsightsStream:
                 id="mix_of_base_and_extra_fields",
             ),
             pytest.param(
-                ["video_thruplay_watched_actions", "objective_result_rate"],
-                ["video_thruplay_watched_actions", "objective_result_rate", "date_start", "date_stop", "account_id", "ad_id"],
+                ["unique_video_view_15_sec", "objective_result_rate"],
+                ["unique_video_view_15_sec", "objective_result_rate", "date_start", "date_stop", "account_id", "ad_id"],
                 [],
                 id="ads_action_stats_and_ads_insights_result_fields",
             ),
@@ -706,7 +706,7 @@ class TestBaseInsightsStream:
         schema = stream.get_json_schema()
 
         # These fields should NOT be in the built-in schema (they are only in ads_insights_custom_fields.json)
-        extra_fields = ["conversion_leads", "cost_per_objective_result", "video_thruplay_watched_actions"]
+        extra_fields = ["conversion_leads", "cost_per_objective_result"]
         for field in extra_fields:
             assert field not in schema["properties"], f"Extra field '{field}' should NOT be in built-in schema"
 
@@ -714,6 +714,7 @@ class TestBaseInsightsStream:
         assert "account_id" in schema["properties"]
         assert "impressions" in schema["properties"]
         assert "actions" in schema["properties"]
+        assert "video_thruplay_watched_actions" in schema["properties"]
 
     def test_fields_custom_with_objective_results(self, api, some_config):
         """Test that objective_results field is included in schema when requested in custom fields"""
