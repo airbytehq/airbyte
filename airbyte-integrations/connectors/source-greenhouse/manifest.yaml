@@ -1686,6 +1686,10 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 8
 
+# Greenhouse publishes no v3 rate-limit ceiling; limits differ between custom and
+# partner integrations and must be read from X-RateLimit-Limit response headers.
+# 50 requests per 30 seconds is a deliberate undershoot of the only published
+# figure (X-RateLimit-Limit: 75); raising it requires an observed header value.
 api_budget:
   type: HTTPAPIBudget
   ratelimit_remaining_header: X-RateLimit-Remaining
@@ -1758,10 +1762,11 @@ spec:
         type: integer
         title: Number of concurrent threads
         description: >-
-          The number of worker threads to use for syncing. The default is tuned
-          against Greenhouse's documented Harvest API rate limit.
-          Increase this only if your Greenhouse account can support higher API
-          usage, or lower it if you see rate-limit errors.
+          The number of worker threads to use for syncing. Greenhouse publishes no
+          Harvest v3 rate-limit ceiling, so the default is conservative and all
+          threads share a single budget. Increase this only if your Greenhouse
+          account can support higher API usage, or lower it if you see rate-limit
+          errors.
         minimum: 1
         maximum: 8
         default: 2
