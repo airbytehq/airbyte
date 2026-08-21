@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 21, 2026
+
+Platform
+
+- The Data Worker usage chart on your organization's Usage page is easier to read. Each day now has a single bar for peak usage instead of stacked, color-coded workspace segments, and hovering over a bar shows your region's peak next to a per-workspace breakdown. The dates along the bottom of the chart also display correctly now. This chart is available if your plan includes contracted Data Worker capacity.
+
 ## August 12, 2026
 
 Connections
