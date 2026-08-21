@@ -196,13 +196,43 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.createSnowflakeStage(tableName))
         /*
          * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
-         * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
-         * ensure that the destination schema is in sync with any changes.
+         * uses a fixed schema that is not based on the catalog/incoming record.  However, raw
+         * tables created before 3.10.0 lack _airbyte_meta/_airbyte_generation_id, so repair
+         * those before returning. The normal path gets the same repair via
+         * super.ensureSchemaMatches, which invokes ensureMetaColumnsExist first.
          */
         if (snowflakeConfiguration.legacyRawTablesOnly) {
+            ensureMetaColumnsExist(stream, tableName)
             return
         }
         super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
+
+    /**
+     * Tables created by connector versions prior to 3.10.0 lack the `_airbyte_meta` and
+     * `_airbyte_generation_id` columns, and the migration that used to add them was removed in the
+     * 4.0.0 direct-load rewrite. Schema evolution can't repair them either, because
+     * [discoverSchema] and [computeSchema] both exclude the meta columns from the diff. So we
+     * detect and add missing meta columns here, before the schema diff runs.
+     */
+    override suspend fun ensureMetaColumnsExist(stream: DestinationStream, tableName: TableName) {
+        // describeTable() uses SHOW COLUMNS and returns ALL columns, unlike getColumnsFromDb()
+        // which filters out the meta columns.
+        val existingColumns = describeTable(tableName).keys
+        val missingMetaColumns =
+            columnManager.getMetaColumns().filterKeys { metaColumn ->
+                // Case-insensitive: raw mode uses lowercase names, schema mode uppercase, and
+                // QUOTED_IDENTIFIERS_IGNORE_CASE accounts may store either case.
+                existingColumns.none { it.equals(metaColumn, ignoreCase = true) }
+            }
+        if (missingMetaColumns.isNotEmpty()) {
+            log.info {
+                "Table ${tableName.toPrettyString()} is missing Airbyte meta columns " +
+                    "${missingMetaColumns.keys} (likely created by a pre-direct-load connector " +
+                    "version); adding them"
+            }
+            sqlGenerator.addMetaColumns(tableName, missingMetaColumns).forEach { execute(it) }
+        }
     }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {

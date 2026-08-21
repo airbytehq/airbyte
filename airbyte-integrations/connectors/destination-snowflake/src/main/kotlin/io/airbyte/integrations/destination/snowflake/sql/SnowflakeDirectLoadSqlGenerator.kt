@@ -392,6 +392,21 @@ class SnowflakeDirectLoadSqlGenerator(
     ): String =
         """DESCRIBE TABLE ${fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
 
+    fun addMetaColumns(
+        tableName: TableName,
+        columns: Map<String, ColumnType>,
+    ): Set<String> {
+        val prettyTableName = fullyQualifiedName(tableName)
+        return columns
+            .map { (name, columnType) ->
+                // Intentionally nullable (no NOT NULL): preexisting records have no value for
+                // these columns, and we don't backfill (matching the pre-4.0
+                // SnowflakeAbMetaAndGenIdMigration and the alterTable() policy below).
+                "ALTER TABLE $prettyTableName ADD COLUMN IF NOT EXISTS ${name.quote()} ${columnType.type};".andLog()
+            }
+            .toSet()
+    }
+
     fun alterTable(
         tableName: TableName,
         addedColumns: Map<String, ColumnType>,

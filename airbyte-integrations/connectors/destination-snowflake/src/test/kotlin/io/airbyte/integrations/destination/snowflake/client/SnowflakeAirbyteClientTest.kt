@@ -7,7 +7,10 @@ package io.airbyte.integrations.destination.snowflake.client
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
@@ -772,6 +775,281 @@ internal class SnowflakeAirbyteClientTest {
             assertTrue(exception.message!!.contains("current role has no privileges on it"))
             assertTrue(exception.cause is SnowflakeSQLException)
         }
+    }
+
+    private fun mockShowColumnsResult(columns: Map<String, String>): ResultSet =
+        mockk<ResultSet> {
+            every { next() } returnsMany (List(columns.size) { true } + false)
+            every { getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD) } returnsMany columns.keys.toList()
+            every { getString(DESCRIBE_TABLE_COLUMN_TYPE_FIELD) } returnsMany
+                columns.values.toList()
+        }
+
+    @Test
+    fun `ensureMetaColumnsExist adds missing meta columns`() {
+        val tableName = TableName("test_namespace", "test_table")
+        val abRawId = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+        val abExtractedAt = COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()
+        val abMeta = COLUMN_NAME_AB_META.toSnowflakeCompatibleName()
+        val abGenerationId = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+
+        // Pre-3.10.0-shaped table: only _AIRBYTE_RAW_ID and _AIRBYTE_EXTRACTED_AT.
+        val showColumnsResultSet =
+            mockShowColumnsResult(
+                mapOf(
+                    abRawId to """{"type":"TEXT","nullable":false}""",
+                    abExtractedAt to """{"type":"TIMESTAMP_TZ","nullable":false}""",
+                    "USER_COL" to """{"type":"TEXT","nullable":true}""",
+                )
+            )
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns
+                    showColumnsResultSet andThen
+                    mockk<ResultSet>()
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+
+        every { columnManager.getMetaColumns() } returns
+            linkedMapOf(
+                abRawId to ColumnType("VARCHAR", false),
+                abExtractedAt to ColumnType("TIMESTAMP_TZ", false),
+                abMeta to ColumnType("VARIANT", false),
+                abGenerationId to ColumnType("NUMBER", true),
+            )
+
+        val expectedMissing =
+            mapOf(
+                abMeta to ColumnType("VARIANT", false),
+                abGenerationId to ColumnType("NUMBER", true),
+            )
+        val alterSql1 = """ALTER TABLE t ADD COLUMN IF NOT EXISTS "$abMeta" VARIANT;"""
+        val alterSql2 = """ALTER TABLE t ADD COLUMN IF NOT EXISTS "$abGenerationId" NUMBER;"""
+        every { sqlGenerator.addMetaColumns(tableName, expectedMissing) } returns
+            setOf(alterSql1, alterSql2)
+
+        runBlocking { client.ensureMetaColumnsExist(mockk<DestinationStream>(), tableName) }
+
+        verify(exactly = 1) { sqlGenerator.showColumns(tableName) }
+        verify(exactly = 1) { sqlGenerator.addMetaColumns(tableName, expectedMissing) }
+        verify(exactly = 1) { statement.executeQuery(alterSql1) }
+        verify(exactly = 1) { statement.executeQuery(alterSql2) }
+    }
+
+    @Test
+    fun `ensureMetaColumnsExist is a noop when all meta columns exist`() {
+        val tableName = TableName("test_namespace", "test_table")
+        val abRawId = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+        val abExtractedAt = COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()
+        val abMeta = COLUMN_NAME_AB_META.toSnowflakeCompatibleName()
+        val abGenerationId = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+
+        val showColumnsResultSet =
+            mockShowColumnsResult(
+                mapOf(
+                    abRawId to """{"type":"TEXT","nullable":false}""",
+                    abExtractedAt to """{"type":"TIMESTAMP_TZ","nullable":false}""",
+                    abMeta to """{"type":"VARIANT","nullable":false}""",
+                    abGenerationId to """{"type":"NUMBER","nullable":true}""",
+                    "USER_COL" to """{"type":"TEXT","nullable":true}""",
+                )
+            )
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns showColumnsResultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+
+        every { columnManager.getMetaColumns() } returns
+            linkedMapOf(
+                abRawId to ColumnType("VARCHAR", false),
+                abExtractedAt to ColumnType("TIMESTAMP_TZ", false),
+                abMeta to ColumnType("VARIANT", false),
+                abGenerationId to ColumnType("NUMBER", true),
+            )
+
+        runBlocking { client.ensureMetaColumnsExist(mockk<DestinationStream>(), tableName) }
+
+        verify(exactly = 1) { sqlGenerator.showColumns(tableName) }
+        verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
+        verify(exactly = 1) { statement.executeQuery(any()) }
+    }
+
+    @Test
+    fun `ensureMetaColumnsExist compares column names case-insensitively`() {
+        val tableName = TableName("test_namespace", "test_table")
+        val abRawId = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+        val abExtractedAt = COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()
+        val abMeta = COLUMN_NAME_AB_META.toSnowflakeCompatibleName()
+        val abGenerationId = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+
+        // QUOTED_IDENTIFIERS_IGNORE_CASE scenario: stored names differ in case from expected.
+        val showColumnsResultSet =
+            mockShowColumnsResult(
+                mapOf(
+                    abRawId.lowercase() to """{"type":"TEXT","nullable":false}""",
+                    abExtractedAt.lowercase() to """{"type":"TIMESTAMP_TZ","nullable":false}""",
+                    abMeta.lowercase() to """{"type":"VARIANT","nullable":false}""",
+                    abGenerationId.lowercase() to """{"type":"NUMBER","nullable":true}""",
+                )
+            )
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns showColumnsResultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+
+        every { columnManager.getMetaColumns() } returns
+            linkedMapOf(
+                abRawId to ColumnType("VARCHAR", false),
+                abExtractedAt to ColumnType("TIMESTAMP_TZ", false),
+                abMeta to ColumnType("VARIANT", false),
+                abGenerationId to ColumnType("NUMBER", true),
+            )
+
+        runBlocking { client.ensureMetaColumnsExist(mockk<DestinationStream>(), tableName) }
+
+        verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
+    }
+
+    @Test
+    fun `ensureSchemaMatches repairs meta columns in legacy raw mode`() {
+        val tableName = TableName("test_namespace", "test_table")
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        // Pre-3.10.0-shaped raw table: missing
+        // _airbyte_meta/_airbyte_generation_id/_airbyte_loaded_at.
+        val showColumnsResultSet =
+            mockShowColumnsResult(
+                mapOf(
+                    COLUMN_NAME_AB_RAW_ID to """{"type":"TEXT","nullable":false}""",
+                    COLUMN_NAME_AB_EXTRACTED_AT to """{"type":"TIMESTAMP_TZ","nullable":false}""",
+                )
+            )
+        val statement =
+            mockk<Statement> {
+                // First executeQuery is the stage creation, then SHOW COLUMNS, then the ALTER.
+                every { executeQuery(any()) } returns
+                    mockk<ResultSet>() andThen
+                    showColumnsResultSet andThen
+                    mockk<ResultSet>()
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+
+        every { columnManager.getMetaColumns() } returns
+            linkedMapOf(
+                COLUMN_NAME_AB_RAW_ID to ColumnType("VARCHAR", false),
+                COLUMN_NAME_AB_EXTRACTED_AT to ColumnType("TIMESTAMP_TZ", false),
+                COLUMN_NAME_AB_META to ColumnType("VARIANT", false),
+                COLUMN_NAME_AB_GENERATION_ID to ColumnType("NUMBER", true),
+                COLUMN_NAME_AB_LOADED_AT to ColumnType("TIMESTAMP_TZ", true),
+            )
+
+        val expectedMissing =
+            mapOf(
+                COLUMN_NAME_AB_META to ColumnType("VARIANT", false),
+                COLUMN_NAME_AB_GENERATION_ID to ColumnType("NUMBER", true),
+                COLUMN_NAME_AB_LOADED_AT to ColumnType("TIMESTAMP_TZ", true),
+            )
+        val alterSql = "ALTER RAW TABLE"
+        every { sqlGenerator.addMetaColumns(tableName, expectedMissing) } returns setOf(alterSql)
+
+        runBlocking {
+            client.ensureSchemaMatches(
+                mockk<DestinationStream>(),
+                tableName,
+                ColumnNameMapping(emptyMap()),
+            )
+        }
+
+        verify(exactly = 1) { sqlGenerator.createSnowflakeStage(tableName) }
+        verify(exactly = 1) { sqlGenerator.addMetaColumns(tableName, expectedMissing) }
+        verify(exactly = 1) { statement.executeQuery(alterSql) }
+        // The schema diff pipeline must not run in raw mode.
+        verify(exactly = 0) { sqlGenerator.describeTable(any(), any()) }
+        verify(exactly = 0) { sqlGenerator.alterTable(any(), any(), any()) }
+    }
+
+    @Test
+    fun `ensureSchemaMatches repairs meta columns exactly once in schema mode`() {
+        val tableName = TableName("test_namespace", "test_table")
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns false
+        val abRawId = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+        val abExtractedAt = COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()
+        val abMeta = COLUMN_NAME_AB_META.toSnowflakeCompatibleName()
+        val abGenerationId = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+
+        val showColumnsResultSet =
+            mockShowColumnsResult(
+                mapOf(
+                    abRawId to """{"type":"TEXT","nullable":false}""",
+                    abExtractedAt to """{"type":"TIMESTAMP_TZ","nullable":false}""",
+                    abMeta to """{"type":"VARIANT","nullable":false}""",
+                    abGenerationId to """{"type":"NUMBER","nullable":true}""",
+                )
+            )
+        // Empty DESCRIBE TABLE result for the schema diff: no user columns in DB or stream.
+        val describeResultSet = mockk<ResultSet> { every { next() } returns false }
+        val statement =
+            mockk<Statement> {
+                // Stage creation, SHOW COLUMNS (hook), DESCRIBE TABLE (diff discovery).
+                every { executeQuery(any()) } returns
+                    mockk<ResultSet>() andThen
+                    showColumnsResultSet andThen
+                    describeResultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+        every { dataSource.connection } returns mockConnection
+
+        every { columnManager.getMetaColumns() } returns
+            linkedMapOf(
+                abRawId to ColumnType("VARCHAR", false),
+                abExtractedAt to ColumnType("TIMESTAMP_TZ", false),
+                abMeta to ColumnType("VARIANT", false),
+                abGenerationId to ColumnType("NUMBER", true),
+            )
+
+        runBlocking {
+            client.ensureSchemaMatches(
+                mockk<DestinationStream>(relaxed = true),
+                tableName,
+                ColumnNameMapping(emptyMap()),
+            )
+        }
+
+        // The hook runs exactly once (via super.ensureSchemaMatches), then the diff pipeline.
+        verify(exactly = 1) { sqlGenerator.showColumns(tableName) }
+        verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
+        verify(exactly = 1) { sqlGenerator.describeTable(any(), any()) }
     }
 
     @Test
