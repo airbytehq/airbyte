@@ -487,6 +487,10 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
     3. Trigger a **Refresh data** sync (or clear the affected streams and run a new sync) so the destination tables are rewritten with the new column type and previously-rejected records are re-emitted as strings.
   - The same steps apply if you later disable the toggle — refresh the schema and the data so the destination column types match the new catalog.
 
+- **`ValueError: No format in [...] matching True` before any records sync**:
+  - Versions 6.6.0 through 6.8.1 crash at startup, failing the whole sync, if your connection deselects an association stream whose parent object stream syncs incrementally.
+  - Upgrade the source to version 6.8.2 or later. Affected connections recover on their next sync, with no configuration or catalog change needed.
+
 </details>
 
 ## IP allow list
