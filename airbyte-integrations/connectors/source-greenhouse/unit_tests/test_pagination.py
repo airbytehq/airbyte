@@ -5,6 +5,8 @@ import base64
 from urllib.parse import parse_qs
 
 import pytest
+import yaml
+from jsonschema import validate
 
 from airbyte_cdk.models import FailureType, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -380,6 +382,91 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(
     assert note_requests[0].qs == {"per_page": ["500"], "candidate_ids": ["42"]}
     assert [record.record.data["id"] for record in output.records] == [101]
     assert output.records[0].record.data["candidate_id"] == 42
+
+
+def test_documented_v3_examples_validate_against_stream_schemas():
+    with open("../manifest.yaml") as manifest_file:
+        manifest = yaml.safe_load(manifest_file)
+
+    documented_examples = {
+        "applications": {
+            "id": 1,
+            "referrer_id": 1,
+            "source_id": 1,
+            "agency_note_id": 1,
+            "recruiter_id": 1,
+            "coordinator_id": 1,
+            "needs_decision": False,
+            "prospect": False,
+            "rejected_at": None,
+            "created_at": "2024-01-01T12:30:30.000Z",
+            "updated_at": "2024-01-01T00:00:00.000Z",
+            "last_activity_at": "2024-01-01T00:00:00.000Z",
+            "stage_id": 1,
+            "job_interview_stage_id": 1,
+            "candidate_id": 1,
+            "job_id": 1,
+            "job_post_id": None,
+            "status": "in_process",
+            "stage_name": "Application Review",
+            "custom_fields": {
+                "custom_field_1": {
+                    "name": "Custom Field 1",
+                    "type": "short_text",
+                    "value": "some value",
+                }
+            },
+            "location_address": "455 Broadway St., New York, NY",
+            "answers": [{"question": "Simple question", "answer": "some answer"}],
+            "prospective_job_ids": [],
+        },
+        "users": {
+            "id": 1,
+            "first_name": "Admin",
+            "last_name": "User",
+            "job_title": None,
+            "agency_id": None,
+            "created_at": "2024-01-01T00:00:00.000Z",
+            "updated_at": "2024-01-01T00:00:00.000Z",
+            "primary_email": "bob_johnson727@localhost.com",
+            "name": "Admin User",
+            "deactivated": False,
+            "site_admin": True,
+            "employee_id": None,
+            "linked_candidate_ids": [],
+            "office_ids": [],
+            "department_ids": [],
+            "interviewer_tags": [],
+            "custom_fields": {
+                "select_custom_field": {
+                    "name": "Select custom field",
+                    "type": "single_select",
+                    "value": None,
+                }
+            },
+        },
+        "activity_feed": {
+            "id": 1,
+            "body": "Admin-only note",
+            "created_at": "2024-01-01T12:30:30.000Z",
+            "updated_at": "2024-01-01T12:30:30.000Z",
+            "subject": None,
+            "user_id": 1,
+            "visibility": "admin_only_visible",
+            "email_from": None,
+            "email_to": None,
+            "email_cc": None,
+            "import_hash": None,
+            "body_with_tags": None,
+            "email_attachment_file_names": None,
+            "candidate_id": 1,
+            "type": "NOTE",
+            "application_id": None,
+        },
+    }
+
+    for stream_name, record in documented_examples.items():
+        validate(record, manifest["schemas"][stream_name])
 
 
 @pytest.mark.parametrize(
