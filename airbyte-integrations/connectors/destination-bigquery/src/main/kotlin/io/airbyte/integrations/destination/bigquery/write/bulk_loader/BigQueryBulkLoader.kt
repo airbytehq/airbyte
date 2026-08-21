@@ -62,6 +62,7 @@ class BigQueryBulkLoader(
                 .setFormatOptions(csvOptions)
                 .setSchema(schema)
                 .setWriteDisposition(JobInfo.WriteDisposition.WRITE_APPEND)
+                .setSchemaUpdateOptions(listOf(JobInfo.SchemaUpdateOption.ALLOW_FIELD_ADDITION))
                 .setJobTimeoutMs(600000L) // 10 min timeout
                 .setNullMarker(BigQueryConsts.NULL_MARKER)
                 .build()
