@@ -68,9 +68,12 @@ data:
     - title: Instagram Platform Changelog
       url: https://developers.facebook.com/docs/instagram-platform/changelog
       type: api_release_history
-    - title: Release notes
-      url: https://developers.facebook.com/docs/instagram-api/changelog
+    - title: Graph API Changelog (available versions and their end dates)
+      url: https://developers.facebook.com/docs/graph-api/changelog
       type: api_release_history
+    - title: Graph API Versioning and Deprecation Policy
+      url: https://developers.facebook.com/docs/graph-api/guides/versioning
+      type: api_deprecations
   erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
     - language:manifest-only
