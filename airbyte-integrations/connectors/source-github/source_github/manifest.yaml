@@ -31,11 +31,14 @@ definitions:
       token_delimiter: ","
       auth_method: "token"
       header: "Authorization"
-      # Same `is not none` guard as the backoff caps below, and for the same reason: a
-      # present-but-null `max_waiting_time` (reachable via the API or Terraform) renders as an
-      # empty string here, so `.get` with a default produced "PTM" and every command failed at
-      # startup with an ISO8601 parse error. `check_connection` passes 0 deliberately, so the
-      # guard must distinguish null from 0.
+      # Same `is not none` guard as the backoff caps below, and for the same reason. A default
+      # in `.get` only applies when the key is *absent*: a present-but-null `max_waiting_time`
+      # (reachable via the API, Terraform or embedded use) returns None, which renders as the
+      # literal "None", so the previous expression produced "PTNoneM" and every command failed at
+      # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
+      # isodate splits on the "T" and reports the empty date half, not because the value was
+      # empty. `check_connection` passes 0 deliberately, so the guard must distinguish null from
+      # 0 — which is why this is `is not none` rather than `or 120`.
       max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
       quota_status_source:
         type: QuotaStatusSource
