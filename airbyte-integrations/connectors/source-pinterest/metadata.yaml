@@ -68,6 +68,9 @@ data:
     - title: Pinterest API Changelog
       url: https://developers.pinterest.com/docs/changelog/
       type: api_release_history
+    - title: Pinterest API generated client (spec-derived)
+      url: https://github.com/pinterest/pinterest-python-generated-api-client
+      type: spec_repository
   tags:
     - language:manifest-only
     - cdk:low-code
