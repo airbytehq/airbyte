@@ -1482,22 +1482,6 @@ spec:
         order: 0
         oneOf:
           - type: object
-            title: API Key
-            required:
-              - auth_type
-              - api_key
-            properties:
-              auth_type:
-                type: string
-                const: "API Key"
-                order: 0
-              api_key:
-                type: string
-                title: API Key
-                description: Your Linear API key. Generate one from Linear Settings → API.
-                airbyte_secret: true
-                order: 1
-          - type: object
             title: OAuth2.0
             required:
               - auth_type
@@ -1527,6 +1511,22 @@ spec:
                 description: The Refresh Token obtained after completing the OAuth flow.
                 airbyte_secret: true
                 order: 3
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - api_key
+            properties:
+              auth_type:
+                type: string
+                const: "API Key"
+                order: 0
+              api_key:
+                type: string
+                title: API Key
+                description: Your Linear API key. Generate one from Linear Settings → API.
+                airbyte_secret: true
+                order: 1
       start_date:
         type: string
         order: 1
