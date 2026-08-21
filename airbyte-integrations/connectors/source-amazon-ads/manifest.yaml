@@ -1739,6 +1739,167 @@ definitions:
         schema:
           $ref: "#/schemas/sponsored_brands_campaigns_report_stream_daily"
 
+    sponsored_tv_campaigns_report_stream:
+      type: DeclarativeStream
+      name: sponsored_tv_campaigns_report_stream
+      primary_key: ["profileId", "reportDate", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "st campaigns report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_TELEVISION
+              groupBy: ["campaign"]
+              columns:
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "longTermSales"
+                - "longTermROAS"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartViews"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "brandedSearchesViews"
+                - "clickThroughRate"
+                - "clicks"
+                - "cost"
+                - "costPerThousandImpressions"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "detailPageViewViews"
+                - "endDate"
+                - "frequencyAverage"
+                - "householdFrequencyAverage"
+                - "householdReach"
+                - "impressions"
+                - "newToBrandDetailPageViewClicks"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewViews"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesViews"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandSalesViews"
+                - "portfolioId"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesViews"
+                - "reach"
+                - "roas"
+                - "sales"
+                - "salesClicks"
+                - "salesViews"
+                - "startDate"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "unitsSoldViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+              reportTypeId: stCampaigns
+              filters: []
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_tv_campaigns_report_stream"
+
+    sponsored_tv_campaigns_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_tv_campaigns_report_stream_daily
+      primary_key: ["profileId", "date", "campaignId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "st campaigns report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_TELEVISION
+              groupBy: ["campaign"]
+              columns:
+                - "date"
+                - "campaignBudgetCurrencyCode"
+                - "campaignId"
+                - "campaignName"
+                - "campaignStatus"
+                - "campaignBudgetAmount"
+                - "campaignBudgetType"
+                - "longTermSales"
+                - "longTermROAS"
+                - "addToCart"
+                - "addToCartClicks"
+                - "addToCartViews"
+                - "brandedSearches"
+                - "brandedSearchesClicks"
+                - "brandedSearchesViews"
+                - "clickThroughRate"
+                - "clicks"
+                - "cost"
+                - "costPerThousandImpressions"
+                - "detailPageViews"
+                - "detailPageViewsClicks"
+                - "detailPageViewViews"
+                - "frequencyAverage"
+                - "householdFrequencyAverage"
+                - "householdReach"
+                - "impressions"
+                - "newToBrandDetailPageViewClicks"
+                - "newToBrandDetailPageViews"
+                - "newToBrandDetailPageViewViews"
+                - "newToBrandPurchases"
+                - "newToBrandPurchasesClicks"
+                - "newToBrandPurchasesViews"
+                - "newToBrandSales"
+                - "newToBrandSalesClicks"
+                - "newToBrandSalesViews"
+                - "portfolioId"
+                - "purchases"
+                - "purchasesClicks"
+                - "purchasesViews"
+                - "reach"
+                - "roas"
+                - "sales"
+                - "salesClicks"
+                - "salesViews"
+                - "unitsSold"
+                - "unitsSoldClicks"
+                - "unitsSoldViews"
+                - "videoCompleteViews"
+                - "videoFirstQuartileViews"
+                - "videoMidpointViews"
+                - "videoThirdQuartileViews"
+              reportTypeId: stCampaigns
+              filters: []
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_tv_campaigns_report_stream_daily"
+
     sponsored_brands_adgroups_report_stream:
       type: DeclarativeStream
       name: sponsored_brands_adgroups_report_stream
@@ -4012,6 +4173,7 @@ streams:
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream"
   - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream"
+  - $ref: "#/definitions/streams/sponsored_tv_campaigns_report_stream"
   - $ref: "#/definitions/streams/sponsored_brands_adgroups_report_stream"
   - $ref: "#/definitions/streams/sponsored_brands_ads_report_stream"
 
@@ -4031,6 +4193,7 @@ streams:
 
   - $ref: "#/definitions/streams/sponsored_brands_v3_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_brands_campaigns_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_tv_campaigns_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_brands_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_brands_ads_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_display_campaigns_report_stream_daily"
@@ -5804,6 +5967,448 @@ schemas:
           - "null"
           - integer
     title: sponsored_brands_campaigns_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_tv_campaigns_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      longTermSales:
+        type:
+          - "null"
+          - number
+      longTermROAS:
+        type:
+          - "null"
+          - number
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartViews:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearchesViews:
+        type:
+          - "null"
+          - integer
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      costPerThousandImpressions:
+        type:
+          - "null"
+          - number
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      detailPageViewViews:
+        type:
+          - "null"
+          - integer
+      endDate:
+        type:
+          - "null"
+          - string
+      frequencyAverage:
+        type:
+          - "null"
+          - number
+      householdFrequencyAverage:
+        type:
+          - "null"
+          - number
+      householdReach:
+        type:
+          - "null"
+          - integer
+      impressions:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewViews:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesViews:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandSalesViews:
+        type:
+          - "null"
+          - number
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesViews:
+        type:
+          - "null"
+          - integer
+      reach:
+        type:
+          - "null"
+          - integer
+      roas:
+        type:
+          - "null"
+          - number
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesViews:
+        type:
+          - "null"
+          - number
+      startDate:
+        type:
+          - "null"
+          - string
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      unitsSoldViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+    title: sponsored_tv_campaigns_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_tv_campaigns_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - string
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      longTermSales:
+        type:
+          - "null"
+          - number
+      longTermROAS:
+        type:
+          - "null"
+          - number
+      addToCart:
+        type:
+          - "null"
+          - integer
+      addToCartClicks:
+        type:
+          - "null"
+          - integer
+      addToCartViews:
+        type:
+          - "null"
+          - integer
+      brandedSearches:
+        type:
+          - "null"
+          - integer
+      brandedSearchesClicks:
+        type:
+          - "null"
+          - integer
+      brandedSearchesViews:
+        type:
+          - "null"
+          - integer
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      costPerThousandImpressions:
+        type:
+          - "null"
+          - number
+      detailPageViews:
+        type:
+          - "null"
+          - integer
+      detailPageViewsClicks:
+        type:
+          - "null"
+          - integer
+      detailPageViewViews:
+        type:
+          - "null"
+          - integer
+      frequencyAverage:
+        type:
+          - "null"
+          - number
+      householdFrequencyAverage:
+        type:
+          - "null"
+          - number
+      householdReach:
+        type:
+          - "null"
+          - integer
+      impressions:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViews:
+        type:
+          - "null"
+          - integer
+      newToBrandDetailPageViewViews:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchases:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesClicks:
+        type:
+          - "null"
+          - integer
+      newToBrandPurchasesViews:
+        type:
+          - "null"
+          - integer
+      newToBrandSales:
+        type:
+          - "null"
+          - number
+      newToBrandSalesClicks:
+        type:
+          - "null"
+          - number
+      newToBrandSalesViews:
+        type:
+          - "null"
+          - number
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      purchases:
+        type:
+          - "null"
+          - integer
+      purchasesClicks:
+        type:
+          - "null"
+          - integer
+      purchasesViews:
+        type:
+          - "null"
+          - integer
+      reach:
+        type:
+          - "null"
+          - integer
+      roas:
+        type:
+          - "null"
+          - number
+      sales:
+        type:
+          - "null"
+          - number
+      salesClicks:
+        type:
+          - "null"
+          - number
+      salesViews:
+        type:
+          - "null"
+          - number
+      unitsSold:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks:
+        type:
+          - "null"
+          - integer
+      unitsSoldViews:
+        type:
+          - "null"
+          - integer
+      videoCompleteViews:
+        type:
+          - "null"
+          - integer
+      videoFirstQuartileViews:
+        type:
+          - "null"
+          - integer
+      videoMidpointViews:
+        type:
+          - "null"
+          - integer
+      videoThirdQuartileViews:
+        type:
+          - "null"
+          - integer
+    title: sponsored_tv_campaigns_report_stream_daily
     type:
       - "null"
       - object
