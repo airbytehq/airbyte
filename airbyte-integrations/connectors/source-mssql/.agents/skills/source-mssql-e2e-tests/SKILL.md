@@ -45,6 +45,7 @@ source-mssql-e2e-tests/
 │   ├── render-config.sh        # jq the backend bridge IP into a config template
 │   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
 │   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
+│   ├── extract-state.py        # unwrap the latest protocol STATE message
 │   └── run.sh                  # one-shot: backend → fixtures → config → spec/check/discover → catalog → read → teardown
 └── fixtures/
     ├── configs/
@@ -67,6 +68,9 @@ The skill expects all script paths relative to the skill root.
   the derived `configured_catalog.json`, and one subdirectory per
   protocol command (`spec/`, `check/`, `discover/`, `read/`) holding that
   command's `stdout.txt`, `stderr.txt`, `report.md`, and `report.html`.
+  With `--replay`, the two reads are `read-1/` and `read-2/`, and their
+  extracted state files are `state-1.json` and `state-2.json` at the
+  step root.
   This is the same layout the ops repo's `connector-regression-test.yml`
   workflow uses under `/tmp/regression_test_artifacts`, so CI can upload
   it per command.
@@ -117,10 +121,12 @@ Build the target image first when using `--test-version=dev`, or pass
 `--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--step-name`, `--catalog` (skip discover-derived generation),
-`--sync-mode=incremental`, `--cursor-field`, `--streams`,
-`--config-template`, `--keep-backend`, and `--` to forward extra args to
-`airbyte-ops`. Per-command timeouts match the workflow's (30/30/60/180
-minutes) and are overridable with
+`--state=PATH` (forward to read as `--state-path=PATH`),
+`--mutate=PATH` (repeatable; apply `.sql` or execute a file between
+replay reads), `--replay`, `--sync-mode=incremental`, `--cursor-field`,
+`--streams`, `--config-template`, `--keep-backend`, and `--` to forward
+extra args to `airbyte-ops`. Per-command timeouts match the workflow's
+(30/30/60/180 minutes) and are overridable with
 `TIMEOUT_MINUTES_{SPEC,CHECK,DISCOVER,READ}`.
 
 When `--control-version` is set, `run.sh` drops
@@ -130,6 +136,16 @@ existing comparators (record counts, primary keys, per-record, schema).
 Both runs must see identical backend state — a full-refresh sweep is
 read-only, but for CDC that means recreating the backend and capture
 instance between them, which the comparators cannot check for you.
+`--replay` is intentionally rejected with `--control-version`: comparison
+mode runs both images inside one airbyte-ops invocation and has no hook
+between them to reset backend or capture state.
+
+With `--replay`, the first read must pass and emit a STATE message. The
+harness extracts the latest state, runs each `--mutate` entry in order
+(`.sql` files through `apply-sql.sh`, executable files directly), then
+replays the second read from that state. If the first read or a mutation
+fails, the second leg is marked `ERROR` in the summary rather than being
+silently skipped.
 
 ## Asserting on output
 
@@ -140,6 +156,12 @@ Inline assertions in driver scripts. Suggested helpers:
 - Connector-side log shape: `grep -c '<expected substring>' $REPRO_OUT/<step>/read/stderr.txt`.
 - Connection status: `jq -e 'select(.type == "CONNECTION_STATUS" and .connectionStatus.status == "SUCCEEDED")' $REPRO_OUT/<step>/check/stdout.txt`.
 
+The protocol-level `scripts/extract-state.py` helper is `uv`-PEP-723
+standalone. Run it with
+`./scripts/extract-state.py <stdout.txt> > state.json`, or pipe stdout
+to it. It keeps the latest outer `STATE` message's inner `.state` object
+by default; pass `--all` to preserve every state.
+
 In comparison mode each command's directory holds `target/` and
 `control/` subdirectories, and the raw output is under those.
 
@@ -147,6 +169,37 @@ Pass `-- --enable-debug-logs=True` to `run.sh` to set `LOG_LEVEL=DEBUG`
 on the connector container. That surfaces the
 Debezium "Adding table … to the list of capture schema tables" lines
 that some assertions rely on.
+
+## Authoring a fixture
+
+Nothing here generates fixtures: `apply-sql.sh` only applies what you
+write, so encoding the reported symptom is the manual step.
+
+1. Write the smallest condition that produces the symptom. Data- and
+   schema-shaped bugs get SQL; a config-shaped bug gets a
+   `--config-template` variant and no SQL at all.
+2. Keep it idempotent and re-appliable — `CREATE DATABASE` / `CREATE
+TABLE` guarded by an existence check, as `00-init-base.sql` does.
+   `--fixture` is repeatable and applies in the order given, so
+   number-prefix anything that must follow the init fixture.
+3. Keep it out of the repo while investigating. `--fixture` takes any
+   path: write scratch fixtures in `fixtures/sql/.tmp/`, which the local
+   `.gitignore` ignores, or anywhere outside the tree, such as
+   `${REPRO_OUT:-/tmp/source-mssql-repro}`. Committing one under the
+   connector directory makes CI treat it as a connector change and require
+   a `dockerImageTag` bump.
+4. Reproduce against the known-bad version first
+   (`poe e2e-local --command=read --test-version=<bad> --fixture=…`) and
+   assert on the output rather than the exit code (see
+   [Asserting on output](#asserting-on-output)).
+5. Prove the fix with `--test-version=dev` after `:airbyteDocker`, or
+   with `--control-version=<bad>` for the comparison shape `/ai-prove-fix`
+   uses.
+6. Only commit a fixture once it earns re-running as a regression check.
+   Promoting one means flipping its assertion from "symptom still
+   present" to "behavior correct" — the shape
+   `source-mssql-e2e-cdc-tests/scripts/canary-resume.sh` uses. Anything
+   still asserting the presence of an unfixed bug is scratch.
 
 ## Common gotchas
 
