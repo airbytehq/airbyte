@@ -111,7 +111,7 @@ The connector throttles itself to the documented burst limit of 25 requests per 
 
 Versions up to 0.2.13 sent each 30-day window's bounds as dates rather than timestamps. The Granola API excludes the entire day named by `created_before`, so those syncs skipped every note created on a window boundary date, in both the `notes` and `detailed_notes` streams. Version 0.2.14 sends second-level timestamps, so new syncs cover the full range.
 
-Existing connections don't backfill the skipped notes on their own. To recover them, [refresh](/platform/operator-guides/refreshes) the `notes` and `detailed_notes` streams once after upgrading to 0.2.14 or later.
+Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. You don't need to do anything for `detailed_notes`, which reads from `notes` and picks up the recovered notes with it.
 
 ## IP allow list
 
