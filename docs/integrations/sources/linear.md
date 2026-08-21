@@ -40,7 +40,7 @@ For more information, see the [Linear GraphQL API documentation](https://linear.
 2. Add the redirect callback URL for your Airbyte deployment to the app's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app.
 3. Copy the app's client ID and client secret.
 
-The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it.
+The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
 
 If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete Linear's [authorization code flow](https://linear.app/developers/oauth-2-0-authentication) yourself and use the resulting refresh token:
 
@@ -96,6 +96,12 @@ The Linear source connector supports the following streams. Streams marked as in
 | `teams` | Yes | Teams in your Linear workspace. |
 | `users` | Yes | Users in your Linear workspace. |
 | `workflow_states` | Yes | Workflow states (for example, Todo, In Progress, Done) defined by each team. |
+
+Starting with connector version `0.2.16`, new connections pre-select `issues`, `projects`, `teams`, `users`, `comments`, `cycles`, `issue_labels`, and `workflow_states`. Enable the other streams yourself if you need them. Existing connections keep the streams you already selected.
+
+### Customer Requests streams
+
+The `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams read Linear's Customer Requests data. An admin has to enable Customer Requests in [Workspace Settings > Customer requests](https://linear.app/settings/customers) before your workspace has any of this data to sync, so these streams return no records in workspaces where the feature is off. Customer tiers are also defined in those settings, so the `customer_tiers` stream stays empty until someone configures tiers. See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
 
 ## Limitations and troubleshooting
 
