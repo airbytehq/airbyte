@@ -263,6 +263,18 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                description: >-
+                  Handle HTTP 400 for invalid date range on list_disputes.
+                  PayPal rejects requests where the date window exceeds 180
+                  days or the date parameter is otherwise invalid.
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 400
+                    action: FAIL
+                    error_message: >-
+                      PayPal API rejected the list_disputes request:
+                      {{ response.get('message', response) }}
                 backoff_strategies:
                   - type: ConstantBackoffStrategy
                     backoff_time_in_seconds: 100
