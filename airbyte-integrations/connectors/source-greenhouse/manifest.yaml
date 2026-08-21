@@ -80,9 +80,7 @@ definitions:
       type: DeclarativeStream
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.ApplicationCursorStateMigration
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.GreenhouseStateMigration
+          class_name: source_declarative_manifest.components.PerPartitionToFlatStateMigration
       name: applications_demographics_answers
       primary_key:
         - id
@@ -95,7 +93,6 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
-            application_ids: "{{ stream_partition.application_id if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -112,15 +109,6 @@ definitions:
             page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: application_id
-              stream:
-                $ref: "#/definitions/streams/applications"
-              incremental_dependency: true
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -141,9 +129,7 @@ definitions:
       type: DeclarativeStream
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.ApplicationCursorStateMigration
-        - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.GreenhouseStateMigration
+          class_name: source_declarative_manifest.components.PerPartitionToFlatStateMigration
       name: applications_interviews
       primary_key:
         - id
@@ -156,7 +142,6 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
-            application_ids: "{{ stream_partition.application_id if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -173,15 +158,6 @@ definitions:
             page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: application_id
-              stream:
-                $ref: "#/definitions/streams/applications"
-              incremental_dependency: true
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -868,7 +844,7 @@ definitions:
       type: DeclarativeStream
       state_migrations:
         - type: CustomStateMigration
-          class_name: source_declarative_manifest.components.GreenhouseStateMigration
+          class_name: source_declarative_manifest.components.PerPartitionToFlatStateMigration
       name: jobs_stages
       primary_key:
         - id
@@ -881,7 +857,6 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
-            job_ids: "{{ stream_partition.job_id if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -898,15 +873,6 @@ definitions:
             page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: job_id
-              stream:
-                $ref: "#/definitions/streams/jobs"
-              incremental_dependency: true
         decoder:
           type: JsonDecoder
       incremental_sync:
