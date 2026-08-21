@@ -107,6 +107,20 @@ definitions:
           http_method: GET
           request_parameters:
             include: transcript
+          # Granola refuses to return oversized transcripts inline and answers 413
+          # TRANSCRIPT_TOO_LARGE. Skip the note here instead of failing the sync; the
+          # full transcript is available from the note_transcripts stream.
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 413
+                action: IGNORE
+                error_message: >-
+                  Skipping a note in detailed_notes because its transcript is too large to
+                  be returned inline. Sync the note_transcripts stream to replicate this
+                  transcript.
         record_selector:
           type: RecordSelector
           extractor:
@@ -125,6 +139,75 @@ definitions:
         schema:
           $ref: "#/schemas/detailed_notes"
 
+    note_transcripts:
+      type: DeclarativeStream
+      name: note_transcripts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v1/notes/{{ stream_partition.note_id }}/transcript
+          http_method: GET
+          request_parameters:
+            page_size: "100"
+          # A note listed by the parent stream can be deleted, unshared, or fall out of
+          # the API key's scope before its transcript partition runs, and Granola answers
+          # 404 on this path. Skip that note instead of failing every remaining transcript.
+          error_handler:
+            $ref: "#/definitions/base_error_handler"
+            response_filters:
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                error_message: >-
+                  Skipping a note in note_transcripts because Granola no longer returns a
+                  transcript for it. The note was likely deleted or unshared during the sync.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - transcript
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('cursor', '') }}"
+            stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: note_id
+              stream:
+                $ref: "#/definitions/streams/notes"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - note_id
+              value: "{{ stream_partition.note_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/note_transcripts"
+
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+        max_waiting_time_in_seconds: 60
+      - type: ExponentialBackoffStrategy
+        factor: 5
+
   base_requester:
     type: HttpRequester
     url_base: https://public-api.granola.ai
@@ -133,18 +216,12 @@ definitions:
       api_token: "{{ config['api_key'] }}"
     # Prefer Retry-After when present; otherwise use exponential backoff.
     error_handler:
-      type: DefaultErrorHandler
-      max_retries: 5
-      backoff_strategies:
-        - type: WaitTimeFromHeader
-          header: Retry-After
-          max_waiting_time_in_seconds: 60
-        - type: ExponentialBackoffStrategy
-          factor: 5
+      $ref: "#/definitions/base_error_handler"
 
 streams:
   - $ref: "#/definitions/streams/notes"
   - $ref: "#/definitions/streams/detailed_notes"
+  - $ref: "#/definitions/streams/note_transcripts"
 
 spec:
   type: Spec
@@ -183,6 +260,7 @@ metadata:
   autoImportSchema:
     notes: false
     detailed_notes: false
+    note_transcripts: false
 
 schemas:
   notes:
@@ -223,6 +301,66 @@ schemas:
     additionalProperties: true
     required:
       - id
+
+  note_transcripts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      note_id:
+        type: string
+        description: The unique identifier of the note the transcript segment belongs to.
+      speaker:
+        type:
+          - "null"
+          - object
+        description: Speaker information.
+        properties:
+          source:
+            type:
+              - "null"
+              - string
+            description: Source of the speaker (microphone or speaker).
+          attribution:
+            type:
+              - "null"
+              - string
+            description: >-
+              Who the segment is attributed to: "me" for the note's owner, "them" for
+              other meeting participants. Omitted when the attribution is unknown.
+          diarization_label:
+            type:
+              - "null"
+              - string
+            description: >-
+              Diarized anonymous speaker label, such as "Speaker A". Present only on iOS
+              transcripts when diarization is available.
+          name:
+            type:
+              - "null"
+              - string
+            description: >-
+              Resolved name of the identified speaker, such as "Alice Smith". Present
+              only when a speaker could be identified.
+      text:
+        type:
+          - "null"
+          - string
+        description: Transcript text content.
+      start_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        description: Start time of the transcript segment.
+      end_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+        description: End time of the transcript segment.
+    additionalProperties: true
+    required:
+      - note_id
 
   detailed_notes:
     type: object

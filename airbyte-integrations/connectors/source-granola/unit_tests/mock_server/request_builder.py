@@ -28,6 +28,17 @@ class GranolaRequestBuilder:
     def notes_endpoint(cls) -> "GranolaRequestBuilder":
         return cls("/v1/notes").with_page_size(30)
 
+    @classmethod
+    def note_endpoint(cls, note_id: str) -> "GranolaRequestBuilder":
+        return cls(f"/v1/notes/{note_id}")
+
+    @classmethod
+    def transcript_endpoint(cls, note_id: str) -> "GranolaRequestBuilder":
+        return cls(f"/v1/notes/{note_id}/transcript").with_page_size(100)
+
+    def with_include(self, include: str) -> "GranolaRequestBuilder":
+        return self.with_query_param("include", include)
+
     def with_page_size(self, page_size: int) -> "GranolaRequestBuilder":
         return self.with_query_param("page_size", str(page_size))
 
