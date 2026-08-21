@@ -93,8 +93,8 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-GREENHOUSE__CREDS
-          fileName: config.json
+        - name: SECRET_SOURCE-GREENHOUSE__CREDS_OAUTH
+          fileName: config_oauth.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store

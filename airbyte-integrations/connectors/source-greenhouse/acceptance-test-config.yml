@@ -8,17 +8,17 @@ acceptance_tests:
       - spec_path: "manifest.yaml"
   connection:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/config_invalid.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       # Restore expect_records from a regenerated live Harvest v3 read before enabling fixture validation.
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         empty_streams:
           - name: eeoc
             bypass_reason: "No data"
@@ -30,11 +30,11 @@ acceptance_tests:
             bypass_reason: "No Data"
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
