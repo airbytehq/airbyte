@@ -323,9 +323,7 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
         user_requests.append(request)
         context.status_code = 200
         if len(user_requests) == 1:
-            context.headers["Link"] = (
-                '<https://harvest.greenhouse.io/v3/users?cursor=cursor-2>; rel="next"'
-            )
+            context.headers["Link"] = '<https://harvest.greenhouse.io/v3/users?cursor=cursor-2>; rel="next"'
         return [{"id": len(user_requests), "updated_at": "2024-01-01T00:00:00.000Z"}]
 
     requests_mock.get("https://harvest.greenhouse.io/v3/users", json=users_callback)
@@ -344,9 +342,7 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
     assert user_requests[1].qs == {"cursor": ["cursor-2"]}
 
 
-def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(
-    requests_mock, get_source
-):
+def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock, get_source):
     _register_token(requests_mock)
     candidate_requests = []
     note_requests = []
@@ -476,16 +472,12 @@ def test_documented_v3_examples_validate_against_stream_schemas():
         (401, "Unauthorized"),
     ],
 )
-def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(
-    status_code, message, requests_mock, get_source
-):
+def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code, message, requests_mock, get_source):
     def token_callback(request, context):
         context.status_code = status_code
         return {
             "message": message,
-            "errors": [
-                "Refresh token expired at 2026-01-01T00:00:00Z. The user must re-authorize consent"
-            ],
+            "errors": ["Refresh token expired at 2026-01-01T00:00:00Z. The user must re-authorize consent"],
         }
 
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
@@ -496,9 +488,6 @@ def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(
 
     messages = [trace.trace.error.message for trace in output.errors]
     assert any("Please re-authenticate" in text for text in messages), messages
-    assert all(
-        trace.trace.error.failure_type == FailureType.config_error for trace in output.errors
-    ), [
-        (trace.trace.error.failure_type, trace.trace.error.message)
-        for trace in output.errors
+    assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
+        (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
     ]

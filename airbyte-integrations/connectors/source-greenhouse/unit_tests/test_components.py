@@ -127,7 +127,5 @@ def test_per_partition_to_flat_state_migration_should_migrate_flat_state_only(
     declarative_stream.parameters = {}
     migration = components_module.PerPartitionToFlatStateMigration(declarative_stream, {})
 
-    assert migration.should_migrate(
-        {"states": [{"cursor": {"updated_at": "2024-01-01T00:00:00.000Z"}}]}
-    )
+    assert migration.should_migrate({"states": [{"cursor": {"updated_at": "2024-01-01T00:00:00.000Z"}}]})
     assert not migration.should_migrate({"updated_at": "2024-01-01T00:00:00.000Z"})
