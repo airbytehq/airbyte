@@ -40,6 +40,26 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Incremental sync limitations
+
+The following streams use `created_datetime` as their incremental cursor. Their incremental syncs do not pick up changes made after a record was created:
+
+- **jobs**: job status transitions, including changes to `started_datetime` and `ended_datetime`. The schema does not include `updated_datetime`.
+- **macros**: edits to macro fields such as the name or actions. The schema includes `updated_datetime`, but the stream remains creation-cursor based.
+- **messages**: changes to message fields after creation. The schema does not include `updated_datetime`.
+- **rules**: rule edits and deactivation changes. The schema includes `updated_datetime`, but the stream remains creation-cursor based.
+- **tags**: tag renames and changes to descriptions or decorations. The schema does not include `updated_datetime`.
+- **teams**: team renames and changes to descriptions, decorations, or members. The schema does not include `updated_datetime`.
+- **users**: role, name, active-status, and timezone changes. The schema includes `updated_datetime`, but the stream remains creation-cursor based.
+
+Run a full refresh of the affected stream to capture these changes.
+
+The `satisfaction-surveys` stream is also creation-cursor based. Updates to a survey's `score` or `scored_datetime` after creation are not captured by an incremental sync; run a full refresh of that stream.
+
+The connector does not capture deletions as deletion events. Tickets expose `trashed` and tags expose `deleted_datetime`, but there is no deletion stream, so deleted records are not captured as deletion events.
+
+The incremental sync `end_datetime` is evaluated when the sync starts. Records created while a sync is in progress fall outside that window and are picked up by the next sync.
+
 ## Changelog
 
 <details>
@@ -47,7 +67,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.1.51 | 2026-08-20 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs now avoid re-reading previously-synced data across the applicable Gorgias streams using cursor-aware pagination or client-side filtering. |
+| 0.1.51 | 2026-08-20 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental sync improvements and known limitations are documented in the [Incremental sync limitations](#incremental-sync-limitations) section. |
 | 0.1.50 | 2026-08-18 | [84643](https://github.com/airbytehq/airbyte/pull/84643) | Update dependencies |
 | 0.1.49 | 2026-08-11 | [83969](https://github.com/airbytehq/airbyte/pull/83969) | Update dependencies |
 | 0.1.48 | 2026-08-04 | [83514](https://github.com/airbytehq/airbyte/pull/83514) | Update dependencies |

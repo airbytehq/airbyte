@@ -28,6 +28,16 @@ check:
   stream_names:
     - account
 
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 40
+          interval: PT20S
+      matchers:
+        - url_path_pattern: "^/api/.*"
+
 definitions:
   streams:
     account:
@@ -126,7 +136,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -196,7 +206,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -233,7 +243,7 @@ definitions:
           path: events
           http_method: GET
           request_parameters:
-            order_by: created_datetime:desc
+            "created_datetime[gte]": "{{ format_datetime(stream_interval['start_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -266,13 +276,14 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        is_data_feed: true
+        is_client_side_incremental: true
         cursor_field: created_datetime
+        lookback_window: PT5M
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -334,7 +345,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -404,7 +415,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -474,7 +485,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -542,7 +553,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -611,7 +622,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -647,8 +658,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: satisfaction-surveys
           http_method: GET
-          request_parameters:
-            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -681,12 +690,11 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        is_data_feed: true
         cursor_field: created_datetime
         end_datetime:
           type: MinMaxDatetime
@@ -751,7 +759,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -821,7 +829,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -891,7 +899,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -961,7 +969,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -1031,7 +1039,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
@@ -1100,7 +1108,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 50
+            page_size: 100
             cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
         partition_router:
