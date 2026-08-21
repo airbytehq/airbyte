@@ -134,6 +134,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.15 | 2026-08-21 | [84946](https://github.com/airbytehq/airbyte/pull/84946) | Update base image and declare a heartbeat timeout |
 | 0.2.14 | 2026-08-18 | [84676](https://github.com/airbytehq/airbyte/pull/84676) | Update dependencies |
 | 0.2.13 | 2026-08-11 | [84025](https://github.com/airbytehq/airbyte/pull/84025) | Update dependencies |
 | 0.2.12 | 2026-08-04 | [83528](https://github.com/airbytehq/airbyte/pull/83528) | Update dependencies |
@@ -146,11 +147,9 @@ For programmatic configuration, use these parameter names:
 | 0.2.5 | 2026-06-10 | [78237](https://github.com/airbytehq/airbyte/pull/78237) | fix(source-linear): Handle GraphQL rate-limit errors |
 | 0.2.4 | 2026-06-09 | [79388](https://github.com/airbytehq/airbyte/pull/79388) | Update dependencies |
 | 0.2.3 | 2026-06-02 | [78816](https://github.com/airbytehq/airbyte/pull/78816) | Update dependencies |
-| 0.2.2 | 2026-05-18 | [78160](https://github.com/airbytehq/airbyte/pull/78160) | Promoted release candidate to GA |
-| 0.2.2-rc.2 | 2026-05-15 | [78124](https://github.com/airbytehq/airbyte/pull/78124) | Expose `num_workers` in connector spec (default 4, min 1, max 10) so users can override the per-connection concurrency from the UI |
-| 0.2.2-rc.1 | 2026-05-12 | [78034](https://github.com/airbytehq/airbyte/pull/78034) | Resume concurrency tuning at default_concurrency=4 (Path A, 2,500 req/hr API key ceiling); re-enable progressive rollout |
+| 0.2.2 | 2026-05-18 | [78160](https://github.com/airbytehq/airbyte/pull/78160) | Promote release candidate to GA |
 | 0.2.1 | 2026-05-12 | [78013](https://github.com/airbytehq/airbyte/pull/78013) | Fix API key config migration for existing connections |
-| 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication support and migrate existing API key configurations to nested credentials |
+| 0.2.0 | 2026-05-11 | [77578](https://github.com/airbytehq/airbyte/pull/77578) | Add OAuth 2.0 authentication |
 | 0.1.2 | 2026-04-28 | [77318](https://github.com/airbytehq/airbyte/pull/77318) | Update dependencies |
 | 0.1.1 | 2026-04-21 | [76654](https://github.com/airbytehq/airbyte/pull/76654) | Update dependencies |
 | 0.1.0 | 2026-04-17 | [76429](https://github.com/airbytehq/airbyte/pull/76429) | Add incremental sync support for 12 streams using the `updatedAt` cursor field |
@@ -180,7 +179,7 @@ For programmatic configuration, use these parameter names:
 | 0.0.13 | 2025-07-12 | [63095](https://github.com/airbytehq/airbyte/pull/63095) | Update dependencies |
 | 0.0.12 | 2025-07-05 | [62601](https://github.com/airbytehq/airbyte/pull/62601) | Update dependencies |
 | 0.0.11 | 2025-06-28 | [62178](https://github.com/airbytehq/airbyte/pull/62178) | Update dependencies |
-| 0.0.10 | 2025-06-26 | [61417](https://github.com/airbytehq/airbyte/pull/61417) | source-linear contribution from zckymc |
+| 0.0.10 | 2025-06-26 | [61417](https://github.com/airbytehq/airbyte/pull/61417) | Update connector configuration |
 | 0.0.9 | 2025-06-21 | [61843](https://github.com/airbytehq/airbyte/pull/61843) | Update dependencies |
 | 0.0.8 | 2025-06-14 | [61117](https://github.com/airbytehq/airbyte/pull/61117) | Update dependencies |
 | 0.0.7 | 2025-05-24 | [60728](https://github.com/airbytehq/airbyte/pull/60728) | Update dependencies |
@@ -189,6 +188,6 @@ For programmatic configuration, use these parameter names:
 | 0.0.4 | 2025-04-26 | [58781](https://github.com/airbytehq/airbyte/pull/58781) | Update dependencies |
 | 0.0.3 | 2025-04-19 | [58215](https://github.com/airbytehq/airbyte/pull/58215) | Update dependencies |
 | 0.0.2 | 2025-04-12 | [57669](https://github.com/airbytehq/airbyte/pull/57669) | Update dependencies |
-| 0.0.1 | 2025-04-11 | [#57586](https://github.com/airbytehq/airbyte/pull/57586) | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) |
+| 0.0.1 | 2025-04-11 | [57586](https://github.com/airbytehq/airbyte/pull/57586) | Initial release by [@natikgadzhi](https://github.com/natikgadzhi) |
 
 </details>
