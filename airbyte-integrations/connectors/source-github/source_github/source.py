@@ -30,9 +30,6 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
 from .streams import (
-    Assignees,
-    Branches,
-    Collaborators,
     Comments,
     CommitCommentReactions,
     CommitComments,
@@ -42,7 +39,6 @@ from .streams import (
     Events,
     IssueCommentReactions,
     IssueEvents,
-    IssueLabels,
     IssueMilestones,
     IssueReactions,
     Issues,
@@ -60,7 +56,6 @@ from .streams import (
     ReviewComments,
     Reviews,
     Stargazers,
-    Tags,
     TeamMembers,
     TeamMemberships,
     Teams,
@@ -381,9 +376,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         python_streams = [
             IssueTimelineEvents(**repository_args),
-            Assignees(**repository_args),
-            Branches(**repository_args),
-            Collaborators(**repository_args),
             Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
@@ -393,7 +385,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             Events(**repository_args_with_start_date),
             IssueCommentReactions(**repository_args_with_start_date),
             IssueEvents(**repository_args_with_start_date),
-            IssueLabels(**repository_args),
             IssueMilestones(**repository_args_with_start_date),
             IssueReactions(**repository_args_with_start_date),
             Issues(**repository_args_with_start_date),
@@ -410,7 +401,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
-            Tags(**repository_args),
             teams_stream,
             team_members_stream,
             Users(**organization_args),

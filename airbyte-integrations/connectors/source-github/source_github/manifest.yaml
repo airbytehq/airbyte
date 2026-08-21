@@ -97,172 +97,329 @@ definitions:
               url_path_pattern: "/graphql"
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
-    # Replicates the legacy GithubStreamABC error contract:
-    # - rate limits are waited out instead of failing the sync. GitHub signals them
-    #   three different ways, and the legacy handler retried on any of them
-    #   (errors_handlers.py::GithubStreamABCErrorHandler.interpret_response), so all
-    #   three are matched below, ahead of the 404/403 filters:
-    #     1. a `Retry-After` header (sent on most, but per the docs not all,
-    #        secondary-limit responses);
-    #     2. an "API rate limit exceeded" message (primary limit) or an
-    #        "exceeded a secondary rate limit" message (secondary limit without
-    #        `Retry-After` — note secondary limits are tracked separately from the
-    #        primary quota, so `X-RateLimit-Remaining` may still be non-zero);
-    #     3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback
-    #        the docs prescribe when `Retry-After` is absent. The declarative
-    #        predicate cannot see the status code, so "is an error response" is
-    #        approximated by GitHub's error envelope (a JSON object with a
-    #        `message`); successful payloads are arrays, or objects without a
-    #        top-level `message`, and must not match — the request that spends the
-    #        last quota point returns 200 with `X-RateLimit-Remaining: 0` and its
-    #        records have to be kept (token rotation handles the exhausted token);
-    # - 404 on an organization or repository is skipped with a warning so one
-    #   deleted repo or renamed org doesn't fail the whole sync (`check` enumerates
-    #   the partition routers below and relies on the same skip semantics);
-    # - plain 403 fails with an actionable scopes/SSO message (matches the legacy
-    #   mapping so `check` can catch bad token scopes).
-    # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
     error_handler:
-      type: DefaultErrorHandler
-      backoff_strategies:
-        # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
-        # rate-limit wait rather than only the ones the authenticator decides before sending.
-        # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap
-        # 1s: an interactive check then fails in seconds with the rate-limit message instead of
-        # sleeping until the reset. A sync keeps the user's budget.
-        #
-        # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
-        # `HttpClient` asked the authenticator for a spare credential only *after* a strategy
-        # returned a wait, and a cap raises instead of returning — so a budget shorter than the
-        # distance to the reset ended the stream rather than rotating onto a healthy token
-        # (measured on 7.28.0: 30min budget against a 60min reset failed with a second token
-        # idle). The rotation question is now asked first and the cap only governs waits that are
-        # actually taken, which `test_short_wait_budget_does_not_cost_token_rotation` proves end
-        # to end. 7.28.1 also resolves the cap at construction, so an expression this manifest
-        # got wrong fails at startup rather than at whichever rate limit reaches it first.
-        #
-        # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach
-        # the multiplication as None, and a falsy test would read check's deliberate 0 as absent
-        # and hand it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`,
-        # so a user on the spec's minimum of 1 minute would otherwise get a 60s cap equal to the
-        # `min_wait: 60` floor below, and every headerless 5xx would fail instead of retrying.
-        - type: WaitTimeFromHeader
-          header: "Retry-After"
-          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-        - type: WaitUntilTimeFromHeader
-          header: "X-RateLimit-Reset"
-          min_wait: 60
-          # The cap is compared against the computed wait, not the raw reset timestamp, and it
-          # is applied after `min_wait` — so during check, where the cap is 1s, even the 60s
-          # floor below is refused.
-          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-          # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
-          # timestamp already in the past, or seconds away, doesn't turn into a tight retry
-          # loop against a quota that hasn't actually refilled.
-          #
-          # It does NOT land on exactly the same responses legacy floored. Measured:
-          #
-          #                                     here    legacy
-          #   403 + Retry-After: 30              30s      60s    <- floor missing
-          #   403 + X-RateLimit-Reset now+10     60s      60s
-          #   403 + reset already past           60s      60s
-          #   500 / timeout, no such headers     60s     expo    <- floor leaking
-          #
-          # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
-          # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
-          # `min_wait` outright when its header is *absent* rather than treating it as a floor
-          # on a computed wait, and backoff_strategies are shared by every retryable response
-          # on this requester.
-          #
-          # Accepted deliberately, after measuring the alternatives:
-          #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
-          #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
-          #     strategies into one list -- its own docstring says the list "is not used to map
-          #     different strategies to different error conditions" -- and HttpClient takes the
-          #     first truthy one regardless of which branch matched. Byte-identical backoffs.
-          #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
-          #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
-          #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
-          #     refilled. That is what the floor exists to prevent.
-          #
-          # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
-          # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
-          # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
-          # With the header present but stale, max(negative, min_wait) already yields 60s, so
-          # the floor survives exactly where it belongs. Four other connectors combine these
-          # two strategies and would move the same way.
-          #
-          # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
-          # max_retries (5), on every stream that inherits this requester.
-          # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
-          # authenticator's counters against every response (the `*_header` fields on the
-          # quota pools above), so a primary rate limit — which GitHub reports as
-          # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
-          # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
-          # spare token it retries in 0.1s on that token instead of waiting out this window.
-          # This covers the reactive rotation the legacy strategy did at the 10-minute mark
-          # (backoff_strategies.py) and applies to manifest and Python streams alike, since
-          # both share one authenticator.
-          # Still waited out, correctly: a secondary rate limit, where the token's counters
-          # stay positive. GitHub scopes secondary limits per account, so rotating to another
-          # token of the same account would only be rejected again.
-      response_filters:
-        # Short-circuit successful responses before any rate-limit filter sees them.
-        # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
-        # (default_error_handler.py::interpret_response) and returns on the first match, so
-        # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
-        # throttling on its own account — is classified RATE_LIMITED: its records are
-        # discarded and the request is retried until `max_retries` runs out, failing the
-        # stream. The guard has to live in its own filter rather than as a conjunct in the
-        # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
-        # (http_response_filter.py::_matches_filter) and the predicate context carries only
-        # the parsed body and the headers — no status code.
-        # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
-        # computing, retry later", which `contributor_activity` backs off on today and which
-        # must not become a success when that stream migrates onto this requester.
-        - type: HttpResponseFilter
-          http_codes: [200]
-          action: SUCCESS
-        - type: HttpResponseFilter
-          predicate: "{{ 'Retry-After' in headers }}"
-          action: RATE_LIMITED
-          error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
-        - type: HttpResponseFilter
-          error_message_contains: "API rate limit exceeded"
-          action: RATE_LIMITED
-          error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
-        - type: HttpResponseFilter
-          error_message_contains: "secondary rate limit"
-          action: RATE_LIMITED
-          error_message: "GitHub secondary rate limit hit. Waiting before retrying."
-        - type: HttpResponseFilter
-          # `is not none` (rather than a bare `response.get('message')`) is required:
-          # InterpolatedBoolean compares the *rendered* string against a fixed
-          # false-values list that does not include "None", so a falsy `.get()` would
-          # evaluate to true and rate-limit successful responses.
-          predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
-          action: RATE_LIMITED
-          error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
-        - type: HttpResponseFilter
-          http_codes: [404]
-          action: IGNORE
-          error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
-        # NOTE (Step 3+ migration checklist): 403 -> FAIL matches legacy behavior for
-        # `Repositories` ONLY — streams.py:162 re-raised 403 for that stream. Legacy
-        # SKIPPED 403 with a warning for Organizations/Teams/Users and the repo-scoped
-        # streams (streams.py:168-182), so migrating any of those under this shared
-        # filter would turn "skip the one org/repo you can't read" into a failed sync.
-        # Before migrating them, move this filter onto the per-stream error_handler (or
-        # switch it to IGNORE for those streams).
-        - type: HttpResponseFilter
-          http_codes: [403]
-          action: FAIL
-          failure_type: config_error
-          error_message: >-
-            GitHub denied access (HTTP 403). Your token may be missing required scopes
-            (this connector typically needs: repo, read:org, read:user, read:project, workflow),
-            or this organization may require SAML SSO authorization.
-            See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+      $ref: "#/definitions/strict_access_error_handler"
+
+  # Requester for the repo-scoped child streams (`repos/{repository}/...`). Same transport
+  # as `requester_base`, but an inaccessible or empty single repository is skipped instead
+  # of failing the sync — see `skip_inaccessible_error_handler`.
+  repository_scoped_requester:
+    $ref: "#/definitions/requester_base"
+    http_method: GET
+    request_parameters:
+      # constants.DEFAULT_PAGE_SIZE — none of these streams was a `large_stream`, so the
+      # deprecated `page_size_for_large_streams` config never applied to them.
+      per_page: "100"
+    error_handler:
+      $ref: "#/definitions/skip_inaccessible_error_handler"
+
+  # --- Error handling -------------------------------------------------------------
+  #
+  # Replicates the legacy GithubStreamABC error contract. Rate limits are waited out
+  # instead of failing the sync; GitHub signals them three different ways, and the legacy
+  # handler retried on any of them
+  # (errors_handlers.py::GithubStreamABCErrorHandler.interpret_response), so all three are
+  # matched by the filters below, ahead of the 404/403/409 filters:
+  #   1. a `Retry-After` header (sent on most, but per the docs not all, secondary-limit
+  #      responses);
+  #   2. an "API rate limit exceeded" message (primary limit) or an "exceeded a secondary
+  #      rate limit" message (secondary limit without `Retry-After` — note secondary limits
+  #      are tracked separately from the primary quota, so `X-RateLimit-Remaining` may still
+  #      be non-zero);
+  #   3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback the docs
+  #      prescribe when `Retry-After` is absent. The declarative predicate cannot see the
+  #      status code, so "is an error response" is approximated by GitHub's error envelope
+  #      (a JSON object with a `message`); successful payloads are arrays, or objects
+  #      without a top-level `message`, and must not match — the request that spends the
+  #      last quota point returns 200 with `X-RateLimit-Remaining: 0` and its records have
+  #      to be kept (token rotation handles the exhausted token).
+  # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
+  #
+  # What differs per requester is only the terminal 403/409 handling, so the filters are
+  # separate definitions composed into the two handlers at the end of this block.
+  # `DefaultErrorHandler` returns the first matching filter, which is why order matters:
+  # every handler lists `success_filter` first — it evaluates filters before checking
+  # `response.ok`, so a 200 carrying `Retry-After` would otherwise be classified
+  # RATE_LIMITED and have its records discarded — then the rate-limit filters, then the
+  # terminal 404/403/409/410 ones.
+  #
+  # DELIBERATE DIVERGENCE — 502/504 after retries. Both handlers leave 5xx to the CDK default
+  # mapping, so a repository that keeps returning 502/504 is retried and then fails the stream.
+  # Legacy retried the same way but `GithubStreamABC.read_records` caught the exhausted-retries
+  # `AirbyteTracedException` for 502/504, logged a warning and moved on to the next repository
+  # (streams.py:196-207), i.e. it reported a COMPLETE sync with that repository's records
+  # silently missing. Failing the stream is the better contract, and
+  # `SourceGithub.continue_sync_on_stream_failure` keeps the other streams going. Parity is not
+  # reachable declaratively anyway: `DefaultErrorHandler` has no "retry N times, then ignore",
+  # and a `502/504 -> IGNORE` filter would drop the repository on the *first* blip instead of
+  # retrying it. Pinned by `test_repeated_502_fails_the_stream`.
+  #
+  # KNOWN GAP — skip logging. The `IGNORE` path logs the filter's `error_message` at INFO with
+  # no slice context, whereas legacy logged `Skipping <stream> for repository <repo>` at
+  # WARNING. `HttpResponseFilter.error_message` only interpolates `response` and `headers`, so
+  # neither the stream name nor `stream_partition` is reachable from here. Follow-up: give
+  # `HttpResponseFilter` access to the stream slice in the CDK (same bucket as the token
+  # rotation follow-up noted below).
+  rate_limit_backoff_strategies:
+    # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
+    # rate-limit wait rather than only the ones the authenticator decides before sending.
+    # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap 1s:
+    # an interactive check then fails in seconds with the rate-limit message instead of sleeping
+    # until the reset. A sync keeps the user's budget.
+    #
+    # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
+    # `HttpClient` asked the authenticator for a spare credential only *after* a strategy returned
+    # a wait, and a cap raises instead of returning — so a budget shorter than the distance to the
+    # reset ended the stream rather than rotating onto a healthy token (measured on 7.28.0: 30min
+    # budget against a 60min reset failed with a second token idle). The rotation question is now
+    # asked first and the cap only governs waits that are actually taken, which
+    # `test_short_wait_budget_does_not_cost_token_rotation` proves end to end. 7.28.1 also resolves
+    # the cap at construction, so an expression this manifest got wrong fails at startup rather
+    # than at whichever rate limit reaches it first.
+    #
+    # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach the
+    # multiplication as None, and a falsy test would read check's deliberate 0 as absent and hand
+    # it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`, so a user on
+    # the spec's minimum of 1 minute would otherwise get a 60s cap equal to the `min_wait: 60`
+    # floor below, and every headerless 5xx would fail instead of retrying.
+    - type: WaitTimeFromHeader
+      header: "Retry-After"
+      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+    - type: WaitUntilTimeFromHeader
+      header: "X-RateLimit-Reset"
+      min_wait: 60
+      # The cap is compared against the computed wait, not the raw reset timestamp, and it is
+      # applied after `min_wait` — so during check, where the cap is 1s, even the 60s floor below
+      # is refused.
+      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+      # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
+      # timestamp already in the past, or seconds away, doesn't turn into a tight retry
+      # loop against a quota that hasn't actually refilled.
+      #
+      # It does NOT land on exactly the same responses legacy floored. Measured:
+      #
+      #                                     here    legacy
+      #   403 + Retry-After: 30              30s      60s    <- floor missing
+      #   403 + X-RateLimit-Reset now+10     60s      60s
+      #   403 + reset already past           60s      60s
+      #   500 / timeout, no such headers     60s     expo    <- floor leaking
+      #
+      # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
+      # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
+      # `min_wait` outright when its header is *absent* rather than treating it as a floor
+      # on a computed wait, and backoff_strategies are shared by every retryable response
+      # on the requesters that inherit these handlers.
+      #
+      # Accepted deliberately, after measuring the alternatives:
+      #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
+      #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
+      #     strategies into one list -- its own docstring says the list "is not used to map
+      #     different strategies to different error conditions" -- and HttpClient takes the
+      #     first truthy one regardless of which branch matched. Byte-identical backoffs.
+      #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
+      #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
+      #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
+      #     refilled. That is what the floor exists to prevent.
+      #
+      # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
+      # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
+      # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
+      # With the header present but stale, max(negative, min_wait) already yields 60s, so
+      # the floor survives exactly where it belongs. Four other connectors combine these
+      # two strategies and would move the same way.
+      #
+      # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
+      # max_retries (5), on every stream that inherits these handlers.
+      # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
+      # authenticator's counters against every response (the `*_header` fields on the
+      # quota pools above), so a primary rate limit — which GitHub reports as
+      # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
+      # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
+      # spare token it retries in 0.1s on that token instead of waiting out this window.
+      # This covers the reactive rotation the legacy strategy did at the 10-minute mark
+      # (backoff_strategies.py) and applies to manifest and Python streams alike, since
+      # both share one authenticator.
+      # Still waited out, correctly: a secondary rate limit, where the token's counters
+      # stay positive. GitHub scopes secondary limits per account, so rotating to another
+      # token of the same account would only be rejected again.
+
+  # Short-circuit successful responses before any rate-limit filter sees them.
+  # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
+  # (default_error_handler.py::interpret_response) and returns on the first match, so
+  # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
+  # throttling on its own account — is classified RATE_LIMITED: its records are
+  # discarded and the request is retried until `max_retries` runs out, failing the
+  # stream. The guard has to live in its own filter rather than as a conjunct in the
+  # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
+  # (http_response_filter.py::_matches_filter) and the predicate context carries only
+  # the parsed body and the headers — no status code.
+  # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
+  # computing, retry later", which `contributor_activity` backs off on today and which
+  # must not become a success when that stream migrates onto one of these handlers.
+  success_filter:
+    type: HttpResponseFilter
+    http_codes: [200]
+    action: SUCCESS
+
+  retry_after_rate_limit_filter:
+    type: HttpResponseFilter
+    predicate: "{{ 'Retry-After' in headers }}"
+    action: RATE_LIMITED
+    error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+
+  primary_rate_limit_filter:
+    type: HttpResponseFilter
+    error_message_contains: "API rate limit exceeded"
+    action: RATE_LIMITED
+    error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+
+  secondary_rate_limit_filter:
+    type: HttpResponseFilter
+    error_message_contains: "secondary rate limit"
+    action: RATE_LIMITED
+    error_message: "GitHub secondary rate limit hit. Waiting before retrying."
+
+  exhausted_quota_filter:
+    type: HttpResponseFilter
+    # `is not none` (rather than a bare `response.get('message')`) is required:
+    # InterpolatedBoolean compares the *rendered* string against a fixed
+    # false-values list that does not include "None", so a falsy `.get()` would
+    # evaluate to true and rate-limit successful responses.
+    predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
+    action: RATE_LIMITED
+    error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
+
+  # GitHub answers 410 Gone when the feature backing an endpoint is turned off for the
+  # repository ("Issues are disabled for this repo.", "Projects are disabled for this repo."),
+  # and the legacy handler skipped exactly those (errors_handlers.py::is_gone_with_feature_disabled).
+  # 410 is absent from the CDK default mapping, so without this filter such a response would be
+  # retried five times behind the 60s backoff floor and then fail the stream.
+  #
+  # This has to be a predicate rather than `http_codes: [410] + error_message_contains`:
+  # HttpResponseFilter ORs its conditions, so combining them would skip *every* 410. The predicate
+  # cannot see the status code, so it keys off GitHub's error envelope instead — the same
+  # `response is mapping` guard the quota filter above uses, since a successful list response is a
+  # JSON array and a successful single-repo response has no top-level `message`. `| string` keeps a
+  # non-string `message` from raising inside the template.
+  #
+  # Because the status code is invisible here, the message match is deliberately narrower than
+  # legacy's bare "is disabled"/"are disabled": it must name a feature GitHub can actually turn off
+  # for a repository behind one of this connector's endpoints. Legacy could afford the loose match
+  # because it had already established `status_code == 410`; here the same loose match would also
+  # swallow a 401 "Your account is disabled" or any future error whose wording happens to mention
+  # something disabled, silently dropping the repository. Migrating a stream whose feature can be
+  # disabled per repository means adding that word to the list below — and the failure mode if it
+  # is forgotten is `gone_fail_filter` failing the stream with an actionable message, not a silent
+  # skip.
+  #
+  # Two escaping traps, both silent:
+  #   - `!= ''` rather than `is not none`. The CDK's `regex_search` filter returns an empty string
+  #     on no match, and InterpolatedBoolean's false-values list does not contain "None", so
+  #     `is not none` would render "True" for every response and skip everything.
+  #   - `\\b`, not `\b`. Jinja parses its own string literals with Python escapes, so a single
+  #     `\b` reaches `re` as a backspace character (0x08) and the pattern never matches — the
+  #     failure is a filter that quietly stops skipping, not an error.
+  disabled_feature_skip_filter:
+    type: HttpResponseFilter
+    predicate: >-
+      {{ response is mapping
+         and ((response.get('message') or '') | string
+              | regex_search('(?i)\\b(issues|projects|discussions) (?:are|is) disabled\\b')) != '' }}
+    action: IGNORE
+    error_message: "Skipping this repository: GitHub reports the feature backing this stream is disabled for it (HTTP 410 Gone)."
+
+  # Any other 410 is unexpected and fails fast with the legacy message
+  # (errors_handlers.py::GITHUB_DEFAULT_ERROR_MAPPING). Must come after
+  # `disabled_feature_skip_filter`, which is the expected case.
+  gone_fail_filter:
+    type: HttpResponseFilter
+    http_codes: [410]
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      GitHub returned 410 Gone for an unexpected reason. The endpoint or API version may be
+      deprecated. Verify the connector version is current and the endpoint is still supported.
+
+  # 404 on an organization or repository is skipped with a warning so one deleted repo or
+  # renamed org doesn't fail the whole sync (`check` enumerates the partition routers below
+  # and relies on the same skip semantics).
+  not_found_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
+
+  # Legacy re-raised 403 for `Repositories` (streams.py:162), so the repo listing and the
+  # resolver streams fail with an actionable scopes/SSO message. That is what lets `check`
+  # catch a token with bad scopes.
+  forbidden_fail_filter:
+    type: HttpResponseFilter
+    http_codes: [403]
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      GitHub denied access (HTTP 403). Your token may be missing required scopes
+      (this connector typically needs: repo, read:org, read:user, read:project, workflow),
+      or this organization may require SAML SSO authorization.
+      See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+
+  # Legacy skipped 403 with a warning for the repo-scoped streams (streams.py:172-179):
+  # one repository the token cannot read must not fail the other partitions. This filter
+  # runs after the rate-limit filters above, so a secondary-limit 403 is still retried
+  # rather than silently dropping the repository.
+  forbidden_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [403]
+    action: IGNORE
+    error_message: >-
+      GitHub denied access to this repository (HTTP 403). Your token may be missing
+      required scopes, or this organization may require SAML SSO authorization. Skipping
+      this repository.
+
+  # GitHub answers 409 "Git Repository is empty." for a repository with no commits
+  # (`branches` and `tags` hit this). Legacy IGNOREd that exact message and retried any
+  # other 409 until `read_records` warned and skipped the slice, so skipping every 409
+  # here is the same observable outcome without spending the retry budget.
+  empty_repository_skip_filter:
+    type: HttpResponseFilter
+    http_codes: [409]
+    action: IGNORE
+    error_message: "Skipping this repository (HTTP 409 Conflict). The repository is likely empty (no commits)."
+
+  strict_access_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      # No `disabled_feature_skip_filter` here, deliberately. The endpoints on this handler are
+      # the repository listing and resolution (`/orgs/{org}/repos`, `/repos/{owner}/{repo}`), which
+      # have no per-repository feature to disable and so never send that 410. Including it would
+      # let any error envelope mentioning a disabled feature match *before* `forbidden_fail_filter`
+      # and turn the 403 that `check` relies on into a silent skip.
+      - $ref: "#/definitions/not_found_skip_filter"
+      - $ref: "#/definitions/forbidden_fail_filter"
+      - $ref: "#/definitions/gone_fail_filter"
+
+  skip_inaccessible_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/disabled_feature_skip_filter"
+      - $ref: "#/definitions/not_found_skip_filter"
+      - $ref: "#/definitions/forbidden_skip_filter"
+      - $ref: "#/definitions/empty_repository_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
 
   page_link_paginator:
     type: DefaultPaginator
@@ -1095,6 +1252,511 @@ definitions:
                       - "null"
                       - string
 
+  # --- Repo-scoped full-refresh REST streams --------------------------------------
+  #
+  # The streams below differ only in path, primary key and schema, so they share this
+  # retriever. Each is partitioned by `repository_partition_router`, and `page` pagination
+  # follows GitHub's `rel="next"` link header exactly as the legacy streams did.
+  repository_scoped_retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      $ref: "#/definitions/page_link_paginator"
+    partition_router:
+      $ref: "#/definitions/repository_partition_router"
+
+  # Replaces the legacy `GithubStream.transform` (streams.py:250), which stamped the
+  # partition's repository onto every record. None of these streams carries `reactions`,
+  # so the `+1`/`-1` renaming that transform also did is not needed here.
+  add_repository_transformation:
+    - type: AddFields
+      fields:
+        - path: ["repository"]
+          value: "{{ stream_partition.repository }}"
+
+  assignees_stream:
+    # API docs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees
+    type: DeclarativeStream
+    name: assignees
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_partition.repository }}/assignees"
+    transformations:
+      $ref: "#/definitions/add_repository_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Repository where the assignee is assigned
+            type: string
+          login:
+            description: Username of the assignee
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier of the assignee
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: Node ID of the assignee
+            type:
+              - "null"
+              - string
+          avatar_url:
+            description: URL of the assignee's avatar image
+            type:
+              - "null"
+              - string
+          gravatar_id:
+            description: Gravatar ID of the assignee
+            type:
+              - "null"
+              - string
+          url:
+            description: URL of the assignee's account
+            type:
+              - "null"
+              - string
+          html_url:
+            description: URL of the assignee's GitHub profile
+            type:
+              - "null"
+              - string
+          followers_url:
+            description: URL of the assignee's followers
+            type:
+              - "null"
+              - string
+          following_url:
+            description: URL of the assignee's following
+            type:
+              - "null"
+              - string
+          gists_url:
+            description: URL of the assignee's gists
+            type:
+              - "null"
+              - string
+          starred_url:
+            description: URL of the assignee's starred items
+            type:
+              - "null"
+              - string
+          subscriptions_url:
+            description: URL of the assignee's subscriptions
+            type:
+              - "null"
+              - string
+          organizations_url:
+            description: URL of the assignee's organizations
+            type:
+              - "null"
+              - string
+          repos_url:
+            description: URL of the assignee's repositories
+            type:
+              - "null"
+              - string
+          events_url:
+            description: URL of the assignee's events
+            type:
+              - "null"
+              - string
+          received_events_url:
+            description: URL of the assignee's received events
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the assignee's account
+            type:
+              - "null"
+              - string
+          site_admin:
+            description: Boolean indicating if the assignee is a site administrator
+            type:
+              - "null"
+              - boolean
+
+  branches_stream:
+    # API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
+    type: DeclarativeStream
+    name: branches
+    primary_key: ["repository", "name"]
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_partition.repository }}/branches"
+    transformations:
+      $ref: "#/definitions/add_repository_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Details about the repository associated with the branch.
+            type: string
+          name:
+            description: The name of the branch.
+            type:
+              - "null"
+              - string
+          commit:
+            description: Details about the commit associated with the branch.
+            type:
+              - "null"
+              - object
+            properties:
+              sha:
+                description: The unique identifier of the commit.
+                type:
+                  - "null"
+                  - string
+              url:
+                description: The URL to view details of the commit.
+                type:
+                  - "null"
+                  - string
+          protected:
+            description: Indicates if the branch is protected.
+            type:
+              - "null"
+              - boolean
+          protection:
+            description: Details about the protection settings of the branch.
+            type:
+              - "null"
+              - object
+            properties:
+              enabled:
+                description: Indicates if protection is enabled for the branch.
+                type:
+                  - "null"
+                  - boolean
+              required_status_checks:
+                description: Settings for required status checks on the branch.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  enforcement_level:
+                    description: Level of enforcement for required status checks.
+                    type:
+                      - "null"
+                      - string
+                  contexts:
+                    description: List of contexts required for status checks to pass.
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      description: Name of a context.
+                      type:
+                        - "null"
+                        - string
+                  checks:
+                    description: List of status checks that are required.
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      description: Details about a specific status check.
+                      type: object
+                      properties:
+                        context:
+                          description: Context information of the status check.
+                          type:
+                            - "null"
+                            - string
+                        app_id:
+                          description: ID of the application associated with the status check.
+                          type:
+                            - "null"
+                            - integer
+          protection_url:
+            description: URL to manage protection settings for the branch.
+            type:
+              - "null"
+              - string
+
+  collaborators_stream:
+    # API docs: https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
+    type: DeclarativeStream
+    name: collaborators
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_partition.repository }}/collaborators"
+    transformations:
+      $ref: "#/definitions/add_repository_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Repository information related to the collaborator
+            type: string
+          login:
+            description: Username of the collaborator
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier of the collaborator
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: Node ID of the collaborator
+            type:
+              - "null"
+              - string
+          avatar_url:
+            description: URL of the collaborator's avatar image
+            type:
+              - "null"
+              - string
+          gravatar_id:
+            description: Gravatar ID of the collaborator
+            type:
+              - "null"
+              - string
+          url:
+            description: URL of the collaborator's GitHub API endpoint
+            type:
+              - "null"
+              - string
+          html_url:
+            description: HTML URL of the collaborator's profile
+            type:
+              - "null"
+              - string
+          followers_url:
+            description: URL of the followers of the collaborator
+            type:
+              - "null"
+              - string
+          following_url:
+            description: URL of the users followed by the collaborator
+            type:
+              - "null"
+              - string
+          gists_url:
+            description: URL of gists created by the collaborator
+            type:
+              - "null"
+              - string
+          starred_url:
+            description: URL of the repositories starred by the collaborator
+            type:
+              - "null"
+              - string
+          subscriptions_url:
+            description: URL of the repositories subscribed to by the collaborator
+            type:
+              - "null"
+              - string
+          organizations_url:
+            description: URL of organizations the collaborator is associated with
+            type:
+              - "null"
+              - string
+          repos_url:
+            description: URL of the repositories of the collaborator
+            type:
+              - "null"
+              - string
+          events_url:
+            description: URL of the events related to the collaborator
+            type:
+              - "null"
+              - string
+          received_events_url:
+            description: URL of events received by the collaborator
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the collaborator (e.g., User)
+            type:
+              - "null"
+              - string
+          site_admin:
+            description: Indicates if the collaborator is a site administrator
+            type:
+              - "null"
+              - boolean
+          role_name:
+            description: Name of the collaborator's role
+            type:
+              - "null"
+              - string
+          permissions:
+            description: The permissions assigned to the collaborators
+            type:
+              - "null"
+              - object
+            properties:
+              admin:
+                description: Indicates if the collaborator has admin access
+                type:
+                  - "null"
+                  - boolean
+              maintain:
+                description: Indicates if the collaborator has maintain access
+                type:
+                  - "null"
+                  - boolean
+              push:
+                description: Indicates if the collaborator has push access
+                type:
+                  - "null"
+                  - boolean
+              pull:
+                description: Indicates if the collaborator has pull access
+                type:
+                  - "null"
+                  - boolean
+              triage:
+                description: Indicates if the collaborator has triage access
+                type:
+                  - "null"
+                  - boolean
+
+  issue_labels_stream:
+    # API docs: https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository
+    type: DeclarativeStream
+    name: issue_labels
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_partition.repository }}/labels"
+    transformations:
+      $ref: "#/definitions/add_repository_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Information about the repository to which the label belongs.
+            type: string
+          id:
+            description: Unique identifier for the label.
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: A unique identifier for the label at the GitHub API level.
+            type:
+              - "null"
+              - string
+          url:
+            description: URL that provides direct access to the label resource.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the label used for identification.
+            type:
+              - "null"
+              - string
+          description:
+            description: Descriptive text providing additional information about the label.
+            type:
+              - "null"
+              - string
+          color:
+            description: The color associated with the label, typically used for visual representation.
+            type:
+              - "null"
+              - string
+          default:
+            description: Indicates if the label is the default label for the repository.
+            type:
+              - "null"
+              - boolean
+
+  tags_stream:
+    # API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
+    type: DeclarativeStream
+    name: tags
+    primary_key: ["repository", "name"]
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/repository_scoped_requester"
+        path: "repos/{{ stream_partition.repository }}/tags"
+    transformations:
+      $ref: "#/definitions/add_repository_transformation"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Repository information related to the tag
+            type: string
+          name:
+            description: Name of the tag
+            type:
+              - "null"
+              - string
+          commit:
+            description: Information about the commit associated with this tag
+            type:
+              - "null"
+              - object
+            properties:
+              sha:
+                description: The unique SHA of the commit
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL to view details of the commit
+                type:
+                  - "null"
+                  - string
+          zipball_url:
+            description: URL to download a zipball archive of the repository at this tag
+            type:
+              - "null"
+              - string
+          tarball_url:
+            description: URL to download a tarball archive of the repository at this tag
+            type:
+              - "null"
+              - string
+          node_id:
+            description: Unique identifier of the tag
+            type:
+              - "null"
+              - string
+
 # Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
 # is per token, so this is conservative — a multi-token config could spend more than this
 # allows, and the /rate_limit probes are counted against it too. Left global on purpose,
@@ -1120,6 +1782,11 @@ concurrency_level:
 
 streams:
   - $ref: "#/definitions/repositories_stream"
+  - $ref: "#/definitions/assignees_stream"
+  - $ref: "#/definitions/branches_stream"
+  - $ref: "#/definitions/collaborators_stream"
+  - $ref: "#/definitions/issue_labels_stream"
+  - $ref: "#/definitions/tags_stream"
 
 check:
   type: CheckStream
@@ -1256,7 +1923,7 @@ spec:
         default: 120
         minimum: 1
         maximum: 240
-        description: Max time (in minutes) the connector will wait on a rate limit before failing — both when all API tokens are already known to be exhausted and when GitHub rejects a request and asks the connector to wait. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
+        description: Max time (in minutes) the connector will wait when all API tokens are rate-limited before failing. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
         order: 5
       num_workers:
         type: integer

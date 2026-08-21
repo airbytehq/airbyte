@@ -17,7 +17,6 @@ from source_github import SourceGithub, constants
 from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
-    Collaborators,
     Comments,
     CommitCommentReactions,
     CommitComments,
@@ -26,7 +25,6 @@ from source_github.streams import (
     Deployments,
     GithubStreamABCBackoffStrategy,
     IssueEvents,
-    IssueLabels,
     IssueMilestones,
     Issues,
     IssueTimelineEvents,
@@ -43,7 +41,6 @@ from source_github.streams import (
     RepositoryStats,
     Reviews,
     Stargazers,
-    Tags,
     TeamMembers,
     TeamMemberships,
     Teams,
@@ -339,17 +336,18 @@ def test_permission_403_raises_error(time_mock, requests_mock):
 @patch("time.sleep")
 def test_read_records_404_message_for_repository_stream(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/missing-repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = Deployments(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/missing-repo/tags",
+        "https://api.github.com/repos/org/missing-repo/deployments",
         status_code=requests.codes.NOT_FOUND,
         json={"message": "Not Found"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `Tags` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
+        "Skipping `Deployments` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg
+        for msg in caplog.messages
     )
 
 
@@ -370,10 +368,10 @@ def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_moc
 @patch("time.sleep")
 def test_read_records_403_raises_with_actionable_message(time_mock, requests_mock):
     args = {"authenticator": None, "repositories": ["org/private-repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = Deployments(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/private-repo/tags",
+        "https://api.github.com/repos/org/private-repo/deployments",
         status_code=requests.codes.FORBIDDEN,
         json={"message": "Resource not accessible by integration"},
     )
@@ -387,17 +385,19 @@ def test_read_records_403_raises_with_actionable_message(time_mock, requests_moc
 @patch("time.sleep")
 def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/empty-repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = Deployments(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/empty-repo/tags",
+        "https://api.github.com/repos/org/empty-repo/deployments",
         status_code=requests.codes.CONFLICT,
         json={"message": "Git Repository is not empty but not a conflict either"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `tags` for repository `org/empty-repo`" in msg and "GitHub returned 409 Conflict" in msg and "empty (no commits)" in msg
+        "Skipping `deployments` for repository `org/empty-repo`" in msg
+        and "GitHub returned 409 Conflict" in msg
+        and "empty (no commits)" in msg
         for msg in caplog.messages
     )
 
@@ -405,16 +405,18 @@ def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
 @patch("time.sleep")
 def test_read_records_502_message(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/repo"], "page_size_for_large_streams": 30}
-    stream = Tags(**args)
+    stream = Deployments(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/repo/tags",
+        "https://api.github.com/repos/org/repo/deployments",
         status_code=requests.codes.BAD_GATEWAY,
         json={"message": "Server Error"},
     )
 
     list(read_full_refresh(stream))
-    assert any("GitHub returned HTTP 502 Bad Gateway for stream `tags`" in msg and "usually transient" in msg for msg in caplog.messages)
+    assert any(
+        "GitHub returned HTTP 502 Bad Gateway for stream `deployments`" in msg and "usually transient" in msg for msg in caplog.messages
+    )
 
 
 @patch("time.sleep")
@@ -1109,6 +1111,18 @@ def test_stream_comments(requests_mock):
     }
 
 
+def test_branches_technical_stream_still_answers_get_json_schema():
+    """`Branches` is kept only so `Commits` can discover branches, and its schema file was
+    deleted when the user-facing `branches` stream moved to the manifest. The class overrides
+    `get_json_schema` so it does not fall back to the now-missing `schemas/branches.json`."""
+    stream = Branches(repositories=["organization/repository"], page_size_for_large_streams=100)
+
+    schema = stream.get_json_schema()
+
+    assert schema["type"] == "object"
+    assert set(stream.primary_key) <= set(schema["properties"])
+
+
 def test_streams_read_full_refresh(requests_mock):
     repository_args = {
         "repositories": ["organization/repository"],
@@ -1215,16 +1229,12 @@ def test_streams_read_full_refresh(requests_mock):
         "total_count": 1,
     }
 
-    for cls, url in [
-        (Tags, "https://api.github.com/repos/organization/repository/tags"),
-        (IssueLabels, "https://api.github.com/repos/organization/repository/labels"),
-        (Collaborators, "https://api.github.com/repos/organization/repository/collaborators"),
-        (Branches, "https://api.github.com/repos/organization/repository/branches"),
-    ]:
-        stream = cls(**repository_args)
-        requests_mock.get(url, json=get_json_response(stream.cursor_field))
-        records = list(read_full_refresh(stream))
-        assert records == get_records(stream.cursor_field)
+    # `assignees`, `branches`, `collaborators`, `issue_labels` and `tags` moved to the
+    # manifest; their read behavior is covered by test_manifest_repo_scoped_streams.py.
+    # `Branches` stays as the technical stream `Commits` uses for branch discovery.
+    stream = Branches(**repository_args)
+    requests_mock.get("https://api.github.com/repos/organization/repository/branches", json=get_json_response(stream.cursor_field))
+    assert list(read_full_refresh(stream)) == get_records(stream.cursor_field)
 
     requests_mock.get(
         "https://api.github.com/repos/organization/repository/stargazers",

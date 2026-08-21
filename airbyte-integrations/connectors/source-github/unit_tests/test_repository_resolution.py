@@ -217,7 +217,9 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     source = SourceGithub(config=dict(config))
     streams = ConcurrentDeclarativeSource.streams(source, config)
 
-    assert [stream.name for stream in streams] == ["repositories"]
+    # Building at all is the assertion: every manifest stream shares the authenticator and the
+    # backoff strategies, so a value one of those interpolations cannot render fails here.
+    assert "repositories" in [stream.name for stream in streams]
 
 
 def test_resolution_raises_on_no_tokens():
