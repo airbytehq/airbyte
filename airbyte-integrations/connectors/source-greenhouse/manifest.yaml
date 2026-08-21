@@ -1101,6 +1101,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            show_service_accounts: "{{ 'true' if not next_page_token }}"
           error_handler:
             type: DefaultErrorHandler
             backoff_strategies:

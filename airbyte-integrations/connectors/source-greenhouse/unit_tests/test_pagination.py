@@ -313,6 +313,35 @@ def test_manifest_flat_child_state_migration_reaches_request(requests_mock, get_
     }
 
 
+def test_users_include_service_accounts_only_on_first_page(requests_mock, get_source):
+    _register_token(requests_mock)
+    user_requests = []
+
+    def users_callback(request, context):
+        user_requests.append(request)
+        context.status_code = 200
+        if len(user_requests) == 1:
+            context.headers["Link"] = (
+                '<https://harvest.greenhouse.io/v3/users?cursor=cursor-2>; rel="next"'
+            )
+        return [{"id": len(user_requests), "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/users", json=users_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("users", SyncMode.incremental).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert len(user_requests) == 2
+    assert user_requests[0].qs == {
+        "per_page": ["500"],
+        "updated_at": ["gte|1970-01-01t00:00:00.000z"],
+        "show_service_accounts": ["true"],
+    }
+    assert user_requests[1].qs == {"cursor": ["cursor-2"]}
+
+
 @pytest.mark.parametrize(
     "status_code, message",
     [
