@@ -1,5 +1,12 @@
 # Airbyte Agents release notes
 
+## August 17, 2026
+
+Web app
+
+- When connector setup fails because of a configuration problem, such as a missing or invalid credential, the error now appears on the credentials page right away instead of only after repeated retry attempts.
+- The custom plan on the plans page no longer shows a redundant "Custom" price above the "Talk to sales" button.
+
 ## August 12, 2026
 
 Web app
