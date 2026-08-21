@@ -4,6 +4,8 @@
 import base64
 from urllib.parse import parse_qs
 
+import pytest
+
 from airbyte_cdk.models import FailureType, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -95,6 +97,37 @@ def test_applications_retries_429_and_completes(requests_mock, get_source):
 
     assert [record.record.data["id"] for record in output.records] == [1]
     assert len(application_requests) == 2
+
+
+def test_applications_429_waits_for_retry_after(requests_mock, get_source, monkeypatch):
+    waits = []
+    monkeypatch.setattr(
+        "airbyte_cdk.sources.streams.http.rate_limiting.time.sleep",
+        lambda seconds: waits.append(seconds),
+    )
+    _register_token(requests_mock)
+    application_requests = []
+
+    def applications_callback(request, context):
+        application_requests.append(request)
+        if len(application_requests) == 1:
+            context.status_code = 429
+            context.headers["X-RateLimit-Remaining"] = "0"
+            context.headers["Retry-After"] = "1"
+            return {"message": "Too Many Requests"}
+        context.status_code = 200
+        context.headers["X-RateLimit-Remaining"] = "50"
+        return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert waits
+    assert waits[0] == pytest.approx(2)
 
 
 def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source):
