@@ -46,7 +46,7 @@ def test_application_cursor_state_migration_drops_partition_cursor(components_mo
         "states": [
             {
                 "partition": {"application_id": 42},
-                "cursor": {"updated_at": "2024-01-01T00:00:00.000Z"},
+                "cursor": {},
             }
         ]
     }
@@ -67,7 +67,7 @@ def test_application_cursor_state_migration_drops_child_parent_state(components_
         "states": [
             {
                 "partition": {"application_id": 42},
-                "parent_state": {"applications": {"updated_at": "2024-01-01T00:00:00.000Z"}},
+                "parent_state": {"applications": {}},
                 "cursor": {"updated_at": "2024-01-02T00:00:00.000Z"},
             }
         ]
