@@ -109,4 +109,13 @@ data:
     - title: monday.com Status
       url: https://status.monday.com/
       type: status_page
+    - title: monday.com OAuth and permissions
+      url: https://developer.monday.com/apps/docs/oauth
+      type: permissions_scopes
+    - title: monday.com OAuth 2.1 migration guide
+      url: https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow
+      type: api_deprecations
+    - title: monday.com User entity migration guide (2026-04 to 2026-10)
+      url: https://developer.monday.com/api-reference/docs/migrating-user-entity-to-2026-10
+      type: api_deprecations
 metadataSpecVersion: "1.0"
