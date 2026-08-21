@@ -25,8 +25,8 @@ The connector maps Snowflake types to Airbyte types as follows.
 | `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL` | Number |
 | `DATE` | Date |
 | `TIME` | Time without time zone |
-| `TIMESTAMP`, `TIMESTAMP_NTZ`, `DATETIME` | Timestamp without time zone |
-| `TIMESTAMP_LTZ`, `TIMESTAMP_TZ` | Timestamp with time zone |
+| `TIMESTAMP`, `TIMESTAMP_NTZ`, `TIMESTAMPNTZ`, `DATETIME` | Timestamp without time zone |
+| `TIMESTAMP_LTZ`, `TIMESTAMPLTZ`, `TIMESTAMP_TZ`, `TIMESTAMPTZ` | Timestamp with time zone |
 | `BINARY`, `VARBINARY` | Binary |
 | `VARIANT`, `OBJECT`, `ARRAY`, `GEOGRAPHY`, `GEOMETRY`, `VECTOR`, `FILE` | String |
 
