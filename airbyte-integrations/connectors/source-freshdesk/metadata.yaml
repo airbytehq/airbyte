@@ -17,6 +17,18 @@ data:
     - title: Changelog
       url: https://developers.freshdesk.com/api/#change_log
       type: api_release_history
+    - title: API Deprecation and Breaking Change Policies
+      url: https://developers.freshdesk.com/api/#policies
+      type: api_deprecations
+    - title: Customer Satisfaction (New CSAT) APIs
+      url: https://developers.freshdesk.com/api/#customer-satisfaction_new
+      type: api_deprecations
+    - title: API Reference
+      url: https://developers.freshdesk.com/api/
+      type: api_reference
+    - title: Authentication
+      url: https://developers.freshdesk.com/api/#authentication
+      type: authentication_guide
   githubIssueLabel: source-freshdesk
   icon: freshdesk.svg
   license: ELv2
