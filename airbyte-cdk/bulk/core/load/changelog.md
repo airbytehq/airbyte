@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.0.25 — 2026-08-21
+
+[#84930](https://github.com/airbytehq/airbyte/pull/84930) — Fail with a clear config error when a stream is configured to deduplicate without a primary key.
+
 ### 1.0.24 — 2026-08-10
 
 [#83806](https://github.com/airbytehq/airbyte/pull/83806) — Fix: honor the configured Azure Blob `endpointDomainName` and target the matching Entra authority host.
