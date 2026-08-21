@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 18, 2026
+
+Connections
+
+- Setting up or refreshing the schema for a source with a very large number of tables and columns is now more reliable. Previously, these requests could run out of memory and fail before the schema reached you.
+
 ## August 12, 2026
 
 Connections
