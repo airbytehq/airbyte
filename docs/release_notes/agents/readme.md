@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## August 18, 2026
+
+Web app
+
+- Fixed an issue where long-running chat responses could be cut off before the agent finished answering.
+
+SDK
+
+- Searches against your synced data now filter out weakly related results by default, so agents get more relevant matches. You can adjust or turn off this minimum similarity cutoff when you need broader results.
+
 ## August 12, 2026
 
 Web app
