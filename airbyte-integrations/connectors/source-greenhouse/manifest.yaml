@@ -1103,22 +1103,7 @@ definitions:
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
             show_service_accounts: "{{ 'true' if not next_page_token }}"
           error_handler:
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
-                max_waiting_time_in_seconds: 300
-            response_filters:
-              - type: HttpResponseFilter
-                http_codes:
-                  - 403
-                action: FAIL
-                failure_type: config_error
-                error_message: >-
-                  Greenhouse returned 403 for /v3/users. All Harvest v3 list endpoints
-                  require the connection to be authorized by a Greenhouse user with Site
-                  Admin privileges. Re-run the Authenticate step signed in to Greenhouse
-                  as a Site Admin.
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1798,6 +1783,10 @@ spec:
           grant_type: authorization_code
           code: "{{ auth_code_value }}"
           redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_at
       complete_oauth_output_specification:
         required:
           - refresh_token
@@ -1812,6 +1801,12 @@ spec:
             path_in_connector_config:
               - credentials
               - access_token
+          expires_at:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         required:
           - client_id

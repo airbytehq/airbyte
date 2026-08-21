@@ -132,16 +132,18 @@ def test_applications_429_waits_for_retry_after(requests_mock, get_source, monke
     assert waits[0] == pytest.approx(2)
 
 
-def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source):
+@pytest.mark.parametrize("stream_name", ["offices", "users"])
+def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_source, stream_name):
     _register_token(requests_mock)
     requests_mock.get(
-        "https://harvest.greenhouse.io/v3/offices",
+        f"https://harvest.greenhouse.io/v3/{stream_name}",
         status_code=403,
         json={"message": "Forbidden"},
     )
 
     source = get_source(CONFIG)
-    catalog = CatalogBuilder().with_stream("offices", SyncMode.full_refresh).build()
+    sync_mode = SyncMode.incremental if stream_name == "users" else SyncMode.full_refresh
+    catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
     output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
 
     assert output.errors

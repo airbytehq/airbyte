@@ -4,16 +4,17 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Harvest v3 stream behavior
 
-This connector uses Greenhouse Harvest v3 with OAuth Authorization Code authentication and rotating refresh tokens. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The `refresh_token_updater` persists each rotated refresh token. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor.
+This connector uses Greenhouse Harvest v3 with OAuth Authorization Code authentication and rotating refresh tokens. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The `refresh_token_updater` persists each rotated refresh token. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor. Child streams preserve their minimum recoverable `updated_at` cursor while flattening partition state and resume without a backfill.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
 | applications | top-level | updated_at | updated_at | incremental |
-| applications_demographics_answers | child | updated_at | updated_at, application_ids | incremental |
-| applications_interviews | child | updated_at | updated_at, application_ids | incremental |
+| applications_demographics_answers | child | updated_at | updated_at | incremental |
+| applications_interviews | child | updated_at | updated_at | incremental |
 | candidates | top-level | updated_at | updated_at | incremental |
 | close_reasons | top-level | none | none | full refresh |
 | custom_fields | top-level | none | none | full refresh |
+| custom_field_options | top-level | none | none | full refresh |
 | degrees | top-level | none | custom_field_key=degree | full refresh |
 | demographics_answers | top-level | updated_at | updated_at | incremental |
 | demographics_answer_options | top-level | none | none | full refresh |
@@ -27,7 +28,7 @@ This connector uses Greenhouse Harvest v3 with OAuth Authorization Code authenti
 | interviews | top-level | updated_at | updated_at | incremental |
 | job_posts | top-level | updated_at | updated_at | incremental |
 | job_stages | top-level | updated_at | updated_at | incremental |
-| jobs_stages | child | updated_at | updated_at, job_ids | incremental |
+| jobs_stages | child | updated_at | updated_at | incremental |
 | offers | top-level | updated_at | updated_at | incremental |
 | rejection_reasons | top-level | none | none | full refresh |
 | scorecards | top-level | updated_at | updated_at | incremental |

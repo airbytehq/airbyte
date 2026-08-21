@@ -56,7 +56,7 @@ Refresh the schema in every destination and reset streams whose records or field
 
 ### Pagination and incremental state
 
-Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`; `applications` and its child streams backfill once on the new `updated_at` cursor.
+Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`, so `applications` backfills once on the new `updated_at` cursor. Its three de-fanned child streams preserve the minimum recoverable `updated_at` cursor and resume without a backfill.
 
 In v3, `applications_demographics_answers` reads the same flat collection as `demographics_answers`, `applications_interviews` reads the same flat collection as `interviews`, and `jobs_stages` reads the same flat collection as `job_stages`. These child/top-level pairs are therefore redundant: each child stream now returns the full collection rather than only rows for parents in scope. If you sync both members of a pair, disable one to avoid duplicate rows and duplicate API cost.
 
