@@ -12,6 +12,7 @@ from requests.auth import HTTPBasicAuth
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
@@ -51,6 +52,7 @@ class TicketActivitiesRetriever(Retriever):
     parameters: InitVar[Mapping[str, Any]]
     request_timeout: int = 300
     backoff_strategy: Optional[BackoffStrategy] = field(default=None)
+    api_budget: Optional[APIBudget] = field(default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         error_mapping = {
@@ -75,6 +77,7 @@ class TicketActivitiesRetriever(Retriever):
             name="ticket_activities",
             logger=logger,
             error_handler=HttpStatusErrorHandler(logger, error_mapping=error_mapping),
+            api_budget=self.api_budget,
             backoff_strategy=self.backoff_strategy or FreshdeskExportBackoffStrategy(),
         )
 
@@ -141,11 +144,6 @@ class TicketActivitiesRetriever(Retriever):
         )
         if allow_missing and response.status_code == 404:
             return None
-        if response.status_code in (401, 403):
-            raise AirbyteTracedException(
-                message=_EXPORT_UNAVAILABLE_MESSAGE,
-                failure_type=FailureType.config_error,
-            )
         response.raise_for_status()
         try:
             payload = response.json()

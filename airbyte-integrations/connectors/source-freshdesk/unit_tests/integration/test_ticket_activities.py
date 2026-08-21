@@ -1,12 +1,14 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 from requests_mock import Mocker
 
 from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, FailureType, YamlDeclarativeSource
+from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import StreamSlice
 
@@ -181,6 +183,35 @@ def test_ticket_activities_retries_rate_limits_then_reads(requests_mock: Mocker)
 
     assert [record["ticket_id"] for record in records] == [600]
     assert requests_mock.call_count == 3
+
+
+def test_ticket_activities_honors_injected_api_budget() -> None:
+    budget = APIBudget(policies=[])
+
+    retriever = TicketActivitiesRetriever(
+        config=ConfigBuilder().domain(_DOMAIN).build(),
+        parameters={},
+        api_budget=budget,
+    )
+
+    assert retriever._http_client._api_budget is budget
+
+
+def test_ticket_activities_lookback_is_clamped_to_export_retention() -> None:
+    config = ConfigBuilder().domain(_DOMAIN).start_date(datetime(2017, 1, 1)).build()
+    source = YamlDeclarativeSource(
+        path_to_yaml=str(_YAML_FILE_PATH),
+        catalog=ConfiguredAirbyteCatalog(streams=[]),
+        config=config,
+        state=None,
+    )
+
+    stream = next(s for s in source.streams(config) if s.name == "ticket_activities")
+    slices = [partition.to_slice() for partition in stream.generate_partitions()]
+
+    # Freshdesk keeps each daily export file for 30 days; older slices are guaranteed 404s,
+    # so the stream clamps any config start_date to the retention window.
+    assert 0 < len(slices) <= 32
 
 
 def test_ticket_activities_stream_is_incremental() -> None:

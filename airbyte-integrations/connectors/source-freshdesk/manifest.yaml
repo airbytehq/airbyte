@@ -1452,8 +1452,9 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.get('start_date') or day_delta(-3650,
+            {{ config.get('start_date') or day_delta(-30,
             '%Y-%m-%dT%H:%M:%SZ') }}
+          min_datetime: "{{ day_delta(-30, '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         cursor_datetime_formats:

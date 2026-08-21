@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Freshdesk]
 
 - A Freshdesk account with an [API key](https://support.freshdesk.com/support/solutions/articles/215517). The API key belongs to the agent whose credentials are used, and that agent must have access to the resources you want to sync.
 - Your Freshdesk [domain](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `yourcompany.freshdesk.com`.
-- To sync **Ticket Activities**, an account admin must have enabled Freshdesk's scheduled ticket activities export. Freshdesk makes historical exports available through `/api/v2/export/ticket_activities?created_at=YYYY-MM-DD`.
+- To sync **Ticket Activities**, your account must have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled under **Admin > Account > Scheduled Exports**. Freshdesk deprecated this feature together with Legacy Reports (October 2023): it stays available only for accounts that had it enabled before the deprecation (Pro/Enterprise and legacy Estate/Forest plans) and cannot be newly enabled. Export files cover one day each and remain downloadable for 30 days, so the stream can only backfill about the last 30 days. Without the export enabled the stream syncs successfully but returns no records.
 
 ## Set up the Freshdesk connector in Airbyte
 
@@ -90,7 +90,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.3.0 | 2026-08-15 | [80306](https://github.com/airbytehq/airbyte/pull/80306) | Add the `ticket_activities` stream. |
+| 3.3.0 | 2026-08-21 | [80306](https://github.com/airbytehq/airbyte/pull/80306) | Add the `ticket_activities` stream (requires the deprecated Freshdesk scheduled ticket activities export to be enabled on the account) |
 | 3.2.26 | 2026-08-11 | [83944](https://github.com/airbytehq/airbyte/pull/83944) | Update dependencies |
 | 3.2.25 | 2026-08-04 | [83464](https://github.com/airbytehq/airbyte/pull/83464) | Update dependencies |
 | 3.2.24 | 2026-07-28 | [82890](https://github.com/airbytehq/airbyte/pull/82890) | Update dependencies |
