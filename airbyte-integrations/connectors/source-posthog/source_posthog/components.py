@@ -3,12 +3,18 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Set
 
+import requests
+
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @dataclass
@@ -147,3 +153,27 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
             return True
         else:
             return False
+
+
+_CONFIG_ERROR_STATUS_CODES: Set[int] = {401, 403}
+
+_ERROR_MESSAGES = {
+    401: "API key is invalid or expired.",
+    403: "API key lacks required scopes for this resource.",
+}
+
+
+@dataclass
+class PosthogErrorHandler(DefaultErrorHandler):
+    """Maps HTTP 401 and 403 to `config_error` so the platform does not
+    raise false Sentry alerts for permission / credential problems.
+    """
+
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
+        if response.status_code in _CONFIG_ERROR_STATUS_CODES:
+            raise AirbyteTracedException(
+                message=_ERROR_MESSAGES.get(response.status_code, "Authentication or authorization error."),
+                internal_message=f"HTTP {response.status_code} from {response.url}: {response.text[:500]}",
+                failure_type=FailureType.config_error,
+            )
+        return super().interpret_response(response)
