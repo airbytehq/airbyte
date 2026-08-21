@@ -18,25 +18,28 @@ flowchart TD
     START -->|"I want a shell-first or agent-harness tool"| CLI["CLI"]
     START -->|"No code needed"| WEB["Web app"]
     START -->|"Non-Python backend or custom admin"| API["Agent API"]
+    START -->|"I want my client to treat Airbyte as a model"| MODEL["Airbyte model"]
 
     click MCP "#mcp-server"
     click SDK "#python-sdk"
     click CLI "#cli"
     click WEB "#web-app"
     click API "#agent-api"
+    click MODEL "#airbyte-model"
 ```
 
 ## At a glance
 
-| | Web app | MCP server | SDK | CLI | API |
-| --- | --- | --- | --- | --- | --- |
-| **Install required** | No | No | `uv add airbyte-agent-sdk` | Binary download or `brew` | No |
-| **Language / platform** | Browser | Any MCP-capable client | Python | Any shell | Any HTTP client |
-| **Auth model** | Browser login | OAuth (browser popup) | Client ID + secret | Browser login or `--manual` | Client ID + secret |
-| **Best for** | No-code exploration, automations | Conversational AI agents (Claude, ChatGPT, Cursor) | Python-native agent frameworks | Shell scripts, CI, agent harnesses | Non-Python backends, custom admin |
-| **Programmatic control** | No | Agent-driven | Full | Full | Full |
-| **Context Store access** | Yes | Yes | Yes | Yes | Yes |
-| **Credential handling** | Browser widget | Browser widget (via agent) | Environment variables | Browser widget + settings file | HTTP headers |
+| | Web app | MCP server | SDK | CLI | API | Airbyte model |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Install required** | No | No | `uv add airbyte-agent-sdk` | Binary download or `brew` | No | No |
+| **Language / platform** | Browser | Any MCP-capable client | Python | Any shell | Any HTTP client | Any OpenAI Responses or Anthropic Messages client |
+| **Auth model** | Browser login | OAuth (browser popup) | Client ID + secret | Browser login or `--manual` | Client ID + secret | API key |
+| **Best for** | No-code exploration, automations | Conversational AI agents (Claude, ChatGPT, Cursor) | Python-native agent frameworks | Shell scripts, CI, agent harnesses | Non-Python backends, custom admin | Clients that can point at a custom model, like Codex and Claude Code |
+| **Who reasons** | Airbyte | Your agent | Your agent | Your agent | Your agent | Airbyte |
+| **Programmatic control** | No | Agent-driven | Full | Full | Full | No |
+| **Context Store access** | Yes | Yes | Yes | Yes | Yes | Yes |
+| **Credential handling** | Browser widget | Browser widget (via agent) | Environment variables | Browser widget + settings file | HTTP headers | Environment variables |
 
 ## MCP server
 
@@ -102,6 +105,16 @@ Choose the API when you need HTTP-level control, are working outside Python, or 
 
 **Get started:** see the [API docs](../interfaces/api) for authentication, connector management, and execution endpoints. The [Developer Quickstart](developer-quickstart) also covers common patterns.
 
+## Airbyte model
+
+**Best for:** Clients that can point at a custom model endpoint, like Codex, Claude Code, and pydantic-AI.
+
+The [Airbyte model](../interfaces/model) is a natural language interface. Your client sends a question to Airbyte the same way it would send one to any other model, and Airbyte queries your connectors and answers in plain language. Change a base URL, a model name, and an API key, and you're done.
+
+Choose the Airbyte model when you want Airbyte to be the agent inside a client you already use, and you don't need that client's own tools, prompts, or structured output. This interface is in public alpha.
+
+**Get started:** see the [Airbyte model docs](../interfaces/model) for setup instructions for Codex, Claude Code, pydantic-AI, and raw HTTP clients.
+
 ## MCP server vs. CLI for AI agents
 
 Both the MCP server and the CLI connect AI agents to your data, but they differ in how the agent communicates with Airbyte:
@@ -118,6 +131,22 @@ The CLI gives coding agents and harnesses several practical advantages:
 - Long-running work can finish in a shell command, while MCP tool calls are subject to client request timeouts.
 
 Use MCP for an off-the-shelf conversational client when zero installation matters. Use the CLI for coding agents and harnesses that can run shell commands, especially when output is large, work is multi-step, or tasks are long-running.
+
+## When to use the Airbyte model instead
+
+The MCP server and the CLI both give your agent tools and let it decide how to use them. The Airbyte model replaces your agent's model instead, so Airbyte does the reasoning and returns a written answer.
+
+Use the Airbyte model when:
+
+- Your client can't use MCP or run shell commands, but can point at a custom model.
+- You want answers, not records, and you don't need your own prompts or tools in the loop.
+- You want the shortest possible setup: no server URL, no binary, no OAuth flow.
+
+Use the MCP server or the CLI when:
+
+- Your agent needs to combine Airbyte data with its own tools, files, or reasoning.
+- You need structured output to parse, pipe, or store.
+- You care about reasoning cost. Airbyte bills tool calls only for the MCP server, the API, the SDK, and the CLI, but bills reasoning too for the Airbyte model. See [Agent operations](../concepts/agent-operations.md).
 
 ## All paths lead to the same data
 

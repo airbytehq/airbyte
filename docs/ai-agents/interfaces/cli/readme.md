@@ -26,7 +26,7 @@ Most resource operations accept JSON input with `--json` and print JSON output. 
 - You need to compose output with shell tools, avoid result truncation, or run many sequential calls and long-running operations without MCP client limits.
 - You want fuller, prescriptive agent guidance from an installable skill. See [Use the CLI with AI agents](./using-with-ai-agents.md).
 
-If your agent already speaks the Model Context Protocol, the [MCP server](../mcp/readme.md) offers the same connectors with zero install. If you're writing Python, the [SDK](../sdk/readme.md) gives you typed, in-process access. For raw HTTP control or non-Python backends, see the [API](../api/readme.md).
+If your agent already speaks the Model Context Protocol, the [MCP server](../mcp/readme.md) offers the same connectors with zero install. If you're writing Python, the [SDK](../sdk/readme.md) gives you typed, in-process access. For raw HTTP control or non-Python backends, see the [API](../api/readme.md). If you want written answers instead of JSON, and you want Airbyte to decide which connectors to query, see the [Airbyte model](../model/readme.md).
 
 Source code and releases live in the [`airbytehq/airbyte-agent-cli`](https://github.com/airbytehq/airbyte-agent-cli) repository.
 
