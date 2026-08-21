@@ -573,6 +573,33 @@ spec:
           specify which content owner's data to retrieve. If not provided, the
           API will use the channel associated with your OAuth credentials.
         order: 0
+      requests_per_minute:
+        type: integer
+        title: YouTube Reporting API Requests Per Minute
+        minimum: 1
+        maximum: 60
+        default: 30
+        examples:
+          - 15
+          - 30
+          - 60
+        description: >-
+          The maximum number of requests per minute for the YouTube Reporting API.
+          The quota of 60 requests per minute is per Google API project and is shared
+          by every Airbyte connection using the same OAuth client. If you run multiple
+          YouTube connections, divide this value among them. Lower this value if you
+          experience repeated 429 rate limit errors.
+        order: 1
+      num_workers:
+        type: integer
+        title: Number of concurrent threads
+        minimum: 1
+        maximum: 10
+        default: 2
+        examples: [1, 2, 5]
+        description: >-
+          The number of worker threads to use for the sync.
+        order: 2
       credentials:
         type: object
         title: Authenticate via OAuth 2.0
@@ -1903,8 +1930,13 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        # Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min
-        - limit: 60
+        # The 60/min quota is shared across connections in an API project, so we default to half and let users lower it further.
+        - limit: "{{ config.get('requests_per_minute', 30) }}"
           interval: PT1M
       matchers: [] # all requests
   status_codes_for_ratelimit_hit: [429]
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10
