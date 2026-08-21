@@ -164,7 +164,7 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
     output = read(source, config=CONFIG, catalog=catalog)
 
-    assert application_requests[0].qs["updated_at"] == ["gte|2024-01-01t00:00:00.000z"]
+    assert application_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [1]
     assert vars(output.most_recent_state.stream_state) == {"updated_at": "2024-01-01T00:00:00.000Z"}

@@ -44,7 +44,7 @@ class ApplicationCursorStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self._contains_applied_at(stream_state):
             return stream_state
-        return self._rename_applied_at(stream_state)
+        return self._drop_applied_at(stream_state)
 
     @classmethod
     def _contains_applied_at(cls, value: Any) -> bool:
@@ -55,9 +55,9 @@ class ApplicationCursorStateMigration(StateMigration):
         return False
 
     @classmethod
-    def _rename_applied_at(cls, value: Any) -> Any:
+    def _drop_applied_at(cls, value: Any) -> Any:
         if isinstance(value, Mapping):
-            return {("updated_at" if key == "applied_at" else key): cls._rename_applied_at(item) for key, item in value.items()}
+            return {key: cls._drop_applied_at(item) for key, item in value.items() if key != "applied_at"}
         if isinstance(value, list):
-            return [cls._rename_applied_at(item) for item in value]
+            return [cls._drop_applied_at(item) for item in value]
         return value

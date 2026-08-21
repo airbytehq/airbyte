@@ -52,7 +52,7 @@ Refresh the schema in every destination and reset streams whose records or field
 
 ### Pagination and incremental state
 
-Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. Existing application state is migrated from `applied_at` to `updated_at`, including partitioned application child-stream state.
+Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`; `applications` and its child streams backfill once on the new `updated_at` cursor.
 
 ### Rate limits
 

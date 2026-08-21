@@ -26,18 +26,18 @@ def test_migrate(components_module):
     assert migrated_state == expected_state
 
 
-def test_application_cursor_state_migration_renames_global_cursor(components_module):
+def test_application_cursor_state_migration_drops_global_cursor(components_module):
     state = {"applied_at": "2024-01-01T00:00:00.000Z"}
 
-    assert components_module.ApplicationCursorStateMigration().migrate(state) == {"updated_at": "2024-01-01T00:00:00.000Z"}
+    assert components_module.ApplicationCursorStateMigration().migrate(state) == {}
 
 
-def test_application_cursor_state_migration_renames_partition_cursor(components_module):
+def test_application_cursor_state_migration_drops_partition_cursor(components_module):
     state = {
         "states": [
             {
                 "partition": {"application_id": 42},
-                "cursor": {"applied_at": "2024-01-01T00:00:00.000Z"},
+                "cursor": {},
             }
         ]
     }
@@ -52,12 +52,12 @@ def test_application_cursor_state_migration_renames_partition_cursor(components_
     }
 
 
-def test_application_cursor_state_migration_renames_child_parent_state(components_module):
+def test_application_cursor_state_migration_drops_child_parent_state(components_module):
     state = {
         "states": [
             {
                 "partition": {"application_id": 42},
-                "parent_state": {"applications": {"applied_at": "2024-01-01T00:00:00.000Z"}},
+                "parent_state": {"applications": {}},
                 "cursor": {"updated_at": "2024-01-02T00:00:00.000Z"},
             }
         ]
