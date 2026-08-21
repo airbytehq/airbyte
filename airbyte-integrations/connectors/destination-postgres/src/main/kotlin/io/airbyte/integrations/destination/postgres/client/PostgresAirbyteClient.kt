@@ -47,6 +47,8 @@ class PostgresAirbyteClient(
         private const val COLUMN_NAME_COLUMN = "column_name"
         /** SQLSTATE 42P01 = undefined_table; 3F000 = invalid_schema_name. */
         private val MISSING_RELATION_SQL_STATES = setOf("42P01", "3F000")
+        /** SQLSTATE 42703 = undefined_column. */
+        private const val UNDEFINED_COLUMN_SQL_STATE = "42703"
     }
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -175,11 +177,36 @@ class PostgresAirbyteClient(
         execute(sqlGenerator.dropTable(tableName))
     }
 
+    /**
+     * Tables created by pre-direct-load connector versions may lack the `_airbyte_meta` and
+     * `_airbyte_generation_id` columns. Schema evolution can't repair them because
+     * [getColumnsFromDb] and the stream's final schema both exclude the meta columns, so we detect
+     * and add missing meta columns here, before the schema diff runs.
+     */
+    override suspend fun ensureMetaColumnsExist(stream: DestinationStream, tableName: TableName) {
+        // getColumnsFromDbForDiscovery returns ALL columns, unlike getColumnsFromDb which
+        // filters out the meta columns.
+        val existingColumns = getColumnsFromDbForDiscovery(tableName).keys
+        val missingMetaColumns =
+            columnManager.getMetaColumns().filterKeys { metaColumn ->
+                existingColumns.none { it.equals(metaColumn, ignoreCase = true) }
+            }
+        if (missingMetaColumns.isNotEmpty()) {
+            log.info {
+                "Table ${tableName.namespace}.${tableName.name} is missing Airbyte meta columns " +
+                    "${missingMetaColumns.keys} (likely created by a pre-direct-load connector " +
+                    "version); adding them"
+            }
+            execute(sqlGenerator.addMetaColumns(tableName, missingMetaColumns))
+        }
+    }
+
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
+        ensureMetaColumnsExist(stream, tableName)
         val columnsInDb = getColumnsFromDb(tableName)
         // In raw tables mode, finalSchema contains just {_airbyte_data -> JSONB}
         // In typed mode, finalSchema contains the mapped user columns
@@ -422,6 +449,16 @@ class PostgresAirbyteClient(
             if (isMissingRelation(e)) {
                 log.debug(e) { "Table $tableName does not exist. Returning generation ID 0." }
                 0L
+            } else if (isUndefinedColumn(e)) {
+                // Tables created by pre-direct-load connector versions lack the
+                // _airbyte_generation_id column. This is queried before ensureMetaColumnsExist
+                // has had a chance to repair the table, so treat it as generation 0 (the repair
+                // happens later in the sync, and a generation of 0 routes truncate syncs down
+                // the overwrite path, which recreates the table with the full schema).
+                log.warn(e) {
+                    "Table $tableName does not have a generation ID column. Returning generation ID 0."
+                }
+                0L
             } else {
                 log.error(e) { "Failed to retrieve the generation ID for table $tableName." }
                 throw e
@@ -497,4 +534,8 @@ class PostgresAirbyteClient(
     private fun isMissingRelation(exception: Throwable): Boolean =
         generateSequence(exception) { it.cause }
             .any { it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES }
+
+    private fun isUndefinedColumn(exception: Throwable): Boolean =
+        generateSequence(exception) { it.cause }
+            .any { it is SQLException && it.sqlState == UNDEFINED_COLUMN_SQL_STATE }
 }
