@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need the [Harvest API key](https://developers.greenhouse.io/harvest.html#authentication) with permissions to the resources Airbyte should be able to access.
+To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 application. Greenhouse issues these only to partners: email partner-support@greenhouse.io to request a client ID and client secret and to register your redirect URI. For Airbyte Cloud the redirect URI is `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte it is `<your-airbyte-url>/auth_flow`. The authorizing Greenhouse user must be a Site Admin, because every v3 list endpoint returns 403 otherwise.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -12,8 +12,22 @@ To set up the Greenhouse source connector, you'll need the [Harvest API key](htt
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Enter your [**Harvest API Key**](https://developers.greenhouse.io/harvest.html#authentication) that you obtained from Greenhouse.
-6. Click **Set up source**.
+5. Enter the **OAuth client ID** and **OAuth client secret** from your Greenhouse OAuth application.
+6. Click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token in **Refresh token**.
+7. If your deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**:
+   1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
+   2. Within 1 minute (the authorization code TTL), exchange the `code` query parameter:
+
+      ```bash
+      curl -X POST 'https://auth.greenhouse.io/token?grant_type=authorization_code&code=<code>&redirect_uri=<registered_redirect_uri>' -u '<client_id>:<client_secret>' --data ''
+      ```
+
+   3. Copy `refresh_token` from the response into the **Refresh token** field.
+8. Click **Set up source**.
+
+:::warning
+Greenhouse refresh tokens live for 24 hours and rotate on every refresh. A connection that stays idle longer than 24 hours cannot refresh and must be reauthenticated by repeating steps 6-7.
+:::
 
 ## Supported sync modes
 
@@ -26,7 +40,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 ## Supported Streams
 
-- [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
+- [Activity Feed](https://harvestdocs.greenhouse.io/reference/get_v3-notes)
 - [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
 - [Applications Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
 - [Applications Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
@@ -40,9 +54,10 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Candidates](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) \(Incremental\)
 - [Close Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons)
 - [Custom Fields](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields)
-- [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
+- [Custom Field Options](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
+- [Degrees](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
 - [Departments](https://harvestdocs.greenhouse.io/reference/get_v3-departments)
-- [Disciplines](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
+- [Disciplines](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
 - [EEOC](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) \(Incremental\)
 - [Email Templates](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) \(Incremental\)
 - [Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
@@ -55,7 +70,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Offices](https://harvestdocs.greenhouse.io/reference/get_v3-offices)
 - [Prospect Pools](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools)
 - [Rejection Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons)
-- [Schools](https://developers.greenhouse.io/harvest.html#get-list-schools)
+- [Schools](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
 - [Scorecards](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) \(Incremental\)
 - [Sources](https://harvestdocs.greenhouse.io/reference/get_v3-sources)
 - [Tags](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags)
@@ -66,6 +81,14 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 ## Performance considerations
 
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+
+## Refresh token lifetime
+
+Greenhouse refresh tokens expire 24 hours after they are issued and rotate on every use. Keep each Greenhouse connection on a sync frequency of less than 24 hours so the connector refreshes the token before it expires. If a connection is paused, disabled, or fails for longer than 24 hours, the refresh token expires and syncs fail with "Refresh token is invalid or expired." Recover by opening **Sources > your Greenhouse source > Settings** and clicking **Authenticate** to repeat the OAuth consent flow.
+
+## Migration from Harvest v1 before the v1/v2 sunset
+
+Version 1.0.0 migrates the 36 existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.
 
 ## IP allow list
 
@@ -78,6 +101,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of 36 existing streams from Harvest v1 to v3 plus the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
