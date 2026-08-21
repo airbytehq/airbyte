@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 from source_github.source import SourceGithub
 
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -187,6 +188,36 @@ def test_rate_limit_404_on_github_dot_com_is_not_swallowed_into_a_broken_sync(re
 
     assert repositories == []
     assert organizations == []
+
+
+@pytest.mark.parametrize(
+    "max_waiting_time",
+    [pytest.param(v, id=i) for v, i in [(None, "null"), (0, "zero"), (1, "spec_minimum"), (240, "spec_maximum")]],
+)
+def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waiting_time):
+    """`max_waiting_time` reaches three interpolations — the authenticator's `max_wait_time` and
+    the two backoff caps — and CDK 7.28.1 resolves the caps when the strategy is constructed, so a
+    value one of them cannot render fails every command rather than one retry. Null is the case
+    that bit: it renders as an empty string, so `config.get('max_waiting_time', 120)` produced
+    "PTM" and the source would not build. Zero must keep working too, since `check_connection`
+    passes it deliberately.
+    """
+    quota = {"remaining": 5000, "reset": int(time.time()) + 3600, "limit": 5000}
+    requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo",
+        json={"full_name": "org/repo", "organization": {"login": "org"}},
+    )
+    config = {
+        "credentials": {"personal_access_token": "test_token"},
+        "repositories": ["org/repo"],
+        "max_waiting_time": max_waiting_time,
+    }
+
+    source = SourceGithub(config=dict(config))
+    streams = ConcurrentDeclarativeSource.streams(source, config)
+
+    assert [stream.name for stream in streams] == ["repositories"]
 
 
 def test_resolution_raises_on_no_tokens():
