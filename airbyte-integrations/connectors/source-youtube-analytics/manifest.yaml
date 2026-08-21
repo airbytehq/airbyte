@@ -511,10 +511,10 @@ definitions:
           predicate: >-
             {{ response.get('error', {}).get('code') == 429 and
             'FreeQuotaRequestsPerDayPerProject' not in response|string }}
-      # Retry-After values above this cap stop the stream instead of sleeping past the handler budget.
-      # The total retry window is bounded by the CDK's 600-second max_time.
+      # The effective retry window is bounded by the CDK's 600-second max_time.
       max_retries: 8
       backoff_strategies:
+        # Retry-After values above this cap stop the stream instead of sleeping past the handler budget.
         - type: WaitTimeFromHeader
           header: Retry-After
           max_waiting_time_in_seconds: 600

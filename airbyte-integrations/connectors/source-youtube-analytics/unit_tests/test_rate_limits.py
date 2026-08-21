@@ -2,18 +2,15 @@
 
 """Tests for YouTube Reporting API rate-limit handling."""
 
-import json
 import time
 
 import pytest
-import requests
 import requests_mock
 from _helpers import get_source
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 _REPORT_TYPES_URL = "https://youtubereporting.googleapis.com/v1/reportTypes"
@@ -23,20 +20,6 @@ _RATE_LIMIT_BODY = {"error": {"code": 429, "message": "rate limit exceeded"}}
 
 def _read_report_types(config):
     return read(get_source(config), config, _REPORT_TYPES_CATALOG)
-
-
-def _get_error_handler(config):
-    source = get_source(config)
-    stream = next(stream for stream in source.streams(config) if stream.name == "report_types")
-    return stream._stream_partition_generator._partition_factory._retriever.requester.error_handler
-
-
-def _response(body, status_code=429, headers=None):
-    response = requests.Response()
-    response.status_code = status_code
-    response._content = json.dumps(body).encode()
-    response.headers.update(headers or {})
-    return response
 
 
 def _register_token(mocker):
@@ -132,9 +115,9 @@ def test_429_retry_after_above_cap_fails_as_transient_error(config, monkeypatch)
     assert not output.records
     assert report_types_mock.call_count == 1
     assert not [wait for wait in waits if wait > 0]
-    with pytest.raises(AirbyteTracedException) as exc_info:
-        _get_error_handler(config).backoff_time(_response(_RATE_LIMIT_BODY, headers={"Retry-After": "601"}), 1)
-    assert exc_info.value.failure_type == FailureType.transient_error
+    assert output.errors
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.transient_error
 
 
 def test_daily_quota_429_fails_without_retry(config, monkeypatch):
@@ -156,6 +139,7 @@ def test_daily_quota_429_fails_without_retry(config, monkeypatch):
     assert not output.records
     assert report_types_mock.call_count == 1
     assert not [wait for wait in waits if wait > 0]
-    error = _get_error_handler(config).interpret_response(_response(body))
+    assert output.errors
+    error = output.errors[0].trace.error
     assert error.failure_type == FailureType.transient_error
-    assert error.error_message == "Daily YouTube API project quota is exhausted."
+    assert error.message == "Daily YouTube API project quota is exhausted."
