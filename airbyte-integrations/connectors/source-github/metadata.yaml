@@ -54,6 +54,7 @@ data:
     streams:
       - branches
       - comments
+      - commit_details
       - issues
       - organizations
       - pull_requests

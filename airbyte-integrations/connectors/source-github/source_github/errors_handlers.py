@@ -20,9 +20,12 @@ logger = logging.getLogger("airbyte")
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
     401: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message=(
+            "GitHub returned 401 Unauthorized. Your token may be invalid, expired, or revoked. "
+            "Please verify the token in the connector configuration."
+        ),
     ),
     403: ErrorResolution(
         response_action=ResponseAction.FAIL,
@@ -35,9 +38,12 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
         ),
     ),
     404: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.IGNORE,
         failure_type=FailureType.config_error,
-        error_message="Conflict.",
+        error_message=(
+            "GitHub returned 404 Not Found. The requested resource does not exist, may have been deleted, "
+            "or the configured token may lack access to it. Skipping."
+        ),
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,

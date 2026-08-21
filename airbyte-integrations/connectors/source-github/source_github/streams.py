@@ -107,6 +107,8 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -301,7 +303,7 @@ class GithubStream(GithubStreamABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
+        if not response.ok or is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
             # The CDK IGNORE action still calls parse_response; guard against non-array error bodies.
             return
         yield from super().parse_response(
@@ -434,6 +436,8 @@ class RepositoryStats(GithubStream):
         return f"repos/{stream_slice['repository']}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield response.json()
 
 
@@ -490,6 +494,8 @@ class Organizations(GithubStreamABC):
         return f"orgs/{stream_slice['organization']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield response.json()
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -516,6 +522,8 @@ class Repositories(SemiIncrementalMixin, Organizations):
         return f"orgs/{stream_slice['organization']}/repos"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():  # GitHub puts records in an array.
             record = self.transform(record=record, stream_slice=stream_slice)
             if not self._pattern or self._pattern.match(record["full_name"]):
@@ -544,6 +552,8 @@ class Teams(Organizations):
         return f"orgs/{stream_slice['organization']}/teams"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -557,6 +567,8 @@ class Users(Organizations):
         return f"orgs/{stream_slice['organization']}/members"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1833,6 +1845,8 @@ class TeamMemberships(GithubStream):
                 yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield self.transform(response.json(), stream_slice=stream_slice)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -1953,3 +1967,50 @@ class IssueTimelineEvents(GithubStream):
         for event in events_list:
             record[event["event"]] = event
         yield record
+
+
+class CommitDetails(SemiIncrementalMixin, GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
+
+    Fetches full per-commit detail (stats and per-file changes) for each commit produced by the
+    Commits stream. One API call is made per commit SHA, so sync cost scales with commit volume.
+    """
+
+    primary_key = "sha"
+    cursor_field = "created_at"
+    slice_keys = ["repository", "branch"]
+
+    def __init__(self, parent: Commits, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/commits/{stream_slice['sha']}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        for stream_slice in self.parent.stream_slices(**kwargs):
+            for record in self.parent.read_records(stream_slice=stream_slice, **kwargs):
+                yield {"repository": record["repository"], "sha": record["sha"], "branch": record["branch"]}
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
+        yield self.transform(record=response.json(), stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["branch"] = stream_slice["branch"]
+        record["created_at"] = record["commit"]["author"]["date"]
+        return record
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        repository = latest_record["repository"]
+        branch = latest_record["branch"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
+        return current_stream_state
