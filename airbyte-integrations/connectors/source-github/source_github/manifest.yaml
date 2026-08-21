@@ -1,4 +1,4 @@
-version: "7.26.0"
+version: "7.28.1"
 type: DeclarativeSource
 
 definitions:
@@ -31,13 +31,36 @@ definitions:
       token_delimiter: ","
       auth_method: "token"
       header: "Authorization"
-      max_wait_time: "PT{{ config.get('max_waiting_time', 120) }}M"
+      # Same `is not none` guard as the backoff caps below, and for the same reason. A default
+      # in `.get` only applies when the key is *absent*: a present-but-null `max_waiting_time`
+      # (reachable via the API, Terraform or embedded use) returns None, which renders as the
+      # literal "None", so the previous expression produced "PTNoneM" and every command failed at
+      # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
+      # isodate splits on the "T" and reports the empty date half, not because the value was
+      # empty. `check_connection` passes 0 deliberately, so the guard must distinguish null from
+      # 0 — which is why this is `is not none` rather than `or 120`.
+      max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
       quota_status_source:
         type: QuotaStatusSource
         url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
         request_headers:
           Accept: "application/vnd.github+json"
           X-GitHub-Api-Version: "2022-11-28"
+        # GitHub Enterprise Server ships with HTTP API rate limiting disabled, and an instance
+        # in that state answers `GET /rate_limit` with 404 {"message": "Rate limiting is not
+        # enabled."}. Seeding runs before the first stream request, so without this the whole
+        # connection died on a generic "Resource not found" — every command, not just sync.
+        # Listed statuses seed that token's pools as untracked instead: no exhaustion waits, no
+        # proactive throttling, no rotation on exhaustion, while requests are still signed and
+        # tokens still rotate. Only 404, deliberately. An untracked token stays untracked for
+        # the whole sync (the endpoint is never consulted for it again), so a status the
+        # endpoint can also return transiently would cost quota tracking for the entire run.
+        # 401/403 must never be listed — a revoked credential would then read as "quota
+        # tracking unavailable" instead of as an auth failure. GitHub documents 404 as a
+        # possible response for this endpoint but never states that it means rate limiting is
+        # off; that mapping comes from GHES responses in the wild, which is exactly why the CDK
+        # leaves it to the connector.
+        unavailable_status_codes: [404]
       quotas:
         - type: TokenQuota
           name: rest
@@ -138,11 +161,37 @@ definitions:
   # `HttpResponseFilter` access to the stream slice in the CDK (same bucket as the token
   # rotation follow-up noted below).
   rate_limit_backoff_strategies:
+    # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
+    # rate-limit wait rather than only the ones the authenticator decides before sending.
+    # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap 1s:
+    # an interactive check then fails in seconds with the rate-limit message instead of sleeping
+    # until the reset. A sync keeps the user's budget.
+    #
+    # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
+    # `HttpClient` asked the authenticator for a spare credential only *after* a strategy returned
+    # a wait, and a cap raises instead of returning — so a budget shorter than the distance to the
+    # reset ended the stream rather than rotating onto a healthy token (measured on 7.28.0: 30min
+    # budget against a 60min reset failed with a second token idle). The rotation question is now
+    # asked first and the cap only governs waits that are actually taken, which
+    # `test_short_wait_budget_does_not_cost_token_rotation` proves end to end. 7.28.1 also resolves
+    # the cap at construction, so an expression this manifest got wrong fails at startup rather
+    # than at whichever rate limit reaches it first.
+    #
+    # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach the
+    # multiplication as None, and a falsy test would read check's deliberate 0 as absent and hand
+    # it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`, so a user on
+    # the spec's minimum of 1 minute would otherwise get a 60s cap equal to the `min_wait: 60`
+    # floor below, and every headerless 5xx would fail instead of retrying.
     - type: WaitTimeFromHeader
       header: "Retry-After"
+      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
     - type: WaitUntilTimeFromHeader
       header: "X-RateLimit-Reset"
       min_wait: 60
+      # The cap is compared against the computed wait, not the raw reset timestamp, and it is
+      # applied after `min_wait` — so during check, where the cap is 1s, even the 60s floor below
+      # is refused.
+      max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
       # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
       # timestamp already in the past, or seconds away, doesn't turn into a tight retry
       # loop against a quota that hasn't actually refilled.

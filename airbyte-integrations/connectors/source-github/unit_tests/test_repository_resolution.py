@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 from source_github.source import SourceGithub
 
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -45,6 +46,180 @@ def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
     assert ok is False
     assert "Rate limit is exceeded for all provided tokens." in message
     sleep_mock.assert_not_called()
+
+
+def test_check_connection_fails_fast_when_the_server_reports_a_rate_limit(requests_mock):
+    """The other rate-limit path: the local counters look healthy, the request goes out, and
+    GitHub rejects it with a reset an hour away. That wait belongs to the error handler, not to
+    the authenticator, so `max_waiting_time: 0` could not reach it until the manifest gained
+    `max_waiting_time_in_seconds` (CDK #1123). Without the cap this check sleeps ~3600s."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        status_code=403,
+        headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 3600)},
+        json={"message": "API rate limit exceeded for user ID 1."},
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+    source = SourceGithub(config=dict(config))
+
+    with patch("time.sleep") as sleep_mock:
+        ok, message = source.check_connection(logging.getLogger("airbyte"), dict(config))
+
+    assert ok is False
+    assert "rate limit" in message.lower()
+    assert sleep_mock.call_count == 0 or max(call.args[0] for call in sleep_mock.call_args_list) < 60
+
+
+def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
+    """The cap must bound `check` without turning an ordinary sync-time rate limit into a
+    failure: a two-minute wait is well inside the default 120-minute budget, so it is slept."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {
+                "status_code": 403,
+                "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 120)},
+                "json": {"message": "API rate limit exceeded for user ID 1."},
+            },
+            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+        ],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+
+    with patch("time.sleep") as sleep_mock:
+        organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+    assert max(call.args[0] for call in sleep_mock.call_args_list) > 60
+
+
+def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock):
+    """The wait cap must not turn ordinary transient errors into failures. A headerless 5xx falls
+    back to the `min_wait: 60` floor, and the CDK raises at `>=`, so a user on the spec's minimum
+    Max Waiting Time of 1 minute would hit a 60s cap that exactly equals that floor. Measured
+    before the `+ 1` in the manifest: a single 500 failed the whole resolution."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {"status_code": 500, "json": {"message": "Server Error"}},
+            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+        ],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "max_waiting_time": 1}
+
+    with patch("time.sleep"):
+        organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+
+
+def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
+    """A budget below the distance to the reset must not stop a sync that had a spare token.
+
+    Rotating is the same retry, seconds from now, on a credential with quota — strictly better
+    than ending the stream. This is the end-to-end proof of the CDK fix: it exercises the real
+    manifest, the real authenticator and the real capped strategy together.
+
+    Passes only on a CDK carrying airbytehq/airbyte-python-cdk#1126. It was xfail(strict) against
+    7.28.0, where the cap raised before rotation was considered, and turned red the moment the
+    prerelease of that fix was pinned — which is what removed the marker.
+    """
+    reset_at = int(time.time()) + 3600
+    quota = {"remaining": 5000, "reset": reset_at, "limit": 5000}
+    requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {
+                "status_code": 403,
+                "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(reset_at)},
+                "json": {"message": "API rate limit exceeded for user ID 1."},
+            },
+            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+        ],
+    )
+    config = {
+        "credentials": {"personal_access_token": "token1,token2"},
+        "repositories": ["org/*"],
+        "max_waiting_time": 30,
+    }
+
+    with patch("time.sleep") as sleep_mock:
+        organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+    # The 0.1s rotation retry, not a wait for the reset and not a failure.
+    assert max(call.args[0] for call in sleep_mock.call_args_list) < 60
+
+
+def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_mock):
+    """GHES ships with HTTP API rate limiting off and answers /rate_limit with 404. Quota
+    seeding runs before the first stream request, so that 404 used to fail every command;
+    `unavailable_status_codes: [404]` seeds the token untracked instead (CDK #1121)."""
+    api_url = "https://github.example.com/api/v3"
+    requests_mock.get(f"{api_url}/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
+    requests_mock.get(
+        f"{api_url}/orgs/org/repos",
+        json=[{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "api_url": api_url}
+
+    organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/repo"]
+    assert organizations == ["org"]
+
+
+def test_rate_limit_404_on_github_dot_com_is_not_swallowed_into_a_broken_sync(requests_mock):
+    """The opt-in is scoped to the quota endpoint, so a 404 from a stream still means what it
+    always meant — the org does not exist — and resolution yields nothing rather than pretending
+    it succeeded."""
+    requests_mock.get("https://api.github.com/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
+    requests_mock.get("https://api.github.com/orgs/org/repos", status_code=404, json={"message": "Not Found"})
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+
+    organizations, repositories = _resolve(config)
+
+    assert repositories == []
+    assert organizations == []
+
+
+@pytest.mark.parametrize(
+    "max_waiting_time",
+    [pytest.param(v, id=i) for v, i in [(None, "null"), (0, "zero"), (1, "spec_minimum"), (240, "spec_maximum")]],
+)
+def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waiting_time):
+    """`max_waiting_time` reaches three interpolations — the authenticator's `max_wait_time` and
+    the two backoff caps — and CDK 7.28.1 resolves the caps when the strategy is constructed, so a
+    value one of them cannot render fails every command rather than one retry. Null is the case
+    that bit: it renders as an empty string, so `config.get('max_waiting_time', 120)` produced
+    "PTM" and the source would not build. Zero must keep working too, since `check_connection`
+    passes it deliberately.
+    """
+    quota = {"remaining": 5000, "reset": int(time.time()) + 3600, "limit": 5000}
+    requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
+    requests_mock.get(
+        "https://api.github.com/repos/org/repo",
+        json={"full_name": "org/repo", "organization": {"login": "org"}},
+    )
+    config = {
+        "credentials": {"personal_access_token": "test_token"},
+        "repositories": ["org/repo"],
+        "max_waiting_time": max_waiting_time,
+    }
+
+    source = SourceGithub(config=dict(config))
+    streams = ConcurrentDeclarativeSource.streams(source, config)
+
+    # Building at all is the assertion: every manifest stream shares the authenticator and the
+    # backoff strategies, so a value one of those interpolations cannot render fails here.
+    assert "repositories" in [stream.name for stream in streams]
 
 
 def test_resolution_raises_on_no_tokens():
