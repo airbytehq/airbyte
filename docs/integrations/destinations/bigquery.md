@@ -252,6 +252,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.24-rc.1 | 2026-08-11 | [77517](https://github.com/airbytehq/airbyte/pull/77517) | Surface permission-denied errors from direct-load table status checks as config errors instead of system errors. |
 | 3.0.23 | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
 | 3.0.21 | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346) | Remove unnecessary NULL PK equality checks from merge SQL |
