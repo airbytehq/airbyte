@@ -4,11 +4,13 @@ This page contains the setup guide and reference information for the Facebook Pa
 
 ## Prerequisites
 
-To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
+To set up the Facebook Pages source connector, you need a Facebook app, a long-lived Page access token, and the ID of the Page you want to sync.
 
 :::note
-The Facebook Pages source connector is currently only compatible with v24 of the Facebook Graph API.
+This connector calls v24.0 of the Facebook Graph API.
 :::
+
+Meta only returns Page Insights data for Pages with 100 or more likes, and the connector checks the connection by reading the `page_insights` stream. If your Page has fewer than 100 likes, expect the connection check and both insights streams to return no data or fail.
 
 ## Setup guide
 
@@ -32,23 +34,11 @@ After all the steps, it should look something like this:
 
 ### Step 2: Set up the Facebook Pages connector in Airbyte
 
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
-6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
-
-### For Airbyte OSS
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
-6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
+1. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+2. Select **Facebook Pages** and enter a name for the source.
+3. For **Page Access Token**, enter the long-lived Page token you generated in Step 1. The connector also accepts a long-lived User token, as long as that user can generate a Page token for the Page you configure.
+4. For **Page ID**, enter the Page's ID or username. If your Page URL is `https://www.facebook.com/Test-1111111111`, use `Test-1111111111`.
+5. (Optional) Set **Page Size** to control the number of records requested per API call for the `post` and `post_insights` streams. The default is 100, and valid values are 1 through 100. Decrease it if you see "Please reduce the amount of data you're asking for" errors.
 
 ### Creating your own OAuth App
 
@@ -72,10 +62,19 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Supported Streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
+| Stream | Graph API endpoint | Notes |
+| :--- | :--- | :--- |
+| `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
+| `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. |
+| `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. |
+| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights) | Post-level insights, one record per metric and period. Requests a fixed set of metrics. |
+
+You can't choose which insights metrics to sync. The connector requests these:
+
+- `page_insights`: `page_total_actions`, `page_post_engagements`, `page_fan_adds_by_paid_non_paid_unique`, `page_media_view`, `page_total_media_view_unique`
+- `post_insights`: `post_media_view`, `post_total_media_view_unique`, `post_clicks`, `post_clicks_by_type`, `post_reactions_by_type_total`
+
+Both insights streams inherit Meta's own limits on Page Insights: data is available only for Pages with 100 or more likes, most metrics refresh once every 24 hours, and Meta retains at most two years of history.
 
 ## Reference
 
@@ -168,7 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.1.2 | 2026-08-17 | [84408](https://github.com/airbytehq/airbyte/pull/84408) | Remove Page/Post Insights metrics deprecated by Meta and request `page_total_media_view_unique` / `post_total_media_view_unique` instead; fail fast with Meta's own message on invalid-metric errors. |
 | 2.1.1 | 2026-05-22 | [78342](https://github.com/airbytehq/airbyte/pull/78342) | Classify Facebook app-approval errors as configuration errors. |
-| 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
+| 2.1.0 | 2026-03-02 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
 | 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
 | 2.0.3 | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248) | Use correct pagination parameter name (`limit` instead of `page_size`) |
 | 2.0.2 | 2025-12-01 | [70258](https://github.com/airbytehq/airbyte/pull/70258) | Use Post stream for check, handle 400 error in Page stream |
