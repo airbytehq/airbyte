@@ -1,6 +1,6 @@
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
-# Greenhouse migration guide
+# Greenhouse Migration Guide
 
 ## Upgrading to 1.0.0
 
