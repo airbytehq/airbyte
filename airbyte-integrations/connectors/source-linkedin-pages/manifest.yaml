@@ -644,11 +644,13 @@ streams:
       cursor_datetime_formats:
         - "%ms"
       datetime_format: "%ms"
+      step: P1D
+      cursor_granularity: P0D
       start_datetime:
         type: MinMaxDatetime
         datetime:
-          "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
-          if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ')
+          "{{ (max(day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z', config['start_date']))
+          if 'start_date' in config else day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z'
           }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
@@ -661,7 +663,7 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: share_statistics_time_bound
@@ -820,11 +822,13 @@ streams:
       cursor_datetime_formats:
         - "%ms"
       datetime_format: "%ms"
+      step: P1D
+      cursor_granularity: P0D
       start_datetime:
         type: MinMaxDatetime
         datetime:
-          "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
-          if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ')
+          "{{ (max(day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z', config['start_date']))
+          if 'start_date' in config else day_delta(-365, format='%Y-%m-%d') + 'T00:00:00Z'
           }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
@@ -837,7 +841,7 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ day_delta(-2, format='%Y-%m-%d') + 'T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 spec:
   connection_specification:
