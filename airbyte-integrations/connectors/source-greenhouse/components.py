@@ -66,6 +66,9 @@ class ApplicationCursorStateMigration(StateMigration):
 class PerPartitionToFlatStateMigration(StateMigration):
     """Collapse per-partition state onto a flat cursor for a collection endpoint."""
 
+    declarative_stream: DeclarativeStreamModel
+    config: Config
+
     _RESERVED = ("states", "state", "use_global_cursor", "lookback_window", "parent_state")
 
     def __init__(self, declarative_stream: DeclarativeStreamModel, config: Config):
