@@ -232,6 +232,38 @@ def test_tags_incremental_data_feed_filters_records_and_stops_pagination():
     assert _latest_cursor_value(output, "tags", "created_datetime") == "2026-08-12T00:00:00.000000+0000"
 
 
+def test_macros_reads_full_history_on_every_sync():
+    """`macros` is deliberately not a data feed.
+
+    The stream fits in a single page, so a stop condition saves no requests, while the object's
+    `updated_datetime` moves on every edit and `created_datetime` — the only field the endpoint can
+    order by — does not. Reading in full is what keeps macro edits arriving.
+    """
+    pages = [
+        {
+            "data": [
+                _record(1, "2026-08-12T00:00:00.000000+0000"),
+                _record(2, "2026-08-09T00:00:00.000000+0000"),
+            ],
+            "meta": {"next_cursor": "page-2"},
+        },
+        {
+            "data": [_record(3, "2026-08-08T00:00:00.000000+0000")],
+            "meta": {"next_cursor": None},
+        },
+    ]
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get(f"{_BASE_URL}/macros", [{"json": page} for page in pages])
+        output = _read("macros", _stream_state("macros", "created_datetime"))
+
+    emitted_ids = [record.record.data["id"] for record in output.records]
+    assert emitted_ids == [1, 2, 3]
+    macro_requests = [request for request in mocker.request_history if request.path == "/api/macros"]
+    assert len(macro_requests) == 2
+    assert "order_by" not in macro_requests[0].qs
+
+
 def test_integrations_client_side_incremental_filters_records_without_stopping_pagination():
     pages = [
         {

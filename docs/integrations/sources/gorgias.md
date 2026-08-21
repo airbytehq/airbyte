@@ -45,16 +45,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 The following streams use `created_datetime` as their incremental cursor. Their incremental syncs do not pick up changes made after a record was created:
 
 - **jobs**: job status transitions, including changes to `started_datetime` and `ended_datetime`. The schema does not include `updated_datetime`.
-- **macros**: edits to macro fields such as the name or actions. The schema includes `updated_datetime`, but the stream remains creation-cursor based.
 - **messages**: changes to message fields after creation. The schema does not include `updated_datetime`.
-- **rules**: rule edits and deactivation changes. The schema includes `updated_datetime`, but the stream remains creation-cursor based.
+- **rules**: rule edits and deactivation changes. The schema includes `updated_datetime`, but the `/api/rules` endpoint cannot order by it, so the stream is cursored on `created_datetime`.
 - **tags**: tag renames and changes to descriptions or decorations. The schema does not include `updated_datetime`.
 - **teams**: team renames and changes to descriptions, decorations, or members. The schema does not include `updated_datetime`.
-- **users**: role, name, active-status, and timezone changes. The schema includes `updated_datetime`, but the stream remains creation-cursor based.
+- **users**: role, name, active-status, and timezone changes. The schema includes `updated_datetime`, but the `/api/users` endpoint cannot order by it, so the stream is cursored on `created_datetime`.
 
 Run a full refresh of the affected stream to capture these changes.
 
-The `account`, `satisfaction-surveys`, `views`, and `views_items` streams read their full history on every sync, so post-creation changes such as a survey's `score` and `scored_datetime` are captured.
+The `account`, `macros`, `satisfaction-surveys`, `views`, and `views_items` streams read their full history on every sync, so post-creation changes such as a macro's name or a survey's `score` and `scored_datetime` are captured.
 
 The connector does not capture deletions as deletion events. Tickets expose `trashed` and tags expose `deleted_datetime`, but there is no deletion stream, so deleted records are not captured as deletion events.
 

@@ -451,8 +451,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: macros
           http_method: GET
-          request_parameters:
-            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -490,7 +488,6 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        is_data_feed: true
         cursor_field: created_datetime
         end_datetime:
           type: MinMaxDatetime
