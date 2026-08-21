@@ -7,6 +7,10 @@ settings:
 overrides:
   dompurify: 3.1.6
   jsonpath-plus: 10.3.0
+  axios@<1.16.0: 1.18.1
+  node-forge@<1.4.0: 1.4.0
+  undici@>=7.0.0 <7.28.0: 7.28.0
+  ws@>=7.0.0 <7.5.11: 7.5.11
 
 importers:
 
@@ -4871,6 +4875,15 @@ packages:
   flat@5.0.2:
     resolution: {integrity: sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==}
     hasBin: true
+
+  follow-redirects@1.16.0:
+    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
 
   follow-redirects@1.16.0:
     resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
@@ -14875,6 +14888,8 @@ snapshots:
       path-exists: 5.0.0
 
   flat@5.0.2: {}
+
+  follow-redirects@1.16.0: {}
 
   follow-redirects@1.16.0: {}
 
