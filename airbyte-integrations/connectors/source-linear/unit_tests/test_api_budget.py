@@ -77,9 +77,9 @@ def test_linear_rate_limit_headers_do_not_use_the_millisecond_reset_header() -> 
     _, budget = _build_source_and_budget(API_KEY_CONFIG)
 
     assert budget._ratelimit_remaining_header == "X-RateLimit-Requests-Remaining"
-    assert not (
-        budget._ratelimit_reset_header.lower().startswith("x-ratelimit-") and budget._ratelimit_reset_header.lower().endswith("-reset")
-    )
+    # The CDK default, i.e. no Linear reset header is wired in: Linear reports its
+    # reset timestamps in epoch milliseconds, which the budget cannot parse.
+    assert budget._ratelimit_reset_header == "ratelimit-reset"
 
     request = requests.Request("POST", "https://api.linear.app/graphql").prepare()
     response = requests.Response()
