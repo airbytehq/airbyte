@@ -44,7 +44,7 @@ The connector requests the `read` and `customer:read` scopes and authorizes with
 
 If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete Linear's [authorization code flow](https://linear.app/developers/oauth-2-0-authentication) yourself and use the resulting refresh token:
 
-1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&scope=read,customer:read&actor=app` in a browser and approve the app. Linear redirects to your redirect URI with a `code` parameter.
+1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
 2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
 3. Copy the `refresh_token` from the response. The connector uses it to mint access tokens, which Linear expires after 24 hours.
 
@@ -122,7 +122,7 @@ Workspace-level OAuth applications receive dynamically increased limits based on
 Linear's GraphQL API hides archived records from paginated responses unless the caller requests them explicitly, and the connector doesn't request them. As a result:
 
 - Archived issues, projects, cycles, comments, and other archived entities never appear in your synced data. The `archivedAt` field is present in the schemas but is `null` for every synced record.
-- When a record you already synced is archived or deleted in Linear, it stops appearing in the API response, so incremental syncs leave the last synced version in the destination. Airbyte doesn't remove it. If you need to detect these records, compare a full refresh of the stream against your destination table.
+- When a record you already synced is archived or deleted in Linear, it stops appearing in the API response, and Airbyte doesn't delete rows it already synced, so whatever was written stays in the destination. If you need to detect these records, compare a full refresh of the stream against your destination table.
 
 ### Data availability
 
