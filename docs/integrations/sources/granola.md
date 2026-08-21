@@ -63,12 +63,13 @@ The Granola source connector supports the following streams:
 | :--- | :--- | :--- |
 | `notes` | Incremental | `id` |
 | `detailed_notes` | Full refresh | `id` |
+| `note_transcripts` | Full refresh | None |
 
 ### Notes
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows. The connector uses the `created_after` and `created_before` query parameters for these windows. Because the cursor is the creation date, edits to an existing note aren't picked up by later incremental syncs. Run a full refresh if you need to capture changes to notes you already synced.
+For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows, passing each window's bounds as second-level timestamps in the `created_after` and `created_before` query parameters. Because the cursor is the creation date, edits to an existing note aren't picked up by later incremental syncs. Run a full refresh if you need to capture changes to notes you already synced.
 
 The API only returns notes that have a generated AI summary and transcript. Notes that are still being processed or were never summarized are excluded.
 
@@ -80,7 +81,15 @@ The connector always requests transcript data for this stream. Syncing `detailed
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
-Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. The connector doesn't fall back to Granola's paged transcript endpoint, so those notes fail to sync in this stream. Long recordings, such as multi-hour meetings, are the most likely to hit this limit.
+Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. The connector skips those notes in this stream instead of failing the sync, so a note with an oversized transcript produces no `detailed_notes` record at all, including its summary, attendees, and calendar metadata. Each skip is logged at INFO level rather than as a warning, so search the sync logs for `transcript is too large` to see which notes were skipped. Sync the `note_transcripts` stream to replicate their transcripts.
+
+### Note transcripts
+
+The `note_transcripts` stream retrieves each note's transcript from the [`GET /v1/notes/{note_id}/transcript`](https://docs.granola.ai/api-reference/get-transcript) endpoint, one record per transcript segment. Each record carries the segment's speaker, text, and start and end times, plus the `note_id` of the note it belongs to. Because this endpoint is paged, it returns transcripts of any size, including those `detailed_notes` can't return inline.
+
+The stream has no primary key, so records are appended rather than deduplicated. It isn't incremental: on every sync it re-reads the full list of notes created since your start date and requests each of those notes' transcripts again, so it adds at least one request for every note in that range rather than only for new notes. Transcripts longer than 100 segments cost an additional request per page. On a workspace with thousands of historical notes this dominates sync time, so size your sync frequency against the total note count.
+
+If Granola no longer returns a transcript for a note that the `notes` stream listed, such as a note deleted or unshared mid-sync, the API responds with `404` and the connector skips that note instead of failing the stream.
 
 ### Data access by key type
 
@@ -105,6 +114,14 @@ The Granola API enforces rate limits. Depending on the key's access scope, limit
 
 The connector throttles itself to the documented burst limit of 25 requests per 5 seconds. If Granola still returns `429 Too Many Requests`, or a `5xx` server error, the connector retries the request up to 5 times. It waits for the interval in the `Retry-After` response header when Granola sends one, up to 60 seconds, and otherwise backs off exponentially.
 
+## Troubleshooting
+
+### Notes are missing after syncing with version 0.2.13 or earlier
+
+Versions up to 0.2.13 sent each 30-day window's bounds as dates rather than timestamps. The Granola API excludes the entire day named by `created_before`, so those syncs skipped every note created on a window boundary date, in both the `notes` and `detailed_notes` streams. Version 0.2.14 sends second-level timestamps, so new syncs cover the full range.
+
+Existing connections don't backfill the skipped notes on their own. After upgrading to 0.2.14 or later, [refresh](/platform/operator-guides/refreshes) the `notes` stream once to recover them. You don't need to do anything for `detailed_notes`, which reads from `notes` and picks up the recovered notes with it.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -127,6 +144,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 0.3.0 | 2026-08-20 | [84907](https://github.com/airbytehq/airbyte/pull/84907) | Add note_transcripts stream for transcripts of any size. Notes whose transcript is too large to return inline are now skipped in detailed_notes, producing no record for those notes, instead of failing the sync |
+| 0.2.14 | 2026-08-21 | [84898](https://github.com/airbytehq/airbyte/pull/84898) | Stop dropping notes created on a 30-day incremental slice boundary date |
 | 0.2.13 | 2026-08-18 | [84623](https://github.com/airbytehq/airbyte/pull/84623) | Update dependencies |
 | 0.2.12 | 2026-08-12 | [84278](https://github.com/airbytehq/airbyte/pull/84278) | Retry rate-limited and server-error responses with backoff honoring Retry-After |
 | 0.2.11 | 2026-08-11 | [83964](https://github.com/airbytehq/airbyte/pull/83964) | Update dependencies |
