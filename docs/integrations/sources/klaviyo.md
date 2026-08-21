@@ -112,7 +112,7 @@ Both streams also need `metrics:read`, because the connector lists your account'
 Both streams partition data by conversion metric. By default, the connector fetches reports for all metrics in your account. You can use the optional **Report Stream Conversion Metric IDs** configuration field to specify a comma-separated list of metric IDs (for example, `RESQ6t,ABC123`) to limit reporting to specific conversion metrics.
 
 :::warning
-These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exceed the daily rate limit. Specify only the conversion metrics you need using the **Report Stream Conversion Metric IDs** field.
+These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exhaust the daily quota, which fails the sync with a rate limit error. See [Performance considerations](#performance-considerations). Specify only the conversion metrics you need using the **Report Stream Conversion Metric IDs** field.
 :::
 
 Not all Klaviyo metrics support conversion value queries. For example, metrics without a `$value` property cannot be queried for values data. The connector automatically skips these unsupported metrics and continues syncing the remaining ones. If you see fewer results than expected, verify that your selected metrics support values data in Klaviyo.
@@ -140,9 +140,11 @@ To find metric IDs, go to **Analytics** > **Metrics** in your Klaviyo account, o
 
 ## Performance considerations
 
-The connector is restricted by Klaviyo [rate limits](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling).
+The connector is restricted by Klaviyo [rate limits](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). When Klaviyo answers a request with `429`, the connector waits for the number of seconds in the response's `Retry-After` header and then retries. Burst and steady limit waits are typically seconds to about a minute, so syncs usually recover from them without any action from you.
 
-The Klaviyo connector should not run into Klaviyo API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The connector waits at most 10 minutes for any single retry. When `Retry-After` asks for longer than that, the sync fails with a rate limit error instead of idling. In practice this happens on the reporting endpoints behind the **Campaign Values Reports** and **Flow Series Reports** streams, which enforce a daily quota of 225 requests on top of the burst and steady limits: once a sync exhausts that quota, `Retry-After` holds the seconds remaining until the next daily reset, which can be many hours. To stay inside the quota, narrow the conversion metrics you request with **Report Stream Conversion Metric IDs**, sync these two streams less frequently, or move them to their own connection so a quota failure doesn't interrupt your other streams. Connector versions before 3.0.1 waited for the full `Retry-After` value on every stream, which stalled the sync until Airbyte stopped the attempt and restarted it.
+
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter rate limit issues that aren't retried successfully.
 
 The `Campaigns Detailed` stream contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
 
@@ -177,7 +179,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.1 | 2026-08-20 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
+| 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
 | 3.0.0 | 2026-08-14 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
 | 2.21.1 | 2026-08-11 | [83991](https://github.com/airbytehq/airbyte/pull/83991) | Update dependencies |
 | 2.21.0 | 2026-08-07 | [75301](https://github.com/airbytehq/airbyte/pull/75301) | Add optional metric ID filtering for the `events` and `events_detailed` streams |
