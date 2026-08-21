@@ -3,6 +3,16 @@ data:
   allowedHosts:
     hosts:
       - api.linear.app
+  suggestedStreams:
+    streams:
+      - issues
+      - projects
+      - teams
+      - users
+      - comments
+      - cycles
+      - issue_labels
+      - workflow_states
   registryOverrides:
     oss:
       enabled: true
@@ -20,7 +30,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1c5d8316-ed42-4473-8fbc-2626f03f070c
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg
