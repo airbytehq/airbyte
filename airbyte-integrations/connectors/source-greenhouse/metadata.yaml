@@ -75,7 +75,7 @@ data:
               - "user_roles"
               - "user_permissions"
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
       defaultRolloutMode: autopilot
       autopilotConfig:
         autoStart: true
