@@ -82,7 +82,7 @@ The connector always requests transcript data for this stream. Syncing `detailed
 
 The API returns a 404 for notes that don't have a generated AI summary and transcript. Because `detailed_notes` uses `notes` as its parent stream, it only requests detail records for notes returned by the list endpoint.
 
-Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. Starting with version 0.3.0, the connector skips those notes in this stream instead of failing the sync, so a note with an oversized transcript produces no `detailed_notes` record at all. Sync the `note_transcripts` stream to replicate their transcripts, and see [Notes are missing from detailed_notes](#notes-are-missing-from-detailed_notes) for how to tell which notes were skipped.
+Granola returns the transcript inline. If a transcript is too large to return that way, the API responds with `413` and the error code `TRANSCRIPT_TOO_LARGE` instead of the note. Long recordings, such as multi-hour meetings, are the most likely to hit this limit. Starting with version 0.3.0, the connector skips those notes in this stream instead of failing the sync, so a note with an oversized transcript produces no `detailed_notes` record at all. Sync the `note_transcripts` stream to replicate their transcripts, and see [Notes are missing from `detailed_notes`](#notes-are-missing-from-detailed_notes) for how to tell which notes were skipped.
 
 ### Note transcripts
 
