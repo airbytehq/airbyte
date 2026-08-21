@@ -494,19 +494,34 @@ definitions:
             Authorization failed. Please ensure you have the correct
             permissions.
         - type: HttpResponseFilter
+          action: FAIL
+          failure_type: transient_error
+          predicate: >-
+            {{ response.get('error', {}).get('code') == 429 and
+            'FreeQuotaRequestsPerDayPerProject' in response|string }}
+          error_message: Daily YouTube API project quota is exhausted.
+        - type: HttpResponseFilter
           action: RETRY
           http_codes: []
           predicate: >-
-            {{ 'code' in response and response['error']['code'] >= 500 and
-            response['error']['code'] < 600 }}
+            {{ response.get('error', {}).get('code', 0) >= 500 and
+            response.get('error', {}).get('code', 0) < 600 }}
         - type: HttpResponseFilter
           action: RETRY
           predicate: >-
-            {{ 'code' in response and response['error']['code'] == 429 and
-            'FreeQuotaRequestsPerDayPerProject' not in response }}
+            {{ response.get('error', {}).get('code') == 429 and
+            'FreeQuotaRequestsPerDayPerProject' not in response|string }}
+      # Retry-After values above this cap stop the stream instead of sleeping past the handler budget.
+      # The total retry window is bounded by the CDK's 600-second max_time.
+      max_retries: 8
       backoff_strategies:
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 30
+        - type: WaitTimeFromHeader
+          header: Retry-After
+          max_waiting_time_in_seconds: 600
+        # Jitter avoids synchronized retries across connections sharing a Google project quota.
+        - type: ExponentialBackoffStrategy
+          factor: 15
+          jitter_range_in_seconds: 5
   base_retriever:
     type: SimpleRetriever
     requester:
