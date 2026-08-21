@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.*
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.message.Meta
 import java.util.*
 import java.util.stream.Collectors
@@ -176,6 +177,26 @@ object BigQueryUtils {
             Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
                 .map { name: String -> name.replace("airbyte/", "").replace(":", "/") }
                 .orElse("destination-bigquery")
+
+    @JvmStatic
+    inline fun <T> executeBigQueryOperation(operation: () -> T): T {
+        try {
+            return operation()
+        } catch (e: BigQueryException) {
+            var cause: Throwable? = e
+            while (cause != null) {
+                if (cause is InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    throw TransientErrorException(
+                        "The BigQuery operation was interrupted, likely because the sync was cancelled. This is transient and the next sync attempt should succeed.",
+                        e,
+                    )
+                }
+                cause = cause.cause
+            }
+            throw e
+        }
+    }
 }
 
 fun TableId.toPrettyString() = "${this.dataset}.${this.table}"
