@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## August 21, 2026
+
+Connectors
+
+- You can now search your Freshdesk data by meaning instead of exact keywords. Your agents can find relevant tickets, contact and company notes, and satisfaction survey feedback based on what the text is about, and narrow results by details like status, priority, or account tier.
+
+Other
+
+- When your agents filter a search-by-meaning request by a detail that isn't available, they now get a clear message listing the details you can filter on, instead of a confusing failure. Connector descriptions also list those filterable details up front, so agents pick valid ones the first time.
+
 ## August 12, 2026
 
 Web app
