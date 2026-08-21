@@ -28,3 +28,8 @@ def get_source():
         )
 
     return _get_source
+
+
+@pytest.fixture
+def connector_path():
+    return _CONNECTOR_PATH

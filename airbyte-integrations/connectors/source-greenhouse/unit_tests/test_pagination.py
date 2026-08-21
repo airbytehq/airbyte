@@ -380,8 +380,8 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
     assert output.records[0].record.data["candidate_id"] == 42
 
 
-def test_documented_v3_examples_validate_against_stream_schemas():
-    with open("../manifest.yaml") as manifest_file:
+def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
+    with open(connector_path / "manifest.yaml") as manifest_file:
         manifest = yaml.safe_load(manifest_file)
 
     documented_examples = {
