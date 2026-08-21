@@ -103,6 +103,12 @@ data:
     - title: monday.com authentication
       url: https://developer.monday.com/api-reference/docs/authentication
       type: authentication_guide
+    - title: monday.com OAuth and permissions
+      url: https://developer.monday.com/apps/docs/oauth
+      type: authentication_guide
+    - title: monday.com OAuth 2.1 migration guide
+      url: https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow
+      type: api_deprecations
     - title: monday.com rate limits
       url: https://developer.monday.com/api-reference/docs/rate-limits
       type: rate_limits
