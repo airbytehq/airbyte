@@ -13,7 +13,7 @@ This page contains the setup guide and reference information for the [Linear](ht
 - A Linear account
 - One of the following authentication methods:
   - **API Key**: A Linear personal API key.
-  - **OAuth 2.0**: A Linear OAuth app with a client ID, client secret, and refresh token.
+  - **OAuth 2.0**: A Linear OAuth app with a client ID, client secret, and refresh token. A Linear workspace admin has to authorize the app, because the connector installs it at the workspace level.
 
 ## Setup guide
 
