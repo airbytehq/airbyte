@@ -35,7 +35,7 @@
       "dc_region": {
         "title": "Data Center Location",
         "type": "string",
-        "description": "Please choose the region of your Data Center location. More info by this <a href=\"https://www.zoho.com/crm/developer/docs/api/v2/multi-dc.html\">Link</a>",
+        "description": "Please choose the region of your Data Center location. More info by this <a href=\"https://www.zoho.com/crm/developer/docs/api/v8/multi-dc.html\">Link</a>",
         "enum": ["US", "AU", "EU", "IN", "CN", "JP"]
       },
       "environment": {
