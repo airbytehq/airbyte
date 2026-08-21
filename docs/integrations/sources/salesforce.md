@@ -274,6 +274,12 @@ Responsibility for the connected-app setting depends on how you authenticate:
 - The pre-save **Test connection** button rotates the token but cannot persist the new one (the connection does not exist yet), so the just-entered token is invalidated. Complete the connection setup promptly after testing, and re-authenticate if a subsequent sync reports an authentication error.
 - Running a manual **check** concurrently with a sync on the same source can race two rotations and invalidate one. Avoid triggering a connection test while a sync is in progress.
 
+### Sync fails with "The authentication to SalesForce has expired"
+
+This error means Salesforce rejected the connector's refresh token, so the connector can no longer obtain new access tokens. Common causes include a revoked or expired refresh token, a deactivated OAuth connected app, or a rotated token that was invalidated (see [Refresh Token Rotation](#refresh-token-rotation-rtr)). Re-authenticate the source to restore access: on Airbyte Cloud, click **Authenticate your account** again in the source settings; on Airbyte Open Source, generate a new refresh token and update the source configuration.
+
+Starting in version 2.8.1, when Salesforce rejects the refresh token, the connector fails the sync immediately with this error instead of repeatedly retrying the token endpoint from every stream. This changes only how quickly the sync fails; the fix in all cases is to re-authenticate.
+
 ### Missing Records (Salesforce API Eventual Consistency)
 
 Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
@@ -317,11 +323,11 @@ When extracting data through the Bulk API, the connector downloads results as CS
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.8.1 | 2026-08-05 | [82784](https://github.com/airbytehq/airbyte/pull/82784) | Fail fast when the refresh token is rejected instead of retrying the token endpoint from every stream |
-| 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
+| 2.8.0 | 2026-07-23 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
 | 2.7.26-rc.1 | 2026-07-14 | [81535](https://github.com/airbytehq/airbyte/pull/81535) | Use ordered `ConcurrentMessageRepository` so state checkpoints are emitted in-order with records, preventing data loss (cursor advancing past uncommitted records) when a sync is terminated ungracefully |
-| 2.7.25 | 2026-06-20 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
-| 2.7.24 | 2026-06-23 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
+| 2.7.25 | 2026-07-13 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
+| 2.7.24 | 2026-07-09 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
 | 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
 | 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
