@@ -28,3 +28,22 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 ### Future incremental stream candidates
 
 - **No API date filter (4 streams):** `customer_statuses`, `customer_tiers`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+
+## Error handling
+
+Linear's GraphQL API returns errors in an `errors` array with a machine-readable
+`extensions.code` and a human-readable `extensions.userPresentableMessage`. HTTP status
+is an unreliable signal on its own — a malformed query returns 500, not 400 — so the
+response filters in `definitions.base_requester.error_handler` match on `extensions.code`.
+
+| `extensions.code` | HTTP | Action | Failure type |
+|---|---|---|---|
+| `RATELIMITED` | 429 | RATE_LIMITED | transient_error |
+| `AUTHENTICATION_ERROR` | 401 | FAIL | config_error |
+| `FORBIDDEN`, `FEATURE_NOT_ACCESSIBLE` | 400/403 | FAIL | config_error |
+| `GRAPHQL_VALIDATION_FAILED` | 400 or 500 | FAIL | system_error |
+| anything else with an `errors` array | any | FAIL | system_error |
+
+Order matters — the CDK applies the first matching filter. The catch-all must stay last;
+it exists because GraphQL can return HTTP 200 with a populated `errors` array, which would
+otherwise be extracted as zero records and reported as a successful empty stream.
