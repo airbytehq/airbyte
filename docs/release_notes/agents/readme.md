@@ -1,5 +1,20 @@
 # Airbyte Agents release notes
 
+## August 20, 2026
+
+Web app
+
+- Links in chat messages are now readable in dark mode.
+- Sortable column headings in tables now match the styling of the other headings instead of appearing in mixed case.
+
+Connectors
+
+- You can now search Twilio, Typeform, and incident.io by meaning. Your agents can find text message bodies, form questions and response answers, and incident names, alert descriptions, and incident updates without matching exact keywords.
+
+Other
+
+- When your agent searches your synced data using a field name that doesn't exist, it now gets the closest matching field names back so it can correct the search, instead of a generic failure.
+
 ## August 12, 2026
 
 Web app
