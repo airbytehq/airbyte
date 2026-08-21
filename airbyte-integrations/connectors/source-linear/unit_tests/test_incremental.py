@@ -75,6 +75,11 @@ def streams_by_name(source: YamlDeclarativeSource) -> Mapping[str, Any]:
     return {s.name: s for s in source.streams(config=CONFIG)}
 
 
+@pytest.fixture(scope="module")
+def manifest() -> Mapping[str, Any]:
+    return yaml.safe_load(Path(MANIFEST_PATH).read_text())
+
+
 @pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
 def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
@@ -99,18 +104,16 @@ def test_every_stream_query_includes_archived_records(
 
 
 @pytest.mark.parametrize("stream_name", STREAM_GRAPHQL_FIELDS)
-def test_every_stream_schema_declares_archived_at(stream_name: str) -> None:
-    manifest = yaml.safe_load(Path(MANIFEST_PATH).read_text())
+def test_every_stream_schema_declares_archived_at(stream_name: str, manifest: Mapping[str, Any]) -> None:
     archived_at = manifest["schemas"][stream_name]["properties"]["archivedAt"]
-    assert archived_at["type"] == ["null", "string"]
+    assert set(archived_at["type"]) == {"null", "string"}
     assert archived_at["format"] == "date-time"
 
 
 @pytest.mark.parametrize("stream_name", ["issues", "projects"])
-def test_issues_and_projects_schemas_declare_trashed(stream_name: str) -> None:
-    manifest = yaml.safe_load(Path(MANIFEST_PATH).read_text())
+def test_issues_and_projects_schemas_declare_trashed(stream_name: str, manifest: Mapping[str, Any]) -> None:
     trashed = manifest["schemas"][stream_name]["properties"]["trashed"]
-    assert trashed["type"] == ["boolean", "null"]
+    assert set(trashed["type"]) == {"boolean", "null"}
 
 
 def _build_full_request_body(
