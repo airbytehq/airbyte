@@ -96,9 +96,9 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 The YouTube Reporting API has the following quota limits:
 
 - Free requests per day: 20,000
-- Requests per 100 seconds: 100
-- Requests per minute: 60 per Google API project, shared by every Airbyte connection
-  that uses the same OAuth client
+- Free requests per 100 seconds: 100
+- Free requests per minute: 60 per Google API project, shared by every Airbyte
+  connection that uses the same OAuth client
 
 If you run multiple YouTube connections, divide the per-minute quota among them by
 setting `requests_per_minute` for each connection. The default is 30 requests per
