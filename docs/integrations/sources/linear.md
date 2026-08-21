@@ -81,7 +81,7 @@ The Linear source connector supports the following streams. Streams marked as in
 | `cycles` | Yes | Cycles (sprints) for each team. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
-| `issues` | Yes | Issues in every team, including archived issues. |
+| `issues` | Yes | Issues in every team, including archived issues. Archived issues have a non-null `archivedAt` value. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
 | `projects` | Yes | Projects across all teams. |
@@ -106,6 +106,10 @@ Workspace-level OAuth applications receive dynamically increased limits based on
 ### Data availability
 
 The connector retrieves data that the authenticated user has access to. If you cannot see certain teams, projects, or issues in your synced data, verify that your Linear account has the appropriate permissions.
+
+### Archived and deleted records
+
+Archived records are returned with a non-null `archivedAt` value, which the connector uses as the deletion signal. Linear also supports permanent hard deletion (for example, `issueDelete` with `permanently`), which leaves no signal; hard-deleted records cannot be detected. The first sync after upgrading to version 0.3.0 backfills previously invisible archived records and may transfer a large one-time volume.
 
 ## IP allow list
 
@@ -134,6 +138,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.3.0 | 2026-08-21 | TBD | Include archived records in all streams (`includeArchived: true`) and declare `archivedAt` (and `trashed` on issues/projects) in stream schemas; the first sync after upgrade backfills previously invisible archived records and may transfer a large one-time volume |
 | 0.2.14 | 2026-08-18 | [84676](https://github.com/airbytehq/airbyte/pull/84676) | Update dependencies |
 | 0.2.13 | 2026-08-11 | [84025](https://github.com/airbytehq/airbyte/pull/84025) | Update dependencies |
 | 0.2.12 | 2026-08-04 | [83528](https://github.com/airbytehq/airbyte/pull/83528) | Update dependencies |

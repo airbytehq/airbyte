@@ -30,3 +30,7 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 ### Future incremental stream candidates
 
 - **No API date filter (4 streams):** `customer_statuses`, `customer_tiers`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+
+## Deletions
+
+Linear soft-deletes records by archiving them. The API provides no hard-delete signal or deleted-records endpoint, so the connector uses `archivedAt` on the primary stream as its single canonical deletion flag. Every query must pass `includeArchived: true`; without it, Linear omits archived records entirely and `archivedAt` is always null. Linear can also permanently hard-delete records, which leaves no signal for the connector to detect.
