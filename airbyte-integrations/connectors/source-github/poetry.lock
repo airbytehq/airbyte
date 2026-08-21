@@ -2,14 +2,14 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.28.0.post4.dev32473979054"
+version = "7.28.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "airbyte_cdk-7.28.0.post4.dev32473979054-py3-none-any.whl", hash = "sha256:4e83bc0fd7f85154aeebff8a4a56d65413ac2a1aed2dc2ba416c02dbe4b4a774"},
-    {file = "airbyte_cdk-7.28.0.post4.dev32473979054.tar.gz", hash = "sha256:e5fcf7c3b28a0e780b8860127595a032e608e3460abc947d5a79afdddcfc65f8"},
+    {file = "airbyte_cdk-7.28.1-py3-none-any.whl", hash = "sha256:fbde14515c58475a7e70c9c77ef7bd8e47c4aed429344b95e27dc6fb25d01935"},
+    {file = "airbyte_cdk-7.28.1.tar.gz", hash = "sha256:71674e0db32d6832d15e30268a872f17628a05e3ab5adad96d6bdc67432b002b"},
 ]
 
 [package.dependencies]
@@ -3023,4 +3023,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.14"
-content-hash = "bed0054ffba68bee749ad5af95be7cabd1b37c6a6156f7655a13d46797bc84e5"
+content-hash = "1cf3440bd84725fb12db58d5ccd3af4c8df2973cee1fffd5cbeaa44b4e44cd5e"

@@ -1,4 +1,4 @@
-version: "7.28.0"
+version: "7.28.1"
 type: DeclarativeSource
 
 definitions:
@@ -123,14 +123,15 @@ definitions:
         # 1s: an interactive check then fails in seconds with the rate-limit message instead of
         # sleeping until the reset. A sync keeps the user's budget.
         #
-        # REQUIRES a CDK carrying airbytehq/airbyte-python-cdk#1126, currently pinned as a
-        # prerelease in pyproject.toml. Before that fix `HttpClient` asked the authenticator for a
-        # spare credential only *after* a strategy returned a wait, and a cap raises instead of
-        # returning — so a budget shorter than the distance to the reset ended the stream rather
-        # than rotating onto a healthy token (measured on 7.28.0: 30min budget against a 60min
-        # reset failed with a second token idle). With #1126 the rotation question is asked first
-        # and the cap only governs waits that are actually taken, which
-        # `test_short_wait_budget_does_not_cost_token_rotation` proves end to end.
+        # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
+        # `HttpClient` asked the authenticator for a spare credential only *after* a strategy
+        # returned a wait, and a cap raises instead of returning — so a budget shorter than the
+        # distance to the reset ended the stream rather than rotating onto a healthy token
+        # (measured on 7.28.0: 30min budget against a 60min reset failed with a second token
+        # idle). The rotation question is now asked first and the cap only governs waits that are
+        # actually taken, which `test_short_wait_budget_does_not_cost_token_rotation` proves end
+        # to end. 7.28.1 also resolves the cap at construction, so an expression this manifest
+        # got wrong fails at startup rather than at whichever rate limit reaches it first.
         #
         # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach
         # the multiplication as None, and a falsy test would read check's deliberate 0 as absent
