@@ -5988,7 +5988,7 @@ schemas:
       campaignId:
         type:
           - "null"
-          - string
+          - integer
       campaignName:
         type:
           - "null"
@@ -6215,7 +6215,7 @@ schemas:
       campaignId:
         type:
           - "null"
-          - string
+          - integer
       campaignName:
         type:
           - "null"
