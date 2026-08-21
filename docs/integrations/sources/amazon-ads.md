@@ -86,7 +86,6 @@ This source is capable of syncing the following streams:
 - [Profiles](https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles)
 - [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
 - [Sponsored Brands Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns)
-- Sponsored Television Campaign Reports (`sponsored_tv_campaigns_report_stream`, `sponsored_tv_campaigns_report_stream_daily`)
 - [Sponsored Brands Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups)
 - [Sponsored Brands Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod#tag/Ads/operation/ListSponsoredBrandsAds)
 - [Sponsored Brands Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords)
@@ -108,6 +107,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Brands Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview) (Purchased Products, Campaigns, Ad Groups, Ads)
 - Sponsored Display Reports (Campaigns, Ad Groups, Product Ads, Targets, ASINs)
 - Sponsored Products Reports (Campaigns, Ad Groups, Keywords, Targets, Product Ads, ASINs Keywords, ASINs Targets)
+- Sponsored Television Reports (Campaigns)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
 
 :::note
