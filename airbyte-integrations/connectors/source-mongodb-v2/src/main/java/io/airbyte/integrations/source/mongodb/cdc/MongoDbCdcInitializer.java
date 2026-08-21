@@ -207,21 +207,22 @@ public class MongoDbCdcInitializer {
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, incrementalOnlyStreamsCatalog, savedOffsetIsValid);
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-
+    LOGGER.info("***Initial snapshot streams: {}", initialSnapshotStreams);
     final Set<AirbyteStreamNameNamespacePair> streamsStillInInitialSnapshot = stateManager.getStreamStates().entrySet().stream()
         .filter(e -> InitialSnapshotStatus.IN_PROGRESS.equals(e.getValue().status()))
         .map(Map.Entry::getKey)
         .collect(Collectors.toSet());
-
+    LOGGER.info("***Streams still in initial snapshot: {}", streamsStillInInitialSnapshot);
     // Fetch the streams from the catalog that still need to complete the initial snapshot sync
     List<ConfiguredAirbyteStream> inProgressSnapshotStreams = new ArrayList<>(incrementalOnlyStreamsCatalog.getStreams().stream()
         .filter(stream -> streamsStillInInitialSnapshot.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .toList());
+    LOGGER.info("***Streams in progress snapshot: {}", inProgressSnapshotStreams);
     final var startedCdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
         .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
         .map(stream -> stream.getStream().getNamespace() + "\\." + stream.getStream().getName()).toList();
-
+    LOGGER.info("***Started cdc streams: {}", startedCdcStreamList);
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators = new ArrayList<>();
     for (int i = 0; i < databaseNames.size(); i++) {
       initialSnapshotIterators

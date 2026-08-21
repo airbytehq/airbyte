@@ -59,7 +59,7 @@ public class InitialSnapshotHandler {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final var checkpointInterval = config.getCheckpointInterval();
     final String MULTIPLE_ID_TYPES_ANALYTICS_MESSAGE_KEY = "db-sources-mongo-multiple-id-types";
-
+    LOGGER.info("***getIterators for initial snapshot for streams: {}", streams);
     return streams
         .stream()
         .filter(airbyteStream -> airbyteStream.getStream().getNamespace().equals(database.getName()))
@@ -67,7 +67,9 @@ public class InitialSnapshotHandler {
           final var collectionName = airbyteStream.getStream().getName();
           final var namespace = airbyteStream.getStream().getNamespace();
           final var collection = database.getCollection(collectionName);
+          LOGGER.info("***collection: {}", collection);
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
+          LOGGER.info("***fields: {}", fields);
           final var idTypes = aggregateIdField(collection);
           if (idTypes.size() > 1) {
             LOGGER.warn("The _id fields in this collection are not consistently typed, which may lead to data loss (collection = {}).",
@@ -120,6 +122,7 @@ public class InitialSnapshotHandler {
    */
   private List<String> aggregateIdField(final MongoCollection<Document> collection) {
     final List<String> idTypes = new ArrayList<>();
+    LOGGER.info("***aggregateIdField for collection: {}", collection);
     /*
      * Sanity check that all ID_FIELD values are of the same type for this collection.
      * db.collection.aggregate([{ $group : { _id : { $type : "$_id" }, count : { $sum : 1 } } }])
@@ -133,10 +136,14 @@ public class InitialSnapshotHandler {
           // {"_id": {"_id": "[TYPE]"}, "count": [COUNT]}
           // where [TYPE] is the bson type (objectId, string, etc.) and [COUNT] is the number of documents of
           // that type
+            LOGGER.info("***document: {}", document);
           final Document innerDocument = document.get(MongoConstants.ID_FIELD, Document.class);
+          LOGGER.info("***innerDocument: {}", innerDocument);
           idTypes.add(innerDocument.get(MongoConstants.ID_FIELD).toString());
+          LOGGER.info("***idTypes: {}", idTypes);
         });
-
+    LOGGER.info("***idTypes size: {}", idTypes.size());
+    LOGGER.info("***idTypes: {}", idTypes);
     return idTypes;
   }
 
