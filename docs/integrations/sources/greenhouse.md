@@ -88,7 +88,7 @@ Greenhouse refresh tokens expire 24 hours after they are issued and rotate on ev
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates all streams from Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.
+Version 1.0.0 migrates the 36 existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.
 
 ## IP allow list
 
@@ -101,7 +101,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of all streams from Harvest v1 to v3 because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
+| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of 36 existing streams from Harvest v1 to v3 plus the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |

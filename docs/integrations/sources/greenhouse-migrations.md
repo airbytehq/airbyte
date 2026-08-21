@@ -14,7 +14,7 @@ Greenhouse issues OAuth client credentials to partners on request by email. Star
 
 ### Stream and schema changes
 
-All 37 streams now use their Harvest v3 collection endpoints. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
+The 36 existing streams now use their Harvest v3 collection endpoints, and this release adds one new `custom_field_options` stream. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
 
 - `applications` uses `updated_at` for incremental state instead of `applied_at` and exposes flat job, stage, recruiter, coordinator, and source identifiers.
 - `candidates` no longer embeds applications and uses `private`, `preferred_name`, `last_activity_at`, and linked user identifiers.
