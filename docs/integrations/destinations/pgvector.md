@@ -2,129 +2,105 @@
 
 ## Overview
 
-This page guides you through the process of setting up the PGVector destination connector.
+This page guides you through setting up the PGVector destination connector. The connector writes each
+record as one or more embedded text chunks into a Postgres table, so you can run similarity searches
+in Postgres instead of a dedicated vector database.
 
-There are three parts to this:
-* Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-* Embedding - convert the text into a vector representation using a pre-trained model. Currently supported:
-  * OpenAI's `text-embedding-ada-002`
-  * Cohere's `embed-english-light-v2.0` 
-  * Azure OpenAI 
-  * Fake `random vectors with 1536 embedding dimensions`
-  * OpenAI-compatible
-  * Coming soon: Hugging Face's `e5-base-v2`.
-* Postgres Connection - where to store the vectors. This configures a vector store using Postgres tables having the `VECTOR` data type which is achieved installing pgvector.
+Configuring the destination has three parts:
+
+- **Processing** - Split records into chunks that fit your model's context window, and decide which
+  fields to embed and which to keep as metadata.
+- **Embedding** - Convert the text into a vector using an embedding model. See
+  [Embedding](#embedding) for the supported services and their vector sizes.
+- **Postgres connection** - Where to store the vectors. The connector writes to Postgres tables that
+  use the `vector` column type provided by the pgvector extension.
 
 ## Prerequisites
 
-To use the PGVector destination, you'll need:
+To use the PGVector destination, you need:
 
-- An account with API access depending on which embedding method you want to use.
-- A Postgres DB with support for [pgvector](https://github.com/pgvector/pgvector).
+- A Postgres database with the [pgvector](https://github.com/pgvector/pgvector) extension installed.
+- Credentials for the embedding service you want to use, unless you use fake embeddings for testing.
 
-You'll need the following information to configure the destination:
+Collect the following information before you configure the destination:
 
-- **Embedding service API Key** - The API key for your embedding account and other params depending on your model.
-- **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port
-  number (5432).
-- **Username**
-- **Password**
-- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in
-  the search-path. These schemas will be used to resolve unqualified object names used in statements
-  executed over this connection.
-- **Database** - The database name. The default is to connect to a database with the same name as
-  the user name.
+- **Host** - The host name or address of the Postgres server.
+- **Port** - The port the server listens on. Defaults to the PostgreSQL standard port (5432).
+- **Database** - The name of the database to write to.
+- **Default Schema** - The schema the connector writes its tables into. Defaults to `public`. The
+  connector writes to a single schema, and schema names are case sensitive.
+- **Username** and **Password** - The Postgres user Airbyte authenticates as.
+- **Embedding service credentials** - The API key, and any other fields the service requires, for the
+  embedding method you choose.
 
-#### Configure Network Access
+#### Configure network access
 
-Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
-may need to allow access from the IP you're using to expose Airbyte.
+Make sure Airbyte can reach your Postgres database. If the database is in a VPC, you may need to
+allow access from the IP address Airbyte connects from. The connector also reaches out to your
+embedding service, so allow outbound access to `api.openai.com`, `api.cohere.ai`, or the base URL of
+your Azure OpenAI or OpenAI-compatible service.
 
 ## Step 1: Set up Postgres
 
-#### **Permissions**
+#### Permissions
 
-You need a Postgres user with the following permissions:
+The Postgres user needs to create tables and insert rows in the target schema. If the schema doesn't
+exist yet, the connector creates it, so the user also needs the privilege to create schemas.
 
-- can create tables and write rows.
-- can create schemas e.g:
+You can create a dedicated user by running:
 
-You can create such a user by running:
-
-```
+```sql
 CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
 
-You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
+If you want the connector to write into a schema that already exists, grant privileges on that schema
+too:
 
-Enable the extension. Here you can find the [official documentation](https://github.com/pgvector/pgvector).
+```sql
+GRANT CREATE, USAGE ON SCHEMA <schema> TO airbyte_user;
 ```
-CREATE EXTENSION vector;
+
+You can also use an existing user, but a dedicated user is strongly recommended.
+
+#### Enable pgvector
+
+Run this once in the database you sync to. On most Postgres installations, creating the extension
+requires a superuser or a managed-service role that permits extension creation. If the extension
+isn't available at all, follow the [pgvector installation
+instructions](https://github.com/pgvector/pgvector#installation) first.
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
 ```
+
 ## Step 2: Set up the PGVector connector in Airbyte
 
-#### Target Database
-
-You will need to choose an existing database or create a new database that will be used to store
-synced data from Airbyte.
-
-## Naming Conventions
-
-From
-[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
-
-- SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
-  marks and non-Latin letters\) or an underscore \(\_\).
-- Subsequent characters in an identifier or key word can be letters, underscores, digits \(0-9\), or
-  dollar signs \($\).
-
-  Note that dollar signs are not allowed in identifiers according to the SQL standard, so their use
-  might render applications less portable. The SQL standard will not define a key word that contains
-  digits or starts or ends with an underscore, so identifiers of this form are safe against possible
-  conflict with future extensions of the standard.
-
-- The system uses no more than NAMEDATALEN-1 bytes of an identifier; longer names can be written in
-  commands, but they will be truncated. By default, NAMEDATALEN is 64 so the maximum identifier
-  length is 63 bytes
-- Quoted identifiers can contain any character, except the character with code zero. \(To include a
-  double quote, write two double quotes.\) This allows constructing table or column names that would
-  otherwise not be possible, such as ones containing spaces or ampersands. The length limitation
-  still applies.
-- Quoting an identifier also makes it case-sensitive, whereas unquoted names are always folded to
-  lower case.
-- In order to make your applications portable and less error-prone, use consistent quoting with each
-  name (either always quote it or never quote it).
-
-:::info
-
-Airbyte Postgres destination will create raw tables and schemas using the Unquoted identifiers by
-replacing any special characters with an underscore. All final tables and their corresponding
-columns are created using Quoted identifiers preserving the case sensitivity. Special characters in final
-tables are replaced with underscores.
-
-:::
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or your self-managed
+   Airbyte instance.
+2. In the left navigation bar, click **Destinations**. In the top-right corner, click **New
    destination**.
-3. On the Set up the destination page, enter the name for the PGVector connector and select
-   **Postgres** from the Destination type dropdown.
-4. Enter a name for your source.
-5. Enter processing information.
-6. Enter embedding information.
-7. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
-   Postgres database.
-8. Enter the **Default Schemas**.
+3. Select **PGVector** from the list of destination types, and enter a name for your destination.
+4. In the **Processing** section, list the **Text fields to embed**, the **Fields to store as
+   metadata**, and set the **Chunk size**.
+5. In the **Embedding** section, choose an embedding method and enter its credentials.
+6. In the **Postgres Connection** section, enter the **Host**, **Port**, **Database**, **Default
+   Schema**, **Username**, and **Password** for the user you created in
+   [Step 1](#step-1-set-up-postgres).
+7. Click **Set up destination**.
 
-:::note
+## Naming conventions
 
-The schema names are case sensitive. The 'public' schema is set by default.
+The connector creates one table per stream, in the schema you set as the **Default Schema**. Stream
+names are normalized before they're used as table names: characters are folded to lower case and
+every character that isn't a letter or a digit is replaced with an underscore. Names that begin with
+a digit are prefixed with an underscore.
 
-:::
-
-7. For **User** and **Password**, enter the username and password you created in
-   [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
+Postgres also truncates identifiers longer than 63 bytes. Streams whose names differ only in case, in
+punctuation, or beyond the first 63 bytes normalize to the same table name and overwrite each other's
+data. See [Postgres SQL
+identifiers](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS)
+for the full identifier rules.
 
 ## Supported sync modes
 
@@ -138,54 +114,94 @@ The schema names are case sensitive. The 'public' schema is set by default.
 
 ## Data type mapping
 
-All fields specified as metadata fields will be stored in the metadata object of the document and can be used for filtering. The following data types are allowed for metadata fields:
-* String
-* Number (integer or floating point, gets converted to a 64 bit floating point)
-* Booleans (true, false)
-* List of String
-
-All other fields are ignored.
+Fields you list as metadata fields are stored as JSON in the `metadata` column, so strings, numbers,
+booleans, arrays, and nested objects are all preserved. Fields that you list as neither text fields
+nor metadata fields aren't written to the destination.
 
 ## Configuration
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.  Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record is split into text fields and metadata fields, as configured in the **Processing**
+section. All text fields are concatenated into a single string, which is then split into chunks of
+the configured length. Metadata fields are stored alongside each chunk of the record they came from.
+The chunking options come from the [LangChain Python
+library](https://python.langchain.com/docs/introduction/).
 
-When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
+If you leave **Text fields to embed** empty, every field in the record is embedded. If you leave
+**Fields to store as metadata** empty, every field is also stored as metadata.
 
-The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
+When specifying text fields, you can access nested fields in the record by using dot notation. For
+example, `user.name` accesses the `name` field in the `user` object. You can also use wildcards to
+access all fields in an object. For example, `users.*.name` accesses all `name` fields in all entries
+of the `users` array.
 
-The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_ab_record_id` metadata field.
+By default, text is split on paragraph, line, sentence, and word boundaries. You can instead split on
+your own list of separators, on Markdown headers, or on code structure for a specific programming
+language, using the **Text splitter** option.
+
+Chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens,
+which is the maximum input length of the `text-embedding-ada-002` model.
+
+The stream name is added to each chunk as an `_ab_stream` metadata field. For streams that sync with
+the **Incremental Sync - Append + Deduped** mode and have a primary key, the primary key is also
+added as an `_ab_record_id` metadata field.
 
 ### Embedding
 
-The connector can use one of the following embedding methods:
+The connector can use one of the following embedding methods. The method you choose sets the
+dimension count of the `vector` column when the connector creates the table, and the connector never
+alters that column afterward. Switching to a method with a different dimension count means the table
+has to be recreated.
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+| Method | Model | Dimensions |
+| :--- | :--- | :--- |
+| [OpenAI](https://platform.openai.com/docs/api-reference/embeddings) | `text-embedding-ada-002` | 1536 |
+| [Azure OpenAI](https://learn.microsoft.com/azure/ai-services/openai/reference#embeddings) | `text-embedding-ada-002` | 1536 |
+| [Cohere](https://docs.cohere.com/reference/embed) | `embed-english-light-v2.0` | 1024 |
+| OpenAI-compatible service | Whatever model you name | Whatever you configure |
+| Fake | None. Random vectors. | 1536 |
 
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+For OpenAI, sync throughput is bound by the [OpenAI embedding API rate
+limits](https://platform.openai.com/docs/guides/rate-limits). Azure OpenAI needs the API key, the
+resource base URL, and the deployment name from your Azure OpenAI resource. An OpenAI-compatible
+service needs the base URL, the model name, and the number of dimensions the model produces.
 
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+Fake embeddings generate random vectors. Use them to test a pipeline end to end without paying for
+embedding calls. They aren't useful for search.
 
-### Indexing/Data Storage 
+### Indexing and data storage
 
-- For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
-   Postgres database.
-- List the **Default Schemas**.
+Each stream is written to a table of the same name in the default schema, and the connector creates
+the schema and table if they don't exist. Every table has these columns:
 
-All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns: 
-- document_id (string) - the unique identifier of the document, creating from appending the primary keys in the stream schema
-- chunk_id (string) - the unique identifier of the chunk, created by appending the chunk number to the document_id
-- metadata (variant) - the metadata of the document, stored as key-value pairs
-- document_content (string) - the text content of the chunk
-- embedding (vector) - the embedding of the chunk, stored as a list of floats
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `document_id` | string | Identifies the source record. For records with a primary key, it's `Stream_{stream name}_Key_{primary key values}`. For records without one, it's a random identifier, which means chunks can't be traced back to the record. |
+| `chunk_id` | string | A random identifier for the chunk. |
+| `metadata` | JSON | The metadata fields of the record, plus `_ab_stream` and, when present, `_ab_record_id`. |
+| `document_content` | string | The text content of the chunk. |
+| `embedding` | vector | The embedding of the chunk. |
 
-## Limitations & troubleshooting
+The connector doesn't create an index on the `embedding` column. Sequential scans are fine for small
+tables, but for larger ones, create an [HNSW or IVFFlat
+index](https://github.com/pgvector/pgvector#indexing) yourself, using the distance operator your
+queries use.
+
+Because one record becomes several chunks, deduplication deletes every existing row for a
+`document_id` and reinserts the record's current chunks, rather than updating rows in place.
+
+## Limitations and troubleshooting
 
 ### psycopg2.OperationalError could not translate host name something@hostname to address
 
-Given your password contains the character `@`, it is likely that the connection string will not be created properly given it is a reserved character. If it is the case, we suggest replacing `@` to `%40` (the equivalent UTF-8 character) in order for the authentication to properly work.
+The connector builds its connection string from your credentials, and `@` is a reserved character in
+that string. If your password contains `@`, replace it with `%40` so authentication works.
+
+### The "Do not store raw text" setting has no effect
+
+This destination always writes chunk text to the `document_content` column, even when the advanced
+**Do not store raw text** option is enabled.
 
 ## Namespace support
 
