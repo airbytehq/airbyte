@@ -569,6 +569,25 @@ class PostgresDirectLoadSqlGenerator(
         WITH (FORMAT csv)
         """
 
+    fun addMetaColumns(
+        tableName: TableName,
+        columns: Map<String, ColumnType>,
+    ): String {
+        val fullyQualifiedTableName = getFullyQualifiedName(tableName)
+        val clauses =
+            columns.map { (name, columnType) ->
+                // Note: we intentionally don't set NOT NULL.
+                // We're adding a new column, and preexisting records have no value for it.
+                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN IF NOT EXISTS ${quoteIdentifier(name)} ${columnType.type};"
+            }
+
+        return """
+            BEGIN TRANSACTION;
+            ${clauses.joinToString("\n")}
+            COMMIT;
+        """
+    }
+
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
