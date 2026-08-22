@@ -22,11 +22,20 @@ version in two workspaces of the same organization.
 
 ## The three definition endpoints
 
-| Endpoint | Connectors it covers | Read | Create, update, delete |
-| --- | --- | --- | --- |
-| `definitions/sources` | Source connectors that run a Docker image, both Airbyte's and your custom ones | All deployments | Custom definitions only, and not on Cloud |
-| `definitions/destinations` | Destination connectors that run a Docker image | All deployments | Custom definitions only, and not on Cloud |
-| `definitions/declarative_sources` | Low-code source connectors built from a Connector Builder manifest | All deployments | All deployments, including Cloud |
+| Endpoint | Connectors it covers | Read | Create and update | Delete |
+| --- | --- | --- | --- | --- |
+| `definitions/sources` | Source connectors that run a Docker image, both Airbyte's and your custom ones | All deployments | Custom definitions only, and not on Cloud | Custom definitions only; all deployments |
+| `definitions/destinations` | Destination connectors that run a Docker image | All deployments | Custom definitions only, and not on Cloud | Custom definitions only; all deployments |
+| `definitions/declarative_sources` | Low-code source connectors built from a Connector Builder manifest | All deployments | All deployments, including Cloud | All deployments, including Cloud |
+
+:::warning
+
+Deleting a custom definition destroys every source or destination created from it,
+and deleting those actors cascades to the connections that use them. This applies
+to all three definition endpoint families; deleting a declarative source definition
+also removes its Connector Builder project.
+
+:::
 
 Declarative source definitions are deliberately kept apart from `definitions/sources`:
 they never appear in its list response, and requesting one by ID there returns a 404.
@@ -121,9 +130,14 @@ curl --request POST \
 Two requirements on the manifest:
 
 - It must contain a `spec` object with a `connection_specification` — the JSON schema
-  for your connector's own configuration. Without it, the request fails.
-- Its `version` must be a CDK version whose major version your deployment supports. A
-  manifest built against a newer major version is rejected with a 409.
+  for your connector's own configuration. Without it, the request currently fails
+  with an unexpected-error 500 rather than a validation error.
+- Its `version` must be a CDK version whose major version has a registered base image
+  on your deployment. An unsupported major is rejected with a 409 whose body contains
+  only the generic `Could not fulfill request` message.
+- On Self-Managed, updates also check whether the version is supported by the current
+  platform version. That check runs on update but not create, so a version can be
+  accepted by `POST` and rejected by a later `PUT` with a 400.
 
 The definition also becomes a Connector Builder project, so you can open and edit the
 connector in the UI afterwards. The returned `id` is a normal `definitionId`: create
@@ -131,9 +145,11 @@ sources from it exactly as above.
 
 ### Publish a new version
 
-`PUT` publishes the manifest as the next version and activates it. Versions increment
-on their own — the first update to a new definition returns `version: 2` — so this is
-the endpoint to call from CI when the manifest changes in git:
+`PUT` publishes the manifest as the next version and activates it. The new version is
+the highest version already published plus one — a first update to a definition with
+only version 1 returns `version: 2`, while a definition already published at version 2
+returns `version: 3`. This is the endpoint to call from CI when the manifest changes in
+git:
 
 ```bash
 curl --request PUT \
@@ -181,7 +197,8 @@ curl --request PUT \
   --data '{ "name": "Internal Orders API", "dockerImageTag": "1.5.0" }'
 ```
 
-`DELETE` removes the definition from the workspace and returns it one last time.
+`DELETE` removes the definition from the workspace and returns it one last time. See
+the warning above for the cascading data loss.
 
 :::note
 Creating or updating an image-based definition runs the connector image to read its
@@ -196,16 +213,22 @@ call fails and the definition keeps its previous tag.
 
 Two rules explain almost every error these endpoints return:
 
-- **Only custom definitions can be written to.** Airbyte's registry connectors are
-  managed for you; updating or deleting one fails with
-  `Public definitions cannot be modified.` This holds on every deployment, including
-  Self-Managed.
+- **Only custom definitions can be updated or deleted.** Airbyte's registry connectors
+  are managed for you. On Self-Managed, updating or deleting one fails with
+  `Public definitions cannot be modified.` On Cloud, an update to a registry definition
+  hits the Cloud edition guard first and returns
+  `Non-declarative definitions cannot be created or updated in Airbyte Cloud.`; a
+  delete returns `Public definitions cannot be modified.` on every deployment.
 - **Cloud doesn't accept image-based definitions.** Creating or updating a source or
   destination definition on Cloud fails with `Non-declarative definitions cannot be
   created or updated in Airbyte Cloud.` Cloud runs connectors from Airbyte's registry
   plus declarative connectors, so use a declarative source definition instead. There
   is no declarative equivalent for destinations, so custom destinations are a
   Self-Managed capability.
+
+These writes require workspace editor access. Source definitions also accept the
+workspace source editor role, but destination definitions do not, so a workspace
+destination editor cannot write destination definitions.
 
 ## See also
 
