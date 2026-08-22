@@ -1402,10 +1402,40 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 60
       response_filters:
+        # 1 · Rate limits — unchanged, must stay first.
         - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}"
           action: RATE_LIMITED
           failure_type: transient_error
           error_message: "Rate limit exceeded for Linear API."
+        # 2 · Authentication — surface Linear's own message.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'AUTHENTICATION_ERROR' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Linear rejected the credentials: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
+            If you authenticated with an API key, confirm it has not been revoked in Linear under Settings → Security & access → Personal API keys.
+            If you authenticated with OAuth, re-authenticate to obtain a new refresh token.
+        # 3 · Permission and plan gating — user-correctable, but not a credential problem.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Linear denied access to this data: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'access denied') }}
+            The customers, customer_needs, customer_statuses and customer_tiers streams require Linear's Customer Requests
+            feature and the customer:read scope. Deselect them if your workspace does not have Customer Requests enabled.
+        # 4 · Query defects — permanent. Fail immediately; do NOT let the HTTP 500 case retry.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'GRAPHQL_VALIDATION_FAILED' }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: >-
+            Linear rejected the connector's query as invalid: {{ response['errors'][0].get('message', 'validation failed') }}
+            This is a connector defect, not a configuration problem. Please report it to Airbyte support.
+        # 5 · Catch-all for any HTTP 200 carrying a GraphQL errors array.
+        - predicate: "{{ 'errors' in response and response['errors'] }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: >-
+            Linear returned an error: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', response['errors'][0].get('message', 'unknown error')) }}
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_type"]
