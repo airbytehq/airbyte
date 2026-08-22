@@ -1,0 +1,42 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - api.adanos.org
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-adanos
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.6@sha256:9b7d308cba381c3fb2f107af5adc6360a49a19f451738f1beb99f3708a043cd2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7515a27f-b25c-4725-96db-0a9a7c290ca2
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-adanos
+  githubIssueLabel: source-adanos
+  icon: icon.svg
+  license: ELv2
+  name: Adanos
+  releaseDate: "2026-07-22"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/adanos
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Adanos API reference
+      url: https://api.adanos.org/docs
+      type: api_reference
+    - title: Adanos authentication
+      url: https://adanos.org/register
+      type: authentication_guide
