@@ -77,23 +77,19 @@ class MsSqlSourceMetadataQuerier(
 
             // For on-premises SQL Server, check if SQL Server Agent is running
             base.conn.createStatement().use { stmt: Statement ->
-                stmt
-                    .executeQuery(
-                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'"
-                    )
-                    .use { rs: ResultSet ->
-                        if (!rs.next()) {
-                            throw ConfigErrorException(
-                                "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running."
-                            )
-                        }
-                        val status = rs.getString("status_desc")
-                        if (status != "Running") {
-                            throw ConfigErrorException(
-                                "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running."
-                            )
-                        }
+                stmt.executeQuery(SQL_SERVER_AGENT_SERVICE_QUERY).use { rs: ResultSet ->
+                    if (!rs.next()) {
+                        throw ConfigErrorException(
+                            "SQL Server Agent service is not found. CDC requires SQL Server Agent to be running."
+                        )
                     }
+                    val status = rs.getString("status_desc")
+                    if (status != "Running") {
+                        throw ConfigErrorException(
+                            "SQL Server Agent is not running (status: $status). CDC requires SQL Server Agent to be running."
+                        )
+                    }
+                }
             }
         } catch (e: SQLException) {
             // Gracefully handle cases where sys.dm_server_services is not accessible
@@ -508,6 +504,21 @@ class MsSqlSourceMetadataQuerier(
     )
 
     companion object {
+
+        // Agent-only prefixes. Do not use '%SQL Server%Agent%' — that also matches a
+        // database-engine row named 'SQL Server (Agent)', and checkSqlServerAgentRunning()
+        // reads only the first unordered row.
+        internal const val SQL_SERVER_AGENT_EN_LIKE_PATTERN = "SQL Server Agent%"
+        internal const val SQL_SERVER_AGENT_DE_LIKE_PATTERN = "SQL Server-Agent%"
+        internal const val SQL_SERVER_AGENT_EN_DOUBLE_SPACE_LIKE_PATTERN = "SQL Server  Agent%"
+        internal const val SQL_SERVER_AGENT_CJK_LIKE_PATTERN = "%SQL Server 代理%"
+
+        internal const val SQL_SERVER_AGENT_SERVICE_QUERY =
+            "SELECT servicename, status_desc FROM sys.dm_server_services " +
+                "WHERE servicename LIKE '$SQL_SERVER_AGENT_EN_LIKE_PATTERN' " +
+                "OR servicename LIKE '$SQL_SERVER_AGENT_DE_LIKE_PATTERN' " +
+                "OR servicename LIKE '$SQL_SERVER_AGENT_EN_DOUBLE_SPACE_LIKE_PATTERN' " +
+                "OR servicename LIKE '$SQL_SERVER_AGENT_CJK_LIKE_PATTERN'"
 
         /**
          * SQL Server system schemas that should be excluded from auto-discovery. These schemas
