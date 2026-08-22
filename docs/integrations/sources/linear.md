@@ -89,7 +89,7 @@ The Linear source connector supports the following streams. Streams marked as in
 | `cycles` | Yes | Cycles (sprints) for each team. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
-| `issues` | Yes | Issues in every team. |
+| `issues` | Yes | Issues in every team, including archived issues. Archived issues have a non-null `archivedAt` value. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
 | `projects` | Yes | Projects across all teams. |
@@ -117,16 +117,13 @@ Linear enforces three types of rate limits:
 
 Workspace-level OAuth applications receive dynamically increased limits based on the number of paid seats. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
-### Archived records aren't synced
-
-Linear's GraphQL API hides archived records from paginated responses unless the caller requests them explicitly, and the connector doesn't request them. As a result:
-
-- Archived issues, projects, cycles, comments, and other archived entities never appear in your synced data. The `archivedAt` field is present in the schemas but is `null` for every synced record.
-- When a record you already synced is archived or deleted in Linear, it stops appearing in the API response, and Airbyte doesn't delete rows it already synced, so whatever was written stays in the destination. If you need to detect these records, compare a full refresh of the stream against your destination table.
-
 ### Data availability
 
 The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
+
+### Archived and deleted records
+
+Archived records are returned with a non-null `archivedAt` value, which the connector uses as the deletion signal. Linear also supports permanent hard deletion (for example, `issueDelete` with `permanently`), which leaves no signal; hard-deleted records cannot be detected. The first sync after upgrading to version 0.3.0 backfills previously invisible archived records and may transfer a large one-time volume.
 
 ## IP allow list
 
@@ -155,6 +152,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.3.0 | 2026-08-21 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Include archived records in all streams (`includeArchived: true`) and declare `archivedAt` (and `trashed` on issues/projects) in stream schemas; the first sync after upgrade backfills previously invisible archived records and may transfer a large one-time volume |
 | 0.2.18 | 2026-08-21 | [84948](https://github.com/airbytehq/airbyte/pull/84948) | Clarify authentication field titles and descriptions in the connector setup form. |
 | 0.2.17 | 2026-08-21 | [84951](https://github.com/airbytehq/airbyte/pull/84951) | Enable acceptance test suites with GSM test secrets for API key and OAuth |
 | 0.2.16 | 2026-08-21 | [84944](https://github.com/airbytehq/airbyte/pull/84944) | Add suggested streams so new connections pre-select core streams and exclude Customer Requests streams |

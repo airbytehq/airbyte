@@ -18,6 +18,7 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 from requests import Response
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -55,6 +56,14 @@ FULL_REFRESH_ONLY_STREAMS = [
     "customer_tiers",
 ]
 
+STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
+    **INCREMENTAL_STREAM_GRAPHQL_FIELDS,
+    "project_statuses": "projectStatuses",
+    "issue_relations": "issueRelations",
+    "customer_statuses": "customerStatuses",
+    "customer_tiers": "customerTiers",
+}
+
 
 @pytest.fixture(scope="module")
 def source() -> YamlDeclarativeSource:
@@ -64,6 +73,11 @@ def source() -> YamlDeclarativeSource:
 @pytest.fixture(scope="module")
 def streams_by_name(source: YamlDeclarativeSource) -> Mapping[str, Any]:
     return {s.name: s for s in source.streams(config=CONFIG)}
+
+
+@pytest.fixture(scope="module")
+def manifest() -> Mapping[str, Any]:
+    return yaml.safe_load(Path(MANIFEST_PATH).read_text())
 
 
 @pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
@@ -76,6 +90,30 @@ def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: M
 def test_full_refresh_only_stream_has_no_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
     assert not stream.cursor_field, f"stream {stream_name} should not declare a cursor_field but got {stream.cursor_field!r}"
+
+
+@pytest.mark.parametrize("stream_name, graphql_field", STREAM_GRAPHQL_FIELDS.items())
+def test_every_stream_query_includes_archived_records(
+    stream_name: str,
+    graphql_field: str,
+    streams_by_name: Mapping[str, Any],
+) -> None:
+    body = _build_full_request_body(streams_by_name[stream_name], next_page_token=None)
+    call_site = _top_level_call_site(body["query"], graphql_field)
+    assert "includeArchived: true" in call_site
+
+
+@pytest.mark.parametrize("stream_name", STREAM_GRAPHQL_FIELDS)
+def test_every_stream_schema_declares_archived_at(stream_name: str, manifest: Mapping[str, Any]) -> None:
+    archived_at = manifest["schemas"][stream_name]["properties"]["archivedAt"]
+    assert set(archived_at["type"]) == {"null", "string"}
+    assert archived_at["format"] == "date-time"
+
+
+@pytest.mark.parametrize("stream_name", ["issues", "projects"])
+def test_issues_and_projects_schemas_declare_trashed(stream_name: str, manifest: Mapping[str, Any]) -> None:
+    trashed = manifest["schemas"][stream_name]["properties"]["trashed"]
+    assert set(trashed["type"]) == {"boolean", "null"}
 
 
 def _build_full_request_body(
