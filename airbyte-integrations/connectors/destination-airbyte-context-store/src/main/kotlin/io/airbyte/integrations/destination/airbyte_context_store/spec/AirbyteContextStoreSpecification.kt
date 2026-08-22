@@ -64,6 +64,5 @@ class AirbyteContextStoreSpecification :
 
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
 
-    @get:JsonProperty("flush_batch_size_mb", required = false)
-    val flushBatchSizeMb: Long? = null
+    @get:JsonProperty("flush_batch_size_mb", required = false) val flushBatchSizeMb: Long? = null
 }
