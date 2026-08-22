@@ -49,9 +49,12 @@ data:
       6.0.0:
         message:
           Source-defined primary keys for TikTok Marketing report streams now include
-          `advertiser_id` so Incremental + Deduped syncs correctly distinguish records
-          across advertiser partitions. Users will need to refresh the source schema and
-          clear the impacted streams after upgrading. See the
+          `advertiser_id` so Incremental | Deduped syncs correctly distinguish records
+          across advertiser partitions. Refresh the source schema after upgrading.
+          Clear the impacted streams only if they use Incremental | Deduped. Append
+          and overwrite syncs should not be cleared, because the new key is unused
+          there and a clear can drop report history TikTok will not fully re-serve.
+          Snapshot destination tables before any clear. See the
           [TikTok Marketing migration guide](https://docs.airbyte.com/integrations/sources/tiktok-marketing-migrations#upgrading-to-600)
           for the full list of impacted streams and steps.
         upgradeDeadline: "2026-09-14"
