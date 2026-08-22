@@ -102,7 +102,7 @@ class TestVirtualBankAccountStream(TestCase):
         # Mock API response with record AFTER the state timestamp
         http_mocker.get(
             RequestBuilder.virtual_bank_accounts_endpoint()
-            .with_sort_by_asc("updated_at")
+            .with_sort_by_asc("created_at")
             .with_include_deleted("true")
             .with_updated_at_between(previous_state_timestamp, 1705320000)  # Frozen time: 2024-01-15T12:00:00Z
             .with_limit(100)
