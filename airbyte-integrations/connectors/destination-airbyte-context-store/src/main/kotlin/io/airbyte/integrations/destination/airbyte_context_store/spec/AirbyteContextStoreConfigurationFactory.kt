@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.airbyte_context_store.spec
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogSpecification
+import io.airbyte.integrations.destination.s3_data_lake.spec.S3BucketRegion
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfiguration
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfigurationFactory
 import io.micronaut.context.annotation.Replaces
@@ -28,8 +30,21 @@ class AirbyteContextStoreConfigurationFactory :
         if (!pojo.acknowledgeManagedStorage) {
             throw ConfigErrorException("Managed storage acknowledgement is not accepted.")
         }
-        if (pojo.s3BucketName.isBlank() || pojo.warehouseLocation.isBlank()) {
+        if (
+            pojo.s3BucketName.isBlank() ||
+                pojo.warehouseLocation.isBlank() ||
+                pojo.mainBranchName.isBlank() ||
+                pojo.s3BucketRegion == S3BucketRegion.NO_REGION
+        ) {
             throw SystemErrorException("Managed storage configuration is missing.")
+        }
+
+        val catalog = pojo.catalogType
+        if (catalog !is GlueCatalogSpecification) {
+            throw SystemErrorException("Managed catalog configuration is not a Glue catalog.")
+        }
+        if (catalog.glueId.isBlank() || catalog.databaseName.isBlank()) {
+            throw SystemErrorException("Managed catalog configuration is missing.")
         }
 
         return S3DataLakeConfiguration(
