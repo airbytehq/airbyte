@@ -21,7 +21,7 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 1. If you're not sure which chart versions you're running, run `helm list -n <NAMESPACE>`.
 
-2. Check the [release notes](/release_notes/) to see what versions are available and review any requirements to upgrade. You can also see which Helm chart versions are available in the [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte/airbyte).
+2. Check the [release notes](/release_notes/) to see what versions are available and review any requirements to upgrade. You can also see which Helm chart versions are available in the [Airbyte ArtifactHub](https://artifacthub.io/packages/helm/airbyte-v2/airbyte).
 
 3. Update your `values.yaml` file if necessary. In most cases, you only need to do this if you want to implement a new feature from the new version.
 

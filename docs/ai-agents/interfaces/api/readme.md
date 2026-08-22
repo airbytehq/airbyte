@@ -1,14 +1,24 @@
 ---
-sidebar_position: 3
+plan: all
+sidebar_position: 4
 ---
 
 import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
 
 # API
 
-The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with third-party data sources.
+The Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with third-party data sources.
 
 This section walks through the four operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
+
+## When to use the API
+
+- Your backend isn't Python, so the SDK isn't an option.
+- You need direct HTTP control over authentication, connector management, or execution.
+- You're building custom admin flows or embedding the authentication module in your application.
+- You want to call Airbyte Agents from any language or framework that can make HTTP requests.
+
+If you're writing Python, the [SDK](../sdk/readme.md) wraps the same endpoints with a typed interface. If your agent speaks the Model Context Protocol, the [MCP server](../mcp/readme.md) gives you zero-install access. For shell scripts and CI, see the [CLI](../cli/readme.md).
 
 ## Choose your interface
 
@@ -22,19 +32,19 @@ If your account belongs to multiple organizations, generate your application tok
 
 ## How the pieces fit together
 
-The four pages in this section are designed to map one-to-one with the [SDK](../sdk) section so the same mental model works in either environment.
+The four pages in this section are designed to map one-to-one with the [SDK](../sdk/readme.md) section so the same mental model works in either environment.
 
-1. **[Authentication](./authentication)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
+1. **[Authentication](./authentication/readme.md)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
 
-2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
+2. **[Add a connector](./add-connector.md)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
 
-3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
+3. **[Execute operations](./execute.md)**: First introspect the connector (`GET /integrations/connectors/<connector_id>/inspect`, then `GET /skills/docs`) to discover its entities, actions, and usage guidance, then call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
-4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete) — operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
+4. **[Manage workspaces](./workspaces.md)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
 
 ## End-to-end example
 
-This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk).
+This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk/readme.md).
 
 ```bash title="1. Get an application token"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \

@@ -744,6 +744,87 @@ Classes
     `ok: bool | None`
     :   The type of the None singleton.
 
+<a id="ChannelJoinParams"></a>
+
+`ChannelJoinParams(**data: Any)`
+:   Parameters for joining a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: str`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="ChannelJoinResponse"></a>
+
+`ChannelJoinResponse(**data: Any)`
+:   Response from joining a channel
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `channel: airbyte_agent_sdk.connectors.slack.models.Channel | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `ok: bool | None`
+    :   The type of the None singleton.
+
+    `response_metadata: airbyte_agent_sdk.connectors.slack.models.ChannelJoinResponseResponseMetadata | None`
+    :   The type of the None singleton.
+
+    `warning: str | None`
+    :   The type of the None singleton.
+
+<a id="ChannelJoinResponseResponseMetadata"></a>
+
+`ChannelJoinResponseResponseMetadata(**data: Any)`
+:   Additional response metadata
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `warnings: list[str] | None`
+    :   List of warning messages
+
 <a id="ChannelKickParams"></a>
 
 `ChannelKickParams(**data: Any)`
@@ -1410,13 +1491,16 @@ Classes
 
     ### Class variables
 
-    `blocks: str | None`
+    `blocks: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `channel: str`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool | None`
     :   The type of the None singleton.
 
     `text: str`
@@ -1635,10 +1719,16 @@ Classes
 
     ### Class variables
 
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
     `channel: str`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool | None`
     :   The type of the None singleton.
 
     `reply_broadcast: bool | None`
@@ -1763,6 +1853,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
 
     `channel: str`
     :   The type of the None singleton.
@@ -2133,10 +2226,16 @@ Classes
 
     ### Class variables
 
+    `blocks: list[dict[str, typing.Any]] | None`
+    :   The type of the None singleton.
+
     `channel: str`
     :   The type of the None singleton.
 
     `model_config`
+    :   The type of the None singleton.
+
+    `mrkdwn: bool | None`
     :   The type of the None singleton.
 
     `post_at: int`
@@ -2288,7 +2387,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `SlackExecuteResultWithMeta[list[Channel], ChannelsListResultMeta](**data: Any)`
@@ -2519,6 +2618,12 @@ Classes
 
     ### Class variables
 
+    `include_archived_channels: bool | None`
+    :   Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.
+
+    `include_private_channels: bool | None`
+    :   Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated.
+
     `join_channels: bool`
     :   Whether to automatically join public channels to sync messages.
 
@@ -2530,6 +2635,9 @@ Classes
 
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
+
+    `threads_ignore_no_replies: bool | None`
+    :   When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.
 
 <a id="SlackTokenAuthenticationAuthConfig"></a>
 

@@ -1,4 +1,5 @@
 ---
+plan: all
 sidebar_position: 1
 ---
 
@@ -7,13 +8,13 @@ sidebar_position: 1
 The SDK authenticates with Airbyte Agents using an Airbyte `client_id` and `client_secret`. Once the SDK has these, it handles the rest: fetching tokens, refreshing them before they expire, and attaching them to every request. You never manage tokens yourself.
 
 :::note Two sets of credentials
-The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *your app* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you pass to [`create_connector`](./add-connector) so Airbyte can sign in to each third-party service on your behalf. The two are independent: rotating one doesn't affect the other.
+The `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` on this page authenticate *your app* with Airbyte Agents. They aren't the same as the per-connector credentials (an OAuth `client_id`/`client_secret`/`refresh_token`, an API key, and so on) that you provide when you [add a connector](./add-connector) so Airbyte can sign in to each third-party service on your behalf. The two are independent: rotating one doesn't affect the other.
 :::
 
 ## Get your credentials
 
 1. Sign in to [app.airbyte.ai](https://app.airbyte.ai/).
-2. Open the [Profile page](https://app.airbyte.ai/profile) and copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET`.
+2. Open the Profile page and copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET`.
 
 For details, see [Manage your user profile](../../admin/profile).
 
@@ -115,4 +116,3 @@ If you belong to a single organization, you can omit `organization_id`.
 
 - Never commit `AIRBYTE_CLIENT_ID` or `AIRBYTE_CLIENT_SECRET` to version control. Use a `.env` file and add it to `.gitignore`.
 - Keep Airbyte credentials server-side. The SDK is designed for backend use.
-- Rotate credentials periodically from the [Profile page](https://app.airbyte.ai/profile).

@@ -21,11 +21,12 @@ const getRemarkPlugins = () => ({
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
   planInformation: require("./src/remark/planInformation"),
   connectorTypeBanner: require("./src/remark/connectorTypeBanner"),
+  codeBlockTabs: require("./src/remark/codeBlockTabs"),
 });
 
 const plugins = getRemarkPlugins();
 
-// Import constants for Airbyte Agents API sidebar generation
+// Import constants for Agent API sidebar generation
 const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
@@ -37,12 +38,17 @@ const darkCodeTheme = prismThemes.dracula;
 const config: Config = {
   future: {
     v4: true,
-    experimental_faster: true,
+    faster: true,
   },
   markdown: {
     mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: "throw",
+    },
+    mdx1Compat: {
+      comments: true,
+      admonitions: true,
+      headingIds: true,
     },
   },
   themes: [
@@ -57,6 +63,7 @@ const config: Config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
+  trailingSlash: false,
   onBrokenLinks: "throw",
 
   favicon: "img/favicon.png",
@@ -72,13 +79,6 @@ const config: Config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
-    },
-    {
-      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
-      async: true,
-      "data-apikey": "2094e2379643f69f7aec647a15f786",
-      "data-cookieless": "1",
-      "data-auto-identify": "1",
     },
   ],
   headTags: [
@@ -165,7 +165,7 @@ const config: Config = {
         async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
           const sidebarItems = await defaultSidebarItemsGenerator(args);
 
-          // Load and filter the Airbyte Agents API sidebar based on allowed tags
+          // Load and filter the Agent API sidebar based on allowed tags
           const agentEngineApiItems = loadAgentEngineApiSidebar();
 
           // Replace the "api-reference" category with the filtered API items
@@ -182,8 +182,12 @@ const config: Config = {
           // multi-instance sidebars (e.g. sidebar-platform.js) use this same
           // pattern, so this makes ai-agents breadcrumbs consistent with them.
           // See https://github.com/facebook/docusaurus/issues/6953.
+          // Filter out the README (used as the category link) and
+          // standalone landing pages that should not appear in navigation.
+          const hiddenDocIds = new Set(["README", "slack-app"]);
           const itemsWithoutReadme = processedItems.filter(
-            (item: any) => !(item.type === "doc" && item.id === "README"),
+            (item: any) =>
+              !(item.type === "doc" && hiddenDocIds.has(item.id)),
           );
 
           return [
@@ -201,6 +205,7 @@ const config: Config = {
           plugins.planInformation,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
+          plugins.codeBlockTabs,
         ],
       },
     ],
@@ -301,7 +306,7 @@ const config: Config = {
         depth: 4,
         content: {
           includePages: true,
-          excludeRoutes: ["./api-docs/**"],
+          excludeRoutes: ["./api-docs/**", "./ai-agents/slack-app"],
         },
       } satisfies LLmPluginOptions,
     ],
@@ -341,7 +346,7 @@ const config: Config = {
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
-    require.resolve("./src/scripts/kapaWithOsanoConsent.js"),
+    require.resolve("./src/scripts/kapaWithDataGrailConsent.js"),
   ],
 
   themeConfig: {
@@ -381,13 +386,21 @@ const config: Config = {
         height: 40,
       },
       items: [
+        // "Agents" is a direct link (no dropdown needed)
+        {
+          type: "doc",
+          position: "left",
+          docsPluginId: "ai-agents",
+          docId: "README",
+          label: "Agents",
+        },
         // "Data Replication" dropdown groups the five sub-sections
         // `to` makes the label itself clickable (navigates to Platform)
         {
           type: "dropdown",
           position: "left",
           label: "Data Replication",
-          to: "/platform/",
+          to: "/platform",
           items: [
             {
               type: "docSidebar",
@@ -408,14 +421,6 @@ const config: Config = {
               label: "Developers",
             },
           ],
-        },
-        // "Airbyte Agents" is a direct link (no dropdown needed)
-        {
-          type: "doc",
-          position: "left",
-          docsPluginId: "ai-agents",
-          docId: "README",
-          label: "Airbyte Agents",
         },
         // "Release notes" and "Community" are tier-one nav items
         {

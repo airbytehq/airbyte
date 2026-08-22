@@ -369,7 +369,6 @@ Classes
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[CustomFieldsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[IssuesSearchData]
-    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[MessagesSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult[TicketFormsSearchData]
@@ -528,45 +527,6 @@ Classes
 <a id="IssuesSearchResult"></a>
 
 `IssuesSearchResult(**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-`AirbyteSearchResult[MessagesSearchData](**data: Any)`
-:   Result from Airbyte cache search operations with typed records.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.pylon.models.AirbyteSearchResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="MessagesSearchResult"></a>
-
-`MessagesSearchResult(**data: Any)`
 :   Result from Airbyte cache search operations with typed records.
     
     Create a new model by parsing and validating input data from keyword arguments.
@@ -2445,42 +2405,6 @@ Classes
     `request_id: str | None`
     :   The type of the None singleton.
 
-<a id="MessagesSearchData"></a>
-
-`MessagesSearchData(**data: Any)`
-:   Search result data for messages entity.
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `id: str`
-    :   Unique identifier for the message
-
-    `is_private: bool | None`
-    :   Whether the message is an internal note (not visible to the customer)
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `source: str | None`
-    :   Channel the message was sent through (e.g. email, slack)
-
-    `thread_id: str | None`
-    :   Identifier of the thread this message belongs to
-
-    `timestamp: str | None`
-    :   Timestamp the message was posted, in ISO 8601 format
-
 <a id="Milestone"></a>
 
 `Milestone(**data: Any)`
@@ -3032,7 +2956,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `PylonExecuteResultWithMeta[list[Account], AccountsListResultMeta](**data: Any)`

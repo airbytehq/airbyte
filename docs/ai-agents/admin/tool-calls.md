@@ -1,3 +1,7 @@
+---
+plan: all
+---
+
 # Review tool calls
 
 Airbyte Agents logs every tool call your agents make. Review this log to understand what your agents are doing, troubleshoot failures, and investigate unexpected activity or cost spikes.
@@ -10,12 +14,12 @@ A tool call is a single action an agent takes against a connector. Each time an 
 
 Airbyte classifies tool calls as one of the following types:
 
-- **Direct**: A real-time request to a third-party API. Airbyte routes the call through the connector and returns the live response to the agent. Direct tool calls are useful for operational queries, real-time lookups, and actions that change state, like creating a ticket or sending a message.
+- **Direct**: A real-time request to a third-party API. Airbyte routes the call through the connector and returns the live response to the agent. Direct tool calls are useful for operational queries, real-time searches, and actions that change state, like creating a ticket or sending a message.
 - **Search**: A query against data Airbyte has already replicated into the Context Store. Airbyte answers the call from the cache without contacting the upstream API, which makes search tool calls fast and cost-efficient.
 
-Tool calls are the billable unit that most directly reflects the work your agents do. Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For billing details, see [Billing and pricing](./billing.md).
+Tool calls are the billable unit that most directly reflects the work your agents do. For Airbyte-managed agents, Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For agents you bring through the MCP, the API, the SDK, or the CLI, Airbyte bills tool calls only, not the reasoning your own model performs. For billing details, see [Billing and pricing](./billing.md).
 
-Tool calls can originate from any interface: Chat, Automations, the Automation Builder chat, MCP, the API, and the SDK. The Tool Calls page shows activity from all sources.
+Tool calls can originate from any interface, including Chat, MCP, the API, the SDK, and the CLI. The Tool Calls page shows activity from all sources.
 
 ## How to interpret the table
 
@@ -45,16 +49,18 @@ Use the filters above the table to narrow the activity to a specific subset:
 - **Tool Type**: Show only Direct tool calls, only Search tool calls, or both.
 - **Status**: Show only successful calls, only failed calls, or both.
 
+Administrators see tool calls from every workspace in the organization; members see tool calls from the workspaces they belong to. Tool calls made in a workspace that was later deleted are preserved and still appear in the table.
+
 #### Columns
 
 Each row in the table includes the following information:
 
 - **Tool Type**: A badge that identifies the call as **Direct** or **Search**. Search calls that Airbyte served from the Context Store also show a **Context Store** badge.
-- **Entity**: The resource the agent acted on, such as `contacts` or `orders`. This matches the stream name exposed by the connector.
-- **Action**: The operation the agent performed, such as `list`, `get`, `context-store-search`, or `create`.
+- **Entity**: The resource the agent acted on, such as `contacts` or `orders`. This matches the stream name exposed by the connector's 3rd party API.
+- **Action**: The operation the agent performed, such as `list`, `get`, `context_store_search`, or `create`.
 - **Workspace**: The workspace the tool call belongs to. Click the workspace name to view that workspace's credentials.
 - **Connector**: The connector the agent used, such as HubSpot or Stripe.
-- **Timestamp**: The date and time Airbyte recorded the call.
+- **Timestamp**: The date and time Airbyte recorded the call, reflected in your browsers local time zone.
 - **Status**: A green check mark for successful calls, or a red X for failed calls. Use the Status filter to focus on failures when you're troubleshooting.
 
 If the table is empty, your agents haven't made any tool calls yet, or your filters exclude every call in the window. Clear your filters to confirm.

@@ -21,8 +21,8 @@ By default, Snowflake allows users to connect to the service from any computer o
 A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
 policy to allow or deny access to a single IP address or a list of addresses.
 
-If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses
-is on the allowed list
+If you're using Airbyte Cloud, add Airbyte's
+[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Snowflake network policy allowlist.
 
 To determine whether a network policy is set on your account or for a specific user, execute the
 _SHOW PARAMETERS_ command.
@@ -118,10 +118,20 @@ commit;
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
-Note: Our integration automatically creates the necessary schemas in your Snowflake destination database.
+:::info
+Airbyte automatically creates the necessary schemas in your Snowflake destination database.
 To enable this, ensure the connection user has `CREATE SCHEMA` privileges on the target database.
 If you prefer to create schemas manually, that's supported—however, our connection user must have `OWNERSHIP` privileges on those schemas.
 This allows us to manage tables and other objects required for the integration to function properly.
+:::
+
+:::info Cost-saving tip
+Snowflake bills for compute on a per-second basis, meaning the warehouse resumes and incurs charges
+each time Airbyte loads data. To reduce costs, we recommend provisioning an X-Small warehouse with a
+one-minute auto-suspend timeout dedicated to Airbyte syncs. This is the smallest available compute
+tier and ensures the warehouse shuts down quickly after each load completes, minimizing idle compute
+charges. The script above already configures this (`warehouse_size = xsmall`, `auto_suspend = 60`).
+:::
 
 ### Step 2: Set up a data loading method
 
@@ -151,7 +161,9 @@ username/password or key pair authentication:
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
 | Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
+| Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
+| Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
 
 ### Key pair authentication
 
@@ -163,9 +175,18 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 override this with the **Airbyte Internal Table Dataset Name** setting) and a final table with typed columns. Contents in the raw table are _not_
 deduplicated.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to [Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+:::info
+By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated
+transient database for Airbyte. Using a transient database ensures all Airbyte-created tables are
+transient by default, which helps reduce the additional costs and storage space associated with
+[Fail-safe](https://docs.snowflake.com/en/user-guide/data-failsafe). However, transient tables
+cannot be recovered in case of operational or system failures.
+
+If you configure a custom **Airbyte Internal Table Dataset Name** (internal schema), ensure both the
+default schema and the internal schema reside in databases of the same nature (both transient or
+both permanent) to avoid inconsistent data protection behavior. For more information, refer to
+[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html).
+:::
 
 ### Raw Table schema
 
@@ -180,8 +201,10 @@ The raw table contains these fields:
 `_airbyte_data` is a JSON blob with the event data. See [here](/platform/understanding-airbyte/airbyte-metadata-fields)
 for more information about the other fields.
 
-**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table
-could be subject to change in future versions.
+:::info
+Although the contents of the `_airbyte_data` are fairly stable, the schema of the raw table could
+be subject to change in future versions.
+:::
 
 ### Final Table schema
 
@@ -203,7 +226,7 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 | STRING (BASE64)                     | TEXT           |
 | STRING (BIG_NUMBER)                 | TEXT           |
 | STRING (BIG_INTEGER)                | TEXT           |
-| NUMBER                              | FLOAT          |
+| NUMBER                              | FLOAT (default) or NUMBER(38,9) |
 | INTEGER                             | NUMBER         |
 | BOOLEAN                             | BOOLEAN        |
 | STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP_TZ   |
@@ -216,11 +239,30 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 | UNION                               | VARIANT        |
 | UNKNOWN                             | VARIANT        |
 
+The **Decimal Data Type** setting determines which Snowflake data type Airbyte uses for columns with the Airbyte type `NUMBER` (decimal):
+
+- **NUMBER(38,9)** (recommended): An exact fixed-point decimal type that supports up to 38 total digits, with up to 29 digits before the decimal point and 9 digits after it. It is suitable for financial data and other values that require exact decimal representation within this precision and scale.
+- **FLOAT** (default): An approximate binary floating-point type with approximately 15 digits of precision. It supports magnitudes up to approximately 10^308, making it suitable for scientific calculations, statistical models, probabilities, model scores, and other use cases where a wide numeric range is more important than exact decimal representation and small rounding differences are acceptable.
+
+**Unaffected cases:**
+
+- Legacy raw tables mode: the setting has no effect because there are no typed columns. All values are stored in the `_airbyte_data` VARIANT column.
+- Scale-0 database types (for example `NUMERIC(10,0)`): source connectors map these to the Airbyte `INTEGER` type, which is always stored as Snowflake NUMBER and is not affected by this setting.
+
+:::warning
+We recommend running a full refresh after changing this setting on an existing connection. Otherwise, on the next sync, Airbyte attempts to convert existing number columns in place. Because FLOAT and NUMBER(38,9) have different range and precision characteristics, this conversion can result in data loss, including reduced precision, truncated values, or values being set to NULL:
+
+- Switching to **NUMBER(38,9)**: Stored FLOAT values with more than 29 digits before the decimal point are set to NULL during the conversion. Because Snowflake converts the column in place, Airbyte does not process the individual rows, so no `_airbyte_meta` entry is added for these changes. Values that lost precision when they were originally loaded as FLOAT (rows flagged `TRUNCATED` in `_airbyte_meta`) remain imprecise, because the conversion cannot restore digits that were never stored. Only a full refresh re-syncs the original values from the source.
+- Switching to **FLOAT**: Values silently become approximate again, and query results may differ slightly.
+
+:::
+
 ### Precision and size limits
 
 Snowflake has precision limits for numeric types:
 
 - **FLOAT**: Standard 64-bit floating point value.
+- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are truncated and flagged in `_airbyte_meta`.
 - **NUMBER (INTEGER)**: Maximum 38 digits.
 
 When a value exceeds the bounds of these types, Airbyte nulls it out. Values within the minimum/maximum boundaries but with excessive precision are rounded. In both cases, the `_airbyte_meta` column contains a `changes` entry to reflect this.
@@ -234,7 +276,7 @@ Values that exceed these size limits are nulled out, and the `_airbyte_meta` col
 
 ### Schema evolution
 
-This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables, drops removed columns, and modifies column types as needed. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
+This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables and modifies column types as needed. When a column is removed from the source, the connector retains the existing column and its historical data in the destination; subsequent rows are written with `NULL` for that column. The connector requires `ALTER TABLE` privileges on destination tables to support this feature.
 
 ## Supported sync modes
 
@@ -287,6 +329,17 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
+| 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
+| 4.0.49          | 2026-08-05 | [83740](https://github.com/airbytehq/airbyte/pull/83740)   | Upgrade CDK to 1.0.21                                                                                                                                                                  |
+| 4.0.48          | 2026-07-23 | [82272](https://github.com/airbytehq/airbyte/pull/82272)   | Columns removed from the source schema are now preserved in the destination table instead of being dropped to prevent unintentional data loss due to source schema changes. |
+| 4.0.47          | 2026-07-23 | [82294](https://github.com/airbytehq/airbyte/pull/82294)   | Replace ALTER TABLE SWAP WITH with CREATE OR REPLACE TABLE CLONE COPY GRANTS to preserve table grants |
+| 4.0.46          | 2026-07-15 | [82104](https://github.com/airbytehq/airbyte/pull/82104)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 4.0.45          | 2026-07-10 | [81530](https://github.com/airbytehq/airbyte/pull/81530)   | Restore NULL-safe primary-key matching in dedup MERGE to fix duplicate rows when composite PKs contain NULLs |
+| 4.0.44          | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346)   | Remove unnecessary NULL PK equality checks from merge SQL |
+| 4.0.43          | 2026-05-20 | [78231](https://github.com/airbytehq/airbyte/pull/78231)   | Upgrade CDK to 1.0.13 |
+| 4.0.42          | 2026-05-14 | [77978](https://github.com/airbytehq/airbyte/pull/77978)   | Improve encrypted key-pair private key handling and error messages                                                                                                                     |
+| 4.0.41          | 2026-05-07 | [77795](https://github.com/airbytehq/airbyte/pull/77795)   | Add option to preserve Snowflake whitespace                                                                                                                                            |
 | 4.0.40-rc.1     | 2026-04-27 | [76405](https://github.com/airbytehq/airbyte/pull/76405)   | Upgrade CDK to 1.0.9. Enable fast timestamp coercion. Progressive rollout.                                                                                                             |
 | 4.0.39          | 2026-03-13 | [74715](https://github.com/airbytehq/airbyte/pull/74715)   | Drop temp table after successful upsert to prevent duplicate records                                                                                                                   |
 | 4.0.38          | 2026-02-25 | [74041](https://github.com/airbytehq/airbyte/pull/74041)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches                                                                                                                           |

@@ -43,7 +43,7 @@ def test_streams(conversations_list, config, is_valid):
         (200, {"ok": False, "error": "token_revoked"}, False, "Slack API authentication/permission error: token_revoked."),
         (200, {"ok": False, "error": "token_expired"}, False, "Slack API authentication/permission error: token_expired."),
         (200, {"ok": False, "error": "no_permission"}, False, "Slack API authentication/permission error: no_permission."),
-        (200, {"ok": False, "error": "plan_upgrade_required"}, True, None),
+        (200, {"ok": False, "error": "plan_upgrade_required"}, False, "Slack API returned an unrecognized error: plan_upgrade_required."),
         (
             400,
             "Bad request",

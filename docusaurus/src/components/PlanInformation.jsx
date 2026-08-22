@@ -53,7 +53,7 @@ export const PlanInformation = ({ plans }) => {
         Custom
       </Badge>
       <a
-        href="https://airbyte.com/product/ai-agents"
+        href="https://airbyte.com/ai"
         target="_blank"
         className={styles.helpIcon}
       >

@@ -76,8 +76,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -88,6 +89,41 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, name: str, account_number: str | None = None, type: str | None = None, industry: str | None = None, phone: str | None = None, website: str | None = None, billing_street: str | None = None, billing_city: str | None = None, billing_state: str | None = None, billing_postal_code: str | None = None, billing_country: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, description: str | None = None, owner_id: str | None = None, parent_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create an account
+        
+        Args:
+            name: Account name.
+            account_number: Parameter AccountNumber
+            type: Parameter Type
+            industry: Parameter Industry
+            phone: Parameter Phone
+            website: Parameter Website
+            billing_street: Parameter BillingStreet
+            billing_city: Parameter BillingCity
+            billing_state: Parameter BillingState
+            billing_postal_code: Parameter BillingPostalCode
+            billing_country: Parameter BillingCountry
+            annual_revenue: Parameter AnnualRevenue
+            number_of_employees: Parameter NumberOfEmployees
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            parent_id: Parameter ParentId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete an account
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Account`
     :   Get a single account by ID. Returns all accessible fields by default.
@@ -107,6 +143,12 @@ Classes
     `list(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
     :   Returns a list of accounts via SOQL query. Default returns up to 200 records.
         For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+        For "top", "largest", or "highest-value" account requests, rank by a financial account value field
+        such as ARR, annual recurring revenue, revenue, annual revenue, amount, or value. ARR is often a
+        Salesforce custom field, so prefer the customer's org-specific ARR or account value field when
+        available. If no better org-specific field is visible, `AnnualRevenue` is the standard Account
+        fallback. Do not use `NumberOfEmployees` unless the user asks for employee count, headcount,
+        company size, or largest employer.
         
         
                 Args:
@@ -117,6 +159,8 @@ Classes
           SELECT FIELDS(STANDARD) FROM Account ORDER BY LastModifiedDate DESC LIMIT 50
           SELECT Id, Name, Owner.Name, Owner.Email FROM Account LIMIT 50
           SELECT Id, Name, Parent.Name, Owner.Name FROM Account WHERE Industry = 'Technology' LIMIT 50
+          SELECT Id, Name, AnnualRevenue FROM Account ORDER BY AnnualRevenue DESC LIMIT 10
+          SELECT Id, Name, NumberOfEmployees FROM Account ORDER BY NumberOfEmployees DESC LIMIT 10
         
         Use dot-path traversal (Owner.Name, Parent.Name) to resolve relationship
         fields inline instead of returning raw IDs.
@@ -125,6 +169,32 @@ Classes
         
                 Returns:
                     AccountsListResult
+
+    `update(self, name: str, account_number: str | None = None, type: str | None = None, industry: str | None = None, phone: str | None = None, website: str | None = None, billing_street: str | None = None, billing_city: str | None = None, billing_state: str | None = None, billing_postal_code: str | None = None, billing_country: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, description: str | None = None, owner_id: str | None = None, parent_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update an account
+        
+        Args:
+            name: Account name.
+            account_number: Parameter AccountNumber
+            type: Parameter Type
+            industry: Parameter Industry
+            phone: Parameter Phone
+            website: Parameter Website
+            billing_street: Parameter BillingStreet
+            billing_city: Parameter BillingCity
+            billing_state: Parameter BillingState
+            billing_postal_code: Parameter BillingPostalCode
+            billing_country: Parameter BillingCountry
+            annual_revenue: Parameter AnnualRevenue
+            number_of_employees: Parameter NumberOfEmployees
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            parent_id: Parameter ParentId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
 <a id="AttachmentsQuery"></a>
 
@@ -152,6 +222,13 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of an attachment (legacy).
+        First use the list or get action to retrieve the Attachment ID and file metadata,
+        then use this action to download the actual file content.
+        Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, path: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the binary file content of an attachment (legacy).
         First use the list or get action to retrieve the Attachment ID and file metadata,
@@ -169,6 +246,13 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of an attachment (legacy).
+        First use the list or get action to retrieve the Attachment ID and file metadata,
+        then use this action to download the actual file content.
+        Note: Attachments are a legacy feature; consider using ContentVersion for new implementations.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Attachment`
     :   Get a single attachment's metadata by ID. Returns file metadata, not the file content.
@@ -227,6 +311,39 @@ Classes
                 Returns:
                     CampaignsApiSearchResult
 
+    `create(self, name: str, type: str | None = None, status: str | None = None, start_date: str | None = None, end_date: str | None = None, is_active: bool | None = None, description: str | None = None, expected_revenue: float | None = None, budgeted_cost: float | None = None, actual_cost: float | None = None, expected_response: float | None = None, number_sent: float | None = None, parent_id: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a campaign
+        
+        Args:
+            name: Parameter Name
+            type: Parameter Type
+            status: Parameter Status
+            start_date: Parameter StartDate
+            end_date: Parameter EndDate
+            is_active: Parameter IsActive
+            description: Parameter Description
+            expected_revenue: Parameter ExpectedRevenue
+            budgeted_cost: Parameter BudgetedCost
+            actual_cost: Parameter ActualCost
+            expected_response: Parameter ExpectedResponse
+            number_sent: Parameter NumberSent
+            parent_id: Parameter ParentId
+            owner_id: Parameter OwnerId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a campaign
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Campaign`
     :   Get a single campaign by ID. Returns all accessible fields by default.
         Use the `fields` parameter to retrieve only specific fields for better performance.
@@ -264,6 +381,30 @@ Classes
                 Returns:
                     CampaignsListResult
 
+    `update(self, name: str, type: str | None = None, status: str | None = None, start_date: str | None = None, end_date: str | None = None, is_active: bool | None = None, description: str | None = None, expected_revenue: float | None = None, budgeted_cost: float | None = None, actual_cost: float | None = None, expected_response: float | None = None, number_sent: float | None = None, parent_id: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a campaign
+        
+        Args:
+            name: Parameter Name
+            type: Parameter Type
+            status: Parameter Status
+            start_date: Parameter StartDate
+            end_date: Parameter EndDate
+            is_active: Parameter IsActive
+            description: Parameter Description
+            expected_revenue: Parameter ExpectedRevenue
+            budgeted_cost: Parameter BudgetedCost
+            actual_cost: Parameter ActualCost
+            expected_response: Parameter ExpectedResponse
+            number_sent: Parameter NumberSent
+            parent_id: Parameter ParentId
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
 <a id="CasesQuery"></a>
 
 `CasesQuery(connector: SalesforceConnector)`
@@ -288,6 +429,40 @@ Classes
         
                 Returns:
                     CasesApiSearchResult
+
+    `create(self, subject: str | None = None, status: str | None = None, priority: str | None = None, origin: str | None = None, type: str | None = None, reason: str | None = None, description: str | None = None, account_id: str | None = None, contact_id: str | None = None, supplied_name: str | None = None, supplied_email: str | None = None, supplied_phone: str | None = None, supplied_company: str | None = None, owner_id: str | None = None, parent_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a case
+        
+        Args:
+            subject: Parameter Subject
+            status: Parameter Status
+            priority: Parameter Priority
+            origin: Parameter Origin
+            type: Parameter Type
+            reason: Parameter Reason
+            description: Parameter Description
+            account_id: Parameter AccountId
+            contact_id: Parameter ContactId
+            supplied_name: Parameter SuppliedName
+            supplied_email: Parameter SuppliedEmail
+            supplied_phone: Parameter SuppliedPhone
+            supplied_company: Parameter SuppliedCompany
+            owner_id: Parameter OwnerId
+            parent_id: Parameter ParentId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a case
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Case`
     :   Get a single case by ID. Returns all accessible fields by default.
@@ -325,6 +500,31 @@ Classes
         
                 Returns:
                     CasesListResult
+
+    `update(self, subject: str | None = None, status: str | None = None, priority: str | None = None, origin: str | None = None, type: str | None = None, reason: str | None = None, description: str | None = None, account_id: str | None = None, contact_id: str | None = None, supplied_name: str | None = None, supplied_email: str | None = None, supplied_phone: str | None = None, supplied_company: str | None = None, owner_id: str | None = None, parent_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a case
+        
+        Args:
+            subject: Parameter Subject
+            status: Parameter Status
+            priority: Parameter Priority
+            origin: Parameter Origin
+            type: Parameter Type
+            reason: Parameter Reason
+            description: Parameter Description
+            account_id: Parameter AccountId
+            contact_id: Parameter ContactId
+            supplied_name: Parameter SuppliedName
+            supplied_email: Parameter SuppliedEmail
+            supplied_phone: Parameter SuppliedPhone
+            supplied_company: Parameter SuppliedCompany
+            owner_id: Parameter OwnerId
+            parent_id: Parameter ParentId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
 <a id="ContactsQuery"></a>
 
@@ -386,8 +586,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -398,6 +599,40 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, last_name: str, first_name: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, title: str | None = None, department: str | None = None, account_id: str | None = None, mailing_street: str | None = None, mailing_city: str | None = None, mailing_state: str | None = None, mailing_postal_code: str | None = None, mailing_country: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a contact
+        
+        Args:
+            first_name: Parameter FirstName
+            last_name: Parameter LastName
+            email: Parameter Email
+            phone: Parameter Phone
+            mobile_phone: Parameter MobilePhone
+            title: Parameter Title
+            department: Parameter Department
+            account_id: Parameter AccountId
+            mailing_street: Parameter MailingStreet
+            mailing_city: Parameter MailingCity
+            mailing_state: Parameter MailingState
+            mailing_postal_code: Parameter MailingPostalCode
+            mailing_country: Parameter MailingCountry
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a contact
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Contact`
     :   Get a single contact by ID. Returns all accessible fields by default.
@@ -436,6 +671,31 @@ Classes
                 Returns:
                     ContactsListResult
 
+    `update(self, last_name: str, first_name: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, title: str | None = None, department: str | None = None, account_id: str | None = None, mailing_street: str | None = None, mailing_city: str | None = None, mailing_state: str | None = None, mailing_postal_code: str | None = None, mailing_country: str | None = None, description: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a contact
+        
+        Args:
+            first_name: Parameter FirstName
+            last_name: Parameter LastName
+            email: Parameter Email
+            phone: Parameter Phone
+            mobile_phone: Parameter MobilePhone
+            title: Parameter Title
+            department: Parameter Department
+            account_id: Parameter AccountId
+            mailing_street: Parameter MailingStreet
+            mailing_city: Parameter MailingCity
+            mailing_state: Parameter MailingState
+            mailing_postal_code: Parameter MailingPostalCode
+            mailing_country: Parameter MailingCountry
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
 <a id="ContentVersionsQuery"></a>
 
 `ContentVersionsQuery(connector: SalesforceConnector)`
@@ -462,6 +722,13 @@ Classes
                 Returns:
                     AsyncIterator[bytes]
 
+    `download_base64(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of a content version.
+        First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
+        then use this action to download the actual file content.
+        The response is the raw binary file data.
+         and return a JSON-safe base64 chunk.
+
     `download_local(self, path: str, id: str | None = None, range_header: str | None = None, **kwargs) ‑> Path`
     :   Downloads the binary file content of a content version.
         First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
@@ -479,6 +746,13 @@ Classes
         
                 Returns:
                     str: Path to the downloaded file
+
+    `download_text(self, id: str | None = None, range_header: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Downloads the binary file content of a content version.
+        First use the list or get action to retrieve the ContentVersion ID and file metadata (size, type, etc.),
+        then use this action to download the actual file content.
+        The response is the raw binary file data.
+         and return a JSON-safe UTF-8 text chunk.
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.ContentVersion`
     :   Get a single content version's metadata by ID. Returns file metadata, not the file content.
@@ -536,6 +810,36 @@ Classes
                 Returns:
                     EventsApiSearchResult
 
+    `create(self, subject: str, start_date_time: str, duration_in_minutes: int, end_date_time: str | None = None, location: str | None = None, description: str | None = None, who_id: str | None = None, what_id: str | None = None, is_all_day_event: bool | None = None, show_as: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create an event
+        
+        Args:
+            subject: Parameter Subject
+            start_date_time: Parameter StartDateTime
+            end_date_time: Parameter EndDateTime
+            duration_in_minutes: Parameter DurationInMinutes
+            location: Parameter Location
+            description: Parameter Description
+            who_id: Parameter WhoId
+            what_id: Parameter WhatId
+            is_all_day_event: Parameter IsAllDayEvent
+            show_as: Parameter ShowAs
+            owner_id: Parameter OwnerId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete an event
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Event`
     :   Get a single event by ID. Returns all accessible fields by default.
         Use the `fields` parameter to retrieve only specific fields for better performance.
@@ -573,6 +877,27 @@ Classes
         
                 Returns:
                     EventsListResult
+
+    `update(self, subject: str, start_date_time: str, duration_in_minutes: int, end_date_time: str | None = None, location: str | None = None, description: str | None = None, who_id: str | None = None, what_id: str | None = None, is_all_day_event: bool | None = None, show_as: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update an event
+        
+        Args:
+            subject: Parameter Subject
+            start_date_time: Parameter StartDateTime
+            end_date_time: Parameter EndDateTime
+            duration_in_minutes: Parameter DurationInMinutes
+            location: Parameter Location
+            description: Parameter Description
+            who_id: Parameter WhoId
+            what_id: Parameter WhatId
+            is_all_day_event: Parameter IsAllDayEvent
+            show_as: Parameter ShowAs
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
 <a id="LeadsQuery"></a>
 
@@ -642,8 +967,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -654,6 +980,46 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, last_name: str, company: str, first_name: str | None = None, title: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, website: str | None = None, status: str | None = None, lead_source: str | None = None, industry: str | None = None, rating: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, street: str | None = None, city: str | None = None, state: str | None = None, postal_code: str | None = None, country: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a lead
+        
+        Args:
+            first_name: Parameter FirstName
+            last_name: Parameter LastName
+            company: Parameter Company
+            title: Parameter Title
+            email: Parameter Email
+            phone: Parameter Phone
+            mobile_phone: Parameter MobilePhone
+            website: Parameter Website
+            status: Parameter Status
+            lead_source: Parameter LeadSource
+            industry: Parameter Industry
+            rating: Parameter Rating
+            annual_revenue: Parameter AnnualRevenue
+            number_of_employees: Parameter NumberOfEmployees
+            street: Parameter Street
+            city: Parameter City
+            state: Parameter State
+            postal_code: Parameter PostalCode
+            country: Parameter Country
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a lead
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Lead`
     :   Get a single lead by ID. Returns all accessible fields by default.
@@ -692,6 +1058,37 @@ Classes
                 Returns:
                     LeadsListResult
 
+    `update(self, last_name: str, company: str, first_name: str | None = None, title: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, website: str | None = None, status: str | None = None, lead_source: str | None = None, industry: str | None = None, rating: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, street: str | None = None, city: str | None = None, state: str | None = None, postal_code: str | None = None, country: str | None = None, description: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a lead
+        
+        Args:
+            first_name: Parameter FirstName
+            last_name: Parameter LastName
+            company: Parameter Company
+            title: Parameter Title
+            email: Parameter Email
+            phone: Parameter Phone
+            mobile_phone: Parameter MobilePhone
+            website: Parameter Website
+            status: Parameter Status
+            lead_source: Parameter LeadSource
+            industry: Parameter Industry
+            rating: Parameter Rating
+            annual_revenue: Parameter AnnualRevenue
+            number_of_employees: Parameter NumberOfEmployees
+            street: Parameter Street
+            city: Parameter City
+            state: Parameter State
+            postal_code: Parameter PostalCode
+            country: Parameter Country
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
+
 <a id="NotesQuery"></a>
 
 `NotesQuery(connector: SalesforceConnector)`
@@ -716,6 +1113,32 @@ Classes
         
                 Returns:
                     NotesApiSearchResult
+
+    `create(self, title: str, parent_id: str, body: str | None = None, is_private: bool | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a classic Salesforce Note attached to a parent record (Account, Contact,
+        Lead, Opportunity, Case, custom object, etc.). `Title` and `ParentId` are required.
+        
+        
+                Args:
+                    title: Note title, up to 80 characters.
+                    body: Note body content (up to ~32,000 characters).
+                    parent_id: Id of the parent record this note is attached to (Account, Contact, Lead, Opportunity, Case, custom object, etc.).
+                    is_private: When true, the note is visible only to its owner and admins.
+                    owner_id: Parameter OwnerId
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a note
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Note`
     :   Get a single note by ID. Returns all accessible fields by default.
@@ -753,6 +1176,20 @@ Classes
         
                 Returns:
                     NotesListResult
+
+    `update(self, title: str | None = None, body: str | None = None, is_private: bool | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a note
+        
+        Args:
+            title: Note title, up to 80 characters.
+            body: Note body content (up to ~32,000 characters).
+            is_private: When true, the note is visible only to its owner and admins.
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
 <a id="OpportunitiesQuery"></a>
 
@@ -814,8 +1251,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -826,6 +1264,38 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, name: str, stage_name: str, close_date: str, account_id: str | None = None, amount: float | None = None, probability: float | None = None, type: str | None = None, lead_source: str | None = None, next_step: str | None = None, campaign_id: str | None = None, forecast_category_name: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create an opportunity
+        
+        Args:
+            name: Parameter Name
+            account_id: Parameter AccountId
+            stage_name: Opportunity stage (e.g., Prospecting, Qualification, Closed Won).
+            close_date: Parameter CloseDate
+            amount: Parameter Amount
+            probability: Parameter Probability
+            type: Parameter Type
+            lead_source: Parameter LeadSource
+            next_step: Parameter NextStep
+            campaign_id: Parameter CampaignId
+            forecast_category_name: Parameter ForecastCategoryName
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete an opportunity
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Opportunity`
     :   Get a single opportunity by ID. Returns all accessible fields by default.
@@ -845,6 +1315,9 @@ Classes
     `list(self, q: str, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResultWithMeta[list[Opportunity], OpportunitiesListResultMeta]`
     :   Returns a list of opportunities via SOQL query. Default returns up to 200 records.
         For pagination, check the response: if `done` is false, use `nextRecordsUrl` to fetch the next page.
+        For "top", "largest", or "highest-value" opportunity requests, first choose a
+        visible financial opportunity field. Standard candidates include `Amount` for
+        total deal value and `ExpectedRevenue` for expected, weighted, or forecast revenue.
         
         
                 Args:
@@ -854,6 +1327,8 @@ Classes
         Examples:
           SELECT FIELDS(STANDARD) FROM Opportunity WHERE StageName = 'Closed Won' LIMIT 50
           SELECT Id, Name, Amount, Account.Name, Owner.Name FROM Opportunity LIMIT 50
+          SELECT Id, Name, Amount, StageName, Account.Name FROM Opportunity ORDER BY Amount DESC LIMIT 10
+          SELECT Id, Name, ExpectedRevenue, Probability, Amount FROM Opportunity ORDER BY ExpectedRevenue DESC LIMIT 10
           SELECT Id, Name, StageName, Account.Name, Account.Industry, Owner.Name, Campaign.Name FROM Opportunity WHERE CloseDate = THIS_QUARTER LIMIT 50
         
         Use dot-path traversal (Account.Name, Owner.Name, Campaign.Name) to resolve
@@ -863,6 +1338,29 @@ Classes
         
                 Returns:
                     OpportunitiesListResult
+
+    `update(self, name: str, stage_name: str, close_date: str, account_id: str | None = None, amount: float | None = None, probability: float | None = None, type: str | None = None, lead_source: str | None = None, next_step: str | None = None, campaign_id: str | None = None, forecast_category_name: str | None = None, description: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update an opportunity
+        
+        Args:
+            name: Parameter Name
+            account_id: Parameter AccountId
+            stage_name: Opportunity stage (e.g., Prospecting, Qualification, Closed Won).
+            close_date: Parameter CloseDate
+            amount: Parameter Amount
+            probability: Parameter Probability
+            type: Parameter Type
+            lead_source: Parameter LeadSource
+            next_step: Parameter NextStep
+            campaign_id: Parameter CampaignId
+            forecast_category_name: Parameter ForecastCategoryName
+            description: Parameter Description
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
 <a id="OpportunityStagesQuery"></a>
 
@@ -898,8 +1396,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1067,137 +1566,138 @@ Classes
 
     ### Static methods
 
-    `create(*, airbyte_config: AirbyteAuthConfig, auth_config: "'SalesforceAuthConfig' | None" = None, server_side_oauth_secret_id: str | None = None, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None)`
-    :   Create a new hosted connector on Airbyte Cloud.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
         
-        This factory method:
-        1. Creates a source on Airbyte Cloud with the provided credentials
-        2. Returns a connector configured with the new connector_id
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
         
-        Supports two authentication modes:
-        1. Direct credentials: Provide `auth_config` with typed credentials
-        2. Server-side OAuth: Provide `server_side_oauth_secret_id` from OAuth flow
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
         
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            auth_config: Typed auth config. Required unless using server_side_oauth_secret_id.
-            server_side_oauth_secret_id: OAuth secret ID from get_consent_url redirect.
-                When provided, auth_config is not required.
-            name: Optional source name (defaults to connector name + workspace_name)
-            replication_config: Optional replication settings dict.
-                Required for connectors with x-airbyte-replication-config (REPLICATION mode sources).
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            A SalesforceConnector instance configured in hosted mode
-        
-        Raises:
-            ValueError: If neither or both auth_config and server_side_oauth_secret_id provided
-        
-        Example:
-            # Create a new hosted connector with API key auth
-            connector = await SalesforceConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."),
-            )
-        
-            # With server-side OAuth:
-            connector = await SalesforceConnector.create(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                server_side_oauth_secret_id="airbyte_oauth_..._secret_...",
-            )
-        
-            # Use the connector
-            result = await connector.execute("entity", "list", \{\})
-
-    `get_consent_url(*, airbyte_config: AirbyteAuthConfig, redirect_url: str, name: str | None = None, replication_config: dict[str, Any] | None = None, source_template_id: str | None = None) ‑> str`
-    :   Initiate server-side OAuth flow with auto-source creation.
-        
-        Returns a consent URL where the end user should be redirected to grant access.
-        After completing consent, the source is automatically created and the user is
-        redirected to your redirect_url with a `connector_id` query parameter.
-        
-        Args:
-            airbyte_config: Airbyte hosted auth config with client credentials and workspace_name.
-                Optionally include organization_id for multi-org request routing.
-            redirect_url: URL where users will be redirected after OAuth consent.
-                After consent, user arrives at: redirect_url?connector_id=...
-            name: Optional name for the source. Defaults to connector name + workspace_name.
-            replication_config: Optional replication settings dict. Merged with OAuth credentials.
-            source_template_id: Source template ID. Required when organization has
-                multiple source templates for this connector type.
-        
-        Returns:
-            The OAuth consent URL
-        
-        Example:
-            consent_url = await SalesforceConnector.get_consent_url(
-                airbyte_config=AirbyteAuthConfig(
-                    workspace_name="my-workspace",
-                    organization_id="00000000-0000-0000-0000-000000000123",
-                    airbyte_client_id="client_abc",
-                    airbyte_client_secret="secret_xyz",
-                ),
-                redirect_url="https://myapp.com/oauth/callback",
-                name="My Salesforce Source",
-            )
-            # Redirect user to: consent_url
-            # After consent, user arrives at: https://myapp.com/oauth/callback?connector_id=...
-
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
-        
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @SalesforceConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = SalesforceConnector(...)
         
-            @mcp.tool()
-            @SalesforceConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @SalesforceConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @SalesforceConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @SalesforceConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @SalesforceConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = SalesforceConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @SalesforceConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @SalesforceConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @SalesforceConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1206,10 +1706,6 @@ Classes
         
         Returns:
             The connector ID if in hosted mode, None if in local mode.
-        
-        Example:
-            connector = await SalesforceConnector.create(...)
-            print(f"Created connector: \{connector.connector_id\}")
 
     ### Methods
 
@@ -1246,7 +1742,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'api_search', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1258,6 +1754,9 @@ Classes
             entity: Entity name (e.g., "customers")
             action: Operation action (e.g., "create", "get", "list")
             params: Operation parameters (typed based on entity+action)
+            select_fields: Optional allowlist of dot-notation fields to include
+            exclude_fields: Optional blocklist of dot-notation fields to remove
+            skip_truncation: Disable long-text truncation for collection actions
         
         Returns:
             Typed response based on the operation
@@ -1268,6 +1767,17 @@ Classes
                 action="get",
                 params=\{"id": "cus_123"\}
             )
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
 
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
@@ -1283,6 +1793,18 @@ Classes
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
 
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
+
 <a id="SobjectsQuery"></a>
 
 `SobjectsQuery(connector: SalesforceConnector)`
@@ -1292,6 +1814,47 @@ Classes
 
     ### Methods
 
+    `create(self, sobject_type: str, **kwargs) ‑> dict[str, typing.Any]`
+    :   Create a record for any Salesforce SObject by name. Works for standard
+        objects (Account, Contact, ...) and custom objects (e.g. `MyObject__c`).
+        Pass the SObject's API name in the `sobjectType` path parameter and the
+        field values as a free-form JSON body.
+        
+        
+                Args:
+                    sobject_type: SObject API name (e.g., `Account`, `MyCustomObject__c`).
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `delete(self, sobject_type: str, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a record by id. Salesforce moves the record to the Recycle Bin
+        (15-day retention) for most objects.
+        
+        
+                Args:
+                    sobject_type: SObject API name.
+                    id: Salesforce record Id.
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
+    `get(self, sobject_type: str, id: str | None = None, fields: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Fetch a single record from any SObject by id. Works for standard and
+        custom objects.
+        
+        
+                Args:
+                    sobject_type: SObject API name.
+                    id: Salesforce record Id.
+                    fields: Comma-separated field names to return. Omit for default fields.
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
+
     `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SalesforceExecuteResult[list[SObject]]`
     :   Returns a list of all available Salesforce objects (sObjects) in the organization.
         This endpoint is used for health checks to verify authentication and connectivity.
@@ -1299,6 +1862,19 @@ Classes
         
                 Returns:
                     SobjectsListResult
+
+    `update(self, sobject_type: str, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update fields on an existing record. Pass only the fields you want to
+        change in the JSON body; Salesforce leaves the rest untouched.
+        
+        
+                Args:
+                    sobject_type: SObject API name.
+                    id: Salesforce record Id.
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]
 
 <a id="TasksQuery"></a>
 
@@ -1358,8 +1934,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1370,6 +1947,36 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, subject: str, status: str | None = None, priority: str | None = None, activity_date: str | None = None, who_id: str | None = None, what_id: str | None = None, description: str | None = None, type: str | None = None, is_reminder_set: bool | None = None, reminder_date_time: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a task
+        
+        Args:
+            subject: Parameter Subject
+            status: Task status (e.g., Not Started, In Progress, Completed).
+            priority: Parameter Priority
+            activity_date: Parameter ActivityDate
+            who_id: Related contact or lead Id.
+            what_id: Related Account, Opportunity, or other object Id.
+            description: Parameter Description
+            type: Parameter Type
+            is_reminder_set: Parameter IsReminderSet
+            reminder_date_time: Parameter ReminderDateTime
+            owner_id: Parameter OwnerId
+            **kwargs: Additional parameters
+        
+        Returns:
+            SObjectCreateResponse
+
+    `delete(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Delete a task
+        
+        Args:
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.Task`
     :   Get a single task by ID. Returns all accessible fields by default.
@@ -1408,6 +2015,27 @@ Classes
         
                 Returns:
                     TasksListResult
+
+    `update(self, subject: str, status: str | None = None, priority: str | None = None, activity_date: str | None = None, who_id: str | None = None, what_id: str | None = None, description: str | None = None, type: str | None = None, is_reminder_set: bool | None = None, reminder_date_time: str | None = None, owner_id: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a task
+        
+        Args:
+            subject: Parameter Subject
+            status: Task status (e.g., Not Started, In Progress, Completed).
+            priority: Parameter Priority
+            activity_date: Parameter ActivityDate
+            who_id: Related contact or lead Id.
+            what_id: Related Account, Opportunity, or other object Id.
+            description: Parameter Description
+            type: Parameter Type
+            is_reminder_set: Parameter IsReminderSet
+            reminder_date_time: Parameter ReminderDateTime
+            owner_id: Parameter OwnerId
+            id: Parameter id
+            **kwargs: Additional parameters
+        
+        Returns:
+            dict[str, Any]
 
 <a id="UsersQuery"></a>
 
@@ -1459,8 +2087,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1471,6 +2100,34 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `create(self, username: str, last_name: str, email: str, alias: str, profile_id: str, time_zone_sid_key: str, locale_sid_key: str, email_encoding_key: str, language_locale_key: str, first_name: str | None = None, user_role_id: str | None = None, manager_id: str | None = None, is_active: bool | None = None, title: str | None = None, department: str | None = None, phone: str | None = None, mobile_phone: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
+    :   Create a Salesforce User. Consumes a paid user-license seat. Requires the
+        "Manage Internal Users" permission on the running OAuth identity.
+        
+        
+                Args:
+                    username: Login name (email-format, must be unique across all Salesforce orgs).
+                    first_name: Parameter FirstName
+                    last_name: Parameter LastName
+                    email: Parameter Email
+                    alias: 1-8 character alias.
+                    profile_id: Salesforce profile that determines the user's base permissions.
+                    user_role_id: Parameter UserRoleId
+                    manager_id: Parameter ManagerId
+                    time_zone_sid_key: e.g., "America/Los_Angeles".
+                    locale_sid_key: e.g., "en_US".
+                    email_encoding_key: e.g., "UTF-8".
+                    language_locale_key: e.g., "en_US".
+                    is_active: Set to false to deactivate the user (Salesforce does not support delete).
+                    title: Parameter Title
+                    department: Parameter Department
+                    phone: Parameter Phone
+                    mobile_phone: Parameter MobilePhone
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    SObjectCreateResponse
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.User`
     :   Get a single user by ID. Returns all accessible fields by default.
@@ -1508,3 +2165,32 @@ Classes
         
                 Returns:
                     UsersListResult
+
+    `update(self, username: str | None = None, first_name: str | None = None, last_name: str | None = None, email: str | None = None, alias: str | None = None, profile_id: str | None = None, user_role_id: str | None = None, manager_id: str | None = None, time_zone_sid_key: str | None = None, locale_sid_key: str | None = None, email_encoding_key: str | None = None, language_locale_key: str | None = None, is_active: bool | None = None, title: str | None = None, department: str | None = None, phone: str | None = None, mobile_phone: str | None = None, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
+    :   Update a Salesforce User. To deactivate a user (Salesforce does not allow
+        delete), send `{ "IsActive": false }`.
+        
+        
+                Args:
+                    username: Login name (email-format, must be unique across all Salesforce orgs).
+                    first_name: Parameter FirstName
+                    last_name: Parameter LastName
+                    email: Parameter Email
+                    alias: 1-8 character alias.
+                    profile_id: Salesforce profile that determines the user's base permissions.
+                    user_role_id: Parameter UserRoleId
+                    manager_id: Parameter ManagerId
+                    time_zone_sid_key: e.g., "America/Los_Angeles".
+                    locale_sid_key: e.g., "en_US".
+                    email_encoding_key: e.g., "UTF-8".
+                    language_locale_key: e.g., "en_US".
+                    is_active: Set to false to deactivate the user (Salesforce does not support delete).
+                    title: Parameter Title
+                    department: Parameter Department
+                    phone: Parameter Phone
+                    mobile_phone: Parameter MobilePhone
+                    id: Parameter id
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    dict[str, Any]

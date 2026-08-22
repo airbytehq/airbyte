@@ -822,6 +822,23 @@ schemas:
         type:
           - string
           - "null"
+      external_issue_reference:
+        type:
+          - object
+          - "null"
+        properties:
+          issue_name:
+            type:
+              - string
+              - "null"
+          issue_permalink:
+            type:
+              - string
+              - "null"
+          provider:
+            type:
+              - string
+              - "null"
       id:
         type: string
       incident_id:
