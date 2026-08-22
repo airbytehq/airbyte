@@ -85,8 +85,9 @@ class Config(AbstractFileBasedSpec, BaseModel):
     sanitize_signed_urls: Optional[bool] = Field(
         title="Sanitize File URLs",
         description=(
-            "When enabled, removes credential-bearing query parameters from signed URLs "
-            "in the _ab_source_file_url record field. Only relevant for Service Account authentication."
+            "Deprecated — this option has no effect as of 0.10.29. "
+            "The connector no longer generates signed URLs for Service Account authentication; "
+            "_ab_source_file_url now always contains the clean canonical HTTPS path."
         ),
         default=False,
         order=4,
