@@ -1,4 +1,4 @@
-version: 7.17.1
+version: 7.23.7
 
 type: DeclarativeSource
 
@@ -60,9 +60,9 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: >-
-            {{ response.get('pagination', {}).get('next_url',
-            '').split('page.token=')[-1].split('&')[0] if
-            response.get('pagination', {}).get('next_url') else None }}
+            {{ (response.get('pagination', {}).get('next_url',
+            '').split('page.token=')[-1].split('&')[0] | regex_replace('%3[Dd]',
+            '=')) if response.get('pagination', {}).get('next_url') else None }}
           stop_condition: "{{ not response.get('pagination', {}).get('next_url') }}"
 
 streams:
@@ -673,19 +673,20 @@ spec:
         airbyte_secret: true
       start_time:
         type: string
-        order: 5
-        title: start_time
-        format: date-time
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:?[0-9]{2})$
-        pattern_descriptor: "YYYY-MM-DDTHH:mm:ssZ"
-        examples:
-          - "2024-05-11T00:00:00Z"
         description: >-
           Optional UTC start date applied to all three streams, in
           YYYY-MM-DDTHH:MM:SSZ format. When omitted, all three streams start 24
           months before the current date. A value earlier than 24 months ago is
           clamped for campaign_report, because Reddit only serves report data
           for the last 24 months.
+        order: 5
+        title: start_time
+        format: date-time
+        pattern: >-
+          ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:?[0-9]{2})$
+        examples:
+          - "2024-05-11T00:00:00Z"
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
       user_agent:
         type: string
         description: >-
