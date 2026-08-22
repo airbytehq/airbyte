@@ -8,7 +8,6 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -22,7 +21,7 @@ internal class SnowflakeCheckerTest {
     @ValueSource(booleans = [true, false])
     fun testSuccessfulCheck(isLegacyRawTablesOnly: Boolean) {
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
-            mockk(relaxed = true) { coEvery { countTable(any()) } returns 1L }
+            mockk(relaxed = true) { every { exactCountTable(any()) } returns 1L }
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
@@ -62,7 +61,7 @@ internal class SnowflakeCheckerTest {
     @ValueSource(booleans = [true, false])
     fun testUnsuccessfulCheck(isLegacyRawTablesOnly: Boolean) {
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
-            mockk(relaxed = true) { coEvery { countTable(any()) } returns 0L }
+            mockk(relaxed = true) { every { exactCountTable(any()) } returns 0L }
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
