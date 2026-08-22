@@ -46,7 +46,7 @@ import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class CdcPartitionReader<T : Comparable<T>>(
+class CdcPartitionReader<T : PartiallyOrdered<T>>(
     val resourceAcquirer: ResourceAcquirer,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
@@ -413,7 +413,9 @@ class CdcPartitionReader<T : Comparable<T>>(
                 if (currentPosition == null) {
                     return null
                 }
-                val isProgressing = lastHeartbeatPosition?.let { currentPosition > it } ?: true
+                val isProgressing =
+                    lastHeartbeatPosition == null ||
+                        currentPosition.isGreater(lastHeartbeatPosition)
                 if (isProgressing) {
                     lastHeartbeatPosition = currentPosition
                     lastHeartbeatTime = now
@@ -433,20 +435,21 @@ class CdcPartitionReader<T : Comparable<T>>(
                 }
             }
 
-            if (currentPosition == null || currentPosition < upperBound) {
-                return null
+            if (currentPosition.isGreaterOrEqual(upperBound)) {
+                // Close because the current event is at or past the sync upper bound.
+                return when (eventType) {
+                    EventType.TOMBSTONE,
+                    EventType.HEARTBEAT ->
+                        CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
+                    EventType.KEY_JSON_INVALID,
+                    EventType.VALUE_JSON_INVALID,
+                    EventType.RECORD_EMITTED,
+                    EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                    EventType.RECORD_DISCARDED_BY_STREAM_ID ->
+                        CloseReason.RECORD_REACHED_TARGET_POSITION
+                }
             }
-            // Close because the current event is past the sync upper bound.
-            return when (eventType) {
-                EventType.TOMBSTONE,
-                EventType.HEARTBEAT -> CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
-                EventType.KEY_JSON_INVALID,
-                EventType.VALUE_JSON_INVALID,
-                EventType.RECORD_EMITTED,
-                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
-                EventType.RECORD_DISCARDED_BY_STREAM_ID ->
-                    CloseReason.RECORD_REACHED_TARGET_POSITION
-            }
+            return null // Keep processing.
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {

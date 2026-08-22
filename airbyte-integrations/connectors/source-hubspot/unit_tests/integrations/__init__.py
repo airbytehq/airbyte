@@ -14,7 +14,7 @@ from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseB
 from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 
 from .config_builder import ConfigBuilder
-from .request_builders.api import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
+from .request_builders.api import CrmSearchPropertiesRequestBuilder, CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
 from .request_builders.streams import AssociationsBatchReadRequestBuilder, CRMSearchRequestBuilder, WebAnalyticsRequestBuilder
 from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
@@ -129,14 +129,23 @@ class HubspotTestCase:
     @classmethod
     def mock_properties(cls, http_mocker: HttpMocker, object_type: str, properties: Dict[str, str]):
         templates = find_template("properties", __file__)
-        record_builder = lambda: RecordBuilder(copy.deepcopy(templates[0]), id_path=None, cursor_path=None)
 
-        response_builder = RootHttpResponseBuilder(templates)
+        # Mock v2 URL (used by dynamic schema loader)
+        v2_response = RootHttpResponseBuilder(copy.deepcopy(templates))
         for name, type in properties.items():
-            record = record_builder().with_field(FieldPath("name"), name).with_field(FieldPath("type"), type)
-            response_builder = response_builder.with_record(record)
+            record = RecordBuilder(copy.deepcopy(templates[0]), id_path=None, cursor_path=None)
+            record.with_field(FieldPath("name"), name).with_field(FieldPath("type"), type)
+            v2_response.with_record(record)
+        http_mocker.get(PropertiesRequestBuilder().for_entity(object_type).build(), v2_response.build())
 
-        http_mocker.get(PropertiesRequestBuilder().for_entity(object_type).build(), response_builder.build())
+        # Mock v3 URL (used by CRM search streams for property discovery)
+        v3_records = copy.deepcopy(templates)
+        for name, type in properties.items():
+            record = RecordBuilder(copy.deepcopy(templates[0]), id_path=None, cursor_path=None)
+            record.with_field(FieldPath("name"), name).with_field(FieldPath("type"), type)
+            v3_records.append(record.build())
+        v3_response = HttpResponse(json.dumps({"results": v3_records}), 200)
+        http_mocker.get(CrmSearchPropertiesRequestBuilder().for_entity(object_type).build(), v3_response)
 
     @classmethod
     def mock_response(cls, http_mocker: HttpMocker, request, responses, method: str = "get"):
@@ -149,21 +158,28 @@ class HubspotTestCase:
         entities = entities if entities is not None else OBJECTS_WITH_DYNAMIC_SCHEMA
 
         # figure out which entities are already mocked
-        existing = set()
+        existing_v2 = set()
+        existing_v3 = set()
         for entity in entities:
             for request_mock in http_mocker._get_matchers():
-                # check if dynamic stream was already mocked
-                if f"properties/v2/{entity}" in request_mock.request._parsed_url.path:
-                    existing.add(entity)
+                path = request_mock.request._parsed_url.path
+                if f"properties/v2/{entity}" in path:
+                    existing_v2.add(entity)
+                if f"crm/v3/properties/{entity}" in path:
+                    existing_v3.add(entity)
 
         templates = [{"name": "hs__test_field", "type": "enumeration"}]
-        response_builder = RootHttpResponseBuilder(templates)
 
         for entity in entities:
-            if entity in existing:
-                continue  # skip if already mocked
+            # Mock v2 URL (used by dynamic schema loader)
+            if entity not in existing_v2:
+                v2_response = RootHttpResponseBuilder(copy.deepcopy(templates))
+                http_mocker.get(PropertiesRequestBuilder().for_entity(entity).build(), v2_response.build())
 
-            http_mocker.get(PropertiesRequestBuilder().for_entity(entity).build(), response_builder.build())
+            # Mock v3 URL (used by CRM search streams for property discovery)
+            if entity not in existing_v3:
+                v3_response = HttpResponse(json.dumps({"results": copy.deepcopy(templates)}), 200)
+                http_mocker.get(CrmSearchPropertiesRequestBuilder().for_entity(entity).build(), v3_response)
 
     @classmethod
     def mock_custom_objects_streams(cls, http_mocker: HttpMocker):

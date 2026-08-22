@@ -98,8 +98,10 @@ class TestTicketMetricsIncremental(TestCase):
     def test_given_state_when_read_then_migrate_state_to_per_partition(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
 
-        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=2)).timestamp())
+        state_cursor_value = int(ab_datetime_now().subtract(timedelta(days=3)).timestamp())
         state = StateBuilder().with_stream_state("ticket_metrics", state={"_ab_updated_at": state_cursor_value}).build()
+        # Deliberately newer than the seeded state so the resulting parent_state can only come from the
+        # parent record's `generated_timestamp`, not from the incoming state value.
         parent_cursor_value = ab_datetime_now().subtract(timedelta(days=2))
         tickets_records_builder = given_tickets_with_state(
             http_mocker, ab_datetime_parse(state_cursor_value), parent_cursor_value, api_token_authenticator
@@ -123,23 +125,17 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        # Note: The stateful ticket_metrics stream uses the parent's generated_timestamp as the cursor
-        # (see manifest.yaml transformation: record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'])
-        # So the cursor value is the parent's timestamp, not the child's updated_at
-        # Flexible assertion: generated_timestamp can be int or string depending on environment
+        # The stateful ticket_metrics stream derives its `_ab_updated_at` cursor from the parent's
+        # `generated_timestamp` (see the AddFields transformation in manifest.yaml), and the parent cursor
+        # serialises state with datetime_format "%s", i.e. as a Unix-timestamp string.
         state_dict = output.most_recent_state.stream_state.__dict__
-        expected_timestamp = int(parent_cursor_value.timestamp())
 
         assert state_dict["lookback_window"] == 0
         assert state_dict["use_global_cursor"] == False
         assert "_ab_updated_at" in state_dict["state"]
         assert len(state_dict["states"]) == 1
 
-        # Check parent_state timestamp (can be int or string)
-        actual_generated_ts = state_dict["parent_state"]["tickets"]["generated_timestamp"]
-        assert actual_generated_ts == expected_timestamp or actual_generated_ts == str(
-            expected_timestamp
-        ), f"Expected {expected_timestamp} or '{expected_timestamp}', got {actual_generated_ts}"
+        assert state_dict["parent_state"]["tickets"] == {"generated_timestamp": str(int(parent_cursor_value.timestamp()))}
 
 
 @freezegun.freeze_time(_NOW.isoformat())

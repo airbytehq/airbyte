@@ -12,11 +12,11 @@ data:
       enabled: false
       packageName: airbyte-source-criteo-marketing
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.8.1@sha256:2b5907a547006ee2284cd8e0028e895581da5dafd5c533ba03e1683ac7606e78
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 9a5346ac-42ee-485d-a791-d079f92ccdfc
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.15
   dockerRepository: airbyte/source-criteo-marketing
   githubIssueLabel: source-criteo-marketing
   icon: icon.svg
