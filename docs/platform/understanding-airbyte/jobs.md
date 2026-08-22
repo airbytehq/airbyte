@@ -49,7 +49,7 @@ Socket mode introduces the following performance benefits.
 - **Lower Latency**: Eliminates STDIO buffering delays
 - **Higher Throughput**: Direct socket communication reduces overhead
 
-Airbyte determines the number of sockets by `min(source_cpu_limit, destination_cpu_limit) * 2`, allowing parallel data transfer. For example, connectors with 4 CPU limits use 8 sockets.
+By default, Airbyte determines the number of sockets by `min(source_cpu_limit, destination_cpu_limit) * 2`, allowing parallel data transfer. For example, connectors with 4 CPU limits use 8 sockets. Airbyte can override this default. For example, syncs to Iceberg destinations that deduplicate data use a single socket.
 
 Socket mode offers enhanced state management to support parallel processing and ensure data consistency:
 
@@ -100,8 +100,10 @@ It chooses socket mode when all of these conditions are met.
 It chooses legacy mode in the following conditions.
 
 - Any of the above conditions aren't met
+- The connectors' IPC options are missing
 - The `ForceRunStdioMode` feature flag is enabled
-- IPC options are missing or incompatible
+
+Airbyte can also force socket mode with the `SocketTest` feature flag, which bypasses these checks. If the source and destination share no serialization format or transport medium at all, the sync fails rather than falling back to legacy mode.
 
 ### Connector sidecar
 
@@ -118,8 +120,8 @@ flowchart LR
 
 The connector sidecar has the following responsibilities.
 
-- Interpret and records connector operation results
-- Handle miscellaneous side effects like logging and auth token refresh flows
+- Interprets and records connector operation results
+- Handles miscellaneous side effects like logging and auth token refresh flows
 
 ## Workload launching architecture
 
@@ -135,8 +137,8 @@ The **Workload API Server** places the job in a queue. The **Launcher** picks up
 
 With this set up, Airbyte now supports:
 
-- configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
-- configuring the maximum number of jobs that can be started at once via ``
+- configuring the maximum number of concurrent jobs via the `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.
+- configuring the maximum number of jobs that can be started at once via the `WORKLOAD_LAUNCHER_PARALLELISM` environment variable.
 - differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
 
 This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage. See

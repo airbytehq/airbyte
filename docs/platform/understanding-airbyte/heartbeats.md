@@ -41,7 +41,7 @@ If these issues show up on Airbyte Cloud,
 
 #### Heartbeat logic
 
-The exact heartbeat logic depends on whether a connection is running in [legacy mode or socket mode](jobs#replication-architecture-modes).
+The exact heartbeat logic depends on whether a connection is running in [legacy mode or socket mode](jobs.md#replication-architecture-modes).
 
 - In legacy mode, the platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats. These messages flow through the container orchestrator, which monitors when the last beat was sent.
 
@@ -60,7 +60,7 @@ The heartbeat can be configured using the file flags.yaml through 2 entries:
 
 ### Destination
 
-#### Heartbeating logic
+#### Heartbeat logic
 
 Adding a heartbeat to the destination similar to the one at the source is not straightforward since there isn't a constant stream of messages from the destination to the platform. Instead, we have implemented something that is more akin to a timeout. The platform monitors whether there has been a call to the destination that has taken more than a specified amount of time. If such a delay occurs, the platform considers the destination to have timed out.
 

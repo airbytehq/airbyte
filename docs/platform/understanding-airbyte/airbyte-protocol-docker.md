@@ -75,7 +75,7 @@ Environment configuration:
 
 - `DATA_CHANNEL_MEDIUM=SOCKET`
 - `DATA_CHANNEL_FORMAT=PROTOBUF`
-- `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths
+- `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths, numbered from 1, for example `/var/run/sockets/airbyte_socket_1.sock,/var/run/sockets/airbyte_socket_2.sock`
 
 The Airbyte platform automatically selects the appropriate mode based on connector capabilities. For more details on data channel modes and architecture, see the [Airbyte Protocol](airbyte-protocol.md#data-channel-modes) and [Workloads & jobs](jobs.md#replication-architecture-modes) documentation.
 
@@ -110,4 +110,4 @@ For a list of permitted write directories, please consult the base image definit
 
 ## Must be an `amd64` or multi-arch image
 
-To run on Airbyte Platform, the image bust be valid for `amd64`. Since most developers contribute from ARM-based, Mac M-series laptops, consider creating a multi-arch image that covers both `arm64/amd64` so that the same image tags work on both ARM and AMD runtimes.
+To run on Airbyte Platform, the image must be valid for `amd64`. Since most developers contribute from ARM-based, Mac M-series laptops, consider creating a multi-arch image that covers both `arm64/amd64` so that the same image tags work on both ARM and AMD runtimes.

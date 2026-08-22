@@ -79,6 +79,6 @@ Airbyte selects the mode automatically, based on the capabilities of the connect
 
 Within connector operation pods, Airbyte runs middleware containers to process connector output.
 
-- **Bookkeeper** [`airbyte-bookkeeper`]: Used in socket mode. Processes control messages, state, and logs while records flow directly between connectors via sockets.
+- **Bookkeeper** [`airbyte-container-orchestrator`, running in `BOOKKEEPER` mode]: Used in socket mode. Processes control messages, state, and logs while records flow directly between connectors via sockets.
 
 - **Container Orchestrator** [`airbyte-container-orchestrator`]: Used in legacy mode. Sits between source and destination connectors, processing all data and control messages.

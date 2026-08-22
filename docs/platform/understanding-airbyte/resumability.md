@@ -76,4 +76,6 @@ The platform emits log lines to help identify resumed streams. Look for messages
 
 ### Resumability in Socket Mode
 
-For connections running in socket mode, sources can read tables in parallel partitions with per-partition checkpointing. Each partition maintains its own checkpoint, enabling fine-grained resumability. If a sync fails, Airbyte resumes from the last successful checkpoint for each partition rather than restarting the entire table. This parallel partitioning approach maintains the same at-least-once delivery semantics while improving throughput.
+For connections running in socket mode, sources can read tables as parallel partitions, and records and state messages travel over multiple sockets at once. Each state message carries a `partition_id` and an incrementing `id`. The destination only commits a state once it receives every record for that partition, and it commits states in `id` order, so checkpoints remain sequential even though records arrive out of order.
+
+If a sync fails, Airbyte resumes from the last state the destination committed in that sequence rather than restarting the stream. This preserves the same at-least-once delivery semantics as legacy mode while improving throughput.

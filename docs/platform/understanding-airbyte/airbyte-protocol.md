@@ -144,12 +144,12 @@ Environment configuration for Socket mode:
 
 - `DATA_CHANNEL_MEDIUM=SOCKET`
 - `DATA_CHANNEL_FORMAT=PROTOBUF`
-- `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths, for example `/var/run/sockets/airbyte_socket_0.sock,/var/run/sockets/airbyte_socket_1.sock`
+- `DATA_CHANNEL_SOCKET_PATHS`: Comma-separated list of socket file paths, for example `/var/run/sockets/airbyte_socket_1.sock,/var/run/sockets/airbyte_socket_2.sock`
 
 Socket configuration:
 
-- Socket count is determined by: `min(source_cpu_limit, destination_cpu_limit) * 2`
-- Socket paths follow the pattern: `/var/run/sockets/airbyte_socket_{n}.sock`
+- Socket count defaults to `min(source_cpu_limit, destination_cpu_limit) * 2`, but Airbyte can override this. For example, syncs to Iceberg destinations that deduplicate data use a single socket.
+- Socket paths follow the pattern `/var/run/sockets/airbyte_socket_{n}.sock`, numbered from 1
 - Sockets are created on memory-based volumes (tmpfs) for high performance
 
 The platform's ArchitectureDecider component determines whether a sync runs in Socket mode or legacy mode based on connector compatibility, feature flags, and configuration.
