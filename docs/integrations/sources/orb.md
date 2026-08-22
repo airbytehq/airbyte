@@ -69,6 +69,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                               |
 |---------|------------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.23 | 2026-04-03 | [76081](https://github.com/airbytehq/airbyte/pull/76081) | Fix subscription_usage stream failing due to broken 1:N record expansion in custom transform |
 | 2.1.22 | 2025-05-24 | [60516](https://github.com/airbytehq/airbyte/pull/60516) | Update dependencies |
 | 2.1.21 | 2025-05-10 | [60083](https://github.com/airbytehq/airbyte/pull/60083) | Update dependencies |
 | 2.1.20 | 2025-05-04 | [59524](https://github.com/airbytehq/airbyte/pull/59524) | Update dependencies |
