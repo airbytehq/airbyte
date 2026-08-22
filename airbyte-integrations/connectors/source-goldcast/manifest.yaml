@@ -2788,29 +2788,6 @@ streams:
               - string
           props:
             type: object
-            properties:
-              city:
-                type: string
-              solutions:
-                type: string
-              tag_source:
-                type: string
-              utm_medium:
-                type: string
-              utm_source:
-                type: string
-              tag_country:
-                type: string
-              utm_content:
-                type: string
-              revenue_type:
-                type: string
-              utm_campaign:
-                type: string
-              tag_form_type:
-                type: string
-              contact_job_title:
-                type: string
           tags:
             type:
               - "null"
