@@ -41,7 +41,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 
 :::info
 
-By default, syncs are run with a slice period of 7 days. If you see errors with the message `Result set size is greater than the maximum limit` or an error code like `RESULTSET_TOO_LARGE`:
+By default, syncs are run with a slice period of 7 days. PayPal caps a transaction search at 10K records, and the `transactions` stream automatically retries a rejected slice as smaller date ranges. The sync only fails if a one-second date range is still rejected. If a sync fails with `Result set size is greater than the maximum limit` or `RESULTSET_TOO_LARGE`:
 
 - Try lower the size of the slice period in your optional parameters in your connection configuration.
 - You can try to lower the scheduling sync window in case a day slice period is not enough. Lowering the sync period it may help avoid reaching the 10K limit.
@@ -268,6 +268,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.46 | 2026-08-20 | [84916](https://github.com/airbytehq/airbyte/pull/84916) | Retry oversized `transactions` date slices as smaller date ranges instead of failing the sync on the first `RESULTSET_TOO_LARGE` response |
 | 2.6.45 | 2026-08-18 | [84690](https://github.com/airbytehq/airbyte/pull/84690) | Update dependencies |
 | 2.6.44 | 2026-08-11 | [84075](https://github.com/airbytehq/airbyte/pull/84075) | Update dependencies |
 | 2.6.43 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
