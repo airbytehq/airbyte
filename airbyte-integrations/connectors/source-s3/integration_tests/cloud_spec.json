@@ -446,10 +446,10 @@
       },
       "endpoint": {
         "title": "Endpoint",
-        "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. The custom endpoint must be secure, but the 'https' prefix is not required.",
+        "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. The custom endpoint must be a secure URL including the 'https://' prefix.",
         "default": "",
-        "examples": ["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
-        "pattern": "^(?!http://).*$",
+        "examples": ["https://my-s3-endpoint.com"],
+        "pattern": "^$|^[Hh][Tt][Tt][Pp][Ss]://.+$",
         "order": 4,
         "type": "string"
       },

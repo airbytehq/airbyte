@@ -11,6 +11,7 @@ from pydantic.v1.error_wrappers import ValidationError
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 
 
 class S3FileBasedStreamConfig(FileBasedStreamConfig):
@@ -70,8 +71,8 @@ class Config(AbstractFileBasedSpec):
     endpoint: Optional[str] = Field(
         default="",
         title="Endpoint",
-        description="Endpoint to an S3 compatible service. Leave empty to use AWS.",
-        examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
+        description="Endpoint to an S3 compatible service. Leave empty to use AWS. The endpoint must be a full URL including the scheme.",
+        examples=["https://my-s3-endpoint.com"],
         order=4,
     )
 
@@ -101,11 +102,12 @@ class Config(AbstractFileBasedSpec):
                 "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
             )
 
-        if is_cloud_environment():
-            endpoint = values.get("endpoint")
-            if endpoint:
-                if endpoint.startswith("http://"):  # ignore-https-check
-                    raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+        endpoint = values.get("endpoint")
+        if endpoint:
+            allowed_schemes = ("https://",) if is_cloud_environment() else ("http://", "https://")  # ignore-https-check
+            if not endpoint.casefold().startswith(allowed_schemes):
+                expected = " or ".join(f'"{scheme}"' for scheme in allowed_schemes)
+                raise ConfigValidationError(f'Field "Endpoint" must be a full URL starting with {expected}.')
 
         return values
 
