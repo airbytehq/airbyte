@@ -47,13 +47,13 @@ This is the most common use of these endpoints, and it needs no custom connector
 all. List the definitions in a workspace and take the `id` of the connector you want:
 that value is the `definitionId` you pass when you create a source or a destination.
 
-```bash
+```bash title="Request: list source definitions"
 curl --request GET \
   --url 'https://api.airbyte.com/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/sources' \
   --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>'
 ```
 
-```json
+```json title="Response: list source definitions"
 {
   "data": [
     {
@@ -69,7 +69,7 @@ curl --request GET \
 
 Then create a source from it:
 
-```bash
+```bash title="Request: create a source from a definition"
 curl --request POST \
   --url 'https://api.airbyte.com/v1/sources' \
   --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
@@ -93,7 +93,7 @@ Airbyte doesn't have. You send a Connector Builder manifest instead of a Docker 
 and Airbyte publishes it as version 1. Your real manifest declares its streams in
 `streams`, left empty here for brevity:
 
-```bash
+```bash title="Request: create a declarative source definition"
 curl --request POST \
   --url 'https://api.airbyte.com/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/declarative_sources' \
   --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
@@ -118,7 +118,7 @@ curl --request POST \
   }'
 ```
 
-```json
+```json title="Response: create a declarative source definition"
 {
   "id": "9bb26c3b-5125-4492-bb2e-ccda42cfe255",
   "name": "Internal Orders API",
@@ -151,7 +151,7 @@ only version 1 returns `version: 2`, while a definition already published at ver
 returns `version: 3`. This is the endpoint to call from CI when the manifest changes in
 git:
 
-```bash
+```bash title="Request: publish a new manifest version"
 curl --request PUT \
   --url 'https://api.airbyte.com/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/declarative_sources/<DEFINITION_ID>' \
   --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
@@ -166,7 +166,7 @@ The request body takes only the manifest. You can't rename a definition this way
 If you built a connector with the CDK and pushed it to a registry, register the image
 in a workspace with `POST definitions/sources` (or `definitions/destinations`):
 
-```bash
+```bash title="Request: register a custom image-based source definition"
 curl --request POST \
   --url '<YOUR_AIRBYTE_URL>/api/public/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/sources' \
   --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
@@ -189,7 +189,7 @@ To move the connector to a new version, `PUT` the new tag. Both `name` and
 `dockerImageTag` are required, so send the current name if you only want to change the
 tag:
 
-```bash
+```bash title="Request: move a custom definition to a new image tag"
 curl --request PUT \
   --url '<YOUR_AIRBYTE_URL>/api/public/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/sources/<DEFINITION_ID>' \
   --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
