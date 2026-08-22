@@ -64,8 +64,9 @@ Classes
         - segments_date: Date segment for the report row
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -112,8 +113,9 @@ Classes
         - label_resource_name: Resource name of the label
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -173,8 +175,9 @@ Classes
         - segments_date: Date segment for the report row
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -221,8 +224,9 @@ Classes
         - label_resource_name: Resource name of the label
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -297,8 +301,9 @@ Classes
         - segments_date: Date segment for the report row
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -356,8 +361,9 @@ Classes
         - label_resource_name: Resource name of the label
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -440,8 +446,9 @@ Classes
         - segments_ad_network_type: Ad network type segment
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.

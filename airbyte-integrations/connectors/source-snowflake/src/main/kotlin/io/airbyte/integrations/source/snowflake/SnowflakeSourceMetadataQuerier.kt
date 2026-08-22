@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
 import io.airbyte.cdk.discover.JdbcMetadataQuerier.PrimaryKeyRow
@@ -123,9 +123,11 @@ class SnowflakeSourceMetadataQuerier(
 
     override fun fields(
         streamID: StreamIdentifier,
-    ): List<Field> {
+    ): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map {
+            EmittedField(it.label, base.fieldTypeMapper.toFieldType(it))
+        }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
@@ -155,7 +157,7 @@ class SnowflakeSourceMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { EmittedField(it, NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )

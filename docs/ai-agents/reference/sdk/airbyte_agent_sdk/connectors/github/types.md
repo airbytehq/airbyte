@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BranchesAnyCondition"></a>
@@ -94,7 +94,7 @@ Classes
 <a id="BranchesContainsCondition"></a>
 
 `BranchesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -103,6 +103,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.BranchesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BranchesEndswithCondition"></a>
+
+`BranchesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.BranchesStringFilter`
     :   The type of the None singleton.
 
 <a id="BranchesEqCondition"></a>
@@ -234,20 +248,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.BranchesStringFilter`
     :   The type of the None singleton.
 
-<a id="BranchesLikeCondition"></a>
-
-`BranchesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.BranchesStringFilter`
-    :   The type of the None singleton.
-
 <a id="BranchesListParams"></a>
 
 `BranchesListParams(*args, **kwargs)`
@@ -335,7 +335,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition`
     :   The type of the None singleton.
 
 <a id="BranchesOrCondition"></a>
@@ -357,7 +357,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BranchesSearchFilter"></a>
@@ -385,7 +385,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesLikeCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.BranchesEqCondition | airbyte_agent_sdk.connectors.github.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.github.types.BranchesGtCondition | airbyte_agent_sdk.connectors.github.types.BranchesGteCondition | airbyte_agent_sdk.connectors.github.types.BranchesLtCondition | airbyte_agent_sdk.connectors.github.types.BranchesLteCondition | airbyte_agent_sdk.connectors.github.types.BranchesInCondition | airbyte_agent_sdk.connectors.github.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.github.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.github.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.github.types.BranchesNotCondition | airbyte_agent_sdk.connectors.github.types.BranchesAndCondition | airbyte_agent_sdk.connectors.github.types.BranchesOrCondition | airbyte_agent_sdk.connectors.github.types.BranchesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.BranchesSortFilter]`
@@ -405,10 +405,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Branch name (e.g. `main`, `feature/foo`)
 
+<a id="BranchesStartswithCondition"></a>
+
+`BranchesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.BranchesStringFilter`
+    :   The type of the None singleton.
+
 <a id="BranchesStringFilter"></a>
 
 `BranchesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -438,7 +452,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommentsAnyCondition"></a>
@@ -495,7 +509,7 @@ Classes
 <a id="CommentsContainsCondition"></a>
 
 `CommentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -527,6 +541,20 @@ Classes
     :   The type of the None singleton.
 
     `repo: str`
+    :   The type of the None singleton.
+
+<a id="CommentsEndswithCondition"></a>
+
+`CommentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.CommentsStringFilter`
     :   The type of the None singleton.
 
 <a id="CommentsEqCondition"></a>
@@ -667,20 +695,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.CommentsStringFilter`
     :   The type of the None singleton.
 
-<a id="CommentsLikeCondition"></a>
-
-`CommentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.CommentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CommentsListParams"></a>
 
 `CommentsListParams(*args, **kwargs)`
@@ -771,7 +785,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CommentsOrCondition"></a>
@@ -793,7 +807,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommentsSearchFilter"></a>
@@ -836,7 +850,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.CommentsEqCondition | airbyte_agent_sdk.connectors.github.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommentsGtCondition | airbyte_agent_sdk.connectors.github.types.CommentsGteCondition | airbyte_agent_sdk.connectors.github.types.CommentsLtCondition | airbyte_agent_sdk.connectors.github.types.CommentsLteCondition | airbyte_agent_sdk.connectors.github.types.CommentsInCondition | airbyte_agent_sdk.connectors.github.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommentsNotCondition | airbyte_agent_sdk.connectors.github.types.CommentsAndCondition | airbyte_agent_sdk.connectors.github.types.CommentsOrCondition | airbyte_agent_sdk.connectors.github.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.CommentsSortFilter]`
@@ -871,10 +885,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the comment on GitHub
 
+<a id="CommentsStartswithCondition"></a>
+
+`CommentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.CommentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CommentsStringFilter"></a>
 
 `CommentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -919,7 +947,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommitsAnyCondition"></a>
@@ -967,7 +995,7 @@ Classes
 <a id="CommitsContainsCondition"></a>
 
 `CommitsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -976,6 +1004,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.CommitsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CommitsEndswithCondition"></a>
+
+`CommitsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.CommitsStringFilter`
     :   The type of the None singleton.
 
 <a id="CommitsEqCondition"></a>
@@ -1113,20 +1155,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.CommitsStringFilter`
     :   The type of the None singleton.
 
-<a id="CommitsLikeCondition"></a>
-
-`CommitsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.CommitsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CommitsListParams"></a>
 
 `CommitsListParams(*args, **kwargs)`
@@ -1217,7 +1245,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CommitsOrCondition"></a>
@@ -1239,7 +1267,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommitsSearchFilter"></a>
@@ -1273,7 +1301,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsLikeCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.CommitsEqCondition | airbyte_agent_sdk.connectors.github.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.github.types.CommitsGtCondition | airbyte_agent_sdk.connectors.github.types.CommitsGteCondition | airbyte_agent_sdk.connectors.github.types.CommitsLtCondition | airbyte_agent_sdk.connectors.github.types.CommitsLteCondition | airbyte_agent_sdk.connectors.github.types.CommitsInCondition | airbyte_agent_sdk.connectors.github.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.github.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.github.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.github.types.CommitsNotCondition | airbyte_agent_sdk.connectors.github.types.CommitsAndCondition | airbyte_agent_sdk.connectors.github.types.CommitsOrCondition | airbyte_agent_sdk.connectors.github.types.CommitsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.CommitsSortFilter]`
@@ -1299,10 +1327,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the commit on GitHub
 
+<a id="CommitsStartswithCondition"></a>
+
+`CommitsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.CommitsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CommitsStringFilter"></a>
 
 `CommitsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1338,7 +1380,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLikeCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DirectoryContentAnyCondition"></a>
@@ -1375,7 +1417,7 @@ Classes
 <a id="DirectoryContentContainsCondition"></a>
 
 `DirectoryContentContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1384,6 +1426,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DirectoryContentEndswithCondition"></a>
+
+`DirectoryContentEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.DirectoryContentStringFilter`
     :   The type of the None singleton.
 
 <a id="DirectoryContentEqCondition"></a>
@@ -1487,20 +1543,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.DirectoryContentStringFilter`
     :   The type of the None singleton.
 
-<a id="DirectoryContentLikeCondition"></a>
-
-`DirectoryContentLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.DirectoryContentStringFilter`
-    :   The type of the None singleton.
-
 <a id="DirectoryContentListParams"></a>
 
 `DirectoryContentListParams(*args, **kwargs)`
@@ -1588,7 +1630,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLikeCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition`
     :   The type of the None singleton.
 
 <a id="DirectoryContentOrCondition"></a>
@@ -1610,7 +1652,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLikeCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DirectoryContentSearchFilter"></a>
@@ -1633,7 +1675,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLikeCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.DirectoryContentEqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNeqCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentGteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLtCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentLteCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentInCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentContainsCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentNotCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAndCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentOrCondition | airbyte_agent_sdk.connectors.github.types.DirectoryContentAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.DirectoryContentSortFilter]`
@@ -1648,10 +1690,24 @@ Classes
 
     * builtins.dict
 
+<a id="DirectoryContentStartswithCondition"></a>
+
+`DirectoryContentStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.DirectoryContentStringFilter`
+    :   The type of the None singleton.
+
 <a id="DirectoryContentStringFilter"></a>
 
 `DirectoryContentStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1676,7 +1732,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLikeCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsStartswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsEndswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DiscussionsAnyCondition"></a>
@@ -1736,7 +1792,7 @@ Classes
 <a id="DiscussionsContainsCondition"></a>
 
 `DiscussionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1745,6 +1801,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.DiscussionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DiscussionsEndswithCondition"></a>
+
+`DiscussionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.DiscussionsStringFilter`
     :   The type of the None singleton.
 
 <a id="DiscussionsEqCondition"></a>
@@ -1871,20 +1941,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.DiscussionsStringFilter`
     :   The type of the None singleton.
 
-<a id="DiscussionsLikeCondition"></a>
-
-`DiscussionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.DiscussionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="DiscussionsListParams"></a>
 
 `DiscussionsListParams(*args, **kwargs)`
@@ -1978,7 +2034,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLikeCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsStartswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsEndswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="DiscussionsOrCondition"></a>
@@ -2000,7 +2056,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLikeCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsStartswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsEndswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DiscussionsSearchFilter"></a>
@@ -2023,7 +2079,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLikeCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.DiscussionsEqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNeqCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsGteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLtCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsLteCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsInCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsStartswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsEndswithCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsKeywordCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsContainsCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsNotCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAndCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsOrCondition | airbyte_agent_sdk.connectors.github.types.DiscussionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.DiscussionsSortFilter]`
@@ -2038,10 +2094,24 @@ Classes
 
     * builtins.dict
 
+<a id="DiscussionsStartswithCondition"></a>
+
+`DiscussionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.DiscussionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="DiscussionsStringFilter"></a>
 
 `DiscussionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2066,7 +2136,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentLikeCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FileContentAnyCondition"></a>
@@ -2103,7 +2173,7 @@ Classes
 <a id="FileContentContainsCondition"></a>
 
 `FileContentContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2112,6 +2182,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.FileContentAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FileContentEndswithCondition"></a>
+
+`FileContentEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.FileContentStringFilter`
     :   The type of the None singleton.
 
 <a id="FileContentEqCondition"></a>
@@ -2241,20 +2325,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.FileContentStringFilter`
     :   The type of the None singleton.
 
-<a id="FileContentLikeCondition"></a>
-
-`FileContentLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.FileContentStringFilter`
-    :   The type of the None singleton.
-
 <a id="FileContentLtCondition"></a>
 
 `FileContentLtCondition(*args, **kwargs)`
@@ -2316,7 +2386,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentLikeCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition`
     :   The type of the None singleton.
 
 <a id="FileContentOrCondition"></a>
@@ -2338,7 +2408,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentLikeCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FileContentSearchFilter"></a>
@@ -2361,7 +2431,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentLikeCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.FileContentEqCondition | airbyte_agent_sdk.connectors.github.types.FileContentNeqCondition | airbyte_agent_sdk.connectors.github.types.FileContentGtCondition | airbyte_agent_sdk.connectors.github.types.FileContentGteCondition | airbyte_agent_sdk.connectors.github.types.FileContentLtCondition | airbyte_agent_sdk.connectors.github.types.FileContentLteCondition | airbyte_agent_sdk.connectors.github.types.FileContentInCondition | airbyte_agent_sdk.connectors.github.types.FileContentStartswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentEndswithCondition | airbyte_agent_sdk.connectors.github.types.FileContentFuzzyCondition | airbyte_agent_sdk.connectors.github.types.FileContentKeywordCondition | airbyte_agent_sdk.connectors.github.types.FileContentContainsCondition | airbyte_agent_sdk.connectors.github.types.FileContentNotCondition | airbyte_agent_sdk.connectors.github.types.FileContentAndCondition | airbyte_agent_sdk.connectors.github.types.FileContentOrCondition | airbyte_agent_sdk.connectors.github.types.FileContentAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.FileContentSortFilter]`
@@ -2376,10 +2446,24 @@ Classes
 
     * builtins.dict
 
+<a id="FileContentStartswithCondition"></a>
+
+`FileContentStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.FileContentStringFilter`
+    :   The type of the None singleton.
+
 <a id="FileContentStringFilter"></a>
 
 `FileContentStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2404,7 +2488,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesAnyCondition"></a>
@@ -2502,7 +2586,7 @@ Classes
 <a id="IssuesContainsCondition"></a>
 
 `IssuesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2543,6 +2627,20 @@ Classes
     :   The type of the None singleton.
 
     `title: str`
+    :   The type of the None singleton.
+
+<a id="IssuesEndswithCondition"></a>
+
+`IssuesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.IssuesStringFilter`
     :   The type of the None singleton.
 
 <a id="IssuesEqCondition"></a>
@@ -2707,20 +2805,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.IssuesStringFilter`
     :   The type of the None singleton.
 
-<a id="IssuesLikeCondition"></a>
-
-`IssuesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.IssuesStringFilter`
-    :   The type of the None singleton.
-
 <a id="IssuesListParams"></a>
 
 `IssuesListParams(*args, **kwargs)`
@@ -2811,7 +2895,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssuesOrCondition"></a>
@@ -2833,7 +2917,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesSearchFilter"></a>
@@ -2894,7 +2978,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesLikeCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.IssuesEqCondition | airbyte_agent_sdk.connectors.github.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.github.types.IssuesGtCondition | airbyte_agent_sdk.connectors.github.types.IssuesGteCondition | airbyte_agent_sdk.connectors.github.types.IssuesLtCondition | airbyte_agent_sdk.connectors.github.types.IssuesLteCondition | airbyte_agent_sdk.connectors.github.types.IssuesInCondition | airbyte_agent_sdk.connectors.github.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.github.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.github.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.github.types.IssuesNotCondition | airbyte_agent_sdk.connectors.github.types.IssuesAndCondition | airbyte_agent_sdk.connectors.github.types.IssuesOrCondition | airbyte_agent_sdk.connectors.github.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.IssuesSortFilter]`
@@ -2947,10 +3031,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the issue on GitHub
 
+<a id="IssuesStartswithCondition"></a>
+
+`IssuesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.IssuesStringFilter`
+    :   The type of the None singleton.
+
 <a id="IssuesStringFilter"></a>
 
 `IssuesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3054,7 +3152,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LabelsAnyCondition"></a>
@@ -3108,7 +3206,7 @@ Classes
 <a id="LabelsContainsCondition"></a>
 
 `LabelsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3117,6 +3215,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.LabelsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="LabelsEndswithCondition"></a>
+
+`LabelsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.LabelsStringFilter`
     :   The type of the None singleton.
 
 <a id="LabelsEqCondition"></a>
@@ -3260,20 +3372,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.LabelsStringFilter`
     :   The type of the None singleton.
 
-<a id="LabelsLikeCondition"></a>
-
-`LabelsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.LabelsStringFilter`
-    :   The type of the None singleton.
-
 <a id="LabelsListParams"></a>
 
 `LabelsListParams(*args, **kwargs)`
@@ -3361,7 +3459,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="LabelsOrCondition"></a>
@@ -3383,7 +3481,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LabelsSearchFilter"></a>
@@ -3423,7 +3521,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.LabelsEqCondition | airbyte_agent_sdk.connectors.github.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.github.types.LabelsGtCondition | airbyte_agent_sdk.connectors.github.types.LabelsGteCondition | airbyte_agent_sdk.connectors.github.types.LabelsLtCondition | airbyte_agent_sdk.connectors.github.types.LabelsLteCondition | airbyte_agent_sdk.connectors.github.types.LabelsInCondition | airbyte_agent_sdk.connectors.github.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.github.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.github.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.github.types.LabelsNotCondition | airbyte_agent_sdk.connectors.github.types.LabelsAndCondition | airbyte_agent_sdk.connectors.github.types.LabelsOrCondition | airbyte_agent_sdk.connectors.github.types.LabelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.LabelsSortFilter]`
@@ -3455,10 +3553,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   API URL to the label resource
 
+<a id="LabelsStartswithCondition"></a>
+
+`LabelsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.LabelsStringFilter`
+    :   The type of the None singleton.
+
 <a id="LabelsStringFilter"></a>
 
 `LabelsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3500,7 +3612,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLikeCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesStartswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesEndswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MilestonesAnyCondition"></a>
@@ -3566,7 +3678,7 @@ Classes
 <a id="MilestonesContainsCondition"></a>
 
 `MilestonesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3575,6 +3687,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.MilestonesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MilestonesEndswithCondition"></a>
+
+`MilestonesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.MilestonesStringFilter`
     :   The type of the None singleton.
 
 <a id="MilestonesEqCondition"></a>
@@ -3730,20 +3856,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.MilestonesStringFilter`
     :   The type of the None singleton.
 
-<a id="MilestonesLikeCondition"></a>
-
-`MilestonesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.MilestonesStringFilter`
-    :   The type of the None singleton.
-
 <a id="MilestonesListParams"></a>
 
 `MilestonesListParams(*args, **kwargs)`
@@ -3834,7 +3946,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLikeCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesStartswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesEndswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition`
     :   The type of the None singleton.
 
 <a id="MilestonesOrCondition"></a>
@@ -3856,7 +3968,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLikeCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesStartswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesEndswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MilestonesSearchFilter"></a>
@@ -3908,7 +4020,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLikeCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.MilestonesEqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNeqCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesGteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLtCondition | airbyte_agent_sdk.connectors.github.types.MilestonesLteCondition | airbyte_agent_sdk.connectors.github.types.MilestonesInCondition | airbyte_agent_sdk.connectors.github.types.MilestonesStartswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesEndswithCondition | airbyte_agent_sdk.connectors.github.types.MilestonesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.MilestonesKeywordCondition | airbyte_agent_sdk.connectors.github.types.MilestonesContainsCondition | airbyte_agent_sdk.connectors.github.types.MilestonesNotCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAndCondition | airbyte_agent_sdk.connectors.github.types.MilestonesOrCondition | airbyte_agent_sdk.connectors.github.types.MilestonesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.MilestonesSortFilter]`
@@ -3952,10 +4064,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the milestone was last updated
 
+<a id="MilestonesStartswithCondition"></a>
+
+`MilestonesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.MilestonesStringFilter`
+    :   The type of the None singleton.
+
 <a id="MilestonesStringFilter"></a>
 
 `MilestonesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4009,7 +4135,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrgRepositoriesAnyCondition"></a>
@@ -4046,7 +4172,7 @@ Classes
 <a id="OrgRepositoriesContainsCondition"></a>
 
 `OrgRepositoriesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4055,6 +4181,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrgRepositoriesEndswithCondition"></a>
+
+`OrgRepositoriesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStringFilter`
     :   The type of the None singleton.
 
 <a id="OrgRepositoriesEqCondition"></a>
@@ -4158,20 +4298,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStringFilter`
     :   The type of the None singleton.
 
-<a id="OrgRepositoriesLikeCondition"></a>
-
-`OrgRepositoriesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrgRepositoriesListParams"></a>
 
 `OrgRepositoriesListParams(*args, **kwargs)`
@@ -4256,7 +4382,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrgRepositoriesOrCondition"></a>
@@ -4278,7 +4404,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrgRepositoriesSearchFilter"></a>
@@ -4301,7 +4427,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.OrgRepositoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.OrgRepositoriesSortFilter]`
@@ -4316,10 +4442,24 @@ Classes
 
     * builtins.dict
 
+<a id="OrgRepositoriesStartswithCondition"></a>
+
+`OrgRepositoriesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.OrgRepositoriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrgRepositoriesStringFilter"></a>
 
 `OrgRepositoriesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4344,7 +4484,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrganizationsAnyCondition"></a>
@@ -4410,7 +4550,7 @@ Classes
 <a id="OrganizationsContainsCondition"></a>
 
 `OrganizationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4419,6 +4559,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.OrganizationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrganizationsEndswithCondition"></a>
+
+`OrganizationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.OrganizationsStringFilter`
     :   The type of the None singleton.
 
 <a id="OrganizationsEqCondition"></a>
@@ -4568,20 +4722,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.OrganizationsStringFilter`
     :   The type of the None singleton.
 
-<a id="OrganizationsLikeCondition"></a>
-
-`OrganizationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.OrganizationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrganizationsListParams"></a>
 
 `OrganizationsListParams(*args, **kwargs)`
@@ -4666,7 +4806,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrganizationsOrCondition"></a>
@@ -4688,7 +4828,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrganizationsSearchFilter"></a>
@@ -4740,7 +4880,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLikeCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.OrganizationsEqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNeqCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsGteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLtCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsLteCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsInCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsStartswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsEndswithCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsKeywordCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsContainsCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsNotCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAndCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsOrCondition | airbyte_agent_sdk.connectors.github.types.OrganizationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.OrganizationsSortFilter]`
@@ -4784,10 +4924,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Display name of the organization
 
+<a id="OrganizationsStartswithCondition"></a>
+
+`OrganizationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.OrganizationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrganizationsStringFilter"></a>
 
 `OrganizationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4841,7 +4995,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PrCommentsAnyCondition"></a>
@@ -4878,7 +5032,7 @@ Classes
 <a id="PrCommentsContainsCondition"></a>
 
 `PrCommentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4887,6 +5041,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.PrCommentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PrCommentsEndswithCondition"></a>
+
+`PrCommentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.PrCommentsStringFilter`
     :   The type of the None singleton.
 
 <a id="PrCommentsEqCondition"></a>
@@ -5007,20 +5175,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.PrCommentsStringFilter`
     :   The type of the None singleton.
 
-<a id="PrCommentsLikeCondition"></a>
-
-`PrCommentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.PrCommentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="PrCommentsListParams"></a>
 
 `PrCommentsListParams(*args, **kwargs)`
@@ -5111,7 +5265,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="PrCommentsOrCondition"></a>
@@ -5133,7 +5287,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PrCommentsSearchFilter"></a>
@@ -5156,7 +5310,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLikeCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.PrCommentsEqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNeqCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsGteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLtCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsLteCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsInCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsContainsCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsNotCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAndCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsOrCondition | airbyte_agent_sdk.connectors.github.types.PrCommentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.PrCommentsSortFilter]`
@@ -5171,10 +5325,24 @@ Classes
 
     * builtins.dict
 
+<a id="PrCommentsStartswithCondition"></a>
+
+`PrCommentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.PrCommentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="PrCommentsStringFilter"></a>
 
 `PrCommentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5199,7 +5367,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectItemsAnyCondition"></a>
@@ -5236,7 +5404,7 @@ Classes
 <a id="ProjectItemsContainsCondition"></a>
 
 `ProjectItemsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5245,6 +5413,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProjectItemsEndswithCondition"></a>
+
+`ProjectItemsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.ProjectItemsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProjectItemsEqCondition"></a>
@@ -5348,20 +5530,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.ProjectItemsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProjectItemsLikeCondition"></a>
-
-`ProjectItemsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.ProjectItemsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProjectItemsListParams"></a>
 
 `ProjectItemsListParams(*args, **kwargs)`
@@ -5449,7 +5617,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectItemsOrCondition"></a>
@@ -5471,7 +5639,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectItemsSearchFilter"></a>
@@ -5494,7 +5662,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.ProjectItemsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectItemsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.ProjectItemsSortFilter]`
@@ -5509,10 +5677,24 @@ Classes
 
     * builtins.dict
 
+<a id="ProjectItemsStartswithCondition"></a>
+
+`ProjectItemsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.ProjectItemsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectItemsStringFilter"></a>
 
 `ProjectItemsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5537,7 +5719,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsAnyCondition"></a>
@@ -5603,7 +5785,7 @@ Classes
 <a id="ProjectsContainsCondition"></a>
 
 `ProjectsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5612,6 +5794,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.ProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProjectsEndswithCondition"></a>
+
+`ProjectsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProjectsEqCondition"></a>
@@ -5764,20 +5960,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.ProjectsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProjectsLikeCondition"></a>
-
-`ProjectsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.ProjectsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProjectsListParams"></a>
 
 `ProjectsListParams(*args, **kwargs)`
@@ -5862,7 +6044,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectsOrCondition"></a>
@@ -5884,7 +6066,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchFilter"></a>
@@ -5936,7 +6118,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLikeCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.github.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.github.types.ProjectsInCondition | airbyte_agent_sdk.connectors.github.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.github.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.github.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.github.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.ProjectsSortFilter]`
@@ -5980,10 +6162,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the project on GitHub
 
+<a id="ProjectsStartswithCondition"></a>
+
+`ProjectsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.ProjectsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectsStringFilter"></a>
 
 `ProjectsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6037,7 +6233,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLikeCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PullRequestsAnyCondition"></a>
@@ -6135,7 +6331,7 @@ Classes
 <a id="PullRequestsContainsCondition"></a>
 
 `PullRequestsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -6179,6 +6375,20 @@ Classes
     :   The type of the None singleton.
 
     `title: str`
+    :   The type of the None singleton.
+
+<a id="PullRequestsEndswithCondition"></a>
+
+`PullRequestsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.PullRequestsStringFilter`
     :   The type of the None singleton.
 
 <a id="PullRequestsEqCondition"></a>
@@ -6343,20 +6553,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.PullRequestsStringFilter`
     :   The type of the None singleton.
 
-<a id="PullRequestsLikeCondition"></a>
-
-`PullRequestsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.PullRequestsStringFilter`
-    :   The type of the None singleton.
-
 <a id="PullRequestsListParams"></a>
 
 `PullRequestsListParams(*args, **kwargs)`
@@ -6447,7 +6643,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLikeCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition`
     :   The type of the None singleton.
 
 <a id="PullRequestsOrCondition"></a>
@@ -6469,7 +6665,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLikeCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PullRequestsSearchFilter"></a>
@@ -6530,7 +6726,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLikeCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.PullRequestsEqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNeqCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsGteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLtCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsLteCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsInCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsStartswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsEndswithCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsKeywordCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsContainsCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsNotCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAndCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsOrCondition | airbyte_agent_sdk.connectors.github.types.PullRequestsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.PullRequestsSortFilter]`
@@ -6583,10 +6779,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the pull request on GitHub
 
+<a id="PullRequestsStartswithCondition"></a>
+
+`PullRequestsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.PullRequestsStringFilter`
+    :   The type of the None singleton.
+
 <a id="PullRequestsStringFilter"></a>
 
 `PullRequestsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6649,7 +6859,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReleasesAnyCondition"></a>
@@ -6718,7 +6928,7 @@ Classes
 <a id="ReleasesContainsCondition"></a>
 
 `ReleasesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -6727,6 +6937,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.ReleasesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ReleasesEndswithCondition"></a>
+
+`ReleasesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.ReleasesStringFilter`
     :   The type of the None singleton.
 
 <a id="ReleasesEqCondition"></a>
@@ -6885,20 +7109,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.ReleasesStringFilter`
     :   The type of the None singleton.
 
-<a id="ReleasesLikeCondition"></a>
-
-`ReleasesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.ReleasesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ReleasesListParams"></a>
 
 `ReleasesListParams(*args, **kwargs)`
@@ -6986,7 +7196,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ReleasesOrCondition"></a>
@@ -7008,7 +7218,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReleasesSearchFilter"></a>
@@ -7063,7 +7273,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLikeCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.github.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.github.types.ReleasesInCondition | airbyte_agent_sdk.connectors.github.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.github.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.github.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.github.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.ReleasesSortFilter]`
@@ -7110,10 +7320,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the release on GitHub
 
+<a id="ReleasesStartswithCondition"></a>
+
+`ReleasesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.ReleasesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ReleasesStringFilter"></a>
 
 `ReleasesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7170,7 +7394,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RepositoriesAnyCondition"></a>
@@ -7271,7 +7495,7 @@ Classes
 <a id="RepositoriesContainsCondition"></a>
 
 `RepositoriesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -7280,6 +7504,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.RepositoriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="RepositoriesEndswithCondition"></a>
+
+`RepositoriesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.RepositoriesStringFilter`
     :   The type of the None singleton.
 
 <a id="RepositoriesEqCondition"></a>
@@ -7444,20 +7682,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.RepositoriesStringFilter`
     :   The type of the None singleton.
 
-<a id="RepositoriesLikeCondition"></a>
-
-`RepositoriesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.RepositoriesStringFilter`
-    :   The type of the None singleton.
-
 <a id="RepositoriesListParams"></a>
 
 `RepositoriesListParams(*args, **kwargs)`
@@ -7542,7 +7766,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="RepositoriesOrCondition"></a>
@@ -7564,7 +7788,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RepositoriesSearchFilter"></a>
@@ -7628,7 +7852,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.RepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.RepositoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.RepositoriesSortFilter]`
@@ -7684,10 +7908,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Canonical GitHub URL for the repository
 
+<a id="RepositoriesStartswithCondition"></a>
+
+`RepositoriesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.RepositoriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="RepositoriesStringFilter"></a>
 
 `RepositoriesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7753,7 +7991,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLikeCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReviewsAnyCondition"></a>
@@ -7816,7 +8054,7 @@ Classes
 <a id="ReviewsContainsCondition"></a>
 
 `ReviewsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -7825,6 +8063,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.ReviewsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ReviewsEndswithCondition"></a>
+
+`ReviewsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.ReviewsStringFilter`
     :   The type of the None singleton.
 
 <a id="ReviewsEqCondition"></a>
@@ -7954,20 +8206,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.ReviewsStringFilter`
     :   The type of the None singleton.
 
-<a id="ReviewsLikeCondition"></a>
-
-`ReviewsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.ReviewsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ReviewsListParams"></a>
 
 `ReviewsListParams(*args, **kwargs)`
@@ -8058,7 +8296,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLikeCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ReviewsOrCondition"></a>
@@ -8080,7 +8318,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLikeCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReviewsSearchFilter"></a>
@@ -8129,7 +8367,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLikeCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.ReviewsEqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNeqCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsGteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLtCondition | airbyte_agent_sdk.connectors.github.types.ReviewsLteCondition | airbyte_agent_sdk.connectors.github.types.ReviewsInCondition | airbyte_agent_sdk.connectors.github.types.ReviewsStartswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsEndswithCondition | airbyte_agent_sdk.connectors.github.types.ReviewsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ReviewsKeywordCondition | airbyte_agent_sdk.connectors.github.types.ReviewsContainsCondition | airbyte_agent_sdk.connectors.github.types.ReviewsNotCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAndCondition | airbyte_agent_sdk.connectors.github.types.ReviewsOrCondition | airbyte_agent_sdk.connectors.github.types.ReviewsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.ReviewsSortFilter]`
@@ -8170,10 +8408,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the review on GitHub
 
+<a id="ReviewsStartswithCondition"></a>
+
+`ReviewsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.ReviewsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ReviewsStringFilter"></a>
 
 `ReviewsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8224,7 +8476,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersLikeCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersStartswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersEndswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="StargazersAnyCondition"></a>
@@ -8266,7 +8518,7 @@ Classes
 <a id="StargazersContainsCondition"></a>
 
 `StargazersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -8275,6 +8527,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.StargazersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="StargazersEndswithCondition"></a>
+
+`StargazersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.StargazersStringFilter`
     :   The type of the None singleton.
 
 <a id="StargazersEqCondition"></a>
@@ -8383,20 +8649,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.StargazersStringFilter`
     :   The type of the None singleton.
 
-<a id="StargazersLikeCondition"></a>
-
-`StargazersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.StargazersStringFilter`
-    :   The type of the None singleton.
-
 <a id="StargazersListParams"></a>
 
 `StargazersListParams(*args, **kwargs)`
@@ -8484,7 +8736,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersLikeCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersStartswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersEndswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition`
     :   The type of the None singleton.
 
 <a id="StargazersOrCondition"></a>
@@ -8506,7 +8758,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersLikeCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersStartswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersEndswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="StargazersSearchFilter"></a>
@@ -8534,7 +8786,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersLikeCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.StargazersEqCondition | airbyte_agent_sdk.connectors.github.types.StargazersNeqCondition | airbyte_agent_sdk.connectors.github.types.StargazersGtCondition | airbyte_agent_sdk.connectors.github.types.StargazersGteCondition | airbyte_agent_sdk.connectors.github.types.StargazersLtCondition | airbyte_agent_sdk.connectors.github.types.StargazersLteCondition | airbyte_agent_sdk.connectors.github.types.StargazersInCondition | airbyte_agent_sdk.connectors.github.types.StargazersStartswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersEndswithCondition | airbyte_agent_sdk.connectors.github.types.StargazersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.StargazersKeywordCondition | airbyte_agent_sdk.connectors.github.types.StargazersContainsCondition | airbyte_agent_sdk.connectors.github.types.StargazersNotCondition | airbyte_agent_sdk.connectors.github.types.StargazersAndCondition | airbyte_agent_sdk.connectors.github.types.StargazersOrCondition | airbyte_agent_sdk.connectors.github.types.StargazersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.StargazersSortFilter]`
@@ -8554,10 +8806,24 @@ Classes
     `starred_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the user starred the repository
 
+<a id="StargazersStartswithCondition"></a>
+
+`StargazersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.StargazersStringFilter`
+    :   The type of the None singleton.
+
 <a id="StargazersStringFilter"></a>
 
 `StargazersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8587,7 +8853,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsLikeCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -8629,7 +8895,7 @@ Classes
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -8638,6 +8904,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TagsEndswithCondition"></a>
+
+`TagsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.TagsStringFilter`
     :   The type of the None singleton.
 
 <a id="TagsEqCondition"></a>
@@ -8769,20 +9049,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.TagsStringFilter`
     :   The type of the None singleton.
 
-<a id="TagsLikeCondition"></a>
-
-`TagsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.TagsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TagsListParams"></a>
 
 `TagsListParams(*args, **kwargs)`
@@ -8870,7 +9136,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsLikeCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -8892,7 +9158,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsLikeCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -8920,7 +9186,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsLikeCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.TagsEqCondition | airbyte_agent_sdk.connectors.github.types.TagsNeqCondition | airbyte_agent_sdk.connectors.github.types.TagsGtCondition | airbyte_agent_sdk.connectors.github.types.TagsGteCondition | airbyte_agent_sdk.connectors.github.types.TagsLtCondition | airbyte_agent_sdk.connectors.github.types.TagsLteCondition | airbyte_agent_sdk.connectors.github.types.TagsInCondition | airbyte_agent_sdk.connectors.github.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TagsContainsCondition | airbyte_agent_sdk.connectors.github.types.TagsNotCondition | airbyte_agent_sdk.connectors.github.types.TagsAndCondition | airbyte_agent_sdk.connectors.github.types.TagsOrCondition | airbyte_agent_sdk.connectors.github.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.TagsSortFilter]`
@@ -8940,10 +9206,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Tag name (e.g. `v1.2.3`)
 
+<a id="TagsStartswithCondition"></a>
+
+`TagsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.TagsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TagsStringFilter"></a>
 
 `TagsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8973,7 +9253,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsAnyCondition"></a>
@@ -9033,7 +9313,7 @@ Classes
 <a id="TeamsContainsCondition"></a>
 
 `TeamsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -9042,6 +9322,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TeamsEndswithCondition"></a>
+
+`TeamsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.TeamsStringFilter`
     :   The type of the None singleton.
 
 <a id="TeamsEqCondition"></a>
@@ -9188,20 +9482,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.TeamsStringFilter`
     :   The type of the None singleton.
 
-<a id="TeamsLikeCondition"></a>
-
-`TeamsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.TeamsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TeamsListParams"></a>
 
 `TeamsListParams(*args, **kwargs)`
@@ -9286,7 +9566,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TeamsOrCondition"></a>
@@ -9308,7 +9588,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsSearchFilter"></a>
@@ -9354,7 +9634,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.TeamsEqCondition | airbyte_agent_sdk.connectors.github.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.github.types.TeamsGtCondition | airbyte_agent_sdk.connectors.github.types.TeamsGteCondition | airbyte_agent_sdk.connectors.github.types.TeamsLtCondition | airbyte_agent_sdk.connectors.github.types.TeamsLteCondition | airbyte_agent_sdk.connectors.github.types.TeamsInCondition | airbyte_agent_sdk.connectors.github.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.github.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.github.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.github.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.github.types.TeamsNotCondition | airbyte_agent_sdk.connectors.github.types.TeamsAndCondition | airbyte_agent_sdk.connectors.github.types.TeamsOrCondition | airbyte_agent_sdk.connectors.github.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.TeamsSortFilter]`
@@ -9392,10 +9672,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the team on GitHub
 
+<a id="TeamsStartswithCondition"></a>
+
+`TeamsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.TeamsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsStringFilter"></a>
 
 `TeamsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9443,7 +9737,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersLikeCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.github.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -9517,7 +9811,7 @@ Classes
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -9526,6 +9820,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -9660,20 +9968,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -9758,7 +10052,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersLikeCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.github.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -9780,7 +10074,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersLikeCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.github.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -9817,7 +10111,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersLikeCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.UsersEqCondition | airbyte_agent_sdk.connectors.github.types.UsersNeqCondition | airbyte_agent_sdk.connectors.github.types.UsersGtCondition | airbyte_agent_sdk.connectors.github.types.UsersGteCondition | airbyte_agent_sdk.connectors.github.types.UsersLtCondition | airbyte_agent_sdk.connectors.github.types.UsersLteCondition | airbyte_agent_sdk.connectors.github.types.UsersInCondition | airbyte_agent_sdk.connectors.github.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.github.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.github.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.github.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.github.types.UsersContainsCondition | airbyte_agent_sdk.connectors.github.types.UsersNotCondition | airbyte_agent_sdk.connectors.github.types.UsersAndCondition | airbyte_agent_sdk.connectors.github.types.UsersOrCondition | airbyte_agent_sdk.connectors.github.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.UsersSortFilter]`
@@ -9846,10 +10140,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Permalink to the user's profile on GitHub
 
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.UsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9888,7 +10196,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ViewerAnyCondition"></a>
@@ -9925,7 +10233,7 @@ Classes
 <a id="ViewerContainsCondition"></a>
 
 `ViewerContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -9934,6 +10242,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.ViewerAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ViewerEndswithCondition"></a>
+
+`ViewerEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.ViewerStringFilter`
     :   The type of the None singleton.
 
 <a id="ViewerEqCondition"></a>
@@ -10051,20 +10373,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.ViewerStringFilter`
     :   The type of the None singleton.
 
-<a id="ViewerLikeCondition"></a>
-
-`ViewerLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.ViewerStringFilter`
-    :   The type of the None singleton.
-
 <a id="ViewerLtCondition"></a>
 
 `ViewerLtCondition(*args, **kwargs)`
@@ -10126,7 +10434,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition`
     :   The type of the None singleton.
 
 <a id="ViewerOrCondition"></a>
@@ -10148,7 +10456,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ViewerRepositoriesAndCondition"></a>
@@ -10170,7 +10478,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ViewerRepositoriesAnyCondition"></a>
@@ -10207,7 +10515,7 @@ Classes
 <a id="ViewerRepositoriesContainsCondition"></a>
 
 `ViewerRepositoriesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -10216,6 +10524,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ViewerRepositoriesEndswithCondition"></a>
+
+`ViewerRepositoriesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStringFilter`
     :   The type of the None singleton.
 
 <a id="ViewerRepositoriesEqCondition"></a>
@@ -10319,20 +10641,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStringFilter`
     :   The type of the None singleton.
 
-<a id="ViewerRepositoriesLikeCondition"></a>
-
-`ViewerRepositoriesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ViewerRepositoriesListParams"></a>
 
 `ViewerRepositoriesListParams(*args, **kwargs)`
@@ -10414,7 +10722,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ViewerRepositoriesOrCondition"></a>
@@ -10436,7 +10744,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ViewerRepositoriesSearchFilter"></a>
@@ -10459,7 +10767,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesInCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesSortFilter]`
@@ -10474,10 +10782,24 @@ Classes
 
     * builtins.dict
 
+<a id="ViewerRepositoriesStartswithCondition"></a>
+
+`ViewerRepositoriesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.ViewerRepositoriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ViewerRepositoriesStringFilter"></a>
 
 `ViewerRepositoriesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -10503,7 +10825,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerLikeCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.github.types.ViewerEqCondition | airbyte_agent_sdk.connectors.github.types.ViewerNeqCondition | airbyte_agent_sdk.connectors.github.types.ViewerGtCondition | airbyte_agent_sdk.connectors.github.types.ViewerGteCondition | airbyte_agent_sdk.connectors.github.types.ViewerLtCondition | airbyte_agent_sdk.connectors.github.types.ViewerLteCondition | airbyte_agent_sdk.connectors.github.types.ViewerInCondition | airbyte_agent_sdk.connectors.github.types.ViewerStartswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerEndswithCondition | airbyte_agent_sdk.connectors.github.types.ViewerFuzzyCondition | airbyte_agent_sdk.connectors.github.types.ViewerKeywordCondition | airbyte_agent_sdk.connectors.github.types.ViewerContainsCondition | airbyte_agent_sdk.connectors.github.types.ViewerNotCondition | airbyte_agent_sdk.connectors.github.types.ViewerAndCondition | airbyte_agent_sdk.connectors.github.types.ViewerOrCondition | airbyte_agent_sdk.connectors.github.types.ViewerAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.github.types.ViewerSortFilter]`
@@ -10518,10 +10840,24 @@ Classes
 
     * builtins.dict
 
+<a id="ViewerStartswithCondition"></a>
+
+`ViewerStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.github.types.ViewerStringFilter`
+    :   The type of the None singleton.
+
 <a id="ViewerStringFilter"></a>
 
 `ViewerStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
