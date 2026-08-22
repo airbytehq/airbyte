@@ -1,4 +1,4 @@
-# Understanding the YAML file
+# YAML Components
 
 The low-code framework involves editing a boilerplate [YAML file](../low-code-cdk-overview.md#configuring-the-yaml-file). This section deep dives into the components of the YAML file.
 

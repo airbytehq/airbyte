@@ -9,7 +9,7 @@ To contribute a new connector in Connector Builder:
 2. When you're happy with the connector, press the **Publish -> Contribute to Marketplace** button.
 3. You'll be prompted for a connector description and your Github Access Token.
 4. Builder will make a new pull request on your behalf automatically!
-5. Airbyte Marketplace team will review the PR.
+5. The Airbyte team will review the PR.
 
 ### Obtaining your Github Access Token
 In order to contribute a new connector from the Airbyte UI, you'll need to obtain your [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic). This will allow your GitHub user to author the contribution.
@@ -45,7 +45,7 @@ This will enable our team to make sure your contribution does not overlap with e
 
 ### Open a pull request
 
-1. Make sure your connector passes `airbyte-ci connectors test` tests. [Here's a guide on how to run them](../connector-development/testing-connectors/README.md).
+1. Make sure your connector passes the test suite. [Here's a guide on how to run them](../connector-development/testing-connectors/README.md).
 2. Make sure you include the README, documentation, and an icon for your connector. Without them, one of the CI checks will fail.
 3. Follow the [pull request convention](/community/contributing-to-airbyte/resources/pull-requests-handbook#pull-request-title-convention)
 4. Wait for a review from a community maintainer or our team. We generally look for the following criteria:

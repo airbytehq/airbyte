@@ -1,4 +1,4 @@
-version: 6.33.4
+version: 6.34.0
 
 type: DeclarativeSource
 
@@ -22,8 +22,8 @@ definitions:
           http_method: GET
           request_parameters:
             additional-fields[profile]: >-
-              {{ 'predictive_analytics' if not
-              config['disable_fetching_predictive_analytics'] else '' }}
+              {{ 'subscriptions,predictive_analytics' if not
+              config['disable_fetching_predictive_analytics'] else 'subscriptions' }}
             filter: >-
               greater-than(updated,{{
               stream_interval.start_time }})
@@ -38,6 +38,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -81,7 +82,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -116,6 +117,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -164,7 +166,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -212,7 +214,8 @@ definitions:
             include: metric,attributions
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{
+              stream_interval.end_time }}){% if stream_partition.event_metric_id %},equals(metric_id,"{{ stream_partition.event_metric_id }}"){% endif %}
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -224,6 +227,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -251,6 +255,10 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.get('event_metric_ids', '').split(',') | map('trim') | reject('eq', '') | list or [''] }}"
+          cursor_field: event_metric_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: datetime
@@ -263,7 +271,7 @@ definitions:
         cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -295,7 +303,8 @@ definitions:
             fields[metric]: name
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{
+              stream_interval.end_time }}){% if stream_partition.event_metric_id %},equals(metric_id,"{{ stream_partition.event_metric_id }}"){% endif %}
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -307,6 +316,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -336,6 +346,10 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.get('event_metric_ids', '').split(',') | map('trim') | reject('eq', '') | list or [''] }}"
+          cursor_field: event_metric_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: "datetime"
@@ -349,7 +363,7 @@ definitions:
         lookback_window: "P{{ config.get('lookback_window', 0) }}D"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -387,6 +401,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -424,7 +439,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -468,6 +483,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -518,7 +534,7 @@ definitions:
         cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -568,6 +584,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -616,7 +633,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -663,6 +680,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -708,7 +726,7 @@ definitions:
         cursor_granularity: PT1S
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       transformations:
         - type: AddFields
@@ -741,6 +759,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -772,7 +791,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "1970-01-01T00:00:00Z"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -805,6 +824,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -860,6 +880,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -891,7 +912,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -926,6 +947,7 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
               - type: HttpResponseFilter
                 action: RATE_LIMITED
@@ -965,7 +987,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: updated
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
         is_client_side_incremental: true
       transformations:
         - type: AddFields
@@ -977,6 +999,71 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/lists_detailed"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: segments
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+                max_waiting_time_in_seconds: 600
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+        is_client_side_incremental: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - updated
+              value: "{{ record.get('attributes', {}).get('updated') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
     flow_series_reports:
       type: DeclarativeStream
       name: flow_series_reports
@@ -1024,6 +1111,11 @@ definitions:
                   - recipients
                   - revenue_per_recipient
                   - average_order_value
+                  - spam_complaint_rate
+                  - spam_complaints
+                  - unsubscribe_rate
+                  - unsubscribe_uniques
+                  - unsubscribes
                 timeframe:
                   start: "{{ stream_interval.start_time }}"
                   end: "{{ stream_interval.end_time }}"
@@ -1036,7 +1128,16 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                error_message_contains: "does not support querying for values data"
+                error_message: >-
+                  Skipping conversion metric because it does not support
+                  values data queries. Other metrics will continue syncing.
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
@@ -1053,12 +1154,9 @@ definitions:
         record_selector:
           type: RecordSelector
           extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - attributes
-              - results
-              - "*"
+            type: CustomRecordExtractor
+            class_name: >-
+              source_declarative_manifest.components.FlowSeriesPerDayExtractor
           schema_normalization: Default
         paginator:
           type: DefaultPaginator
@@ -1083,18 +1181,29 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # Every report window covers whole calendar days: the start is floored to midnight and the
+        # last window stops at the end of the previous day. Klaviyo report timeframes are inclusive
+        # on both ends and round the end up to :59:59 of its hour, so a window that stops mid-day
+        # reports that whole day and so does the next window. Stopping at the previous day also
+        # keeps today's partial numbers out of the report - the next sync reads that day in full.
+        # Klaviyo evaluates both bounds in the account's company timezone (it documents that the
+        # offset written here is ignored), so these are whole days in that timezone, not in UTC.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
+        lookback_window: "P{{ config.get('reporting_lookback_window', 0) }}D"
       transformations:
+        # `date` is not added here: FlowSeriesPerDayExtractor already sets it to the calendar day
+        # the row reports on, taken from the report's own date_times array.
         - type: AddFields
           fields:
-            - path:
-                - date
-              value: "{{ stream_interval.end_time }}"
             - path:
                 - flow_id
               value: "{{ record.get('groupings', {}).get('flow_id') }}"
@@ -1178,7 +1287,16 @@ definitions:
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
+                max_waiting_time_in_seconds: 600
             response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                error_message_contains: "does not support querying for values data"
+                error_message: >-
+                  Skipping conversion metric because it does not support
+                  values data queries. Other metrics will continue syncing.
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
@@ -1225,9 +1343,26 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        # Whole calendar day windows, as in flow_series_reports, and here they are what keeps the
+        # numbers right rather than merely tidy. This endpoint takes no `interval`, so a request
+        # answers with a single aggregate over the whole window and the connector has to give that
+        # row a `date` itself (see the transformation below). That `date` is also the cursor the
+        # next sync resumes from, so a window ending at the moment the sync runs would store a
+        # wall-clock instant, the next sync would start requesting mid-day, and the day on that
+        # boundary would end up inside two aggregates filed under two different `date` values -
+        # counted twice, with nothing for a destination to deduplicate. Ending on the last complete
+        # day instead makes consecutive syncs tile the calendar exactly, and a second sync on the
+        # same day requests nothing at all.
+        # A lookback window is deliberately not offered here: re-reading a period would return a
+        # fresh aggregate under a new `date`, adding to the previous rows instead of replacing
+        # them. See the reporting_lookback_window spec field.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P1Y')).strftime('%Y-%m-%dT%H:%M:%SZ'))[:10] }}T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ (now_utc() - duration('P1D')).strftime('%Y-%m-%dT23:59:59Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
@@ -1236,7 +1371,10 @@ definitions:
           fields:
             - path:
                 - date
-              value: "{{ stream_interval.end_time }}"
+              # The exclusive upper bound of the period this row aggregates. The window ends at
+              # 23:59:59 on its last day, so this is the midnight that closes it - a day boundary,
+              # which is what the next sync needs to resume from without re-reading that day.
+              value: "{{ (str_to_datetime(stream_interval.end_time) + duration('P1D')).strftime('%Y-%m-%dT00:00:00+00:00') }}"
             - path:
                 - campaign_id
               value: "{{ record.get('groupings', {}).get('campaign_id') }}"
@@ -1278,6 +1416,7 @@ streams:
   - $ref: "#/definitions/streams/metrics"
   - $ref: "#/definitions/streams/lists"
   - $ref: "#/definitions/streams/lists_detailed"
+  - $ref: "#/definitions/streams/segments"
   # Analytics streams
   - $ref: "#/definitions/streams/flow_series_reports"
   - $ref: "#/definitions/streams/campaign_values_reports"
@@ -1304,7 +1443,9 @@ spec:
         description: >-
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated. This field is optional - if not
-          provided, all data will be replicated.
+          provided, Airbyte will replicate the data for the last year. The
+          metrics stream is not affected by this field and always syncs all
+          metric definitions.
         title: Start Date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
@@ -1329,7 +1470,7 @@ spec:
           upper boundary is based on the limit of your Klaviyo plan. More info
           about the rate limit plan tiers can be found on Klaviyo's API <a
           href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 50
         default: 10
@@ -1343,7 +1484,8 @@ spec:
         description: >-
           The number of days to look back when syncing data in incremental mode.
           This helps capture any late-arriving data. Only applies to the
-          events_detailed stream.
+          events_detailed stream. For the flow_series_reports stream, use
+          Reporting Lookback Window instead.
         title: Lookback Window (Days)
         minimum: 0
         default: 0
@@ -1351,6 +1493,31 @@ spec:
           - 0
           - 7
         order: 4
+      reporting_lookback_window:
+        type: integer
+        title: Reporting Lookback Window (Days)
+        description: >-
+          Re-syncs the last N days of the flow_series_reports stream on every
+          incremental run. Klaviyo keeps updating conversion attribution after a
+          send - by default for up to 5 days, and up to 90 days if you raise the
+          attribution window in your account settings - so the numbers first
+          reported for a day keep changing for a while. Set this to at least your
+          attribution window to pick those revisions up. Because
+          flow_series_reports rows are keyed by the calendar day they report on, a
+          destination that deduplicates on the primary key replaces the row
+          previously written for a re-synced day, while in append mode each
+          re-synced day adds an extra row per sync. This does not apply to
+          campaign_values_reports: that endpoint returns a single aggregate for the
+          whole requested period instead of a per-day breakdown, so a re-read
+          cannot replace anything and would only add double-counted rows. Defaults
+          to 0 (no re-sync).
+        minimum: 0
+        default: 0
+        examples:
+          - 0
+          - 7
+          - 30
+        order: 5
       metric_ids:
         type: string
         title: Report Stream Conversion Metric IDs
@@ -1365,7 +1532,23 @@ spec:
           for Placed Order) to avoid slow syncs. Find metric IDs in your Klaviyo
           account under Analytics > Metrics, or use the metrics stream to list all
           available metrics and their IDs.
-        order: 5
+        order: 6
+        examples:
+          - "RESQ6t"
+          - "RESQ6t,ABC123,XYZ789"
+      event_metric_ids:
+        type: string
+        title: Event Stream Metric IDs
+        description: >-
+          OPTIONAL: Comma-separated list of Klaviyo metric IDs to filter the
+          events and events_detailed streams. If left empty, events for ALL
+          metrics will be synced. Specify only the metrics you need to
+          significantly reduce sync volume and duration. Note: Klaviyo does not
+          support filtering by custom metrics - only built-in metrics can be
+          filtered. Find metric IDs in your Klaviyo account under Analytics >
+          Metrics, or use the metrics stream to list all available metrics and
+          their IDs.
+        order: 7
         examples:
           - "RESQ6t"
           - "RESQ6t,ABC123,XYZ789"
@@ -1384,6 +1567,7 @@ metadata:
     metrics: false
     lists: false
     lists_detailed: false
+    segments: false
     flow_series_reports: false
     campaign_values_reports: false
   yamlComponents:
@@ -1413,6 +1597,9 @@ metadata:
         - errorHandler
         - incrementalSync
       lists_detailed:
+        - errorHandler
+        - incrementalSync
+      segments:
         - errorHandler
         - incrementalSync
       flow_series_reports:
@@ -3748,6 +3935,152 @@ schemas:
           - "null"
           - string
         format: date-time
+  segments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      attributes:
+        type:
+          - "null"
+          - object
+        properties:
+          name:
+            type:
+              - "null"
+              - string
+          definition:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              condition_groups:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+          created:
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated:
+            type:
+              - "null"
+              - string
+            format: date-time
+          is_active:
+            type:
+              - "null"
+              - boolean
+          is_processing:
+            type:
+              - "null"
+              - boolean
+          is_starred:
+            type:
+              - "null"
+              - boolean
+      id:
+        type: string
+      links:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          self:
+            type: string
+      relationships:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          flow-triggers:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      type:
+                        - "null"
+                        - string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type:
+                      - "null"
+                      - string
+                  self:
+                    type:
+                      - "null"
+                      - string
+          profiles:
+            type:
+              - "null"
+              - object
+            properties:
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+          tags:
+            type:
+              - "null"
+              - object
+            properties:
+              data:
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+              links:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  related:
+                    type: string
+                  self:
+                    type: string
+      updated:
+        type:
+          - "null"
+          - string
+        format: date-time
   flow_series_reports:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -3758,7 +4091,9 @@ schemas:
           - "null"
           - string
         format: date-time
-        description: End date of the reporting period (used as cursor field)
+        description: >-
+          The calendar day this row reports on, taken from the report date_times array.
+          This is the cursor field.
       flow_id:
         type:
           - "null"
@@ -3806,162 +4141,143 @@ schemas:
           - "null"
           - object
         additionalProperties: true
-        description: Time-series statistics (arrays of values, one per day in the reporting period)
+        description: Report statistics for this calendar day, one scalar value per statistic
         properties:
           opens:
             type:
               - "null"
-              - array
-            description: Number of opens per day
-            items:
-              type: number
+              - number
+            description: Number of opens for this day
           opens_unique:
             type:
               - "null"
-              - array
-            description: Number of unique opens per day
-            items:
-              type: number
+              - number
+            description: Number of unique opens for this day
           clicks:
             type:
               - "null"
-              - array
-            description: Number of clicks per day
-            items:
-              type: number
+              - number
+            description: Number of clicks for this day
           clicks_unique:
             type:
               - "null"
-              - array
-            description: Number of unique clicks per day
-            items:
-              type: number
+              - number
+            description: Number of unique clicks for this day
           delivered:
             type:
               - "null"
-              - array
-            description: Number of delivered messages per day
-            items:
-              type: number
+              - number
+            description: Number of delivered messages for this day
           bounced:
             type:
               - "null"
-              - array
-            description: Number of bounces per day
-            items:
-              type: number
+              - number
+            description: Number of bounces for this day
           bounced_or_failed:
             type:
               - "null"
-              - array
-            description: Number of bounced or failed messages per day
-            items:
-              type: number
+              - number
+            description: Number of bounced or failed messages for this day
           bounced_or_failed_rate:
             type:
               - "null"
-              - array
-            description: Bounce or failure rate per day
-            items:
-              type: number
+              - number
+            description: Bounce or failure rate for this day
           failed:
             type:
               - "null"
-              - array
-            description: Number of failed messages per day
-            items:
-              type: number
+              - number
+            description: Number of failed messages for this day
           failed_rate:
             type:
               - "null"
-              - array
-            description: Failure rate per day
-            items:
-              type: number
+              - number
+            description: Failure rate for this day
           conversions:
             type:
               - "null"
-              - array
-            description: Number of conversions per day
-            items:
-              type: number
+              - number
+            description: Number of conversions for this day
           conversion_value:
             type:
               - "null"
-              - array
-            description: Conversion value per day
-            items:
-              type: number
+              - number
+            description: Conversion value for this day
           conversion_rate:
             type:
               - "null"
-              - array
-            description: Conversion rate per day
-            items:
-              type: number
+              - number
+            description: Conversion rate for this day
           conversion_uniques:
             type:
               - "null"
-              - array
-            description: Unique conversions per day
-            items:
-              type: number
+              - number
+            description: Unique conversions for this day
           click_rate:
             type:
               - "null"
-              - array
-            description: Click rate per day
-            items:
-              type: number
+              - number
+            description: Click rate for this day
           open_rate:
             type:
               - "null"
-              - array
-            description: Open rate per day
-            items:
-              type: number
+              - number
+            description: Open rate for this day
           click_to_open_rate:
             type:
               - "null"
-              - array
-            description: Click-to-open rate per day
-            items:
-              type: number
+              - number
+            description: Click-to-open rate for this day
           delivery_rate:
             type:
               - "null"
-              - array
-            description: Delivery rate per day
-            items:
-              type: number
+              - number
+            description: Delivery rate for this day
           bounce_rate:
             type:
               - "null"
-              - array
-            description: Bounce rate per day
-            items:
-              type: number
+              - number
+            description: Bounce rate for this day
           recipients:
             type:
               - "null"
-              - array
-            description: Number of recipients per day
-            items:
-              type: number
+              - number
+            description: Number of recipients for this day
           revenue_per_recipient:
             type:
               - "null"
-              - array
-            description: Revenue per recipient per day
-            items:
-              type: number
+              - number
+            description: Revenue per recipient for this day
           average_order_value:
             type:
               - "null"
-              - array
-            description: Average order value per day
-            items:
-              type: number
+              - number
+            description: Average order value for this day
+          unsubscribes:
+            type:
+              - "null"
+              - number
+            description: Number of unsubscribes for this day
+          unsubscribe_uniques:
+            type:
+              - "null"
+              - number
+            description: Number of unique unsubscribes for this day
+          unsubscribe_rate:
+            type:
+              - "null"
+              - number
+            description: Unsubscribe rate for this day
+          spam_complaints:
+            type:
+              - "null"
+              - number
+            description: Number of spam complaints for this day
+          spam_complaint_rate:
+            type:
+              - "null"
+              - number
+            description: Spam complaint rate for this day
   campaign_values_reports:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -3972,7 +4288,9 @@ schemas:
           - "null"
           - string
         format: date-time
-        description: End date of the reporting period (used as cursor field)
+        description: >-
+          Exclusive upper bound of the reporting period this row aggregates - the midnight after
+          its last calendar day (used as cursor field)
       campaign_id:
         type:
           - "null"
@@ -4265,6 +4583,16 @@ api_budget:
           url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
           params:
             "additional-fields[list]": "profile_count"
+    # Segments
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 75 # burst: 75 calls per second
+          interval: PT1S
+        - limit: 750 # steady: 750 calls per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "^/api/segments($|/)"
     # Flow Series Reports (XS tier)
     - type: MovingWindowCallRatePolicy
       rates:
@@ -4306,7 +4634,8 @@ api_budget:
 #| metrics           | https://developers.klaviyo.com/en/reference/get_metrics              | M                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
 #| lists             | https://developers.klaviyo.com/en/reference/get_lists                | L                       | Yes, shared with lists_detailed    | No as `step` is not defined in `incremental_sync` | 2                                                                | With other streams (lists_detailed), not within stream as `step` not defined    |
 #| lists_detailed    | https://developers.klaviyo.com/en/reference/get_lists                | 1/s                     | Yes, shared with lists             | No as `step` is not defined in `incremental_sync` | 1                                                                | With other streams (lists), not within stream as `step` not defined             |
-# Note: As of 2024-11-11, `metrics`, `lists` and `lists_detailed` are not supported by the Concurrent CDK as they do client side-filtering.
+#| segments          | https://developers.klaviyo.com/en/reference/get_segments             | L                       | None                               | No as `step` is not defined in `incremental_sync` | 1                                                                | None                                                                            |
+# Note: As of 2024-11-11, `metrics`, `lists`, `lists_detailed` and `segments` are not supported by the Concurrent CDK as they do client side-filtering.
 
 # Based on the above, the only threads that allow for slicing and hence might perform more concurrent HTTP requests are `events` and `events_detailed`. There are no slicing for the others and hence the concurrency is limited by the number of streams querying the same endpoint. Given that the event endpoint is XL, we will set a default concurrency to 10.
 
@@ -4314,4 +4643,3 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 25) }}"
   max_concurrency: 50
-

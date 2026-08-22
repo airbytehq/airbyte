@@ -50,6 +50,10 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "workspace": {
+      "description": "The workspace where the segmentation is located.",
+      "type": ["null", "string"]
     }
   }
 }

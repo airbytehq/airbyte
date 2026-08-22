@@ -6,8 +6,8 @@ package io.airbyte.cdk
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.OutputMessageRouter
@@ -39,7 +39,7 @@ abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
     private val nullValueEncoder = FieldValueEncoder(null, NullCodec)
 
     lateinit var outputMessageRouter: OutputMessageRouter
-    lateinit var outputRoute: ((NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit)
+    lateinit var outputRoute: ((NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit)
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun generatePartitionId(length: Int): String =
@@ -149,7 +149,7 @@ abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
     // Validate the data field name with the schema field name so they have the same case.
     private fun validateDataFieldName(
         payload: NativeRecordPayload,
-        schema: Set<FieldOrMetaField>,
+        schema: Set<DataOrMetaField>,
     ): NativeRecordPayload {
         val validatedPayload: NativeRecordPayload = mutableMapOf()
         for (field in schema) {

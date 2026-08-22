@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.snowflake
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -21,7 +21,6 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -114,7 +113,7 @@ class SnowflakeSourceOperations() :
             "DATETIME",
             "TIMESTAMP",
             "TIMESTAMP_NTZ",
-            "TIMESTAMPNTZ", -> LocalDateTimeFieldType
+            "TIMESTAMPNTZ", -> SnowflakeLocalDateTimeFieldType
             "BINARY",
             "VARBINARY", -> BytesFieldType
             "VARIANT",
@@ -150,7 +149,7 @@ class SnowflakeSourceOperations() :
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
-    fun Field.sql(): String = "\"$id\""
+    fun DataField.sql(): String = "\"$id\""
 
     fun FromNode.sql(): String =
         when (this) {

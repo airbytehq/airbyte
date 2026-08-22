@@ -65,9 +65,12 @@ def clear_cache_before_each_test():
 @fixture
 def config():
     return {
-        "api_token": "token",
-        "domain": "domain",
-        "email": "email@email.com",
+        "credentials": {
+            "auth_type": "API Token",
+            "api_token": "token",
+            "email": "email@email.com",
+        },
+        "domain": "airbyteio.atlassian.net",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
         "enable_experimental_streams": True,
@@ -106,11 +109,6 @@ def groups_response():
 @fixture
 def issue_fields_response():
     return json.loads(load_file("issue_fields.json"))
-
-
-@fixture
-def issues_field_configurations_response():
-    return json.loads(load_file("issues_field_configurations.json"))
 
 
 @fixture
