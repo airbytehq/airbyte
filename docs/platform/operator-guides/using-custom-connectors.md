@@ -101,6 +101,8 @@ You can pull your connector image from your private registry to validate the pre
 
 1. Click **Workspace settings** > **Sources**/**Destinations** depending on your connector. Click **New connector** > **Add a new Docker connector**.
 
+   To automate this workflow, use the [connector definitions API](/developers/connector-definitions).
+
 2. Name your custom connector in `Connector display name`. This is just the display name used for your workspace.
 
 3. Fill in the Docker `Docker full image name` and `Docker image tag`.
@@ -116,6 +118,7 @@ You can pull your connector image from your private registry to validate the pre
 ### Loading connector docker containers into kind
 
 If you are running Airbyte in kind (kubernetes in docker -- this is the default method for abctl), you must load the docker image of that connector into the cluster. If you are seeing the following error, it likely means that the docker image has not been properly loaded into the cluster.
+The same issue affects definitions created through the API, where it surfaces as a spec-read error instead of the UI error shown in these screenshots.
 
 ![Screenshot of UI error when custom connector container is not loaded in the cluster](./assets/custom-connector-error1.png)
 

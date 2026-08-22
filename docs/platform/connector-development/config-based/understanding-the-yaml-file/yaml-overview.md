@@ -1,6 +1,7 @@
 # YAML Components
 
 The low-code framework involves editing a boilerplate [YAML file](../low-code-cdk-overview.md#configuring-the-yaml-file). This section deep dives into the components of the YAML file.
+To learn how to send a manifest to the API, see [Manage connector definitions with the API](/developers/connector-definitions).
 
 ## Stream
 
