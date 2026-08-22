@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsAllFieldsAnyCondition"></a>
@@ -124,7 +124,7 @@ Classes
 <a id="SearchAnalyticsAllFieldsContainsCondition"></a>
 
 `SearchAnalyticsAllFieldsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -133,6 +133,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SearchAnalyticsAllFieldsEndswithCondition"></a>
+
+`SearchAnalyticsAllFieldsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStringFilter`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsAllFieldsEqCondition"></a>
@@ -271,20 +285,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStringFilter`
     :   The type of the None singleton.
 
-<a id="SearchAnalyticsAllFieldsLikeCondition"></a>
-
-`SearchAnalyticsAllFieldsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SearchAnalyticsAllFieldsListParams"></a>
 
 `SearchAnalyticsAllFieldsListParams(*args, **kwargs)`
@@ -384,7 +384,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsAllFieldsOrCondition"></a>
@@ -406,7 +406,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsAllFieldsSearchFilter"></a>
@@ -464,7 +464,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsSortFilter]`
@@ -514,10 +514,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site from which the data originates
 
+<a id="SearchAnalyticsAllFieldsStartswithCondition"></a>
+
+`SearchAnalyticsAllFieldsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsAllFieldsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SearchAnalyticsAllFieldsStringFilter"></a>
 
 `SearchAnalyticsAllFieldsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -577,7 +591,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByCountryAnyCondition"></a>
@@ -640,7 +654,7 @@ Classes
 <a id="SearchAnalyticsByCountryContainsCondition"></a>
 
 `SearchAnalyticsByCountryContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -649,6 +663,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SearchAnalyticsByCountryEndswithCondition"></a>
+
+`SearchAnalyticsByCountryEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStringFilter`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByCountryEqCondition"></a>
@@ -778,20 +806,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStringFilter`
     :   The type of the None singleton.
 
-<a id="SearchAnalyticsByCountryLikeCondition"></a>
-
-`SearchAnalyticsByCountryLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStringFilter`
-    :   The type of the None singleton.
-
 <a id="SearchAnalyticsByCountryListParams"></a>
 
 `SearchAnalyticsByCountryListParams(*args, **kwargs)`
@@ -891,7 +905,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByCountryOrCondition"></a>
@@ -913,7 +927,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByCountrySearchFilter"></a>
@@ -962,7 +976,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountrySortFilter]`
@@ -1003,10 +1017,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByCountryStartswithCondition"></a>
+
+`SearchAnalyticsByCountryStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByCountryStringFilter`
+    :   The type of the None singleton.
+
 <a id="SearchAnalyticsByCountryStringFilter"></a>
 
 `SearchAnalyticsByCountryStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1057,7 +1085,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDateAnyCondition"></a>
@@ -1117,7 +1145,7 @@ Classes
 <a id="SearchAnalyticsByDateContainsCondition"></a>
 
 `SearchAnalyticsByDateContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1126,6 +1154,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SearchAnalyticsByDateEndswithCondition"></a>
+
+`SearchAnalyticsByDateEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStringFilter`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDateEqCondition"></a>
@@ -1252,20 +1294,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStringFilter`
     :   The type of the None singleton.
 
-<a id="SearchAnalyticsByDateLikeCondition"></a>
-
-`SearchAnalyticsByDateLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStringFilter`
-    :   The type of the None singleton.
-
 <a id="SearchAnalyticsByDateListParams"></a>
 
 `SearchAnalyticsByDateListParams(*args, **kwargs)`
@@ -1365,7 +1393,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDateOrCondition"></a>
@@ -1387,7 +1415,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDateSearchFilter"></a>
@@ -1433,7 +1461,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateSortFilter]`
@@ -1471,10 +1499,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByDateStartswithCondition"></a>
+
+`SearchAnalyticsByDateStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDateStringFilter`
+    :   The type of the None singleton.
+
 <a id="SearchAnalyticsByDateStringFilter"></a>
 
 `SearchAnalyticsByDateStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1522,7 +1564,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDeviceAnyCondition"></a>
@@ -1585,7 +1627,7 @@ Classes
 <a id="SearchAnalyticsByDeviceContainsCondition"></a>
 
 `SearchAnalyticsByDeviceContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1594,6 +1636,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SearchAnalyticsByDeviceEndswithCondition"></a>
+
+`SearchAnalyticsByDeviceEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStringFilter`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDeviceEqCondition"></a>
@@ -1723,20 +1779,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStringFilter`
     :   The type of the None singleton.
 
-<a id="SearchAnalyticsByDeviceLikeCondition"></a>
-
-`SearchAnalyticsByDeviceLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStringFilter`
-    :   The type of the None singleton.
-
 <a id="SearchAnalyticsByDeviceListParams"></a>
 
 `SearchAnalyticsByDeviceListParams(*args, **kwargs)`
@@ -1836,7 +1878,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDeviceOrCondition"></a>
@@ -1858,7 +1900,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByDeviceSearchFilter"></a>
@@ -1907,7 +1949,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceSortFilter]`
@@ -1948,10 +1990,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site for which search analytics data is being provided
 
+<a id="SearchAnalyticsByDeviceStartswithCondition"></a>
+
+`SearchAnalyticsByDeviceStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByDeviceStringFilter`
+    :   The type of the None singleton.
+
 <a id="SearchAnalyticsByDeviceStringFilter"></a>
 
 `SearchAnalyticsByDeviceStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2002,7 +2058,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByPageAnyCondition"></a>
@@ -2065,7 +2121,7 @@ Classes
 <a id="SearchAnalyticsByPageContainsCondition"></a>
 
 `SearchAnalyticsByPageContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2074,6 +2130,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SearchAnalyticsByPageEndswithCondition"></a>
+
+`SearchAnalyticsByPageEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStringFilter`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByPageEqCondition"></a>
@@ -2203,20 +2273,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStringFilter`
     :   The type of the None singleton.
 
-<a id="SearchAnalyticsByPageLikeCondition"></a>
-
-`SearchAnalyticsByPageLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStringFilter`
-    :   The type of the None singleton.
-
 <a id="SearchAnalyticsByPageListParams"></a>
 
 `SearchAnalyticsByPageListParams(*args, **kwargs)`
@@ -2316,7 +2372,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByPageOrCondition"></a>
@@ -2338,7 +2394,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByPageSearchFilter"></a>
@@ -2387,7 +2443,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageSortFilter]`
@@ -2428,10 +2484,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site for which the search analytics data is being reported
 
+<a id="SearchAnalyticsByPageStartswithCondition"></a>
+
+`SearchAnalyticsByPageStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByPageStringFilter`
+    :   The type of the None singleton.
+
 <a id="SearchAnalyticsByPageStringFilter"></a>
 
 `SearchAnalyticsByPageStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2482,7 +2552,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByQueryAnyCondition"></a>
@@ -2545,7 +2615,7 @@ Classes
 <a id="SearchAnalyticsByQueryContainsCondition"></a>
 
 `SearchAnalyticsByQueryContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2554,6 +2624,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SearchAnalyticsByQueryEndswithCondition"></a>
+
+`SearchAnalyticsByQueryEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStringFilter`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByQueryEqCondition"></a>
@@ -2683,20 +2767,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStringFilter`
     :   The type of the None singleton.
 
-<a id="SearchAnalyticsByQueryLikeCondition"></a>
-
-`SearchAnalyticsByQueryLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStringFilter`
-    :   The type of the None singleton.
-
 <a id="SearchAnalyticsByQueryListParams"></a>
 
 `SearchAnalyticsByQueryListParams(*args, **kwargs)`
@@ -2796,7 +2866,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByQueryOrCondition"></a>
@@ -2818,7 +2888,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SearchAnalyticsByQuerySearchFilter"></a>
@@ -2867,7 +2937,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQuerySortFilter]`
@@ -2908,10 +2978,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site for which the search analytics data is captured
 
+<a id="SearchAnalyticsByQueryStartswithCondition"></a>
+
+`SearchAnalyticsByQueryStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SearchAnalyticsByQueryStringFilter`
+    :   The type of the None singleton.
+
 <a id="SearchAnalyticsByQueryStringFilter"></a>
 
 `SearchAnalyticsByQueryStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2962,7 +3046,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SitemapsAnyCondition"></a>
@@ -3028,7 +3112,7 @@ Classes
 <a id="SitemapsContainsCondition"></a>
 
 `SitemapsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3037,6 +3121,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SitemapsEndswithCondition"></a>
+
+`SitemapsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStringFilter`
     :   The type of the None singleton.
 
 <a id="SitemapsEqCondition"></a>
@@ -3186,20 +3284,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStringFilter`
     :   The type of the None singleton.
 
-<a id="SitemapsLikeCondition"></a>
-
-`SitemapsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SitemapsListParams"></a>
 
 `SitemapsListParams(*args, **kwargs)`
@@ -3275,7 +3359,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SitemapsOrCondition"></a>
@@ -3297,7 +3381,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SitemapsSearchFilter"></a>
@@ -3349,7 +3433,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitemapsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SitemapsSortFilter]`
@@ -3393,10 +3477,24 @@ Classes
     `warnings: Literal['asc', 'desc']`
     :   Warnings encountered while processing the sitemaps
 
+<a id="SitemapsStartswithCondition"></a>
+
+`SitemapsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SitemapsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SitemapsStringFilter"></a>
 
 `SitemapsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3450,7 +3548,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SitesAnyCondition"></a>
@@ -3495,7 +3593,7 @@ Classes
 <a id="SitesContainsCondition"></a>
 
 `SitesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3504,6 +3602,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SitesEndswithCondition"></a>
+
+`SitesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.google_search_console.types.SitesStringFilter`
     :   The type of the None singleton.
 
 <a id="SitesEqCondition"></a>
@@ -3629,20 +3741,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.google_search_console.types.SitesStringFilter`
     :   The type of the None singleton.
 
-<a id="SitesLikeCondition"></a>
-
-`SitesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.google_search_console.types.SitesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SitesListParams"></a>
 
 `SitesListParams(*args, **kwargs)`
@@ -3713,7 +3811,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SitesOrCondition"></a>
@@ -3735,7 +3833,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SitesSearchFilter"></a>
@@ -3766,7 +3864,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLikeCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.google_search_console.types.SitesEqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNeqCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesGteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLtCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesLteCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesInCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesStartswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesEndswithCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesFuzzyCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesKeywordCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesContainsCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesNotCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAndCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesOrCondition | airbyte_agent_sdk.connectors.google_search_console.types.SitesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.google_search_console.types.SitesSortFilter]`
@@ -3789,10 +3887,24 @@ Classes
     `site_url: Literal['asc', 'desc']`
     :   The URL of the site data being fetched
 
+<a id="SitesStartswithCondition"></a>
+
+`SitesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.google_search_console.types.SitesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SitesStringFilter"></a>
 
 `SitesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
