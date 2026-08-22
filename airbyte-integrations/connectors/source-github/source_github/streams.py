@@ -15,7 +15,7 @@ import requests
 from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
@@ -45,7 +45,7 @@ from .graphql import (
     get_query_releases,
     get_query_reviews,
 )
-from .utils import GitHubAPILimitException, getter
+from .utils import getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -57,8 +57,10 @@ class GithubStreamABC(HttpStream, ABC):
     stream_base_params = {}
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
+        # No `max_waiting_time` handling here on purpose: the wait bound belongs to the shared
+        # manifest authenticator, which reads that config key through its own `max_wait_time`
+        # field. Setting it on the stream would write a dead attribute onto an authenticator
+        # instance shared with every other stream.
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -159,13 +161,10 @@ class GithubStreamABC(HttpStream, ABC):
                     )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
                 api_message = (e._exception.response.json() or {}).get("message", "")
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
-                    raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, (Organizations, Teams, Users)):
+                if isinstance(self, (Organizations, Teams, Users)):
                     error_msg = (
                         f"Skipping `{self.name}` for organization `{organisation}`: "
                         f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
@@ -212,12 +211,10 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException as e:
-            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
-            message = "Rate limit exceeded for all configured GitHub API tokens."
-            raise AirbyteTracedException(
-                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
-            ) from e
+        # Exhausting every token no longer raises a connector-specific exception here: the
+        # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
+        # `except AirbyteTracedException` branch above re-raises untouched (it carries no
+        # response to classify).
 
 
 class GithubStream(GithubStreamABC):
@@ -495,31 +492,6 @@ class Organizations(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
         return record
-
-
-class Repositories(SemiIncrementalMixin, Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
-        self._pattern = re.compile(pattern) if pattern else pattern
-        super().__init__(*args, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            record = self.transform(record=record, stream_slice=stream_slice)
-            if not self._pattern or self._pattern.match(record["full_name"]):
-                yield record
 
 
 class Tags(GithubStream):
