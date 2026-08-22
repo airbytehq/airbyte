@@ -80,22 +80,20 @@ To diagnose long delays, check the Kubernetes pod events (`kubectl describe pod 
 
 Airbyte runs a background monitoring process (the **Workload Monitor**) that periodically checks whether workloads are making expected progress through their lifecycle. If a workload misses its expected deadline, the monitor fails it automatically.
 
-The monitor runs the following checks approximately every minute:
+The monitor runs the following checks every minute by default:
 
-| Check | Watches for | Error message | Likely cause |
-|-------|------------|---------------|-------------|
-| **Not claimed** | Workloads stuck in PENDING status past their deadline | _"No data-plane available to process the job."_ | No Launcher instances are running, or all are at capacity. |
-| **Not started** | Workloads stuck in CLAIMED status past their deadline | _"Unable to start the job."_ | The Launcher claimed the workload but failed to launch the pod (e.g. Kubernetes API errors, resource limits). |
+| Check | Watches for | Failure message | Likely cause |
+| --- | --- | --- | --- |
+| **Not claimed** | Workloads stuck in PENDING status past their deadline | _"Airbyte could not start the process within time limit. No data-plane available to process the job."_ | No Launcher instances are running, or all are at capacity. |
+| **Not started** | Workloads stuck in CLAIMED status past their deadline | _"Airbyte could not start the process within time limit. Unable to start the job."_ | The Launcher claimed the workload but failed to launch the pod (e.g. Kubernetes API errors, resource limits). |
 | **Not heartbeating** | Workloads in LAUNCHED or RUNNING status whose heartbeat deadline has expired | _"Airbyte could not track the sync progress. Sync process exited without reporting status."_ | The pod crashed, was OOM-killed, or the orchestrator process exited before it could report status. |
-| **Timeout** | Workloads exceeding their maximum allowed duration | _(varies)_ | Non-sync workloads timeout after 4 hours by default; sync workloads after 30 days. |
+| **Timeout** | Workloads exceeding their maximum allowed duration | _"Non sync workload timeout"_ or _"Sync workload timeout"_ | Non-sync workloads time out after 4 hours by default; sync workloads after 30 days. |
 
-When one of these checks fails a workload, the platform surfaces a `WorkloadMonitorException` with failure type `TRANSIENT_ERROR`. The user-facing message is:
-
-> _"Airbyte could not start the sync process or track the progress of the sync."_
+When one of these checks fails a workload, the message above becomes the attempt's failure message, attributed to the Airbyte platform. Older Airbyte versions reported these failures as a `WorkloadMonitorException` with the message _"Airbyte could not start the sync process or track the progress of the sync."_, so you may still see that wording in older logs or job history.
 
 This is distinct from [source/destination heartbeat errors](./heartbeats.md), which monitor connector-level responsiveness within a running sync. The Workload Monitor operates at the platform level and checks whether the pod itself is alive and reporting.
 
-**How to debug a WorkloadMonitorException:**
+**How to debug a Workload Monitor failure:**
 
 1. Check the Kubernetes pod status: `kubectl get pods -n <namespace>` — look for `CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, or `Pending` states.
 2. Inspect pod events: `kubectl describe pod <pod-name> -n <namespace>` — check for scheduling failures, resource pressure, or image pull errors.
@@ -178,10 +176,10 @@ Retries described above operate **within a single job execution**. However, cert
 1. All in-progress jobs for the connection are **terminally failed** — both the current attempt and the job itself are marked as `FAILED`.
 2. The failure message reads: _"An internal transient Airbyte error has occurred. The sync should work fine on the next retry."_
 3. **No automatic retry occurs.** The connection waits for its next scheduled sync to create a new job.
-4. Retry counters (successive failures, total failures) are reset because they are scoped to a single workflow execution.
+4. Retry counters (successive failures, total failures) start over, because retry state is tracked per job and the next scheduled sync creates a new job.
 
 :::note
-The error message says "the sync should work fine on the next retry," but this refers to the **next scheduled sync run**, not an immediate automatic retry. If the underlying issue persists (e.g. repeated platform restarts), the connection may fail on successive scheduled runs without ever completing.
+The error message says "the sync should work fine on the next retry," but this refers to the **next scheduled sync run**, not an immediate automatic retry. Connections without a schedule need to be triggered manually. If the underlying issue persists (e.g. repeated platform restarts), the connection may fail on successive scheduled runs without ever completing.
 :::
 
 ### Retry Backoff
