@@ -654,3 +654,31 @@ def test_report_date_columns_match_time_unit(stream_name: str, configuration: di
         assert not {"startDate", "endDate"} & columns, f"{stream_name}: DAILY report requests SUMMARY-only date columns"
     else:
         assert "date" not in columns, f"{stream_name}: SUMMARY report requests the DAILY-only `date` column"
+
+
+# Columns Amazon documents for the report type but rejects for this specific `groupBy`, keyed by
+# (reportTypeId, sorted groupBy). Rejection fails the whole `POST /reporting/reports` call with
+# 400/422, so the stream returns nothing. Mirrors the table in AGENTS.md section 3; only extend it
+# after a live run against a real account proves the column is accepted (or rejected).
+_AMAZON_REJECTED_COLUMNS = {
+    ("spCampaigns", ("adGroup", "campaign")): {"topOfSearchImpressionShare"},
+    ("spPurchasedProduct", ("asin",)): {
+        "addToListFromClicks",
+        "marketplace",
+        "qualifiedBorrowsFromClicks",
+        "royaltyQualifiedBorrowsFromClicks",
+    },
+}
+
+
+@pytest.mark.parametrize("stream_name, configuration, schema", _report_stream_configurations())
+def test_no_report_stream_requests_a_column_amazon_rejects(stream_name: str, configuration: dict, schema: dict) -> None:
+    """Amazon enforces per-`groupBy` exclusions that appear nowhere in its column reference and
+    rejects the entire report-creation request, so a re-added column silently empties the stream.
+    The schema assertion also catches the orphaned-property case, where the column is dropped but
+    its declaration is left behind."""
+    rejected = _AMAZON_REJECTED_COLUMNS.get((configuration["reportTypeId"], tuple(sorted(configuration["groupBy"]))), set())
+    requested = sorted(rejected & set(configuration["columns"]))
+    assert not requested, f"{stream_name}: Amazon rejects these columns for this groupBy: {requested}"
+    declared = sorted(rejected & set(schema["properties"]))
+    assert not declared, f"{stream_name}: schema declares columns Amazon rejects for this groupBy: {declared}"
