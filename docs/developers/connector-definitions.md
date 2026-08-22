@@ -35,13 +35,13 @@ Use the declarative endpoints for anything built in the Connector Builder.
 ## Find the definition ID for a connector
 
 This is the most common use of these endpoints, and it needs no custom connectors at
-all. List the definitions in a workspace to get the `definitionId` you need to create
-a source:
+all. List the definitions in a workspace and take the `id` of the connector you want:
+that value is the `definitionId` you pass when you create a source or a destination.
 
 ```bash
 curl --request GET \
-  --url 'https://api.airbyte.com/v1/workspaces/WORKSPACE_ID/definitions/sources' \
-  --header 'authorization: Bearer YOUR_ACCESS_TOKEN'
+  --url 'https://api.airbyte.com/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/sources' \
+  --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>'
 ```
 
 ```json
@@ -63,11 +63,11 @@ Then create a source from it:
 ```bash
 curl --request POST \
   --url 'https://api.airbyte.com/v1/sources' \
-  --header 'authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
   --header 'content-type: application/json' \
   --data '{
     "name": "Sample data",
-    "workspaceId": "WORKSPACE_ID",
+    "workspaceId": "<YOUR_WORKSPACE_ID>",
     "definitionId": "dfd88b22-b603-4c3d-aad7-3701784586b1",
     "configuration": { "count": 1000 }
   }'
@@ -81,12 +81,13 @@ workspace provisioning.
 
 On Airbyte Cloud, a declarative source definition is the way to add a connector
 Airbyte doesn't have. You send a Connector Builder manifest instead of a Docker image,
-and Airbyte publishes it as version 1:
+and Airbyte publishes it as version 1. Your real manifest declares its streams in
+`streams`, left empty here for brevity:
 
 ```bash
 curl --request POST \
-  --url 'https://api.airbyte.com/v1/workspaces/WORKSPACE_ID/definitions/declarative_sources' \
-  --header 'authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --url 'https://api.airbyte.com/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/declarative_sources' \
+  --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
   --header 'content-type: application/json' \
   --data '{
     "name": "Internal Orders API",
@@ -94,7 +95,7 @@ curl --request POST \
       "version": "6.48.15",
       "type": "DeclarativeSource",
       "check": { "type": "CheckStream", "stream_names": ["orders"] },
-      "streams": [ ... ],
+      "streams": [],
       "spec": {
         "type": "Spec",
         "connection_specification": {
@@ -136,8 +137,8 @@ the endpoint to call from CI when the manifest changes in git:
 
 ```bash
 curl --request PUT \
-  --url 'https://api.airbyte.com/v1/workspaces/WORKSPACE_ID/definitions/declarative_sources/DEFINITION_ID' \
-  --header 'authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --url 'https://api.airbyte.com/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/declarative_sources/<DEFINITION_ID>' \
+  --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
   --header 'content-type: application/json' \
   --data '{ "manifest": { "...": "your updated manifest" } }'
 ```
@@ -151,8 +152,8 @@ in a workspace with `POST definitions/sources` (or `definitions/destinations`):
 
 ```bash
 curl --request POST \
-  --url 'https://YOUR_AIRBYTE_HOST/api/public/v1/workspaces/WORKSPACE_ID/definitions/sources' \
-  --header 'authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --url '<YOUR_AIRBYTE_URL>/api/public/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/sources' \
+  --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
   --header 'content-type: application/json' \
   --data '{
     "name": "Internal Orders API",
@@ -174,8 +175,8 @@ tag:
 
 ```bash
 curl --request PUT \
-  --url 'https://YOUR_AIRBYTE_HOST/api/public/v1/workspaces/WORKSPACE_ID/definitions/sources/DEFINITION_ID' \
-  --header 'authorization: Bearer YOUR_ACCESS_TOKEN' \
+  --url '<YOUR_AIRBYTE_URL>/api/public/v1/workspaces/<YOUR_WORKSPACE_ID>/definitions/sources/<DEFINITION_ID>' \
+  --header 'authorization: Bearer <YOUR_ACCESS_TOKEN>' \
   --header 'content-type: application/json' \
   --data '{ "name": "Internal Orders API", "dockerImageTag": "1.5.0" }'
 ```
