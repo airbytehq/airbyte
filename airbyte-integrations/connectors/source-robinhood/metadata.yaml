@@ -1,0 +1,47 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.robinhood.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f2b7e85a-3c4d-4b9e-a1f6-8d2c5e7a9b0d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-robinhood
+  documentationUrl: https://docs.airbyte.com/integrations/sources/robinhood
+  githubIssueLabel: source-robinhood
+  icon: robinhood.svg
+  license: ELv2
+  name: Robinhood
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-robinhood
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - accounts
+      - positions
+      - orders
+      - dividends
+  supportLevel: community
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  externalDocumentationUrls:
+    - title: Unofficial Robinhood API documentation
+      url: https://github.com/sanko/Robinhood
+      type: api_reference
+    - title: robin_stocks Python library
+      url: https://robin-stocks.readthedocs.io/en/latest/robinhood.html
+      type: other
+metadataSpecVersion: "1.0"
