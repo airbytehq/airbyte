@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountUsersAnyCondition"></a>
@@ -83,7 +83,7 @@ Classes
 <a id="AccountUsersContainsCondition"></a>
 
 `AccountUsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -129,6 +129,20 @@ Classes
     :   The type of the None singleton.
 
     `user: str`
+    :   The type of the None singleton.
+
+<a id="AccountUsersEndswithCondition"></a>
+
+`AccountUsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
     :   The type of the None singleton.
 
 <a id="AccountUsersEqCondition"></a>
@@ -249,20 +263,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
     :   The type of the None singleton.
 
-<a id="AccountUsersLikeCondition"></a>
-
-`AccountUsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="AccountUsersListParams"></a>
 
 `AccountUsersListParams(*args, **kwargs)`
@@ -347,7 +347,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="AccountUsersOrCondition"></a>
@@ -369,7 +369,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountUsersSearchFilter"></a>
@@ -409,7 +409,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersSortFilter]`
@@ -441,10 +441,24 @@ Classes
     `user: Literal['asc', 'desc']`
     :   The user details including name, email, etc.
 
+<a id="AccountUsersStartswithCondition"></a>
+
+`AccountUsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountUsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="AccountUsersStringFilter"></a>
 
 `AccountUsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -520,7 +534,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsAnyCondition"></a>
@@ -607,7 +621,7 @@ Classes
 <a id="AccountsContainsCondition"></a>
 
 `AccountsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -656,6 +670,20 @@ Classes
     ### Class variables
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="AccountsEndswithCondition"></a>
+
+`AccountsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
 
 <a id="AccountsEqCondition"></a>
@@ -823,20 +851,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
     :   The type of the None singleton.
 
-<a id="AccountsLikeCondition"></a>
-
-`AccountsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AccountsListParams"></a>
 
 `AccountsListParams(*args, **kwargs)`
@@ -918,7 +932,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AccountsOrCondition"></a>
@@ -940,7 +954,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsSearchFilter"></a>
@@ -1013,7 +1027,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsSortFilter]`
@@ -1078,10 +1092,24 @@ Classes
     `version: Literal['asc', 'desc']`
     :   The version information related to the account.
 
+<a id="AccountsStartswithCondition"></a>
+
+`AccountsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AccountsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AccountsStringFilter"></a>
 
 `AccountsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1187,7 +1215,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdCampaignAnalyticsAnyCondition"></a>
@@ -1523,7 +1551,7 @@ Classes
 <a id="AdCampaignAnalyticsContainsCondition"></a>
 
 `AdCampaignAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1532,6 +1560,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdCampaignAnalyticsEndswithCondition"></a>
+
+`AdCampaignAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdCampaignAnalyticsEqCondition"></a>
@@ -1934,20 +1976,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdCampaignAnalyticsLikeCondition"></a>
-
-`AdCampaignAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdCampaignAnalyticsListParams"></a>
 
 `AdCampaignAnalyticsListParams(*args, **kwargs)`
@@ -2038,7 +2066,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdCampaignAnalyticsOrCondition"></a>
@@ -2060,7 +2088,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdCampaignAnalyticsSearchFilter"></a>
@@ -2382,7 +2410,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsSortFilter]`
@@ -2696,10 +2724,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdCampaignAnalyticsStartswithCondition"></a>
+
+`AdCampaignAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCampaignAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdCampaignAnalyticsStringFilter"></a>
 
 `AdCampaignAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3023,7 +3065,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdCreativeAnalyticsAnyCondition"></a>
@@ -3359,7 +3401,7 @@ Classes
 <a id="AdCreativeAnalyticsContainsCondition"></a>
 
 `AdCreativeAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3368,6 +3410,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdCreativeAnalyticsEndswithCondition"></a>
+
+`AdCreativeAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdCreativeAnalyticsEqCondition"></a>
@@ -3770,20 +3826,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdCreativeAnalyticsLikeCondition"></a>
-
-`AdCreativeAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdCreativeAnalyticsListParams"></a>
 
 `AdCreativeAnalyticsListParams(*args, **kwargs)`
@@ -3874,7 +3916,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdCreativeAnalyticsOrCondition"></a>
@@ -3896,7 +3938,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdCreativeAnalyticsSearchFilter"></a>
@@ -4218,7 +4260,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsSortFilter]`
@@ -4532,10 +4574,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdCreativeAnalyticsStartswithCondition"></a>
+
+`AdCreativeAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdCreativeAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdCreativeAnalyticsStringFilter"></a>
 
 `AdCreativeAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4859,7 +4915,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdImpressionDeviceAnalyticsAnyCondition"></a>
@@ -5195,7 +5251,7 @@ Classes
 <a id="AdImpressionDeviceAnalyticsContainsCondition"></a>
 
 `AdImpressionDeviceAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5204,6 +5260,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdImpressionDeviceAnalyticsEndswithCondition"></a>
+
+`AdImpressionDeviceAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdImpressionDeviceAnalyticsEqCondition"></a>
@@ -5606,20 +5676,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdImpressionDeviceAnalyticsLikeCondition"></a>
-
-`AdImpressionDeviceAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdImpressionDeviceAnalyticsListParams"></a>
 
 `AdImpressionDeviceAnalyticsListParams(*args, **kwargs)`
@@ -5710,7 +5766,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdImpressionDeviceAnalyticsOrCondition"></a>
@@ -5732,7 +5788,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdImpressionDeviceAnalyticsSearchFilter"></a>
@@ -6054,7 +6110,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsSortFilter]`
@@ -6368,10 +6424,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdImpressionDeviceAnalyticsStartswithCondition"></a>
+
+`AdImpressionDeviceAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdImpressionDeviceAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdImpressionDeviceAnalyticsStringFilter"></a>
 
 `AdImpressionDeviceAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6695,7 +6765,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanyAnalyticsAnyCondition"></a>
@@ -7031,7 +7101,7 @@ Classes
 <a id="AdMemberCompanyAnalyticsContainsCondition"></a>
 
 `AdMemberCompanyAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -7040,6 +7110,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberCompanyAnalyticsEndswithCondition"></a>
+
+`AdMemberCompanyAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanyAnalyticsEqCondition"></a>
@@ -7442,20 +7526,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberCompanyAnalyticsLikeCondition"></a>
-
-`AdMemberCompanyAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberCompanyAnalyticsListParams"></a>
 
 `AdMemberCompanyAnalyticsListParams(*args, **kwargs)`
@@ -7546,7 +7616,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanyAnalyticsOrCondition"></a>
@@ -7568,7 +7638,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanyAnalyticsSearchFilter"></a>
@@ -7890,7 +7960,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsSortFilter]`
@@ -8204,10 +8274,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberCompanyAnalyticsStartswithCondition"></a>
+
+`AdMemberCompanyAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanyAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberCompanyAnalyticsStringFilter"></a>
 
 `AdMemberCompanyAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8531,7 +8615,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanySizeAnalyticsAnyCondition"></a>
@@ -8867,7 +8951,7 @@ Classes
 <a id="AdMemberCompanySizeAnalyticsContainsCondition"></a>
 
 `AdMemberCompanySizeAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -8876,6 +8960,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberCompanySizeAnalyticsEndswithCondition"></a>
+
+`AdMemberCompanySizeAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanySizeAnalyticsEqCondition"></a>
@@ -9278,20 +9376,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberCompanySizeAnalyticsLikeCondition"></a>
-
-`AdMemberCompanySizeAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberCompanySizeAnalyticsListParams"></a>
 
 `AdMemberCompanySizeAnalyticsListParams(*args, **kwargs)`
@@ -9382,7 +9466,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanySizeAnalyticsOrCondition"></a>
@@ -9404,7 +9488,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberCompanySizeAnalyticsSearchFilter"></a>
@@ -9726,7 +9810,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsSortFilter]`
@@ -10040,10 +10124,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberCompanySizeAnalyticsStartswithCondition"></a>
+
+`AdMemberCompanySizeAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCompanySizeAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberCompanySizeAnalyticsStringFilter"></a>
 
 `AdMemberCompanySizeAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -10367,7 +10465,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberCountryAnalyticsAnyCondition"></a>
@@ -10703,7 +10801,7 @@ Classes
 <a id="AdMemberCountryAnalyticsContainsCondition"></a>
 
 `AdMemberCountryAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -10712,6 +10810,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberCountryAnalyticsEndswithCondition"></a>
+
+`AdMemberCountryAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberCountryAnalyticsEqCondition"></a>
@@ -11114,20 +11226,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberCountryAnalyticsLikeCondition"></a>
-
-`AdMemberCountryAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberCountryAnalyticsListParams"></a>
 
 `AdMemberCountryAnalyticsListParams(*args, **kwargs)`
@@ -11218,7 +11316,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberCountryAnalyticsOrCondition"></a>
@@ -11240,7 +11338,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberCountryAnalyticsSearchFilter"></a>
@@ -11562,7 +11660,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsSortFilter]`
@@ -11876,10 +11974,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberCountryAnalyticsStartswithCondition"></a>
+
+`AdMemberCountryAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberCountryAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberCountryAnalyticsStringFilter"></a>
 
 `AdMemberCountryAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -12203,7 +12315,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberIndustryAnalyticsAnyCondition"></a>
@@ -12539,7 +12651,7 @@ Classes
 <a id="AdMemberIndustryAnalyticsContainsCondition"></a>
 
 `AdMemberIndustryAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -12548,6 +12660,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberIndustryAnalyticsEndswithCondition"></a>
+
+`AdMemberIndustryAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberIndustryAnalyticsEqCondition"></a>
@@ -12950,20 +13076,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberIndustryAnalyticsLikeCondition"></a>
-
-`AdMemberIndustryAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberIndustryAnalyticsListParams"></a>
 
 `AdMemberIndustryAnalyticsListParams(*args, **kwargs)`
@@ -13054,7 +13166,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberIndustryAnalyticsOrCondition"></a>
@@ -13076,7 +13188,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberIndustryAnalyticsSearchFilter"></a>
@@ -13398,7 +13510,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsSortFilter]`
@@ -13712,10 +13824,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberIndustryAnalyticsStartswithCondition"></a>
+
+`AdMemberIndustryAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberIndustryAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberIndustryAnalyticsStringFilter"></a>
 
 `AdMemberIndustryAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -14039,7 +14165,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberJobFunctionAnalyticsAnyCondition"></a>
@@ -14375,7 +14501,7 @@ Classes
 <a id="AdMemberJobFunctionAnalyticsContainsCondition"></a>
 
 `AdMemberJobFunctionAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -14384,6 +14510,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberJobFunctionAnalyticsEndswithCondition"></a>
+
+`AdMemberJobFunctionAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberJobFunctionAnalyticsEqCondition"></a>
@@ -14786,20 +14926,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberJobFunctionAnalyticsLikeCondition"></a>
-
-`AdMemberJobFunctionAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberJobFunctionAnalyticsListParams"></a>
 
 `AdMemberJobFunctionAnalyticsListParams(*args, **kwargs)`
@@ -14890,7 +15016,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberJobFunctionAnalyticsOrCondition"></a>
@@ -14912,7 +15038,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberJobFunctionAnalyticsSearchFilter"></a>
@@ -15234,7 +15360,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsSortFilter]`
@@ -15548,10 +15674,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberJobFunctionAnalyticsStartswithCondition"></a>
+
+`AdMemberJobFunctionAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobFunctionAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberJobFunctionAnalyticsStringFilter"></a>
 
 `AdMemberJobFunctionAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -15875,7 +16015,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberJobTitleAnalyticsAnyCondition"></a>
@@ -16211,7 +16351,7 @@ Classes
 <a id="AdMemberJobTitleAnalyticsContainsCondition"></a>
 
 `AdMemberJobTitleAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -16220,6 +16360,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberJobTitleAnalyticsEndswithCondition"></a>
+
+`AdMemberJobTitleAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberJobTitleAnalyticsEqCondition"></a>
@@ -16622,20 +16776,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberJobTitleAnalyticsLikeCondition"></a>
-
-`AdMemberJobTitleAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberJobTitleAnalyticsListParams"></a>
 
 `AdMemberJobTitleAnalyticsListParams(*args, **kwargs)`
@@ -16726,7 +16866,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberJobTitleAnalyticsOrCondition"></a>
@@ -16748,7 +16888,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberJobTitleAnalyticsSearchFilter"></a>
@@ -17070,7 +17210,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsSortFilter]`
@@ -17384,10 +17524,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberJobTitleAnalyticsStartswithCondition"></a>
+
+`AdMemberJobTitleAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberJobTitleAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberJobTitleAnalyticsStringFilter"></a>
 
 `AdMemberJobTitleAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -17711,7 +17865,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberRegionAnalyticsAnyCondition"></a>
@@ -18047,7 +18201,7 @@ Classes
 <a id="AdMemberRegionAnalyticsContainsCondition"></a>
 
 `AdMemberRegionAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -18056,6 +18210,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberRegionAnalyticsEndswithCondition"></a>
+
+`AdMemberRegionAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberRegionAnalyticsEqCondition"></a>
@@ -18458,20 +18626,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberRegionAnalyticsLikeCondition"></a>
-
-`AdMemberRegionAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberRegionAnalyticsListParams"></a>
 
 `AdMemberRegionAnalyticsListParams(*args, **kwargs)`
@@ -18562,7 +18716,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberRegionAnalyticsOrCondition"></a>
@@ -18584,7 +18738,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberRegionAnalyticsSearchFilter"></a>
@@ -18906,7 +19060,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsSortFilter]`
@@ -19220,10 +19374,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberRegionAnalyticsStartswithCondition"></a>
+
+`AdMemberRegionAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberRegionAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberRegionAnalyticsStringFilter"></a>
 
 `AdMemberRegionAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -19547,7 +19715,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberSeniorityAnalyticsAnyCondition"></a>
@@ -19883,7 +20051,7 @@ Classes
 <a id="AdMemberSeniorityAnalyticsContainsCondition"></a>
 
 `AdMemberSeniorityAnalyticsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -19892,6 +20060,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdMemberSeniorityAnalyticsEndswithCondition"></a>
+
+`AdMemberSeniorityAnalyticsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdMemberSeniorityAnalyticsEqCondition"></a>
@@ -20294,20 +20476,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdMemberSeniorityAnalyticsLikeCondition"></a>
-
-`AdMemberSeniorityAnalyticsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdMemberSeniorityAnalyticsListParams"></a>
 
 `AdMemberSeniorityAnalyticsListParams(*args, **kwargs)`
@@ -20398,7 +20566,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdMemberSeniorityAnalyticsOrCondition"></a>
@@ -20420,7 +20588,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdMemberSeniorityAnalyticsSearchFilter"></a>
@@ -20742,7 +20910,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsSortFilter]`
@@ -21056,10 +21224,24 @@ Classes
     `viral_video_views: Literal['asc', 'desc']`
     :   Total views of videos in viral distribution of the ad.
 
+<a id="AdMemberSeniorityAnalyticsStartswithCondition"></a>
+
+`AdMemberSeniorityAnalyticsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.AdMemberSeniorityAnalyticsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdMemberSeniorityAnalyticsStringFilter"></a>
 
 `AdMemberSeniorityAnalyticsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -21446,7 +21628,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignGroupsAnyCondition"></a>
@@ -21521,7 +21703,7 @@ Classes
 <a id="CampaignGroupsContainsCondition"></a>
 
 `CampaignGroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -21613,6 +21795,20 @@ Classes
     :   The type of the None singleton.
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="CampaignGroupsEndswithCondition"></a>
+
+`CampaignGroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignGroupsEqCondition"></a>
@@ -21771,20 +21967,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignGroupsLikeCondition"></a>
-
-`CampaignGroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignGroupsListParams"></a>
 
 `CampaignGroupsListParams(*args, **kwargs)`
@@ -21869,7 +22051,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignGroupsOrCondition"></a>
@@ -21891,7 +22073,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignGroupsSearchFilter"></a>
@@ -21952,7 +22134,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsSortFilter]`
@@ -22005,10 +22187,24 @@ Classes
     `total_budget: Literal['asc', 'desc']`
     :   Total budget allocated for the campaign group.
 
+<a id="CampaignGroupsStartswithCondition"></a>
+
+`CampaignGroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignGroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignGroupsStringFilter"></a>
 
 `CampaignGroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -22105,7 +22301,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -22228,7 +22424,7 @@ Classes
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -22384,6 +22580,20 @@ Classes
     :   The type of the None singleton.
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -22590,20 +22800,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -22688,7 +22884,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -22710,7 +22906,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -22819,7 +23015,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsSortFilter]`
@@ -22920,10 +23116,24 @@ Classes
     `version: Literal['asc', 'desc']`
     :   The version information for the campaign.
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -23159,7 +23369,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConversionsAnyCondition"></a>
@@ -23252,7 +23462,7 @@ Classes
 <a id="ConversionsContainsCondition"></a>
 
 `ConversionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -23319,6 +23529,20 @@ Classes
     :   The type of the None singleton.
 
     `currency_code: str`
+    :   The type of the None singleton.
+
+<a id="ConversionsEndswithCondition"></a>
+
+`ConversionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
     :   The type of the None singleton.
 
 <a id="ConversionsEqCondition"></a>
@@ -23492,20 +23716,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
     :   The type of the None singleton.
 
-<a id="ConversionsLikeCondition"></a>
-
-`ConversionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ConversionsListParams"></a>
 
 `ConversionsListParams(*args, **kwargs)`
@@ -23590,7 +23800,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ConversionsOrCondition"></a>
@@ -23612,7 +23822,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConversionsSearchFilter"></a>
@@ -23691,7 +23901,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsSortFilter]`
@@ -23762,10 +23972,24 @@ Classes
     `view_through_attribution_window_size: Literal['asc', 'desc']`
     :   Window size for view-through attribution.
 
+<a id="ConversionsStartswithCondition"></a>
+
+`ConversionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.ConversionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ConversionsStringFilter"></a>
 
 `ConversionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -23880,7 +24104,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreativesAnyCondition"></a>
@@ -23964,7 +24188,7 @@ Classes
 <a id="CreativesContainsCondition"></a>
 
 `CreativesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -24016,6 +24240,20 @@ Classes
     :   The type of the None singleton.
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="CreativesEndswithCondition"></a>
+
+`CreativesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
     :   The type of the None singleton.
 
 <a id="CreativesEqCondition"></a>
@@ -24183,20 +24421,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
     :   The type of the None singleton.
 
-<a id="CreativesLikeCondition"></a>
-
-`CreativesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CreativesListParams"></a>
 
 `CreativesListParams(*args, **kwargs)`
@@ -24281,7 +24505,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CreativesOrCondition"></a>
@@ -24303,7 +24527,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreativesSearchFilter"></a>
@@ -24373,7 +24597,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesSortFilter]`
@@ -24435,10 +24659,24 @@ Classes
     `serving_hold_reasons: Literal['asc', 'desc']`
     :   Reasons for holding the creative from serving.
 
+<a id="CreativesStartswithCondition"></a>
+
+`CreativesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.CreativesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CreativesStringFilter"></a>
 
 `CreativesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -24544,7 +24782,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LeadFormResponsesAnyCondition"></a>
@@ -24632,7 +24870,7 @@ Classes
 <a id="LeadFormResponsesContainsCondition"></a>
 
 `LeadFormResponsesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -24641,6 +24879,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="LeadFormResponsesEndswithCondition"></a>
+
+`LeadFormResponsesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStringFilter`
     :   The type of the None singleton.
 
 <a id="LeadFormResponsesEqCondition"></a>
@@ -24795,20 +25047,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStringFilter`
     :   The type of the None singleton.
 
-<a id="LeadFormResponsesLikeCondition"></a>
-
-`LeadFormResponsesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStringFilter`
-    :   The type of the None singleton.
-
 <a id="LeadFormResponsesListParams"></a>
 
 `LeadFormResponsesListParams(*args, **kwargs)`
@@ -24896,7 +25134,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition`
     :   The type of the None singleton.
 
 <a id="LeadFormResponsesOrCondition"></a>
@@ -24918,7 +25156,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LeadFormResponsesSearchFilter"></a>
@@ -24992,7 +25230,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesSortFilter]`
@@ -25058,10 +25296,24 @@ Classes
     `versioned_lead_gen_form_urn: Literal['asc', 'desc']`
     :   URN identifying which form this FormResponse belongs to.
 
+<a id="LeadFormResponsesStartswithCondition"></a>
+
+`LeadFormResponsesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormResponsesStringFilter`
+    :   The type of the None singleton.
+
 <a id="LeadFormResponsesStringFilter"></a>
 
 `LeadFormResponsesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -25137,7 +25389,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LeadFormsAnyCondition"></a>
@@ -25218,7 +25470,7 @@ Classes
 <a id="LeadFormsContainsCondition"></a>
 
 `LeadFormsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -25227,6 +25479,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="LeadFormsEndswithCondition"></a>
+
+`LeadFormsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStringFilter`
     :   The type of the None singleton.
 
 <a id="LeadFormsEqCondition"></a>
@@ -25374,20 +25640,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStringFilter`
     :   The type of the None singleton.
 
-<a id="LeadFormsLikeCondition"></a>
-
-`LeadFormsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStringFilter`
-    :   The type of the None singleton.
-
 <a id="LeadFormsListParams"></a>
 
 `LeadFormsListParams(*args, **kwargs)`
@@ -25472,7 +25724,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition`
     :   The type of the None singleton.
 
 <a id="LeadFormsOrCondition"></a>
@@ -25494,7 +25746,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LeadFormsSearchFilter"></a>
@@ -25561,7 +25813,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLikeCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNeqCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsGteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLtCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsLteCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsInCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStartswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsEndswithCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsFuzzyCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsKeywordCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsContainsCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsNotCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAndCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsOrCondition | airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsSortFilter]`
@@ -25620,10 +25872,24 @@ Classes
     `version_tag: Literal['asc', 'desc']`
     :   The number of times the form has been modified.
 
+<a id="LeadFormsStartswithCondition"></a>
+
+`LeadFormsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.linkedin_ads.types.LeadFormsStringFilter`
+    :   The type of the None singleton.
+
 <a id="LeadFormsStringFilter"></a>
 
 `LeadFormsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
