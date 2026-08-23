@@ -5729,11 +5729,11 @@
       },
       "SourceConfiguration": {
         "type": "object",
-        "description": "The configuration shape depends on the source connector type. See the [connector configuration reference](/developers/connector-configurations) for field details and the [connector documentation](/integrations) for connector-specific guidance."
+        "description": "The configuration shape depends on the source connector type. Use the lookup below for field details, or see the [connector documentation](/integrations) for connector-specific guidance."
       },
       "DestinationConfiguration": {
         "type": "object",
-        "description": "The configuration shape depends on the destination connector type. See the [connector configuration reference](/developers/connector-configurations) for field details and the [connector documentation](/integrations) for connector-specific guidance."
+        "description": "The configuration shape depends on the destination connector type. Use the lookup below for field details, or see the [connector documentation](/integrations) for connector-specific guidance."
       },
       "OAuthCredentialsConfiguration": {
         "description": "The values required to configure the source.",

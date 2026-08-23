@@ -11,20 +11,24 @@ module.exports = {
         id: "README",
       },
       items: [
-        "api-documentation",
         {
           type: "category",
-          label: "API Reference",
+          label: "API documentation",
           link: {
             type: "doc",
-            id: "api-reference/airbyte-api",
+            id: "api-documentation",
           },
-          items: loadPublicApiSidebar().items,
-        },
-        {
-          type: "doc",
-          id: "connector-configurations",
-          label: "Connector configuration reference",
+          items: [
+            {
+              type: "category",
+              label: "API Reference",
+              link: {
+                type: "doc",
+                id: "api-reference/airbyte-api",
+              },
+              items: loadPublicApiSidebar().items,
+            },
+          ],
         },
         {
           type: "category",
