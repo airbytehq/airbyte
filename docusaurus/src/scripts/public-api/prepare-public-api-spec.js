@@ -6,6 +6,7 @@ const {
   validateOpenAPISpec,
 } = require("../agent-engine-api/openapi-validator");
 const { SPEC_CACHE_PATH, PUBLIC_API_SPEC_URL } = require("./constants");
+const { toSafeLogString } = require("../log-safe");
 
 const shouldSlimSpec = process.env.PUBLIC_API_SLIM !== "false";
 const shouldFailOnError = process.env.PUBLIC_API_STRICT === "true";
@@ -124,7 +125,9 @@ function loadCachedSpec() {
   try {
     return JSON.parse(fs.readFileSync(SPEC_CACHE_PATH, "utf8"));
   } catch (error) {
-    console.warn(`Could not load cached public API spec: ${error.message}`);
+    console.warn(
+      `Could not load cached public API spec: ${toSafeLogString(error.message)}`,
+    );
     return null;
   }
 }
@@ -274,7 +277,9 @@ async function main() {
     writeSpec(spec);
     console.log(`Public API spec saved to ${SPEC_CACHE_PATH}`);
   } catch (error) {
-    console.error("Error fetching/processing latest public API spec");
+    console.error(
+      `Error fetching/processing latest public API spec: ${toSafeLogString(error.message)}`,
+    );
     if (shouldFailOnError) {
       throw error;
     }
@@ -291,6 +296,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Public API spec preparation failed");
+  console.error(
+    `Public API spec preparation failed: ${toSafeLogString(error)}`,
+  );
   process.exitCode = 1;
 });

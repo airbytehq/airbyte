@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { fetchRegistry } = require("./fetch-registry");
+const { toSafeLogString } = require("./log-safe");
 
 const CONNECTOR_SPECS_DIR = path.join(
   __dirname,
@@ -74,7 +75,7 @@ async function main() {
     if (!isUsableConnectionSpecification(specification)) {
       skippedCount += 1;
       console.warn(
-        `Skipping ${connector.name || connector.dockerRepository || "connector"}: ` +
+        `Skipping ${toSafeLogString(connector.name || connector.dockerRepository || "connector")}: ` +
           "no usable connectionSpecification",
       );
       continue;
@@ -88,7 +89,7 @@ async function main() {
     ) {
       skippedCount += 1;
       console.warn(
-        `Skipping ${connector.name || connector.dockerRepository || "connector"}: ` +
+        `Skipping ${toSafeLogString(connector.name || connector.dockerRepository || "connector")}: ` +
           "missing or invalid definitionId",
       );
       continue;
@@ -122,6 +123,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Error preparing connector spec assets");
+  console.error(
+    `Error preparing connector spec assets: ${toSafeLogString(error)}`,
+  );
   process.exit(1);
 });
