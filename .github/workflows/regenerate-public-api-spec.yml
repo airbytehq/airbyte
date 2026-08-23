@@ -1,3 +1,16 @@
+# Keeps the committed Public API spec cache in sync with the upstream OpenAPI definition.
+#
+# docs.airbyte.com renders the public API reference from a slimmed copy of
+# airbyte-platform's api_sdk.yaml, committed at
+# docusaurus/src/data/public_api_spec.json. Docs builds fetch the upstream spec
+# themselves and only fall back to that committed copy when the fetch fails, so
+# the cache exists to keep Vercel builds working during a GitHub outage — which
+# means it must not be allowed to go stale.
+#
+# This workflow runs the same preparation script the docs build runs, then opens
+# a PR when the regenerated cache differs from what is committed. No PR means
+# the cache is already current.
+
 name: Regenerate Public API Spec Cache
 
 on:
@@ -53,6 +66,8 @@ jobs:
         with:
           version: "9.4.0"
 
+      # The runner image ships yarn, which makes some tooling pick the wrong
+      # package manager for the pnpm-based docusaurus workspace.
       - name: Remove yarn to prevent package manager detection issues
         run: rm -f "$(which yarn)" || true
 
@@ -60,12 +75,18 @@ jobs:
         working-directory: docusaurus
         run: pnpm install --frozen-lockfile
 
+      # PUBLIC_API_STRICT makes a failed fetch, parse, or validation fail the job.
+      # Without it the script falls back to the committed cache and would appear
+      # to succeed while quietly committing nothing (or a stale spec).
       - name: Regenerate Public API spec
         working-directory: docusaurus
         run: pnpm run prepare-public-api
         env:
           PUBLIC_API_STRICT: "true"
 
+      # Opens (or updates) a single long-lived PR branch. The auto-merge label
+      # lets the cache refresh land without a human in the loop; the diff is
+      # generated JSON only.
       - name: Create Pull Request
         id: create-pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
