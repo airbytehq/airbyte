@@ -8,6 +8,7 @@ const {
 const { SPEC_CACHE_PATH, PUBLIC_API_SPEC_URL } = require("./constants");
 
 const shouldSlimSpec = process.env.PUBLIC_API_SLIM !== "false";
+const shouldFailOnError = process.env.PUBLIC_API_STRICT === "true";
 const OPENAPI_METHODS = [
   "get",
   "put",
@@ -277,6 +278,10 @@ async function main() {
     console.error(
       `Error fetching/processing latest public API spec: ${error.message}`,
     );
+    if (shouldFailOnError) {
+      throw error;
+    }
+
     spec = loadCachedSpec();
     if (!spec) {
       throw new Error("No cached public API spec is available", {
