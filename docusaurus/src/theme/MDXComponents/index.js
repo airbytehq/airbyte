@@ -1,6 +1,7 @@
 // Import the original mapper
 import { AgentConnectorTitle } from "@site/src/components/AgentConnectorTitle";
 import { AppliesTo } from "@site/src/components/AppliesTo";
+import { ConnectorSpecPicker } from "@site/src/components/ConnectorSpecPicker";
 import { ConnectorTypeBanner } from "@site/src/components/ConnectorTypeBanner";
 import { Arcade } from "@site/src/components/Arcade";
 import { FieldAnchor } from "@site/src/components/FieldAnchor";
@@ -27,6 +28,7 @@ export default {
   AgentConnectorTitle,
   Arcade,
   AppliesTo,
+  ConnectorSpecPicker,
   ConnectorTypeBanner,
   FieldAnchor,
   HideInUI,

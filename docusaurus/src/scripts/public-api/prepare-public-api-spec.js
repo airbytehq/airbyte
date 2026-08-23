@@ -234,8 +234,9 @@ function replaceConnectorConfigurationUnions(spec) {
       additionalProperties: true,
       description:
         `The configuration shape depends on the ${connectorType} connector type. ` +
-        "See the connector documentation for the fields supported by each connector: " +
-        "[connector documentation](/integrations).",
+        "See the [connector configuration reference](/developers/connector-configurations) " +
+        "for field details and the [connector documentation](/integrations) for " +
+        "connector-specific guidance.",
     };
     replacedSchemas.push(name);
   }

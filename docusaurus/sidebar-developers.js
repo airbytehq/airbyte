@@ -22,6 +22,11 @@ module.exports = {
           items: loadPublicApiSidebar().items,
         },
         {
+          type: "doc",
+          id: "connector-configurations",
+          label: "Connector configuration reference",
+        },
+        {
           type: "category",
           label: "Terraform Provider",
           link: {
