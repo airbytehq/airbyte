@@ -123,8 +123,18 @@ async function main() {
 }
 
 main().catch((error) => {
+  let errorText;
+  try {
+    errorText = String(error);
+  } catch {
+    errorText = "[unprintable value]";
+  }
   console.error(
-    `Error preparing connector spec assets: ${toSafeLogString(error)}`,
+    `Error preparing connector spec assets: ${errorText
+      .replace(/\r/g, " ")
+      .replace(/\n/g, " ")
+      .replace(/[\u0000-\u001F\u007F]/g, "")
+      .slice(0, 500)}`,
   );
   process.exit(1);
 });
