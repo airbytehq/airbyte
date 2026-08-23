@@ -14,7 +14,7 @@
   "paths": {
     "/health": {
       "get": {
-        "tags": ["public_health", "public"],
+        "tags": ["Health"],
         "responses": {
           "200": {
             "description": "Successful operation"
@@ -29,7 +29,7 @@
     },
     "/jobs": {
       "get": {
-        "tags": ["public_jobs", "public", "Jobs"],
+        "tags": ["Jobs"],
         "parameters": [
           {
             "name": "connectionId",
@@ -204,7 +204,7 @@
           },
           "required": true
         },
-        "tags": ["public_jobs", "public", "Jobs"],
+        "tags": ["Jobs"],
         "responses": {
           "200": {
             "content": {
@@ -240,7 +240,7 @@
     },
     "/jobs/{jobId}": {
       "get": {
-        "tags": ["public_jobs", "public", "Jobs"],
+        "tags": ["Jobs"],
         "responses": {
           "200": {
             "content": {
@@ -274,7 +274,7 @@
         "summary": "Get Job status and details"
       },
       "delete": {
-        "tags": ["public_jobs", "public", "Jobs"],
+        "tags": ["Jobs"],
         "responses": {
           "200": {
             "content": {
@@ -323,11 +323,7 @@
         }
       ],
       "get": {
-        "tags": [
-          "public_declarative_source_definitions",
-          "public",
-          "DeclarativeSourceDefinitions"
-        ],
+        "tags": ["Declarative Source Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -357,11 +353,7 @@
         "operationId": "createDeclarativeSourceDefinition",
         "x-speakeasy-alias": "createDeclarativeSourceDefinition",
         "x-speakeasy-group": "DeclarativeSourceDefinitions",
-        "tags": [
-          "public_declarative_source_definitions",
-          "public",
-          "DeclarativeSourceDefinitions"
-        ],
+        "tags": ["Declarative Source Definitions"],
         "responses": {
           "200": {
             "description": "Success",
@@ -409,11 +401,7 @@
         }
       ],
       "get": {
-        "tags": [
-          "public_declarative_source_definitions",
-          "public",
-          "DeclarativeSourceDefinitions"
-        ],
+        "tags": ["Declarative Source Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -439,11 +427,7 @@
         "x-speakeasy-entity-operation": "DeclarativeSourceDefinition#read"
       },
       "put": {
-        "tags": [
-          "public_declarative_source_definitions",
-          "public",
-          "DeclarativeSourceDefinitions"
-        ],
+        "tags": ["Declarative Source Definitions"],
         "requestBody": {
           "required": true,
           "content": {
@@ -479,11 +463,7 @@
         "x-speakeasy-entity-operation": "DeclarativeSourceDefinition#update"
       },
       "delete": {
-        "tags": [
-          "public_declarative_source_definitions",
-          "public",
-          "DeclarativeSourceDefinitions"
-        ],
+        "tags": ["Declarative Source Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -522,7 +502,7 @@
         }
       ],
       "get": {
-        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "tags": ["Source Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -552,7 +532,7 @@
         "x-speakeasy-group": "SourceDefinitions",
         "summary": "Create a source definition.",
         "x-speakeasy-entity-operation": "SourceDefinition#create",
-        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "tags": ["Source Definitions"],
         "requestBody": {
           "required": true,
           "content": {
@@ -600,7 +580,7 @@
         }
       ],
       "get": {
-        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "tags": ["Source Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -626,7 +606,7 @@
         "x-speakeasy-entity-operation": "SourceDefinition#read"
       },
       "put": {
-        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "tags": ["Source Definitions"],
         "requestBody": {
           "required": true,
           "content": {
@@ -662,7 +642,7 @@
         "x-speakeasy-entity-operation": "SourceDefinition#update"
       },
       "delete": {
-        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "tags": ["Source Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -701,11 +681,7 @@
         }
       ],
       "get": {
-        "tags": [
-          "public_destination_definitions",
-          "public",
-          "DestinationDefinitions"
-        ],
+        "tags": ["Destination Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -735,11 +711,7 @@
         "x-speakeasy-group": "DestinationDefinitions",
         "summary": "Create a destination definition.",
         "x-speakeasy-entity-operation": "DestinationDefinition#create",
-        "tags": [
-          "public_destination_definitions",
-          "public",
-          "DestinationDefinitions"
-        ],
+        "tags": ["Destination Definitions"],
         "requestBody": {
           "required": true,
           "content": {
@@ -787,11 +759,7 @@
         }
       ],
       "get": {
-        "tags": [
-          "public_destination_definitions",
-          "public",
-          "DestinationDefinitions"
-        ],
+        "tags": ["Destination Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -817,11 +785,7 @@
         "x-speakeasy-entity-operation": "DestinationDefinition#read"
       },
       "put": {
-        "tags": [
-          "public_destination_definitions",
-          "public",
-          "DestinationDefinitions"
-        ],
+        "tags": ["Destination Definitions"],
         "requestBody": {
           "required": true,
           "content": {
@@ -857,11 +821,7 @@
         "x-speakeasy-entity-operation": "DestinationDefinition#update"
       },
       "delete": {
-        "tags": [
-          "public_destination_definitions",
-          "public",
-          "DestinationDefinitions"
-        ],
+        "tags": ["Destination Definitions"],
         "responses": {
           "200": {
             "content": {
@@ -889,7 +849,7 @@
     },
     "/sources": {
       "get": {
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "responses": {
           "200": {
             "content": {
@@ -987,7 +947,7 @@
             }
           }
         },
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "responses": {
           "200": {
             "content": {
@@ -1023,7 +983,7 @@
     },
     "/sources/{sourceId}": {
       "get": {
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "responses": {
           "200": {
             "content": {
@@ -1070,7 +1030,7 @@
         ]
       },
       "patch": {
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1129,7 +1089,7 @@
         "summary": "Update a Source"
       },
       "put": {
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1189,7 +1149,7 @@
         "x-speakeasy-entity-operation": "Source#update"
       },
       "delete": {
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "responses": {
           "204": {
             "description": "The resource was deleted successfully"
@@ -1220,7 +1180,7 @@
     },
     "/destinations": {
       "get": {
-        "tags": ["public_destinations", "public", "Destinations"],
+        "tags": ["Destinations"],
         "responses": {
           "200": {
             "content": {
@@ -1325,7 +1285,7 @@
             }
           }
         },
-        "tags": ["public_destinations", "public", "Destinations"],
+        "tags": ["Destinations"],
         "responses": {
           "200": {
             "content": {
@@ -1364,7 +1324,7 @@
     },
     "/destinations/{destinationId}": {
       "get": {
-        "tags": ["public_destinations", "public", "Destinations"],
+        "tags": ["Destinations"],
         "responses": {
           "200": {
             "content": {
@@ -1417,7 +1377,7 @@
         ]
       },
       "delete": {
-        "tags": ["public_destinations", "public", "Destinations"],
+        "tags": ["Destinations"],
         "responses": {
           "204": {
             "description": "The resource was deleted successfully"
@@ -1436,7 +1396,7 @@
         "summary": "Delete a Destination"
       },
       "patch": {
-        "tags": ["public_destinations", "public", "Destinations"],
+        "tags": ["Destinations"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1499,7 +1459,7 @@
         "summary": "Update a Destination"
       },
       "put": {
-        "tags": ["public_destinations", "public", "Destinations"],
+        "tags": ["Destinations"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1586,7 +1546,7 @@
           },
           "required": true
         },
-        "tags": ["public_sources", "public", "Sources"],
+        "tags": ["Sources"],
         "responses": {
           "200": {
             "$ref": "#/components/responses/InitiateOauthResponse"
@@ -1626,7 +1586,7 @@
           },
           "required": true
         },
-        "tags": ["public_connections", "public", "Connections"],
+        "tags": ["Connections"],
         "responses": {
           "200": {
             "content": {
@@ -1659,7 +1619,7 @@
         "x-speakeasy-entity-operation": "Connection#create"
       },
       "get": {
-        "tags": ["public_connections", "public", "Connections"],
+        "tags": ["Connections"],
         "responses": {
           "200": {
             "content": {
@@ -1748,7 +1708,7 @@
     },
     "/connections/{connectionId}": {
       "get": {
-        "tags": ["public_connections", "public", "Connections"],
+        "tags": ["Connections"],
         "responses": {
           "200": {
             "content": {
@@ -1784,7 +1744,7 @@
         "x-speakeasy-entity-operation": "Connection#read"
       },
       "patch": {
-        "tags": ["public_connections", "public", "Connections"],
+        "tags": ["Connections"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1839,7 +1799,7 @@
         "x-speakeasy-entity-operation": "Connection#update"
       },
       "delete": {
-        "tags": ["public_connections", "public", "Connections"],
+        "tags": ["Connections"],
         "responses": {
           "204": {
             "description": "The resource was deleted successfully"
@@ -1871,7 +1831,7 @@
     },
     "/streams": {
       "get": {
-        "tags": ["public_streams", "public", "Streams"],
+        "tags": ["Streams"],
         "responses": {
           "200": {
             "content": {
@@ -1933,7 +1893,7 @@
     },
     "/workspaces": {
       "get": {
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "responses": {
           "200": {
             "content": {
@@ -2006,7 +1966,7 @@
         ]
       },
       "post": {
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2069,7 +2029,7 @@
         }
       ],
       "get": {
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "responses": {
           "200": {
             "content": {
@@ -2104,7 +2064,7 @@
         "x-speakeasy-entity-operation": "Workspace#read"
       },
       "patch": {
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2154,7 +2114,7 @@
         "x-speakeasy-entity-operation": "Workspace#update"
       },
       "delete": {
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "responses": {
           "204": {
             "description": "The resource was deleted successfully"
@@ -2185,7 +2145,7 @@
           },
           "required": true
         },
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "responses": {
           "200": {
             "description": "OAuth credential override was successful."
@@ -2245,7 +2205,7 @@
             "description": "The name of the source or destination i.e. google-ads"
           }
         ],
-        "tags": ["public_workspaces", "public", "Workspaces"],
+        "tags": ["Workspaces"],
         "responses": {
           "204": {
             "description": "OAuth credential override was deleted successfully."
@@ -2277,7 +2237,7 @@
         }
       ],
       "get": {
-        "tags": ["public_permissions", "public", "Permissions"],
+        "tags": ["Permissions"],
         "responses": {
           "200": {
             "content": {
@@ -2306,7 +2266,7 @@
         "x-speakeasy-entity-operation": "Permission#read"
       },
       "patch": {
-        "tags": ["public_permissions", "public", "Permissions"],
+        "tags": ["Permissions"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2348,7 +2308,7 @@
         "x-speakeasy-entity-operation": "Permission#update"
       },
       "delete": {
-        "tags": ["public_permissions", "public", "Permissions"],
+        "tags": ["Permissions"],
         "responses": {
           "204": {
             "description": "The resource was deleted successfully"
@@ -2372,7 +2332,7 @@
     },
     "/permissions": {
       "get": {
-        "tags": ["public_permissions", "public", "Permissions"],
+        "tags": ["Permissions"],
         "parameters": [
           {
             "name": "userId",
@@ -2419,7 +2379,7 @@
         "summary": "List Permissions by user id"
       },
       "post": {
-        "tags": ["public_permissions", "public", "Permissions"],
+        "tags": ["Permissions"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2475,7 +2435,7 @@
     },
     "/organizations": {
       "get": {
-        "tags": ["public_organizations", "public", "Organizations"],
+        "tags": ["Organizations"],
         "summary": "List all organizations for a user",
         "description": "Lists users organizations.",
         "responses": {
@@ -2524,7 +2484,7 @@
           },
           "required": true
         },
-        "tags": ["public_organizations", "public", "Organizations"],
+        "tags": ["Organizations"],
         "responses": {
           "200": {
             "description": "OAuth credential override was successful."
@@ -2573,7 +2533,7 @@
             "description": "The name of the source or destination i.e. google-ads"
           }
         ],
-        "tags": ["public_organizations", "public", "Organizations"],
+        "tags": ["Organizations"],
         "responses": {
           "204": {
             "description": "OAuth credential override was deleted successfully."
@@ -2594,7 +2554,7 @@
     },
     "/users": {
       "get": {
-        "tags": ["public_users", "public", "Users"],
+        "tags": ["Users"],
         "summary": "List all users within an organization",
         "description": "Organization Admin user can list all users within the same organization. Also provide filtering on a list of user IDs or/and a list of user emails.",
         "parameters": [
@@ -2657,7 +2617,7 @@
     },
     "/tags": {
       "get": {
-        "tags": ["public_tags", "public", "Tags"],
+        "tags": ["Tags"],
         "summary": "List all tags",
         "description": "Lists all tags",
         "parameters": [
@@ -2697,7 +2657,7 @@
         "x-speakeasy-group": "Tags"
       },
       "post": {
-        "tags": ["public_tags", "public", "Tags"],
+        "tags": ["Tags"],
         "summary": "Create a tag",
         "description": "Create a tag",
         "requestBody": {
@@ -2748,7 +2708,7 @@
         }
       ],
       "get": {
-        "tags": ["public_tags", "public", "Tags"],
+        "tags": ["Tags"],
         "summary": "Get a tag",
         "description": "Get a tag",
         "responses": {
@@ -2774,7 +2734,7 @@
         "x-speakeasy-group": "Tags"
       },
       "delete": {
-        "tags": ["public_tags", "public", "Tags"],
+        "tags": ["Tags"],
         "summary": "Delete a tag",
         "description": "Delete a tag",
         "responses": {
@@ -2793,7 +2753,7 @@
         "x-speakeasy-group": "Tags"
       },
       "patch": {
-        "tags": ["public_tags", "public", "Tags"],
+        "tags": ["Tags"],
         "summary": "Update a tag",
         "description": "Update a tag",
         "requestBody": {
@@ -5770,12 +5730,12 @@
       "SourceConfiguration": {
         "type": "object",
         "additionalProperties": true,
-        "description": "The configuration shape depends on the source connector type. See the connector documentation for the fields supported by each connector: [connector documentation](/integrations/)."
+        "description": "The configuration shape depends on the source connector type. See the connector documentation for the fields supported by each connector: [connector documentation](/integrations)."
       },
       "DestinationConfiguration": {
         "type": "object",
         "additionalProperties": true,
-        "description": "The configuration shape depends on the destination connector type. See the connector documentation for the fields supported by each connector: [connector documentation](/integrations/)."
+        "description": "The configuration shape depends on the destination connector type. See the connector documentation for the fields supported by each connector: [connector documentation](/integrations)."
       },
       "OAuthCredentialsConfiguration": {
         "description": "The values required to configure the source.",
@@ -5996,88 +5956,46 @@
   ],
   "tags": [
     {
-      "name": "public_health"
-    },
-    {
-      "name": "public"
-    },
-    {
-      "name": "public_jobs"
-    },
-    {
-      "name": "Jobs"
-    },
-    {
-      "name": "public_declarative_source_definitions"
-    },
-    {
-      "name": "DeclarativeSourceDefinitions"
-    },
-    {
-      "name": "public_source_definitions"
-    },
-    {
-      "name": "SourceDefinitions"
-    },
-    {
-      "name": "public_destination_definitions"
-    },
-    {
-      "name": "DestinationDefinitions"
-    },
-    {
-      "name": "public_sources"
-    },
-    {
       "name": "Sources"
-    },
-    {
-      "name": "public_destinations"
     },
     {
       "name": "Destinations"
     },
     {
-      "name": "public_connections"
-    },
-    {
       "name": "Connections"
     },
     {
-      "name": "public_streams"
+      "name": "Jobs"
     },
     {
       "name": "Streams"
     },
     {
-      "name": "public_workspaces"
-    },
-    {
       "name": "Workspaces"
-    },
-    {
-      "name": "public_permissions"
-    },
-    {
-      "name": "Permissions"
-    },
-    {
-      "name": "public_organizations"
     },
     {
       "name": "Organizations"
     },
     {
-      "name": "public_users"
-    },
-    {
       "name": "Users"
     },
     {
-      "name": "public_tags"
+      "name": "Permissions"
     },
     {
       "name": "Tags"
+    },
+    {
+      "name": "Source Definitions"
+    },
+    {
+      "name": "Destination Definitions"
+    },
+    {
+      "name": "Declarative Source Definitions"
+    },
+    {
+      "name": "Health"
     }
   ]
 }

@@ -17,7 +17,7 @@ module.exports = {
           label: "API Reference",
           link: {
             type: "doc",
-            id: "api-documentation",
+            id: "api-reference/airbyte-api",
           },
           items: loadPublicApiSidebar().items,
         },

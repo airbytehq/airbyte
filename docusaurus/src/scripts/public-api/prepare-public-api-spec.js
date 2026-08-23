@@ -8,31 +8,79 @@ const {
 const { SPEC_CACHE_PATH, PUBLIC_API_SPEC_URL } = require("./constants");
 
 const shouldSlimSpec = process.env.PUBLIC_API_SLIM !== "false";
+const OPENAPI_METHODS = [
+  "get",
+  "put",
+  "post",
+  "delete",
+  "options",
+  "head",
+  "patch",
+  "trace",
+];
+const PREFERRED_TAG_ORDER = [
+  "Sources",
+  "Destinations",
+  "Connections",
+  "Jobs",
+  "Streams",
+  "Workspaces",
+  "Organizations",
+  "Users",
+  "Permissions",
+  "Tags",
+  "Source Definitions",
+  "Destination Definitions",
+  "Declarative Source Definitions",
+  "Health",
+];
+const TAG_ALIASES = {
+  SourceDefinitions: "Source Definitions",
+  DestinationDefinitions: "Destination Definitions",
+  DeclarativeSourceDefinitions: "Declarative Source Definitions",
+};
 
-function ensureTags(spec) {
-  if (Array.isArray(spec.tags) && spec.tags.length > 0) {
-    return spec;
-  }
+function humanizeMachineTag(tag) {
+  return tag
+    .replace(/^public_?/i, "")
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((word) => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
+    .join(" ");
+}
 
-  const tagNames = new Set();
+function normalizeOperationTags(spec) {
+  const observedTags = new Set();
+
   for (const pathItem of Object.values(spec.paths || {})) {
-    for (const method of [
-      "get",
-      "put",
-      "post",
-      "delete",
-      "options",
-      "head",
-      "patch",
-      "trace",
-    ]) {
-      for (const tag of pathItem?.[method]?.tags || []) {
-        tagNames.add(tag);
+    for (const method of OPENAPI_METHODS) {
+      const operation = pathItem?.[method];
+      if (!operation || !Array.isArray(operation.tags)) {
+        continue;
       }
+
+      const machineTags = operation.tags.filter(
+        (tag) => typeof tag === "string" && /^public($|_)/.test(tag),
+      );
+      operation.tags = operation.tags
+        .filter((tag) => !(typeof tag === "string" && /^public($|_)/.test(tag)))
+        .map((tag) => TAG_ALIASES[tag] || tag);
+
+      if (operation.tags.length === 0 && machineTags.length > 0) {
+        const fallbackTag =
+          machineTags.find((tag) => tag !== "public") || machineTags[0];
+        operation.tags = [humanizeMachineTag(fallbackTag) || "Public"];
+      }
+
+      operation.tags.forEach((tag) => observedTags.add(tag));
     }
   }
 
-  spec.tags = [...tagNames].map((name) => ({ name }));
+  const orderedTags = [
+    ...PREFERRED_TAG_ORDER.filter((tag) => observedTags.has(tag)),
+    ...[...observedTags].filter((tag) => !PREFERRED_TAG_ORDER.includes(tag)),
+  ];
+  spec.tags = orderedTags.map((name) => ({ name }));
   return spec;
 }
 
@@ -186,7 +234,7 @@ function replaceConnectorConfigurationUnions(spec) {
       description:
         `The configuration shape depends on the ${connectorType} connector type. ` +
         "See the connector documentation for the fields supported by each connector: " +
-        "[connector documentation](/integrations/).",
+        "[connector documentation](/integrations).",
     };
     replacedSchemas.push(name);
   }
@@ -219,7 +267,7 @@ async function main() {
   let spec;
   try {
     spec = await fetchPublicApiSpec();
-    spec = ensureTags(spec);
+    spec = normalizeOperationTags(spec);
     spec = await validateOpenAPISpec(spec);
     spec = processSpec(spec);
     await validateOpenAPISpec(spec);
