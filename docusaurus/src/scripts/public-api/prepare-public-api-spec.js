@@ -277,18 +277,8 @@ async function main() {
     writeSpec(spec);
     console.log(`Public API spec saved to ${SPEC_CACHE_PATH}`);
   } catch (error) {
-    let errorText;
-    try {
-      errorText = String(error.message);
-    } catch {
-      errorText = "[unprintable value]";
-    }
     console.error(
-      `Error fetching/processing latest public API spec: ${errorText
-        .replace(/\r/g, " ")
-        .replace(/\n/g, " ")
-        .replace(/[\u0000-\u001F\u007F]/g, "")
-        .slice(0, 500)}`,
+      `Error fetching/processing latest public API spec: ${toSafeLogString(error.message)}`,
     );
     if (shouldFailOnError) {
       throw error;
@@ -306,18 +296,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  let errorText;
-  try {
-    errorText = String(error);
-  } catch {
-    errorText = "[unprintable value]";
-  }
   console.error(
-    `Public API spec preparation failed: ${errorText
-      .replace(/\r/g, " ")
-      .replace(/\n/g, " ")
-      .replace(/[\u0000-\u001F\u007F]/g, "")
-      .slice(0, 500)}`,
+    `Public API spec preparation failed: ${toSafeLogString(error)}`,
   );
   process.exitCode = 1;
 });
