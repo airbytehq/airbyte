@@ -1,3 +1,5 @@
+const { loadPublicApiSidebar } = require("./src/scripts/public-api/sidebar-generator");
+
 module.exports = {
   developers: [
     {
@@ -10,6 +12,15 @@ module.exports = {
       },
       items: [
         "api-documentation",
+        {
+          type: "category",
+          label: "API Reference",
+          link: {
+            type: "doc",
+            id: "api-documentation",
+          },
+          items: loadPublicApiSidebar().items,
+        },
         {
           type: "category",
           label: "Terraform Provider",

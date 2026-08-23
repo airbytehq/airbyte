@@ -1,0 +1,6083 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "airbyte-api",
+    "version": "1.0.0",
+    "description": "Programmatically control Airbyte Cloud, OSS & Enterprise."
+  },
+  "servers": [
+    {
+      "url": "https://api.airbyte.com/v1",
+      "description": "Airbyte API v1"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["public_health", "public"],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        },
+        "operationId": "getHealthCheck",
+        "summary": "Health Check",
+        "security": [],
+        "x-speakeasy-alias": "getHealthCheck",
+        "x-speakeasy-group": "Health"
+      }
+    },
+    "/jobs": {
+      "get": {
+        "tags": ["public_jobs", "public", "Jobs"],
+        "parameters": [
+          {
+            "name": "connectionId",
+            "description": "Filter the Jobs by connectionId.",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Set the limit on the number of Jobs returned. The default is 20 Jobs.",
+            "schema": {
+              "format": "int32",
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "in": "query"
+          },
+          {
+            "name": "offset",
+            "description": "Set the offset to start at when returning Jobs. The default is 0.",
+            "schema": {
+              "format": "int32",
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "in": "query"
+          },
+          {
+            "name": "jobType",
+            "description": "Filter the Jobs by jobType.",
+            "schema": {
+              "$ref": "#/components/schemas/JobTypeEnum"
+            },
+            "in": "query"
+          },
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to list jobs for. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "status",
+            "description": "The Job status you want to filter by",
+            "schema": {
+              "$ref": "#/components/schemas/JobStatusEnum"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "createdAtStart",
+            "description": "The start date to filter by",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "required": false,
+            "example": 1687450500000
+          },
+          {
+            "name": "createdAtEnd",
+            "description": "The end date to filter by",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "required": false,
+            "example": 1687450500000
+          },
+          {
+            "name": "updatedAtStart",
+            "description": "The start date to filter by",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": 1687450500000,
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "updatedAtEnd",
+            "description": "The end date to filter by",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "in": "query",
+            "required": false,
+            "example": 1687450500000
+          },
+          {
+            "name": "orderBy",
+            "description": "The field and method to use for ordering",
+            "schema": {
+              "type": "string",
+              "pattern": "\\w+|(ASC|DESC)"
+            },
+            "in": "query",
+            "required": false,
+            "example": "updatedAt|DESC"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobsResponse"
+                },
+                "examples": {
+                  "Job List Response Example": {
+                    "value": {
+                      "next": "https://api.airbyte.com/v1/jobs?limit=5&offset=10",
+                      "previous": "https://api.airbyte.com/v1/jobs?limit=5&offset=0",
+                      "data": [
+                        {
+                          "id": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                          "status": "running",
+                          "jobType": "sync"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "description": "List all the Jobs by connectionId."
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "listJobs",
+        "summary": "List Jobs by sync type",
+        "x-speakeasy-alias": "listJobs",
+        "x-speakeasy-group": "Jobs"
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCreateRequest"
+              },
+              "examples": {
+                "Job Creation Request Example": {
+                  "value": {
+                    "connectionId": "e735894a-e773-4938-969f-45f53957b75b",
+                    "jobType": "sync"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["public_jobs", "public", "Jobs"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                },
+                "examples": {
+                  "Job Creation Response Example": {
+                    "value": {
+                      "jobId": 1234,
+                      "status": "running",
+                      "jobType": "sync"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Kicks off a new Job based on the JobType. The connectionId is the resource that Job will be run for."
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createJob",
+        "summary": "Trigger a sync or reset job of a connection",
+        "x-speakeasy-alias": "createJob",
+        "x-speakeasy-group": "Jobs"
+      }
+    },
+    "/jobs/{jobId}": {
+      "get": {
+        "tags": ["public_jobs", "public", "Jobs"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                },
+                "examples": {
+                  "Job Get Response Example": {
+                    "value": {
+                      "id": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "status": "running",
+                      "jobType": "sync"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Job by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getJob",
+        "x-speakeasy-alias": "getJob",
+        "x-speakeasy-group": "Jobs",
+        "summary": "Get Job status and details"
+      },
+      "delete": {
+        "tags": ["public_jobs", "public", "Jobs"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            },
+            "description": "Cancel a Job."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "cancelJob",
+        "x-speakeasy-alias": "cancelJob",
+        "x-speakeasy-group": "Jobs",
+        "summary": "Cancel a running Job"
+      },
+      "parameters": [
+        {
+          "name": "jobId",
+          "schema": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/workspaces/{workspaceId}/definitions/declarative_sources": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "public_declarative_source_definitions",
+          "public",
+          "DeclarativeSourceDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclarativeSourceDefinitionsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listDeclarativeSourceDefinitions",
+        "x-speakeasy-alias": "listDeclarativeSourceDefinitions",
+        "x-speakeasy-group": "DeclarativeSourceDefinitions",
+        "summary": "List declarative source definitions."
+      },
+      "post": {
+        "summary": "Create a declarative source definition.",
+        "x-speakeasy-entity-operation": "DeclarativeSourceDefinition#create",
+        "operationId": "createDeclarativeSourceDefinition",
+        "x-speakeasy-alias": "createDeclarativeSourceDefinition",
+        "x-speakeasy-group": "DeclarativeSourceDefinitions",
+        "tags": [
+          "public_declarative_source_definitions",
+          "public",
+          "DeclarativeSourceDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclarativeSourceDefinitionResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDeclarativeSourceDefinitionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspaceId}/definitions/declarative_sources/{definitionId}": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "definitionId",
+          "x-speakeasy-match": "id",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "public_declarative_source_definitions",
+          "public",
+          "DeclarativeSourceDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclarativeSourceDefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getDeclarativeSourceDefinition",
+        "x-speakeasy-alias": "getDeclarativeSourceDefinition",
+        "x-speakeasy-group": "DeclarativeSourceDefinitions",
+        "summary": "Get declarative source definition details.",
+        "x-speakeasy-entity-operation": "DeclarativeSourceDefinition#read"
+      },
+      "put": {
+        "tags": [
+          "public_declarative_source_definitions",
+          "public",
+          "DeclarativeSourceDefinitions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDeclarativeSourceDefinitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclarativeSourceDefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "updateDeclarativeSourceDefinition",
+        "x-speakeasy-alias": "updateDeclarativeSourceDefinition",
+        "x-speakeasy-group": "DeclarativeSourceDefinitions",
+        "summary": "Update declarative source definition details.",
+        "x-speakeasy-entity-operation": "DeclarativeSourceDefinition#update"
+      },
+      "delete": {
+        "tags": [
+          "public_declarative_source_definitions",
+          "public",
+          "DeclarativeSourceDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeclarativeSourceDefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteDeclarativeSourceDefinition",
+        "x-speakeasy-alias": "deleteDeclarativeSourceDefinition",
+        "x-speakeasy-group": "DeclarativeSourceDefinitions",
+        "summary": "Delete a declarative source definition.",
+        "x-speakeasy-entity-operation": "DeclarativeSourceDefinition#delete"
+      }
+    },
+    "/workspaces/{workspaceId}/definitions/sources": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listSourceDefinitions",
+        "x-speakeasy-alias": "listSourceDefinitions",
+        "x-speakeasy-group": "SourceDefinitions",
+        "summary": "List source definitions."
+      },
+      "post": {
+        "operationId": "createSourceDefinition",
+        "x-speakeasy-alias": "createSourceDefinition",
+        "x-speakeasy-group": "SourceDefinitions",
+        "summary": "Create a source definition.",
+        "x-speakeasy-entity-operation": "SourceDefinition#create",
+        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDefinitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/workspaces/{workspaceId}/definitions/sources/{definitionId}": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "definitionId",
+          "x-speakeasy-match": "id",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getSourceDefinition",
+        "x-speakeasy-alias": "getSourceDefinition",
+        "x-speakeasy-group": "SourceDefinitions",
+        "summary": "Get source definition details.",
+        "x-speakeasy-entity-operation": "SourceDefinition#read"
+      },
+      "put": {
+        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDefinitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "updateSourceDefinition",
+        "x-speakeasy-alias": "updateSourceDefinition",
+        "x-speakeasy-group": "SourceDefinitions",
+        "summary": "Update source definition details.",
+        "x-speakeasy-entity-operation": "SourceDefinition#update"
+      },
+      "delete": {
+        "tags": ["public_source_definitions", "public", "SourceDefinitions"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteSourceDefinition",
+        "x-speakeasy-alias": "deleteSourceDefinition",
+        "x-speakeasy-group": "SourceDefinitions",
+        "summary": "Delete a source definition.",
+        "x-speakeasy-entity-operation": "SourceDefinition#delete"
+      }
+    },
+    "/workspaces/{workspaceId}/definitions/destinations": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "public_destination_definitions",
+          "public",
+          "DestinationDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listDestinationDefinitions",
+        "x-speakeasy-alias": "listDestinationDefinitions",
+        "x-speakeasy-group": "DestinationDefinitions",
+        "summary": "List destination definitions."
+      },
+      "post": {
+        "operationId": "createDestinationDefinition",
+        "x-speakeasy-alias": "createDestinationDefinition",
+        "x-speakeasy-group": "DestinationDefinitions",
+        "summary": "Create a destination definition.",
+        "x-speakeasy-entity-operation": "DestinationDefinition#create",
+        "tags": [
+          "public_destination_definitions",
+          "public",
+          "DestinationDefinitions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDefinitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/workspaces/{workspaceId}/definitions/destinations/{definitionId}": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "definitionId",
+          "x-speakeasy-match": "id",
+          "schema": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": [
+          "public_destination_definitions",
+          "public",
+          "DestinationDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getDestinationDefinition",
+        "x-speakeasy-alias": "getDestinationDefinition",
+        "x-speakeasy-group": "DestinationDefinitions",
+        "summary": "Get destination definition details.",
+        "x-speakeasy-entity-operation": "DestinationDefinition#read"
+      },
+      "put": {
+        "tags": [
+          "public_destination_definitions",
+          "public",
+          "DestinationDefinitions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDefinitionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "updateDestinationDefinition",
+        "x-speakeasy-alias": "updateDestinationDefinition",
+        "x-speakeasy-group": "DestinationDefinitions",
+        "summary": "Update destination definition details.",
+        "x-speakeasy-entity-operation": "DestinationDefinition#update"
+      },
+      "delete": {
+        "tags": [
+          "public_destination_definitions",
+          "public",
+          "DestinationDefinitions"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteDestinationDefinition",
+        "x-speakeasy-alias": "deleteDestinationDefinition",
+        "x-speakeasy-group": "DestinationDefinitions",
+        "summary": "Delete a destination definition.",
+        "x-speakeasy-entity-operation": "DestinationDefinition#delete"
+      }
+    },
+    "/sources": {
+      "get": {
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourcesResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listSources",
+        "x-speakeasy-alias": "listSources",
+        "x-speakeasy-group": "Sources",
+        "summary": "List sources",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to list sources for. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "example": "df08f6b0-b364-4cc1-9b3f-96f5d2fccfb2,b0796797-de23-4fc7-a5e2-7e131314718c",
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "includeDeleted",
+            "description": "Include deleted sources in the returned results.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Set the limit on the number of sources returned. The default is 20.",
+            "schema": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query"
+          },
+          {
+            "name": "offset",
+            "description": "Set the offset to start at when returning sources. The default is 0",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0,
+              "default": 0
+            },
+            "in": "query"
+          }
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceCreateRequest"
+              },
+              "examples": {
+                "Source Creation Request Example": {
+                  "value": {
+                    "configuration": {
+                      "airbyte_source_name": "google-ads",
+                      "conversion_window_days": 14,
+                      "customer_id": "1234567890",
+                      "start_date": 1672531200000,
+                      "end_date": 1704067200000
+                    },
+                    "name": "My Source",
+                    "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                },
+                "examples": {
+                  "Source Creation Response Example": {
+                    "value": {
+                      "sourceId": "0c31738c-0b2d-4887-b506-e2cd1c39cc35"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createSource",
+        "x-speakeasy-alias": "createSource",
+        "x-speakeasy-group": "Sources",
+        "x-speakeasy-entity-operation": "Source#create",
+        "summary": "Create a source",
+        "description": "Creates a source given a name, workspace id, and a json blob containing the configuration for the source."
+      }
+    },
+    "/sources/{sourceId}": {
+      "get": {
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                },
+                "examples": {
+                  "Source Get Response Example": {
+                    "value": {
+                      "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "running",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Source by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getSource",
+        "x-speakeasy-alias": "getSource",
+        "x-speakeasy-group": "Sources",
+        "x-speakeasy-entity-operation": "Source#read",
+        "summary": "Get Source details",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeSecretCoordinates",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Rather than return *** for secret properties include the secret coordinate information"
+          }
+        ]
+      },
+      "patch": {
+        "tags": ["public_sources", "public", "Sources"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourcePatchRequest"
+              },
+              "examples": {
+                "Source Update Request Example": {
+                  "value": {
+                    "configuration": {
+                      "airbyte_source_name": "google-ads",
+                      "conversion_window_days": 14,
+                      "customer_id": "1234567890",
+                      "start_date": 1672531200000,
+                      "end_date": 1704067200000
+                    },
+                    "name": "My Source",
+                    "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                },
+                "examples": {
+                  "Source Update Response Example": {
+                    "value": {
+                      "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "running",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Update a Source"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "patchSource",
+        "x-speakeasy-alias": "patchSource",
+        "x-speakeasy-group": "Sources",
+        "summary": "Update a Source"
+      },
+      "put": {
+        "tags": ["public_sources", "public", "Sources"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourcePutRequest"
+              },
+              "examples": {
+                "Source Update Request Example": {
+                  "value": {
+                    "configuration": {
+                      "airbyte_source_name": "google-ads",
+                      "conversion_window_days": 14,
+                      "customer_id": "1234567890",
+                      "start_date": 1672531200000,
+                      "end_date": 1704067200000
+                    },
+                    "name": "My Source",
+                    "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                },
+                "examples": {
+                  "Source Update Response Example": {
+                    "value": {
+                      "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "running",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Update a source and fully overwrite it"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "putSource",
+        "x-speakeasy-alias": "putSource",
+        "x-speakeasy-group": "Sources",
+        "summary": "Update a Source and fully overwrite it",
+        "x-speakeasy-entity-operation": "Source#update"
+      },
+      "delete": {
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteSource",
+        "x-speakeasy-alias": "deleteSource",
+        "x-speakeasy-group": "Sources",
+        "summary": "Delete a Source"
+      },
+      "parameters": [
+        {
+          "name": "sourceId",
+          "schema": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/destinations": {
+      "get": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listDestinations",
+        "x-speakeasy-alias": "listDestinations",
+        "x-speakeasy-group": "Destinations",
+        "summary": "List destinations",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to list destinations for. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "includeDeleted",
+            "description": "Include deleted destinations in the returned results.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Set the limit on the number of destinations returned. The default is 20.",
+            "schema": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query"
+          },
+          {
+            "name": "offset",
+            "description": "Set the offset to start at when returning destinations. The default is 0",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0,
+              "default": 0
+            },
+            "in": "query"
+          }
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestinationCreateRequest"
+              },
+              "examples": {
+                "Destination Creation Request Example": {
+                  "value": {
+                    "name": "Postgres",
+                    "workspaceId": "2155ae5a-de39-4808-af6a-16fe7b8b4ed2",
+                    "configuration": {
+                      "airbyte_destination_name": "postgres",
+                      "port": 5432,
+                      "schema": "public",
+                      "ssl_mode": {
+                        "mode": "prefer"
+                      },
+                      "tunnel_method": {
+                        "tunnel_method": "NO_TUNNEL"
+                      },
+                      "host": "localhost",
+                      "database": "postgres",
+                      "username": "postgres",
+                      "password": "test"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["public_destinations", "public", "Destinations"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationResponse"
+                },
+                "examples": {
+                  "Destination Creation Response Example": {
+                    "value": {
+                      "destinationId": "af0c3c67-aa61-419f-8922-95b0bf840e86"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "createDestination",
+        "x-speakeasy-alias": "createDestination",
+        "x-speakeasy-entity-operation": "Destination#create",
+        "x-speakeasy-group": "Destinations",
+        "summary": "Create a destination",
+        "description": "Creates a destination given a name, workspace id, and a json blob containing the configuration for the source."
+      }
+    },
+    "/destinations/{destinationId}": {
+      "get": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationResponse"
+                },
+                "examples": {
+                  "Destination Get Response Example": {
+                    "value": {
+                      "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "My Destination",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+                      "configuration": {
+                        "conversion_window_days": 14,
+                        "customer_id": "1234567890",
+                        "start_date": 1672531200000,
+                        "end_date": 1704067200000
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Destination by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getDestination",
+        "x-speakeasy-alias": "getDestination",
+        "x-speakeasy-entity-operation": "Destination#read",
+        "x-speakeasy-group": "Destinations",
+        "summary": "Get Destination details",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeSecretCoordinates",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Rather than return *** for secret properties include the secret coordinate information"
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteDestination",
+        "x-speakeasy-alias": "deleteDestination",
+        "x-speakeasy-entity-operation": "Destination#delete",
+        "x-speakeasy-group": "Destinations",
+        "summary": "Delete a Destination"
+      },
+      "patch": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestinationPatchRequest"
+              },
+              "examples": {
+                "Destination Update Request Example": {
+                  "value": {
+                    "configuration": {
+                      "conversion_window_days": 14,
+                      "customer_id": "1234567890",
+                      "start_date": 1672531200000,
+                      "end_date": 1704067200000
+                    },
+                    "name": "My Destination"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationResponse"
+                },
+                "examples": {
+                  "Destination Update Response Example": {
+                    "value": {
+                      "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "running",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+                      "configuration": {
+                        "conversion_window_days": 14,
+                        "customer_id": "1234567890",
+                        "start_date": 1672531200000,
+                        "end_date": 1704067200000
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Update a Destination"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "patchDestination",
+        "x-speakeasy-alias": "patchDestination",
+        "x-speakeasy-group": "Destinations",
+        "summary": "Update a Destination"
+      },
+      "put": {
+        "tags": ["public_destinations", "public", "Destinations"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestinationPutRequest"
+              },
+              "examples": {
+                "Destination Update Request Example": {
+                  "value": {
+                    "configuration": {
+                      "conversion_window_days": 14,
+                      "customer_id": "1234567890",
+                      "start_date": 1672531200000,
+                      "end_date": 1704067200000
+                    },
+                    "name": "My Destination"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationResponse"
+                },
+                "examples": {
+                  "Destination Update Response Example": {
+                    "value": {
+                      "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "running",
+                      "sourceType": "postgres",
+                      "workspaceId": "744cc0ed-7f05-4949-9e60-2a814f90c035",
+                      "configuration": {
+                        "conversion_window_days": 14,
+                        "customer_id": "1234567890",
+                        "start_date": 1672531200000,
+                        "end_date": 1704067200000
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Update a Destination and fully overwrite it"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "putDestination",
+        "x-speakeasy-alias": "putDestination",
+        "x-speakeasy-group": "Destinations",
+        "x-speakeasy-entity-operation": "Destination#update",
+        "summary": "Update a Destination and fully overwrite it"
+      },
+      "parameters": [
+        {
+          "name": "destinationId",
+          "schema": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/sources/initiateOAuth": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateOauthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["public_sources", "public", "Sources"],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/InitiateOauthResponse"
+          },
+          "400": {
+            "description": "A field in the body has not been set appropriately."
+          },
+          "403": {
+            "description": "API key is invalid."
+          }
+        },
+        "operationId": "initiateOAuth",
+        "x-speakeasy-alias": "initiateOAuth",
+        "x-speakeasy-group": "Sources",
+        "summary": "Initiate OAuth for a source",
+        "description": "Given a source ID, workspace ID, and redirect URL, initiates OAuth for the source.\n\nThis returns a fully formed URL for performing user authentication against the relevant source identity provider (IdP). Once authentication has been completed, the IdP will redirect to an Airbyte endpoint which will save the access and refresh tokens off as a secret and return the secret ID to the redirect URL specified in the `secret_id` query string parameter.\n\nThat secret ID can be used to create a source with credentials in place of actual tokens."
+      }
+    },
+    "/connections": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionCreateRequest"
+              },
+              "examples": {
+                "Connection Creation Request Example": {
+                  "value": {
+                    "sourceId": "95e66a59-8045-4307-9678-63bc3c9b8c93",
+                    "destinationId": "e478de0d-a3a0-475c-b019-25f7dd29e281",
+                    "name": "Postgres-to-Bigquery"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["public_connections", "public", "Connections"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                },
+                "examples": {
+                  "Connection Creation Response Example": {
+                    "value": {
+                      "connectionId": "9924bcd0-99be-453d-ba47-c2c9766f7da5"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createConnection",
+        "x-speakeasy-alias": "createConnection",
+        "x-speakeasy-group": "Connections",
+        "summary": "Create a connection",
+        "x-speakeasy-entity-operation": "Connection#create"
+      },
+      "get": {
+        "tags": ["public_connections", "public", "Connections"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionsResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listConnections",
+        "x-speakeasy-alias": "listConnections",
+        "x-speakeasy-group": "Connections",
+        "summary": "List connections",
+        "x-speakeasy-entity-operation": "Connections#read",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to list connections for. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "tagIds",
+            "description": "The UUIDs of the tags you wish to list connections for. Empty list will retrieve all connections.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "includeDeleted",
+            "description": "Include deleted connections in the returned results.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Set the limit on the number of Connections returned. The default is 20.",
+            "schema": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query"
+          },
+          {
+            "name": "offset",
+            "description": "Set the offset to start at when returning Connections. The default is 0",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0,
+              "default": 0
+            },
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/connections/{connectionId}": {
+      "get": {
+        "tags": ["public_connections", "public", "Connections"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                },
+                "examples": {
+                  "Connection Get Response Example": {
+                    "value": {
+                      "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "Postgres To Snowflake",
+                      "sourceId": "9924bcd0-99be-453d-ba47-c2c9766f7da5",
+                      "destinationId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Connection by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getConnection",
+        "x-speakeasy-alias": "getConnection",
+        "x-speakeasy-group": "Connections",
+        "summary": "Get Connection details",
+        "x-speakeasy-entity-operation": "Connection#read"
+      },
+      "patch": {
+        "tags": ["public_connections", "public", "Connections"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionPatchRequest"
+              },
+              "examples": {
+                "Connection Update Request Example": {
+                  "value": {
+                    "sourceId": "95e66a59-8045-4307-9678-63bc3c9b8c93",
+                    "destinationId": "e478de0d-a3a0-475c-b019-25f7dd29e281",
+                    "name": "Postgres-to-Bigquery"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                },
+                "examples": {
+                  "Connection Get Response Example": {
+                    "value": {
+                      "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "Postgres To Snowflake",
+                      "sourceId": "9924bcd0-99be-453d-ba47-c2c9766f7da5",
+                      "destinationId": "744cc0ed-7f05-4949-9e60-2a814f90c035"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Update a Connection by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "patchConnection",
+        "x-speakeasy-alias": "patchConnection",
+        "x-speakeasy-group": "Connections",
+        "summary": "Update Connection details",
+        "x-speakeasy-entity-operation": "Connection#update"
+      },
+      "delete": {
+        "tags": ["public_connections", "public", "Connections"],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteConnection",
+        "x-speakeasy-alias": "deleteConnection",
+        "x-speakeasy-group": "Connections",
+        "summary": "Delete a Connection",
+        "x-speakeasy-entity-operation": "Connection#delete"
+      },
+      "parameters": [
+        {
+          "name": "connectionId",
+          "schema": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/streams": {
+      "get": {
+        "tags": ["public_streams", "public", "Streams"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamPropertiesResponse"
+                }
+              }
+            },
+            "description": "Get the available streams properties for a source/destination pair."
+          },
+          "400": {
+            "description": "Required parameters are missing"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getStreamProperties",
+        "x-speakeasy-alias": "getStreamProperties",
+        "x-speakeasy-group": "Streams",
+        "summary": "Get stream properties",
+        "parameters": [
+          {
+            "name": "sourceId",
+            "description": "ID of the source",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": true
+          },
+          {
+            "name": "destinationId",
+            "description": "ID of the destination",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "ignoreCache",
+            "description": "If true pull the latest schema from the source, else pull from cache (default false)",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "in": "query",
+            "required": false
+          }
+        ]
+      }
+    },
+    "/workspaces": {
+      "get": {
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspacesResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listWorkspaces",
+        "x-speakeasy-alias": "listWorkspaces",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "List workspaces",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "description": "The UUIDs of the workspaces you wish to fetch. Empty list will retrieve all allowed workspaces.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "includeDeleted",
+            "description": "Include deleted workspaces in the returned results.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "description": "Set the limit on the number of workspaces returned. The default is 20.",
+            "schema": {
+              "format": "int32",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "in": "query"
+          },
+          {
+            "name": "offset",
+            "description": "Set the offset to start at when returning workspaces. The default is 0",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0,
+              "default": 0
+            },
+            "in": "query"
+          }
+        ]
+      },
+      "post": {
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceCreateRequest"
+              },
+              "examples": {
+                "Workspace Creation Request Example": {
+                  "value": {
+                    "name": "Company Workspace Name"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponse"
+                },
+                "examples": {
+                  "Workspace Creation Response Example": {
+                    "value": {
+                      "workspaceId": "9924bcd0-99be-453d-ba47-c2c9766f7da5"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createWorkspace",
+        "x-speakeasy-alias": "createWorkspace",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "Create a workspace",
+        "x-speakeasy-entity-operation": "Workspace#create"
+      }
+    },
+    "/workspaces/{workspaceId}": {
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponse"
+                },
+                "examples": {
+                  "Workspace Get Response Example": {
+                    "value": {
+                      "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+                      "name": "Acme Company",
+                      "dataResidency": "auto"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Get a Workspace by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getWorkspace",
+        "x-speakeasy-alias": "getWorkspace",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "Get Workspace details",
+        "x-speakeasy-entity-operation": "Workspace#read"
+      },
+      "patch": {
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceUpdateRequest"
+              },
+              "examples": {
+                "Workspace Update Request Example": {
+                  "value": {
+                    "name": "Company Workspace Name"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceResponse"
+                },
+                "examples": {
+                  "Workspace Update Response Example": {
+                    "value": {
+                      "workspaceId": "9924bcd0-99be-453d-ba47-c2c9766f7da5"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "updateWorkspace",
+        "x-speakeasy-alias": "updateWorkspace",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "Update a workspace",
+        "x-speakeasy-entity-operation": "Workspace#update"
+      },
+      "delete": {
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteWorkspace",
+        "x-speakeasy-alias": "deleteWorkspace",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "Delete a Workspace",
+        "x-speakeasy-entity-operation": "Workspace#delete"
+      }
+    },
+    "/workspaces/{workspaceId}/oauthCredentials": {
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceOAuthCredentialsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "responses": {
+          "200": {
+            "description": "OAuth credential override was successful."
+          },
+          "400": {
+            "description": "A field in the body has not been set appropriately."
+          },
+          "403": {
+            "description": "API key is invalid."
+          }
+        },
+        "operationId": "createOrUpdateWorkspaceOAuthCredentials",
+        "x-speakeasy-alias": "createOrUpdateWorkspaceOAuthCredentials",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "Create OAuth override credentials for a workspace and source type.",
+        "description": "Create/update a set of OAuth credentials to override the Airbyte-provided OAuth credentials used for source/destination OAuth.\nIn order to determine what the credential configuration needs to be, please see the connector specification of the relevant source/destination."
+      },
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "schema": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/workspaces/{workspaceId}/oauthCredentials/{actorType}/{name}": {
+      "delete": {
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "actorType",
+            "schema": {
+              "$ref": "#/components/schemas/ActorTypeEnum"
+            },
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "name",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "required": true,
+            "description": "The name of the source or destination i.e. google-ads"
+          }
+        ],
+        "tags": ["public_workspaces", "public", "Workspaces"],
+        "responses": {
+          "204": {
+            "description": "OAuth credential override was deleted successfully."
+          },
+          "400": {
+            "description": "A field in the path has not been set appropriately."
+          },
+          "403": {
+            "description": "API key is invalid."
+          }
+        },
+        "operationId": "deleteWorkspaceOAuthCredentials",
+        "x-speakeasy-alias": "deleteWorkspaceOAuthCredentials",
+        "x-speakeasy-group": "Workspaces",
+        "summary": "Delete OAuth override credentials for a workspace and source/destination type.",
+        "description": "Delete a set of OAuth credentials that overrides the Airbyte-provided OAuth credentials used for source/destination OAuth.\n\n> 🚧 Warning\n>\n> Deleting an override that is actively used by existing sources or destinations will cause those connectors to fail on their next sync and require re-authentication."
+      }
+    },
+    "/permissions/{permissionId}": {
+      "parameters": [
+        {
+          "name": "permissionId",
+          "schema": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["public_permissions", "public", "Permissions"],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponse"
+                }
+              }
+            },
+            "description": "Get a Permission by the id in the path."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Data issue"
+          }
+        },
+        "operationId": "getPermission",
+        "summary": "Get Permission details",
+        "x-speakeasy-alias": "getPermission",
+        "x-speakeasy-group": "Permissions",
+        "x-speakeasy-entity-operation": "Permission#read"
+      },
+      "patch": {
+        "tags": ["public_permissions", "public", "Permissions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PermissionUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponse"
+                }
+              }
+            },
+            "description": "Successful updated"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Data issue"
+          }
+        },
+        "operationId": "updatePermission",
+        "summary": "Update a permission",
+        "x-speakeasy-alias": "updatePermission",
+        "x-speakeasy-group": "Permissions",
+        "x-speakeasy-entity-operation": "Permission#update"
+      },
+      "delete": {
+        "tags": ["public_permissions", "public", "Permissions"],
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Data issue"
+          }
+        },
+        "operationId": "deletePermission",
+        "x-speakeasy-alias": "deletePermission",
+        "x-speakeasy-group": "Permissions",
+        "summary": "Delete a Permission",
+        "x-speakeasy-entity-operation": "Permission#delete"
+      }
+    },
+    "/permissions": {
+      "get": {
+        "tags": ["public_permissions", "public", "Permissions"],
+        "parameters": [
+          {
+            "name": "userId",
+            "description": "User Id in permission.",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          },
+          {
+            "name": "organizationId",
+            "description": "This is required if you want to read someone else's permissions, and you should have organization admin or a higher role.",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "query",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionsResponse"
+                }
+              }
+            },
+            "description": "List Permissions."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listPermissions",
+        "x-speakeasy-alias": "listPermissions",
+        "x-speakeasy-group": "Permissions",
+        "summary": "List Permissions by user id"
+      },
+      "post": {
+        "tags": ["public_permissions", "public", "Permissions"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PermissionCreateRequest"
+              },
+              "examples": {
+                "Permission Creation Request Example": {
+                  "value": {
+                    "permissionType": "workspace_admin",
+                    "userId": "7d08fd6c-531e-4a00-937e-3d355f253e63",
+                    "workspaceId": "9924bcd0-99be-453d-ba47-c2c9766f7da5"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponse"
+                },
+                "examples": {
+                  "Permission Creation Response Example": {
+                    "value": {
+                      "permissionId": "9924bcd0-99be-453d-ba47-c2c9766f7da5",
+                      "permissionType": "workspace_admin",
+                      "userId": "7d08fd6c-531e-4a00-937e-3d355f253e63"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          }
+        },
+        "operationId": "createPermission",
+        "x-speakeasy-alias": "createPermission",
+        "x-speakeasy-group": "Permissions",
+        "summary": "Create a permission",
+        "x-speakeasy-entity-operation": "Permission#create"
+      }
+    },
+    "/organizations": {
+      "get": {
+        "tags": ["public_organizations", "public", "Organizations"],
+        "summary": "List all organizations for a user",
+        "description": "Lists users organizations.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationsResponse"
+                }
+              }
+            },
+            "description": "List user's organizations."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listOrganizationsForUser",
+        "x-speakeasy-alias": "listOrganizationsForUser",
+        "x-speakeasy-group": "Organizations"
+      }
+    },
+    "/organizations/{organizationId}/oauthCredentials": {
+      "put": {
+        "parameters": [
+          {
+            "name": "organizationId",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "path",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationOAuthCredentialsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": ["public_organizations", "public", "Organizations"],
+        "responses": {
+          "200": {
+            "description": "OAuth credential override was successful."
+          },
+          "400": {
+            "description": "A field in the body has not been set appropriately."
+          },
+          "403": {
+            "description": "API key is invalid."
+          }
+        },
+        "operationId": "createOrUpdateOrganizationOAuthCredentials",
+        "x-speakeasy-alias": "createOrUpdateOrganizationOAuthCredentials",
+        "x-speakeasy-group": "Organizations",
+        "summary": "Create OAuth override credentials for an organization and source type.",
+        "description": "Create/update a set of OAuth credentials to override the Airbyte-provided OAuth credentials used for source/destination OAuth.\nIn order to determine what the credential configuration needs to be, please see the connector specification of the relevant source/destination."
+      }
+    },
+    "/organizations/{organizationId}/oauthCredentials/{actorType}/{name}": {
+      "delete": {
+        "parameters": [
+          {
+            "name": "organizationId",
+            "schema": {
+              "format": "UUID",
+              "type": "string"
+            },
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "actorType",
+            "schema": {
+              "$ref": "#/components/schemas/ActorTypeEnum"
+            },
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "name",
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "required": true,
+            "description": "The name of the source or destination i.e. google-ads"
+          }
+        ],
+        "tags": ["public_organizations", "public", "Organizations"],
+        "responses": {
+          "204": {
+            "description": "OAuth credential override was deleted successfully."
+          },
+          "400": {
+            "description": "A field in the path has not been set appropriately."
+          },
+          "403": {
+            "description": "API key is invalid."
+          }
+        },
+        "operationId": "deleteOrganizationOAuthCredentials",
+        "x-speakeasy-alias": "deleteOrganizationOAuthCredentials",
+        "x-speakeasy-group": "Organizations",
+        "summary": "Delete OAuth override credentials for an organization and source/destination type.",
+        "description": "Delete a set of OAuth credentials that overrides the Airbyte-provided OAuth credentials used for source/destination OAuth.\n\n> 🚧 Warning\n>\n> Deleting an override that is actively used by existing sources or destinations will cause those connectors to fail on their next sync and require re-authentication."
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["public_users", "public", "Users"],
+        "summary": "List all users within an organization",
+        "description": "Organization Admin user can list all users within the same organization. Also provide filtering on a list of user IDs or/and a list of user emails.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "organizationId",
+            "schema": {
+              "type": "string",
+              "format": "UUID"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "ids",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "UUID"
+              }
+            },
+            "description": "List of user IDs to filter by"
+          },
+          {
+            "in": "query",
+            "name": "emails",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "email"
+              }
+            },
+            "description": "List of user emails to filter by"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponse"
+                }
+              }
+            },
+            "description": "List Users."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listUsersWithinAnOrganization",
+        "x-speakeasy-alias": "listUsersWithinAnOrganization",
+        "x-speakeasy-group": "Users"
+      }
+    },
+    "/tags": {
+      "get": {
+        "tags": ["public_tags", "public", "Tags"],
+        "summary": "List all tags",
+        "description": "Lists all tags",
+        "parameters": [
+          {
+            "name": "workspaceIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagsResponse"
+                }
+              }
+            },
+            "description": "List Tags."
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "listTags",
+        "x-speakeasy-alias": "listTags",
+        "x-speakeasy-group": "Tags"
+      },
+      "post": {
+        "tags": ["public_tags", "public", "Tags"],
+        "summary": "Create a tag",
+        "description": "Create a tag",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "409": {
+            "description": "Tag with same name already exists"
+          }
+        },
+        "operationId": "createTag",
+        "x-speakeasy-alias": "createTag",
+        "x-speakeasy-group": "Tags"
+      }
+    },
+    "/tags/{tagId}": {
+      "parameters": [
+        {
+          "name": "tagId",
+          "schema": {
+            "$ref": "#/components/schemas/TagId"
+          },
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "tags": ["public_tags", "public", "Tags"],
+        "summary": "Get a tag",
+        "description": "Get a tag",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "getTag",
+        "x-speakeasy-alias": "getTag",
+        "x-speakeasy-group": "Tags"
+      },
+      "delete": {
+        "tags": ["public_tags", "public", "Tags"],
+        "summary": "Delete a tag",
+        "description": "Delete a tag",
+        "responses": {
+          "204": {
+            "description": "The resource was deleted successfully"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "deleteTag",
+        "x-speakeasy-alias": "deleteTag",
+        "x-speakeasy-group": "Tags"
+      },
+      "patch": {
+        "tags": ["public_tags", "public", "Tags"],
+        "summary": "Update a tag",
+        "description": "Update a tag",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagPatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagResponse"
+                }
+              }
+            },
+            "description": "Successful operation"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "403": {
+            "description": "Not allowed"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "operationId": "updateTag",
+        "x-speakeasy-alias": "updateTag",
+        "x-speakeasy-group": "Tags"
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "InitiateOauthResponse": {
+        "content": {
+          "application/json": {}
+        },
+        "description": "Response from the initiate OAuth call should be an object with a single property which will be the `redirect_url`. If a user is redirected to this URL, they'll be prompted by the identity provider to authenticate.",
+        "x-speakeasy-component": true
+      }
+    },
+    "schemas": {
+      "WorkspaceId": {
+        "type": "string",
+        "format": "uuid",
+        "x-speakeasy-component": true
+      },
+      "DeclarativeManifest": {
+        "x-speakeasy-component": true,
+        "x-speakeasy-type-override": "any",
+        "x-speakeasy-terraform-custom-type": {
+          "imports": [
+            "github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+          ],
+          "schemaType": "jsontypes.NormalizedType{}",
+          "valueType": "jsontypes.Normalized"
+        },
+        "description": "Low code CDK manifest JSON object",
+        "type": "object"
+      },
+      "ManifestVersion": {
+        "x-speakeasy-component": true,
+        "type": "integer",
+        "format": "int64"
+      },
+      "TagId": {
+        "type": "string",
+        "format": "uuid",
+        "x-speakeasy-component": true
+      },
+      "Tag": {
+        "description": "A tag that can be associated with a connection. Useful for grouping and organizing connections in a workspace.",
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["tagId", "workspaceId", "name", "color"],
+        "properties": {
+          "tagId": {
+            "$ref": "#/components/schemas/TagId"
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/WorkspaceId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "OrganizationId": {
+        "type": "string",
+        "format": "uuid",
+        "x-speakeasy-component": true
+      },
+      "PermissionType": {
+        "type": "string",
+        "description": "Describes what actions/endpoints the permission entitles to",
+        "enum": [
+          "instance_admin",
+          "organization_admin",
+          "organization_editor",
+          "organization_runner",
+          "organization_reader",
+          "organization_member",
+          "workspace_owner",
+          "workspace_admin",
+          "workspace_runner",
+          "workspace_editor",
+          "workspace_reader"
+        ],
+        "x-speakeasy-component": true
+      },
+      "PublicPermissionType": {
+        "type": "string",
+        "description": "Subset of `PermissionType` (removing `instance_admin`), could be used in public-api.",
+        "enum": [
+          "organization_admin",
+          "organization_editor",
+          "organization_runner",
+          "organization_reader",
+          "organization_member",
+          "workspace_admin",
+          "workspace_editor",
+          "workspace_runner",
+          "workspace_reader"
+        ],
+        "x-speakeasy-component": true
+      },
+      "UserId": {
+        "type": "string",
+        "description": "Internal Airbyte user ID",
+        "format": "uuid",
+        "x-speakeasy-component": true
+      },
+      "SelectedFieldInfo": {
+        "type": "object",
+        "description": "Path to a field/column/property in a stream to be selected. For example, if the field to be selected is a database column called \"foo\", this will be [\"foo\"]. Use multiple path elements for nested schemas.",
+        "properties": {
+          "fieldPath": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "StreamMapperType": {
+        "type": "string",
+        "enum": [
+          "hashing",
+          "field-renaming",
+          "row-filtering",
+          "encryption",
+          "field-filtering"
+        ],
+        "x-speakeasy-component": true
+      },
+      "ConfiguredStreamMapper": {
+        "type": "object",
+        "required": ["type", "mapperConfiguration"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/StreamMapperType"
+          },
+          "mapperConfiguration": {
+            "$ref": "#/components/schemas/MapperConfiguration"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "MapperConfiguration": {
+        "type": "object",
+        "description": "The values required to configure the mapper.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/HashingMapperConfiguration"
+          },
+          {
+            "$ref": "#/components/schemas/FieldFilteringMapperConfiguration"
+          },
+          {
+            "$ref": "#/components/schemas/FieldRenamingMapperConfiguration"
+          },
+          {
+            "$ref": "#/components/schemas/RowFilteringMapperConfiguration"
+          },
+          {
+            "$ref": "#/components/schemas/EncryptionMapperConfiguration"
+          }
+        ],
+        "x-speakeasy-component": true
+      },
+      "HashingMapperConfiguration": {
+        "title": "Hashing",
+        "type": "object",
+        "properties": {
+          "fieldNameSuffix": {
+            "type": "string",
+            "title": "Field name suffix",
+            "description": "The suffix to append to the field name after hashing."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "MD2",
+              "MD5",
+              "SHA-1",
+              "SHA-224",
+              "SHA-256",
+              "SHA-384",
+              "SHA-512"
+            ],
+            "title": "Hashing method",
+            "description": "The hashing algorithm to use."
+          },
+          "targetField": {
+            "type": "string",
+            "title": "Original Field Name",
+            "description": "The name of the field to be hashed."
+          }
+        },
+        "required": ["fieldNameSuffix", "method", "targetField"],
+        "x-speakeasy-component": true
+      },
+      "FieldFilteringMapperConfiguration": {
+        "title": "Field Filtering",
+        "type": "object",
+        "properties": {
+          "targetField": {
+            "type": "string",
+            "title": "The Field to Filter",
+            "description": "The name of the field to filter."
+          }
+        },
+        "required": ["targetField"],
+        "x-speakeasy-component": true
+      },
+      "FieldRenamingMapperConfiguration": {
+        "title": "Field Renaming",
+        "type": "object",
+        "properties": {
+          "newFieldName": {
+            "type": "string",
+            "title": "New Field Name",
+            "description": "The new name for the field after renaming."
+          },
+          "originalFieldName": {
+            "type": "string",
+            "title": "Original Field Name",
+            "description": "The current name of the field to rename."
+          }
+        },
+        "required": ["newFieldName", "originalFieldName"],
+        "x-speakeasy-component": true
+      },
+      "RowFilteringOperationType": {
+        "type": "string",
+        "enum": ["EQUAL", "NOT"],
+        "x-speakeasy-component": true
+      },
+      "RowFilteringOperationEqual": {
+        "type": "object",
+        "title": "EQUAL",
+        "required": ["comparisonValue", "fieldName", "type"],
+        "properties": {
+          "comparisonValue": {
+            "type": "string",
+            "title": "Comparison Value",
+            "description": "The value to compare the field against."
+          },
+          "fieldName": {
+            "type": "string",
+            "title": "Field Name",
+            "description": "The name of the field to apply the operation on."
+          },
+          "type": {
+            "$ref": "#/components/schemas/RowFilteringOperationType"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "RowFilteringOperationNot": {
+        "type": "object",
+        "title": "NOT",
+        "required": ["conditions", "type"],
+        "properties": {
+          "conditions": {
+            "title": "Sub-Conditions (NOT)",
+            "description": "Conditions to evaluate with the NOT operator.",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RowFilteringOperation"
+            }
+          },
+          "type": {
+            "$ref": "#/components/schemas/RowFilteringOperationType"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "RowFilteringOperation": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RowFilteringOperationEqual"
+          },
+          {
+            "$ref": "#/components/schemas/RowFilteringOperationNot"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "EQUAL": "#/components/schemas/RowFilteringOperationEqual",
+            "NOT": "#/components/schemas/RowFilteringOperationNot"
+          }
+        },
+        "x-speakeasy-component": true,
+        "x-airbyte-circular-ref": true
+      },
+      "RowFilteringMapperConfiguration": {
+        "title": "Row Filtering",
+        "type": "object",
+        "properties": {
+          "conditions": {
+            "$ref": "#/components/schemas/RowFilteringOperation"
+          }
+        },
+        "required": ["conditions"],
+        "x-speakeasy-component": true
+      },
+      "EncryptionMapperAlgorithm": {
+        "type": "string",
+        "enum": ["RSA", "AES"],
+        "x-speakeasy-component": true
+      },
+      "EncryptionMapperConfiguration": {
+        "title": "Encryption",
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/EncryptionMapperRSAConfiguration"
+          },
+          {
+            "$ref": "#/components/schemas/EncryptionMapperAESConfiguration"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "algorithm",
+          "mapping": {
+            "RSA": "#/components/schemas/EncryptionMapperRSAConfiguration",
+            "AES": "#/components/schemas/EncryptionMapperAESConfiguration"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "EncryptionMapperRSAConfiguration": {
+        "title": "Encryption - RSA",
+        "type": "object",
+        "properties": {
+          "algorithm": {
+            "$ref": "#/components/schemas/EncryptionMapperAlgorithm"
+          },
+          "fieldNameSuffix": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          },
+          "targetField": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "algorithm",
+          "publicKey",
+          "targetField",
+          "fieldNameSuffix"
+        ],
+        "x-speakeasy-component": true
+      },
+      "EncryptionMapperAESConfiguration": {
+        "title": "Encryption - AES",
+        "type": "object",
+        "properties": {
+          "algorithm": {
+            "$ref": "#/components/schemas/EncryptionMapperAlgorithm"
+          },
+          "fieldNameSuffix": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "x-speakeasy-param-sensitive": true
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["CBC", "CFB", "OFB", "CTR", "GCM", "ECB"]
+          },
+          "padding": {
+            "type": "string",
+            "enum": ["NoPadding", "PKCS5Padding"]
+          },
+          "targetField": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "algorithm",
+          "key",
+          "mode",
+          "padding",
+          "targetField",
+          "fieldNameSuffix"
+        ],
+        "x-speakeasy-component": true
+      },
+      "SelectedFields": {
+        "description": "Paths to the fields that will be included in the configured catalog.",
+        "type": "array",
+        "format": "set",
+        "items": {
+          "$ref": "#/components/schemas/SelectedFieldInfo"
+        },
+        "x-speakeasy-component": true
+      },
+      "ScopedResourceRequirements": {
+        "x-speakeasy-component": true,
+        "description": "actor or actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "default": {
+            "$ref": "#/components/schemas/ResourceRequirements"
+          },
+          "jobSpecific": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobTypeResourceLimit"
+            }
+          }
+        }
+      },
+      "JobTypeResourceLimit": {
+        "x-speakeasy-component": true,
+        "description": "sets resource requirements for a specific job type for an actor or actor definition. these values override the default, if both are set.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["jobType", "resourceRequirements"],
+        "properties": {
+          "jobType": {
+            "$ref": "#/components/schemas/JobType"
+          },
+          "resourceRequirements": {
+            "$ref": "#/components/schemas/ResourceRequirements"
+          }
+        }
+      },
+      "JobType": {
+        "x-speakeasy-component": true,
+        "description": "enum that describes the different types of jobs that the platform runs.",
+        "type": "string",
+        "enum": [
+          "get_spec",
+          "check_connection",
+          "discover_schema",
+          "sync",
+          "reset_connection",
+          "connection_updater",
+          "replicate"
+        ]
+      },
+      "ResourceRequirements": {
+        "x-speakeasy-component": true,
+        "description": "optional resource requirements to run workers (blank for unbounded allocations)",
+        "type": "object",
+        "properties": {
+          "cpu_request": {
+            "type": "string"
+          },
+          "cpu_limit": {
+            "type": "string"
+          },
+          "memory_request": {
+            "type": "string"
+          },
+          "memory_limit": {
+            "type": "string"
+          },
+          "ephemeral_storage_request": {
+            "type": "string"
+          },
+          "ephemeral_storage_limit": {
+            "type": "string"
+          }
+        }
+      },
+      "OAuthConfiguration": {
+        "description": "The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.",
+        "x-speakeasy-component": true
+      },
+      "OAuthInputConfiguration": {
+        "$ref": "#/components/schemas/OAuthConfiguration",
+        "x-speakeasy-component": true
+      },
+      "JobResponse": {
+        "title": "Root Type for JobResponse",
+        "description": "Provides details of a single job.",
+        "required": ["jobId", "status", "jobType", "startTime", "connectionId"],
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatusEnum"
+          },
+          "jobType": {
+            "$ref": "#/components/schemas/JobTypeEnum"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "connectionId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "type": "string"
+          },
+          "duration": {
+            "description": "Duration of a sync in ISO_8601 format",
+            "type": "string"
+          },
+          "bytesSynced": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rowsSynced": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "example": {
+          "id": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+          "status": "running",
+          "jobType": "sync",
+          "startTime": "2023-03-25T01:30:50Z",
+          "duration": "PT8H6M12S"
+        },
+        "x-speakeasy-component": true
+      },
+      "JobsResponse": {
+        "title": "Root Type for JobsResponse",
+        "description": "",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobResponse"
+            }
+          }
+        },
+        "example": {
+          "next": "https://api.airbyte.com/v1/jobs?limit=5&offset=10",
+          "previous": "https://api.airbyte.com/v1/jobs?limit=5&offset=0",
+          "data": [
+            {
+              "id": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+              "status": "running",
+              "jobType": "sync",
+              "startTime": "2023-03-25T01:30:50Z"
+            }
+          ]
+        },
+        "x-speakeasy-component": true
+      },
+      "ConnectionCreateRequest": {
+        "required": ["sourceId", "destinationId"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Optional name of the connection",
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "destinationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "configurations": {
+            "$ref": "#/components/schemas/StreamConfigurations"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/AirbyteApiConnectionSchedule"
+          },
+          "dataResidency": {
+            "deprecated": true,
+            "x-speakeasy-deprecation-message": "We no longer support modifying dataResidency on Community and Enterprise connections. All connections will use the dataResidency of their associated workspace.",
+            "type": "string"
+          },
+          "namespaceDefinition": {
+            "$ref": "#/components/schemas/NamespaceDefinitionEnum"
+          },
+          "namespaceFormat": {
+            "type": "string",
+            "description": "Used when namespaceDefinition is 'custom_format'. If blank then behaves like namespaceDefinition = 'destination'. If \"${SOURCE_NAMESPACE}\" then behaves like namespaceDefinition = 'source'.",
+            "default": null,
+            "example": "${SOURCE_NAMESPACE}"
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Prefix that will be prepended to the name of each stream when it is written to the destination (ex. “airbyte_” causes “projects” => “airbyte_projects”).",
+            "default": ""
+          },
+          "nonBreakingSchemaUpdatesBehavior": {
+            "$ref": "#/components/schemas/NonBreakingSchemaUpdatesBehaviorEnum"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConnectionStatusEnum"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        },
+        "x-speakeasy-entity": "Connection",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "ConnectionPatchRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Optional name of the connection",
+            "type": "string"
+          },
+          "configurations": {
+            "$ref": "#/components/schemas/StreamConfigurations"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/AirbyteApiConnectionSchedule"
+          },
+          "dataResidency": {
+            "deprecated": true,
+            "x-speakeasy-deprecation-message": "We no longer support modifying dataResidency on Community and Enterprise connections. All connections will use the dataResidency of their associated workspace.",
+            "type": "string"
+          },
+          "namespaceDefinition": {
+            "$ref": "#/components/schemas/NamespaceDefinitionEnumNoDefault"
+          },
+          "namespaceFormat": {
+            "type": "string",
+            "description": "Used when namespaceDefinition is 'custom_format'. If blank then behaves like namespaceDefinition = 'destination'. If \"${SOURCE_NAMESPACE}\" then behaves like namespaceDefinition = 'source'.",
+            "default": null,
+            "example": "${SOURCE_NAMESPACE}"
+          },
+          "prefix": {
+            "type": "string",
+            "description": "Prefix that will be prepended to the name of each stream when it is written to the destination (ex. “airbyte_” causes “projects” => “airbyte_projects”)."
+          },
+          "nonBreakingSchemaUpdatesBehavior": {
+            "$ref": "#/components/schemas/NonBreakingSchemaUpdatesBehaviorEnumNoDefault"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConnectionStatusEnum"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          }
+        },
+        "x-speakeasy-entity": "Connection",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "JobCreateRequest": {
+        "title": "Root Type for JobCreate",
+        "description": "Creates a new Job from the configuration provided in the request body.",
+        "required": ["jobType", "connectionId"],
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "jobType": {
+            "$ref": "#/components/schemas/JobTypeEnum"
+          }
+        },
+        "example": {
+          "connectionId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+          "jobType": "sync"
+        },
+        "x-speakeasy-component": true
+      },
+      "JobStatusEnum": {
+        "enum": [
+          "pending",
+          "queued",
+          "running",
+          "incomplete",
+          "failed",
+          "succeeded",
+          "cancelled"
+        ],
+        "type": "string",
+        "x-speakeasy-component": true
+      },
+      "JobTypeEnum": {
+        "description": "Enum that describes the different types of jobs that the platform runs.",
+        "enum": ["sync", "reset", "refresh", "clear"],
+        "type": "string",
+        "x-speakeasy-component": true
+      },
+      "SourceCreateRequest": {
+        "required": ["name", "workspaceId", "configuration"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of the source e.g. dev-mysql-instance.",
+            "type": "string"
+          },
+          "definitionId": {
+            "description": "The UUID of the connector definition. One of configuration.sourceType or definitionId must be provided.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "workspaceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/SourceConfiguration"
+          },
+          "secretId": {
+            "description": "Optional secretID obtained through the  OAuth redirect flow.",
+            "type": "string"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "x-implements": "io.airbyte.api.common.ConfigurableActor",
+        "x-speakeasy-entity": "Source",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "SourcePutRequest": {
+        "required": ["name", "configuration"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/SourceConfiguration"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "x-implements": "io.airbyte.api.common.ConfigurableActor",
+        "x-speakeasy-entity": "Source",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "SourcePatchRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "My source"
+          },
+          "workspaceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/SourceConfiguration"
+          },
+          "secretId": {
+            "description": "Optional secretID obtained through the  OAuth redirect flow.",
+            "type": "string"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "x-implements": "io.airbyte.api.common.ConfigurableActor",
+        "x-speakeasy-entity": "Source",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "TagCreateRequest": {
+        "required": ["name", "color", "workspaceId"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/WorkspaceId"
+          }
+        },
+        "x-speakeasy-entity": "Tag",
+        "x-speakeasy-component": true
+      },
+      "TagPatchRequest": {
+        "required": ["name", "color"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "x-speakeasy-entity": "Tag",
+        "x-speakeasy-component": true
+      },
+      "OrganizationOAuthCredentialsRequest": {
+        "title": "Root Type for OrganizationOAuthCredentials",
+        "description": "POST body for creating/updating organization level OAuth credentials",
+        "required": ["actorType", "name", "configuration"],
+        "type": "object",
+        "properties": {
+          "actorType": {
+            "$ref": "#/components/schemas/ActorTypeEnum"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the source i.e. google-ads"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/OAuthCredentialsConfiguration"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ConnectionResponse": {
+        "title": "Root Type for ConnectionResponse",
+        "description": "Provides details of a single connection.",
+        "type": "object",
+        "required": [
+          "connectionId",
+          "name",
+          "sourceId",
+          "destinationId",
+          "workspaceId",
+          "status",
+          "schedule",
+          "configurations",
+          "createdAt",
+          "tags"
+        ],
+        "properties": {
+          "connectionId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "destinationId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "workspaceId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConnectionStatusEnum"
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ConnectionScheduleResponse"
+          },
+          "nonBreakingSchemaUpdatesBehavior": {
+            "$ref": "#/components/schemas/NonBreakingSchemaUpdatesBehaviorEnum"
+          },
+          "namespaceDefinition": {
+            "$ref": "#/components/schemas/NamespaceDefinitionEnum"
+          },
+          "namespaceFormat": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "configurations": {
+            "$ref": "#/components/schemas/StreamConfigurations"
+          },
+          "createdAt": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "statusReason": {
+            "type": "string"
+          }
+        },
+        "x-speakeasy-entity": "Connection",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "AirbyteApiConnectionSchedule": {
+        "description": "schedule for when the the connection should run, per the schedule type",
+        "type": "object",
+        "required": ["scheduleType"],
+        "properties": {
+          "scheduleType": {
+            "$ref": "#/components/schemas/ScheduleTypeEnum"
+          },
+          "cronExpression": {
+            "type": "string"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ScheduleTypeEnum": {
+        "type": "string",
+        "enum": ["manual", "cron"],
+        "x-speakeasy-component": true
+      },
+      "ConnectionScheduleResponse": {
+        "description": "schedule for when the the connection should run, per the schedule type",
+        "type": "object",
+        "required": ["scheduleType"],
+        "properties": {
+          "scheduleType": {
+            "$ref": "#/components/schemas/ScheduleTypeWithBasicEnum"
+          },
+          "cronExpression": {
+            "type": "string"
+          },
+          "basicTiming": {
+            "type": "string"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ScheduleTypeWithBasicEnum": {
+        "type": "string",
+        "enum": ["manual", "cron", "basic"],
+        "x-speakeasy-component": true
+      },
+      "ConnectionStatusEnum": {
+        "type": "string",
+        "enum": ["active", "inactive", "deprecated", "locked"],
+        "x-speakeasy-component": true
+      },
+      "NamespaceDefinitionEnum": {
+        "type": "string",
+        "description": "Define the location where the data will be stored in the destination",
+        "enum": ["source", "destination", "custom_format"],
+        "default": "destination",
+        "x-speakeasy-component": true
+      },
+      "NonBreakingSchemaUpdatesBehaviorEnum": {
+        "type": "string",
+        "description": "Set how Airbyte handles syncs when it detects a non-breaking schema change in the source",
+        "enum": [
+          "ignore",
+          "disable_connection",
+          "propagate_columns",
+          "propagate_fully"
+        ],
+        "default": "ignore",
+        "x-speakeasy-component": true
+      },
+      "NamespaceDefinitionEnumNoDefault": {
+        "type": "string",
+        "description": "Define the location where the data will be stored in the destination",
+        "enum": ["source", "destination", "custom_format"],
+        "x-speakeasy-component": true
+      },
+      "NonBreakingSchemaUpdatesBehaviorEnumNoDefault": {
+        "type": "string",
+        "description": "Set how Airbyte handles syncs when it detects a non-breaking schema change in the source",
+        "enum": [
+          "ignore",
+          "disable_connection",
+          "propagate_columns",
+          "propagate_fully"
+        ],
+        "x-speakeasy-component": true
+      },
+      "DestinationResponse": {
+        "title": "Root Type for DestinationResponse",
+        "description": "Provides details of a single destination.",
+        "type": "object",
+        "required": [
+          "destinationId",
+          "name",
+          "destinationType",
+          "definitionId",
+          "workspaceId",
+          "configuration",
+          "createdAt"
+        ],
+        "properties": {
+          "destinationId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "destinationType": {
+            "type": "string"
+          },
+          "definitionId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "workspaceId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/DestinationConfiguration"
+          },
+          "createdAt": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "example": {
+          "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+          "name": "Analytics Team Postgres",
+          "destinationType": "postgres",
+          "workspaceId": "871d9b60-11d1-44cb-8c92-c246d53bf87e",
+          "definitionId": "321d9b60-11d1-44cb-8c92-c246d53bf98e"
+        },
+        "x-speakeasy-component": true
+      },
+      "SourceResponse": {
+        "title": "Root Type for SourceResponse",
+        "description": "Provides details of a single source.",
+        "type": "object",
+        "required": [
+          "sourceId",
+          "name",
+          "sourceType",
+          "workspaceId",
+          "configuration",
+          "definitionId",
+          "createdAt"
+        ],
+        "properties": {
+          "sourceId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          },
+          "definitionId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "workspaceId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/SourceConfiguration"
+          },
+          "createdAt": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "example": {
+          "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+          "name": "Analytics Team Postgres",
+          "sourceType": "postgres",
+          "workspaceId": "871d9b60-11d1-44cb-8c92-c246d53bf87e",
+          "definitionId": "321d9b60-11d1-44cb-8c92-c246d53bf98e"
+        },
+        "x-speakeasy-component": true
+      },
+      "TagResponse": {
+        "title": "Root Type for TagResponse",
+        "description": "Provides details of a single tag.",
+        "type": "object",
+        "required": ["tagId", "name", "color", "workspaceId"],
+        "properties": {
+          "tagId": {
+            "$ref": "#/components/schemas/TagId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "description": "A hexadecimal color value",
+            "type": "string"
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/WorkspaceId"
+          }
+        },
+        "example": {
+          "tagId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+          "name": "Analytics Team",
+          "color": "FF5733",
+          "workspaceId": "871d9b60-11d1-44cb-8c92-c246d53bf87e"
+        },
+        "x-speakeasy-component": true
+      },
+      "DestinationCreateRequest": {
+        "required": ["name", "workspaceId", "configuration"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of the destination e.g. dev-mysql-instance.",
+            "type": "string"
+          },
+          "definitionId": {
+            "description": "The UUID of the connector definition. One of configuration.destinationType or definitionId must be provided.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "workspaceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/DestinationConfiguration"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "x-implements": "io.airbyte.api.common.ConfigurableActor",
+        "x-speakeasy-entity": "Destination",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "DestinationPatchRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/DestinationConfiguration"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "x-implements": "io.airbyte.api.common.ConfigurableActor",
+        "x-speakeasy-entity": "Destination",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "DestinationPutRequest": {
+        "required": ["name", "configuration"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/DestinationConfiguration"
+          },
+          "resourceAllocation": {
+            "$ref": "#/components/schemas/ScopedResourceRequirements"
+          }
+        },
+        "x-implements": "io.airbyte.api.common.ConfigurableActor",
+        "x-speakeasy-entity": "Destination",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "WorkspaceCreateRequest": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of the workspace",
+            "type": "string"
+          },
+          "organizationId": {
+            "description": "ID of organization to add workspace to.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/NotificationsConfig"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "WorkspaceUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of the workspace",
+            "type": "string"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/NotificationsConfig"
+          },
+          "regionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "WorkspaceResponse": {
+        "title": "Root Type for WorkspaceResponse",
+        "description": "Provides details of a single workspace.",
+        "type": "object",
+        "required": ["workspaceId", "name", "dataResidency", "notifications"],
+        "properties": {
+          "workspaceId": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dataResidency": {
+            "type": "string"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/NotificationsConfig"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "NotificationsConfig": {
+        "description": "Configures workspace notifications.",
+        "type": "object",
+        "properties": {
+          "failure": {
+            "$ref": "#/components/schemas/NotificationConfig"
+          },
+          "success": {
+            "$ref": "#/components/schemas/NotificationConfig"
+          },
+          "connectionUpdate": {
+            "$ref": "#/components/schemas/NotificationConfig"
+          },
+          "connectionUpdateActionRequired": {
+            "$ref": "#/components/schemas/NotificationConfig"
+          },
+          "syncDisabled": {
+            "$ref": "#/components/schemas/NotificationConfig"
+          },
+          "syncDisabledWarning": {
+            "$ref": "#/components/schemas/NotificationConfig"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "NotificationConfig": {
+        "description": "Configures a notification.",
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/EmailNotificationConfig"
+          },
+          "webhook": {
+            "$ref": "#/components/schemas/WebhookNotificationConfig"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "WebhookNotificationConfig": {
+        "description": "Configures a webhook notification.",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "EmailNotificationConfig": {
+        "description": "Configures an email notification.",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "x-speakeasy-entity": "Workspace",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "UserResponse": {
+        "title": "Root Type for UserResponse",
+        "description": "Provides details of a single user in an organization.",
+        "type": "object",
+        "required": ["id", "name", "email"],
+        "properties": {
+          "name": {
+            "description": "Name of the user",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "x-speakeasy-entity": "User",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "UsersResponse": {
+        "title": "Root Type for UsersResponse",
+        "description": "List/Array of multiple users in an organization",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          }
+        },
+        "x-speakeasy-component": true,
+        "x-speakeasy-entity": "User",
+        "x-speakeasy-param-suppress-computed-diff": true
+      },
+      "PermissionCreateRequest": {
+        "required": ["permissionType", "userId"],
+        "type": "object",
+        "properties": {
+          "permissionType": {
+            "$ref": "#/components/schemas/PublicPermissionType"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/WorkspaceId"
+          },
+          "organizationId": {
+            "$ref": "#/components/schemas/OrganizationId"
+          }
+        },
+        "x-speakeasy-entity": "Permission",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "PermissionUpdateRequest": {
+        "required": ["permissionType"],
+        "type": "object",
+        "properties": {
+          "permissionType": {
+            "$ref": "#/components/schemas/PermissionType"
+          }
+        },
+        "x-speakeasy-entity": "Permission",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "PermissionResponse": {
+        "title": "Root Type for PermissionResponse",
+        "description": "Provides details of a single permission.",
+        "type": "object",
+        "required": ["permissionId", "permissionType", "userId"],
+        "properties": {
+          "permissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "permissionType": {
+            "$ref": "#/components/schemas/PermissionType"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/WorkspaceId"
+          },
+          "organizationId": {
+            "$ref": "#/components/schemas/OrganizationId"
+          }
+        },
+        "x-speakeasy-entity": "Permission",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "PermissionScope": {
+        "description": "Scope of a single permission, e.g. workspace, organization",
+        "type": "string",
+        "enum": ["workspace", "organization", "none"],
+        "x-speakeasy-component": true
+      },
+      "PermissionResponseRead": {
+        "title": "Root type for PermissionResponseRead",
+        "description": "Reformat PermissionResponse with permission scope",
+        "type": "object",
+        "required": [
+          "permissionId",
+          "permissionType",
+          "userId",
+          "scope",
+          "scopeId"
+        ],
+        "properties": {
+          "permissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "permissionType": {
+            "$ref": "#/components/schemas/PermissionType"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "scopeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/PermissionScope"
+          }
+        },
+        "x-speakeasy-entity": "Permission",
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "PermissionsResponse": {
+        "title": "Root Type for PermissionsResponse",
+        "description": "List/Array of multiple permissions",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionResponseRead"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "OrganizationResponse": {
+        "title": "Root Type for OrganizationResponse",
+        "description": "Provides details of a single organization for a user.",
+        "type": "object",
+        "required": ["organizationId", "organizationName", "email"],
+        "properties": {
+          "organizationId": {
+            "$ref": "#/components/schemas/OrganizationId"
+          },
+          "organizationName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "x-speakeasy-param-suppress-computed-diff": true,
+        "x-speakeasy-component": true
+      },
+      "OrganizationsResponse": {
+        "title": "Root Type for OrganizationsResponse",
+        "description": "List/Array of multiple organizations.",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationResponse"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ConnectionsResponse": {
+        "title": "Root Type for ConnectionsResponse",
+        "description": "",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionResponse"
+            },
+            "default": []
+          }
+        },
+        "example": {
+          "next": "https://api.airbyte.com/v1/connections?limit=5&offset=10",
+          "previous": "https://api.airbyte.com/v1/connections?limit=5&offset=0",
+          "data": [
+            {
+              "name": "test-connection"
+            },
+            {
+              "connection_id": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826"
+            },
+            {
+              "sourceId": "49237019-645d-47d4-b45b-5eddf97775ce"
+            },
+            {
+              "destinationId": "al312fs-0ab1-4f72-9ed7-0b8fc27c5826"
+            },
+            {
+              "schedule": {
+                "scheduleType": "manual"
+              }
+            },
+            {
+              "status": "active"
+            }
+          ]
+        },
+        "x-speakeasy-component": true
+      },
+      "SourcesResponse": {
+        "title": "Root Type for SourcesResponse",
+        "description": "",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceResponse"
+            }
+          }
+        },
+        "example": {
+          "next": "https://api.airbyte.com/v1/sources?limit=5&offset=10",
+          "previous": "https://api.airbyte.com/v1/sources?limit=5&offset=0",
+          "data": {
+            "sourceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+            "name": "Analytics Team Postgres",
+            "sourceType": "postgres",
+            "workspaceId": "871d9b60-11d1-44cb-8c92-c246d53bf87e"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "DestinationsResponse": {
+        "title": "Root Type for DestinationsResponse",
+        "description": "",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DestinationResponse"
+            }
+          }
+        },
+        "example": {
+          "next": "https://api.airbyte.com/v1/destinations?limit=5&offset=10",
+          "previous": "https://api.airbyte.com/v1/destinations?limit=5&offset=0",
+          "data": {
+            "destinationId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+            "name": "Analytics Team Postgres",
+            "destinationType": "postgres",
+            "workspaceId": "871d9b60-11d1-44cb-8c92-c246d53bf87e"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "CreateDeclarativeSourceDefinitionRequest": {
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["workspaceId", "name", "manifest"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/components/schemas/DeclarativeManifest"
+          }
+        }
+      },
+      "UpdateDeclarativeSourceDefinitionRequest": {
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["manifest"],
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/DeclarativeManifest"
+          }
+        }
+      },
+      "DeclarativeSourceDefinitionsResponse": {
+        "title": "Root Type for DeclarativeSourceDefinitionsResponse",
+        "description": "",
+        "x-speakeasy-component": true,
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeclarativeSourceDefinitionResponse"
+            }
+          }
+        }
+      },
+      "DeclarativeSourceDefinitionResponse": {
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["id", "name", "manifest", "version"],
+        "properties": {
+          "id": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/components/schemas/DeclarativeManifest"
+          },
+          "version": {
+            "x-speakeasy-terraform-ignore": true,
+            "$ref": "#/components/schemas/ManifestVersion"
+          }
+        }
+      },
+      "CreateDefinitionRequest": {
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["name", "dockerRepository", "dockerImageTag"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dockerRepository": {
+            "type": "string"
+          },
+          "dockerImageTag": {
+            "type": "string"
+          },
+          "documentationUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "UpdateDefinitionRequest": {
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["name", "dockerImageTag"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dockerImageTag": {
+            "type": "string"
+          }
+        }
+      },
+      "DefinitionsResponse": {
+        "title": "Root Type for DefinitionsResponse",
+        "description": "",
+        "x-speakeasy-component": true,
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DefinitionResponse"
+            }
+          }
+        }
+      },
+      "DefinitionResponse": {
+        "title": "Root Type for DefinitionResponse",
+        "description": "Provides details of a single connector definition.",
+        "type": "object",
+        "x-speakeasy-component": true,
+        "required": ["id", "name", "dockerRepository", "dockerImageTag"],
+        "properties": {
+          "id": {
+            "format": "UUID",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dockerRepository": {
+            "type": "string"
+          },
+          "dockerImageTag": {
+            "type": "string"
+          },
+          "documentationUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkspacesResponse": {
+        "title": "Root Type for WorkspacesResponse",
+        "description": "",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "previous": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceResponse"
+            }
+          }
+        },
+        "example": {
+          "next": "https://api.airbyte.com/v1/workspaces?limit=5&offset=10",
+          "previous": "https://api.airbyte.com/v1/workspaces?limit=5&offset=0",
+          "data": {
+            "workspaceId": "18dccc91-0ab1-4f72-9ed7-0b8fc27c5826",
+            "name": "Acme Company",
+            "dataResidency": "auto"
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "TagsResponse": {
+        "title": "Root Type for TagsResponse",
+        "description": "",
+        "required": ["data"],
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagResponse"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "StreamConfiguration": {
+        "description": "Configurations for a single stream.",
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "namespace": {
+            "type": "string",
+            "description": "Namespace of the stream."
+          },
+          "syncMode": {
+            "$ref": "#/components/schemas/ConnectionSyncModeEnum"
+          },
+          "cursorField": {
+            "description": "Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental` unless there is a default.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "primaryKey": {
+            "description": "Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup` unless it is already supplied by the source schema.",
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "includeFiles": {
+            "description": "Whether to move raw files from the source to the destination during the sync.",
+            "type": "boolean"
+          },
+          "destinationObjectName": {
+            "description": "The name of the destination object that this stream will be written to, used for data activation destinations.",
+            "type": "string"
+          },
+          "selectedFields": {
+            "description": "By default (if not provided in the request) all fields will be synced. Otherwise, only the fields in this list will be synced.",
+            "$ref": "#/components/schemas/SelectedFields"
+          },
+          "mappers": {
+            "description": "Mappers that should be applied to the stream before writing to the destination.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfiguredStreamMapper"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "StreamConfigurations": {
+        "description": "A list of configured stream options for a connection.",
+        "type": "object",
+        "properties": {
+          "streams": {
+            "type": "array",
+            "format": "set",
+            "items": {
+              "$ref": "#/components/schemas/StreamConfiguration"
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "StreamPropertiesResponse": {
+        "description": "A list of stream properties.",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StreamProperties"
+        },
+        "x-speakeasy-component": true
+      },
+      "StreamProperties": {
+        "description": "The stream properties associated with a connection.",
+        "type": "object",
+        "properties": {
+          "streamName": {
+            "type": "string"
+          },
+          "syncModes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConnectionSyncModeEnum"
+            }
+          },
+          "streamnamespace": {
+            "type": "string"
+          },
+          "defaultCursorField": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourceDefinedCursorField": {
+            "type": "boolean"
+          },
+          "sourceDefinedPrimaryKey": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "propertyFields": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "x-speakeasy-component": true
+      },
+      "ConnectionSyncModeEnum": {
+        "enum": [
+          "full_refresh_overwrite",
+          "full_refresh_overwrite_deduped",
+          "full_refresh_append",
+          "full_refresh_update",
+          "full_refresh_soft_delete",
+          "incremental_append",
+          "incremental_deduped_history",
+          "incremental_update",
+          "incremental_soft_delete"
+        ],
+        "x-speakeasy-component": true
+      },
+      "ActorTypeEnum": {
+        "description": "Whether you're setting this override for a source or destination",
+        "enum": ["source", "destination"],
+        "x-speakeasy-component": true
+      },
+      "shopify": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of the Shopify developer application.",
+                "order": 1,
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of the Shopify developer application.",
+                "order": 2,
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Shopify Source CDK Specifications"
+      },
+      "azure-blob-storage": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID of your Microsoft developer application",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret of your Microsoft developer application",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "SourceAzureBlobStorageSpec"
+      },
+      "drift": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your Drift developer application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your Drift developer application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Drift Spec"
+      },
+      "snapchat-marketing": {
+        "properties": {
+          "client_id": {
+            "airbyte_secret": true,
+            "description": "The Client ID of your Snapchat developer application.",
+            "order": 0,
+            "title": "Client ID",
+            "type": "string"
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "description": "The Client Secret of your Snapchat developer application.",
+            "order": 1,
+            "title": "Client Secret",
+            "type": "string"
+          }
+        },
+        "title": "Snapchat Marketing Spec"
+      },
+      "gitlab": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The API ID of the Gitlab developer application.",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The API Secret the Gitlab developer application.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Source Gitlab Spec"
+      },
+      "microsoft-sharepoint": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID of your Microsoft developer application",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret of your Microsoft developer application",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Microsoft SharePoint Source Spec"
+      },
+      "notion": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your Notion integration. See our <a href='https://docs.airbyte.com/integrations/sources/notion#step-2-set-permissions-and-acquire-authorization-credentials'>docs</a> for more information.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your Notion integration. See our <a href='https://docs.airbyte.com/integrations/sources/notion#step-2-set-permissions-and-acquire-authorization-credentials'>docs</a> for more information.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Notion Source Spec"
+      },
+      "youtube-analytics": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your developer application",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret of your developer application",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "YouTube Analytics Spec"
+      },
+      "zendesk-talk": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Zendesk Talk Spec"
+      },
+      "linkedin-ads": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The client ID of your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret of your developer application. Refer to our <a href='https://docs.airbyte.com/integrations/sources/linkedin-ads#setup-guide'>documentation</a> for more information.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Linkedin Ads Spec"
+      },
+      "microsoft-onedrive": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID of your Microsoft developer application",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret of your Microsoft developer application",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Microsoft OneDrive Source Spec"
+      },
+      "tiktok-marketing": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "app_id": {
+                "airbyte_secret": true,
+                "description": "The Developer Application App ID.",
+                "title": "App ID",
+                "type": "string"
+              },
+              "secret": {
+                "airbyte_secret": true,
+                "description": "The Developer Application Secret.",
+                "title": "Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "TikTok Marketing Source Spec"
+      },
+      "hubspot": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "description": "The Client ID of your HubSpot developer application. See the <a href=\"https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart\">Hubspot docs</a> if you need help finding this ID.",
+                "examples": ["123456789000"],
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret for your HubSpot developer application. See the <a href=\"https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart\">Hubspot docs</a> if you need help finding this secret.",
+                "examples": ["secret"],
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "HubSpot Source Spec"
+      },
+      "typeform": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of the Typeform developer application.",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret the Typeform developer application.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Typeform Spec"
+      },
+      "facebook-pages": {
+        "title": "Facebook Pages Spec"
+      },
+      "surveymonkey": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of the SurveyMonkey developer application.",
+                "order": 1,
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of the SurveyMonkey developer application.",
+                "order": 2,
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "SurveyMonkey Spec"
+      },
+      "amazon-ads": {
+        "properties": {
+          "client_id": {
+            "airbyte_secret": true,
+            "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+            "order": 1,
+            "title": "Client ID",
+            "type": "string"
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "description": "The client secret of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+            "order": 2,
+            "title": "Client Secret",
+            "type": "string"
+          }
+        },
+        "title": "Source Amazon Ads"
+      },
+      "github": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "OAuth Client Id",
+                "title": "Client Id",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "OAuth Client secret",
+                "title": "Client secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "GitHub Source Spec"
+      },
+      "salesforce": {
+        "properties": {
+          "client_id": {
+            "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client ID</a>",
+            "order": 2,
+            "title": "Client ID",
+            "type": "string"
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "description": "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client secret</a>",
+            "order": 3,
+            "title": "Client Secret",
+            "type": "string"
+          }
+        },
+        "title": "Salesforce Source Spec"
+      },
+      "lever-hiring": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "description": "The Client ID of your Lever Hiring developer application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your Lever Hiring developer application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Lever Hiring Source Spec"
+      },
+      "google-drive": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID for the Google Drive API",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret for the Google Drive API",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Google Drive Source Spec"
+      },
+      "gcs": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Config"
+      },
+      "ticktick": {
+        "properties": {
+          "authorization": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The client ID of your Ticktick application. Read more <a href=\"https://developer.ticktick.com/api#/openapi?id=getting-started\">here</a>.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret of of your Ticktick application. application. Read more <a href=\"https://developer.ticktick.com/api#/openapi?id=getting-started\">here</a>.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "TickTick Spec"
+      },
+      "trello": {
+        "title": "Trello Spec"
+      },
+      "sharepoint-enterprise": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Client ID of your Microsoft developer application",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Client Secret of your Microsoft developer application",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Microsoft SharePoint Source Spec"
+      },
+      "google-ads": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "description": "The Client ID of your Google Ads developer application. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "order": 1,
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your Google Ads developer application. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "order": 2,
+                "title": "Client Secret",
+                "type": "string"
+              },
+              "developer_token": {
+                "airbyte_secret": true,
+                "description": "The Developer Token granted by Google to use their APIs. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "order": 0,
+                "title": "Developer Token",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Google Ads Spec"
+      },
+      "google-search-console": {
+        "properties": {
+          "authorization": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The client ID of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Google Search Console Spec"
+      },
+      "instagram": {
+        "properties": {
+          "client_id": {
+            "airbyte_secret": true,
+            "description": "The Client ID for your Oauth application",
+            "title": "Client Id",
+            "type": "string"
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "description": "The Client Secret for your Oauth application",
+            "title": "Client Secret",
+            "type": "string"
+          }
+        },
+        "title": "Source Instagram"
+      },
+      "smartsheets": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The API ID of the SmartSheets developer application.",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The API Secret the SmartSheets developer application.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Smartsheets Source Spec"
+      },
+      "slack": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this secret.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Slack Spec"
+      },
+      "google-sheets": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Google Sheets Source Spec"
+      },
+      "asana": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "",
+                "title": "",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "",
+                "title": "",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Asana Spec"
+      },
+      "microsoft-teams": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "description": "The Client ID of your Microsoft Teams developer application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your Microsoft Teams developer application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Microsoft Teams Spec"
+      },
+      "amazon-seller-partner": {
+        "properties": {
+          "app_id": {
+            "airbyte_secret": true,
+            "description": "Your Amazon Application ID.",
+            "order": 4,
+            "title": "Application ID",
+            "type": "string"
+          },
+          "lwa_app_id": {
+            "airbyte_secret": true,
+            "description": "Your Login with Amazon Client ID.",
+            "order": 5,
+            "title": "LWA Client Id",
+            "type": "string"
+          },
+          "lwa_client_secret": {
+            "airbyte_secret": true,
+            "description": "Your Login with Amazon Client Secret.",
+            "order": 6,
+            "title": "LWA Client Secret",
+            "type": "string"
+          }
+        },
+        "title": "Amazon Seller Partner Spec"
+      },
+      "pinterest": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your OAuth application",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your OAuth application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Pinterest Spec"
+      },
+      "rd-station-marketing": {
+        "properties": {
+          "authorization": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your RD Station developer application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your RD Station developer application",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "RD Station Marketing Spec"
+      },
+      "zendesk-support": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The OAuth client's ID. See <a href=\"https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.\">this guide</a> for more information.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The OAuth client secret. See <a href=\"https://docs.searchunify.com/Content/Content-Sources/Zendesk-Authentication-OAuth-Client-ID-Secret.htm#:~:text=Get%20Client%20ID%20and%20Client%20Secret&text=Go%20to%20OAuth%20Clients%20and,will%20be%20displayed%20only%20once.\">this guide</a> for more information.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Source Zendesk Support Spec"
+      },
+      "google-analytics-data-api": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "description": "The Client ID of your Google Analytics developer application.",
+                "order": 1,
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your Google Analytics developer application.",
+                "order": 2,
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Google Analytics (Data API) Spec"
+      },
+      "intercom": {
+        "title": "Intercom Spec"
+      },
+      "facebook-marketing": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_hidden": true,
+                "airbyte_secret": true,
+                "description": "The Client Id for your OAuth app",
+                "title": "Client Id",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_hidden": true,
+                "airbyte_secret": true,
+                "description": "The Client Secret for your OAuth app",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Source Facebook Marketing"
+      },
+      "bing-ads": {
+        "properties": {
+          "client_id": {
+            "airbyte_secret": true,
+            "description": "The Client ID of your Microsoft Advertising developer application.",
+            "order": 1,
+            "title": "Client ID",
+            "type": "string"
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "default": "",
+            "description": "The Client Secret of your Microsoft Advertising developer application.",
+            "order": 2,
+            "title": "Client Secret",
+            "type": "string"
+          }
+        },
+        "title": "Bing Ads Spec"
+      },
+      "monday": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your OAuth application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your OAuth application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Monday Spec"
+      },
+      "mailchimp": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The Client ID of your OAuth application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The Client Secret of your OAuth application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Mailchimp Spec"
+      },
+      "airtable": {
+        "properties": {
+          "credentials": {
+            "properties": {
+              "client_id": {
+                "airbyte_secret": true,
+                "description": "The client ID of the Airtable developer application.",
+                "title": "Client ID",
+                "type": "string"
+              },
+              "client_secret": {
+                "airbyte_secret": true,
+                "description": "The client secret of the Airtable developer application.",
+                "title": "Client Secret",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": "Airtable Spec"
+      },
+      "InitiateOauthRequest": {
+        "title": "Root Type for initiate-oauth-post-body",
+        "description": "POST body for initiating OAuth via the public API",
+        "required": ["redirectUrl", "workspaceId", "sourceType"],
+        "type": "object",
+        "example": {
+          "redirectUrl": "https://cloud.airbyte.io/v1/api/oauth/callback",
+          "workspaceId": "871d9b60-11d1-44cb-8c92-c246d53bf87e",
+          "destinationId": "3d93b16c-ff5f-421c-8908-5a3c82088f14"
+        },
+        "properties": {
+          "redirectUrl": {
+            "description": "The URL to redirect the user to with the OAuth secret stored in the secret_id query string parameter after authentication is complete.",
+            "type": "string"
+          },
+          "workspaceId": {
+            "format": "uuid",
+            "description": "The workspace to create the secret and eventually the full source.",
+            "type": "string"
+          },
+          "oAuthInputConfiguration": {
+            "$ref": "#/components/schemas/OAuthInputConfiguration",
+            "description": "Input configuration for OAuth required by some sources."
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/OAuthActorNames"
+          },
+          "requestedScopes": {
+            "type": "array",
+            "description": "Optional OAuth scopes to request, overriding the connector's default scopes. Only supported for connectors that define scopes as an array.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requestedOptionalScopes": {
+            "type": "array",
+            "description": "Optional OAuth optional_scopes to request, overriding the connector's default optional_scopes. Only applied when requestedScopes is also provided.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "WorkspaceOAuthCredentialsRequest": {
+        "title": "Root Type for WorkspaceOAuthCredentials",
+        "description": "POST body for creating/updating workspace level OAuth credentials",
+        "required": ["actorType", "name", "configuration"],
+        "type": "object",
+        "properties": {
+          "actorType": {
+            "$ref": "#/components/schemas/ActorTypeEnum"
+          },
+          "name": {
+            "$ref": "#/components/schemas/OAuthActorNames"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/OAuthCredentialsConfiguration"
+          }
+        }
+      },
+      "OAuthActorNames": {
+        "enum": [
+          "airtable",
+          "amazon-ads",
+          "amazon-seller-partner",
+          "asana",
+          "azure-blob-storage",
+          "bing-ads",
+          "drift",
+          "facebook-marketing",
+          "facebook-pages",
+          "gcs",
+          "github",
+          "gitlab",
+          "google-ads",
+          "google-analytics-data-api",
+          "google-drive",
+          "google-search-console",
+          "google-sheets",
+          "hubspot",
+          "instagram",
+          "intercom",
+          "lever-hiring",
+          "linkedin-ads",
+          "mailchimp",
+          "microsoft-onedrive",
+          "microsoft-sharepoint",
+          "microsoft-teams",
+          "monday",
+          "notion",
+          "pinterest",
+          "rd-station-marketing",
+          "salesforce",
+          "sharepoint-enterprise",
+          "slack",
+          "smartsheets",
+          "snapchat-marketing",
+          "surveymonkey",
+          "ticktick",
+          "tiktok-marketing",
+          "trello",
+          "typeform",
+          "youtube-analytics",
+          "zendesk-support",
+          "zendesk-talk"
+        ]
+      },
+      "SourceConfiguration": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "The configuration shape depends on the source connector type. See the connector documentation for the fields supported by each connector: [connector documentation](/integrations/)."
+      },
+      "DestinationConfiguration": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "The configuration shape depends on the destination connector type. See the connector documentation for the fields supported by each connector: [connector documentation](/integrations/)."
+      },
+      "OAuthCredentialsConfiguration": {
+        "description": "The values required to configure the source.",
+        "example": {
+          "user": "charles"
+        },
+        "oneOf": [
+          {
+            "title": "airtable",
+            "$ref": "#/components/schemas/airtable"
+          },
+          {
+            "title": "amazon-ads",
+            "$ref": "#/components/schemas/amazon-ads"
+          },
+          {
+            "title": "amazon-seller-partner",
+            "$ref": "#/components/schemas/amazon-seller-partner"
+          },
+          {
+            "title": "asana",
+            "$ref": "#/components/schemas/asana"
+          },
+          {
+            "title": "azure-blob-storage",
+            "$ref": "#/components/schemas/azure-blob-storage"
+          },
+          {
+            "title": "bing-ads",
+            "$ref": "#/components/schemas/bing-ads"
+          },
+          {
+            "title": "drift",
+            "$ref": "#/components/schemas/drift"
+          },
+          {
+            "title": "facebook-marketing",
+            "$ref": "#/components/schemas/facebook-marketing"
+          },
+          {
+            "title": "facebook-pages",
+            "$ref": "#/components/schemas/facebook-pages"
+          },
+          {
+            "title": "gcs",
+            "$ref": "#/components/schemas/gcs"
+          },
+          {
+            "title": "github",
+            "$ref": "#/components/schemas/github"
+          },
+          {
+            "title": "gitlab",
+            "$ref": "#/components/schemas/gitlab"
+          },
+          {
+            "title": "google-ads",
+            "$ref": "#/components/schemas/google-ads"
+          },
+          {
+            "title": "google-analytics-data-api",
+            "$ref": "#/components/schemas/google-analytics-data-api"
+          },
+          {
+            "title": "google-drive",
+            "$ref": "#/components/schemas/google-drive"
+          },
+          {
+            "title": "google-search-console",
+            "$ref": "#/components/schemas/google-search-console"
+          },
+          {
+            "title": "google-sheets",
+            "$ref": "#/components/schemas/google-sheets"
+          },
+          {
+            "title": "hubspot",
+            "$ref": "#/components/schemas/hubspot"
+          },
+          {
+            "title": "instagram",
+            "$ref": "#/components/schemas/instagram"
+          },
+          {
+            "title": "intercom",
+            "$ref": "#/components/schemas/intercom"
+          },
+          {
+            "title": "lever-hiring",
+            "$ref": "#/components/schemas/lever-hiring"
+          },
+          {
+            "title": "linkedin-ads",
+            "$ref": "#/components/schemas/linkedin-ads"
+          },
+          {
+            "title": "mailchimp",
+            "$ref": "#/components/schemas/mailchimp"
+          },
+          {
+            "title": "microsoft-onedrive",
+            "$ref": "#/components/schemas/microsoft-onedrive"
+          },
+          {
+            "title": "microsoft-sharepoint",
+            "$ref": "#/components/schemas/microsoft-sharepoint"
+          },
+          {
+            "title": "microsoft-teams",
+            "$ref": "#/components/schemas/microsoft-teams"
+          },
+          {
+            "title": "monday",
+            "$ref": "#/components/schemas/monday"
+          },
+          {
+            "title": "notion",
+            "$ref": "#/components/schemas/notion"
+          },
+          {
+            "title": "pinterest",
+            "$ref": "#/components/schemas/pinterest"
+          },
+          {
+            "title": "rd-station-marketing",
+            "$ref": "#/components/schemas/rd-station-marketing"
+          },
+          {
+            "title": "salesforce",
+            "$ref": "#/components/schemas/salesforce"
+          },
+          {
+            "title": "sharepoint-enterprise",
+            "$ref": "#/components/schemas/sharepoint-enterprise"
+          },
+          {
+            "title": "shopify",
+            "$ref": "#/components/schemas/shopify"
+          },
+          {
+            "title": "slack",
+            "$ref": "#/components/schemas/slack"
+          },
+          {
+            "title": "smartsheets",
+            "$ref": "#/components/schemas/smartsheets"
+          },
+          {
+            "title": "snapchat-marketing",
+            "$ref": "#/components/schemas/snapchat-marketing"
+          },
+          {
+            "title": "surveymonkey",
+            "$ref": "#/components/schemas/surveymonkey"
+          },
+          {
+            "title": "ticktick",
+            "$ref": "#/components/schemas/ticktick"
+          },
+          {
+            "title": "tiktok-marketing",
+            "$ref": "#/components/schemas/tiktok-marketing"
+          },
+          {
+            "title": "trello",
+            "$ref": "#/components/schemas/trello"
+          },
+          {
+            "title": "typeform",
+            "$ref": "#/components/schemas/typeform"
+          },
+          {
+            "title": "youtube-analytics",
+            "$ref": "#/components/schemas/youtube-analytics"
+          },
+          {
+            "title": "zendesk-support",
+            "$ref": "#/components/schemas/zendesk-support"
+          },
+          {
+            "title": "zendesk-talk",
+            "$ref": "#/components/schemas/zendesk-talk"
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "clientCredentials": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/applications/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "basicAuth": []
+    },
+    {
+      "clientCredentials": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "public_health"
+    },
+    {
+      "name": "public"
+    },
+    {
+      "name": "public_jobs"
+    },
+    {
+      "name": "Jobs"
+    },
+    {
+      "name": "public_declarative_source_definitions"
+    },
+    {
+      "name": "DeclarativeSourceDefinitions"
+    },
+    {
+      "name": "public_source_definitions"
+    },
+    {
+      "name": "SourceDefinitions"
+    },
+    {
+      "name": "public_destination_definitions"
+    },
+    {
+      "name": "DestinationDefinitions"
+    },
+    {
+      "name": "public_sources"
+    },
+    {
+      "name": "Sources"
+    },
+    {
+      "name": "public_destinations"
+    },
+    {
+      "name": "Destinations"
+    },
+    {
+      "name": "public_connections"
+    },
+    {
+      "name": "Connections"
+    },
+    {
+      "name": "public_streams"
+    },
+    {
+      "name": "Streams"
+    },
+    {
+      "name": "public_workspaces"
+    },
+    {
+      "name": "Workspaces"
+    },
+    {
+      "name": "public_permissions"
+    },
+    {
+      "name": "Permissions"
+    },
+    {
+      "name": "public_organizations"
+    },
+    {
+      "name": "Organizations"
+    },
+    {
+      "name": "public_users"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "public_tags"
+    },
+    {
+      "name": "Tags"
+    }
+  ]
+}
