@@ -16,11 +16,11 @@ const CONNECTOR_TYPES = [
   { value: "destination", label: "Destinations" },
 ];
 
-export const ConnectorSpecPicker = () => {
+export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
   const specsBaseUrl = useBaseUrl("/connector-specs/");
   const [index, setIndex] = useState(null);
   const [indexError, setIndexError] = useState(null);
-  const [connectorType, setConnectorType] = useState("all");
+  const [connectorType, setConnectorType] = useState(fixedType || "all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [spec, setSpec] = useState(null);
@@ -116,7 +116,11 @@ export const ConnectorSpecPicker = () => {
           className={styles.search}
           placeholder={
             index
-              ? `Search ${index.length} connectors`
+              ? `Search ${
+                  fixedType
+                    ? `${index.filter((entry) => entry.connector_type === fixedType).length} ${fixedType}s`
+                    : `${index.length} connectors`
+                }`
               : "Loading connectors..."
           }
           value={query}
@@ -124,20 +128,21 @@ export const ConnectorSpecPicker = () => {
           disabled={!index}
         />
         <div className={styles.types}>
-          {CONNECTOR_TYPES.map((type) => (
-            <button
-              key={type.value}
-              type="button"
-              className={
-                type.value === connectorType
-                  ? `${styles.typeButton} ${styles.typeButtonActive}`
-                  : styles.typeButton
-              }
-              onClick={() => setConnectorType(type.value)}
-            >
-              {type.label}
-            </button>
-          ))}
+          {!fixedType &&
+            CONNECTOR_TYPES.map((type) => (
+              <button
+                key={type.value}
+                type="button"
+                className={
+                  type.value === connectorType
+                    ? `${styles.typeButton} ${styles.typeButtonActive}`
+                    : styles.typeButton
+                }
+                onClick={() => setConnectorType(type.value)}
+              >
+                {type.label}
+              </button>
+            ))}
         </div>
       </div>
 
@@ -170,7 +175,11 @@ export const ConnectorSpecPicker = () => {
 
       {selected && (
         <div className={styles.spec}>
-          <h2>{selected.name}</h2>
+          {compact ? (
+            <p className={styles.compactName}>{selected.name}</p>
+          ) : (
+            <h2>{selected.name}</h2>
+          )}
           <p>
             <code>{selected.dockerRepository}</code>
             {selected.documentationUrl && (

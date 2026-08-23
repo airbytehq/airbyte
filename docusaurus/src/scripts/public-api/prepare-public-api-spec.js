@@ -231,7 +231,6 @@ function replaceConnectorConfigurationUnions(spec) {
         : "source or destination";
     schemas[name] = {
       type: "object",
-      additionalProperties: true,
       description:
         `The configuration shape depends on the ${connectorType} connector type. ` +
         "See the [connector configuration reference](/developers/connector-configurations) " +

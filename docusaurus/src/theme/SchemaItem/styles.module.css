@@ -1,0 +1,16 @@
+.lookup {
+  margin: 8px 0 4px;
+}
+
+.toggle {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ifm-link-color);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  text-decoration: underline;
+}
