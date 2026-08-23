@@ -274,9 +274,7 @@ async function main() {
     writeSpec(spec);
     console.log(`Public API spec saved to ${SPEC_CACHE_PATH}`);
   } catch (error) {
-    console.error(
-      `Error fetching/processing latest public API spec: ${error.message}`,
-    );
+    console.error("Error fetching/processing latest public API spec");
     if (shouldFailOnError) {
       throw error;
     }
@@ -293,6 +291,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error("Public API spec preparation failed");
   process.exitCode = 1;
 });

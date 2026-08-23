@@ -5,10 +5,17 @@ import styles from "./ConnectorSpecPicker.module.css";
 
 const DOCS_SITE_PREFIX = "https://docs.airbyte.com";
 
-const toDocsHref = (documentationUrl) =>
-  documentationUrl.startsWith(DOCS_SITE_PREFIX)
-    ? documentationUrl.slice(DOCS_SITE_PREFIX.length)
-    : documentationUrl;
+const toDocsHref = (documentationUrl) => {
+  try {
+    const url = new URL(documentationUrl);
+    if (url.origin === DOCS_SITE_PREFIX) {
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+  } catch {
+    // Keep invalid URLs visible so the component can render its fallback link.
+  }
+  return documentationUrl;
+};
 
 const CONNECTOR_TYPES = [
   { value: "all", label: "All" },

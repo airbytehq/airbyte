@@ -122,6 +122,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Error preparing connector spec assets:", error);
+  console.error("Error preparing connector spec assets");
   process.exit(1);
 });
