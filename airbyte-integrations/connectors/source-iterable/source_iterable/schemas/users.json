@@ -128,11 +128,15 @@
     },
     "itblInternal.documentCreatedAt": {
       "description": "Timestamp when the user document was created internally.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "itblInternal.documentUpdatedAt": {
       "description": "Timestamp when the user document was last updated internally.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "itblInternal.isUnknownUser": {
       "description": "Whether the user is flagged as unknown by Iterable.",

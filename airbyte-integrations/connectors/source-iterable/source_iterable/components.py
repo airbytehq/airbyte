@@ -85,8 +85,18 @@ class UsersRecordExtractor(DpathExtractor):
     # The export API emits these as space-separated timestamps ("2021-04-14 16:52:31 +00:00")
     # while the schema declares format: date-time (RFC3339); normalize so typed destinations
     # do not null the values into _airbyte_meta.changes.
-    TIMESTAMP_FIELDS = ("signupDate", "profileUpdatedAt")
-    _TIMESTAMP_FORMATS = ("%Y-%m-%d %H:%M:%S %z", "%Y-%m-%dT%H:%M:%S%z")
+    TIMESTAMP_FIELDS = (
+        "signupDate",
+        "profileUpdatedAt",
+        "itblInternal.documentCreatedAt",
+        "itblInternal.documentUpdatedAt",
+    )
+    _TIMESTAMP_FORMATS = (
+        "%Y-%m-%d %H:%M:%S %z",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%d %H:%M:%S.%f %z",
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+    )
 
     @classmethod
     def _normalize_timestamp(cls, value: Any) -> Any:

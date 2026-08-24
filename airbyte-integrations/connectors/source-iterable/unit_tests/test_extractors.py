@@ -97,8 +97,8 @@ def test_events_extraction():
                 "locale": "en_US",
                 "timeZone": "America/New_York",
                 "itblInternal.emailDomain": "example.com",
-                "itblInternal.documentCreatedAt": "2024-01-15 10:30:00 +00:00",
-                "itblInternal.documentUpdatedAt": "2024-06-01 08:00:00 +00:00",
+                "itblInternal.documentCreatedAt": "2024-01-15T10:30:00+00:00",
+                "itblInternal.documentUpdatedAt": "2024-06-01T08:00:00+00:00",
                 "itblInternal.isUnknownUser": False,
                 "itblDS.brandAffinityLabel": "loyal",
                 "data": {
@@ -152,6 +152,20 @@ def test_events_extraction():
                 "data": {},
             },
             id="null_and_unparseable_timestamps_passed_through_unchanged",
+        ),
+        pytest.param(
+            {
+                "email": "fractional@example.com",
+                "signupDate": "2024-01-15 10:30:00.123 +00:00",
+                "profileUpdatedAt": "2024-01-15T10:30:00.123456+00:00",
+            },
+            {
+                "email": "fractional@example.com",
+                "signupDate": "2024-01-15T10:30:00.123000+00:00",
+                "profileUpdatedAt": "2024-01-15T10:30:00.123456+00:00",
+                "data": {},
+            },
+            id="fractional_second_timestamps_normalized_to_rfc3339",
         ),
         pytest.param(
             {
