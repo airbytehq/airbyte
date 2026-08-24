@@ -124,7 +124,7 @@ For more information about available environments, please visit [this page](http
 
 ### Performance considerations
 
-Zoho CRM API calls consume credits, and each Zoho CRM edition has a credit limit in a 24-hour rolling window. Discovery alone costs roughly two credits per module, because the connector requests module metadata and field metadata for every module in your account. Take this into account when you set sync frequency. For details, see [API limits](https://www.zoho.com/crm/developer/docs/api/v2/api-limits.html) in the Zoho CRM documentation.
+Zoho CRM API calls consume credits, and each Zoho CRM edition has a credit limit in a 24-hour rolling window. Discovery is more expensive than it looks: the connector makes one call to list your modules, then two metadata calls per module (module metadata and field metadata). Take this into account when you set sync frequency. For the credit cost of each call, see [API limits](https://www.zoho.com/crm/developer/docs/api/v2/api-limits.html) in the Zoho CRM documentation.
 
 The **Zoho CRM Edition** you select controls how many metadata requests the connector makes in parallel while it builds the list of streams:
 
@@ -162,7 +162,7 @@ The connector doesn't support the Airbyte OAuth button, so you generate the refr
 
 1. Log into https://api-console.zoho.com/
 2. Choose client
-3. Enter the scopes the refresh and access tokens will cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, and read access to the record data — for example `ZohoCRM.modules.ALL`. **Make sure the scope covers every module you want to sync.** Modules the token can't read don't appear as streams.
+3. Enter the scopes the refresh and access tokens will cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, and read access to the record data — for example `ZohoCRM.modules.ALL`. **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
 4. Enter grant token's lifetime and description, click "Create".
 5. Copy Grant token, close the popup and copy Client ID and Client Secret on the "Client Secret" tab.
 
