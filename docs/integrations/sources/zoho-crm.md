@@ -53,7 +53,7 @@ The list of available streams is the list of Modules as long as Module Metadata 
 
 Any other data type not listed in the table above will be treated as `string`.
 
-Auto-number fields are the exception to the mapping above: when the field has a prefix or suffix configured in Zoho CRM, its values are plain strings such as `INV-1042`, so the connector drops the `big_integer` type and syncs them as strings.
+Auto-number fields are the one exception to that table: when the field has a prefix or suffix configured in Zoho CRM, its values are plain strings such as `INV-1042`, so the connector drops the `big_integer` type and syncs them as strings.
 
 ### Features
 
@@ -162,7 +162,7 @@ The connector doesn't support the Airbyte OAuth button, so you generate the refr
 
 1. Log into https://api-console.zoho.com/
 2. Choose client
-3. Enter the scopes the refresh and access tokens will cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, and read access to the record data — for example `ZohoCRM.modules.ALL`. **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
+3. Enter the scopes the refresh and access tokens cover. The connector reads module and field metadata, then reads records from each module, so grant `ZohoCRM.settings.modules.READ`, `ZohoCRM.settings.fields.READ`, and read access to the record data, such as `ZohoCRM.modules.ALL`. **Make sure the scope covers every module you want to sync.** If the token lacks metadata access for a module, that module doesn't appear as a stream; if it lacks record access, the stream appears but the sync fails when it tries to read data.
 4. Enter grant token's lifetime and description, click "Create".
 5. Copy Grant token, close the popup and copy Client ID and Client Secret on the "Client Secret" tab.
 
