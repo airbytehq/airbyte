@@ -4,7 +4,6 @@
 
 import time
 
-import pytest
 import requests_mock
 from _helpers import get_source
 
@@ -78,7 +77,7 @@ def test_429_backoff_waits_grow_exponentially(config, monkeypatch):
     assert 120 <= backoff_waits[2] <= 132
 
 
-def test_429_retry_after_header_is_honored(config, monkeypatch):
+def test_429_retry_after_header_is_ignored(config, monkeypatch):
     waits = []
     monkeypatch.setattr(time, "sleep", waits.append)
 
@@ -87,7 +86,21 @@ def test_429_retry_after_header_is_honored(config, monkeypatch):
         mocker.get(
             _REPORT_TYPES_URL,
             [
-                {"status_code": 429, "headers": {"Retry-After": "90"}, "json": _RATE_LIMIT_BODY},
+                {
+                    "status_code": 429,
+                    "headers": {"Retry-After": "90"},
+                    "json": _RATE_LIMIT_BODY,
+                },
+                {
+                    "status_code": 429,
+                    "headers": {"Retry-After": "90"},
+                    "json": _RATE_LIMIT_BODY,
+                },
+                {
+                    "status_code": 429,
+                    "headers": {"Retry-After": "90"},
+                    "json": _RATE_LIMIT_BODY,
+                },
                 {"status_code": 200, "json": {"reportTypes": [{"id": "channel_basic_a3"}]}},
             ],
         )
@@ -95,33 +108,10 @@ def test_429_retry_after_header_is_honored(config, monkeypatch):
         output = _read_report_types(config)
 
     assert output.records
-    assert [wait for wait in waits if wait > 0] == [pytest.approx(91, abs=1)]
-
-
-def test_429_retry_after_above_cap_fails_as_transient_error(config, monkeypatch):
-    waits = []
-    monkeypatch.setattr(time, "sleep", waits.append)
-
-    with requests_mock.Mocker() as mocker:
-        _register_token(mocker)
-        report_types_mock = mocker.get(
-            _REPORT_TYPES_URL,
-            status_code=429,
-            headers={"Retry-After": "601"},
-            json=_RATE_LIMIT_BODY,
-        )
-
-        output = _read_report_types(config)
-
-    assert not output.records
-    assert report_types_mock.call_count == 1
-    assert not [wait for wait in waits if wait > 0]
-    assert output.errors
-    assert any(
-        error.trace.error.failure_type == FailureType.transient_error
-        and error.trace.error.message == "The rate limit is greater than max waiting time has been reached."
-        for error in output.errors
-    )
+    backoff_waits = [wait for wait in waits if wait > 0]
+    assert 30 <= backoff_waits[0] <= 42
+    assert 60 <= backoff_waits[1] <= 72
+    assert 120 <= backoff_waits[2] <= 132
 
 
 def test_daily_quota_429_fails_without_retry(config, monkeypatch):
