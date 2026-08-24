@@ -86,7 +86,14 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 14. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 15. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
 16. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
-17. Click `Set up source`.
+17. **Inbound API settings (Fulfillment Inbound streams only)**:
+    - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
+      - `rolling_days` (default): Fetch data for the last **N days including today**.
+      - `fixed`: Fetch data for a fixed UTC datetime range.
+    - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
+18. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -113,7 +120,14 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 12. For **Max Done Report Age (Hours)**, set how many hours old a completed (DONE) report can be and still be reused instead of creating a new one. The default is `0`, which means completed reports are never reused and a fresh report is always created. Set a value between `1` and `72` to reuse recent completed reports and reduce API calls. Reports that are still in progress (IN_QUEUE, IN_PROGRESS) are always reused regardless of this setting.
 13. For **Report Stream Lookback Window (Hours)**, set how many hours of previously synced data incremental report streams should re-fetch on each sync. The default is `0`, which disables lookback. Increase this value when Amazon updates report data after a sync has already completed. This setting does not apply to `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH` or `GET_VENDOR_SALES_REPORT` because those streams use monthly or date-only report boundaries.
 14. For **Stop Sync When Report Streams Are Rate Limited**, enable this option to stop the source from retrying immediately once the rate limit retry budget is exhausted during report creation, and fail with an actionable configuration error. This is useful when persistent rate limiting indicates the connector configuration needs adjustment. When disabled (default), the source applies its backoff and retry strategy; if all retry attempts are exhausted, a transient error is thrown and the sync may be rescheduled automatically.
-15. Click `Set up source`.
+15. **Inbound API settings (Fulfillment Inbound streams only)**:
+    - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
+      - `rolling_days` (default): Fetch data for the last **N days including today**.
+      - `fixed`: Fetch data for a fixed UTC datetime range.
+    - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
+16. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -169,6 +183,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Forecasting Report (Retail)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Fulfillment Inbound Shipments](https://developer-docs.amazon.com/sp-api/reference/getshipments) \(full-refresh\)
+- [Fulfillment Inbound Shipment Items](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) \(full-refresh\)
 - [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
 - [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
 - [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
@@ -193,6 +209,8 @@ The connector automatically shows only the streams compatible with your configur
 - Order Items
 - Financial Events
 - Financial Event Groups
+- Fulfillment Inbound Shipments
+- Fulfillment Inbound Shipment Items
 - All report streams (FBA reports, inventory reports, order reports, analytics, settlement, etc.)
 - All Brand Analytics streams
 
@@ -432,6 +450,12 @@ Lower the **Financial Events Max Results Per Page** setting in your connector co
 
 You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
 
+### Fulfillment Inbound shipment items pagination
+
+The `FbaInboundShipmentItems` stream reads items per shipment via the [getShipmentItemsByShipmentId](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) operation. Amazon's API model defines no pagination request parameter for this operation, although its response can include a `NextToken` value. If Amazon truncates the item list of a single shipment, the connector cannot request the remaining items for that shipment. If you observe incomplete item lists for very large shipments, [contact Airbyte Support](https://support.airbyte.com).
+
+Also note that Amazon selects inbound shipments by the shipment's last-update time, and item-quantity updates do not always advance it (see [amzn/selling-partner-api-models#2594](https://github.com/amzn/selling-partner-api-models/issues/2594)). Prefer a generous **Inbound Rolling Days** window over a narrow one if you rely on item quantities staying current.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -443,7 +467,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.9.6 | 2026-08-20 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
+| 5.10.1 | 2026-08-20 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
+| 5.10.0 | 2026-08-19 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
 | 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |
 | 5.9.4 | 2026-08-11 | [83818](https://github.com/airbytehq/airbyte/pull/83818) | Update dependencies |
 | 5.9.3 | 2026-08-07 | [77620](https://github.com/airbytehq/airbyte/pull/77620) | Pass configured Report Options to the report creation request for GET_LEDGER_DETAIL_VIEW_DATA and GET_LEDGER_SUMMARY_VIEW_DATA |

@@ -66,7 +66,7 @@ source-mssql-e2e-cdc-tests/
 - Driver scripts default `VERSION=4.4.2`. Override with
   `VERSION=4.3.4 ./scripts/repro-12162.sh` to test against an earlier
   version, or `VERSION=dev` after a local
-  `./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker`
+  `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx`
   to test a fix.
 - Assertions are inline in driver scripts: `grep -c '<substring>'` on
   `stderr.txt`, `jq -e` on `stdout.txt`, exit-non-zero on miss.
